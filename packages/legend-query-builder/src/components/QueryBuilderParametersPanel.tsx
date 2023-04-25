@@ -113,10 +113,10 @@ const VariableExpressionEditor = observer(
 
     const parameterNameValue = varState.name;
 
-    const [hasFailedValidation, setFailedValidation] = useState<boolean>(false);
+    const [isNameValid, setIsNameValid] = useState<boolean>(true);
 
-    const getValidationMessage = (input: string): string | undefined => {
-      const possibleMessage = !input
+    const getValidationMessage = (input: string): string | undefined =>
+      !input
         ? `Parameter name can't be empty`
         : allVariableNames.filter((e) => e === input).length >
           (isCreating ? 0 : 1)
@@ -133,11 +133,6 @@ const VariableExpressionEditor = observer(
         : isValidIdentifier(input, true) === false
         ? 'Parameter name must be text with no spaces and not start with an uppercase letter or number'
         : undefined;
-
-      setFailedValidation(possibleMessage !== undefined);
-
-      return possibleMessage;
-    };
 
     const close = (): void => {
       queryParametersState.setSelectedParameter(undefined);
@@ -171,10 +166,11 @@ const VariableExpressionEditor = observer(
               name="Parameter Name"
               prompt="Name of the parameter. Should be descriptive of its purpose."
               value={parameterNameValue}
-              validateInput={getValidationMessage}
               update={(value: string | undefined): void => {
                 variableExpression_setName(varState, value ?? '');
               }}
+              validate={getValidationMessage}
+              onValidate={(issue: string | undefined) => setIsNameValid(!issue)}
               isReadOnly={false}
             />
             <div className="panel__content__form__section">
@@ -229,7 +225,7 @@ const VariableExpressionEditor = observer(
             {isCreating && (
               <ModalFooterButton
                 text="Create"
-                inProgress={hasFailedValidation}
+                disabled={!isNameValid}
                 onClick={onAction}
               />
             )}

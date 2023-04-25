@@ -39,7 +39,6 @@ export const FuzzySearchAdvancedConfigMenu = observer(
         <div className="fuzzy-search__advanced-config__panel__header__label">
           search config
           <DocumentationLink
-            className="fuzzy-search__advanced-config__panel__header__hint"
             documentationKey={
               LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX
             }

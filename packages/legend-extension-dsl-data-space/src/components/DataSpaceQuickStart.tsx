@@ -432,19 +432,21 @@ export const DataSpaceQuickStart = observer(
           )}
         </div>
         <div className="data-space__viewer__wiki__section__content">
-          <div className="data-space__viewer__quickstart">
-            {analysisResult.executables.map((executable) => (
-              <DataSpaceExecutableAnalysisResultView
-                key={executable.uuid}
-                dataSpaceViewerState={dataSpaceViewerState}
-                executableAnalysisResult={executable}
-              />
-            ))}
-          </div>
+          {analysisResult.executables.length !== 0 && (
+            <div className="data-space__viewer__quickstart">
+              {analysisResult.executables.map((executable) => (
+                <DataSpaceExecutableAnalysisResultView
+                  key={executable.uuid}
+                  dataSpaceViewerState={dataSpaceViewerState}
+                  executableAnalysisResult={executable}
+                />
+              ))}
+            </div>
+          )}
+          {analysisResult.executables.length === 0 && (
+            <DataSpaceWikiPlaceholder message="(not specified)" />
+          )}
         </div>
-        {analysisResult.executables.length === 0 && (
-          <DataSpaceWikiPlaceholder message="No quick start provided" />
-        )}
       </div>
     );
   },

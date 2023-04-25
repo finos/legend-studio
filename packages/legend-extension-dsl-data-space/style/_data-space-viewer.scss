@@ -199,7 +199,7 @@
   bottom: 2rem;
   right: 3rem;
   width: 3.4rem;
-  height: 5rem;
+  height: 4.8rem;
   background: var(--color-blue-200);
   border-radius: 0.2rem;
 
@@ -208,14 +208,18 @@
 
     height: 3.4rem;
     width: 3.4rem;
+
+    &:focus {
+      outline: none;
+    }
   }
 
   &__percentage {
     @include flexCenter;
 
-    height: 1.6rem;
+    height: 1.4rem;
     width: 100%;
-    font-size: 1rem;
+    font-size: 0.8rem;
     user-select: none;
     font-family: 'Roboto Mono', monospace;
     background: var(--color-blue-300);
@@ -401,13 +405,14 @@
   &__placeholder {
     @include flexCenter;
 
-    height: 15rem;
+    justify-content: flex-start;
     width: 100%;
-    font-weight: 500;
     border-radius: 0.2rem;
     color: var(--color-dark-grey-300);
-    background: var(--color-dark-grey-100);
     user-select: none;
+    height: auto;
+    background: transparent;
+    font-style: italic;
   }
 }
 

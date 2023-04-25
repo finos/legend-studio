@@ -55,12 +55,11 @@ export const NewServiceModal = observer(
       servicePath,
       mappingPackage.path,
     );
-
-    const [elementExists, setElementExists] = useState<boolean>(false);
+    const [isValid, setIsValid] = useState(true);
 
     const handleEnter = (): void => nameRef.current?.focus();
     const create = (): void => {
-      if (servicePath && !isReadOnly && !elementExists) {
+      if (servicePath && !isReadOnly && !isValid) {
         promoteToService(packagePath, serviceName)
           .then(() => close())
           .catch(applicationStore.alertUnhandledError);
@@ -78,7 +77,6 @@ export const NewServiceModal = observer(
       if (!elementAlreadyExists) {
         return undefined;
       } else {
-        setElementExists(true);
         return 'Element with same path already exists';
       }
     };
@@ -114,7 +112,8 @@ export const NewServiceModal = observer(
             update={(value: string | undefined): void => {
               changeValue(value ?? '');
             }}
-            validateInput={validateElementDoesNotAlreadyExist}
+            validate={validateElementDoesNotAlreadyExist}
+            onValidate={(issue: string | undefined) => setIsValid(!issue)}
             value={servicePath}
             placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
           />
@@ -123,7 +122,7 @@ export const NewServiceModal = observer(
             <div className="search-modal__actions">
               <button
                 className="btn btn--dark"
-                disabled={Boolean(isReadOnly) || elementExists}
+                disabled={Boolean(isReadOnly) || !isValid}
                 onClick={create}
               >
                 Create

@@ -94,7 +94,6 @@ export const CreateWorkspaceModal = observer(
           <div className="modal__title">
             Create Workspace
             <DocumentationLink
-              className="workspace-setup__create-workspace-modal__doc__create-workspace"
               documentationKey={
                 LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_WORKSPACE
               }

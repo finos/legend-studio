@@ -26,7 +26,6 @@ import {
   PencilIcon,
   LockIcon,
   TimesIcon,
-  InfoCircleIcon,
   ErrorIcon,
   PanelFormBooleanField,
   PanelForm,
@@ -37,6 +36,7 @@ import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { ServiceRegistrationEditor } from './ServiceRegistrationEditor.js';
+import { TEMPORARY__SnowflakeServiceDeployer } from './TEMPORARY__SnowflakeServiceDeployer.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   service_addOwner,
@@ -56,6 +56,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { flowResult } from 'mobx';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
 
 type UserOption = { label: string; value: string };
 
@@ -204,7 +205,7 @@ const ServiceGeneralEditor = observer(() => {
           name="URL Pattern"
           isReadOnly={isReadOnly}
           className="service-editor__pattern__input"
-          errorMessageClassname="service-editor__pattern__input"
+          errorMessageClassName="service-editor__pattern__input"
           prompt={
             <>
               Specifies the URL pattern of the service (e.g. /myService/
@@ -215,7 +216,7 @@ const ServiceGeneralEditor = observer(() => {
           update={(value: string | undefined): void => {
             updatePattern(value ?? '');
           }}
-          validateInput={getValidationMessage}
+          validate={getValidationMessage}
           value={pattern}
         />
       </PanelForm>
@@ -442,26 +443,15 @@ const ServiceGeneralEditor = observer(() => {
 
 export const ServiceEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
   const serviceState =
     editorStore.tabManagerState.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
   const isReadOnly = serviceState.isReadOnly;
-  // Tab
   const selectedTab = serviceState.selectedTab;
   const changeTab =
     (tab: SERVICE_TAB): (() => void) =>
     (): void =>
       serviceState.setSelectedTab(tab);
-  const canRegisterService = Boolean(
-    editorStore.applicationStore.config.options
-      .TEMPORARY__serviceRegistrationConfig.length,
-  );
-  const seeDocumentation = (): void =>
-    applicationStore.assistantService.openDocumentationEntry(
-      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST,
-    );
-
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR,
   );
@@ -483,9 +473,22 @@ export const ServiceEditor = observer(() => {
         <div className="panel__header service-editor__header--with-tabs">
           <div className="uml-element-editor__tabs">
             {Object.values(SERVICE_TAB)
-              .filter(
-                (tab) => tab !== SERVICE_TAB.REGISTRATION || canRegisterService,
-              )
+              .filter((tab) => {
+                if (tab === SERVICE_TAB.REGISTRATION) {
+                  return Boolean(
+                    editorStore.applicationStore.config.options
+                      .TEMPORARY__serviceRegistrationConfig.length,
+                  );
+                } else if (
+                  tab === SERVICE_TAB.TEMPORARY__SNOWFLAKE_SERVICE_DEPLOYMENT
+                ) {
+                  return Boolean(
+                    editorStore.applicationStore.config
+                      .TEMPORARY__snowflakeServiceDeploymentUrl,
+                  );
+                }
+                return true;
+              })
               .map((tab) => (
                 <div
                   key={tab}
@@ -496,14 +499,11 @@ export const ServiceEditor = observer(() => {
                 >
                   {prettyCONSTName(tab)}
                   {tab === SERVICE_TAB.TEST && (
-                    <button
-                      className="service-editor__tab__hint"
-                      tabIndex={-1}
-                      onClick={seeDocumentation}
-                      title="click to see more details on service test"
-                    >
-                      <InfoCircleIcon />
-                    </button>
+                    <DocumentationLink
+                      documentationKey={
+                        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST
+                      }
+                    />
                   )}
                 </div>
               ))}
@@ -519,6 +519,10 @@ export const ServiceEditor = observer(() => {
             <ServiceTestableEditor
               serviceTestableState={serviceState.testableState}
             />
+          )}
+          {selectedTab ===
+            SERVICE_TAB.TEMPORARY__SNOWFLAKE_SERVICE_DEPLOYMENT && (
+            <TEMPORARY__SnowflakeServiceDeployer />
           )}
         </div>
       </div>

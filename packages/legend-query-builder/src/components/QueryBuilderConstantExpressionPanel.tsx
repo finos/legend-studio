@@ -85,23 +85,17 @@ const QueryBuilderConstantExpressionEditor = observer(
           ),
         );
 
-    const [hasFailedValidation, setFailedValidation] = useState<boolean>(false);
+    const [isNameValid, setIsNameValid] = useState<boolean>(true);
 
-    const getValidationMessage = (
-      constantInput: string,
-    ): string | undefined => {
-      const possibleMessage = !constantInput
-        ? `Constant Name can't be empty`
+    const getValidationMessage = (constantInput: string): string | undefined =>
+      !constantInput
+        ? `Constant name can't be empty`
         : isValidIdentifier(constantInput) === false
         ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
         : allVariableNames.filter((e) => e === constantInput).length >
           (isCreating ? 0 : 1)
         ? 'Constant name already exists'
         : undefined;
-
-      setFailedValidation(possibleMessage !== undefined);
-      return possibleMessage;
-    };
 
     const close = (): void => {
       variableState.setSelectedConstant(undefined);
@@ -146,7 +140,8 @@ const QueryBuilderConstantExpressionEditor = observer(
               update={(value: string | undefined): void => {
                 variableExpression_setName(varExpression, value ?? '');
               }}
-              validateInput={getValidationMessage}
+              validate={getValidationMessage}
+              onValidate={(issue: string | undefined) => setIsNameValid(!issue)}
               value={variableName}
               isReadOnly={false}
             />
@@ -198,7 +193,7 @@ const QueryBuilderConstantExpressionEditor = observer(
             {isCreating && (
               <ModalFooterButton
                 text="Create"
-                inProgress={hasFailedValidation}
+                disabled={!isNameValid}
                 onClick={onAction}
               />
             )}

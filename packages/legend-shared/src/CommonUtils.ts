@@ -31,6 +31,7 @@ import {
 } from 'lodash-es';
 import { UnsupportedOperationError } from './error/ErrorUtils.js';
 import { format as prettyPrintObject } from 'pretty-format';
+import { assertTrue, guaranteeNonNullable } from './error/AssertionUtils.js';
 
 // NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
 // in case we want to swap out the implementation
@@ -256,6 +257,10 @@ export const getNullableEntry = <T>(array: T[], idx: number): T | undefined => {
     return undefined;
   }
   return array.length > idx ? array[idx] : undefined;
+};
+export const getNonNullableEnry = <T>(array: T[], idx: number): T => {
+  assertTrue(0 <= idx && idx < array.length, `Index out of bound: ${idx}`);
+  return guaranteeNonNullable(array[idx]);
 };
 
 /**
