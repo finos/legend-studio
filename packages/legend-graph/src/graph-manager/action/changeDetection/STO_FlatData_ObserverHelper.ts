@@ -44,8 +44,8 @@ import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 import type { FlatDataAssociationPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 import type { EmbeddedFlatDataPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import type { FlatDataPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping.js';
-import type { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
 import type { FlatDataSectionReference } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataSectionReference.js';
+import type { DEPRECATED__FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -264,7 +264,7 @@ export const observe_FlatDataPropertyMapping = skipObservedWithContext(
 );
 
 export const observe_FlatDataInputData = skipObserved(
-  (metamodel: FlatDataInputData): FlatDataInputData => {
+  (metamodel: DEPRECATED__FlatDataInputData): DEPRECATED__FlatDataInputData => {
     makeObservable(metamodel, {
       data: observable,
       hashCode: computed,

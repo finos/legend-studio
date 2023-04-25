@@ -62,8 +62,8 @@ export const SideBar = observer(() => {
       case ACTIVITY_MODE.REGISTER_SERVICES:
         return (
           <RegisterService
-            bulkServiceRegistrationState={
-              editorStore.bulkServiceRegistrationState
+            globalBulkServiceRegistrationState={
+              editorStore.globalBulkServiceRegistrationState
             }
           />
         );

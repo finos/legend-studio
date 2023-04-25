@@ -22,9 +22,7 @@ import {
   clsx,
   PlusIcon,
   ContextMenu,
-  Dialog,
   BlankPanelPlaceholder,
-  ModalTitle,
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
@@ -32,7 +30,7 @@ import { observer } from 'mobx-react-lite';
 import type { ServiceTestSuite } from '@finos/legend-graph';
 import { ServiceTestDataEditor } from './ServiceTestDataEditor.js';
 import { ServiceTestsEditor } from './ServiceTestsEditor.js';
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { testSuite_setId } from '../../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type {
@@ -41,6 +39,7 @@ import type {
 } from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { RenameModal } from '../../testable/TestAssertionEditor.js';
 
 export const ServiceTestSuiteEditor = observer(
   (props: { serviceTestSuiteState: ServiceTestSuiteState }) => {
@@ -84,55 +83,6 @@ const ServiceSuiteHeaderTabContextMenu = observer(
       </MenuContent>
     );
   }),
-);
-
-export const RenameModal = observer(
-  (props: {
-    val: string;
-    isReadOnly: boolean;
-    setValue: (val: string) => void;
-    showModal: boolean;
-    closeModal: () => void;
-  }) => {
-    const { val, isReadOnly, showModal, closeModal, setValue } = props;
-    const [inputValue, setInputValue] = useState(val);
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      setInputValue(event.target.value);
-    };
-    return (
-      <Dialog
-        open={showModal}
-        onClose={closeModal}
-        classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-      >
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            setValue(inputValue);
-            closeModal();
-          }}
-          className="modal modal--dark search-modal"
-        >
-          <ModalTitle title="Rename" />
-          <div>
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={inputValue}
-              onChange={changeValue}
-            />
-          </div>
-          <div className="search-modal__actions">
-            <button className="btn btn--dark" disabled={isReadOnly}>
-              Rename
-            </button>
-          </div>
-        </form>
-      </Dialog>
-    );
-  },
 );
 
 export const ServiceTestableEditor = observer(

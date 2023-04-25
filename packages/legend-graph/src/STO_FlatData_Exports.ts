@@ -31,4 +31,4 @@ export {
   RootFlatDataRecordType,
   FlatDataRecordField,
 } from './graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataDataType.js';
-export { FlatDataInputData } from './graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
+export { DEPRECATED__FlatDataInputData as FlatDataInputData } from './graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';

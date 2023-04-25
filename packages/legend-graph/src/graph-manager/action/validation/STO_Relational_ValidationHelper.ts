@@ -15,7 +15,7 @@
  */
 
 import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
-import type { RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
+import type { DEPRECATED__RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import {
   type ValidationIssue,
   createValidationError,
@@ -25,7 +25,7 @@ import {
  * @deprecated
  */
 export const DEPRECATED__validation_RelationalInputData = (
-  metamodel: RelationalInputData,
+  metamodel: DEPRECATED__RelationalInputData,
 ): ValidationIssue | undefined => {
   if (isStubbed_PackageableElement(metamodel.database.value)) {
     return createValidationError([

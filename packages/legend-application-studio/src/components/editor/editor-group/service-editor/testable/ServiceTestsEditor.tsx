@@ -57,7 +57,6 @@ import {
   ServiceValueSpecificationTestParameterState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestEditorState.js';
 import { TESTABLE_TEST_TAB } from '../../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
-import type { TestAssertionEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
 import {
   atomicTest_setId,
   testAssertion_setId,
@@ -67,93 +66,11 @@ import {
   TESTABLE_RESULT,
 } from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { getTestableResultIcon } from '../../../side-bar/testable/GlobalTestRunner.js';
-import { TestAssertionEditor } from '../../testable/TestAssertionEditor.js';
-import { RenameModal } from './ServiceTestableEditor.js';
-
-const TestAssertionContextMenu = observer(
-  forwardRef<
-    HTMLDivElement,
-    {
-      serviceTestState: ServiceTestState;
-      testAssertionState: TestAssertionEditorState;
-    }
-  >(function TestContainerContextMenu(props, ref) {
-    const { serviceTestState, testAssertionState } = props;
-    const rename = (): void =>
-      serviceTestState.setAssertionToRename(testAssertionState.assertion);
-    const remove = (): void =>
-      serviceTestState.deleteAssertion(testAssertionState);
-    const add = (): void => serviceTestState.addAssertion();
-    return (
-      <MenuContent ref={ref}>
-        <MenuContentItem onClick={rename}>Rename</MenuContentItem>
-        <MenuContentItem onClick={remove}>Delete</MenuContentItem>
-        <MenuContentItem onClick={add}>Create a new assert</MenuContentItem>
-      </MenuContent>
-    );
-  }),
-);
-
-const TestAssertionItem = observer(
-  (props: {
-    testAssertionEditorState: TestAssertionEditorState;
-    serviceTestState: ServiceTestState;
-    isReadOnly: boolean;
-  }) => {
-    const { testAssertionEditorState, isReadOnly, serviceTestState } = props;
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
-      useState(false);
-    const isRunning = serviceTestState.runningTestAction.isInProgress;
-    const testAssertion = testAssertionEditorState.assertion;
-    const isActive =
-      serviceTestState.selectedAsertionState?.assertion === testAssertion;
-    const _testableResult =
-      testAssertionEditorState.assertionResultState.result;
-    const testableResult = isRunning
-      ? TESTABLE_RESULT.IN_PROGRESS
-      : _testableResult;
-    const resultIcon = getTestableResultIcon(testableResult);
-    const openTestAssertion = (): void =>
-      serviceTestState.openAssertion(testAssertion);
-    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
-    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
-    return (
-      <ContextMenu
-        className={clsx(
-          'testable-test-assertion-explorer__item',
-          {
-            'testable-test-assertion-explorer__item--selected-from-context-menu':
-              !isActive && isSelectedFromContextMenu,
-          },
-          { 'testable-test-assertion-explorer__item--active': isActive },
-        )}
-        disabled={isReadOnly}
-        content={
-          <TestAssertionContextMenu
-            serviceTestState={serviceTestState}
-            testAssertionState={testAssertionEditorState}
-          />
-        }
-        menuProps={{ elevation: 7 }}
-        onOpen={onContextMenuOpen}
-        onClose={onContextMenuClose}
-      >
-        <button
-          className={clsx('testable-test-assertion-explorer__item__label')}
-          onClick={openTestAssertion}
-          tabIndex={-1}
-        >
-          <div className="testable-test-assertion-explorer__item__label__icon testable-test-assertion-explorer__test-result-indicator__container">
-            {resultIcon}
-          </div>
-          <div className="testable-test-assertion-explorer__item__label__text">
-            {testAssertion.id}
-          </div>
-        </button>
-      </ContextMenu>
-    );
-  },
-);
+import {
+  RenameModal,
+  TestAssertionEditor,
+  TestAssertionItem,
+} from '../../testable/TestAssertionEditor.js';
 
 export const NewParameterModal = observer(
   (props: { setupState: ServiceTestSetupState; isReadOnly: boolean }) => {
@@ -513,7 +430,7 @@ const TestAssertionsEditor = observer(
                   (assertionState) => (
                     <TestAssertionItem
                       key={assertionState.assertion.id}
-                      serviceTestState={serviceTestState}
+                      testableTestState={serviceTestState}
                       testAssertionEditorState={assertionState}
                       isReadOnly={
                         serviceTestState.suiteState.testableState
@@ -614,6 +531,7 @@ const ServiceTestDataContextMenu = observer(
     );
   }),
 );
+
 const ServiceTestItem = observer(
   (props: {
     suiteState: ServiceTestSuiteState;
@@ -674,6 +592,7 @@ const ServiceTestItem = observer(
     );
   },
 );
+
 export const ServiceTestsEditor = observer(
   (props: { suiteState: ServiceTestSuiteState }) => {
     const { suiteState } = props;

@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 3.0.7
+
+### Patch Changes
+
+- [#2148](https://github.com/finos/legend-studio/pull/2148) [`349dd7886`](https://github.com/finos/legend-studio/commit/349dd78864843f65a7d94b7a2b1066b454bd8d43) ([@gayathrir11](https://github.com/gayathrir11)) - Preserve query parameter state and query result state for unsupported queries.
+
 ## 3.0.6
 
 ## 3.0.5

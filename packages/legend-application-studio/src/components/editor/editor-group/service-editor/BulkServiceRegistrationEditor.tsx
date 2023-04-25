@@ -21,103 +21,118 @@ import {
   CheckSquareIcon,
   SquareIcon,
   PanelLoadingIndicator,
-  Dialog,
-  Modal,
-  ModalBody,
-  TimesIcon,
 } from '@finos/legend-art';
-import {
-  filterByType,
-  guaranteeNonNullable,
-  prettyCONSTName,
-} from '@finos/legend-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
-import {
-  ServiceRegistrationFail,
-  ServiceRegistrationSuccess,
-  ServiceExecutionMode,
-} from '@finos/legend-graph';
+import { ServiceExecutionMode } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { generateServiceManagementUrl } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 
 export const BulkServiceRegistrationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const bulkServiceRegistrationState = editorStore.bulkServiceRegistrationState;
+  const globalBulkServiceRegistrationState =
+    editorStore.globalBulkServiceRegistrationState;
   // env & execution server
-  const envOptions = bulkServiceRegistrationState.options
-    .filter((info) => info.env !== 'prod')
-    .map((info) => ({
-      label: info.env.toUpperCase(),
-      value: info.env,
-    }));
-  const selectedEnvOption = bulkServiceRegistrationState.serviceEnv
+  const envOptions =
+    globalBulkServiceRegistrationState.serviceConfigState.options
+      .filter((info) => info.env !== 'prod')
+      .map((info) => ({
+        label: info.env.toUpperCase(),
+        value: info.env,
+      }));
+  const selectedEnvOption = globalBulkServiceRegistrationState
+    .serviceConfigState.serviceEnv
     ? {
-        label: bulkServiceRegistrationState.serviceEnv.toUpperCase(),
-        value: bulkServiceRegistrationState.serviceEnv,
+        label:
+          globalBulkServiceRegistrationState.serviceConfigState.serviceEnv.toUpperCase(),
+        value: globalBulkServiceRegistrationState.serviceConfigState.serviceEnv,
       }
     : null;
   const onServerEnvChange = (
     val: { label: string; value: string } | null,
   ): void => {
-    bulkServiceRegistrationState.updateEnv(val?.value);
+    globalBulkServiceRegistrationState.serviceConfigState.updateEnv(val?.value);
   };
 
   // execution mode
-  const serviceTypesOptions = bulkServiceRegistrationState.executionModes
-    .filter((mode) => mode !== ServiceExecutionMode.PROD)
-    .map((mode) => ({
-      label: prettyCONSTName(mode),
-      value: mode,
-    }));
-  const selectedServiceType = bulkServiceRegistrationState.serviceExecutionMode
+  const serviceTypesOptions =
+    globalBulkServiceRegistrationState.serviceConfigState.executionModes
+      .filter((mode) => mode !== ServiceExecutionMode.PROD)
+      .map((mode) => ({
+        label: prettyCONSTName(mode),
+        value: mode,
+      }));
+  const selectedServiceType = globalBulkServiceRegistrationState
+    .serviceConfigState.serviceExecutionMode
     ? {
         label: prettyCONSTName(
-          bulkServiceRegistrationState.serviceExecutionMode,
+          globalBulkServiceRegistrationState.serviceConfigState
+            .serviceExecutionMode,
         ),
-        value: bulkServiceRegistrationState.serviceExecutionMode,
+        value:
+          globalBulkServiceRegistrationState.serviceConfigState
+            .serviceExecutionMode,
       }
     : null;
   const onServiceTypeSelectionChange = (
     val: { label: ServiceExecutionMode; value: ServiceExecutionMode } | null,
   ): void => {
-    bulkServiceRegistrationState.updateType(val?.value);
+    globalBulkServiceRegistrationState.serviceConfigState.updateType(
+      val?.value,
+    );
   };
 
   // version
-  const selectedVersion = bulkServiceRegistrationState.projectVersion
+  const selectedVersion = globalBulkServiceRegistrationState.serviceConfigState
+    .projectVersion
     ? {
         label:
-          bulkServiceRegistrationState.projectVersion instanceof Version
-            ? bulkServiceRegistrationState.projectVersion.id.id
-            : bulkServiceRegistrationState.projectVersion,
-        value: bulkServiceRegistrationState.projectVersion,
+          globalBulkServiceRegistrationState.serviceConfigState
+            .projectVersion instanceof Version
+            ? globalBulkServiceRegistrationState.serviceConfigState
+                .projectVersion.id.id
+            : globalBulkServiceRegistrationState.serviceConfigState
+                .projectVersion,
+        value:
+          globalBulkServiceRegistrationState.serviceConfigState.projectVersion,
       }
     : null;
   const onVersionSelectionChange = (
     val: { label: string; value: Version | string } | null,
   ): void => {
-    bulkServiceRegistrationState.setProjectVersion(val?.value);
+    globalBulkServiceRegistrationState.serviceConfigState.setProjectVersion(
+      val?.value,
+    );
   };
   const versionPlaceholder =
-    bulkServiceRegistrationState.versionOptions === undefined
+    globalBulkServiceRegistrationState.serviceConfigState.versionOptions ===
+    undefined
       ? `Only valid for ${prettyCONSTName(
           ServiceExecutionMode.SEMI_INTERACTIVE,
         )} and ${prettyCONSTName(ServiceExecutionMode.PROD)} service types`
-      : !bulkServiceRegistrationState.versionOptions.length
+      : !globalBulkServiceRegistrationState.serviceConfigState.versionOptions
+          .length
       ? 'Project has no versions'
       : undefined;
 
-  // store model for full interactive
-  const toggleUseStoreModel = (): void => {
-    bulkServiceRegistrationState.setUseStoreModelWithFullInteractive(
-      !bulkServiceRegistrationState.TEMPORARY__useStoreModel,
+  // activate
+  const toggleActivatePostRegistration = (): void => {
+    globalBulkServiceRegistrationState.setActivatePostRegistration(
+      !globalBulkServiceRegistrationState.activatePostRegistration,
     );
   };
 
+  // store model for full interactive
+  const toggleUseStoreModel = (): void => {
+    globalBulkServiceRegistrationState.serviceConfigState.setUseStoreModelWithFullInteractive(
+      !globalBulkServiceRegistrationState.serviceConfigState
+        .TEMPORARY__useStoreModel,
+    );
+  };
+  
   const toggleUseGenerateLineage = (): void => {
     bulkServiceRegistrationState.setUseGenerateLineage(
       !bulkServiceRegistrationState.TEMPORARY__useStoreModel,
@@ -132,19 +147,18 @@ export const BulkServiceRegistrationEditor = observer(() => {
 
   // actions
   const registerService = (): void => {
+    globalBulkServiceRegistrationState.setShowRegConfig(false);
     if (selectedEnvOption && selectedServiceType) {
-      flowResult(bulkServiceRegistrationState.registerServices()).catch(
+      flowResult(globalBulkServiceRegistrationState.registerServices()).catch(
         applicationStore.alertUnhandledError,
       );
     }
   };
-  const closeModal = (): void => {
-    editorStore.bulkServiceRegistrationState.setSuccessModal(false);
-  };
   const disableRegistration =
     !selectedEnvOption ||
     !selectedServiceType ||
-    bulkServiceRegistrationState.registrationState.isInProgress;
+    globalBulkServiceRegistrationState.serviceConfigState.registrationState
+      .isInProgress;
 
   return (
     <div
@@ -166,76 +180,48 @@ export const BulkServiceRegistrationEditor = observer(() => {
             >
               Register
             </button>
-            <Dialog
-              open={editorStore.bulkServiceRegistrationState.showSuccessModel}
-            >
-              <Modal
-                darkMode={true}
-                className="editor-modal bulk-service-registration__service__response"
-              >
-                <div className="bulk-service-registration__header">
-                  <button
-                    className="bulk-service-registration__header__action"
-                    tabIndex={-1}
-                    onClick={closeModal}
-                  >
-                    <TimesIcon />
-                  </button>
-                </div>
-                <ModalBody>
-                  <div className="bulk-service-registration__service__result__header">
-                    Successful Services
-                    {editorStore.bulkServiceRegistrationState.registrationResult
-                      ?.filter(filterByType(ServiceRegistrationSuccess))
-                      .map((service) => (
-                        <div
-                          className="bulk-service-registration__service__link__label"
-                          key={service.pattern}
-                        >
-                          <a
-                            className="bulk-service-registration__service__link__label__service__link"
-                            href={generateServiceManagementUrl(
-                              config.managementUrl,
-                              service.pattern,
-                            )}
-                          >
-                            {service.pattern}
-                          </a>
-                        </div>
-                      ))}
-                  </div>
-                  <div>
-                    <div className="bulk-service-registration__service__result__header">
-                      Failed Services
-                    </div>
-                    <div>
-                      {editorStore.bulkServiceRegistrationState.registrationResult
-                        ?.filter(filterByType(ServiceRegistrationFail))
-                        .map((service) => (
-                          <div
-                            key={service.errorMessage}
-                            className="bulk-service-registration__service__link__label"
-                          >
-                            {`${service.service?.path} ${service.errorMessage}`}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </ModalBody>
-              </Modal>
-            </Dialog>
           </div>
         </div>
       </div>
       <PanelLoadingIndicator
-        isLoading={bulkServiceRegistrationState.registrationState.isInProgress}
+        isLoading={
+          globalBulkServiceRegistrationState.serviceConfigState
+            .registrationState.isInProgress
+        }
       />
       <div className="panel__content__form">
-        {bulkServiceRegistrationState.registrationState.message && (
+        {globalBulkServiceRegistrationState.serviceConfigState.registrationState
+          .message && (
           <div className="service-registration-editor__progress-msg">
-            {`${bulkServiceRegistrationState.registrationState.message}...`}
+            {`${globalBulkServiceRegistrationState.serviceConfigState.registrationState.message}...`}
           </div>
         )}
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Activate Service
+          </div>
+          <div
+            className="panel__content__form__section__toggler"
+            onClick={toggleActivatePostRegistration}
+          >
+            <button
+              className={clsx('panel__content__form__section__toggler__btn', {
+                'panel__content__form__section__toggler__btn--toggled':
+                  globalBulkServiceRegistrationState.activatePostRegistration,
+              })}
+              tabIndex={-1}
+            >
+              {globalBulkServiceRegistrationState.activatePostRegistration ? (
+                <CheckSquareIcon />
+              ) : (
+                <SquareIcon />
+              )}
+            </button>
+            <div className="panel__content__form__section__toggler__prompt">
+              Activates service after registration
+            </div>
+          </div>
+        </div>
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
             Execution Server
@@ -265,8 +251,8 @@ export const BulkServiceRegistrationEditor = observer(() => {
             darkMode={true}
           />
         </div>
-        {bulkServiceRegistrationState.serviceExecutionMode ===
-          ServiceExecutionMode.FULL_INTERACTIVE && (
+        {globalBulkServiceRegistrationState.serviceConfigState
+          .serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE && (
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
               Store Model
@@ -278,11 +264,13 @@ export const BulkServiceRegistrationEditor = observer(() => {
               <button
                 className={clsx('panel__content__form__section__toggler__btn', {
                   'panel__content__form__section__toggler__btn--toggled':
-                    bulkServiceRegistrationState.TEMPORARY__useStoreModel,
+                    globalBulkServiceRegistrationState.serviceConfigState
+                      .TEMPORARY__useStoreModel,
                 })}
                 tabIndex={-1}
               >
-                {bulkServiceRegistrationState.TEMPORARY__useStoreModel ? (
+                {globalBulkServiceRegistrationState.serviceConfigState
+                  .TEMPORARY__useStoreModel ? (
                   <CheckSquareIcon />
                 ) : (
                   <SquareIcon />
@@ -331,11 +319,17 @@ export const BulkServiceRegistrationEditor = observer(() => {
             relevant for semi-interactive and production services.
           </div>
           <CustomSelectorInput
-            options={bulkServiceRegistrationState.versionOptions ?? []}
+            options={
+              globalBulkServiceRegistrationState.serviceConfigState
+                .versionOptions ?? []
+            }
             onChange={onVersionSelectionChange}
             value={selectedVersion}
             darkMode={true}
-            disabled={bulkServiceRegistrationState.versionOptions === undefined}
+            disabled={
+              globalBulkServiceRegistrationState.serviceConfigState
+                .versionOptions === undefined
+            }
             placeholder={versionPlaceholder}
             isLoading={editorStore.sdlcState.isFetchingProjectVersions}
           />

@@ -19,6 +19,7 @@ import type { V1_AtomicTest } from './V1_AtomicTest.js';
 import { V1_Test } from './V1_Test.js';
 
 export abstract class V1_TestSuite extends V1_Test implements Hashable {
+  doc: string | undefined;
   tests: V1_AtomicTest[] = [];
 
   abstract override get hashCode(): string;

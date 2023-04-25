@@ -1,4 +1,5 @@
 ---
 '@finos/legend-application-studio': patch
-'@finos/eslint-plugin-legend-studio': patch
 ---
+
+Add cherry picking for bulk service registration

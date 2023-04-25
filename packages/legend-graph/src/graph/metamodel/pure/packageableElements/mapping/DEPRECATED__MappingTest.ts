@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
-import type { MappingTestAssert } from './MappingTestAssert.js';
-import type { InputData } from './InputData.js';
+import {
+  uuid,
+  hashArray,
+  type Hashable,
+  tryToMinifyLosslessJSONString,
+} from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashElementPointer,
+} from '../../../../Core_HashUtils.js';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
+import type { Class } from '../domain/Class.js';
+import type { FlatData } from '../store/flatData/model/FlatData.js';
+import { PackageableElementPointerType } from '../../../../MetaModelConst.js';
+import type { Database } from '../store/relational/model/Database.js';
 
 /**
  * TODO: Remove once migration from `MappingTest_Legacy` to `MappingTest` is complete
@@ -34,14 +45,14 @@ export class DEPRECATED__MappingTest implements Hashable {
    * @discrepancy model
    */
   query: RawLambda;
-  inputData: InputData[] = [];
-  assert: MappingTestAssert;
+  inputData: DEPRECATED__InputData[] = [];
+  assert: DEPRECATED__MappingTestAssert;
 
   constructor(
     name: string,
     query: RawLambda,
-    inputData: InputData[],
-    assert: MappingTestAssert,
+    inputData: DEPRECATED__InputData[],
+    assert: DEPRECATED__MappingTestAssert,
   ) {
     this.name = name;
     this.query = query;
@@ -56,6 +67,138 @@ export class DEPRECATED__MappingTest implements Hashable {
       this.query,
       hashArray(this.inputData),
       this.assert,
+    ]);
+  }
+}
+
+export abstract class DEPRECATED__MappingTestAssert implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class DEPRECATED__ExpectedOutputMappingTestAssert
+  extends DEPRECATED__MappingTestAssert
+  implements Hashable
+{
+  expectedOutput: string;
+
+  constructor(expectedOutput: string) {
+    super();
+    /**
+     * @workaround https://github.com/finos/legend-studio/issues/68
+     */
+    this.expectedOutput = tryToMinifyLosslessJSONString(expectedOutput);
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.EXPECTED_OUTPUT_MAPPING_TEST_ASSERT,
+      this.expectedOutput,
+    ]);
+  }
+}
+
+export abstract class DEPRECATED__InputData implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export enum ObjectInputType {
+  JSON = 'JSON',
+  XML = 'XML',
+}
+
+export class DEPRECATED__ObjectInputData
+  extends DEPRECATED__InputData
+  implements Hashable
+{
+  sourceClass: PackageableElementReference<Class>;
+  inputType: ObjectInputType;
+  data: string;
+
+  constructor(
+    sourceClass: PackageableElementReference<Class>,
+    inputType: ObjectInputType,
+    data: string,
+  ) {
+    super();
+    this.sourceClass = sourceClass;
+    this.inputType = inputType;
+    /**
+     * @workaround https://github.com/finos/legend-studio/issues/68
+     */
+    this.data =
+      inputType === ObjectInputType.JSON
+        ? tryToMinifyLosslessJSONString(data)
+        : data;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.OBJECT_INPUT_DATA,
+      this.sourceClass.valueForSerialization ?? '',
+      this.inputType,
+      this.data,
+    ]);
+  }
+}
+
+export class DEPRECATED__FlatDataInputData
+  extends DEPRECATED__InputData
+  implements Hashable
+{
+  sourceFlatData: PackageableElementReference<FlatData>;
+  data: string;
+
+  constructor(
+    sourceFlatData: PackageableElementReference<FlatData>,
+    data: string,
+  ) {
+    super();
+    this.sourceFlatData = sourceFlatData;
+    this.data = data;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
+      hashElementPointer(
+        PackageableElementPointerType.STORE,
+        this.sourceFlatData.valueForSerialization ?? '',
+      ),
+      this.data,
+    ]);
+  }
+}
+
+export enum RelationalInputType {
+  SQL = 'SQL',
+  CSV = 'CSV',
+}
+
+export class DEPRECATED__RelationalInputData
+  extends DEPRECATED__InputData
+  implements Hashable
+{
+  database: PackageableElementReference<Database>;
+  data: string;
+  inputType: RelationalInputType;
+
+  constructor(
+    database: PackageableElementReference<Database>,
+    data: string,
+    inputType: RelationalInputType,
+  ) {
+    super();
+    this.database = database;
+    this.data = data;
+    this.inputType = inputType;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATIONAL_INPUT_DATA,
+      this.database.valueForSerialization ?? '',
+      this.data,
+      this.inputType,
     ]);
   }
 }

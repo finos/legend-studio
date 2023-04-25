@@ -37,8 +37,8 @@ import type {
   IdentifiedConnection,
 } from '../metamodel/pure/packageableElements/runtime/Runtime.js';
 import { OperationSetImplementation } from '../metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
-import { ObjectInputType } from '../metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
 import type { PackageableRuntime } from '../metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+import { ObjectInputType } from '../metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 
 // ----------------------------------------- Mapping -----------------------------------------
 

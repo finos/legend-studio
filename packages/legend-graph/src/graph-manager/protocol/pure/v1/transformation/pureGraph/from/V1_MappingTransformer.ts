@@ -33,14 +33,6 @@ import { PurePropertyMapping } from '../../../../../../../graph/metamodel/pure/p
 import { Enum } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Enum.js';
 import type { EnumValueMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumValueMapping.js';
 import type { EnumerationMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
-import type { InputData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InputData.js';
-import type { MappingTestAssert } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestAssert.js';
-import {
-  ObjectInputData,
-  ObjectInputType,
-} from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
-import { FlatDataInputData } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
-import { ExpectedOutputMappingTestAssert } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
 import { extractLine } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
 import { FlatDataPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping.js';
 import type { EmbeddedFlatDataPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
@@ -58,7 +50,16 @@ import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../..
 import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import type { InferableMappingElementIdValue } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
 import type { MappingInclude } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
-import type { DEPRECATED__MappingTest } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
+import {
+  type DEPRECATED__MappingTest,
+  type DEPRECATED__InputData,
+  type DEPRECATED__MappingTestAssert,
+  DEPRECATED__ExpectedOutputMappingTestAssert,
+  DEPRECATED__ObjectInputData,
+  DEPRECATED__FlatDataInputData,
+  ObjectInputType,
+  DEPRECATED__RelationalInputData,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import type { AssociationImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/AssociationImplementation.js';
 import { RelationalAssociationImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/RelationalAssociationImplementation.js';
 import type { PropertyReference } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PropertyReference.js';
@@ -83,17 +84,18 @@ import {
 } from '../../../model/packageableElements/mapping/V1_EnumValueMapping.js';
 import type { V1_PropertyMapping } from '../../../model/packageableElements/mapping/V1_PropertyMapping.js';
 import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping.js';
-import type { V1_InputData } from '../../../model/packageableElements/mapping/V1_InputData.js';
 import type { V1_AssociationMapping } from '../../../model/packageableElements/mapping/V1_AssociationMapping.js';
 import { V1_RelationalAssociationMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalAssociationMapping.js';
-import type { V1_MappingTestAssert } from '../../../model/packageableElements/mapping/V1_MappingTestAssert.js';
 import {
-  V1_ObjectInputData,
-  V1_ObjectInputType,
-} from '../../../model/packageableElements/store/modelToModel/mapping/V1_ObjectInputData.js';
-import { V1_FlatDataInputData } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData.js';
-import { V1_ExpectedOutputMappingTestAssert } from '../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert.js';
-import { V1_DEPRECATED__MappingTest } from '../../../model/packageableElements/mapping/V1_DEPRECATED__MappingTest.js';
+  type V1_DEPRECATED__MappingTestAssert,
+  type V1_DEPRECATED__InputData,
+  V1_DEPRECATED__MappingTest,
+  V1_DEPRECATED__ObjectInputData,
+  V1_DEPRECATED__ObjectInputType,
+  V1_DEPRECATED__FlatDataInputData,
+  V1_DEPRECATED__ExpectedOutputMappingTestAssert,
+  V1_DEPRECATED__RelationalInputData,
+} from '../../../model/packageableElements/mapping/V1_DEPRECATED__MappingTest.js';
 import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer.js';
 import { V1_MappingInclude } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
 import { V1_EnumerationMapping } from '../../../model/packageableElements/mapping/V1_EnumerationMapping.js';
@@ -133,8 +135,6 @@ import { V1_FilterMapping } from '../../../model/packageableElements/store/relat
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
 import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer.js';
 import type { V1_RawRelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
-import { RelationalInputData } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
-import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
@@ -152,16 +152,32 @@ import { FlatDataAssociationImplementation } from '../../../../../../../graph/me
 import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
 import type { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
-import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
+import {
+  V1_MappingDataTest,
+  V1_MappingQueryTest,
+  type V1_MappingTest,
+} from '../../../model/packageableElements/mapping/V1_MappingTest.js';
 import {
   V1_transformAtomicTest,
   V1_transformTestAssertion,
   V1_transformTestSuite,
 } from './V1_TestTransformer.js';
-import type { MappingTest } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
-import type { MappingTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
-import { V1_MappingTestSuite } from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
-import type { MappingStoreTestData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
+import {
+  type MappingTest,
+  MappingDataTest,
+  MappingQueryTest,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import {
+  MappingDataTestSuite,
+  MappingQueryTestSuite,
+  type MappingTestSuite,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import {
+  type V1_MappingTestSuite,
+  V1_MappingDataTestSuite,
+  V1_MappingQueryTestSuite,
+} from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
+import type { StoreTestData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { V1_MappingStoreTestData } from '../../../model/packageableElements/mapping/V1_MappingStoreTestData.js';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 
@@ -243,12 +259,14 @@ const transformEnumerationMapping = (
 
 // Mapping Test
 
-export const V1_getObjectInputType = (type: string): V1_ObjectInputType => {
+export const V1_getObjectInputType = (
+  type: string,
+): V1_DEPRECATED__ObjectInputType => {
   switch (type) {
     case ObjectInputType.JSON:
-      return V1_ObjectInputType.JSON;
+      return V1_DEPRECATED__ObjectInputType.JSON;
     case ObjectInputType.XML:
-      return V1_ObjectInputType.XML;
+      return V1_DEPRECATED__ObjectInputType.XML;
     default:
       throw new UnsupportedOperationError(
         `Encountered unsupported object input type '${type}'`,
@@ -257,9 +275,9 @@ export const V1_getObjectInputType = (type: string): V1_ObjectInputType => {
 };
 
 const transformObjectInputData = (
-  element: ObjectInputData,
-): V1_ObjectInputData => {
-  const inputData = new V1_ObjectInputData();
+  element: DEPRECATED__ObjectInputData,
+): V1_DEPRECATED__ObjectInputData => {
+  const inputData = new V1_DEPRECATED__ObjectInputData();
   inputData.data = element.data;
   inputData.inputType = V1_getObjectInputType(element.inputType);
   inputData.sourceClass = element.sourceClass.valueForSerialization ?? '';
@@ -267,9 +285,9 @@ const transformObjectInputData = (
 };
 
 const transformFlatDataInputData = (
-  element: FlatDataInputData,
-): V1_FlatDataInputData => {
-  const inputData = new V1_FlatDataInputData();
+  element: DEPRECATED__FlatDataInputData,
+): V1_DEPRECATED__FlatDataInputData => {
+  const inputData = new V1_DEPRECATED__FlatDataInputData();
   inputData.data = element.data;
   inputData.sourceFlatData = V1_transformElementReferencePointer(
     PackageableElementPointerType.STORE,
@@ -279,9 +297,9 @@ const transformFlatDataInputData = (
 };
 
 const transformRelationalInputData = (
-  element: RelationalInputData,
-): V1_RelationalInputData => {
-  const inputData = new V1_RelationalInputData();
+  element: DEPRECATED__RelationalInputData,
+): V1_DEPRECATED__RelationalInputData => {
+  const inputData = new V1_DEPRECATED__RelationalInputData();
   inputData.data = element.data;
   inputData.inputType = element.inputType;
   inputData.database = element.database.valueForSerialization ?? '';
@@ -289,19 +307,21 @@ const transformRelationalInputData = (
 };
 
 const transformExpectedOutputMappingTestAssert = (
-  element: ExpectedOutputMappingTestAssert,
-): V1_ExpectedOutputMappingTestAssert => {
-  const assert = new V1_ExpectedOutputMappingTestAssert();
+  element: DEPRECATED__ExpectedOutputMappingTestAssert,
+): V1_DEPRECATED__ExpectedOutputMappingTestAssert => {
+  const assert = new V1_DEPRECATED__ExpectedOutputMappingTestAssert();
   assert.expectedOutput = element.expectedOutput;
   return assert;
 };
 
-const transformMappingTestInputData = (inputData: InputData): V1_InputData => {
-  if (inputData instanceof ObjectInputData) {
+const transformMappingTestInputData = (
+  inputData: DEPRECATED__InputData,
+): V1_DEPRECATED__InputData => {
+  if (inputData instanceof DEPRECATED__ObjectInputData) {
     return transformObjectInputData(inputData);
-  } else if (inputData instanceof FlatDataInputData) {
+  } else if (inputData instanceof DEPRECATED__FlatDataInputData) {
     return transformFlatDataInputData(inputData);
-  } else if (inputData instanceof RelationalInputData) {
+  } else if (inputData instanceof DEPRECATED__RelationalInputData) {
     return transformRelationalInputData(inputData);
   }
   throw new UnsupportedOperationError(
@@ -311,9 +331,11 @@ const transformMappingTestInputData = (inputData: InputData): V1_InputData => {
 };
 
 const transformTestAssert = (
-  mappingTestAssert: MappingTestAssert,
-): V1_MappingTestAssert => {
-  if (mappingTestAssert instanceof ExpectedOutputMappingTestAssert) {
+  mappingTestAssert: DEPRECATED__MappingTestAssert,
+): V1_DEPRECATED__MappingTestAssert => {
+  if (
+    mappingTestAssert instanceof DEPRECATED__ExpectedOutputMappingTestAssert
+  ) {
     return transformExpectedOutputMappingTestAssert(mappingTestAssert);
   }
   throw new UnsupportedOperationError(
@@ -337,7 +359,7 @@ const transformMappingTestLegacy = (
 };
 
 const transformMappingStoreTestData = (
-  element: MappingStoreTestData,
+  element: StoreTestData,
   context: V1_GraphTransformerContext,
 ): V1_MappingStoreTestData => {
   const testData = new V1_MappingStoreTestData();
@@ -346,12 +368,13 @@ const transformMappingStoreTestData = (
   return testData;
 };
 
-export const V1_transformMappingTest = (
-  element: MappingTest,
+export const V1_transformMappingQueryTest = (
+  element: MappingQueryTest,
   context: V1_GraphTransformerContext,
-): V1_MappingTest => {
-  const mappingTest = new V1_MappingTest();
+): V1_MappingQueryTest => {
+  const mappingTest = new V1_MappingQueryTest();
   mappingTest.id = element.id;
+  mappingTest.doc = element.doc;
   mappingTest.assertions = element.assertions.map((assertion) =>
     V1_transformTestAssertion(assertion),
   );
@@ -361,19 +384,76 @@ export const V1_transformMappingTest = (
   return mappingTest;
 };
 
-export const V1_transformMappingTestSuite = (
-  element: MappingTestSuite,
+export const V1_transformMappingDataTest = (
+  element: MappingDataTest,
   context: V1_GraphTransformerContext,
-): V1_MappingTestSuite => {
-  const mappingTestSuite = new V1_MappingTestSuite();
+): V1_MappingDataTest => {
+  const mappingTest = new V1_MappingDataTest();
+  mappingTest.id = element.id;
+  mappingTest.doc = element.doc;
+  mappingTest.assertions = element.assertions.map((assertion) =>
+    V1_transformTestAssertion(assertion),
+  );
+  mappingTest.storeTestData = element.storeTestData.map((testData) =>
+    transformMappingStoreTestData(testData, context),
+  );
+  return mappingTest;
+};
+
+export const V1_transformMappingTest = (
+  element: MappingTest,
+  context: V1_GraphTransformerContext,
+): V1_MappingTest => {
+  if (element instanceof MappingQueryTest) {
+    return V1_transformMappingQueryTest(element, context);
+  } else if (element instanceof MappingDataTest) {
+    return V1_transformMappingDataTest(element, context);
+  }
+  throw new UnsupportedOperationError('Unsupported mapping test');
+};
+
+export const V1_transformMappingDataTestSuite = (
+  element: MappingDataTestSuite,
+  context: V1_GraphTransformerContext,
+): V1_MappingDataTestSuite => {
+  const mappingTestSuite = new V1_MappingDataTestSuite();
   mappingTestSuite.id = element.id;
-  mappingTestSuite.mappingStoreTestDatas = element.mappingStoreTestDatas.map(
-    (testData) => transformMappingStoreTestData(testData, context),
+  mappingTestSuite.doc = element.doc;
+  mappingTestSuite.storeTestData = element.storeTestData.map((testData) =>
+    transformMappingStoreTestData(testData, context),
   );
   mappingTestSuite.tests = element.tests.map((test) =>
     V1_transformAtomicTest(test, context),
   );
   return mappingTestSuite;
+};
+
+export const V1_transformMappingQueryTestSuite = (
+  element: MappingQueryTestSuite,
+  context: V1_GraphTransformerContext,
+): V1_MappingQueryTestSuite => {
+  const mappingTestSuite = new V1_MappingQueryTestSuite();
+  mappingTestSuite.id = element.id;
+  mappingTestSuite.doc = element.doc;
+  mappingTestSuite.query = element.query.accept_RawValueSpecificationVisitor(
+    new V1_RawValueSpecificationTransformer(context),
+  ) as V1_RawLambda;
+  mappingTestSuite.tests = element.tests.map((test) =>
+    V1_transformAtomicTest(test, context),
+  );
+  return mappingTestSuite;
+};
+
+export const V1_transformMappingTestSuite = (
+  element: MappingTestSuite,
+  context: V1_GraphTransformerContext,
+): V1_MappingTestSuite => {
+  if (element instanceof MappingDataTestSuite) {
+    return V1_transformMappingDataTestSuite(element, context);
+  } else if (element instanceof MappingQueryTestSuite) {
+    return V1_transformMappingQueryTestSuite(element, context);
+  }
+  throw new UnsupportedOperationError('Unsupported mapping test suite');
 };
 
 // Include Mapping

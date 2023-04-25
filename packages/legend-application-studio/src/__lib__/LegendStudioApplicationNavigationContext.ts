@@ -44,6 +44,7 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   OPERATION_CLASS_MAPPING_EDITOR = 'studio.editor.mapping-editor.operation-class-mapping-editor',
   ENUMERATION_MAPPING_EDITOR = 'studio.editor.mapping-editor.enumeration-mapping-editor',
   MAPPING_EXECUTION_EDITOR = 'studio.editor.mapping-editor.execution-editor',
+  DEPRECATED_MAPPING_TEST_EDITOR = 'studio.editor.mapping-editor.deprecated-test-editor',
   MAPPING_TEST_EDITOR = 'studio.editor.mapping-editor.test-editor',
 
   RUNTIME_EDITOR = 'studio.editor.runtime-editor',
