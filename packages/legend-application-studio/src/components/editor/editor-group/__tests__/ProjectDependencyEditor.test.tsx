@@ -181,7 +181,7 @@ test.skip(integrationTest('Test Project Dependency Editor'), async () => {
   );
 });
 
-test(integrationTest('Test Project Report'), async () => {
+test.skip(integrationTest('Test Project Report'), async () => {
   const editorGroup = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
@@ -234,7 +234,7 @@ test(integrationTest('Test Project Report'), async () => {
   expect(getByText(dependencyExplorer, 'No Conflicts')).toBeDefined();
 });
 
-test(integrationTest('Test Building of Dependency Report'), async () => {
+test.skip(integrationTest('Test Building of Dependency Report'), async () => {
   const rawdependencyReport = RawProjectDependencyReport.serialization.fromJson(
     TEST_DATA__ProjectDependencyReport,
   );

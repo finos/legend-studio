@@ -40,7 +40,11 @@ import {
   QuerySetupLandingPageStore,
   type BaseQuerySetupStore,
 } from '../stores/QuerySetupStore.js';
-import type { StoreProjectData } from '@finos/legend-server-depot';
+import {
+  MASTER_SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+  type StoreProjectData,
+} from '@finos/legend-server-depot';
 import { useApplicationStore } from '@finos/legend-application';
 import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import type { QuerySetupActionConfiguration } from '../stores/LegendQueryApplicationPlugin.js';
@@ -54,10 +58,18 @@ export const buildProjectOption = (
 });
 
 export type VersionOption = { label: string; value: string };
-export const buildVersionOption = (version: string): VersionOption => ({
-  label: version,
-  value: version,
-});
+export const buildVersionOption = (version: string): VersionOption => {
+  if (version === MASTER_SNAPSHOT_ALIAS) {
+    return {
+      label: SNAPSHOT_VERSION_ALIAS,
+      value: version,
+    };
+  }
+  return {
+    label: version,
+    value: version,
+  };
+};
 
 const QuerySetupLandingPageStoreContext = createContext<
   QuerySetupLandingPageStore | undefined

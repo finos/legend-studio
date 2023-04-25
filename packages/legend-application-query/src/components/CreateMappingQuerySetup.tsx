@@ -36,10 +36,7 @@ import {
   generateMappingQueryCreatorRoute,
   generateQuerySetupRoute,
 } from '../__lib__/LegendQueryNavigation.js';
-import {
-  LATEST_VERSION_ALIAS,
-  SNAPSHOT_VERSION_ALIAS,
-} from '@finos/legend-server-depot';
+import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   useLegendQueryApplicationStore,
@@ -169,7 +166,6 @@ const CreateMappingQuerySetupContent = observer(() => {
   // version
   const versionOptions = [
     LATEST_VERSION_ALIAS,
-    SNAPSHOT_VERSION_ALIAS,
     ...(setupStore.currentProjectVersions ?? []),
   ]
     .slice()

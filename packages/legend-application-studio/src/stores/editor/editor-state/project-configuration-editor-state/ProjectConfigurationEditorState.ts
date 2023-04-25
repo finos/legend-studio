@@ -41,10 +41,7 @@ import {
   UpdatePlatformConfigurationsCommand,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
-import {
-  MASTER_SNAPSHOT_ALIAS,
-  StoreProjectData,
-} from '@finos/legend-server-depot';
+import { SNAPSHOT_ALIAS, StoreProjectData } from '@finos/legend-server-depot';
 import { ProjectDependencyEditorState } from './ProjectDependencyEditorState.js';
 
 export enum CONFIGURATION_EDITOR_TAB {
@@ -61,6 +58,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   selectedTab: CONFIGURATION_EDITOR_TAB;
   isReadOnly = false;
   projects = new Map<string, StoreProjectData>();
+  versions = new Map<string, string[]>();
   queryHistory = new Set<string>();
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
 
@@ -78,6 +76,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       selectedTab: observable,
       isReadOnly: observable,
       projects: observable,
+      versions: observable,
       queryHistory: observable,
       associatedProjectsAndVersionsFetched: observable,
       fetchingProjectVersionsState: observable,
@@ -159,7 +158,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   get containsSnapshotDependencies(): boolean {
     return Boolean(
       this.originalProjectConfiguration?.projectDependencies.some(
-        (dependency) => dependency.versionId === MASTER_SNAPSHOT_ALIAS,
+        (dependency) => dependency.versionId.endsWith(SNAPSHOT_ALIAS),
       ),
     );
   }
@@ -172,6 +171,20 @@ export class ProjectConfigurationEditorState extends EditorState {
       )
         .map((v) => StoreProjectData.serialization.fromJson(v))
         .forEach((project) => this.projects.set(project.coordinates, project));
+
+      // fetch the versions for the dependency projects
+      for (const dep of this.projectConfiguration?.projectDependencies ?? []) {
+        const project = this.projects.get(dep.projectId);
+        if (project) {
+          const _versions =
+            (yield this.editorStore.depotServerClient.getVersions(
+              guaranteeNonNullable(dep.groupId),
+              guaranteeNonNullable(dep.artifactId),
+              true,
+            )) as string[];
+          this.versions.set(project.coordinates, _versions);
+        }
+      }
 
       // Update the legacy dependency to newer format (using group ID and artifact ID instead of just project ID)
       this.projectConfiguration?.projectDependencies.forEach(

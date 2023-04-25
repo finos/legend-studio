@@ -35,10 +35,7 @@ import {
   generateQuerySetupRoute,
   generateServiceQueryCreatorRoute,
 } from '../__lib__/LegendQueryNavigation.js';
-import {
-  LATEST_VERSION_ALIAS,
-  SNAPSHOT_VERSION_ALIAS,
-} from '@finos/legend-server-depot';
+import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   useLegendQueryApplicationStore,
@@ -163,7 +160,6 @@ const CloneQueryServiceSetupContent = observer(() => {
   // version
   const versionOptions = [
     LATEST_VERSION_ALIAS,
-    SNAPSHOT_VERSION_ALIAS,
     ...(querySetupState.currentProjectVersions ?? []),
   ]
     .slice()
