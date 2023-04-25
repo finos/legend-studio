@@ -68,6 +68,7 @@ import {
   TEST_DATA__MappingRoundtrip,
   TEST_DATA__LocalPropertyMapping,
   TEST_DATA__MappingTestSuiteRoundtrip,
+  TEST_DATA__MappingOtherwisePropertyRoundtrip,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
 import { TEST__checkBuildingElementsRoundtrip } from '../__test-utils__/GraphManagerTestUtils.js';
@@ -189,6 +190,10 @@ describe(unitTest('Relational import resolution roundtrip'), () => {
     [
       'Relational database connection',
       TEST_DATA__RelationalDatabaseConnectionRoundtrip,
+    ],
+    [
+      'Relational otherwise embedded mapping',
+      TEST_DATA__MappingOtherwisePropertyRoundtrip,
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);

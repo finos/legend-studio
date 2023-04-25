@@ -288,3 +288,20 @@ export const optionalCustomList = <T>(
         skipIfEmpty: false,
       }),
   );
+
+/**
+ * NOTE: this is a workaround for `serializr` to avoid the magic extension mechanism provided
+ * by `createModelSchema`, where depending on the order schemas are defined, if the schema of the
+ * super class is specified first, when we serialize subclasses, we would get fields of the order
+ * of fields from the super classes first, followed by fields from the subclasses, not the order
+ * specified in the subclass's schema.
+ *
+ * See https://github.com/mobxjs/serializr/issues/179
+ */
+export const TEMPORARY__disableModelSchemaExtensionMechanism = <T>(
+  schema: ModelSchema<T>,
+): ModelSchema<T> => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+  schema.extends = undefined as any;
+  return schema;
+};

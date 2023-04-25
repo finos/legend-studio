@@ -574,7 +574,13 @@ export class V1_PropertyMappingBuilder
         this.immediateParent instanceof
         EmbeddedRelationalInstanceSetImplementation
       ) {
-        propertyOwner = this.immediateParent.class.value;
+        propertyOwner =
+          this.immediateParent._OWNER instanceof
+            EmbeddedRelationalInstanceSetImplementation &&
+          this.immediateParent.property.value.name ===
+            protocol.property.property
+            ? this.immediateParent.property.ownerReference.value
+            : this.immediateParent.class.value;
       } else {
         throw new GraphBuilderError(
           `Can't find property owner class for property '${protocol.property.property}'`,
