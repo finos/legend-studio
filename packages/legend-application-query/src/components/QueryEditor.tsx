@@ -169,7 +169,11 @@ const QuerySaveAsDialogContent = observer(
                 ? `Cannot create query because ${saveAsState.unallowedPersistInfo}`
                 : 'Create New Query'
             }
-            inProgress={!saveNewQuery}
+            inProgressText={
+              !saveAsState.unallowedPersistInfo
+                ? `${saveAsState.unallowedPersistInfo}`
+                : undefined
+            }
             onClick={create}
           />
         </ModalFooter>
