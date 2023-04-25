@@ -40,6 +40,7 @@ import {
   optionalCustom,
   optionalCustomList,
   customList,
+  TEMPORARY__disableModelSchemaExtensionMechanism,
 } from '@finos/legend-shared';
 import {
   ATOMIC_TEST_TYPE,
@@ -360,15 +361,19 @@ const embeddedRelationalPropertyMappingModelSchema = createModelSchema(
   },
 );
 
-const otherwiseEmbeddedRelationalPropertyMappingModelSchgema =
-  createModelSchema(V1_OtherwiseEmbeddedRelationalPropertyMapping, {
+const otherwiseEmbeddedRelationalPropertyMappingModelSchema = createModelSchema(
+  V1_OtherwiseEmbeddedRelationalPropertyMapping,
+  {
     _type: usingConstantValueSchema(
       V1_PropertyMappingType.OTHERWISE_EMBEDDED_RELATIONAL,
     ),
     classMapping: usingModelSchema(relationalClassMappingModelSchema),
+    localMappingProperty: usingModelSchema(
+      V1_localMappingPropertyInfoModelSchema,
+    ),
     otherwisePropertyMapping: custom(
-      (val) => V1_serializeRelationalPropertyMapping(val),
-      (val) => V1_deserializeRelationalPropertyMapping(val),
+      V1_serializeRelationalPropertyMapping,
+      V1_deserializeRelationalPropertyMapping,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
     /**
@@ -381,10 +386,11 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema =
      */
     source: optional(primitive()),
     target: optional(primitive()),
-    localMappingProperty: usingModelSchema(
-      V1_localMappingPropertyInfoModelSchema,
-    ),
-  });
+  },
+);
+TEMPORARY__disableModelSchemaExtensionMechanism(
+  otherwiseEmbeddedRelationalPropertyMappingModelSchema,
+);
 
 const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
   V1_InlineEmbeddedPropertyMapping,
@@ -434,7 +440,7 @@ function V1_serializeRelationalPropertyMapping(
     protocol instanceof V1_OtherwiseEmbeddedRelationalPropertyMapping
   ) {
     return serialize(
-      otherwiseEmbeddedRelationalPropertyMappingModelSchgema,
+      otherwiseEmbeddedRelationalPropertyMappingModelSchema,
       protocol,
     );
   } else if (protocol instanceof V1_EmbeddedRelationalPropertyMapping) {
@@ -457,7 +463,7 @@ function V1_deserializeRelationalPropertyMapping(
       return deserialize(embeddedRelationalPropertyMappingModelSchema, json);
     case V1_PropertyMappingType.OTHERWISE_EMBEDDED_RELATIONAL:
       return deserialize(
-        otherwiseEmbeddedRelationalPropertyMappingModelSchgema,
+        otherwiseEmbeddedRelationalPropertyMappingModelSchema,
         json,
       );
     case V1_PropertyMappingType.INLINE_EMBEDDED_RELATIONAL:

@@ -2254,10 +2254,6 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
                       ],
                       root: false,
                     },
-                    property: {
-                      property:
-                        'propertyBelongsinDemographicsAndNotComplexxClass',
-                    },
                     otherwisePropertyMapping: {
                       _type: 'relationalPropertyMapping',
                       property: {
@@ -2274,6 +2270,10 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
                         ],
                       },
                       target: 'domain_Demographics',
+                    },
+                    property: {
+                      property:
+                        'propertyBelongsinDemographicsAndNotComplexxClass',
                     },
                   },
                 ],

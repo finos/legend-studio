@@ -151,14 +151,6 @@ describe(unitTest('Mapping test suite roundtrip'), () => {
   );
 });
 
-describe(unitTest('Mapping test suite with otherwise roundtrip'), () => {
-  test.each([
-    ['mapping test suite', TEST_DATA__MappingOtherwisePropertyRoundtrip],
-  ])('%s', async (testName, entities) => {
-    await TEST__checkBuildingElementsRoundtrip(entities);
-  });
-});
-
 describe(unitTest('Flat-data import resolution roundtrip'), () => {
   test.each([
     // TODO: import resolution for included stores?
@@ -198,6 +190,10 @@ describe(unitTest('Relational import resolution roundtrip'), () => {
     [
       'Relational database connection',
       TEST_DATA__RelationalDatabaseConnectionRoundtrip,
+    ],
+    [
+      'Relational otherwise embedded mapping',
+      TEST_DATA__MappingOtherwisePropertyRoundtrip,
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
