@@ -117,7 +117,7 @@
     "typescript": "5.0.4",
     "yargs": "17.7.1"
   },
-  "packageManager": "yarn@3.4.1",
+  "packageManager": "yarn@3.5.0",
   "engines": {
     "node": ">=16.17.0",
     "yarn": ">=1.22.10"
