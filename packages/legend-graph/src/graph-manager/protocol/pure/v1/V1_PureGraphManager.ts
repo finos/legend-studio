@@ -3048,7 +3048,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private generateStoreEntitlementAnalysisInput(
+  generateStoreEntitlementAnalysisInput(
     mapping: Mapping,
     runtime: PackageableRuntime,
     query: RawLambda | undefined,
