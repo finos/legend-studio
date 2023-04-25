@@ -1,0 +1,23 @@
+###Data
+Data test::data::MyData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '{""name":"john doe","id":"77"}';
+  }#
+}
+
+
+###Pure
+Class test::model
+{
+  name: String[1];
+  id: String[1];
+}
+
+Class test::changedModel
+{
+  name: String[1];
+  id: Integer[1];
+}

@@ -17,16 +17,42 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import { TestSuite } from '../../test/Test.js';
-import type { MappingStoreTestData } from './MappingStoreTestData.js';
+import type { StoreTestData } from './MappingStoreTestData.js';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 
-export class MappingTestSuite extends TestSuite implements Hashable {
-  mappingStoreTestDatas: MappingStoreTestData[] = [];
+export abstract class MappingTestSuite extends TestSuite implements Hashable {}
+
+export class MappingDataTestSuite extends MappingTestSuite implements Hashable {
+  storeTestData: StoreTestData[] = [];
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.MAPPING_TEST_SUITE,
-      hashArray(this.mappingStoreTestDatas),
+      CORE_HASH_STRUCTURE.MAPPING_TEST_DATA_SUITE,
       this.id,
+      this.doc ?? '',
+      hashArray(this.storeTestData),
+      hashArray(this.tests),
+    ]);
+  }
+}
+
+export class MappingQueryTestSuite
+  extends MappingTestSuite
+  implements Hashable
+{
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  query!: RawLambda;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.MAPPING_TEST_QUERY_SUITE,
+      this.id,
+      this.doc ?? '',
+      this.query,
       hashArray(this.tests),
     ]);
   }

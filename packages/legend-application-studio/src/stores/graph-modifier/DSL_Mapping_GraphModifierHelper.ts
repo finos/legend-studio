@@ -76,6 +76,13 @@ import {
   type EnumerationMappingReference,
   type SourceValueType,
   PrimitiveType,
+  type MappingTestSuite,
+  observe_MappingTestSuite,
+  type MappingQueryTestSuite,
+  type MappingQueryTest,
+  type MappingDataTestSuite,
+  type MappingDataTest,
+  type StoreTestData,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -162,7 +169,7 @@ export const mapping_deleteTest = action(
     deleteEntry(mapping.test, val);
   },
 );
-export const mapping_addTest = action(
+export const mapping_addDEPRECATEDTest = action(
   (
     mapping: Mapping,
     val: DEPRECATED__MappingTest,
@@ -172,6 +179,41 @@ export const mapping_addTest = action(
       mapping.test,
       observe_MappingTest_Legacy(val, observerContext),
     );
+  },
+);
+
+// --------------------------------------------- Testable -------------------------------------
+export const mapping_addTestSuite = action(
+  (
+    mapping: Mapping,
+    val: MappingTestSuite,
+    observerContext: ObserverContext,
+  ): void => {
+    addUniqueEntry(
+      mapping.tests,
+      observe_MappingTestSuite(val, observerContext),
+    );
+  },
+);
+
+export const mapping_deleteTestSuite = action(
+  (mapping: Mapping, val: MappingTestSuite): void => {
+    deleteEntry(mapping.tests, val);
+  },
+);
+
+export const mappingTestable_setQuery = action(
+  (test: MappingQueryTest | MappingQueryTestSuite, value: RawLambda): void => {
+    test.query = observe_RawLambda(value);
+  },
+);
+
+export const mappingTestable_deleteStoreTestData = action(
+  (
+    dataHolder: MappingDataTestSuite | MappingDataTest,
+    val: StoreTestData,
+  ): void => {
+    deleteEntry(dataHolder.storeTestData, val);
   },
 );
 
@@ -284,7 +326,7 @@ export const mappingTest_setInputData = action(
   },
 );
 
-export const mappingTest_setQuery = action(
+export const DEPRECATED_mappingTest_setQuery = action(
   (test: DEPRECATED__MappingTest, value: RawLambda): void => {
     test.query = observe_RawLambda(value);
   },

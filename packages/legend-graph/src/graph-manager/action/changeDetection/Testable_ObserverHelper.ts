@@ -82,7 +82,7 @@ export function observe_AtomicTest(
   if (metamodel instanceof ServiceTest) {
     return observe_ServiceTest(metamodel);
   } else if (metamodel instanceof MappingTest) {
-    return observe_MappingTest(metamodel);
+    return observe_MappingTest(metamodel, context);
   }
   const extraAtomicTestBuilder = context.plugins.flatMap(
     (plugin) =>

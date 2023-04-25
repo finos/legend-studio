@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { toSentenceCase } from '@finos/legend-shared';
+import { prettyCONSTName, toSentenceCase } from '@finos/legend-shared';
 import {
   clsx,
   ContextMenu,
@@ -36,6 +36,7 @@ import {
   useResizeDetector,
   MenuContentItem,
   MenuContent,
+  LockIcon,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
@@ -46,11 +47,12 @@ import {
   getMappingElementType,
   MAPPING_ELEMENT_TYPE,
   getMappingElementLabel,
+  MAPPING_EDITOR_TAB,
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { MappingElementState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { MappingExplorer } from './MappingExplorer.js';
-import { MappingTestEditor } from './MappingTestEditor.js';
-import { DEPRECATED__MappingTestState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
+import { DEPRECATED__MappingTestEditor } from './DEPRECATED__MappingTestEditor.js';
+import { DEPRECATED__MappingTestState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/DEPRECATED__MappingTestState.js';
 import { MappingTestsExplorer } from './MappingTestsExplorer.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { MappingExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
@@ -70,6 +72,8 @@ import {
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import type { MappingEditorTabState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTabManagerState.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
+import { MappingTestableEditor } from '../../edit-panel/mapping-editor/testable/MappingTestableEditor.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -143,7 +147,7 @@ const getMappingElementTargetIcon = (
   return <PURE_UnknownElementTypeIcon />;
 };
 
-export const MappingEditor = observer(() => {
+const _MappingEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const mappingEditorState =
@@ -153,7 +157,7 @@ export const MappingEditor = observer(() => {
   const renderActiveMappingElementTab = (): React.ReactNode => {
     if (currentTabState instanceof DEPRECATED__MappingTestState) {
       return (
-        <MappingTestEditor
+        <DEPRECATED__MappingTestEditor
           key={currentTabState.uuid}
           testState={currentTabState}
           isReadOnly={isReadOnly}
@@ -334,4 +338,75 @@ export const MappingEditor = observer(() => {
       </ResizablePanelGroup>
     </div>
   );
+});
+
+export const MappingEditorWithTestable = observer(() => {
+  const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
+  const mappingEditorState =
+    editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
+  const isReadOnly = mappingEditorState.isReadOnly;
+  const mapping = mappingEditorState.mapping;
+  const selectedTab = mappingEditorState.selectedTab;
+  const changeTab =
+    (tab: MAPPING_EDITOR_TAB): (() => void) =>
+    (): void =>
+      mappingEditorState.setSelectedTab(tab);
+  applicationStore.assistantService.openDocumentationEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST,
+  );
+
+  return (
+    <div className="service-editor">
+      <div className="panel">
+        <div className="panel__header">
+          <div className="panel__header__title">
+            {isReadOnly && (
+              <div className="uml-element-editor__header__lock">
+                <LockIcon />
+              </div>
+            )}
+            <div className="panel__header__title__label">mapaping</div>
+            <div className="panel__header__title__content">{mapping.name}</div>
+          </div>
+        </div>
+        <div className="panel__header service-editor__header--with-tabs">
+          <div className="uml-element-editor__tabs">
+            {Object.values(MAPPING_EDITOR_TAB).map((tab) => (
+              <div
+                key={tab}
+                onClick={changeTab(tab)}
+                className={clsx('service-editor__tab', {
+                  'service-editor__tab--active': tab === selectedTab,
+                })}
+              >
+                {prettyCONSTName(tab)}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="panel__content service-editor__content">
+          {selectedTab === MAPPING_EDITOR_TAB.CLASS_MAPPINGS && (
+            <_MappingEditor />
+          )}
+          {selectedTab === MAPPING_EDITOR_TAB.BETA_TEST_SUITES && (
+            <MappingTestableEditor
+              mappingTestableState={mappingEditorState.mappingTestableState}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export const MappingEditor = observer(() => {
+  const editorStore = useEditorStore();
+  const withTestableEditor =
+    editorStore.applicationStore.config.options
+      .TEMPORARY_enableMappingTestableEditor;
+  if (!withTestableEditor) {
+    return <_MappingEditor />;
+  }
+  return <MappingEditorWithTestable />;
 });

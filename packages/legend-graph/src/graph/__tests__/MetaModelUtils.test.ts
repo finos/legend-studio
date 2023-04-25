@@ -28,9 +28,9 @@ import {
 import { parseLosslessJSON, stringifyLosslessJSON } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import {
-  ObjectInputData,
+  DEPRECATED__ObjectInputData,
   ObjectInputType,
-} from '../metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
+} from '../metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import { PackageableElementExplicitReference } from '../metamodel/pure/packageableElements/PackageableElementReference.js';
 import { Class } from '../metamodel/pure/packageableElements/domain/Class.js';
 
@@ -55,19 +55,19 @@ test(unitTest('Source information should be pruned properly'), () => {
 });
 
 test(unitTest('JSON Object input data should be minified'), () => {
-  const test1 = new ObjectInputData(
+  const test1 = new DEPRECATED__ObjectInputData(
     PackageableElementExplicitReference.create(new Class('')),
     ObjectInputType.JSON,
     '{"a":1}',
   );
 
-  const test2 = new ObjectInputData(
+  const test2 = new DEPRECATED__ObjectInputData(
     PackageableElementExplicitReference.create(new Class('')),
     ObjectInputType.JSON,
     '{\n  "a":1\n}',
   );
 
-  const test3 = new ObjectInputData(
+  const test3 = new DEPRECATED__ObjectInputData(
     PackageableElementExplicitReference.create(new Class('')),
     ObjectInputType.JSON,
     '{\n  "a":1, \n "b" : {\n  "b1":"hello"\n} \n}',

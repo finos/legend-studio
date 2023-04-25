@@ -75,7 +75,6 @@ export const V1_transformAtomicTest = (
   } else if (value instanceof MappingTest) {
     return V1_transformMappingTest(value, context);
   }
-
   const extraAtomicTestTransformers = context.plugins.flatMap(
     (plugin) =>
       (

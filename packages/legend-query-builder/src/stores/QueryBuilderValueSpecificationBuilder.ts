@@ -41,7 +41,7 @@ import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValue
 import { buildExecutionQueryFromLambdaFunction } from './shared/LambdaParameterState.js';
 import type { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 
-const buildGetAllFunction = (
+export const buildGetAllFunction = (
   _class: Class,
   multiplicity: Multiplicity,
 ): SimpleFunctionExpression => {

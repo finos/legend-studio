@@ -21,7 +21,7 @@ import {
   type DEPRECATED__MappingTestState,
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
-} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTestState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/DEPRECATED__MappingTestState.js';
 import {
   clsx,
   ContextMenu,
