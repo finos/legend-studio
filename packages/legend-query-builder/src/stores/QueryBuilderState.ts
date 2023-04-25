@@ -437,7 +437,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.resetQueryResult();
+      this.resetQueryResult({ preserveResult: options?.preserveResult });
       this.resetQueryContent();
       this.unsupportedQueryState.setLambdaError(error);
       this.unsupportedQueryState.setRawLambda(query);
@@ -448,7 +448,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       )
         .map((param) => observe_ValueSpecification(param, this.observerContext))
         .filter(filterByType(VariableExpression));
-      processParameters(parameters, this);
+      processParameters(parameters, this, previousStateParameterValues);
     }
   }
 
