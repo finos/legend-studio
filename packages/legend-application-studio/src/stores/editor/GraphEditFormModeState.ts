@@ -54,6 +54,7 @@ import {
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
+import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import type { TabState } from '@finos/legend-lego/application';
 
 export class GraphEditFormModeState extends GraphEditorMode {
@@ -330,6 +331,12 @@ export class GraphEditFormModeState extends GraphEditorMode {
         this.editorStore,
         this.editorStore.sdlcState,
       );
+
+      this.editorStore.globalBulkServiceRegistrationState =
+        new GlobalBulkServiceRegistrationState(
+          this.editorStore,
+          this.editorStore.sdlcState,
+        );
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
       const generationsBuildState = ActionState.create();

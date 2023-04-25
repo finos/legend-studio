@@ -66,6 +66,16 @@
     font-size: 1.7rem;
   }
 
+  &__section__toggler__btn svg {
+    color: var(--color-dark-grey-250);
+    font-size: 1.7rem;
+  }
+
+  &__section__toggler__btn--toggled svg {
+    color: var(--color-blue-150);
+    font-size: 1.7rem;
+  }
+
   &__header__title {
     width: calc(100% - 3.4rem);
   }
@@ -125,5 +135,55 @@
 
   &__item__link__content__id {
     color: var(--color-light-grey-400);
+  }
+
+  &__item__link__content__status__indicator {
+    display: inline-flex;
+    vertical-align: middle;
+
+    svg {
+      font-size: 1.5rem;
+    }
+
+    &--succeeded svg {
+      color: var(--color-green-100) !important;
+    }
+
+    &--failed svg {
+      color: var(--color-red-100) !important;
+    }
+
+    &--in-progress svg {
+      animation: spin 1s infinite ease;
+      color: var(--color-blue-100);
+    }
+
+    &--unknown svg {
+      color: var(--color-dark-grey-500);
+    }
+  }
+
+  &__services-tree__node__icon__type {
+    width: 2rem;
+
+    @include flexHCenter;
+  }
+
+  &__service__header__action {
+    color: var(--color-light-grey-500);
+  }
+
+  &__header__changes-count {
+    @include flexCenter;
+
+    margin-right: 1rem;
+    background: var(--color-dark-grey-300);
+    border-radius: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    height: 1.6rem;
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: default;
   }
 }
