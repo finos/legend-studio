@@ -213,8 +213,8 @@ export class GlobalBulkServiceRegistrationState {
           config.executionUrl,
           guaranteeNonNullable(this.serviceConfigState.serviceExecutionMode),
           {
-            TEMPORARY__useStoreModel:
-              this.serviceConfigState.TEMPORARY__useStoreModel,
+            TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
+            TEMPORARY__useGenerateLineage: this.TEMPORARY__useGenerateLineage,
           },
         )) as ServiceRegistrationResult[];
 
