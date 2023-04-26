@@ -136,7 +136,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
   const toggleUseGenerateLineage = (): void => {
     globalBulkServiceRegistrationState.serviceConfigState.setUseGenerateLineage(
       !globalBulkServiceRegistrationState.serviceConfigState
-        .TEMPORARY__useStoreModel,
+        .TEMPORARY__useGenerateLineage,
     );
   };
 
