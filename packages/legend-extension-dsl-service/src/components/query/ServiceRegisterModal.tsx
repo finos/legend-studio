@@ -142,8 +142,6 @@ const ServiceRegisterModal = observer(
             editorStore.graphManagerState,
           );
 
-          // svp
-
           const { groupId, artifactId, versionId } =
             editorStore.getProjectInfo();
 
@@ -338,7 +336,7 @@ export const ServiceRegisterAction = observer(
           className="query-editor__header__action btn--dark"
           tabIndex={-1}
           onClick={registerCurrentQuery}
-          title={'Register query as service...'}
+          title="Register query as service"
         >
           <RocketIcon className="query-editor__header__action__icon--service" />
           <div className="query-editor__header__action__label">

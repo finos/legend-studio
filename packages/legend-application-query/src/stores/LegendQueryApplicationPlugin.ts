@@ -64,7 +64,7 @@ export type QueryEditorActionConfiguration = {
   ) => React.ReactNode | undefined;
 };
 
-export type HelpMenuEntry = {
+export type QueryEditorHelpMenuEntry = {
   title?: string;
   label: string;
   onClick: () => void;
@@ -90,7 +90,7 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   /**
    * Get the list of help items for query.
    */
-  getExtraHelpMenuEntries?(): HelpMenuEntry[];
+  getExtraQueryEditorHelpMenuEntries?(): QueryEditorHelpMenuEntry[];
 
   /**
    * Get the list of existing query editor state builders.

@@ -137,9 +137,7 @@ export const SchemaSetModelGenerationEditor = observer(
                       value={modelGenerationState.targetBinding}
                       onChange={changeTargetBindingPath}
                       placeholder="Target binding path"
-                      validationErrorMessage={
-                        targetBindingPathValidationMessage
-                      }
+                      error={targetBindingPathValidationMessage}
                     />
                   </div>
 

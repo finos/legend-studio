@@ -87,7 +87,7 @@ import {
   QueryBuilderNavigationBlocker,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import type { HelpMenuEntry } from '../stores/LegendQueryApplicationPlugin.js';
+import type { QueryEditorHelpMenuEntry } from '../stores/LegendQueryApplicationPlugin.js';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
@@ -95,10 +95,11 @@ const QuerySaveAsDialogContent = observer(
   (props: { saveAsState: QuerySaveAsState }) => {
     const { saveAsState } = props;
     const applicationStore = useApplicationStore();
-    const saveNewQuery = saveAsState.allowPersist;
-    const create = applicationStore.guardUnhandledError(() =>
-      saveAsState.persistQuery(true),
-    );
+    const create = (): void => {
+      flowResult(saveAsState.createQuery(true)).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
 
     const isExistingQueryName = saveAsState.editorStore.existingQueryName;
 
@@ -137,7 +138,7 @@ const QuerySaveAsDialogContent = observer(
       <>
         <ModalBody>
           <PanelLoadingIndicator
-            isLoading={saveAsState.persistQueryState.isInProgress}
+            isLoading={saveAsState.createQueryState.isInProgress}
           />
           <PanelListItem>
             <div className="input--with-validation">
@@ -165,14 +166,9 @@ const QuerySaveAsDialogContent = observer(
           <ModalFooterButton
             text="Create Query"
             title={
-              saveAsState.unallowedPersistInfo
-                ? `Cannot create query because ${saveAsState.unallowedPersistInfo}`
-                : 'Create New Query'
-            }
-            inProgressText={
-              !saveAsState.unallowedPersistInfo
-                ? `${saveAsState.unallowedPersistInfo}`
-                : undefined
+              !saveAsState.allowPersist
+                ? `Cannot create new query`
+                : 'Create new query'
             }
             onClick={create}
           />
@@ -198,7 +194,7 @@ const QuerySaveDialog = observer(() => {
       }}
     >
       <Modal darkMode={true} className="query-export">
-        <ModalHeader title={'save new query'} />
+        <ModalHeader title={'Create New Query'} />
         {saveAsState && <QuerySaveAsDialogContent saveAsState={saveAsState} />}
       </Modal>
     </Dialog>
@@ -420,7 +416,7 @@ const QueryLoader = observer(
 );
 
 const HelpMenuContentItemRenderer = (
-  props: HelpMenuEntry,
+  props: QueryEditorHelpMenuEntry,
 ): React.ReactElement => (
   <MenuContentItem title={props.title ?? ''} onClick={props.onClick}>
     {props.icon && <MenuContentItemIcon>{props.icon}</MenuContentItemIcon>}
@@ -497,7 +493,7 @@ const QueryEditorHeaderContent = observer(
     };
 
     const renameQuery = applicationStore.guardUnhandledError(async () => {
-      await renameState?.persistRenameQuery();
+      await renameState?.renameQuery();
     });
 
     const saveQuery = (): void => {
@@ -513,9 +509,9 @@ const QueryEditorHeaderContent = observer(
               }),
             ),
           );
-          editorStore.saveState
-            ?.persistSaveQuery()
-            .catch(applicationStore.alertUnhandledError);
+          flowResult(editorStore.saveState?.saveQuery()).catch(
+            applicationStore.alertUnhandledError,
+          );
         })
         .catch(applicationStore.alertUnhandledError);
     };
@@ -587,7 +583,7 @@ const QueryEditorHeaderContent = observer(
 
     const extraHelpMenuContentItems = applicationStore.pluginManager
       .getApplicationPlugins()
-      .flatMap((plugin) => plugin.getExtraHelpMenuEntries?.() ?? [])
+      .flatMap((plugin) => plugin.getExtraQueryEditorHelpMenuEntries?.() ?? [])
       .map((item) => <>{HelpMenuContentItemRenderer(item)}</>);
 
     return (
@@ -666,7 +662,7 @@ const QueryEditorHeaderContent = observer(
             disabled={
               editorStore.isSaveActionDisabled ||
               !editorStore.title ||
-              queryBuilderState.saveQueryState.isInProgress
+              queryBuilderState.saveQueryProgressState.isInProgress
             }
             onClick={saveQuery}
             title="Save query"

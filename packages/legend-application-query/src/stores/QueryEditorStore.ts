@@ -155,7 +155,7 @@ export class QuerySaveAsState {
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
   queryBuilderState: QueryBuilderState;
-  persistQueryState = ActionState.create();
+  createQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -166,8 +166,8 @@ export class QuerySaveAsState {
     makeObservable(this, {
       queryName: observable,
       allowPersist: computed,
-      unallowedPersistInfo: computed,
       setQueryName: action,
+      createQuery: flow,
     });
 
     this.editorStore = editorStore;
@@ -185,26 +185,13 @@ export class QuerySaveAsState {
 
   get allowPersist(): boolean {
     return (
-      !this.persistQueryState.isInProgress &&
+      !this.createQueryState.isInProgress &&
       Boolean(this.queryBuilderState.mapping) &&
       this.queryBuilderState.runtimeValue instanceof RuntimePointer
     );
   }
 
-  get unallowedPersistInfo(): string | undefined {
-    if (this.persistQueryState.isInProgress) {
-      return 'Query saving is in progress';
-    }
-    if (!this.queryBuilderState.mapping) {
-      return 'Query has no mapping';
-    }
-    if (!(this.queryBuilderState.runtimeValue instanceof RuntimePointer)) {
-      return 'Query has invalid runtime value';
-    }
-    return undefined;
-  }
-
-  async persistQuery(createNew: boolean): Promise<void> {
+  *createQuery(createNew: boolean): GeneratorFn<void> {
     if (
       this.editorStore.isSaveActionDisabled ||
       !this.queryBuilderState.mapping ||
@@ -212,7 +199,7 @@ export class QuerySaveAsState {
     ) {
       return;
     }
-    this.persistQueryState.inProgress();
+    this.createQueryState.inProgress();
     const query = new Query();
     query.name = this.queryName;
     query.mapping = PackageableElementExplicitReference.create(
@@ -222,9 +209,9 @@ export class QuerySaveAsState {
     this.decorator?.(query);
     try {
       query.content =
-        await this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
+        (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
           this.lambda,
-        );
+        )) as string;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -232,7 +219,7 @@ export class QuerySaveAsState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.persistQueryState.reset();
+      this.createQueryState.reset();
       return;
     }
 
@@ -240,10 +227,10 @@ export class QuerySaveAsState {
       if (createNew) {
         query.id = uuid();
         const newQuery =
-          await this.editorStore.graphManagerState.graphManager.createQuery(
+          (yield this.editorStore.graphManagerState.graphManager.createQuery(
             query,
             this.editorStore.graphManagerState.graph,
-          );
+          )) as Query;
         this.editorStore.applicationStore.notificationService.notifySuccess(
           `Successfully created query!`,
         );
@@ -275,10 +262,10 @@ export class QuerySaveAsState {
         );
       } else {
         const updatedQuery =
-          await this.editorStore.graphManagerState.graphManager.updateQuery(
+          (yield this.editorStore.graphManagerState.graphManager.updateQuery(
             query,
             this.editorStore.graphManagerState.graph,
-          );
+          )) as Query;
         this.editorStore.setTitle(updatedQuery.name);
         this.editorStore.applicationStore.notificationService.notifySuccess(
           `Successfully updated query!`,
@@ -307,7 +294,7 @@ export class QuerySaveAsState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.persistQueryState.reset();
+      this.createQueryState.reset();
       this.editorStore.setSaveAsState(undefined);
     }
   }
@@ -321,7 +308,7 @@ export class QuerySaveState {
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
   queryBuilderState: QueryBuilderState;
-  persistSaveQueryState = ActionState.create();
+  saveQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -332,6 +319,7 @@ export class QuerySaveState {
     makeObservable(this, {
       queryName: observable,
       allowPersist: computed,
+      saveQuery: flow,
     });
 
     this.editorStore = editorStore;
@@ -345,13 +333,13 @@ export class QuerySaveState {
 
   get allowPersist(): boolean {
     return (
-      !this.persistSaveQueryState.isInProgress &&
+      !this.saveQueryState.isInProgress &&
       Boolean(this.queryBuilderState.mapping) &&
       this.queryBuilderState.runtimeValue instanceof RuntimePointer
     );
   }
 
-  async persistSaveQuery(): Promise<void> {
+  *saveQuery(): GeneratorFn<void> {
     if (
       this.editorStore.isSaveActionDisabled ||
       !this.queryBuilderState.mapping ||
@@ -359,7 +347,7 @@ export class QuerySaveState {
     ) {
       return;
     }
-    this.persistSaveQueryState.inProgress();
+    this.saveQueryState.inProgress();
     const query = new Query();
     query.name = this.queryName;
     query.mapping = PackageableElementExplicitReference.create(
@@ -369,9 +357,9 @@ export class QuerySaveState {
     this.decorator?.(query);
     try {
       query.content =
-        await this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
+        (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
           this.lambda,
-        );
+        )) as string;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -379,16 +367,16 @@ export class QuerySaveState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.persistSaveQueryState.reset();
+      this.saveQueryState.reset();
       return;
     }
 
     try {
       const updatedQuery =
-        await this.editorStore.graphManagerState.graphManager.updateQuery(
+        (yield this.editorStore.graphManagerState.graphManager.updateQuery(
           query,
           this.editorStore.graphManagerState.graph,
-        );
+        )) as Query;
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Successfully updated query!`,
       );
@@ -414,7 +402,7 @@ export class QuerySaveState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.persistSaveQueryState.reset();
+      this.saveQueryState.reset();
       this.editorStore.setSaveState(undefined);
     }
   }
@@ -428,7 +416,7 @@ export class QueryRenameState {
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
   queryBuilderState: QueryBuilderState;
-  persistSaveQueryState = ActionState.create();
+  saveQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -439,6 +427,7 @@ export class QueryRenameState {
     makeObservable(this, {
       queryName: observable,
       setQueryName: action,
+      renameQuery: flow,
     });
 
     this.editorStore = editorStore;
@@ -454,7 +443,7 @@ export class QueryRenameState {
     this.queryName = val;
   }
 
-  async persistRenameQuery(): Promise<void> {
+  *renameQuery(): GeneratorFn<void> {
     if (
       this.editorStore.isSaveActionDisabled ||
       !this.queryBuilderState.mapping ||
@@ -462,7 +451,7 @@ export class QueryRenameState {
     ) {
       return;
     }
-    this.persistSaveQueryState.inProgress();
+    this.saveQueryState.inProgress();
     const query = new Query();
     query.name = this.queryName;
     query.mapping = PackageableElementExplicitReference.create(
@@ -472,9 +461,9 @@ export class QueryRenameState {
     this.decorator?.(query);
     try {
       query.content =
-        await this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
+        (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
           this.lambda,
-        );
+        )) as string;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -482,16 +471,16 @@ export class QueryRenameState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.persistSaveQueryState.reset();
+      this.saveQueryState.reset();
       return;
     }
 
     try {
       const updatedQuery =
-        await this.editorStore.graphManagerState.graphManager.updateQuery(
+        (yield this.editorStore.graphManagerState.graphManager.updateQuery(
           query,
           this.editorStore.graphManagerState.graph,
-        );
+        )) as Query;
       this.editorStore.setTitle(updatedQuery.name);
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Successfully renamed query!`,
@@ -517,11 +506,12 @@ export class QueryRenameState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.persistSaveQueryState.reset();
+      this.saveQueryState.reset();
       this.editorStore.setRenameState(undefined);
     }
   }
 }
+
 export class QueryLoaderState {
   readonly editorStore: QueryEditorStore;
 

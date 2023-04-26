@@ -209,7 +209,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
         )}
         <div>
           <div className="panel__content__form__section__header__label">
-            TEST DATA SETUP SQL
+            Test Data Setup SQL
             <Button
               className="btn--icon--small btn--icon--margin--left"
               darkMode={false}

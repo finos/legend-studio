@@ -357,7 +357,7 @@ export const ChangeExecutionModal = observer(
             value={keyValue}
             onChange={onChange}
             placeholder="Multi Execution Key Name"
-            validationErrorMessage={validationMessage}
+            error={validationMessage}
           />
         );
       } else if (executionState instanceof MultiServicePureExecutionState) {
@@ -584,7 +584,7 @@ export const NewExecutionParameterModal = observer(
               value={keyValue}
               onChange={onChange}
               placeholder="Key execution name"
-              validationErrorMessage={validationMessage}
+              error={validationMessage}
             />
           </div>
           <div className="search-modal__actions">

@@ -372,9 +372,7 @@ const QueryBuilderProjectionColumnEditor = observer(
               spellCheck={false}
               value={projectionColumnState.columnName}
               onChange={changeColumnName}
-              validationErrorMessage={
-                isDuplicatedColumnName ? 'Duplicated column' : undefined
-              }
+              error={isDuplicatedColumnName ? 'Duplicated column' : undefined}
             />
           </div>
           <div className="query-builder__projection__column__value">

@@ -136,7 +136,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             ),
             (dataSpaceInfo: DataSpaceInfo) => {
               if (dataSpaceInfo.defaultExecutionContext) {
-                const persistQuery = async (): Promise<void> => {
+                const createQuery = async (): Promise<void> => {
                   // prepare the new query to save
                   const _query = new Query();
                   _query.name = query.name;
@@ -211,7 +211,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                         : 'Create new query',
                       type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                       handler: () => {
-                        persistQuery().catch(
+                        createQuery().catch(
                           editorStore.applicationStore.alertUnhandledError,
                         );
                       },

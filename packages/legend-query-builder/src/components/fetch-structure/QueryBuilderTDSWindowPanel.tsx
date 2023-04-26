@@ -513,9 +513,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                 spellCheck={false}
                 value={windowColumnState.columnName}
                 onChange={changeColumnName}
-                validationErrorMessage={
-                  isDuplicatedColumnName ? 'Duplicated column' : undefined
-                }
+                error={isDuplicatedColumnName ? 'Duplicated column' : undefined}
               />
             </PanelFormSection>
           </div>
@@ -1087,7 +1085,7 @@ const QueryBuilderWindowColumnEditor = observer(
               spellCheck={false}
               value={windowColumnState.columnName}
               onChange={changeColumnName}
-              validationErrorMessage={
+              error={
                 isDuplicatedColumnName
                   ? 'Duplicated column'
                   : isInvalidColumnName
