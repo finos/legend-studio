@@ -2711,6 +2711,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         server,
         executionMode,
         Boolean(options?.TEMPORARY__useStoreModel),
+        Boolean(options?.TEMPORARY__useGenerateLineage),
       ),
     );
   }
@@ -2824,6 +2825,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               server,
               executionMode,
               Boolean(options?.TEMPORARY__useStoreModel),
+              Boolean(options?.TEMPORARY__useGenerateLineage),
             );
             if (result.status === 'success') {
               return new ServiceRegistrationSuccess(
