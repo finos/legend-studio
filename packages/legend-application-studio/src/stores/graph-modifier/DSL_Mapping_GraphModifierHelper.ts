@@ -217,6 +217,15 @@ export const mappingTestable_deleteStoreTestData = action(
   },
 );
 
+export const mappingTestable_addStoreTestData = action(
+  (
+    dataHolder: MappingDataTestSuite | MappingDataTest,
+    val: StoreTestData,
+  ): void => {
+    addUniqueEntry(dataHolder.storeTestData, val);
+  },
+);
+
 // --------------------------------------------- Enumeration Mapping -------------------------------------
 
 export const enumerationMapping_setId = action(

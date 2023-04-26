@@ -87,6 +87,9 @@ export const setup = (outputDir) => {
             linterApp: { url: 'http://localhost:8090' },
           },
         },
+        core: {
+          TEMPORARY__enableMappingTestableEditor: true,
+        },
       },
       undefined,
       2,

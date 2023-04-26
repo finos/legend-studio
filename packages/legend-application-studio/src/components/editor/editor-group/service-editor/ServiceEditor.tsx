@@ -75,7 +75,6 @@ const ServiceGeneralEditor = observer(() => {
       service_setPattern(service, newPattern);
     }
   };
-
   const getValidationMessage = (inputPattern: string): string | undefined => {
     const patternValidationResult = validate_ServicePattern(inputPattern);
     return patternValidationResult

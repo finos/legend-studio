@@ -60,7 +60,7 @@ import {
   type CompilationError,
   type PackageableElement,
   type InputData,
-  type Type,
+  Type,
   type EmbeddedSetImplementation,
   type ExecutionResult,
   getAllClassMappings,
@@ -99,6 +99,8 @@ import {
   findPropertyMapping,
   DEPRECATED__MappingTest,
   PrimitiveType,
+  type Store,
+  ModelStore,
 } from '@finos/legend-graph';
 import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
@@ -319,6 +321,29 @@ export const getMappingElementSource = (
     mappingElement,
   );
 };
+
+export const resolveMappingSourceToStore = (
+  source: MappingElementSource,
+): Store | undefined => {
+  if (source instanceof Type) {
+    return ModelStore.INSTANCE;
+  } else if (source instanceof TableAlias) {
+    return source.relation.ownerReference.value;
+  }
+  return undefined;
+};
+
+export const getMappingStores = (
+  mapping: Mapping,
+  plugins: LegendStudioApplicationPlugin[],
+): Set<Store> =>
+  new Set(
+    getAllClassMappings(mapping)
+      .map((e) => getMappingElementSource(e, plugins))
+      .filter(isNonNullable)
+      .map((source) => resolveMappingSourceToStore(source))
+      .filter(isNonNullable),
+  );
 
 export const getMappingElementType = (
   mappingElement: MappingElement,

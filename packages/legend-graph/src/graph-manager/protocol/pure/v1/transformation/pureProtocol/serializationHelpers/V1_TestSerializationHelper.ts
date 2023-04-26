@@ -28,6 +28,7 @@ import {
   list,
   optional,
   primitive,
+  raw,
   serialize,
   SKIP,
 } from 'serializr';
@@ -163,7 +164,7 @@ const V1_deserializeAssertionStatus = (
 
 export const V1_equalToModelSchema = createModelSchema(V1_EqualTo, {
   _type: usingConstantValueSchema(V1_TestAssertionType.EQUAL_TO),
-  expected: primitive(),
+  expected: raw(),
   id: primitive(),
 });
 

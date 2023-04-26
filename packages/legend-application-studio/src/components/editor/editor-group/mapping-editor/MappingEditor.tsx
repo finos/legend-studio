@@ -404,7 +404,7 @@ export const MappingEditor = observer(() => {
   const editorStore = useEditorStore();
   const withTestableEditor =
     editorStore.applicationStore.config.options
-      .TEMPORARY_enableMappingTestableEditor;
+      .TEMPORARY__enableMappingTestableEditor;
   if (!withTestableEditor) {
     return <_MappingEditor />;
   }
