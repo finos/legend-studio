@@ -26,8 +26,8 @@ import {
   ModalFooter,
   ModalFooterButton,
   ModalHeader,
-  ModalTitle,
   PanelContent,
+  PanelFormTextField,
   PanelLoadingIndicator,
   RefreshIcon,
   WrenchIcon,
@@ -67,12 +67,21 @@ export const RenameModal = observer(
     setValue: (val: string) => void;
     showModal: boolean;
     closeModal: () => void;
+    errorMessageFunc?: (val: string) => string | undefined;
   }) => {
-    const { val, isReadOnly, showModal, closeModal, setValue } = props;
+    const {
+      val,
+      isReadOnly,
+      showModal,
+      closeModal,
+      setValue,
+      errorMessageFunc,
+    } = props;
     const [inputValue, setInputValue] = useState(val);
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      setInputValue(event.target.value);
+    const changeValue = (_val: string | undefined): void => {
+      setInputValue(_val ?? '');
     };
+    const errorMessage = errorMessageFunc?.(inputValue);
     return (
       <Dialog
         open={showModal}
@@ -88,18 +97,20 @@ export const RenameModal = observer(
           }}
           className="modal modal--dark search-modal"
         >
-          <ModalTitle title="Rename" />
-          <div>
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={isReadOnly}
+          <ModalBody>
+            <PanelFormTextField
+              name="Rename"
+              isReadOnly={isReadOnly}
               value={inputValue}
-              onChange={changeValue}
+              update={changeValue}
+              errorMessage={errorMessage}
             />
-          </div>
+          </ModalBody>
           <div className="search-modal__actions">
-            <button className="btn btn--dark" disabled={isReadOnly}>
+            <button
+              className="btn btn--dark"
+              disabled={isReadOnly || Boolean(errorMessage)}
+            >
               Rename
             </button>
           </div>

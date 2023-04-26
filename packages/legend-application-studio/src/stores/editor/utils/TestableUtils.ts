@@ -52,6 +52,23 @@ import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
 import type { EditorStore } from '../EditorStore.js';
 import { createMockDataForMappingElementSource } from './MockDataUtils.js';
 
+export const DEFAULT_TEST_ASSERTION_ID = 'assertion_1';
+export const DEFAULT_TEST_ID = 'test_1';
+
+export const validateTestableId = (
+  id: string | undefined,
+  possibleIds: string[] | undefined,
+): string | undefined => {
+  if (!id) {
+    return 'ID is required';
+  } else if (id.includes(' ')) {
+    return `ID can't contain space`;
+  } else if (possibleIds?.includes(id)) {
+    return `ID '${id}' already exists`;
+  }
+  return undefined;
+};
+
 export const createBareExternalFormat = (
   contentType?: string | undefined,
   content?: string | undefined,

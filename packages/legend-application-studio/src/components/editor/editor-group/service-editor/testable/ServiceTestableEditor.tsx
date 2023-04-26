@@ -39,7 +39,7 @@ import type {
 } from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestableState.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../../__lib__/LegendStudioApplicationNavigationContext.js';
-import { RenameModal } from '../../testable/TestAssertionEditor.js';
+import { RenameModal } from '../../testable/TestableSharedComponents.js';
 
 export const ServiceTestSuiteEditor = observer(
   (props: { serviceTestSuiteState: ServiceTestSuiteState }) => {

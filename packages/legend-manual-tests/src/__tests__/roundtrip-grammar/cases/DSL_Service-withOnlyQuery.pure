@@ -68,6 +68,12 @@ Service service::SimpleRelationalPassFailing
                     contentType: 'application/json';
                     data: '[{"Employees/First Name":"JohnDIFF","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
                   }#;
+              }#,
+            assertEqualTo:
+              EqualTo
+              #{
+                expected : 
+                  'expected result content';
               }#
           ]
         }

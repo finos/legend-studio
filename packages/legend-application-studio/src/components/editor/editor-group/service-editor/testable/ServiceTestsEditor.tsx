@@ -70,7 +70,7 @@ import {
   RenameModal,
   TestAssertionEditor,
   TestAssertionItem,
-} from '../../testable/TestAssertionEditor.js';
+} from '../../testable/TestableSharedComponents.js';
 
 export const NewParameterModal = observer(
   (props: { setupState: ServiceTestSetupState; isReadOnly: boolean }) => {

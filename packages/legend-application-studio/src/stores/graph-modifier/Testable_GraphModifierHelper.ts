@@ -20,8 +20,10 @@ import {
   type AtomicTest,
   type TestAssertion,
   type TestSuite,
+  type ObserverContext,
   observe_TestAssertion,
   observe_ExternalFormatData,
+  observe_AtomicTest,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -61,8 +63,24 @@ export const testSuite_setId = action((test: TestSuite, val: string): void => {
   test.id = val;
 });
 
+export const testable_setId = action(
+  (test: TestSuite | TestAssertion | AtomicTest, val: string): void => {
+    test.id = val;
+  },
+);
+
 export const testSuite_deleteTest = action(
   (test: TestSuite, val: AtomicTest): void => {
     deleteEntry(test.tests, val);
+  },
+);
+
+export const testSuite_addTest = action(
+  (
+    test: TestSuite,
+    val: AtomicTest,
+    observerContext: ObserverContext,
+  ): void => {
+    addUniqueEntry(test.tests, observe_AtomicTest(val, observerContext));
   },
 );
