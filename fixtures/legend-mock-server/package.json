@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@fastify/cors": "8.2.1",
-    "fastify": "4.15.0"
+    "fastify": "4.16.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

@@ -59,7 +59,7 @@ export const NewServiceModal = observer(
 
     const handleEnter = (): void => nameRef.current?.focus();
     const create = (): void => {
-      if (servicePath && !isReadOnly && !isValid) {
+      if (servicePath && !isReadOnly && isValid) {
         promoteToService(packagePath, serviceName)
           .then(() => close())
           .catch(applicationStore.alertUnhandledError);
