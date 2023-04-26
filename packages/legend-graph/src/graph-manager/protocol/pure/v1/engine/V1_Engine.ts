@@ -673,6 +673,7 @@ export class V1_Engine {
     server: string,
     executionMode: ServiceExecutionMode,
     TEMPORARY__useStoreModel: boolean,
+    TEMPORARY__useGenerateLineage: boolean,
   ): Promise<V1_ServiceRegistrationResult> {
     return V1_ServiceRegistrationResult.serialization.fromJson(
       await this.engineServerClient.registerService(
@@ -680,6 +681,7 @@ export class V1_Engine {
         server,
         executionMode,
         TEMPORARY__useStoreModel,
+        TEMPORARY__useGenerateLineage,
       ),
     );
   }

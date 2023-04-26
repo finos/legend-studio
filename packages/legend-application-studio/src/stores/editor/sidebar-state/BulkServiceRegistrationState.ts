@@ -215,6 +215,8 @@ export class GlobalBulkServiceRegistrationState {
           {
             TEMPORARY__useStoreModel:
               this.serviceConfigState.TEMPORARY__useStoreModel,
+            TEMPORARY__useGenerateLineage:
+              this.serviceConfigState.TEMPORARY__useGenerateLineage,
           },
         )) as ServiceRegistrationResult[];
 
