@@ -18,14 +18,10 @@ import type { SettingConfigurationData } from '@finos/legend-application';
 
 export enum QUERY_BUILDER_SETTING_KEY {
   SHOW_POST_FILTER_PANEL = 'query-builder.showPostFilterPanel',
-  RECENTLY_VIEWED_QUERIES = 'query-builder.recentlyViewedQueries',
 }
 
 export const QUERY_BUILDER_SETTING_CONFIG: SettingConfigurationData = {
   [QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL]: {
     defaultValue: false,
-  },
-  [QUERY_BUILDER_SETTING_KEY.RECENTLY_VIEWED_QUERIES]: {
-    defaultValue: [],
   },
 };

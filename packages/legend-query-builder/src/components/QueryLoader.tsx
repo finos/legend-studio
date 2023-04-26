@@ -233,11 +233,11 @@ const QueryLoaderBody = observer(
     const deleteQuery =
       (query: LightQuery): (() => void) =>
       async (): Promise<void> => {
-        const index = queryLoaderState.persistedQueries.findIndex(
+        const index = queryLoaderState.intialQueries.findIndex(
           (idx) => idx === query.id,
         );
-        queryLoaderState.removeQueryId?.(
-          queryLoaderState.persistedQueries,
+        queryLoaderState.onDeleteQuery?.(
+          queryLoaderState.intialQueries,
           index,
           queryLoaderState.applicationStore,
         );
