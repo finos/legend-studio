@@ -134,16 +134,11 @@ export const BulkServiceRegistrationEditor = observer(() => {
   };
 
   const toggleUseGenerateLineage = (): void => {
-    bulkServiceRegistrationState.setUseGenerateLineage(
-      !bulkServiceRegistrationState.TEMPORARY__useStoreModel,
+    globalBulkServiceRegistrationState.serviceConfigState.setUseGenerateLineage(
+      !globalBulkServiceRegistrationState.serviceConfigState
+        .TEMPORARY__useStoreModel,
     );
   };
-
-  const config = guaranteeNonNullable(
-    bulkServiceRegistrationState.options.find(
-      (info) => info.env === bulkServiceRegistrationState.serviceEnv,
-    ),
-  );
 
   // actions
   const registerService = (): void => {
@@ -294,11 +289,11 @@ export const BulkServiceRegistrationEditor = observer(() => {
               <button
                 className={clsx('panel__content__form__section__toggler__btn', {
                   'panel__content__form__section__toggler__btn--toggled':
-                    bulkServiceRegistrationState.TEMPORARY__useGenerateLineage,
+                    globalBulkServiceRegistrationState.serviceConfigState.TEMPORARY__useGenerateLineage,
                 })}
                 tabIndex={-1}
               >
-                {bulkServiceRegistrationState.TEMPORARY__useGenerateLineage ? (
+                {globalBulkServiceRegistrationState.serviceConfigState.TEMPORARY__useGenerateLineage ? (
                   <CheckSquareIcon />
                 ) : (
                   <SquareIcon />
