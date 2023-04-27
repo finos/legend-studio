@@ -53,6 +53,7 @@
     width: 5rem;
     color: var(--color-dark-grey-400);
     cursor: pointer;
+    position: relative;
   }
 
   &__item svg {
@@ -148,8 +149,12 @@
   }
 
   &__review-icon svg,
-  &__project-overview-icon svg {
+  &__item &__project-overview-icon {
     font-size: 2.3rem;
+  }
+
+  &__item &__icon--service-registrar {
+    font-size: 2.4rem;
   }
 
   &__conflict-resolution-icon svg {

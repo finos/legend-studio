@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-export * from './DocumentationLink.js';
+import { SparkleIcon } from '@finos/legend-art';
 
-export * from './ActivityBar.js';
-export * from './TabManager.js';
-export * from './TabManagerState.js';
+export interface ActivityBarItemConfig {
+  mode: string;
+  title: string;
+  icon: React.ReactElement;
+}
 
-export * from './FuzzySearchAdvancedConfigMenu.js';
+export const ActivityBarItemExperimentalBadge: React.FC = () => (
+  <div
+    className="activity-bar__item__experimental-badge"
+    title="This is an experimental feature"
+  >
+    <SparkleIcon />
+  </div>
+);

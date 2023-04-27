@@ -72,6 +72,7 @@
   --color-hclight-pink-40: #fa87d4;
   --color-hclight-pink-50: #ed4cb7;
   --color-hclight-pink-60: #cc1d92;
+  --color-hclight-purple-50: #ac71f0;
   --color-hclight-purple-60: #8f49de;
 }
 
@@ -326,6 +327,30 @@
 
     &__divider {
       background: var(--color-hclight-grey-30);
+    }
+
+    &__item__experimental-badge {
+      background: var(--color-hclight-blue-50);
+      border-color: var(--color-hclight-grey-20);
+
+      svg {
+        color: var(--color-hclight-grey-20);
+      }
+    }
+  }
+
+  .data-space__viewer__panel {
+    &__header {
+      color: var(--color-hclight-blue-60);
+      border-bottom-color: var(--color-hclight-blue-60);
+    }
+
+    &__content__placeholder {
+      color: var(--color-hclight-grey-40);
+
+      svg {
+        color: var(--color-hclight-blue-50);
+      }
     }
   }
 

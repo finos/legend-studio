@@ -18,32 +18,28 @@ import { observer } from 'mobx-react-lite';
 import { ACTIVITY_MODE } from '../stores/PureIDEConfig.js';
 import { clsx, FileAltIcon, LegendLogo, ListIcon } from '@finos/legend-art';
 import { usePureIDEStore } from './PureIDEStoreProvider.js';
-
-interface ActivityDisplay {
-  mode: ACTIVITY_MODE;
-  title: string;
-  info?: string;
-  icon: React.ReactElement;
-}
+import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
 
 export const ActivityBar = observer(() => {
   const ideStore = usePureIDEStore();
   const changeActivity =
-    (activity: ACTIVITY_MODE): (() => void) =>
+    (activity: string): (() => void) =>
     (): void =>
       ideStore.setActiveActivity(activity);
-  const activities: ActivityDisplay[] = [
-    {
-      mode: ACTIVITY_MODE.CONCEPT_EXPLORER,
-      title: 'Concept Explorer',
-      icon: <ListIcon />,
-    },
-    {
-      mode: ACTIVITY_MODE.FILE_EXPLORER,
-      title: 'File Explorer',
-      icon: <FileAltIcon />,
-    },
-  ].filter((activity): activity is ActivityDisplay => Boolean(activity));
+  const activities: ActivityBarItemConfig[] = (
+    [
+      {
+        mode: ACTIVITY_MODE.CONCEPT_EXPLORER,
+        title: 'Concept Explorer',
+        icon: <ListIcon />,
+      },
+      {
+        mode: ACTIVITY_MODE.FILE_EXPLORER,
+        title: 'File Explorer',
+        icon: <FileAltIcon />,
+      },
+    ] as ActivityBarItemConfig[]
+  ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
 
   return (
     <div className="activity-bar">
@@ -61,9 +57,7 @@ export const ActivityBar = observer(() => {
             })}
             onClick={changeActivity(activity.mode)}
             tabIndex={-1}
-            title={`${activity.title}${
-              activity.info ? ` - ${activity.info}` : ''
-            }`}
+            title={activity.title}
           >
             {activity.icon}
           </button>

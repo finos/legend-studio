@@ -159,7 +159,7 @@ export class EditorStore implements CommandRegistrar {
     default: 300,
     snap: 100,
   });
-  activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.EXPLORER;
+  activeActivity?: string = ACTIVITY_MODE.EXPLORER;
   readonly sideBarDisplayState = new PanelDisplayState({
     initial: 300,
     default: 300,
@@ -839,7 +839,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   setActiveActivity(
-    activity: ACTIVITY_MODE,
+    activity: string,
     options?: { keepShowingIfMatchedCurrent?: boolean },
   ): void {
     if (!this.sideBarDisplayState.isOpen) {

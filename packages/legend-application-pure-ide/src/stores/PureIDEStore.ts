@@ -119,7 +119,7 @@ export class PureIDEStore implements CommandRegistrar {
     default: 300,
     snap: 100,
   });
-  activeActivity?: ACTIVITY_MODE = ACTIVITY_MODE.CONCEPT_EXPLORER;
+  activeActivity?: string = ACTIVITY_MODE.CONCEPT_EXPLORER;
   readonly sideBarDisplayState = new PanelDisplayState({
     initial: 300,
     default: 300,
@@ -512,7 +512,7 @@ export class PureIDEStore implements CommandRegistrar {
   }
 
   setActiveActivity(
-    activity: ACTIVITY_MODE,
+    activity: string,
     options?: { keepShowingIfMatchedCurrent?: boolean },
   ): void {
     if (!this.sideBarDisplayState.isOpen) {

@@ -108,12 +108,41 @@
     padding: 4rem;
     box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
   }
+}
 
-  &__panel {
-    height: 100%;
-    width: 100%;
-    overflow: auto;
-    padding: 2rem 0;
+.data-space__viewer__panel {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  padding: 2rem 0;
+
+  &__header {
+    @include flexVCenter;
+
+    border-bottom: 0.2rem solid var(--color-blue-100);
+    user-select: none;
+    color: var(--color-blue-100);
+
+    &__label {
+      @include flexVCenter;
+
+      font-size: 2.4rem;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+  }
+
+  &__content__placeholder {
+    padding-top: 1rem;
+    line-height: 2.8rem;
+    color: var(--color-dark-grey-300);
+    user-select: none;
+    font-style: italic;
+
+    svg {
+      font-size: 1rem;
+      color: var(--color-blue-100);
+    }
   }
 }
 
@@ -278,6 +307,7 @@
     width: 5rem;
     color: var(--color-dark-grey-400);
     cursor: pointer;
+    position: relative;
   }
 
   &__item svg {
@@ -341,6 +371,24 @@
 
     &--support {
       font-size: 2.4rem;
+    }
+  }
+
+  &__item__experimental-badge {
+    @include flexCenter;
+
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    height: 1.6rem;
+    width: 1.6rem;
+    border-radius: 50%;
+    background: var(--color-mauve-50);
+    border: 0.1rem solid var(--color-dark-grey-100);
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-100);
     }
   }
 }

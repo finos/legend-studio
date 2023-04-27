@@ -55,10 +55,6 @@ import {
 } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore, useCommands } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
-import {
-  ActivityBarMenu,
-  type ActivityDisplay,
-} from '../editor/ActivityBar.js';
 import { Explorer } from '../editor/side-bar/Explorer.js';
 import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
 import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
@@ -67,6 +63,8 @@ import {
   useLegendStudioBaseStore,
 } from '../LegendStudioFrameworkProvider.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
+import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
+import { ActivityBarMenu } from '../editor/ActivityBar.js';
 
 const ProjectViewerStatusBar = observer(() => {
   const params = useParams<ProjectViewerPathParams>();
@@ -204,31 +202,33 @@ const ProjectViewerActivityBar = observer(() => {
   const editorStore = useEditorStore();
 
   const changeActivity =
-    (activity: ACTIVITY_MODE): (() => void) =>
+    (activity: string): (() => void) =>
     (): void =>
       editorStore.setActiveActivity(activity);
   // tabs
-  const activities: ActivityDisplay[] = [
-    {
-      mode: ACTIVITY_MODE.EXPLORER,
-      title: 'Explorer (Ctrl + Shift + X)',
-      icon: <FileTrayIcon />,
-    },
-    baseStore.isSDLCAuthorized !== undefined && {
-      mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
-      title: 'Project',
-      icon: (
-        <div className="activity-bar__project-overview-icon">
-          <RepoIcon />
-        </div>
-      ),
-    },
-    viewerStore.workflowManagerState && {
-      mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
-      title: 'WORKFLOW MANAGER',
-      icon: <WrenchIcon />,
-    },
-  ].filter((activity): activity is ActivityDisplay => Boolean(activity));
+  const activities: ActivityBarItemConfig[] = (
+    [
+      {
+        mode: ACTIVITY_MODE.EXPLORER,
+        title: 'Explorer (Ctrl + Shift + X)',
+        icon: <FileTrayIcon />,
+      },
+      baseStore.isSDLCAuthorized !== undefined && {
+        mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
+        title: 'Project',
+        icon: (
+          <div className="activity-bar__project-overview-icon">
+            <RepoIcon />
+          </div>
+        ),
+      },
+      viewerStore.workflowManagerState && {
+        mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
+        title: 'WORKFLOW MANAGER',
+        icon: <WrenchIcon />,
+      },
+    ] as (ActivityBarItemConfig | boolean)[]
+  ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
 
   return (
     <div className="activity-bar">
@@ -244,9 +244,7 @@ const ProjectViewerActivityBar = observer(() => {
             })}
             onClick={changeActivity(activity.mode)}
             tabIndex={-1}
-            title={`${activity.title}${
-              activity.info ? ` - ${activity.info}` : ''
-            }`}
+            title={activity.title}
           >
             {activity.icon}
           </button>

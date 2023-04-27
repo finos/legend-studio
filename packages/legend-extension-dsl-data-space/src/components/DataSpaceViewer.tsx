@@ -16,8 +16,8 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  BlankPanelContent,
   CaretUpIcon,
+  SparkleIcon,
   VerifiedIcon,
   clsx,
 } from '@finos/legend-art';
@@ -81,12 +81,22 @@ const DataSpaceHeader = observer(
   },
 );
 
-const DataSpacePlaceholderPanel: React.FC<{ message: string }> = (props) => {
-  const { message } = props;
+const DataSpacePlaceholderPanel: React.FC<{
+  header: string;
+  message: string;
+}> = (props) => {
+  const { header, message } = props;
 
   return (
     <div className="data-space__viewer__panel">
-      <BlankPanelContent>{message}</BlankPanelContent>
+      <div className="data-space__viewer__panel__header">
+        <div className="data-space__viewer__panel__header__label">{header}</div>
+      </div>
+      <div className="data-space__viewer__panel__content">
+        <div className="data-space__viewer__panel__content__placeholder">
+          <SparkleIcon /> This is work in progress.{` ${message}`}
+        </div>
+      </div>
     </div>
   );
 };
@@ -182,23 +192,38 @@ export const DataSpaceViewer = observer(
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES && (
-                <DataSpacePlaceholderPanel message="View all data stores (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Stores"
+                  message="This panel will provide details about the available datasets' schema and test data"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY && (
-                <DataSpacePlaceholderPanel message="View data availability (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Availability"
+                  message="This panel will provide details about the status of data being made available to end-users and applications"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS && (
-                <DataSpacePlaceholderPanel message="View data readiness (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Readiness"
+                  message="This will provide details about the status of data being prepared to collect, process, and analyze"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST && (
-                <DataSpacePlaceholderPanel message="View data cost (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Cost"
+                  message="This will provide details about the cost of data usage"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE && (
-                <DataSpacePlaceholderPanel message="View data ownership and governance (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Governance"
+                  message="This will provide details about data policy, data contract, and dataset lineage information"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (

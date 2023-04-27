@@ -14,10 +14,24 @@
  * limitations under the License.
  */
 
-export * from './DocumentationLink.js';
+@use 'mixins' as *;
 
-export * from './ActivityBar.js';
-export * from './TabManager.js';
-export * from './TabManagerState.js';
+.activity-bar {
+  &__item &__item__experimental-badge {
+    @include flexCenter;
 
-export * from './FuzzySearchAdvancedConfigMenu.js';
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    height: 1.6rem;
+    width: 1.6rem;
+    border-radius: 50%;
+    background: var(--color-mauve-50);
+    border: 0.1rem solid var(--color-dark-grey-280);
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-280);
+    }
+  }
+}

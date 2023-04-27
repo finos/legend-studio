@@ -43,6 +43,10 @@ import { VIRTUAL_ASSISTANT_TAB } from '@finos/legend-application';
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
 import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
+import {
+  ActivityBarItemExperimentalBadge,
+  type ActivityBarItemConfig,
+} from '@finos/legend-lego/application';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
@@ -61,13 +65,6 @@ const SettingsMenu = observer(
     );
   }),
 );
-
-export interface ActivityDisplay {
-  mode: ACTIVITY_MODE;
-  title: string;
-  info?: string;
-  icon: React.ReactElement;
-}
 
 export const ActivityBarMenu: React.FC = () => {
   const applicationStore = useLegendStudioApplicationStore();
@@ -137,7 +134,7 @@ export const ActivityBarMenu: React.FC = () => {
 export const ActivityBar = observer(() => {
   const editorStore = useEditorStore();
   const changeActivity =
-    (activity: ACTIVITY_MODE): (() => void) =>
+    (activity: string): (() => void) =>
     (): void =>
       editorStore.setActiveActivity(activity);
   // local changes
@@ -240,91 +237,100 @@ export const ActivityBar = observer(() => {
     ></div>
   );
   // tabs
-  const activities: ActivityDisplay[] = [
-    {
-      mode: ACTIVITY_MODE.EXPLORER,
-      title: 'Explorer (Ctrl + Shift + X)',
-      icon: <FileTrayIcon className="activity-bar__explorer-icon" />,
-    },
-    !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
-      title: 'Test Runner',
-      icon: <FlaskIcon />,
-    },
-    !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.LOCAL_CHANGES,
-      title: 'Local Changes (Ctrl + Shift + G)',
-      info: localChanges ? `${localChanges} unpushed changes` : undefined,
-      icon: (
-        <div className="activity-bar__local-change-icon activity-bar__item__icon-with-indicator">
-          <CodeBranchIcon />
-          {localChangesIndicatorStatusIcon}
-        </div>
-      ),
-    },
-    !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.WORKSPACE_UPDATER,
-      title: 'Update Workspace (Ctrl + Shift + U)',
-      info: workspaceUpdateChanges
-        ? `Update available${
-            workspaceUpdatePotentialConflicts ? ' with potential conflicts' : ''
-          }`
-        : undefined,
-      icon: (
-        <div className="activity-bar__workspace-updater-icon activity-bar__item__icon-with-indicator">
-          <CloudDownloadIcon />
-          {projectLatestChangesIndicatorStatusIcon}
-        </div>
-      ),
-    },
-    !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.WORKSPACE_REVIEW,
-      title: 'Review (Ctrl + Shift + M)',
-      info: reviewChanges ? `${reviewChanges} changes` : undefined,
-      icon: (
-        <div className="activity-bar__review-icon activity-bar__item__icon-with-indicator">
-          <GitPullRequestIcon />
-          {reviewChangesIndicatorStatusIcon}
-        </div>
-      ),
-    },
-    editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.CONFLICT_RESOLUTION,
-      title: 'Conflict Resolution',
-      info: conflictResolutionChanges
-        ? `${conflictResolutionChanges} changes${
-            conflictResolutionConflicts
-              ? ` (${conflictResolutionConflicts} unresolved conflicts)`
-              : ''
-          }`
-        : conflictResolutionChanges,
-      icon: (
-        <div className="activity-bar__conflict-resolution-icon activity-bar__item__icon-with-indicator">
-          <GitMergeIcon />
-          {conflictResolutionChangesIndicatorStatusIcon}
-        </div>
-      ),
-    },
-    !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
-      title: 'Project',
-      icon: (
-        <div className="activity-bar__project-overview-icon">
-          <RepoIcon />
-        </div>
-      ),
-    },
-    !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
-      title: 'Workflow Manager',
-      icon: <WrenchIcon />,
-    },
-    !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.REGISTER_SERVICES,
-      title: 'Register Service',
-      icon: <RobotIcon />,
-    },
-  ].filter((activity): activity is ActivityDisplay => Boolean(activity));
+  const activities: ActivityBarItemConfig[] = (
+    [
+      {
+        mode: ACTIVITY_MODE.EXPLORER,
+        title: 'Explorer (Ctrl + Shift + X)',
+        icon: <FileTrayIcon className="activity-bar__explorer-icon" />,
+      },
+      !editorStore.isInConflictResolutionMode && {
+        mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
+        title: 'Test Runner',
+        icon: <FlaskIcon />,
+      },
+      !editorStore.isInConflictResolutionMode && {
+        mode: ACTIVITY_MODE.LOCAL_CHANGES,
+        title: `Local Changes (Ctrl + Shift + G)${
+          localChanges ? ` - ${localChanges} unpushed changes` : ''
+        }`,
+        icon: (
+          <div className="activity-bar__local-change-icon activity-bar__item__icon-with-indicator">
+            <CodeBranchIcon />
+            {localChangesIndicatorStatusIcon}
+          </div>
+        ),
+      },
+      !editorStore.isInConflictResolutionMode && {
+        mode: ACTIVITY_MODE.WORKSPACE_UPDATER,
+        title: `Update Workspace (Ctrl + Shift + U)${
+          workspaceUpdateChanges
+            ? ` - Update available${
+                workspaceUpdatePotentialConflicts
+                  ? ' with potential conflicts'
+                  : ''
+              }`
+            : ''
+        }`,
+        icon: (
+          <div className="activity-bar__workspace-updater-icon activity-bar__item__icon-with-indicator">
+            <CloudDownloadIcon />
+            {projectLatestChangesIndicatorStatusIcon}
+          </div>
+        ),
+      },
+      !editorStore.isInConflictResolutionMode && {
+        mode: ACTIVITY_MODE.WORKSPACE_REVIEW,
+        title: `Review (Ctrl + Shift + M)${
+          reviewChanges ? ` - ${reviewChanges} changes` : ''
+        }`,
+        icon: (
+          <div className="activity-bar__review-icon activity-bar__item__icon-with-indicator">
+            <GitPullRequestIcon />
+            {reviewChangesIndicatorStatusIcon}
+          </div>
+        ),
+      },
+      editorStore.isInConflictResolutionMode && {
+        mode: ACTIVITY_MODE.CONFLICT_RESOLUTION,
+        title: `Conflict Resolution${
+          conflictResolutionChanges
+            ? ` - ${conflictResolutionChanges} changes${
+                conflictResolutionConflicts
+                  ? ` (${conflictResolutionConflicts} unresolved conflicts)`
+                  : ''
+              }`
+            : ''
+        }`,
+        icon: (
+          <div className="activity-bar__conflict-resolution-icon activity-bar__item__icon-with-indicator">
+            <GitMergeIcon />
+            {conflictResolutionChangesIndicatorStatusIcon}
+          </div>
+        ),
+      },
+      !editorStore.isInConflictResolutionMode && {
+        mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
+        title: 'Project',
+        icon: <RepoIcon className="activity-bar__project-overview-icon" />,
+      },
+      !editorStore.isInConflictResolutionMode && {
+        mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
+        title: 'Workflow Manager',
+        icon: <WrenchIcon />,
+      },
+      !editorStore.isInConflictResolutionMode && {
+        mode: ACTIVITY_MODE.REGISTER_SERVICES,
+        title: 'Register Service (Experimental)',
+        icon: (
+          <>
+            <RobotIcon className="activity-bar__icon--service-registrar" />
+            <ActivityBarItemExperimentalBadge />
+          </>
+        ),
+      },
+    ] as (ActivityBarItemConfig | boolean)[]
+  ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
 
   return (
     <div className="activity-bar">
@@ -340,9 +346,7 @@ export const ActivityBar = observer(() => {
             })}
             onClick={changeActivity(activity.mode)}
             tabIndex={-1}
-            title={`${activity.title}${
-              activity.info ? ` - ${activity.info}` : ''
-            }`}
+            title={activity.title}
           >
             {activity.icon}
           </button>
