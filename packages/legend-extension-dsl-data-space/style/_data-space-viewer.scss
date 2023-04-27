@@ -1173,6 +1173,10 @@
       margin-top: 1rem;
       height: 30rem;
     }
+
+    &__action-tab-group {
+      display: flex;
+    }
   }
 
   &__tds__column-specs {
@@ -1201,6 +1205,12 @@
         margin-top: 0.5rem;
       }
     }
+  }
+
+  &__tds__placeholder-panel {
+    height: 100%;
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-200);
   }
 
   &__tds__query-text {

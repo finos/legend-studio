@@ -236,6 +236,7 @@ export const MenuIcon = IO.IoMenuOutline;
 export const BeakerIcon = IO.IoBeaker;
 export const FlaskIcon = IO.IoFlaskSharp;
 export const AvailabilityIcon = IO.IoSyncCircleSharp;
+export const StatisticsIcon = IO.IoStatsChart;
 
 const BS = ReactIcons.BS;
 export const DisplayIcon = BS.BsDisplayFill;

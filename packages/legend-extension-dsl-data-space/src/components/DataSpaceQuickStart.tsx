@@ -17,11 +17,14 @@
 import { observer } from 'mobx-react-lite';
 import {
   AnchorLinkIcon,
+  BlankPanelContent,
   CodeIcon,
   CopyIcon,
+  DataAccessIcon,
   LegendLogo,
   MoreVerticalIcon,
   QuestionCircleIcon,
+  StatisticsIcon,
   clsx,
 } from '@finos/legend-art';
 import {
@@ -52,6 +55,9 @@ import {
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
   QUERY = 'QUERY',
+
+  DATA_ACCESS = 'DATA_ACCESS',
+  USAGE_STATS = 'USAGE_STATS',
   QUERY_TEXT = 'QUERY_TEXT',
 }
 
@@ -185,25 +191,64 @@ const DataSpaceExecutableTDSResultView = observer(
               </button>
             ))}
           </div>
-          {queryText !== undefined && (
+          <div className="data-space__viewer__quickstart__item__content__action-tab-group">
             <button
               className={clsx(
                 'data-space__viewer__quickstart__item__content__tab',
                 {
                   'data-space__viewer__quickstart__item__content__tab--active':
-                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT,
+                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.DATA_ACCESS,
                 },
               )}
               tabIndex={-1}
+              title="Data Access"
               onClick={() =>
-                setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT)
+                setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.DATA_ACCESS)
               }
             >
               <div className="data-space__viewer__quickstart__item__content__tab__icon">
-                <CodeIcon className="data-space__viewer__quickstart__item__content__tab__icon--query" />
+                <DataAccessIcon />
               </div>
             </button>
-          )}
+            <button
+              className={clsx(
+                'data-space__viewer__quickstart__item__content__tab',
+                {
+                  'data-space__viewer__quickstart__item__content__tab--active':
+                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.USAGE_STATS,
+                },
+              )}
+              tabIndex={-1}
+              title="Usage Statistics"
+              onClick={() =>
+                setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.USAGE_STATS)
+              }
+            >
+              <div className="data-space__viewer__quickstart__item__content__tab__icon">
+                <StatisticsIcon />
+              </div>
+            </button>
+            {queryText !== undefined && (
+              <button
+                className={clsx(
+                  'data-space__viewer__quickstart__item__content__tab',
+                  {
+                    'data-space__viewer__quickstart__item__content__tab--active':
+                      selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT,
+                  },
+                )}
+                tabIndex={-1}
+                title="Pure Query"
+                onClick={() =>
+                  setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT)
+                }
+              >
+                <div className="data-space__viewer__quickstart__item__content__tab__icon">
+                  <CodeIcon className="data-space__viewer__quickstart__item__content__tab__icon--query" />
+                </div>
+              </button>
+            )}
+          </div>
         </div>
         <div className="data-space__viewer__quickstart__item__content__tab__content">
           {selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
@@ -272,6 +317,20 @@ const DataSpaceExecutableTDSResultView = observer(
                   Open in Query with Test Data
                 </button>
               </div>
+            </div>
+          )}
+          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.DATA_ACCESS && (
+            <div className="data-space__viewer__quickstart__tds__placeholder-panel">
+              <BlankPanelContent>
+                Data Access (Work in Progress)
+              </BlankPanelContent>
+            </div>
+          )}
+          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.USAGE_STATS && (
+            <div className="data-space__viewer__quickstart__tds__placeholder-panel">
+              <BlankPanelContent>
+                Usage Statistics (Work in Progress)
+              </BlankPanelContent>
             </div>
           )}
           {selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT &&

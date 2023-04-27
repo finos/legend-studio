@@ -646,17 +646,17 @@
       }
 
       &__tab {
-        color: var(--color-hclight-grey-30);
+        color: var(--color-hclight-grey-60);
         border-left-color: var(--color-hclight-grey-15);
       }
 
       &__tab:hover .data-space__viewer__quickstart__item__content__tab__label {
-        color: var(--color-hclight-grey-40);
+        color: var(--color-hclight-grey-70);
       }
 
       &__tab:hover .data-space__viewer__quickstart__item__content__tab__icon {
         svg {
-          color: var(--color-hclight-grey-40);
+          color: var(--color-hclight-grey-70);
         }
       }
 
@@ -677,6 +677,10 @@
     }
 
     &__tds__query {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__tds__placeholder-panel {
       border-color: var(--color-hclight-grey-30);
     }
 
