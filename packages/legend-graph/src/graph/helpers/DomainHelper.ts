@@ -713,3 +713,23 @@ export const getFunctionName = (
 export const getFunctionNameWithPath = (
   func: ConcreteFunctionDefinition,
 ): string => func.package?.path + ELEMENT_PATH_DELIMITER + func.functionName;
+
+export const buildDomainModal = (
+  _class: Class,
+  _elements: Set<Type>,
+  currentLayer = 0,
+  maxDepth = 20,
+): void => {
+  if (!_elements.has(_class) && currentLayer < maxDepth) {
+    _elements.add(_class);
+    getAllClassProperties(_class).forEach((p) => {
+      const propertyType = p.genericType.value.rawType;
+      console.log(propertyType);
+      if (propertyType instanceof Class) {
+        buildDomainModal(propertyType, _elements, currentLayer + 1, maxDepth);
+      } else if (propertyType instanceof Enumeration) {
+        _elements.add(propertyType);
+      }
+    });
+  }
+};

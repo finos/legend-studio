@@ -23,6 +23,13 @@ import {
   LockIcon,
   PanelDropZone,
   PanelFormSection,
+  RefreshIcon,
+  Dialog,
+  ModalBody,
+  ModalTitle,
+  ModalFooter,
+  ModalFooterButton,
+  Modal,
 } from '@finos/legend-art';
 import {
   capitalize,
@@ -40,8 +47,11 @@ import {
   type ModelUnit,
   type PackageableElement,
   type PackageableElementReference,
+  type Class,
+  buildDomainModal,
+  type Type,
 } from '@finos/legend-graph';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { getElementIcon } from '../../../ElementIconUtils.js';
@@ -59,6 +69,11 @@ import {
   externalFormat_modelUnit_deletePackageableElementExcludes,
   externalFormat_modelUnit_deletePackageableElementIncludes,
 } from '../../../../stores/graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 
 const ModelUnitPackagableElementEntryEditor = observer(
   (props: {
@@ -284,9 +299,96 @@ const BindingGeneralEditor = observer(
   },
 );
 
+const DomainImporterModal = observer(
+  (props: {
+    modelUnit: ModelUnit;
+    editorStore: EditorStore;
+    isReadOnly: boolean;
+    close: () => void;
+  }) => {
+    const { modelUnit, editorStore, close, isReadOnly } = props;
+    const classOptions =
+      editorStore.graphManagerState.usableClasses.map(buildElementOption);
+    const [selectedClass, setSelectedClass] = useState<Class | undefined>(
+      classOptions[0]?.value,
+    );
+    const classSelectorRef = useRef<SelectComponent>(null);
+
+    const selectedClassOption = selectedClass
+      ? {
+          value: selectedClass,
+          label: selectedClass.name,
+        }
+      : null;
+    const changeClassOption = (
+      val: PackageableElementOption<Class> | null,
+    ): void => {
+      setSelectedClass(val?.value);
+    };
+    const importDomainClass = (): void => {
+      if (selectedClass) {
+        const set = new Set<Type>();
+        buildDomainModal(selectedClass, set);
+        const bindingIncludes = modelUnit.packageableElementIncludes.map(
+          (e) => e.value,
+        );
+        Array.from(set).forEach((_c) => {
+          if (!bindingIncludes.includes(_c)) {
+            externalFormat_modelUnit_addPackageableElementIncludes(
+              modelUnit,
+              PackageableElementExplicitReference.create(_c),
+            );
+          }
+        });
+      }
+      close();
+    };
+    return (
+      <Dialog
+        open={true}
+        onClose={close}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true}>
+          <ModalTitle title="Domain Model Importer" />
+          <ModalBody>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Class
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                Class to import with all associated classes
+              </div>
+              <CustomSelectorInput
+                ref={classSelectorRef}
+                options={classOptions}
+                onChange={changeClassOption}
+                value={selectedClassOption}
+                darkMode={true}
+                placeholder="Choose a class..."
+                isClearable={true}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              disabled={isReadOnly || !selectedClass}
+              onClick={importDomainClass}
+              text="Import"
+            />
+            <ModalFooterButton onClick={close} text="Close" />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const ModelUnitEditor = observer(
   (props: { modelUnit: ModelUnit; isReadOnly: boolean }) => {
     const editorStore = useEditorStore();
+    const [showDomainImporter, setShowDomainImporter] = useState(false);
     const { modelUnit, isReadOnly } = props;
     const graph = editorStore.graphManagerState.graph;
     const allowedElements = [
@@ -368,6 +470,7 @@ export const ModelUnitEditor = observer(
       },
       [isReadOnly, modelUnit],
     );
+    const showDomainImporterModal = (): void => setShowDomainImporter(true);
 
     return (
       <>
@@ -375,6 +478,19 @@ export const ModelUnitEditor = observer(
           <div className="panel__content__form__section__header__label">
             <div className="panel__content__form__section__header__label__text">
               {capitalize('Model Includes')}
+            </div>
+            <div className="panel__header__actions">
+              <button
+                className="panel__header__action"
+                onClick={showDomainImporterModal}
+                title="Import Domain modal"
+                tabIndex={-1}
+              >
+                <div className="">
+                  <RefreshIcon className="" />
+                  <div className="">Import Domain</div>
+                </div>
+              </button>
             </div>
           </div>
           <div className="panel__content__form__section__header__prompt">
@@ -407,6 +523,15 @@ export const ModelUnitEditor = observer(
             isReadOnly={isReadOnly}
           />
         </PanelFormSection>
+
+        {showDomainImporter && (
+          <DomainImporterModal
+            modelUnit={modelUnit}
+            editorStore={editorStore}
+            close={() => setShowDomainImporter(false)}
+            isReadOnly={isReadOnly}
+          />
+        )}
       </>
     );
   },
