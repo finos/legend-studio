@@ -19,13 +19,17 @@ import {
   type GenericLegendApplicationStore,
   type NavigationZone,
 } from '@finos/legend-application';
-import { type ClassView } from '@finos/legend-extension-dsl-diagram/graph';
+import {
+  type Point,
+  type ClassView,
+} from '@finos/legend-extension-dsl-diagram/graph';
 import {
   type DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
 } from '@finos/legend-extension-dsl-diagram/application';
 import type {
   BasicGraphManagerState,
+  Class,
   GraphData,
   PackageableRuntime,
 } from '@finos/legend-graph';
@@ -353,11 +357,11 @@ export class DataSpaceViewerState {
     artifactId: string,
     entityPath: string | undefined,
   ) => Promise<void>;
-  readonly onDiagramClassDoubleClick: (classView: ClassView) => void;
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
-  readonly openServiceQuery?: ((servicePath: string) => void) | undefined;
+  readonly queryClass: (_class: Class) => void;
+  readonly openServiceQuery: (servicePath: string) => void;
 
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
 
@@ -367,9 +371,12 @@ export class DataSpaceViewerState {
 
   _renderer?: DiagramRenderer | undefined;
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
-  currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
+
+  // diagram
+  currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
+  contextMenuClassView?: ClassView | undefined;
 
   TEMPORARY__enableExperimentalFeatures = false;
 
@@ -393,9 +400,9 @@ export class DataSpaceViewerState {
         artifactId: string,
         entityPath: string | undefined,
       ) => Promise<void>;
-      onDiagramClassDoubleClick: (classView: ClassView) => void;
+      queryClass: (_class: Class) => void;
+      openServiceQuery: (servicePath: string) => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
-      openServiceQuery?: ((servicePath: string) => void) | undefined;
     },
     options?: {
       TEMPORARY__enableExperimentalFeatures?: boolean | undefined;
@@ -407,6 +414,7 @@ export class DataSpaceViewerState {
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
+      contextMenuClassView: observable,
       isVerified: computed,
       diagramRenderer: computed,
       setDiagramRenderer: action,
@@ -414,6 +422,7 @@ export class DataSpaceViewerState {
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
+      setContextMenuClassView: action,
     });
 
     this.applicationStore = applicationStore;
@@ -433,8 +442,8 @@ export class DataSpaceViewerState {
     this.retriveGraphData = actions.retriveGraphData;
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
-    this.onDiagramClassDoubleClick = actions.onDiagramClassDoubleClick;
     this.onZoneChange = actions.onZoneChange;
+    this.queryClass = actions.queryClass;
     this.openServiceQuery = actions.openServiceQuery;
 
     this.dataAccessState = new DataSpaceViewerDataAccessState(this);
@@ -519,7 +528,17 @@ export class DataSpaceViewerState {
     this.diagramRenderer.setEnableLayoutAutoAdjustment(true);
     this.diagramRenderer.onClassViewDoubleClick = (
       classView: ClassView,
-    ): void => this.onDiagramClassDoubleClick(classView);
+    ): void => this.queryClass(classView.class.value);
+    this.diagramRenderer.onClassViewRightClick = (
+      classView: ClassView,
+      point: Point,
+    ): void => {
+      this.setContextMenuClassView(classView);
+    };
+  }
+
+  setContextMenuClassView(val: ClassView | undefined): void {
+    this.contextMenuClassView = val;
   }
 
   syncZoneWithNavigation(zone: NavigationZone): void {

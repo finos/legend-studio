@@ -17,6 +17,9 @@
 import {
   AnchorLinkIcon,
   CircleIcon,
+  ContextMenu,
+  MenuContent,
+  MenuContentItem,
   ThinChevronLeftIcon,
   ThinChevronRightIcon,
   clsx,
@@ -69,15 +72,71 @@ const DataSpaceDiagramCanvas = observer(
       }
     }, [dataSpaceViewerState, width, height]);
 
+    // actions
+    const queryClass = (): void => {
+      if (dataSpaceViewerState.contextMenuClassView) {
+        dataSpaceViewerState.queryClass(
+          dataSpaceViewerState.contextMenuClassView.class.value,
+        );
+      }
+    };
+    const viewClassDocumentation = (): void => {
+      if (
+        dataSpaceViewerState.contextMenuClassView &&
+        dataSpaceViewerState.modelsDocumentationState.hasClassDocumentation(
+          dataSpaceViewerState.contextMenuClassView.class.value.path,
+        )
+      ) {
+        dataSpaceViewerState.modelsDocumentationState.viewClassDocumentation(
+          dataSpaceViewerState.contextMenuClassView.class.value.path,
+        );
+        dataSpaceViewerState.changeZone(
+          generateAnchorForActivity(
+            DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
+          ),
+        );
+      }
+    };
+
     return (
-      <div
-        ref={diagramCanvasRef}
-        className={clsx(
-          'diagram-canvas ',
-          dataSpaceViewerState.diagramCursorClass,
-        )}
-        tabIndex={0}
-      />
+      <ContextMenu
+        className="data-space__viewer__diagram-viewer__canvas"
+        content={
+          <MenuContent>
+            <MenuContentItem
+              onClick={queryClass}
+              disabled={!dataSpaceViewerState.contextMenuClassView}
+            >
+              Query
+            </MenuContentItem>
+            <MenuContentItem
+              onClick={viewClassDocumentation}
+              disabled={
+                !dataSpaceViewerState.contextMenuClassView ||
+                !dataSpaceViewerState.modelsDocumentationState.hasClassDocumentation(
+                  dataSpaceViewerState.contextMenuClassView.class.value.path,
+                )
+              }
+            >
+              View Documentation
+            </MenuContentItem>
+          </MenuContent>
+        }
+        disabled={!dataSpaceViewerState.contextMenuClassView}
+        menuProps={{ elevation: 7 }}
+        onClose={(): void =>
+          dataSpaceViewerState.setContextMenuClassView(undefined)
+        }
+      >
+        <div
+          ref={diagramCanvasRef}
+          className={clsx(
+            'diagram-canvas',
+            dataSpaceViewerState.diagramCursorClass,
+          )}
+          tabIndex={0}
+        />
+      </ContextMenu>
     );
   }),
 );

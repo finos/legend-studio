@@ -23,9 +23,9 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   BasicGraphManagerState,
+  type Class,
   GraphDataWithOrigin,
   LegendSDLC,
 } from '@finos/legend-graph';
@@ -151,17 +151,7 @@ export class DataSpacePreviewStore {
             this.applicationStore,
             this.depotServerClient,
           ),
-          onDiagramClassDoubleClick: (classView: ClassView): void =>
-            this.queryDataSpace(classView.class.value.path),
-          onZoneChange: (zone: NavigationZone | undefined): void => {
-            if (zone === undefined) {
-              this.applicationStore.navigationService.navigator.resetZone();
-            } else {
-              this.applicationStore.navigationService.navigator.updateCurrentZone(
-                zone,
-              );
-            }
-          },
+          queryClass: (_class: Class): void => this.queryDataSpace(_class.path),
           openServiceQuery: (servicePath: string): void =>
             this.applicationStore.navigationService.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
@@ -172,6 +162,15 @@ export class DataSpacePreviewStore {
                 servicePath,
               ),
             ),
+          onZoneChange: (zone: NavigationZone | undefined): void => {
+            if (zone === undefined) {
+              this.applicationStore.navigationService.navigator.resetZone();
+            } else {
+              this.applicationStore.navigationService.navigator.updateCurrentZone(
+                zone,
+              );
+            }
+          },
         },
         {
           TEMPORARY__enableExperimentalFeatures:

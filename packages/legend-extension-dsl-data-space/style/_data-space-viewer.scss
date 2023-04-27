@@ -483,6 +483,13 @@
 .data-space__viewer__diagram-viewer {
   height: 70rem;
 
+  &__canvas {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    position: relative;
+  }
+
   &__carousel {
     display: flex;
     flex-direction: column;

@@ -19,7 +19,6 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   StoreProjectData,
   retrieveProjectEntitiesWithDependencies,
@@ -48,7 +47,11 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from './LegendTaxonomyDataSpaceViewerHelper.js';
-import { GraphDataWithOrigin, LegendSDLC } from '@finos/legend-graph';
+import {
+  type Class,
+  GraphDataWithOrigin,
+  LegendSDLC,
+} from '@finos/legend-graph';
 import {
   DataSpaceViewerState,
   EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
@@ -173,8 +176,7 @@ export class TaxonomyNodeViewerState {
             this.explorerStore.applicationStore,
             this.explorerStore.depotServerClient,
           ),
-          onDiagramClassDoubleClick: (classView: ClassView): void =>
-            this.queryDataSpace(classView.class.value.path),
+          queryClass: (_class: Class): void => this.queryDataSpace(_class.path),
           openServiceQuery: (servicePath: string): void =>
             this.explorerStore.applicationStore.navigationService.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(

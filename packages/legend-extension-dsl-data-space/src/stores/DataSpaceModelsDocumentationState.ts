@@ -585,4 +585,24 @@ export class DataSpaceViewerModelsDocumentationState {
     this.resetTypeFilter();
     this.resetPackageFilter();
   }
+
+  hasClassDocumentation(classPath: string): boolean {
+    return this.dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs.some(
+      (entry) => entry.elementEntry.path === classPath,
+    );
+  }
+
+  viewClassDocumentation(classPath: string): void {
+    if (this.hasClassDocumentation(classPath)) {
+      const classNode = this.packageFilterTreeData.nodes.get(classPath);
+      if (classNode) {
+        uncheckAllFilterTree(this.packageFilterTreeData);
+        classNode.setCheckType(
+          ModelsDocumentationFilterTreeNodeCheckType.CHECKED,
+        );
+        this.resetSearch();
+        this.updatePackageFilter();
+      }
+    }
+  }
 }

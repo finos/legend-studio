@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   GraphDataWithOrigin,
   type Class,
@@ -208,8 +207,8 @@ export class DataSpaceAdvancedSearchState {
             ),
           viewProject: this.viewProject,
           viewSDLCProject: this.viewSDLCProject,
-          onDiagramClassDoubleClick: (classView: ClassView): void => {
-            this.proceedToCreateQuery(classView.class.value);
+          queryClass: (_class: Class): void => {
+            this.proceedToCreateQuery(_class);
           },
           openServiceQuery: (servicePath: string): void =>
             this.applicationStore.navigationService.navigator.visitAddress(

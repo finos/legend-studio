@@ -111,15 +111,9 @@ const DataSpaceExecutableTDSResultView = observer(
       if (
         executableAnalysisResult.info instanceof DataSpaceServiceExecutableInfo
       ) {
-        if (dataSpaceViewerState.openServiceQuery) {
-          dataSpaceViewerState.openServiceQuery(
-            executableAnalysisResult.executable,
-          );
-        } else {
-          applicationStore.notificationService.notifyUnsupportedFeature(
-            `Can't open service query`,
-          );
-        }
+        dataSpaceViewerState.openServiceQuery(
+          executableAnalysisResult.executable,
+        );
       }
     };
     const columnSpecifications = tdsResult.columns;
