@@ -37,7 +37,7 @@ export {
   createViewSDLCProjectHandler,
   QueryEditorStore,
   ExistingQueryEditorStore,
-  type QueryExportConfiguration,
+  type QueryPersistConfiguration,
 } from './stores/QueryEditorStore.js';
 
 // components

@@ -321,7 +321,7 @@ const PropertyBasicEditor = observer(
                   spellCheck={false}
                   onChange={changeValue}
                   placeholder="Property name"
-                  validationErrorMessage={
+                  error={
                     isPropertyDuplicated(property)
                       ? 'Duplicated property'
                       : undefined

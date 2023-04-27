@@ -27,6 +27,16 @@
   &__error__indicator {
     color: var(--color-red-180);
   }
+
+  &__caution {
+    position: absolute;
+    right: 0.5rem;
+    top: calc(50% - 0.7rem);
+  }
+
+  &__caution__indicator {
+    color: var(--color-warning);
+  }
 }
 
 input.input--with-validation--error {

@@ -19,7 +19,10 @@ import type { Query } from '@finos/legend-graph';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type { ExistingQueryEditorStore } from './QueryEditorStore.js';
+import type {
+  ExistingQueryEditorStore,
+  QueryEditorStore,
+} from './QueryEditorStore.js';
 import type { QuerySetupLandingPageStore } from './QuerySetupStore.js';
 
 export enum QuerySetupActionTag {
@@ -53,12 +56,19 @@ export type ExistingQueryEditorStateBuilder = (
   editorStore: ExistingQueryEditorStore,
 ) => QueryBuilderState | undefined;
 
-export type ExistingQueryEditorActionRendererConfiguration = {
+export type QueryEditorActionConfiguration = {
   key: string;
   renderer: (
-    editorStore: ExistingQueryEditorStore,
+    editorStore: QueryEditorStore,
     queryBuilderState: QueryBuilderState,
   ) => React.ReactNode | undefined;
+};
+
+export type QueryEditorHelpMenuEntry = {
+  title?: string;
+  label: string;
+  onClick: () => void;
+  icon?: React.ReactNode;
 };
 
 export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlugin {
@@ -78,12 +88,19 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
 
   /**
+   * Get the list of help items for query.
+   */
+  getExtraQueryEditorHelpMenuEntries?(): QueryEditorHelpMenuEntry[];
+
+  /**
    * Get the list of existing query editor state builders.
    */
   getExtraExistingQueryEditorStateBuilders?(): ExistingQueryEditorStateBuilder[];
 
   /**
-   * Get the list of renderer configurations for existing query editor actions.
+   * Get the list of query editor action renderer configurations.
    */
-  getExtraExistingQueryActionRendererConfiguration?(): ExistingQueryEditorActionRendererConfiguration[];
+  getExtraQueryEditorActionConfigurations?(
+    editorStore: QueryEditorStore,
+  ): QueryEditorActionConfiguration[];
 }

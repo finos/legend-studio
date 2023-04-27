@@ -16,7 +16,11 @@
 
 import type { GraphManagerOperationReport } from '@finos/legend-graph';
 import type { TelemetryService } from '@finos/legend-application';
-import { QUERY_BUILDER_EVENT } from './QueryBuilderEvent.js';
+import {
+  QUERY_BUILDER_EVENT,
+  QUERY_BUILDER_FILTER_EVENT,
+  QUERY_BUILDER_POST_FILTER_EVENT,
+} from './QueryBuilderEvent.js';
 
 type QueryExecution_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
@@ -69,6 +73,132 @@ export class QueryBuilderTelemetryHelper {
     telemetryService.logEvent(
       QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__SUCCESS,
       data,
+    );
+  }
+
+  static logEvent_FilterCreateConditionLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.FILTER__CREATE__CONDITION__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_FilterCleanupTreeLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.FILTER__CLEANUP__TREE__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_FilterCollapseTreeLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.FILTER__COLLAPSE__TREE__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_FilterCreateGroupFromConditionLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.FILTER__CREATE__GROUP__FROM__CONDITION__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_FilterCreateLogicalGroupLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.FILTER__CREATE__LOGICAL__GROUP__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_FilterExpandTreeLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.FILTER__EXPAND__TREE__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_FilterSimplifyTreeLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_FILTER_EVENT.FILTER__SIMPLIFY__TREE__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_PostFilterCreateConditionLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_POST_FILTER_EVENT.FILTER__CREATE__CONDITION__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_PostFilterCleanupTreeLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_POST_FILTER_EVENT.FILTER__CLEANUP__TREE__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_PostFilterCollapseTreeLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_POST_FILTER_EVENT.FILTER__COLLAPSE__TREE__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_PostFilterCreateGroupFromConditionLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_POST_FILTER_EVENT.FILTER__CREATE__GROUP__FROM__CONDITION__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_PostFilterCreateLogicalGroupLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_POST_FILTER_EVENT.FILTER__CREATE__LOGICAL__GROUP__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_PostFilterExpandTreeLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_POST_FILTER_EVENT.FILTER__EXPAND__TREE__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_PostFilterSimplifyTreeLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      QUERY_BUILDER_POST_FILTER_EVENT.FILTER__SIMPLIFY__TREE__LAUNCH,
+      {},
     );
   }
 }

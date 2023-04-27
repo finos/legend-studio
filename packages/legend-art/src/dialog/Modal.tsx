@@ -104,7 +104,7 @@ export const ModalFooterButton: React.FC<{
   return (
     <button
       className={clsx(
-        'btn modal__footer__close-btn',
+        'btn modal__footer__btn',
         {
           'btn--dark': isDarkMode,
         },

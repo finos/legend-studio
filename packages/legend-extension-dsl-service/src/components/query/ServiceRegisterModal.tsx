@@ -51,14 +51,14 @@ import {
   ServiceExecutionMode,
   validate_ServicePattern,
 } from '@finos/legend-graph';
-import type { ExistingQueryEditorStore } from '@finos/legend-application-query';
+import { type QueryEditorStore } from '@finos/legend-application-query';
 import type { UserOption } from '../studio/QueryProductionizer.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { resolveVersion } from '@finos/legend-server-depot';
 
 const ServiceRegisterModal = observer(
   (props: {
-    editorStore: ExistingQueryEditorStore;
+    editorStore: QueryEditorStore;
     onClose(): void;
     queryBuilderState: QueryBuilderState;
   }) => {
@@ -141,13 +141,17 @@ const ServiceRegisterModal = observer(
             queryBuilderState.runtimeValue.packageableRuntime.value.path,
             editorStore.graphManagerState,
           );
+
+          const { groupId, artifactId, versionId } =
+            editorStore.getProjectInfo();
+
           const serviceRegistrationResult =
             await editorStore.graphManagerState.graphManager.registerService(
               service,
               editorStore.graphManagerState.graph,
-              editorStore.query.groupId,
-              editorStore.query.artifactId,
-              resolveVersion(editorStore.query.versionId),
+              groupId,
+              artifactId,
+              resolveVersion(versionId),
               guaranteeNonNullable(serverConfig?.executionUrl),
               ServiceExecutionMode.SEMI_INTERACTIVE,
             );
@@ -315,10 +319,11 @@ const ServiceRegisterModal = observer(
 
 export const ServiceRegisterAction = observer(
   (props: {
-    editorStore: ExistingQueryEditorStore;
+    editorStore: QueryEditorStore;
     queryBuilderState: QueryBuilderState;
   }) => {
     const { editorStore, queryBuilderState } = props;
+
     const [showRegisterServiceModal, setShowRegisterServiceModal] =
       useState(false);
     const registerCurrentQuery = (): void => {
@@ -331,11 +336,11 @@ export const ServiceRegisterAction = observer(
           className="query-editor__header__action btn--dark"
           tabIndex={-1}
           onClick={registerCurrentQuery}
-          title="Register query as service..."
+          title="Register query as service"
         >
           <RocketIcon className="query-editor__header__action__icon--service" />
           <div className="query-editor__header__action__label">
-            Register Service
+            Register DEV Service
           </div>
         </button>
         {showRegisterServiceModal && (

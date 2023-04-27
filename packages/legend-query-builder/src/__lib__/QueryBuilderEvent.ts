@@ -24,3 +24,23 @@ export enum QUERY_BUILDER_EVENT {
   DEBUG_EXECUTION_PLAN__SUCCESS = 'query-builder.debug-plan.success',
   BUILD_EXECUTION_PLAN__SUCCESS = 'query-builder.build-plan.success',
 }
+
+export enum QUERY_BUILDER_FILTER_EVENT {
+  FILTER__CREATE__CONDITION__LAUNCH = 'query-builder.filter.create-condition.launch',
+  FILTER__CREATE__GROUP__FROM__CONDITION__LAUNCH = 'query-builder.filter.create-group-from-condition.launch',
+  FILTER__CREATE__LOGICAL__GROUP__LAUNCH = 'query-builder.filter.create-logical-group.launch',
+  FILTER__CLEANUP__TREE__LAUNCH = 'query-builder.filter.cleanup-tree.launch',
+  FILTER__SIMPLIFY__TREE__LAUNCH = 'query-builder.filter.simplify-tree.launch',
+  FILTER__COLLAPSE__TREE__LAUNCH = 'query-builder.filter.collapse-tree.launch',
+  FILTER__EXPAND__TREE__LAUNCH = 'query-builder.filter.expand-tree.launch',
+}
+
+export enum QUERY_BUILDER_POST_FILTER_EVENT {
+  FILTER__CREATE__CONDITION__LAUNCH = 'query-builder.post-filter.create-condition.launch',
+  FILTER__CREATE__GROUP__FROM__CONDITION__LAUNCH = 'query-builder.post-filter.create-group-from-condition.launch',
+  FILTER__CREATE__LOGICAL__GROUP__LAUNCH = 'query-builder.post-filter.create-logical-group.launch',
+  FILTER__CLEANUP__TREE__LAUNCH = 'query-builder.post-filter.cleanup-tree.launch',
+  FILTER__SIMPLIFY__TREE__LAUNCH = 'query-builder.post-filter.simplify-tree.launch',
+  FILTER__COLLAPSE__TREE__LAUNCH = 'query-builder.post-filter.collapse-tree.launch',
+  FILTER__EXPAND__TREE__LAUNCH = 'query-builder.post-filter.expand-tree.launch',
+}

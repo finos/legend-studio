@@ -35,6 +35,25 @@
   }
 }
 
+.input__btn {
+  @include flexCenter;
+
+  background: var(--color-blue-200);
+  color: var(--color-light-grey-50);
+  height: 2.8rem;
+  padding: 0.5rem;
+  border-radius: 0.1rem;
+
+  svg {
+    height: 90%;
+    width: 90%;
+  }
+}
+
+.input__btn:hover {
+  background: var(--color-blue-180);
+}
+
 .input--dark {
   background: var(--color-dark-grey-100);
   color: var(--color-light-grey-150);

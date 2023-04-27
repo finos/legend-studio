@@ -16,8 +16,9 @@
 
 import packageJson from '../../../package.json';
 import {
-  type ExistingQueryEditorActionRendererConfiguration,
+  type QueryEditorActionConfiguration,
   LegendQueryApplicationPlugin,
+  ExistingQueryEditorStore,
 } from '@finos/legend-application-query';
 import { ArrowCircleUpIcon } from '@finos/legend-art';
 import { generateQueryProductionizerRoute } from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
@@ -31,12 +32,15 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
     super(packageJson.extensions.applicationQueryPlugin, packageJson.version);
   }
 
-  override getExtraExistingQueryActionRendererConfiguration(): ExistingQueryEditorActionRendererConfiguration[] {
+  override getExtraQueryEditorActionConfigurations(): QueryEditorActionConfiguration[] {
     return [
       {
         key: 'productionize-query',
         renderer: (editorStore, queryBuilderState) => {
           const openQueryProductionizer = async (): Promise<void> => {
+            if (!(editorStore instanceof ExistingQueryEditorStore)) {
+              return;
+            }
             // fetch project data
             const project = StoreProjectData.serialization.fromJson(
               await editorStore.depotServerClient.getProject(
@@ -81,11 +85,16 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
               className="query-editor__header__action btn--dark"
               tabIndex={-1}
               onClick={proceed}
-              title="Productionize query..."
+              disabled={!(editorStore instanceof ExistingQueryEditorStore)}
+              title={
+                !(editorStore instanceof ExistingQueryEditorStore)
+                  ? 'Please save your query first before productionizing'
+                  : 'Productionize query...'
+              }
             >
               <ArrowCircleUpIcon className="query-editor__header__action__icon--productionize" />
               <div className="query-editor__header__action__label">
-                Productionize
+                Productionize Query
               </div>
             </button>
           );

@@ -137,9 +137,7 @@ const TagBasicEditor = observer(
             value={tag.value}
             onChange={changeValue}
             placeholder="Tag value"
-            validationErrorMessage={
-              isTagDuplicated(tag) ? 'Duplicated tag' : undefined
-            }
+            error={isTagDuplicated(tag) ? 'Duplicated tag' : undefined}
           />
           {!isReadOnly && (
             <button
@@ -242,7 +240,7 @@ const StereotypeBasicEditor = observer(
             value={stereotype.value}
             onChange={changeValue}
             placeholder="Stereotype value"
-            validationErrorMessage={
+            error={
               isStereotypeDuplicated(stereotype)
                 ? 'Duplicated stereotype'
                 : undefined

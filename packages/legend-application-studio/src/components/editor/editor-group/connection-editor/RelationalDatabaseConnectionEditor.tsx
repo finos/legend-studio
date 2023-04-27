@@ -57,7 +57,7 @@ import {
   ModalHeader,
   Button,
 } from '@finos/legend-art';
-import { capitalize, prettyCONSTName } from '@finos/legend-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 import {
   type RelationalDatabaseConnection,
@@ -209,9 +209,9 @@ const LocalH2DatasourceSpecificationEditor = observer(
         )}
         <div>
           <div className="panel__content__form__section__header__label">
-            {capitalize('test data setup SQL')}
+            Test Data Setup SQL
             <Button
-              className="btn--icon--small"
+              className="btn--icon--small btn--icon--margin--left"
               darkMode={false}
               onClick={openInPopUp}
               title="Open..."

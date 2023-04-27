@@ -15,28 +15,35 @@
  */
 
 import { clsx } from 'clsx';
-import { TimesCircleIcon } from '../icon/Icon.js';
+import { ExclamationCircleIcon, TimesCircleIcon } from '../icon/Icon.js';
 
 export const InputWithInlineValidation: React.FC<
   React.InputHTMLAttributes<HTMLInputElement> & {
-    validationErrorMessage?: string | undefined;
+    error?: string | undefined;
+    warning?: string | undefined;
   }
 > = (props) => {
-  const { validationErrorMessage, className, ...inputProps } = props;
+  const { error, warning, className, ...inputProps } = props;
+
+  const showCautionMessage = Boolean(warning) && !error;
+
   return (
     <div className="input--with-validation">
       <input
         className={clsx(className, {
-          'input--with-validation--error': Boolean(validationErrorMessage),
+          'input--caution': showCautionMessage,
+          'input--with-validation--error': Boolean(error),
         })}
         {...inputProps}
       />
-      {validationErrorMessage && (
-        <div
-          className="input--with-validation__error"
-          title={validationErrorMessage}
-        >
+      {error && (
+        <div className="input--with-validation__error" title={error}>
           <TimesCircleIcon className="input--with-validation__error__indicator" />
+        </div>
+      )}
+      {showCautionMessage && (
+        <div className="input--with-validation_caution" title={warning}>
+          <ExclamationCircleIcon className="input--with-validation_caution__indicator" />
         </div>
       )}
     </div>

@@ -60,8 +60,9 @@
   @include flexCenter;
 
   &--small {
+    @include flexCenter;
+
     padding: 0.5rem;
-    margin-left: 0.5rem;
     border-radius: 0.1rem;
     color: var(--color-light-grey-50);
     background: var(--color-dark-grey-300);
@@ -69,6 +70,23 @@
 
   &--small:hover {
     background: var(--color-dark-grey-400);
+  }
+
+  &--margin--right {
+    margin-right: 0.5rem;
+  }
+
+  &--margin--left {
+    margin-left: 0.5rem;
+  }
+
+  &__caution {
+    background: var(--color-yellow-400);
+    border-radius: 0;
+  }
+
+  &__caution:hover {
+    background: var(--color-yellow-300);
   }
 }
 

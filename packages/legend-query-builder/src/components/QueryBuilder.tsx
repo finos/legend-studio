@@ -69,7 +69,6 @@ import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpre
 import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
-import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -250,18 +249,6 @@ export const QueryBuilder = observer(
     const applicationStore = queryBuilderState.applicationStore;
     const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
       queryBuilderState.textEditorState.openModal(mode);
-    const toggleAssistant = (): void =>
-      applicationStore.assistantService.toggleAssistant();
-    const queryDocEntry = applicationStore.documentationService.getDocEntry(
-      QUERY_BUILDER_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
-    );
-    const openQueryTutorial = (): void => {
-      if (queryDocEntry?.url) {
-        applicationStore.navigationService.navigator.visitAddress(
-          queryDocEntry.url,
-        );
-      }
-    };
     const toggleShowFunctionPanel = (): void => {
       queryBuilderState.setShowFunctionsExplorerPanel(
         !queryBuilderState.showFunctionsExplorerPanel,
@@ -373,206 +360,178 @@ export const QueryBuilder = observer(
                 )}
               </div>
               <div className="query-builder__sub-header__content__actions">
-                <div
-                  title="Query title"
-                  className="query-builder__sub-header__query__title"
-                >
-                  {queryBuilderState.titleOfQuery}
-                </div>
-                <div className="query-builder__sub-header__actions">
-                  <DropdownMenu
-                    className="query-builder__sub-header__custom-action"
-                    title="Show Advanced Menu..."
-                    content={
-                      <MenuContent>
+                <DropdownMenu
+                  className="query-builder__sub-header__custom-action"
+                  title="Show Advanced Menu..."
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        onClick={toggleShowFunctionPanel}
+                        disabled={!queryBuilderState.isQuerySupported}
+                      >
+                        <MenuContentItemIcon>
+                          {queryBuilderState.showFunctionsExplorerPanel ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Function(s)
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      {!queryBuilderState.isParameterSupportDisabled && (
                         <MenuContentItem
-                          onClick={toggleShowFunctionPanel}
-                          disabled={!queryBuilderState.isQuerySupported}
+                          onClick={toggleShowParameterPanel}
+                          disabled={
+                            !queryBuilderState.isQuerySupported ||
+                            queryBuilderState.parametersState.parameterStates
+                              .length > 0
+                          }
                         >
                           <MenuContentItemIcon>
-                            {queryBuilderState.showFunctionsExplorerPanel ? (
+                            {queryBuilderState.showParametersPanel ? (
                               <CheckIcon />
                             ) : null}
                           </MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Function(s)
+                            Show Parameter(s)
                           </MenuContentItemLabel>
                         </MenuContentItem>
-                        {!queryBuilderState.isParameterSupportDisabled && (
-                          <MenuContentItem
-                            onClick={toggleShowParameterPanel}
-                            disabled={
-                              !queryBuilderState.isQuerySupported ||
-                              queryBuilderState.parametersState.parameterStates
-                                .length > 0
-                            }
-                          >
-                            <MenuContentItemIcon>
-                              {queryBuilderState.showParametersPanel ? (
-                                <CheckIcon />
-                              ) : null}
-                            </MenuContentItemIcon>
-                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                              Show Parameter(s)
-                            </MenuContentItemLabel>
-                          </MenuContentItem>
-                        )}
-                        {
-                          <MenuContentItem
-                            onClick={toggleConstantPanel}
-                            disabled={
-                              !queryBuilderState.isQuerySupported ||
-                              queryBuilderState.constantState.constants.length >
-                                0
-                            }
-                          >
-                            <MenuContentItemIcon>
-                              {queryBuilderState.constantState
-                                .showConstantPanel ? (
-                                <CheckIcon />
-                              ) : null}
-                            </MenuContentItemIcon>
-                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                              Show Constant(s)
-                            </MenuContentItemLabel>
-                          </MenuContentItem>
+                      )}
+                      {
+                        <MenuContentItem
+                          onClick={toggleConstantPanel}
+                          disabled={
+                            !queryBuilderState.isQuerySupported ||
+                            queryBuilderState.constantState.constants.length > 0
+                          }
+                        >
+                          <MenuContentItemIcon>
+                            {queryBuilderState.constantState
+                              .showConstantPanel ? (
+                              <CheckIcon />
+                            ) : null}
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show Constant(s)
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      }
+                      <MenuContentItem
+                        onClick={toggleShowFilterPanel}
+                        disabled={
+                          !queryBuilderState.isQuerySupported ||
+                          Array.from(
+                            queryBuilderState.filterState.nodes.values(),
+                          ).length > 0
                         }
-                        <MenuContentItem
-                          onClick={toggleShowFilterPanel}
-                          disabled={
-                            !queryBuilderState.isQuerySupported ||
-                            Array.from(
-                              queryBuilderState.filterState.nodes.values(),
-                            ).length > 0
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            {queryBuilderState.filterState.showPanel ? (
-                              <CheckIcon />
-                            ) : null}
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Filter
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                        <MenuContentItem
-                          onClick={toggleShowOLAPGroupByPanel}
-                          disabled={
-                            !queryBuilderState.isQuerySupported ||
-                            !(
-                              queryBuilderState.fetchStructureState
-                                .implementation instanceof QueryBuilderTDSState
-                            ) ||
-                            queryBuilderState.fetchStructureState.implementation
-                              .windowState.windowColumns.length > 0
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            {isTDSState &&
-                            guaranteeType(
-                              queryBuilderState.fetchStructureState
-                                .implementation,
-                              QueryBuilderTDSState,
-                            ).showWindowFuncPanel ? (
-                              <CheckIcon />
-                            ) : null}
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Window Func(s)
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                        <MenuContentItem
-                          onClick={toggleShowPostFilterPanel}
-                          disabled={
-                            !queryBuilderState.isQuerySupported ||
-                            !(
-                              queryBuilderState.fetchStructureState
-                                .implementation instanceof QueryBuilderTDSState
-                            ) ||
-                            Array.from(
-                              queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
-                            ).length > 0
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            {queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState &&
-                            queryBuilderState.fetchStructureState.implementation
-                              .showPostFilterPanel ? (
-                              <CheckIcon />
-                            ) : null}
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Post-Filter
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                        <MenuContentItem onClick={openWatermark}>
-                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Watermark
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                        <MenuContentDivider />
-                        <MenuContentItem
-                          onClick={openCheckEntitlmentsEditor}
-                          disabled={
-                            queryBuilderState.isQuerySupported &&
+                      >
+                        <MenuContentItemIcon>
+                          {queryBuilderState.filterState.showPanel ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Filter
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem
+                        onClick={toggleShowOLAPGroupByPanel}
+                        disabled={
+                          !queryBuilderState.isQuerySupported ||
+                          !(
                             queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState &&
-                            queryBuilderState.fetchStructureState.implementation
-                              .projectionColumns.length === 0
-                          }
-                        >
-                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Check Entitlements
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                        <MenuContentItem onClick={editQueryInPure}>
-                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Edit Query in Pure
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                        <MenuContentItem onClick={showQueryProtocol}>
-                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Query Protocol
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                        <MenuContentDivider />
-                        {queryDocEntry && (
-                          <MenuContentItem onClick={openQueryTutorial}>
-                            <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                              Open Documentation
-                            </MenuContentItemLabel>
-                          </MenuContentItem>
-                        )}
-                        <MenuContentItem onClick={toggleAssistant}>
-                          <MenuContentItemIcon>
-                            {!applicationStore.assistantService.isHidden ? (
-                              <CheckIcon />
-                            ) : null}
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Virtual Assistant
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      </MenuContent>
-                    }
-                    menuProps={{
-                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                      transformOrigin: { vertical: 'top', horizontal: 'right' },
-                      elevation: 7,
-                    }}
-                  >
-                    <div className="query-builder__sub-header__custom-action__label">
-                      Advanced
-                    </div>
-                    <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
-                  </DropdownMenu>
-                </div>
+                              .implementation instanceof QueryBuilderTDSState
+                          ) ||
+                          queryBuilderState.fetchStructureState.implementation
+                            .windowState.windowColumns.length > 0
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          {isTDSState &&
+                          guaranteeType(
+                            queryBuilderState.fetchStructureState
+                              .implementation,
+                            QueryBuilderTDSState,
+                          ).showWindowFuncPanel ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Window Func(s)
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem
+                        onClick={toggleShowPostFilterPanel}
+                        disabled={
+                          !queryBuilderState.isQuerySupported ||
+                          !(
+                            queryBuilderState.fetchStructureState
+                              .implementation instanceof QueryBuilderTDSState
+                          ) ||
+                          Array.from(
+                            queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
+                          ).length > 0
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          {queryBuilderState.fetchStructureState
+                            .implementation instanceof QueryBuilderTDSState &&
+                          queryBuilderState.fetchStructureState.implementation
+                            .showPostFilterPanel ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Post-Filter
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem onClick={openWatermark}>
+                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Watermark
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentDivider />
+                      <MenuContentItem
+                        onClick={openCheckEntitlmentsEditor}
+                        disabled={
+                          queryBuilderState.isQuerySupported &&
+                          queryBuilderState.fetchStructureState
+                            .implementation instanceof QueryBuilderTDSState &&
+                          queryBuilderState.fetchStructureState.implementation
+                            .projectionColumns.length === 0
+                        }
+                      >
+                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Check Entitlements
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem onClick={editQueryInPure}>
+                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Edit Query in Pure
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem onClick={showQueryProtocol}>
+                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Query Protocol
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    elevation: 7,
+                  }}
+                >
+                  <div className="query-builder__sub-header__custom-action__label">
+                    Advanced
+                  </div>
+                  <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
+                </DropdownMenu>
               </div>
             </div>
             <div className="query-builder__main">

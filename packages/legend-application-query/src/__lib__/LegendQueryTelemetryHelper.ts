@@ -59,6 +59,21 @@ export class LegendQueryTelemetryHelper {
     );
   }
 
+  static logEvent_QueryViewProjectLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_PROJECT__LAUNCH, {});
+  }
+
+  static logEvent_QueryViewSdlcProjectLaunched(
+    telemetryService: TelemetryService,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_QUERY_APP_EVENT.VIEW_SDLC_PROJECT__LAUNCH,
+      {},
+    );
+  }
+
   static logEvent_GraphInitializationSucceeded(
     telemetryService: TelemetryService,
     data: GraphInitializationReport,
