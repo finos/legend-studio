@@ -21,7 +21,6 @@ import {
   HttpHeader,
   ContentType,
 } from '@finos/legend-shared';
-import { resolveProjectVersion } from './DepotVersionAliases.js';
 import type { DepotScope } from './models/DepotScope.js';
 import {
   type ProjectDependencyCoordinates,
@@ -32,6 +31,7 @@ import type { RawProjectDependencyReport } from './models/RawProjectDependencyRe
 import type { ProjectVersionPlatformDependency } from './models/ProjectVersionPlatformDependency.js';
 import type { VersionedProjectData } from './models/VersionedProjectData.js';
 import type { StoreProjectData } from './models/StoreProjectData.js';
+import { resolveVersion } from './DepotVersionAliases.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -95,19 +95,14 @@ export class DepotServerClient extends AbstractServerClient {
   ): Promise<PlainObject<Entity>[]> =>
     this.get(this._version(groupId, artifactId, version));
 
-  async getEntities(
+  getEntities(
     project: StoreProjectData,
     versionId: string,
   ): Promise<PlainObject<Entity>[]> {
-    const resolvedVersion = await resolveProjectVersion(
-      project,
-      versionId,
-      this,
-    );
     return this.getVersionEntities(
       project.groupId,
       project.artifactId,
-      resolvedVersion,
+      resolveVersion(versionId),
     );
   }
 
@@ -125,20 +120,15 @@ export class DepotServerClient extends AbstractServerClient {
       )}/entities/${encodeURIComponent(entityPath)}`,
     );
 
-  async getEntity(
+  getEntity(
     project: StoreProjectData,
     versionId: string,
     entityPath: string,
   ): Promise<PlainObject<Entity>> {
-    const resolvedVersion = await resolveProjectVersion(
-      project,
-      versionId,
-      this,
-    );
     return this.getVersionEntity(
       project.groupId,
       project.artifactId,
-      resolvedVersion,
+      resolveVersion(versionId),
       entityPath,
     );
   }
@@ -230,15 +220,10 @@ export class DepotServerClient extends AbstractServerClient {
     versionId: string,
   ): Promise<Map<string, EntitiesWithOrigin>> {
     const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
-    const resolvedVersion = await resolveProjectVersion(
-      project,
-      versionId,
-      this,
-    );
     const dependencies = await this.getDependencyEntities(
       project.groupId,
       project.artifactId,
-      resolvedVersion,
+      resolveVersion(versionId),
       true,
       false,
     );
@@ -312,22 +297,16 @@ export class DepotServerClient extends AbstractServerClient {
     project: StoreProjectData,
     versionId: string,
     filePath: string,
-  ): Promise<string> => {
-    const resolvedVersion = await resolveProjectVersion(
-      project,
-      versionId,
-      this,
-    );
-    return this.get(
+  ): Promise<string> =>
+    this.get(
       `${this._generationContentByGAV(
         project.groupId,
         project.artifactId,
-        resolvedVersion,
+        resolveVersion(versionId),
       )}/file/${encodeURIComponent(filePath)}`,
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
     );
-  };
 
   // ------------------------------------------- Versions -------------------------------------------
 

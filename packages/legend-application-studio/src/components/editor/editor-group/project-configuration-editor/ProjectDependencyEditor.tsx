@@ -765,7 +765,8 @@ const ProjectVersionDependencyEditor = observer(
     const versionSelectorRef = useRef<SelectComponent>(null);
     const configState = editorStore.projectConfigurationEditorState;
     const dependencyEditorState = configState.projectDependencyEditorState;
-    const [versions, setVersions] = useState<string[]>([]);
+    const versions: string[] =
+      configState.versions.get(projectDependency.projectId) ?? [];
     const [fetchSelectedProjectVersionsStatus] = useState(ActionState.create());
     // project
     const selectedProject = configState.projects.get(
@@ -791,7 +792,6 @@ const ProjectVersionDependencyEditor = observer(
       ) {
         projectDependency.setProjectId(val?.value.coordinates ?? '');
         projectDependency.setVersionId('');
-        setVersions([]);
         if (val) {
           try {
             fetchSelectedProjectVersionsStatus.inProgress();
@@ -802,7 +802,7 @@ const ProjectVersionDependencyEditor = observer(
                 true,
               ),
             )) as string[];
-            setVersions(v);
+            configState.versions.set(val.value.coordinates, v);
             if (v.length) {
               projectDependency.setVersionId(
                 guaranteeNonNullable(v[v.length - 1]),
@@ -824,14 +824,15 @@ const ProjectVersionDependencyEditor = observer(
     };
     // version
     const version = projectDependency.versionId;
-    let versionOptions = versions
+    const versionOptions = versions
       .slice()
       .sort((v1, v2) => compareSemVerVersions(v2, v1))
-      .map((v) => ({ value: v, label: v }));
-    versionOptions = [
-      { label: SNAPSHOT_VERSION_ALIAS, value: MASTER_SNAPSHOT_ALIAS },
-      ...versionOptions,
-    ];
+      .map((v) => {
+        if (v === MASTER_SNAPSHOT_ALIAS) {
+          return { value: v, label: SNAPSHOT_VERSION_ALIAS };
+        }
+        return { value: v, label: v };
+      });
     const selectedVersionOption: VersionOption | null =
       versionOptions.find((v) => v.value === version) ?? null;
     const versionDisabled =

@@ -15,11 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import {
-  isNonNullable,
-  type PlainObject,
-  prettyCONSTName,
-} from '@finos/legend-shared';
+import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
@@ -58,10 +54,7 @@ import {
   DocumentationLink,
   DocumentationPreview,
 } from '@finos/legend-lego/application';
-import type {
-  StoreProjectData,
-  VersionedProjectData,
-} from '@finos/legend-server-depot';
+import type { StoreProjectData } from '@finos/legend-server-depot';
 
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
@@ -410,36 +403,38 @@ export const ProjectConfigurationEditor = observer(() => {
       break;
   }
   const currentProjectConfiguration = configState.currentProjectConfiguration;
-  const addValue = (): void => {
-    if (!isReadOnly) {
-      if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
-        const currentProjects = Array.from(configState.projects.values());
-        if (currentProjects.length) {
-          const projectToAdd = currentProjects[0] as StoreProjectData;
-          const dependencyToAdd = new ProjectDependency(
-            projectToAdd.coordinates,
-          );
-          applicationStore.guardUnhandledError(async () => {
-            const versionedData = flowResult(
-              editorStore.depotServerClient.getLatestVersion(
+  const addValue = applicationStore.guardUnhandledError(
+    async (): Promise<void> => {
+      if (!isReadOnly) {
+        if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
+          const currentProjects = Array.from(configState.projects.values());
+          if (currentProjects.length) {
+            const projectToAdd = currentProjects[0] as StoreProjectData;
+            const dependencyToAdd = new ProjectDependency(
+              projectToAdd.coordinates,
+            );
+            const versions = (await flowResult(
+              editorStore.depotServerClient.getVersions(
                 projectToAdd.groupId,
                 projectToAdd.artifactId,
+                true,
               ),
-            ) as PlainObject<VersionedProjectData>;
-            dependencyToAdd.setVersionId(versionedData.versionId as string);
-          });
-          currentProjectConfiguration.addProjectDependency(dependencyToAdd);
-          flowResult(
-            configState.projectDependencyEditorState.fetchDependencyReport(),
-          ).catch(applicationStore.alertUnhandledError);
-        } else {
-          currentProjectConfiguration.addProjectDependency(
-            new ProjectDependency(''),
-          );
+            )) as string[];
+            configState.versions.set(dependencyToAdd.projectId, versions);
+            dependencyToAdd.setVersionId(versions[0] ?? '');
+            currentProjectConfiguration.addProjectDependency(dependencyToAdd);
+            flowResult(
+              configState.projectDependencyEditorState.fetchDependencyReport(),
+            ).catch(applicationStore.alertUnhandledError);
+          } else {
+            currentProjectConfiguration.addProjectDependency(
+              new ProjectDependency(''),
+            );
+          }
         }
       }
-    }
-  };
+    },
+  );
   const disableAddButton =
     selectedTab !== CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES || isReadOnly;
 
