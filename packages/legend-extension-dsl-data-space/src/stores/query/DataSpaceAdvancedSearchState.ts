@@ -47,6 +47,7 @@ import {
 } from '@finos/legend-application';
 import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
+import { generateServiceQueryCreatorRoute } from '@finos/legend-application-query';
 
 export class DataSpaceAdvancedSearchState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -210,6 +211,15 @@ export class DataSpaceAdvancedSearchState {
           onDiagramClassDoubleClick: (classView: ClassView): void => {
             this.proceedToCreateQuery(classView.class.value);
           },
+          openServiceQuery: (servicePath: string): void =>
+            this.applicationStore.navigationService.navigator.visitAddress(
+              generateServiceQueryCreatorRoute(
+                dataSpace.groupId,
+                dataSpace.artifactId,
+                dataSpace.versionId,
+                servicePath,
+              ),
+            ),
         },
       );
       this.loadDataSpaceState.pass();

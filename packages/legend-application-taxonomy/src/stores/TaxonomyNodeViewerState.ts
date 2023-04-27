@@ -49,7 +49,10 @@ import {
   createViewSDLCProjectHandler,
 } from './LegendTaxonomyDataSpaceViewerHelper.js';
 import { GraphDataWithOrigin, LegendSDLC } from '@finos/legend-graph';
-import { DataSpaceViewerState } from '@finos/legend-extension-dsl-data-space/application';
+import {
+  DataSpaceViewerState,
+  EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
+} from '@finos/legend-extension-dsl-data-space/application';
 
 interface TaxonomyNodeDataSpaceOption {
   label: string;
@@ -172,6 +175,16 @@ export class TaxonomyNodeViewerState {
           ),
           onDiagramClassDoubleClick: (classView: ClassView): void =>
             this.queryDataSpace(classView.class.value.path),
+          openServiceQuery: (servicePath: string): void =>
+            this.explorerStore.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
+                this.explorerStore.applicationStore.config.queryApplicationUrl,
+                dataSpaceTaxonomyContext.groupId,
+                dataSpaceTaxonomyContext.artifactId,
+                dataSpaceTaxonomyContext.versionId,
+                servicePath,
+              ),
+            ),
         },
       );
       this.dataSpaceViewerState = dataSpaceViewerState;

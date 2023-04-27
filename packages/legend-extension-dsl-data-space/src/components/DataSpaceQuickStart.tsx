@@ -38,6 +38,7 @@ import {
   DataSpaceExecutableTDSResult,
   type DataSpaceExecutableAnalysisResult,
   type DataSpaceExecutableTDSResultColumn,
+  DataSpaceServiceExecutableInfo,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
@@ -106,6 +107,21 @@ const DataSpaceExecutableTDSResultView = observer(
     );
     const queryText = executableAnalysisResult.info?.query;
 
+    const openServiceQuery = (): void => {
+      if (
+        executableAnalysisResult.info instanceof DataSpaceServiceExecutableInfo
+      ) {
+        if (dataSpaceViewerState.openServiceQuery) {
+          dataSpaceViewerState.openServiceQuery(
+            executableAnalysisResult.executable,
+          );
+        } else {
+          applicationStore.notificationService.notifyUnsupportedFeature(
+            `Can't open service query`,
+          );
+        }
+      }
+    };
     const columnSpecifications = tdsResult.columns;
     const extractTDSExecutableActionConfigurations =
       applicationStore.pluginManager
@@ -303,9 +319,7 @@ const DataSpaceExecutableTDSResultView = observer(
                 <button
                   className="data-space__viewer__quickstart__tds__query__action btn--dark"
                   tabIndex={-1}
-                  onClick={() => {
-                    // TODO: wire this so we can go to the query for the service
-                  }}
+                  onClick={openServiceQuery}
                 >
                   Open in Query
                 </button>

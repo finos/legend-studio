@@ -49,7 +49,10 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../LegendTaxonomyDataSpaceViewerHelper.js';
-import { DataSpaceViewerState } from '@finos/legend-extension-dsl-data-space/application';
+import {
+  DataSpaceViewerState,
+  EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
+} from '@finos/legend-extension-dsl-data-space/application';
 
 export class DataSpacePreviewStore {
   readonly applicationStore: LegendTaxonomyApplicationStore;
@@ -159,6 +162,16 @@ export class DataSpacePreviewStore {
               );
             }
           },
+          openServiceQuery: (servicePath: string): void =>
+            this.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
+                this.applicationStore.config.queryApplicationUrl,
+                groupId,
+                artifactId,
+                versionId,
+                servicePath,
+              ),
+            ),
         },
         {
           TEMPORARY__enableExperimentalFeatures:

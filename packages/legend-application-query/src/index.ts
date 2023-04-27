@@ -21,7 +21,10 @@ export * from './application/LegendQueryPluginManager.js';
 
 export * from './__lib__/LegendQueryEvent.js';
 export * from './__lib__/LegendQueryEventHelper.js';
-export { generateExistingQueryEditorRoute } from './__lib__/LegendQueryNavigation.js';
+export {
+  generateExistingQueryEditorRoute,
+  generateServiceQueryCreatorRoute,
+} from './__lib__/LegendQueryNavigation.js';
 
 export {
   useLegendQueryApplicationStore,

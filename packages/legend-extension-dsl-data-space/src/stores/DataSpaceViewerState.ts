@@ -357,6 +357,7 @@ export class DataSpaceViewerState {
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
+  readonly openServiceQuery?: ((servicePath: string) => void) | undefined;
 
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
 
@@ -394,6 +395,7 @@ export class DataSpaceViewerState {
       ) => Promise<void>;
       onDiagramClassDoubleClick: (classView: ClassView) => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
+      openServiceQuery?: ((servicePath: string) => void) | undefined;
     },
     options?: {
       TEMPORARY__enableExperimentalFeatures?: boolean | undefined;
@@ -433,6 +435,7 @@ export class DataSpaceViewerState {
     this.viewSDLCProject = actions.viewSDLCProject;
     this.onDiagramClassDoubleClick = actions.onDiagramClassDoubleClick;
     this.onZoneChange = actions.onZoneChange;
+    this.openServiceQuery = actions.openServiceQuery;
 
     this.dataAccessState = new DataSpaceViewerDataAccessState(this);
     this.modelsDocumentationState = new DataSpaceViewerModelsDocumentationState(

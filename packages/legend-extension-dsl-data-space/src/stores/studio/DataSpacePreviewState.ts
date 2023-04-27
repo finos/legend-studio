@@ -32,6 +32,7 @@ import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analyti
 import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { InMemoryGraphData } from '@finos/legend-graph';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from '../../__lib__/DSL_DataSpace_LegendApplicationNavigation.js';
 
 export class DataSpacePreviewState extends EditorExtensionState {
   readonly editorStore: EditorStore;
@@ -109,6 +110,8 @@ export class DataSpacePreviewState extends EditorExtensionState {
         this.loadDataSpaceState,
       )) as DataSpaceAnalysisResult;
 
+      const queryApplicationUrl =
+        this.editorStore.applicationStore.config.queryApplicationUrl;
       this.dataSpaceViewerState = new DataSpaceViewerState(
         this.editorStore.applicationStore,
         this.editorStore.graphManagerState,
@@ -134,6 +137,18 @@ export class DataSpacePreviewState extends EditorExtensionState {
               this.editorStore.applicationStore.alertUnhandledError,
             );
           },
+          openServiceQuery: queryApplicationUrl
+            ? (servicePath: string): void =>
+                this.editorStore.applicationStore.navigationService.navigator.visitAddress(
+                  EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
+                    queryApplicationUrl,
+                    groupId,
+                    artifactId,
+                    versionId,
+                    servicePath,
+                  ),
+                )
+            : undefined,
         },
       );
       this.loadDataSpaceState.pass();

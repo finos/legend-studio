@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-export * from '../__lib__/DSL_DataSpace_LegendApplicationNavigation.js';
-export { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApplicationPlugin.js';
-export { DataSpaceViewer } from './DataSpaceViewer.js';
-export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
-export { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import { generateGAVCoordinates } from '@finos/legend-storage';
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl = (
+  queryApplicationUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  servicePath: string,
+): string =>
+  `${queryApplicationUrl}/create-from-service/${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    versionId,
+  )}/${servicePath}`;
