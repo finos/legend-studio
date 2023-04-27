@@ -16,12 +16,23 @@
 
 import {
   AnchorLinkIcon,
+  CaretDownIcon,
+  CenterFocusIcon,
   CircleIcon,
   ContextMenu,
+  CustomSelectorInput,
+  DescriptionIcon,
+  DropdownMenu,
   MenuContent,
+  MenuContentDivider,
   MenuContentItem,
+  MousePointerIcon,
+  MoveIcon,
+  ShapesIcon,
   ThinChevronLeftIcon,
   ThinChevronRightIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
   clsx,
   useResizeDetector,
 } from '@finos/legend-art';
@@ -34,8 +45,15 @@ import {
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useRef } from 'react';
 import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
-import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram/application';
+import {
+  DIAGRAM_INTERACTION_MODE,
+  DIAGRAM_RELATIONSHIP_EDIT_MODE,
+  DIAGRAM_ZOOM_LEVELS,
+  DiagramRenderer,
+} from '@finos/legend-extension-dsl-diagram/application';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
+import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/index.js';
+import { getNonNullableEnry } from '@finos/legend-shared';
 
 const DataSpaceDiagramCanvas = observer(
   forwardRef<
@@ -137,6 +155,273 @@ const DataSpaceDiagramCanvas = observer(
   }),
 );
 
+type DiagramOption = {
+  label: React.ReactNode;
+  value: DataSpaceDiagramAnalysisResult;
+};
+const buildDiagramOption = (
+  diagram: DataSpaceDiagramAnalysisResult,
+): DiagramOption => ({
+  label: (
+    <div className="data-space__viewer__diagram-viewer__header__navigation__selector__label">
+      <ShapesIcon className="data-space__viewer__diagram-viewer__header__navigation__selector__icon" />
+      <div className="data-space__viewer__diagram-viewer__header__navigation__selector__title">
+        {diagram.title ? diagram.title : 'Untitled'}
+      </div>
+    </div>
+  ),
+  value: diagram,
+});
+
+const DataSpaceDiagramViewerHeader = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+    const diagramViewerState = dataSpaceViewerState.diagramViewerState;
+    // const currentDiagramIndex = diagramViewerState.currentDiagram
+    //   ? dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.findIndex(
+    //       diagramViewerState.currentDiagram,
+    //     ) + 1
+    //   : 0;
+    const diagramOptions =
+      dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.map(
+        buildDiagramOption,
+      );
+    const selectedDiagramOption = diagramViewerState.currentDiagram
+      ? buildDiagramOption(diagramViewerState.currentDiagram)
+      : null;
+    const onDiagramOptionChange = (option: DiagramOption): void => {
+      if (option.value !== diagramViewerState.currentDiagram) {
+        diagramViewerState.setCurrentDiagram(option.value);
+      }
+    };
+    const createModeSwitcher =
+      (
+        editMode: DIAGRAM_INTERACTION_MODE,
+        relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE,
+      ): (() => void) =>
+      (): void =>
+        diagramViewerState.diagramRenderer.changeMode(
+          editMode,
+          relationshipMode,
+        );
+    const createCenterZoomer =
+      (zoomLevel: number): (() => void) =>
+      (): void => {
+        diagramViewerState.diagramRenderer.zoomCenter(zoomLevel / 100);
+      };
+    const zoomToFit = (): void =>
+      diagramViewerState.diagramRenderer.zoomToFit();
+
+    return (
+      <div className="data-space__viewer__diagram-viewer__header">
+        <div className="data-space__viewer__diagram-viewer__header__navigation">
+          <CustomSelectorInput
+            className="data-space__viewer__diagram-viewer__header__navigation__selector"
+            options={diagramOptions}
+            onChange={onDiagramOptionChange}
+            value={selectedDiagramOption}
+            placeholder="Search for a diagram"
+            darkMode={true}
+          />
+          <div className="data-space__viewer__diagram-viewer__header__navigation__pager">
+            <input
+              className="data-space__viewer__diagram-viewer__header__navigation__pager__input input--dark"
+              value={diagramViewerState.currentDiagramIndex}
+              type="number"
+              onChange={(event) => {
+                const value = parseInt(event.target.value, 10);
+                if (
+                  isNaN(value) ||
+                  value < 1 ||
+                  value >
+                    dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.length
+                ) {
+                  return;
+                }
+                diagramViewerState.setCurrentDiagram(
+                  getNonNullableEnry(
+                    dataSpaceViewerState.dataSpaceAnalysisResult.diagrams,
+                    value - 1,
+                  ),
+                );
+              }}
+            />
+          </div>
+          <div className="data-space__viewer__diagram-viewer__header__navigation__pager__count">
+            /{dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.length}
+          </div>
+        </div>
+        <div className="data-space__viewer__diagram-viewer__header__actions">
+          {diagramViewerState.isDiagramRendererInitialized && (
+            <>
+              <div className="data-space__viewer__diagram-viewer__header__group">
+                <button
+                  className="data-space__viewer__diagram-viewer__header__tool"
+                  tabIndex={-1}
+                  onClick={(): void => {
+                    if (diagramViewerState.currentDiagram) {
+                      dataSpaceViewerState.syncZoneWithNavigation(
+                        generateAnchorForDiagram(
+                          diagramViewerState.currentDiagram,
+                        ),
+                      );
+                    }
+                  }}
+                  title="Copy Link"
+                >
+                  <AnchorLinkIcon />
+                </button>
+                <button
+                  className="data-space__viewer__diagram-viewer__header__tool"
+                  tabIndex={-1}
+                  onClick={(): void => {
+                    if (diagramViewerState.diagramRenderer) {
+                      diagramViewerState.diagramRenderer.recenter();
+                    }
+                  }}
+                  title="Recenter"
+                >
+                  <CenterFocusIcon className="data-space__viewer__diagram-viewer__icon--recenter" />
+                </button>
+                <button
+                  className={clsx(
+                    'data-space__viewer__diagram-viewer__header__tool',
+                    {
+                      'data-space__viewer__diagram-viewer__header__tool--active':
+                        diagramViewerState.showDescription,
+                    },
+                  )}
+                  tabIndex={-1}
+                  onClick={() =>
+                    diagramViewerState.setShowDescription(
+                      !diagramViewerState.showDescription,
+                    )
+                  }
+                  title="Toggle View Description"
+                >
+                  <DescriptionIcon className="data-space__viewer__diagram-viewer__icon--description" />
+                </button>
+              </div>
+              <div className="data-space__viewer__diagram-viewer__header__group__separator" />
+              <div className="data-space__viewer__diagram-viewer__header__group">
+                <button
+                  className={clsx(
+                    'data-space__viewer__diagram-viewer__header__tool',
+                    {
+                      'data-space__viewer__diagram-viewer__header__tool--active':
+                        diagramViewerState.diagramRenderer.interactionMode ===
+                        DIAGRAM_INTERACTION_MODE.LAYOUT,
+                    },
+                  )}
+                  tabIndex={-1}
+                  onClick={createModeSwitcher(
+                    DIAGRAM_INTERACTION_MODE.LAYOUT,
+                    DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+                  )}
+                  title="View Tool"
+                >
+                  <MousePointerIcon className="data-space__viewer__diagram-viewer__icon--layout" />
+                </button>
+                <button
+                  className={clsx(
+                    'data-space__viewer__diagram-viewer__header__tool',
+                    {
+                      'data-space__viewer__diagram-viewer__header__tool--active':
+                        diagramViewerState.diagramRenderer.interactionMode ===
+                        DIAGRAM_INTERACTION_MODE.PAN,
+                    },
+                  )}
+                  tabIndex={-1}
+                  onClick={createModeSwitcher(
+                    DIAGRAM_INTERACTION_MODE.PAN,
+                    DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+                  )}
+                  title="Pan Tool"
+                >
+                  <MoveIcon className="data-space__viewer__diagram-viewer__icon--pan" />
+                </button>
+                <button
+                  className={clsx(
+                    'data-space__viewer__diagram-viewer__header__tool',
+                    {
+                      'data-space__viewer__diagram-viewer__header__tool--active':
+                        diagramViewerState.diagramRenderer.interactionMode ===
+                        DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+                    },
+                  )}
+                  tabIndex={-1}
+                  title="Zoom In"
+                  onClick={createModeSwitcher(
+                    DIAGRAM_INTERACTION_MODE.ZOOM_IN,
+                    DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+                  )}
+                >
+                  <ZoomInIcon className="data-space__viewer__diagram-viewer__icon--zoom-in" />
+                </button>
+                <button
+                  className={clsx(
+                    'data-space__viewer__diagram-viewer__header__tool',
+                    {
+                      'data-space__viewer__diagram-viewer__header__tool--active':
+                        diagramViewerState.diagramRenderer.interactionMode ===
+                        DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+                    },
+                  )}
+                  tabIndex={-1}
+                  title="Zoom Out"
+                  onClick={createModeSwitcher(
+                    DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+                    DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+                  )}
+                >
+                  <ZoomOutIcon className="data-space__viewer__diagram-viewer__icon--zoom-out" />
+                </button>
+              </div>
+              <div className="data-space__viewer__diagram-viewer__header__group__separator" />
+              <DropdownMenu
+                className="data-space__viewer__diagram-viewer__header__group data-space__viewer__diagram-viewer__header__dropdown"
+                title="Zoom..."
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="data-space__viewer__diagram-viewer__header__zoomer__dropdown__menu__item"
+                      onClick={zoomToFit}
+                    >
+                      Fit
+                    </MenuContentItem>
+                    <MenuContentDivider />
+                    {DIAGRAM_ZOOM_LEVELS.map((zoomLevel) => (
+                      <MenuContentItem
+                        key={zoomLevel}
+                        className="data-space__viewer__diagram-viewer__header__zoomer__dropdown__menu__item"
+                        onClick={createCenterZoomer(zoomLevel)}
+                      >
+                        {zoomLevel}%
+                      </MenuContentItem>
+                    ))}
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  elevation: 7,
+                }}
+              >
+                <div className="data-space__viewer__diagram-viewer__header__dropdown__label data-space__viewer__diagram-viewer__header__zoomer__dropdown__label">
+                  {Math.round(diagramViewerState.diagramRenderer.zoom * 100)}%
+                </div>
+                <div className="data-space__viewer__diagram-viewer__header__dropdown__trigger data-space__viewer__diagram-viewer__header__zoomer__dropdown__trigger">
+                  <CaretDownIcon />
+                </div>
+              </DropdownMenu>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
 export const DataSpaceDiagramViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
@@ -195,6 +480,9 @@ export const DataSpaceDiagramViewer = observer(
         <div className="data-space__viewer__wiki__section__content">
           {analysisResult.diagrams.length > 0 && (
             <div className="data-space__viewer__diagram-viewer">
+              <DataSpaceDiagramViewerHeader
+                dataSpaceViewerState={dataSpaceViewerState}
+              />
               <div className="data-space__viewer__diagram-viewer__carousel">
                 <div className="data-space__viewer__diagram-viewer__carousel__frame">
                   <div className="data-space__viewer__diagram-viewer__carousel__frame__display">

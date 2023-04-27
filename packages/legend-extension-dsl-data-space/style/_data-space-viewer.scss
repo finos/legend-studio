@@ -483,6 +483,204 @@
 .data-space__viewer__diagram-viewer {
   height: 70rem;
 
+  &__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    height: 3.8rem;
+    width: 100%;
+  }
+
+  &__header__navigation {
+    @include flexVCenter;
+  }
+
+  &__header__navigation__selector {
+    width: 25rem;
+
+    &__icon {
+      font-size: 1.2rem;
+    }
+
+    &__label {
+      @include flexVCenter;
+    }
+
+    &__title {
+      margin-left: 1rem;
+    }
+  }
+
+  &__header__navigation__pager {
+    @include flexVCenter;
+
+    height: 2.8rem;
+    margin-left: 0.5rem;
+    padding-left: 0.5rem;
+    border-left: 0.1rem solid var(--color-dark-grey-280);
+
+    &__input {
+      height: 2.8rem;
+      width: 2.8rem;
+    }
+
+    &__count {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      font-family: 'Roboto Mono', monospace;
+      margin-left: 0.5rem;
+      user-select: none;
+    }
+  }
+
+  &__header__actions {
+    @include flexVCenter;
+  }
+
+  &__header__group {
+    @include flexVCenter;
+
+    height: 100%;
+    padding: 0 0.5rem;
+
+    &__separator {
+      height: 2.4rem;
+      border: 0.05rem solid var(--color-dark-grey-280);
+    }
+
+    &__action {
+      width: 2rem;
+    }
+  }
+
+  &__header__dropdown {
+    @include flexVCenter;
+
+    margin-left: 0.3rem;
+    height: 2.8rem;
+    border: 0.1rem solid var(--color-dark-grey-300);
+
+    &__label {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      color: var(--color-dark-grey-500);
+      font-weight: 500;
+      font-size: 1.2rem;
+    }
+
+    &__trigger {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      cursor: pointer;
+
+      svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+  }
+
+  &__header__tool {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    height: 2.8rem;
+    width: 2.8rem;
+    border-radius: 0.2rem;
+
+    &--active {
+      border-radius: 0.2rem;
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-blue-200);
+    }
+
+    & + & {
+      margin-left: 0.3rem;
+    }
+
+    &:hover {
+      svg {
+        color: var(--color-light-grey-100);
+      }
+    }
+
+    &:hover[disabled],
+    &[disabled] {
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    svg {
+      color: var(--color-light-grey-300);
+    }
+  }
+
+  &__header__zoomer__dropdown {
+    &__label {
+      width: 5rem;
+    }
+
+    &__trigger {
+      width: 2rem;
+    }
+
+    &__menu__item {
+      @include flexCenter;
+
+      width: 7rem;
+    }
+  }
+
+  &__icon {
+    &--recenter,
+    &--description,
+    &--layout,
+    &--pan,
+    &--zoom-in,
+    &--zoom-out {
+      font-size: 1.8rem;
+    }
+  }
+
+  &__cursor {
+    &--crosshair {
+      cursor: crosshair;
+    }
+
+    &--pointer {
+      cursor: pointer;
+    }
+
+    &--resize {
+      cursor: nwse-resize;
+    }
+
+    &--zoom-in {
+      cursor: zoom-in;
+    }
+
+    &--zoom-out {
+      cursor: zoom-out;
+    }
+
+    &--grab {
+      cursor: grab;
+    }
+
+    &--grabbing {
+      cursor: grabbing;
+    }
+
+    &--not-allowed {
+      cursor: not-allowed;
+    }
+  }
+
   &__canvas {
     height: 100%;
     width: 100%;
@@ -493,7 +691,7 @@
   &__carousel {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: calc(100% - 3.8rem);
     width: 100%;
 
     .diagram-canvas {

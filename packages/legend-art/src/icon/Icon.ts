@@ -42,6 +42,7 @@ export const TimesCircleIcon = FA.FaTimesCircle;
 export const PlusIcon = FA.FaPlus;
 export const CogIcon = FA.FaCog;
 export const EyeIcon = FA.FaEye;
+export const CloseEyeIcon = FA.FaEyeSlash;
 export const CaretUpIcon = FA.FaCaretUp;
 export const CaretDownIcon = FA.FaCaretDown;
 export const FireIcon = FA.FaFire;
@@ -189,6 +190,8 @@ export const LaunchIcon = MD.MdRocketLaunch;
 export const DatasetIcon = MD.MdOutlineDataset;
 export const VerifiedIcon = MD.MdVerified;
 export const QueryIcon = MD.MdQueryStats;
+export const CenterFocusIcon = MD.MdFilterCenterFocus;
+export const DescriptionIcon = MD.MdOutlineDescription;
 
 const VSC = ReactIcons.VSC;
 export const ErrorIcon = VSC.VscError;

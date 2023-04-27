@@ -2876,6 +2876,67 @@ export class DiagramRenderer {
   mouseup(e: MouseEvent): void {
     const mouseEventCoordinate = this.resolveMouseEventCoordinate(e);
 
+    switch (this.interactionMode) {
+      case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
+        // Rounding up the current zoom level to make sure floating point precision
+        // does not come into play when comparing with recommended zoom levels:
+        // e.g. in Javascript, 110 === 110.000000000000001
+        const currentZoomLevel = Math.round(this.zoom * 100);
+        let nextZoomLevel: number;
+        // NOTE: below the smallest recommended zoom level, we will start decrement by 10
+        // and increment by 100 beyond the largest recommended zoom level.
+        if (currentZoomLevel <= (DIAGRAM_ZOOM_LEVELS[0] as number) - 10) {
+          nextZoomLevel = Math.floor(currentZoomLevel / 10) * 10 + 10;
+        } else if (
+          currentZoomLevel >=
+          (DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] as number)
+        ) {
+          nextZoomLevel = Math.floor(currentZoomLevel / 100) * 100 + 100;
+        } else {
+          nextZoomLevel = guaranteeNonNullable(
+            DIAGRAM_ZOOM_LEVELS.find(
+              (zoomLevel) => zoomLevel > currentZoomLevel,
+            ),
+          );
+        }
+        this.zoomPoint(
+          nextZoomLevel / 100,
+          this.canvasCoordinateToModelCoordinate(
+            this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
+          ),
+        );
+        break;
+      }
+      case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
+        const currentZoomLevel = Math.round(this.zoom * 100);
+        let nextZoomLevel: number;
+        if (currentZoomLevel <= (DIAGRAM_ZOOM_LEVELS[0] as number)) {
+          nextZoomLevel = Math.ceil(currentZoomLevel / 10) * 10 - 10;
+        } else if (
+          currentZoomLevel >=
+          (DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] as number) + 100
+        ) {
+          nextZoomLevel = Math.ceil(currentZoomLevel / 100) * 100 - 100;
+        } else {
+          nextZoomLevel = guaranteeNonNullable(
+            findLast(
+              DIAGRAM_ZOOM_LEVELS,
+              (zoomLevel) => zoomLevel < currentZoomLevel,
+            ),
+          );
+        }
+        this.zoomPoint(
+          nextZoomLevel / 100,
+          this.canvasCoordinateToModelCoordinate(
+            this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
+          ),
+        );
+        break;
+      }
+      default:
+        break;
+    }
+
     if (!this.isReadOnly) {
       switch (this.interactionMode) {
         case DIAGRAM_INTERACTION_MODE.LAYOUT: {
@@ -2899,63 +2960,6 @@ export class DiagramRenderer {
           this.changeMode(
             DIAGRAM_INTERACTION_MODE.LAYOUT,
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-          );
-          break;
-        }
-        case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
-          // Rounding up the current zoom level to make sure floating point precision
-          // does not come into play when comparing with recommended zoom levels:
-          // e.g. in Javascript, 110 === 110.000000000000001
-          const currentZoomLevel = Math.round(this.zoom * 100);
-          let nextZoomLevel: number;
-          // NOTE: below the smallest recommended zoom level, we will start decrement by 10
-          // and increment by 100 beyond the largest recommended zoom level.
-          if (currentZoomLevel <= (DIAGRAM_ZOOM_LEVELS[0] as number) - 10) {
-            nextZoomLevel = Math.floor(currentZoomLevel / 10) * 10 + 10;
-          } else if (
-            currentZoomLevel >=
-            (DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] as number)
-          ) {
-            nextZoomLevel = Math.floor(currentZoomLevel / 100) * 100 + 100;
-          } else {
-            nextZoomLevel = guaranteeNonNullable(
-              DIAGRAM_ZOOM_LEVELS.find(
-                (zoomLevel) => zoomLevel > currentZoomLevel,
-              ),
-            );
-          }
-          this.zoomPoint(
-            nextZoomLevel / 100,
-            this.canvasCoordinateToModelCoordinate(
-              this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
-            ),
-          );
-          break;
-        }
-        case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
-          const currentZoomLevel = Math.round(this.zoom * 100);
-          let nextZoomLevel: number;
-          if (currentZoomLevel <= (DIAGRAM_ZOOM_LEVELS[0] as number)) {
-            nextZoomLevel = Math.ceil(currentZoomLevel / 10) * 10 - 10;
-          } else if (
-            currentZoomLevel >=
-            (DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] as number) +
-              100
-          ) {
-            nextZoomLevel = Math.ceil(currentZoomLevel / 100) * 100 - 100;
-          } else {
-            nextZoomLevel = guaranteeNonNullable(
-              findLast(
-                DIAGRAM_ZOOM_LEVELS,
-                (zoomLevel) => zoomLevel < currentZoomLevel,
-              ),
-            );
-          }
-          this.zoomPoint(
-            nextZoomLevel / 100,
-            this.canvasCoordinateToModelCoordinate(
-              this.eventCoordinateToCanvasCoordinate(mouseEventCoordinate),
-            ),
           );
           break;
         }

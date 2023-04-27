@@ -33,18 +33,22 @@ export class DataSpaceViewerDiagramViewerState {
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
   contextMenuClassView?: ClassView | undefined;
+  showDescription = true;
 
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
     makeObservable(this, {
       _renderer: observable,
       currentDiagram: observable,
       contextMenuClassView: observable,
+      showDescription: observable,
       previousDiagram: computed,
       nextDiagram: computed,
+      currentDiagramIndex: computed,
       diagramRenderer: computed,
       setDiagramRenderer: action,
       setCurrentDiagram: action,
       setContextMenuClassView: action,
+      setShowDescription: action,
     });
 
     this.dataSpaceViewerState = dataSpaceViewerState;
@@ -72,13 +76,21 @@ export class DataSpaceViewerDiagramViewerState {
     if (!this.isDiagramRendererInitialized) {
       return '';
     }
-    if (this.diagramRenderer.middleClick || this.diagramRenderer.rightClick) {
-      return 'diagram-editor__cursor--grabbing';
-    }
     switch (this.diagramRenderer.interactionMode) {
+      case DIAGRAM_INTERACTION_MODE.PAN: {
+        return this.diagramRenderer.leftClick
+          ? 'data-space__viewer__diagram-viewer__cursor--grabbing'
+          : 'data-space__viewer__diagram-viewer__cursor--grab';
+      }
+      case DIAGRAM_INTERACTION_MODE.ZOOM_IN: {
+        return 'data-space__viewer__diagram-viewer__cursor--zoom-in';
+      }
+      case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
+        return 'data-space__viewer__diagram-viewer__cursor--zoom-out';
+      }
       case DIAGRAM_INTERACTION_MODE.LAYOUT: {
         if (this.diagramRenderer.mouseOverClassView) {
-          return 'diagram-editor__cursor--pointer';
+          return 'data-space__viewer__diagram-viewer__cursor--pointer';
         }
         return '';
       }
@@ -119,6 +131,14 @@ export class DataSpaceViewerDiagramViewerState {
     return this.dataSpaceViewerState.dataSpaceAnalysisResult.diagrams[idx + 1];
   }
 
+  get currentDiagramIndex(): number {
+    return this.currentDiagram
+      ? this.dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.indexOf(
+          this.currentDiagram,
+        ) + 1
+      : 0;
+  }
+
   setDiagramRenderer(val: DiagramRenderer): void {
     this._renderer = val;
   }
@@ -142,5 +162,9 @@ export class DataSpaceViewerDiagramViewerState {
     ): void => {
       this.setContextMenuClassView(classView);
     };
+  }
+
+  setShowDescription(val: boolean): void {
+    this.showDescription = val;
   }
 }
