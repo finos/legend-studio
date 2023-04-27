@@ -19,14 +19,6 @@ import {
   type GenericLegendApplicationStore,
   type NavigationZone,
 } from '@finos/legend-application';
-import {
-  type Point,
-  type ClassView,
-} from '@finos/legend-extension-dsl-diagram/graph';
-import {
-  type DiagramRenderer,
-  DIAGRAM_INTERACTION_MODE,
-} from '@finos/legend-extension-dsl-diagram/application';
 import type {
   BasicGraphManagerState,
   Class,
@@ -53,6 +45,7 @@ import {
 } from '../graph-manager/DSL_DataSpace_PureGraphManagerPlugin.js';
 import { DataSpaceViewerDataAccessState } from './DataSpaceViewerDataAccessState.js';
 import { DataSpaceViewerModelsDocumentationState } from './DataSpaceModelsDocumentationState.js';
+import { DataSpaceViewerDiagramViewerState } from './DataSpaceViewerDiagramViewerState.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'description',
@@ -327,7 +320,9 @@ class DataSpaceLayoutState {
             (diagram) => generateAnchorForDiagram(diagram) === anchor,
           );
         if (matchingDiagram) {
-          this.dataSpaceViewerState.setCurrentDiagram(matchingDiagram);
+          this.dataSpaceViewerState.diagramViewerState.setCurrentDiagram(
+            matchingDiagram,
+          );
         }
       }
 
@@ -363,20 +358,16 @@ export class DataSpaceViewerState {
   readonly queryClass: (_class: Class) => void;
   readonly openServiceQuery: (servicePath: string) => void;
 
+  readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
 
   // TODO: change this so it holds the data access state for each execution context
   readonly dataAccessState: DataSpaceViewerDataAccessState;
   // TODO: have a state similar to dataAccessState for each executables
 
-  _renderer?: DiagramRenderer | undefined;
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
-
-  // diagram
-  currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
-  contextMenuClassView?: ClassView | undefined;
 
   TEMPORARY__enableExperimentalFeatures = false;
 
@@ -409,20 +400,13 @@ export class DataSpaceViewerState {
     },
   ) {
     makeObservable(this, {
-      _renderer: observable,
-      currentDiagram: observable,
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
-      contextMenuClassView: observable,
       isVerified: computed,
-      diagramRenderer: computed,
-      setDiagramRenderer: action,
-      setCurrentDiagram: action,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
-      setContextMenuClassView: action,
     });
 
     this.applicationStore = applicationStore;
@@ -436,9 +420,6 @@ export class DataSpaceViewerState {
     this.currentExecutionContext =
       dataSpaceAnalysisResult.defaultExecutionContext;
     this.currentRuntime = this.currentExecutionContext.defaultRuntime;
-    this.currentDiagram = getNullableFirstEntry(
-      this.dataSpaceAnalysisResult.diagrams,
-    );
     this.retriveGraphData = actions.retriveGraphData;
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
@@ -450,44 +431,11 @@ export class DataSpaceViewerState {
     this.modelsDocumentationState = new DataSpaceViewerModelsDocumentationState(
       this,
     );
+    this.diagramViewerState = new DataSpaceViewerDiagramViewerState(this);
 
     this.TEMPORARY__enableExperimentalFeatures = Boolean(
       options?.TEMPORARY__enableExperimentalFeatures,
     );
-  }
-
-  get diagramRenderer(): DiagramRenderer {
-    return guaranteeNonNullable(
-      this._renderer,
-      `Diagram renderer must be initialized (this is likely caused by calling this method at the wrong place)`,
-    );
-  }
-
-  get isDiagramRendererInitialized(): boolean {
-    return Boolean(this._renderer);
-  }
-
-  // NOTE: we have tried to use React to control the cursor and
-  // could not overcome the jank/lag problem, so we settle with CSS-based approach
-  // See https://css-tricks.com/using-css-cursors/
-  // See https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
-  get diagramCursorClass(): string {
-    if (!this.isDiagramRendererInitialized) {
-      return '';
-    }
-    if (this.diagramRenderer.middleClick || this.diagramRenderer.rightClick) {
-      return 'diagram-editor__cursor--grabbing';
-    }
-    switch (this.diagramRenderer.interactionMode) {
-      case DIAGRAM_INTERACTION_MODE.LAYOUT: {
-        if (this.diagramRenderer.mouseOverClassView) {
-          return 'diagram-editor__cursor--pointer';
-        }
-        return '';
-      }
-      default:
-        return '';
-    }
   }
 
   get isVerified(): boolean {
@@ -498,14 +446,6 @@ export class DataSpaceViewerState {
           stereotype.value === PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
       ),
     );
-  }
-
-  setDiagramRenderer(val: DiagramRenderer): void {
-    this._renderer = val;
-  }
-
-  setCurrentDiagram(val: DataSpaceDiagramAnalysisResult): void {
-    this.currentDiagram = val;
   }
 
   setCurrentActivity(val: DATA_SPACE_VIEWER_ACTIVITY_MODE): void {
@@ -521,24 +461,6 @@ export class DataSpaceViewerState {
 
   setCurrentRuntime(val: PackageableRuntime): void {
     this.currentRuntime = val;
-  }
-
-  setupDiagramRenderer(): void {
-    this.diagramRenderer.setIsReadOnly(true);
-    this.diagramRenderer.setEnableLayoutAutoAdjustment(true);
-    this.diagramRenderer.onClassViewDoubleClick = (
-      classView: ClassView,
-    ): void => this.queryClass(classView.class.value);
-    this.diagramRenderer.onClassViewRightClick = (
-      classView: ClassView,
-      point: Point,
-    ): void => {
-      this.setContextMenuClassView(classView);
-    };
-  }
-
-  setContextMenuClassView(val: ClassView | undefined): void {
-    this.contextMenuClassView = val;
   }
 
   syncZoneWithNavigation(zone: NavigationZone): void {
