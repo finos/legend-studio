@@ -303,14 +303,15 @@ export class QuerySaveAsState {
 }
 
 export class QuerySaveState {
-  editorStore: QueryEditorStore;
+  readonly editorStore: QueryEditorStore;
+  readonly saveQueryState = ActionState.create();
+
+  queryBuilderState: QueryBuilderState;
   lambda: RawLambda;
   queryName: string;
   allowUpdate = false;
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
-  queryBuilderState: QueryBuilderState;
-  saveQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -529,7 +530,6 @@ export abstract class QueryEditorStore {
   saveAsState?: QuerySaveAsState | undefined;
   saveState?: QuerySaveState | undefined;
   renameState?: QueryRenameState | undefined;
-
   title: string | undefined;
   existingQueryName: string | undefined;
 
@@ -656,7 +656,7 @@ export abstract class QueryEditorStore {
    */
   protected abstract initializeQueryBuilderState(): Promise<QueryBuilderState>;
 
-  abstract getExportConfiguration(
+  abstract getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
   ): Promise<QueryPersistConfiguration>;
@@ -898,7 +898,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getExportConfiguration(): Promise<QueryPersistConfiguration> {
+  async getPersistConfiguration(): Promise<QueryPersistConfiguration> {
     return {
       decorator: (query: Query): void => {
         query.id = uuid();
@@ -986,7 +986,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getExportConfiguration(
+  async getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
   ): Promise<QueryPersistConfiguration> {
@@ -1104,7 +1104,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getExportConfiguration(
+  async getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
   ): Promise<QueryPersistConfiguration> {

@@ -247,7 +247,7 @@ const QueryEditorHeaderContent = observer(
               editorStore,
               queryBuilderState,
               lambda,
-              await editorStore.getExportConfiguration(lambda, {
+              await editorStore.getPersistConfiguration(lambda, {
                 update: true,
               }),
             ),
@@ -275,7 +275,7 @@ const QueryEditorHeaderContent = observer(
               editorStore,
               queryBuilderState,
               lambda,
-              await editorStore.getExportConfiguration(lambda, {
+              await editorStore.getPersistConfiguration(lambda, {
                 update: true,
               }),
             ),
@@ -295,7 +295,7 @@ const QueryEditorHeaderContent = observer(
               editorStore,
               queryBuilderState,
               lambda,
-              await editorStore.getExportConfiguration(lambda),
+              await editorStore.getPersistConfiguration(lambda),
             ),
           );
         })

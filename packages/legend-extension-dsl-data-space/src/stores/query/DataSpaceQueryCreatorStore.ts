@@ -237,7 +237,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getExportConfiguration(
+  async getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
   ): Promise<QueryPersistConfiguration> {
