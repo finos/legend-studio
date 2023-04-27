@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 28.1.2
+
+### Patch Changes
+
+- [#2166](https://github.com/finos/legend-studio/pull/2166) [`becbe1d71`](https://github.com/finos/legend-studio/commit/becbe1d716f7473f9485bfc70a63703ea8e13538) ([@janeenyamak1](https://github.com/janeenyamak1)) - Reverting previous Optional Lineage Feature In Service Registration
+
 ## 28.1.1
 
 ## 28.1.0

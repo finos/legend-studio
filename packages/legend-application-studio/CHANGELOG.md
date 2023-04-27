@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 24.1.2
+
+### Patch Changes
+
+- [#2097](https://github.com/finos/legend-studio/pull/2097) [`931cb2882`](https://github.com/finos/legend-studio/commit/931cb2882eaf9ae1a5298a581e70bd05190e3357) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add cherry picking for bulk service registration
+
+- [#2166](https://github.com/finos/legend-studio/pull/2166) [`becbe1d71`](https://github.com/finos/legend-studio/commit/becbe1d716f7473f9485bfc70a63703ea8e13538) ([@janeenyamak1](https://github.com/janeenyamak1)) - Reverting previous Optional Lineage Feature In Service Registration
+
 ## 24.1.1
 
 ## 24.1.0

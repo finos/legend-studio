@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 3.0.8
+
+### Patch Changes
+
+- [#1994](https://github.com/finos/legend-studio/pull/1994) [`33e05b833`](https://github.com/finos/legend-studio/commit/33e05b833318df21cc9a8d51f71b5d83e021e03c) ([@xannem](https://github.com/xannem)) - Consolidate filter operations and track usage
+
 ## 3.0.7
 
 ### Patch Changes
