@@ -172,20 +172,6 @@ export class ProjectConfigurationEditorState extends EditorState {
         .map((v) => StoreProjectData.serialization.fromJson(v))
         .forEach((project) => this.projects.set(project.coordinates, project));
 
-      // fetch the versions for the dependency projects
-      for (const dep of this.projectConfiguration?.projectDependencies ?? []) {
-        const project = this.projects.get(dep.projectId);
-        if (project) {
-          const _versions =
-            (yield this.editorStore.depotServerClient.getVersions(
-              guaranteeNonNullable(dep.groupId),
-              guaranteeNonNullable(dep.artifactId),
-              true,
-            )) as string[];
-          this.versions.set(project.coordinates, _versions);
-        }
-      }
-
       // Update the legacy dependency to newer format (using group ID and artifact ID instead of just project ID)
       this.projectConfiguration?.projectDependencies.forEach(
         (dependency): void => {
@@ -201,6 +187,21 @@ export class ProjectConfigurationEditorState extends EditorState {
           }
         },
       );
+
+      // fetch the versions for the dependency projects
+      for (const dep of this.projectConfiguration?.projectDependencies ?? []) {
+        const project = this.projects.get(dep.projectId);
+        if (project) {
+          const _versions =
+            (yield this.editorStore.depotServerClient.getVersions(
+              guaranteeNonNullable(dep.groupId),
+              guaranteeNonNullable(dep.artifactId),
+              true,
+            )) as string[];
+          this.versions.set(project.coordinates, _versions);
+        }
+      }
+
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error) {
       assertErrorThrown(error);

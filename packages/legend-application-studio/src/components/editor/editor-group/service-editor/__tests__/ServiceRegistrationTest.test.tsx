@@ -112,6 +112,7 @@ const setup = async (
     projects: [],
     projectData: [],
     projectDependency: [],
+    projectDependencyVersions: [],
     dependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
   });
   return MOCK__editorStore;
