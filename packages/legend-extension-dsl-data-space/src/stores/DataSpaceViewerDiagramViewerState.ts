@@ -34,6 +34,7 @@ export class DataSpaceViewerDiagramViewerState {
   currentDiagram?: DataSpaceDiagramAnalysisResult | undefined;
   contextMenuClassView?: ClassView | undefined;
   showDescription = true;
+  expandDescription = false;
 
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
     makeObservable(this, {
@@ -41,6 +42,7 @@ export class DataSpaceViewerDiagramViewerState {
       currentDiagram: observable,
       contextMenuClassView: observable,
       showDescription: observable,
+      expandDescription: observable,
       previousDiagram: computed,
       nextDiagram: computed,
       currentDiagramIndex: computed,
@@ -49,6 +51,7 @@ export class DataSpaceViewerDiagramViewerState {
       setCurrentDiagram: action,
       setContextMenuClassView: action,
       setShowDescription: action,
+      setExpandDescription: action,
     });
 
     this.dataSpaceViewerState = dataSpaceViewerState;
@@ -166,5 +169,10 @@ export class DataSpaceViewerDiagramViewerState {
 
   setShowDescription(val: boolean): void {
     this.showDescription = val;
+    this.setExpandDescription(false);
+  }
+
+  setExpandDescription(val: boolean): void {
+    this.expandDescription = val;
   }
 }

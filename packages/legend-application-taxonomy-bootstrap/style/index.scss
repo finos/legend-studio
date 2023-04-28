@@ -43,6 +43,11 @@
   --color-hclight-grey-70: #3e5463;
   --color-hclight-grey-80: #2a3f4d;
   --color-hclight-grey-90: #1c2b36;
+  --color-hclight-grey-shade-10: #00000014;
+  --color-hclight-grey-shade-30: #00000045;
+  --color-hclight-grey-shade-40: #00000061;
+  --color-hclight-grey-shade-50: #0000008a;
+  --color-hclight-grey-shade-60: #0000009c;
   --color-hclight-ultramarine-90: #23254d;
   --color-hclight-aqua-10: #ebf3f7;
   --color-hclight-aqua-20: #c9e7f5;
@@ -553,6 +558,56 @@
 
         svg {
           color: var(--color-hclight-blue-50);
+        }
+      }
+    }
+
+    &__description {
+      background: var(--color-hclight-grey-shade-60);
+
+      &__title {
+        color: var(--color-hclight-white);
+      }
+
+      &__content {
+        .data-space__viewer__markdown-text-viewer {
+          background: transparent;
+          color: var(--color-hclight-white);
+        }
+      }
+
+      &__content__placeholder {
+        color: var(--color-hclight-grey-20);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-hclight-grey-30);
+        border: 0.2rem solid transparent;
+        background-clip: content-box;
+        border-radius: 0.4rem;
+      }
+
+      ::-webkit-scrollbar-track-piece {
+        background: transparent;
+      }
+
+      &__close-btn {
+        svg {
+          color: var(--color-hclight-grey-30);
+        }
+
+        &:hover svg {
+          color: var(--color-hclight-grey-20);
+        }
+      }
+
+      &__expand-btn {
+        svg {
+          color: var(--color-hclight-grey-30);
+        }
+
+        &:hover svg {
+          color: var(--color-hclight-grey-20);
         }
       }
     }

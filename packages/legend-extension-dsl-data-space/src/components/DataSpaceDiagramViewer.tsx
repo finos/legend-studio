@@ -19,6 +19,7 @@ import {
   CaretDownIcon,
   CenterFocusIcon,
   CircleIcon,
+  CloseIcon,
   ContextMenu,
   CustomSelectorInput,
   DescriptionIcon,
@@ -29,8 +30,10 @@ import {
   MousePointerIcon,
   MoveIcon,
   ShapesIcon,
+  ThinChevronDownIcon,
   ThinChevronLeftIcon,
   ThinChevronRightIcon,
+  ThinChevronUpIcon,
   ZoomInIcon,
   ZoomOutIcon,
   clsx,
@@ -54,6 +57,7 @@ import {
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/index.js';
 import { getNonNullableEnry } from '@finos/legend-shared';
+import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 
 const DataSpaceDiagramCanvas = observer(
   forwardRef<
@@ -66,12 +70,17 @@ const DataSpaceDiagramCanvas = observer(
     const { dataSpaceViewerState, diagram } = props;
     const diagramViewerState = dataSpaceViewerState.diagramViewerState;
     const diagramCanvasRef = ref as React.MutableRefObject<HTMLDivElement>;
+    const descriptionText = diagramViewerState.currentDiagram?.description;
 
     const { width, height } = useResizeDetector<HTMLDivElement>({
       refreshMode: 'debounce',
       refreshRate: 50,
       targetRef: diagramCanvasRef,
     });
+
+    useEffect(() => {
+      diagramViewerState.setExpandDescription(false);
+    }, [diagramViewerState, diagramViewerState.currentDiagram]);
 
     useEffect(() => {
       const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
@@ -142,6 +151,55 @@ const DataSpaceDiagramCanvas = observer(
           diagramViewerState.setContextMenuClassView(undefined)
         }
       >
+        {diagramViewerState.showDescription && (
+          <div
+            className={clsx('data-space__viewer__diagram-viewer__description', {
+              'data-space__viewer__diagram-viewer__description--expanded':
+                diagramViewerState.expandDescription,
+            })}
+          >
+            <button
+              className="data-space__viewer__diagram-viewer__description__close-btn"
+              tabIndex={-1}
+              title="Hide Description"
+              onClick={() => diagramViewerState.setShowDescription(false)}
+            >
+              <CloseIcon />
+            </button>
+            <div className="data-space__viewer__diagram-viewer__description__title">
+              {diagramViewerState.currentDiagram?.title
+                ? diagramViewerState.currentDiagram.title
+                : 'Untitled'}
+            </div>
+            <div className="data-space__viewer__diagram-viewer__description__content">
+              {descriptionText ? (
+                <DataSpaceMarkdownTextViewer value={descriptionText} />
+              ) : (
+                <div className="data-space__viewer__diagram-viewer__description__content__placeholder">
+                  (not specified)
+                </div>
+              )}
+            </div>
+            <button
+              className="data-space__viewer__diagram-viewer__description__expand-btn"
+              tabIndex={-1}
+              title={
+                diagramViewerState.expandDescription ? 'Collapse' : 'Expand'
+              }
+              onClick={() =>
+                diagramViewerState.setExpandDescription(
+                  !diagramViewerState.expandDescription,
+                )
+              }
+            >
+              {diagramViewerState.expandDescription ? (
+                <ThinChevronUpIcon />
+              ) : (
+                <ThinChevronDownIcon />
+              )}
+            </button>
+          </div>
+        )}
         <div
           ref={diagramCanvasRef}
           className={clsx(
@@ -177,11 +235,6 @@ const DataSpaceDiagramViewerHeader = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const diagramViewerState = dataSpaceViewerState.diagramViewerState;
-    // const currentDiagramIndex = diagramViewerState.currentDiagram
-    //   ? dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.findIndex(
-    //       diagramViewerState.currentDiagram,
-    //     ) + 1
-    //   : 0;
     const diagramOptions =
       dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.map(
         buildDiagramOption,

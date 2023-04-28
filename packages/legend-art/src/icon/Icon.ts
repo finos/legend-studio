@@ -257,6 +257,7 @@ export const DistributeHorizontalIcon = BS.BsDistributeHorizontal;
 export const DistributeVerticalIcon = BS.BsDistributeVertical;
 export const DataAccessIcon = BS.BsDatabaseFillLock;
 export const DataReadyIcon = BS.BsDatabaseFillCheck;
+export const ThinChevronUpIcon = BS.BsChevronUp;
 export const ThinChevronDownIcon = BS.BsChevronDown;
 export const ThinChevronRightIcon = BS.BsChevronRight;
 export const ThinChevronLeftIcon = BS.BsChevronLeft;
