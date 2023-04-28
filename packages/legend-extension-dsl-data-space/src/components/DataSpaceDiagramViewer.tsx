@@ -58,6 +58,7 @@ import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/index.js';
 import { getNonNullableEnry } from '@finos/legend-shared';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
+import { useCommands } from '@finos/legend-application';
 
 const DataSpaceDiagramCanvas = observer(
   forwardRef<
@@ -332,7 +333,7 @@ const DataSpaceDiagramViewerHeader = observer(
                       diagramViewerState.diagramRenderer.recenter();
                     }
                   }}
-                  title="Recenter"
+                  title="Recenter (R)"
                 >
                   <CenterFocusIcon className="data-space__viewer__diagram-viewer__icon--recenter" />
                 </button>
@@ -350,7 +351,7 @@ const DataSpaceDiagramViewerHeader = observer(
                       !diagramViewerState.showDescription,
                     )
                   }
-                  title="Toggle View Description"
+                  title="Toggle Description (D)"
                 >
                   <DescriptionIcon className="data-space__viewer__diagram-viewer__icon--description" />
                 </button>
@@ -371,7 +372,7 @@ const DataSpaceDiagramViewerHeader = observer(
                     DIAGRAM_INTERACTION_MODE.LAYOUT,
                     DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
                   )}
-                  title="View Tool"
+                  title="View Tool (V)"
                 >
                   <MousePointerIcon className="data-space__viewer__diagram-viewer__icon--layout" />
                 </button>
@@ -389,7 +390,7 @@ const DataSpaceDiagramViewerHeader = observer(
                     DIAGRAM_INTERACTION_MODE.PAN,
                     DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
                   )}
-                  title="Pan Tool"
+                  title="Pan Tool (M)"
                 >
                   <MoveIcon className="data-space__viewer__diagram-viewer__icon--pan" />
                 </button>
@@ -403,7 +404,7 @@ const DataSpaceDiagramViewerHeader = observer(
                     },
                   )}
                   tabIndex={-1}
-                  title="Zoom In"
+                  title="Zoom In (Z)"
                   onClick={createModeSwitcher(
                     DIAGRAM_INTERACTION_MODE.ZOOM_IN,
                     DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
@@ -421,7 +422,7 @@ const DataSpaceDiagramViewerHeader = observer(
                     },
                   )}
                   tabIndex={-1}
-                  title="Zoom Out"
+                  title="Zoom Out (Z)"
                   onClick={createModeSwitcher(
                     DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
                     DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
@@ -484,6 +485,8 @@ export const DataSpaceDiagramViewer = observer(
     const anchor = generateAnchorForActivity(
       DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
     );
+
+    useCommands(diagramViewerState);
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -554,7 +557,7 @@ export const DataSpaceDiagramViewer = observer(
                       previousDiagram && previousDiagram.title
                         ? previousDiagram.title
                         : '(untitled)'
-                    }`}
+                    } (⇦)`}
                     disabled={!previousDiagram}
                     onClick={showPreviousDiagram}
                   >
@@ -567,7 +570,7 @@ export const DataSpaceDiagramViewer = observer(
                       nextDiagram && nextDiagram.title
                         ? nextDiagram.title
                         : '(untitled)'
-                    }`}
+                    } (⇨)`}
                     disabled={!nextDiagram}
                     onClick={showNextDiagram}
                   >

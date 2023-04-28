@@ -19,15 +19,20 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  type DataSpaceViewerState,
+} from './DataSpaceViewerState.js';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/index.js';
 import {
   DIAGRAM_INTERACTION_MODE,
   type DiagramRenderer,
 } from '@finos/legend-extension-dsl-diagram/application';
+import type { CommandRegistrar } from '@finos/legend-application';
+import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
 
-export class DataSpaceViewerDiagramViewerState {
+export class DataSpaceViewerDiagramViewerState implements CommandRegistrar {
   readonly dataSpaceViewerState: DataSpaceViewerState;
 
   _renderer?: DiagramRenderer | undefined;
@@ -174,5 +179,69 @@ export class DataSpaceViewerDiagramViewerState {
 
   setExpandDescription(val: boolean): void {
     this.expandDescription = val;
+  }
+
+  registerCommands(): void {
+    const DEFAULT_TRIGGER = (): boolean =>
+      this.dataSpaceViewerState.currentActivity ===
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER;
+    this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.diagramRenderer.recenter(),
+    });
+    this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_ZOOM_TOOL,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.diagramRenderer.switchToZoomMode(),
+    });
+    this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_VIEW_TOOL,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.diagramRenderer.switchToViewMode(),
+    });
+    this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_PAN_TOOL,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.diagramRenderer.switchToPanMode(),
+    });
+    this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.NEXT_DIAGRAM,
+      trigger: DEFAULT_TRIGGER,
+      action: () => {
+        if (this.nextDiagram) {
+          this.setCurrentDiagram(this.nextDiagram);
+        }
+      },
+    });
+    this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.PREVIOUS_DIAGRAM,
+      trigger: DEFAULT_TRIGGER,
+      action: () => {
+        if (this.previousDiagram) {
+          this.setCurrentDiagram(this.previousDiagram);
+        }
+      },
+    });
+    this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.TOGGLE_DESCRIPTION,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.setShowDescription(!this.showDescription),
+    });
+  }
+
+  deregisterCommands(): void {
+    [
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER,
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_ZOOM_TOOL,
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_VIEW_TOOL,
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_PAN_TOOL,
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.NEXT_DIAGRAM,
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.PREVIOUS_DIAGRAM,
+    ].forEach((commandKey) =>
+      this.dataSpaceViewerState.applicationStore.commandService.deregisterCommand(
+        commandKey,
+      ),
+    );
   }
 }
