@@ -1,0 +1,787 @@
+[
+  {
+    "path": "test::temp",
+    "content": {
+      "_type": "class",
+      "name": "temp",
+      "package": "test",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Number"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "test::Employee",
+    "content": {
+      "_type": "class",
+      "name": "Employee",
+      "package": "test",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "hireDate",
+          "type": "Date"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "hireType",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fteFactor",
+          "type": "Float"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "firmName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "endDate",
+          "type": "Date"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "test::testYtd__Any_MANY_",
+    "content": {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "groupBy",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "getAll",
+              "parameters": [
+                {
+                  "_type": "packageableElementPtr",
+                  "fullPath": "test::Employee"
+                }
+              ]
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "property",
+                      "property": "hireDate",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "p"
+                        }
+                      ]
+                    }
+                  ],
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "p"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                {
+                  "_type": "func",
+                  "function": "agg",
+                  "parameters": [
+                    {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "func",
+                          "function": "ytd",
+                          "parameters": [
+                            {
+                              "_type": "property",
+                              "property": "hireDate",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "p"
+                                }
+                              ]
+                            },
+                            {
+                              "_type": "string",
+                              "value": "NY"
+                            },
+                            {
+                              "_type": "strictDate",
+                              "value": "2022-11-16"
+                            },
+                            {
+                              "_type": "property",
+                              "property": "fteFactor",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "p"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "p"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "func",
+                          "function": "sum",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "y"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "y"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "values": [
+                {
+                  "_type": "string",
+                  "value": "includedDate"
+                },
+                {
+                  "_type": "string",
+                  "value": "ytd"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "name": "testYtd__Any_MANY_",
+      "package": "test",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "returnType": "Any"
+    },
+    "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
+  },
+  {
+    "path": "test::store",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [
+        {
+          "name": "JoinEmployeeToFirm",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "EmployeeTable"
+                },
+                "tableAlias": "EmployeeTable"
+              },
+              {
+                "_type": "column",
+                "column": "employeeId",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "store",
+      "package": "test",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "hireDate",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Date"
+                  }
+                },
+                {
+                  "name": "hireType",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 10
+                  }
+                },
+                {
+                  "name": "fteFactor",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Double"
+                  }
+                }
+              ],
+              "name": "EmployeeTable",
+              "primaryKey": ["id"]
+            },
+            {
+              "columns": [
+                {
+                  "name": "firmName",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 100
+                  }
+                },
+                {
+                  "name": "employeeId",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "name": "FirmTable",
+              "primaryKey": ["firmName", "employeeId"]
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "test::mapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "test::Employee",
+          "distinct": false,
+          "id": "emp",
+          "mainTable": {
+            "_type": "Table",
+            "database": "test::store",
+            "mainTableDb": "test::store",
+            "schema": "default",
+            "table": "EmployeeTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "test::store",
+                "mainTableDb": "test::store",
+                "schema": "default",
+                "table": "EmployeeTable"
+              },
+              "tableAlias": "EmployeeTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Employee",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "EmployeeTable"
+                },
+                "tableAlias": "EmployeeTable"
+              },
+              "source": "emp"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Employee",
+                "property": "hireDate"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "hireDate",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "EmployeeTable"
+                },
+                "tableAlias": "EmployeeTable"
+              },
+              "source": "emp"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Employee",
+                "property": "hireType"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "hireType",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "EmployeeTable"
+                },
+                "tableAlias": "EmployeeTable"
+              },
+              "source": "emp"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Employee",
+                "property": "fteFactor"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "fteFactor",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "EmployeeTable"
+                },
+                "tableAlias": "EmployeeTable"
+              },
+              "source": "emp"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Employee",
+                "property": "firmName"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "test::store",
+                    "name": "JoinEmployeeToFirm"
+                  }
+                ],
+                "relationalElement": {
+                  "_type": "column",
+                  "column": "firmName",
+                  "table": {
+                    "_type": "Table",
+                    "database": "test::store",
+                    "mainTableDb": "test::store",
+                    "schema": "default",
+                    "table": "FirmTable"
+                  },
+                  "tableAlias": "FirmTable"
+                }
+              },
+              "source": "emp"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Employee",
+                "property": "endDate"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "hireDate",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "EmployeeTable"
+                },
+                "tableAlias": "EmployeeTable"
+              },
+              "source": "emp"
+            }
+          ],
+          "root": false
+        },
+        {
+          "_type": "pureInstance",
+          "class": "test::temp",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "test::temp",
+                "property": "id"
+              },
+              "source": "",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "property": "id",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "test::temp"
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "mapping",
+      "package": "test",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "test::service",
+    "content": {
+      "_type": "service",
+      "autoActivateUpdates": true,
+      "documentation": "",
+      "execution": {
+        "_type": "pureSingleExecution",
+        "func": {
+          "_type": "lambda",
+          "body": [
+            {
+              "_type": "func",
+              "function": "groupBy",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "getAll",
+                  "parameters": [
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "test::Employee"
+                    }
+                  ]
+                },
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 0
+                  },
+                  "values": []
+                },
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "values": [
+                    {
+                      "_type": "func",
+                      "function": "agg",
+                      "parameters": [
+                        {
+                          "_type": "lambda",
+                          "body": [
+                            {
+                              "_type": "func",
+                              "function": "ytd",
+                              "parameters": [
+                                {
+                                  "_type": "property",
+                                  "property": "hireDate",
+                                  "parameters": [
+                                    {
+                                      "_type": "var",
+                                      "name": "x"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "_type": "string",
+                                  "value": "NY"
+                                },
+                                {
+                                  "_type": "strictDate",
+                                  "value": "2022-11-16"
+                                },
+                                {
+                                  "_type": "property",
+                                  "property": "fteFactor",
+                                  "parameters": [
+                                    {
+                                      "_type": "var",
+                                      "name": "x"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ],
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x"
+                            }
+                          ]
+                        },
+                        {
+                          "_type": "lambda",
+                          "body": [
+                            {
+                              "_type": "func",
+                              "function": "sum",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "x"
+                                }
+                              ]
+                            }
+                          ],
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "values": [
+                    {
+                      "_type": "string",
+                      "value": "ytd"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "parameters": []
+        },
+        "mapping": "test::mapping",
+        "runtime": {
+          "_type": "runtimePointer",
+          "runtime": "test::runtime"
+        }
+      },
+      "name": "service",
+      "owners": ["gayathri"],
+      "package": "test",
+      "pattern": "/test/calendar/",
+      "testSuites": [
+        {
+          "_type": "serviceTestSuite",
+          "id": "testSuite_1",
+          "testData": {
+            "connectionsTestData": []
+          },
+          "tests": [
+            {
+              "_type": "serviceTest",
+              "assertions": [
+                {
+                  "_type": "equalToJson",
+                  "expected": {
+                    "_type": "externalFormat",
+                    "contentType": "application/json",
+                    "data": ""
+                  },
+                  "id": "assertion_1"
+                }
+              ],
+              "id": "test_1",
+              "keys": [],
+              "serializationFormat": "PURE"
+            }
+          ]
+        }
+      ]
+    },
+    "classifierPath": "meta::legend::service::metamodel::Service"
+  },
+  {
+    "path": "test::runtime",
+    "content": {
+      "_type": "runtime",
+      "name": "runtime",
+      "package": "test",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "test::store",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "test::connection"
+                },
+                "id": "connection_1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "test::mapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    "classifierPath": "meta::pure::runtime::PackageableRuntime"
+  },
+  {
+    "path": "test::connection",
+    "content": {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+          "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+          "_type": "h2Local"
+        },
+        "element": "test::store",
+        "type": "H2"
+      },
+      "name": "connection",
+      "package": "test"
+    },
+    "classifierPath": "meta::pure::runtime::PackageableConnection"
+  }
+]

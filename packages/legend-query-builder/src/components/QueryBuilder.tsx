@@ -40,6 +40,7 @@ import {
   ModalHeader,
   BlankPanelContent,
   ModalFooterButton,
+  CalendarIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -56,6 +57,8 @@ import {
   BackdropContainer,
   useApplicationStore,
   useCommands,
+  ActionAlertActionType,
+  ActionAlertType,
 } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
@@ -286,6 +289,56 @@ export const QueryBuilder = observer(
     const openWatermark = (): void => {
       queryBuilderState.watermarkState.setIsEditingWatermark(true);
     };
+
+    const toggleEnableCalendar = (): void => {
+      if (queryBuilderState.isCalendarEnabled) {
+        queryBuilderState.applicationStore.alertService.setActionAlertInfo({
+          message:
+            'You are about to disable calendar aggregation operations. This will remove all the calendar aggreagtions you added to the query.',
+          prompt: ' Do you want to proceed?',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void => {
+                if (
+                  queryBuilderState.fetchStructureState
+                    .implementation instanceof QueryBuilderTDSState
+                ) {
+                  queryBuilderState.fetchStructureState.implementation.aggregationState.disableCalendar();
+                }
+              },
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      } else {
+        queryBuilderState.applicationStore.alertService.setActionAlertInfo({
+          message:
+            'You are about to enable calendar aggregation operations. This will let you add calendar functions to the aggregation operations that you perform on projection columns, but this would require your calendar database to be included in your database.',
+          prompt: ' Do you want to proceed?',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void => queryBuilderState.setIsCalendarEnabled(true),
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      }
+    };
+
     const editQueryInPure = (): void => {
       openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
     };
@@ -351,6 +404,13 @@ export const QueryBuilder = observer(
                     >
                       <WaterDropIcon />
                     </button>
+                  </>
+                )}
+                {queryBuilderState.isCalendarEnabled && (
+                  <>
+                    <div className="query-builder__sub-header__content__icon">
+                      <CalendarIcon />
+                    </div>
                   </>
                 )}
                 {queryBuilderState.watermarkState.isEditingWatermark && (
@@ -489,6 +549,25 @@ export const QueryBuilder = observer(
                         <MenuContentItemIcon>{null}</MenuContentItemIcon>
                         <MenuContentItemLabel className="query-builder__sub-header__menu-content">
                           Show Watermark
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem
+                        onClick={toggleEnableCalendar}
+                        disabled={
+                          !queryBuilderState.isQuerySupported ||
+                          !(
+                            queryBuilderState.fetchStructureState
+                              .implementation instanceof QueryBuilderTDSState
+                          )
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          {queryBuilderState.isCalendarEnabled ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Enable Calendar
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentDivider />

@@ -101,6 +101,8 @@ import { getQueryBuilderCoreWindowOperators } from './window/QueryBuilderWindowG
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../../../__lib__/QueryBuilderSetting.js';
 import type { ExportDataInfo } from '../../QueryBuilderResultState.js';
+import type { QueryBuilderAggregateCalendarFunction } from './aggregation/QueryBuilderAggregateCalendarFunction.js';
+import { getQueryBuilderCoreAggregrationCalendarFunctions } from './aggregation/QueryBuilderAggregateCalendarFunctionLoader.js';
 
 // TODO: should we support raw once externalize() is supported on TDS ?
 export enum TDS_EXECUTION_SERIALIZATION_FORMAT {
@@ -124,6 +126,8 @@ export class QueryBuilderTDSState
     getQueryBuilderCorePostFilterOperators();
   aggregationOperators: QueryBuilderAggregateOperator[] =
     getQueryBuilderCoreAggregrationOperators();
+  aggregationCalendarFunctions: QueryBuilderAggregateCalendarFunction[] =
+    getQueryBuilderCoreAggregrationCalendarFunctions();
   windowFuncOperators: QueryBuilderTDS_WindowOperator[] =
     getQueryBuilderCoreWindowOperators();
 
@@ -158,6 +162,7 @@ export class QueryBuilderTDSState
     this.aggregationState = new QueryBuilderAggregationState(
       this,
       this.aggregationOperators,
+      this.aggregationCalendarFunctions,
     );
     this.windowState = new QueryBuilderWindowState(
       this,
@@ -268,19 +273,33 @@ export class QueryBuilderTDSState
   }
 
   get fetchStructureValidationIssues(): string[] {
+    const validationIssues: string[] = [];
+    const hasInValidCalendarAggregateColumns =
+      this.aggregationState.columns.some(
+        (column) =>
+          column.calendarFunction &&
+          column.calendarFunction.dateColumn === undefined,
+      );
+    if (hasInValidCalendarAggregateColumns) {
+      validationIssues.push(
+        'Query has calendar function with no date column specified',
+      );
+    }
     const hasDuplicatedProjectionColumns = this.projectionColumns.some(
       (column) =>
         this.projectionColumns.filter((c) => c.columnName === column.columnName)
           .length > 1,
     );
     if (hasDuplicatedProjectionColumns) {
-      return ['Query has duplicated projection columns'];
+      validationIssues.push('Query has duplicated projection columns');
+      return validationIssues;
     }
     const hasNoProjectionColumns = this.projectionColumns.length === 0;
     if (hasNoProjectionColumns) {
-      return ['Query has no projection columns'];
+      validationIssues.push('Query has no projection columns');
+      return validationIssues;
     }
-    return [];
+    return validationIssues;
   }
 
   get allValidationIssues(): string[] {

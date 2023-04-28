@@ -104,6 +104,28 @@ export const processTDSAggregateExpression = (
       `Can't process agg() lambda: only support agg() lambda body with 1 expression`,
     );
 
+    let calendarExpression: SimpleFunctionExpression | undefined;
+    if (queryBuilderState.isCalendarEnabled) {
+      const childExpression = expression.parametersValues[0];
+      assertType(
+        childExpression,
+        LambdaFunctionInstanceValue,
+        `Can't process agg() expression: agg() expects argument #0 to be a lambda function`,
+      );
+      const lambdaFunc1 = guaranteeNonNullable(
+        childExpression.values[0],
+        `Can't process agg() lambda: agg() lambda function is missing`,
+      );
+      assertTrue(
+        lambdaFunc1.expressionSequence.length === 1,
+        `Can't process agg() lambda: only support agg() lambda body with 1 expression`,
+      );
+      calendarExpression =
+        lambdaFunc1.expressionSequence[0] instanceof SimpleFunctionExpression
+          ? lambdaFunc1.expressionSequence[0]
+          : undefined;
+    }
+
     assertTrue(
       lambdaFunc.functionType.parameters.length === 1,
       `Can't process agg() lambda: only support agg() lambda with 1 parameter`,
@@ -128,6 +150,25 @@ export const processTDSAggregateExpression = (
       );
       if (aggregateColumnState) {
         aggregationState.addColumn(aggregateColumnState);
+        if (
+          queryBuilderState.isCalendarEnabled &&
+          calendarExpression !== undefined
+        ) {
+          for (const calendarFunction of aggregationState.calendarFunctions) {
+            // NOTE: this allow plugin author to either return `undefined` or throw error
+            // if there is a problem with building the lambda. Either case, the plugin is
+            // considered as not supporting the lambda.
+            returnUndefOnError(() =>
+              calendarFunction.updateAggregateColumnState(
+                guaranteeNonNullable(calendarExpression),
+                aggregateColumnState,
+              ),
+            );
+          }
+        }
+        if (!aggregateColumnState.calendarFunction) {
+          aggregateColumnState.setHideCalendarColumnState(true);
+        }
         return;
       }
     }
