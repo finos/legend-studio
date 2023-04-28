@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 3.1.0
+
+### Minor Changes
+
+- [#2143](https://github.com/finos/legend-studio/pull/2143) [`4511b5b76`](https://github.com/finos/legend-studio/commit/4511b5b76414030f358bfdd59e7472b2f42f20ba) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for calendar aggreagte operations
+
 ## 3.0.8
 
 ### Patch Changes
