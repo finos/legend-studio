@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-pure-ide-deployment",
-  "version": "9.29.0",
+  "version": "9.30.0",
   "description": "Legend Pure IDE web application deployment",
   "keywords": [
     "legend",
