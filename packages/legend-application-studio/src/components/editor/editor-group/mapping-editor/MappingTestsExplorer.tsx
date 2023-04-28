@@ -53,7 +53,7 @@ import { SetImplementation } from '@finos/legend-graph';
 import { MappingEditorState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 
 const addTestPromps = [
-  `Let's add some test!`,
+  `Let's add some tests!`,
   `"A test a day keeps the QA away"`,
 ];
 

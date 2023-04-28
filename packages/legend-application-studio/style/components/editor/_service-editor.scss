@@ -1098,6 +1098,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  border-bottom: 0.1rem solid var(--color-dark-grey-200) !important;
 
   &__connection {
     width: 100%;
