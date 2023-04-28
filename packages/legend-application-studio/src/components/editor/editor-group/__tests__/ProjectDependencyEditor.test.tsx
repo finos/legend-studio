@@ -115,6 +115,8 @@ const TEST_DATA__DependencyEntities = [
   },
 ];
 
+const TEST_DATA__Versions = ['1.0.0', '2.0.0', '3.0.0'];
+
 const TEST_DATA__latestProjectStructure = { version: 11, extensionVersion: 1 };
 
 let MOCK__editorStore: EditorStore;
@@ -127,6 +129,7 @@ beforeEach(async () => {
     projects: TEST_DATA__Projects,
     projectData: TEST_DATA__ProjectData,
     projectDependency: TEST_DATA__DependencyEntities,
+    projectDependencyVersions: TEST_DATA__Versions,
     dependencyReport: TEST_DATA__ProjectDependencyReport,
   });
   fireEvent.click(renderResult.getByText('config'));
@@ -138,12 +141,13 @@ beforeEach(async () => {
   await waitFor(() => renderResult.getByText('Project Structure'));
 });
 
-test.skip(integrationTest('Test Project Dependency Editor'), async () => {
+test(integrationTest('Test Project Dependency Editor'), async () => {
   const editorGroup = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
   const updateButton = getByText(editorGroup, 'Update');
   fireEvent.click(getByText(editorGroup, 'Project Dependencies'));
+  const configState = MOCK__editorStore.projectConfigurationEditorState;
 
   // dependency 1
   await waitFor(() => getByText(editorGroup, 'PROD-1'));
@@ -155,7 +159,6 @@ test.skip(integrationTest('Test Project Dependency Editor'), async () => {
   await waitFor(() => getByText(editorGroup, 'org.finos.legend:prod-2'));
   await waitFor(() => getByText(editorGroup, '3.0.0'));
 
-  const configState = MOCK__editorStore.projectConfigurationEditorState;
   const projectDependenciesToAdd =
     configState.currentProjectConfiguration.projectDependencies.filter(
       (dep) =>
@@ -181,7 +184,7 @@ test.skip(integrationTest('Test Project Dependency Editor'), async () => {
   );
 });
 
-test.skip(integrationTest('Test Project Report'), async () => {
+test(integrationTest('Test Project Report'), async () => {
   const editorGroup = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
@@ -234,7 +237,7 @@ test.skip(integrationTest('Test Project Report'), async () => {
   expect(getByText(dependencyExplorer, 'No Conflicts')).toBeDefined();
 });
 
-test.skip(integrationTest('Test Building of Dependency Report'), async () => {
+test(integrationTest('Test Building of Dependency Report'), async () => {
   const rawdependencyReport = RawProjectDependencyReport.serialization.fromJson(
     TEST_DATA__ProjectDependencyReport,
   );

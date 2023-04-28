@@ -223,6 +223,7 @@ export const TEST__setUpEditor = async (
     projects: PlainObject<StoreProjectData>[];
     projectData: PlainObject<StoreProjectData>[];
     projectDependency: PlainObject<ProjectVersionEntities>[];
+    projectDependencyVersions: string[];
     dependencyReport: PlainObject<RawProjectDependencyReport>;
   },
 ): Promise<RenderResult> => {
@@ -238,6 +239,7 @@ export const TEST__setUpEditor = async (
     projectData,
     projects,
     projectDependency,
+    projectDependencyVersions,
     dependencyReport,
   } = data;
 
@@ -289,6 +291,10 @@ export const TEST__setUpEditor = async (
     MOCK__editorStore.depotServerClient,
     'getProjects',
   ).mockResolvedValue(projects);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getVersions',
+  ).mockResolvedValue(projectDependencyVersions);
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getProjectById',
@@ -387,6 +393,7 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projects?: PlainObject<StoreProjectData>[];
     projectData?: PlainObject<StoreProjectData>[];
     projectDependency?: PlainObject<ProjectVersionEntities>[];
+    projectDependencyVersions?: string[];
     dependencyReport?: PlainObject<RawProjectDependencyReport>;
   },
 ): Promise<RenderResult> =>
@@ -406,6 +413,7 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projects: [],
     projectData: [],
     projectDependency: [],
+    projectDependencyVersions: [],
     dependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
     ...overrides,
   });
