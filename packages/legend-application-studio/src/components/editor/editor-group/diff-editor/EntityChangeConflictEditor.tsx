@@ -45,7 +45,6 @@ import {
   CompareIcon,
   ArrowDownIcon,
   ArrowUpIcon,
-  useResizeDetector,
 } from '@finos/legend-art';
 import {
   disposeCodeEditor,
@@ -182,20 +181,12 @@ const MergeConflictEditor = observer(
       undefined,
     );
 
-    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
-    useEffect(() => {
-      if (width !== undefined && height !== undefined) {
-        editor?.layout({ width, height });
-      }
-    }, [editor, width, height]);
-
     useEffect(() => {
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
-          theme: CODE_EDITOR_THEME.LEGEND,
+          theme: CODE_EDITOR_THEME.DEFAULT_DARK,
           language: CODE_EDITOR_LANGUAGE.PURE,
           minimap: { enabled: false },
           formatOnType: true,
@@ -591,7 +582,7 @@ const MergeConflictEditor = observer(
     );
 
     return (
-      <div ref={ref} className="code-editor__container">
+      <div className="code-editor__container">
         <div className="code-editor__body" ref={textInputRef} />
       </div>
     );

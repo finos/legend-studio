@@ -22,23 +22,23 @@ import {
   resetLineNumberGutterWidth,
   getCodeEditorValue,
   normalizeLineEnding,
+  type CODE_EDITOR_LANGUAGE,
 } from './CodeEditorUtils.js';
-import { useResizeDetector } from '@finos/legend-art';
 import {
   DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
-import {
-  CODE_EDITOR_THEME,
-  type CODE_EDITOR_LANGUAGE,
-} from './CodeEditorConfig.js';
+import { CODE_EDITOR_THEME } from './CodeEditorTheme.js';
+import { clsx } from '@finos/legend-art';
 
 export const CodeEditor: React.FC<{
   inputValue: string;
   isReadOnly?: boolean | undefined;
+  lightTheme?: CODE_EDITOR_THEME;
   language: CODE_EDITOR_LANGUAGE;
   showMiniMap?: boolean | undefined;
   hideGutter?: boolean | undefined;
+  showPadding?: boolean | undefined;
   extraEditorOptions?:
     | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
     | undefined;
@@ -47,10 +47,12 @@ export const CodeEditor: React.FC<{
   const {
     inputValue,
     updateInput,
+    lightTheme,
     language,
     isReadOnly,
     showMiniMap,
     hideGutter,
+    showPadding,
     extraEditorOptions,
   } = props;
   const applicationStore = useApplicationStore();
@@ -71,13 +73,6 @@ export const CodeEditor: React.FC<{
    */
   const value = normalizeLineEnding(inputValue);
   const textInputRef = useRef<HTMLDivElement>(null);
-  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
-  useEffect(() => {
-    if (width !== undefined && height !== undefined) {
-      editor?.layout({ width, height });
-    }
-  }, [editor, width, height]);
 
   useEffect(() => {
     if (!editor && textInputRef.current) {
@@ -86,14 +81,16 @@ export const CodeEditor: React.FC<{
         ...getBaseCodeEditorOptions(),
         theme: applicationStore.layoutService
           .TEMPORARY__isLightColorThemeEnabled
-          ? CODE_EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
-          : CODE_EDITOR_THEME.LEGEND,
+          ? lightTheme ?? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
+          : CODE_EDITOR_THEME.DEFAULT_DARK,
+        padding: showPadding ? { top: 20, bottom: 20 } : { top: 0, bottom: 0 },
+
         formatOnType: true,
         formatOnPaste: true,
       });
       setEditor(_editor);
     }
-  }, [applicationStore, editor]);
+  }, [applicationStore, lightTheme, showPadding, editor]);
 
   useEffect(() => {
     if (editor) {
@@ -129,11 +126,10 @@ export const CodeEditor: React.FC<{
       // See https://github.com/microsoft/vscode/issues/30795
       ...(hideGutter
         ? {
-            glyphMargin: false,
+            glyphMargin: true,
             folding: false,
             lineNumbers: 'off',
-            lineDecorationsWidth: 10,
-            lineNumbersMinChars: 0,
+            lineDecorationsWidth: 0,
           }
         : {}),
       ...(extraEditorOptions ?? {}),
@@ -153,7 +149,11 @@ export const CodeEditor: React.FC<{
   );
 
   return (
-    <div ref={ref} className="code-editor__container">
+    <div
+      className={clsx('code-editor__container', {
+        'code-editor__container--padding': showPadding,
+      })}
+    >
       <div className="code-editor__body" ref={textInputRef} />
     </div>
   );

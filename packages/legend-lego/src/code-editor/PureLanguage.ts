@@ -14,19 +14,29 @@
  * limitations under the License.
  */
 
-export enum CODE_EDITOR_THEME {
-  LEGEND = 'legend',
-  TEMPORARY__VSCODE_LIGHT = 'vs',
-}
+export enum PURE_GRAMMAR_TOKEN {
+  WHITESPACE = '',
 
-export enum CODE_EDITOR_LANGUAGE {
-  TEXT = 'plaintext',
-  PURE = 'pure',
-  JSON = 'json',
-  JAVA = 'java',
-  MARKDOWN = 'markdown',
-  SQL = 'sql',
-  XML = 'xml',
-  YAML = 'yaml',
-  GRAPHQL = 'graphql',
+  KEYWORD = 'keyword',
+  IDENTIFIER = 'identifier',
+  OPERATOR = 'operator',
+  DELIMITER = 'delimiter',
+
+  PARSER = 'parser',
+  NUMBER = 'number',
+  DATE = 'date',
+  COLOR = 'color',
+  PACKAGE = 'package',
+  STRING = 'string',
+  COMMENT = 'comment',
+
+  LANGUAGE_STRUCT = 'language-struct',
+  MULTIPLICITY = 'multiplicity',
+  GENERICS = 'generics',
+  PROPERTY = 'property',
+  PARAMETER = 'property',
+  VARIABLE = 'variable',
+  TYPE = 'type',
+
+  INVALID = 'invalid',
 }

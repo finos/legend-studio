@@ -27,7 +27,6 @@ import {
   WordWrapIcon,
   MoreHorizontalIcon,
   PanelContent,
-  useResizeDetector,
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
@@ -712,21 +711,13 @@ export const GrammarTextEditor = observer(() => {
     );
   };
 
-  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
-  useEffect(() => {
-    if (width !== undefined && height !== undefined) {
-      editor?.layout({ width, height });
-    }
-  }, [editor, width, height]);
-
   useEffect(() => {
     if (!editor && textEditorRef.current) {
       const element = textEditorRef.current;
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         language: CODE_EDITOR_LANGUAGE.PURE,
-        theme: CODE_EDITOR_THEME.LEGEND,
+        theme: CODE_EDITOR_THEME.DEFAULT_DARK,
         renderValidationDecorations: 'on',
       });
       _editor.onDidChangeModelContent(() => {
@@ -1085,7 +1076,7 @@ export const GrammarTextEditor = observer(() => {
         </div>
       </div>
       <PanelContent className="editor-group__content">
-        <div ref={ref} className="code-editor__container">
+        <div className="code-editor__container">
           <div className="code-editor__body" ref={textEditorRef} />
         </div>
       </PanelContent>

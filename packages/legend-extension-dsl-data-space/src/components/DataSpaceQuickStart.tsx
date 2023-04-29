@@ -50,6 +50,7 @@ import {
 } from '@finos/legend-lego/data-grid';
 import {
   CODE_EDITOR_LANGUAGE,
+  CODE_EDITOR_THEME,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 
@@ -348,8 +349,10 @@ const DataSpaceExecutableTDSResultView = observer(
                   <CodeEditor
                     inputValue={queryText}
                     isReadOnly={true}
+                    lightTheme={CODE_EDITOR_THEME.ONE_DARK_PRO}
                     language={CODE_EDITOR_LANGUAGE.PURE}
                     showMiniMap={false}
+                    showPadding={true}
                     hideGutter={true}
                   />
                 </div>

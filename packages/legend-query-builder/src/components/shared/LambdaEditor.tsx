@@ -23,7 +23,6 @@ import {
   LongArrowAltDownIcon,
   LongArrowAltUpIcon,
   Dialog,
-  useResizeDetector,
   Modal,
   ModalBody,
   ModalFooter,
@@ -154,13 +153,6 @@ const LambdaEditorInline = observer(
       }
     };
 
-    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-    useEffect(() => {
-      if (width !== undefined && height !== undefined) {
-        editor?.layout({ width, height });
-      }
-    }, [editor, width, height]);
-
     useEffect(() => {
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
@@ -187,8 +179,8 @@ const LambdaEditorInline = observer(
           language: CODE_EDITOR_LANGUAGE.PURE,
           theme: applicationStore.layoutService
             .TEMPORARY__isLightColorThemeEnabled
-            ? CODE_EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
-            : CODE_EDITOR_THEME.LEGEND,
+            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
+            : CODE_EDITOR_THEME.DEFAULT_DARK,
           ...lambdaEditorOptions,
         });
         setEditor(_editor);
@@ -341,7 +333,6 @@ const LambdaEditorInline = observer(
           })}
         >
           <div
-            ref={ref}
             data-testid={QUERY_BUILDER_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
             className="lambda-editor__editor__input"
           >
@@ -451,13 +442,6 @@ const LambdaEditorPopUp = observer(
       transformLambdaToString(true),
     );
 
-    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-    useEffect(() => {
-      if (width !== undefined && height !== undefined) {
-        editor?.layout({ width, height });
-      }
-    }, [editor, width, height]);
-
     const onEnter = (): void => {
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
@@ -466,8 +450,8 @@ const LambdaEditorPopUp = observer(
           language: CODE_EDITOR_LANGUAGE.PURE,
           theme: applicationStore.layoutService
             .TEMPORARY__isLightColorThemeEnabled
-            ? CODE_EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
-            : CODE_EDITOR_THEME.LEGEND,
+            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
+            : CODE_EDITOR_THEME.DEFAULT_DARK,
         });
         setEditor(_editor);
       }
@@ -613,7 +597,6 @@ const LambdaEditorPopUp = observer(
           <ModalBody>
             <div className={clsx('lambda-editor__popup__content', className)}>
               <div
-                ref={ref}
                 data-testid={QUERY_BUILDER_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
                 className="lambda-editor__editor__input"
               >

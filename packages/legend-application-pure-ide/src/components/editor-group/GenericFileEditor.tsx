@@ -19,12 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import type { FileEditorState } from '../../stores/FileEditorState.js';
 import { useApplicationStore, useCommands } from '@finos/legend-application';
-import {
-  clsx,
-  Dialog,
-  useResizeDetector,
-  WordWrapIcon,
-} from '@finos/legend-art';
+import { clsx, Dialog, WordWrapIcon } from '@finos/legend-art';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import {
   getNullableFirstEntry,
@@ -154,14 +149,13 @@ export const GenericFileEditor = observer(
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
-    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
     useEffect(() => {
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const newEditor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
-          theme: CODE_EDITOR_THEME.LEGEND,
+          theme: CODE_EDITOR_THEME.DEFAULT_DARK,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
           readOnly: editorState.file.RO,
         });
@@ -193,12 +187,6 @@ export const GenericFileEditor = observer(
     }, [ideStore, applicationStore, editorState, editor]);
 
     useCommands(editorState);
-
-    useEffect(() => {
-      if (width !== undefined && height !== undefined) {
-        editor?.layout({ width, height });
-      }
-    }, [editor, width, height]);
 
     useEffect(() => {
       if (editor) {
@@ -252,7 +240,7 @@ export const GenericFileEditor = observer(
           </div>
         </div>
         <div className="panel__content file-editor__content">
-          <div ref={ref} className="code-editor__container">
+          <div className="code-editor__container">
             <div className="code-editor__body" ref={textInputRef} />
           </div>
         </div>
