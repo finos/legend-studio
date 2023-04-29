@@ -328,11 +328,7 @@ const DataSpaceDiagramViewerHeader = observer(
                 <button
                   className="data-space__viewer__diagram-viewer__header__tool"
                   tabIndex={-1}
-                  onClick={(): void => {
-                    if (diagramViewerState.diagramRenderer) {
-                      diagramViewerState.diagramRenderer.recenter();
-                    }
-                  }}
+                  onClick={() => diagramViewerState.diagramRenderer.recenter()}
                   title="Recenter (R)"
                 >
                   <CenterFocusIcon className="data-space__viewer__diagram-viewer__icon--recenter" />
@@ -554,7 +550,7 @@ export const DataSpaceDiagramViewer = observer(
                     className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--back"
                     tabIndex={-1}
                     title={`Previous - ${
-                      previousDiagram && previousDiagram.title
+                      previousDiagram?.title
                         ? previousDiagram.title
                         : '(untitled)'
                     } (⇦)`}
@@ -567,9 +563,7 @@ export const DataSpaceDiagramViewer = observer(
                     className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--next"
                     tabIndex={-1}
                     title={`Next - ${
-                      nextDiagram && nextDiagram.title
-                        ? nextDiagram.title
-                        : '(untitled)'
+                      nextDiagram?.title ? nextDiagram.title : '(untitled)'
                     } (⇨)`}
                     disabled={!nextDiagram}
                     onClick={showNextDiagram}
