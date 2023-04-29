@@ -547,7 +547,6 @@ const DataSpaceModelsDocumentationGridPanel = observer(
       >
         <DataGrid
           rowData={documentationState.filteredSearchResults}
-          suppressBrowserResizeObserver={true}
           overlayNoRowsTemplate={`<div class="data-space__viewer__grid--empty">No documentation found</div>`}
           // highlight element row
           getRowClass={(params) =>
@@ -978,7 +977,7 @@ const DataSpaceModelsDocumentationSearchBar = observer(
           spellCheck={false}
           onChange={onSearchTextChange}
           value={searchText}
-          placeholder="Search documentation (Ctrl + Shift + F)"
+          placeholder="Search (Ctrl + Shift + F)"
         />
         <button
           ref={searchConfigTriggerRef}

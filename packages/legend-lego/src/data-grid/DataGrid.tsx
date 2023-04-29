@@ -29,7 +29,18 @@ import {
 export function DataGrid<TData = unknown>(
   props: AgGridReactProps<TData> | AgReactUiProps<TData>,
 ): JSX.Element {
-  return <AgGridReact {...props} modules={[ClientSideRowModelModule]} />;
+  return (
+    <AgGridReact
+      // Temporarily disable usage the browser's ResizeObserver as sometimes, this causes the error
+      // `ResizeObserver loop limit exceeded` when we zoom in too much, in our cases, the problem
+      // seem to arise when the scrollbar visibility changes as row data is being supplied
+      // one way to resolve this problem is to set `alwaysShowVerticalScroll={true}`
+      // See https://github.com/ag-grid/ag-grid/issues/2588
+      suppressBrowserResizeObserver={true}
+      {...props}
+      modules={[ClientSideRowModelModule]}
+    />
+  );
 }
 
 export const configureDataGridComponent = (): void => {

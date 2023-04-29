@@ -66,7 +66,6 @@ const DataAccessOverview = observer(
         <div className="data-space__viewer__data-access__grid data-space__viewer__grid ag-theme-balham-dark">
           <DataGrid
             rowData={dataAccessState.datasets}
-            suppressBrowserResizeObserver={true}
             gridOptions={{
               suppressScrollOnNewData: true,
               getRowId: (rowData) => rowData.data.uuid,
@@ -125,8 +124,6 @@ const DataAccessOverview = observer(
                   return '';
                 },
                 flex: 1,
-                wrapText: true,
-                autoHeight: true,
               },
             ]}
           />
