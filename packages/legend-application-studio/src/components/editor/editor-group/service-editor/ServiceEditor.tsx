@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   MINIMUM_SERVICE_OWNERS,
@@ -57,6 +57,7 @@ import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { flowResult } from 'mobx';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
+import { ServicePostValidationsEditor } from './ServicePostValidationEditor.js';
 
 type UserOption = { label: string; value: string };
 
@@ -454,6 +455,32 @@ export const ServiceEditor = observer(() => {
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR,
   );
+  const renderServiceEditorTab = (): React.ReactNode => {
+    switch (selectedTab) {
+      case SERVICE_TAB.GENERAL:
+        return <ServiceGeneralEditor />;
+      case SERVICE_TAB.EXECUTION:
+        return <ServiceExecutionEditor />;
+      case SERVICE_TAB.REGISTRATION:
+        return <ServiceRegistrationEditor />;
+      case SERVICE_TAB.TEST:
+        return (
+          <ServiceTestableEditor
+            serviceTestableState={serviceState.testableState}
+          />
+        );
+      case SERVICE_TAB.POST_VALIDATION:
+        return (
+          <ServicePostValidationsEditor
+            validationState={serviceState.postValidationState}
+          />
+        );
+      case SERVICE_TAB.TEMPORARY__SNOWFLAKE_SERVICE_DEPLOYMENT:
+        return <TEMPORARY__SnowflakeServiceDeployer />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="service-editor">
@@ -509,20 +536,7 @@ export const ServiceEditor = observer(() => {
           </div>
         </div>
         <div className="panel__content service-editor__content">
-          {selectedTab === SERVICE_TAB.GENERAL && <ServiceGeneralEditor />}
-          {selectedTab === SERVICE_TAB.EXECUTION && <ServiceExecutionEditor />}
-          {selectedTab === SERVICE_TAB.REGISTRATION && (
-            <ServiceRegistrationEditor />
-          )}
-          {selectedTab === SERVICE_TAB.TEST && (
-            <ServiceTestableEditor
-              serviceTestableState={serviceState.testableState}
-            />
-          )}
-          {selectedTab ===
-            SERVICE_TAB.TEMPORARY__SNOWFLAKE_SERVICE_DEPLOYMENT && (
-            <TEMPORARY__SnowflakeServiceDeployer />
-          )}
+          {renderServiceEditorTab()}
         </div>
       </div>
     </div>

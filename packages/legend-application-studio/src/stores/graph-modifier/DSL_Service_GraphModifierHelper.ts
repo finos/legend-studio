@@ -41,6 +41,8 @@ import {
   observe_ServiceTestSuite,
   observe_ServiceTest,
   observe_EmbeddedData,
+  PostValidation,
+  observe_PostValidation,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -247,5 +249,24 @@ export const pureMultiExecution_addExecutionParameter = action(
 export const pureMultiExecution_deleteExecutionParameter = action(
   (pe: PureMultiExecution, value: KeyedExecutionParameter): void => {
     deleteEntry(pe.executionParameters, value);
+  },
+);
+
+// ------------------------------------------- POST VALIDATION --------------------------
+export const service_addValidation = action(
+  (service: Service, val: PostValidation): void => {
+    addUniqueEntry(service.postValidations, observe_PostValidation(val));
+  },
+);
+
+export const service_deleteValidation = action(
+  (service: Service, val: PostValidation): void => {
+    deleteEntry(service.postValidations, val);
+  },
+);
+
+export const serviceValidation_setDescription = action(
+  (postValidation: PostValidation, val: string) => {
+    postValidation.description = val;
   },
 );

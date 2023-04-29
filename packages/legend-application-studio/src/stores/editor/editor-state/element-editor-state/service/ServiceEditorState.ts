@@ -43,12 +43,14 @@ import {
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
+import { ServicePostValidationsState } from './ServicePostValidationState.js';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
   EXECUTION = 'EXECUTION',
   TEST = 'TEST',
   REGISTRATION = 'REGISTRATION',
+  POST_VALIDATION = 'POST_VALIDATION',
   TEMPORARY__SNOWFLAKE_SERVICE_DEPLOYMENT = 'SNOWFLAKE_DEPLOYMENT',
 }
 
@@ -103,6 +105,7 @@ export class ServiceEditorState extends ElementEditorState {
   registrationState: ServiceRegistrationState;
   testableState: ServiceTestableState;
   selectedTab: SERVICE_TAB;
+  postValidationState: ServicePostValidationsState;
   TEMPORARY__snowflakeServiceRegistrationState: TEMPORARY__SnowflakeServiceRegistrationState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -112,6 +115,7 @@ export class ServiceEditorState extends ElementEditorState {
       executionState: observable,
       registrationState: observable,
       selectedTab: observable,
+      postValidationState: observable,
       setSelectedTab: action,
       resetExecutionState: action,
       openToTestTab: action,
@@ -135,6 +139,7 @@ export class ServiceEditorState extends ElementEditorState {
       query && !isStubbed_RawLambda(query)
         ? SERVICE_TAB.EXECUTION
         : SERVICE_TAB.GENERAL;
+    this.postValidationState = new ServicePostValidationsState(this);
     this.TEMPORARY__snowflakeServiceRegistrationState =
       new TEMPORARY__SnowflakeServiceRegistrationState(
         this.editorStore,
