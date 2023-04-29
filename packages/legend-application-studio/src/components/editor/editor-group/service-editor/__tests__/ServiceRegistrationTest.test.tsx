@@ -113,7 +113,7 @@ const setup = async (
     projectData: [],
     projectDependency: [],
     projectDependencyVersions: [],
-    dependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
+    projectDependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
   });
   return MOCK__editorStore;
 };

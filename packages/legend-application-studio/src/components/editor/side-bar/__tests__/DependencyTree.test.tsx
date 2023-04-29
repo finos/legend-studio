@@ -158,7 +158,7 @@ beforeEach(async () => {
     projects: TEST_DATA__Projects,
     projectData: TEST_DATA__ProjectData,
     projectDependency: TEST_DATA__DependencyEntities,
-    dependencyReport: TEST_DATA__ProjectDependencyReport,
+    projectDependencyReport: TEST_DATA__ProjectDependencyReport,
   });
 });
 

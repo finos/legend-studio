@@ -51,7 +51,7 @@ beforeEach(async () => {
     entities: [],
     projectConfiguration: TEST_DATA__ProjectConfiguration,
     latestProjectStructureVersion: TEST_DATA__latestProjectStructure,
-    dependencyReport: TEST_DATA__EmptyProjectDependencyReport,
+    projectDependencyReport: TEST_DATA__EmptyProjectDependencyReport,
   });
   fireEvent.click(renderResult.getByTitle('Project Configuration Panel'));
   const editorGroupContent = await renderResult.findByTestId(

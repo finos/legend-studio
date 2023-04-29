@@ -123,7 +123,7 @@ test(integrationTest('Test Project Report With Conflicts'), async () => {
     projects: TEST_DATA__Projects,
     projectData: TEST_DATA__ProjectData,
     projectDependency: TEST_DATA__DependencyEntities,
-    dependencyReport: TEST_DATA__ProjectDependencyReportWithConflict,
+    projectDependencyReport: TEST_DATA__ProjectDependencyReportWithConflict,
   });
   fireEvent.click(renderResult.getByText('config'));
   const editorGroup = await renderResult.findByTestId(

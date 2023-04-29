@@ -130,7 +130,7 @@ beforeEach(async () => {
     projectData: TEST_DATA__ProjectData,
     projectDependency: TEST_DATA__DependencyEntities,
     projectDependencyVersions: TEST_DATA__Versions,
-    dependencyReport: TEST_DATA__ProjectDependencyReport,
+    projectDependencyReport: TEST_DATA__ProjectDependencyReport,
   });
   fireEvent.click(renderResult.getByText('config'));
   const editorGroup = await renderResult.findByTestId(
