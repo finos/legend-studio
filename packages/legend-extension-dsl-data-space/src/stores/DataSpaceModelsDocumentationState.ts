@@ -15,7 +15,10 @@
  */
 
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  type DataSpaceViewerState,
+} from './DataSpaceViewerState.js';
 import { type TreeData, type TreeNodeData } from '@finos/legend-art';
 import {
   ActionState,
@@ -32,6 +35,8 @@ import {
   type NormalizedDataSpaceDocumentationEntry,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { CORE_PURE_PATH, ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import type { CommandRegistrar } from '@finos/legend-application';
+import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
 
 export enum ModelsDocumentationFilterTreeNodeCheckType {
   CHECKED,
@@ -331,12 +336,15 @@ const buildPackageFilterTreeData = (
   };
 };
 
-export class DataSpaceViewerModelsDocumentationState {
+export class DataSpaceViewerModelsDocumentationState
+  implements CommandRegistrar
+{
   readonly dataSpaceViewerState: DataSpaceViewerState;
 
   showHumanizedForm = true;
 
   // search text
+  private searchInput?: HTMLInputElement | undefined;
   private readonly searchEngine: FuzzySearchEngine<NormalizedDataSpaceDocumentationEntry>;
   searchConfigurationState: FuzzySearchAdvancedConfigState;
   readonly searchState = ActionState.create();
@@ -604,5 +612,38 @@ export class DataSpaceViewerModelsDocumentationState {
         this.updatePackageFilter();
       }
     }
+  }
+
+  setSearchInput(el: HTMLInputElement | undefined): void {
+    this.searchInput = el;
+  }
+
+  focusSearchInput(): void {
+    this.searchInput?.focus();
+  }
+
+  selectSearchInput(): void {
+    this.searchInput?.select();
+  }
+
+  registerCommands(): void {
+    const DEFAULT_TRIGGER = (): boolean =>
+      this.dataSpaceViewerState.currentActivity ===
+      DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION;
+    this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.SEARCH_DOCUMENTATION,
+      trigger: DEFAULT_TRIGGER,
+      action: () => this.focusSearchInput(),
+    });
+  }
+
+  deregisterCommands(): void {
+    [
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.SEARCH_DOCUMENTATION,
+    ].forEach((commandKey) =>
+      this.dataSpaceViewerState.applicationStore.commandService.deregisterCommand(
+        commandKey,
+      ),
+    );
   }
 }

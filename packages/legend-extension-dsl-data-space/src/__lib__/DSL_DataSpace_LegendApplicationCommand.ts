@@ -17,18 +17,19 @@
 import type { CommandConfigData } from '@finos/legend-application';
 
 export enum DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY {
-  RECENTER = 'dsl-dataspace.diagram-viewer.recenter',
+  RECENTER_DIAGRAM = 'dsl-dataspace.diagram-viewer.recenter',
   USE_ZOOM_TOOL = 'dsl-dataspace.diagram-viewer.use-zoom-tool',
   USE_VIEW_TOOL = 'dsl-dataspace.diagram-viewer.use-view-tool',
   USE_PAN_TOOL = 'dsl-dataspace.diagram-viewer.use-pan-tool',
-  NEXT_DIAGRAM = 'dsl-dataspace.diagram-viewer.next-diagram',
-  PREVIOUS_DIAGRAM = 'dsl-dataspace.diagram-viewer.previous-diagram',
-  TOGGLE_DESCRIPTION = 'dsl-dataspace.diagram-viewer.toggle-description',
+  GO_TO_NEXT_DIAGRAM = 'dsl-dataspace.diagram-viewer.go-to-next-diagram',
+  GO_TO_PREVIOUS_DIAGRAM = 'dsl-dataspace.diagram-viewer.go-to-previous-diagram',
+  TOGGLE_DIAGRAM_DESCRIPTION = 'dsl-dataspace.diagram-viewer.toggle-description',
+  SEARCH_DOCUMENTATION = 'dsl-dataspace.models-documentation.search',
 }
 
 export const DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG: CommandConfigData =
   {
-    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER]: {
+    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER_DIAGRAM]: {
       title: 'Data Space Diagram Viewer: Recenter',
       defaultKeyboardShortcut: 'KeyR',
       when: 'When diagram viewer is active',
@@ -48,19 +49,26 @@ export const DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG: CommandConfigData
       defaultKeyboardShortcut: 'KeyM',
       when: 'When diagram viewer is active',
     },
-    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.NEXT_DIAGRAM]: {
+    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.GO_TO_NEXT_DIAGRAM]: {
       title: 'Data Space Diagram Viewer: Next Diagram',
       defaultKeyboardShortcut: 'ArrowRight',
       when: 'When diagram viewer is active',
     },
-    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.PREVIOUS_DIAGRAM]: {
+    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.GO_TO_PREVIOUS_DIAGRAM]: {
       title: 'Data Space Diagram Viewer: Previous Diagram',
       defaultKeyboardShortcut: 'ArrowLeft',
       when: 'When viewing diagram',
     },
-    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.TOGGLE_DESCRIPTION]: {
-      title: 'Data Space Diagram Viewer: Toggle Description',
-      defaultKeyboardShortcut: 'KeyD',
-      when: 'When diagram viewer is active',
+    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.TOGGLE_DIAGRAM_DESCRIPTION]:
+      {
+        title: 'Data Space Diagram Viewer: Toggle Description',
+        defaultKeyboardShortcut: 'KeyD',
+        when: 'When diagram viewer is active',
+      },
+    [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.SEARCH_DOCUMENTATION]: {
+      title: 'Data Space Models Documentation: Search',
+      defaultKeyboardShortcut: 'Control+Shift+KeyF',
+      additionalKeyboardShortcuts: ['Meta+Shift+KeyF'],
+      when: 'When models documnetation viewer is active',
     },
   };

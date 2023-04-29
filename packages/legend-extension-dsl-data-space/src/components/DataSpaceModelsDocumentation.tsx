@@ -57,7 +57,7 @@ import {
   type NormalizedDataSpaceDocumentationEntry,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { debounce, isNonNullable, prettyCONSTName } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
@@ -547,6 +547,7 @@ const DataSpaceModelsDocumentationGridPanel = observer(
       >
         <DataGrid
           rowData={documentationState.filteredSearchResults}
+          suppressBrowserResizeObserver={true}
           overlayNoRowsTemplate={`<div class="data-space__viewer__grid--empty">No documentation found</div>`}
           // highlight element row
           getRowClass={(params) =>
@@ -943,7 +944,7 @@ const DataSpaceModelsDocumentationSearchBar = observer(
     // actions
     const clearSearchText = (): void => {
       documentationState.resetSearch();
-      searchInputRef.current?.focus();
+      documentationState.focusSearchInput();
     };
     const toggleSearchConfigMenu = (): void =>
       documentationState.setShowSearchConfigurationMenu(
@@ -951,14 +952,22 @@ const DataSpaceModelsDocumentationSearchBar = observer(
       );
     const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
       if (event.code === 'Escape') {
-        searchInputRef.current?.select();
+        documentationState.selectSearchInput();
       }
     };
 
     // search config menu
     const closeSearchConfigMenu = (): void =>
       documentationState.setShowSearchConfigurationMenu(false);
-    const onSearchConfigMenuOpen = (): void => searchInputRef.current?.focus();
+    const onSearchConfigMenuOpen = (): void =>
+      documentationState.focusSearchInput();
+
+    useEffect(() => {
+      if (searchInputRef.current) {
+        documentationState.setSearchInput(searchInputRef.current);
+      }
+      return () => documentationState.setSearchInput(undefined);
+    }, [documentationState]);
 
     return (
       <div className="data-space__viewer__models-documentation__search">
@@ -969,7 +978,7 @@ const DataSpaceModelsDocumentationSearchBar = observer(
           spellCheck={false}
           onChange={onSearchTextChange}
           value={searchText}
-          placeholder="Search documentation"
+          placeholder="Search documentation (Ctrl + Shift + F)"
         />
         <button
           ref={searchConfigTriggerRef}
@@ -1039,6 +1048,8 @@ export const DataSpaceModelsDocumentation = observer(
     const anchor = generateAnchorForActivity(
       DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
     );
+
+    useCommands(dataSpaceViewerState.modelsDocumentationState);
 
     useEffect(() => {
       if (sectionRef.current) {

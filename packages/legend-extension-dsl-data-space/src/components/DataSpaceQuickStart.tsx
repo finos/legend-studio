@@ -265,6 +265,7 @@ const DataSpaceExecutableTDSResultView = observer(
             <div className="data-space__viewer__quickstart__tds__column-specs data-space__viewer__grid ag-theme-balham-dark">
               <DataGrid
                 rowData={columnSpecifications}
+                suppressBrowserResizeObserver={true}
                 gridOptions={{
                   suppressScrollOnNewData: true,
                   getRowId: (rowData) => rowData.data.uuid,

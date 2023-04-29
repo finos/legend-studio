@@ -373,6 +373,7 @@ const QueryBuilderGridResult = observer(
       >
         <DataGrid
           rowData={rowData}
+          suppressBrowserResizeObserver={true}
           gridOptions={{
             suppressScrollOnNewData: true,
             getRowId: function (data) {

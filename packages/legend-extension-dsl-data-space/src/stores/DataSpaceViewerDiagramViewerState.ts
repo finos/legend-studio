@@ -186,7 +186,7 @@ export class DataSpaceViewerDiagramViewerState implements CommandRegistrar {
       this.dataSpaceViewerState.currentActivity ===
       DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER;
     this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
-      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER,
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER_DIAGRAM,
       trigger: DEFAULT_TRIGGER,
       action: () => this.diagramRenderer.recenter(),
     });
@@ -206,7 +206,7 @@ export class DataSpaceViewerDiagramViewerState implements CommandRegistrar {
       action: () => this.diagramRenderer.switchToPanMode(),
     });
     this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
-      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.NEXT_DIAGRAM,
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.GO_TO_NEXT_DIAGRAM,
       trigger: DEFAULT_TRIGGER,
       action: () => {
         if (this.nextDiagram) {
@@ -215,7 +215,7 @@ export class DataSpaceViewerDiagramViewerState implements CommandRegistrar {
       },
     });
     this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
-      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.PREVIOUS_DIAGRAM,
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.GO_TO_PREVIOUS_DIAGRAM,
       trigger: DEFAULT_TRIGGER,
       action: () => {
         if (this.previousDiagram) {
@@ -224,7 +224,7 @@ export class DataSpaceViewerDiagramViewerState implements CommandRegistrar {
       },
     });
     this.dataSpaceViewerState.applicationStore.commandService.registerCommand({
-      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.TOGGLE_DESCRIPTION,
+      key: DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.TOGGLE_DIAGRAM_DESCRIPTION,
       trigger: DEFAULT_TRIGGER,
       action: () => this.setShowDescription(!this.showDescription),
     });
@@ -232,12 +232,12 @@ export class DataSpaceViewerDiagramViewerState implements CommandRegistrar {
 
   deregisterCommands(): void {
     [
-      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER,
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER_DIAGRAM,
       DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_ZOOM_TOOL,
       DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_VIEW_TOOL,
       DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_PAN_TOOL,
-      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.NEXT_DIAGRAM,
-      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.PREVIOUS_DIAGRAM,
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.GO_TO_NEXT_DIAGRAM,
+      DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.GO_TO_PREVIOUS_DIAGRAM,
     ].forEach((commandKey) =>
       this.dataSpaceViewerState.applicationStore.commandService.deregisterCommand(
         commandKey,
