@@ -75,7 +75,7 @@
 
       height: 2.8rem;
       min-width: 2rem;
-      padding: 0 0.5rem;
+      padding: 0 1rem;
       border-radius: 0.2rem;
       margin: 0 0.3rem;
 
@@ -148,7 +148,11 @@
     }
 
     &__action + &__action {
-      margin-left: 0.2rem;
+      margin-left: 0;
+    }
+
+    &__action__dropdown-trigger {
+      margin-left: 0.5rem;
     }
   }
 

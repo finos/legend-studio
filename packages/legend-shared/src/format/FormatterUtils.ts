@@ -214,3 +214,20 @@ export const indent = (value: string, indentText: string): string =>
     .split('\n')
     .map((line) => `${indentText}${line}`)
     .join('\n');
+
+export const quantify = (
+  value: number,
+  label: string,
+  pluralForm?: string | undefined,
+): string =>
+  value <= 0
+    ? `no ${pluralForm ?? `${label}s`}`
+    : value > 1
+    ? `${value} ${pluralForm ?? `${label}s`}`
+    : `1 ${label}`;
+
+export const quantifyList = (
+  val: Array<unknown>,
+  label: string,
+  pluralForm?: string | undefined,
+): string => quantify(val.length, label, pluralForm);

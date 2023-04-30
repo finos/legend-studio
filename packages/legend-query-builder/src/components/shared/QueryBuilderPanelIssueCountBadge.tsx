@@ -15,6 +15,7 @@
  */
 
 import { TimesCircleIcon } from '@finos/legend-art';
+import { quantifyList } from '@finos/legend-shared';
 
 export const QueryBuilderPanelIssueCountBadge: React.FC<{
   issues: string[] | undefined;
@@ -23,7 +24,7 @@ export const QueryBuilderPanelIssueCountBadge: React.FC<{
   if (!issues) {
     return null;
   }
-  const labelText = `${issues.length} issue${issues.length > 1 ? 's' : ''}`;
+  const labelText = quantifyList(issues, 'issue');
   return (
     <div
       className="query-builder-panel-issue-count-badge"

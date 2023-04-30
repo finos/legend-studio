@@ -25,7 +25,7 @@ import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl } from '../__lib__/LegendQueryNavigation.js';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 import type { PlainObject } from '@finos/legend-shared';
-import { LEGEND_QUERY_USER_DATA_KEY } from '../application/LegendQueryUserData.js';
+import { LEGEND_QUERY_USER_DATA_KEY } from '../__lib__/LegendQueryUserData.js';
 import {
   QueryStorageState,
   persistQueryIds,
@@ -47,7 +47,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
     );
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      queryStorageState.persistedQueries,
+      queryStorageState.recentQueries,
       persistQueryIds,
       removePersistedQuery,
     );

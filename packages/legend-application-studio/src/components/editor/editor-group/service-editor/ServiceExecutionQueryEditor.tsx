@@ -480,7 +480,7 @@ export const ServiceExecutionQueryEditor = observer(
               graphManager={editorStore.graphManagerState.graphManager}
               loadQuery={loadQuery}
               modalTitle="import query"
-              moreOptions={{
+              options={{
                 loadAsDialog: true,
                 includeDefaultQueries: true,
               }}

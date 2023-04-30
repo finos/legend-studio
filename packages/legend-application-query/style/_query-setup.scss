@@ -514,10 +514,9 @@
 }
 
 .query-setup__existing-query {
-  width: 60rem;
-  height: 60rem;
+  bottom: 10vh;
   position: absolute;
-  top: 5vw;
+  top: 10vh;
 
   &__header {
     background: var(--color-magenta-50);
@@ -532,7 +531,7 @@
   }
 
   &__content {
-    padding: 1rem;
+    height: calc(100% - 3.4rem);
   }
 }
 

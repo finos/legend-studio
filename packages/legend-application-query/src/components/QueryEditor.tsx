@@ -316,7 +316,8 @@ const QueryEditorHeaderContent = observer(
         );
       });
     };
-    const renameQuery2 = async (
+
+    const renameQueryFromLoader = async (
       selectedQuery: LightQuery,
       updatedQueryName: string,
       renameQueryState: ActionState,
@@ -404,7 +405,10 @@ const QueryEditorHeaderContent = observer(
 
     const extraHelpMenuContentItems = applicationStore.pluginManager
       .getApplicationPlugins()
-      .flatMap((plugin) => plugin.getExtraQueryEditorHelpMenuEntries?.() ?? [])
+      .flatMap(
+        (plugin) =>
+          plugin.getExtraQueryEditorHelpMenuActionConfigurations?.() ?? [],
+      )
       .map((item) => (
         <MenuContentItem
           key={item.key}
@@ -543,29 +547,24 @@ const QueryEditorHeaderContent = observer(
             }
           >
             <div
-              className=" query-editor__header__action__label"
+              className="query-editor__header__action__label"
               title="See more options"
             >
-              Help
+              Help...
             </div>
-            <CaretDownIcon />
+            <CaretDownIcon className="query-editor__header__action__dropdown-trigger" />
           </DropdownMenu>
           {editorStore.queryLoaderState.isQueryLoaderOpen && (
             <QueryLoader
               queryLoaderState={editorStore.queryLoaderState}
               graphManager={queryBuilderState.graphManagerState.graphManager}
               loadQuery={loadQuery}
-              renameQuery={renameQuery2}
-              moreOptions={{
+              renameQuery={renameQueryFromLoader}
+              options={{
                 loadAsDialog: true,
                 isDeleteSupported: true,
                 includeDefaultQueries: true,
               }}
-              currentQueryId={
-                editorStore instanceof ExistingQueryEditorStore
-                  ? editorStore.query.id
-                  : undefined
-              }
             />
           )}
           <button
@@ -620,7 +619,7 @@ const QueryEditorHeaderContent = observer(
             >
               More Actions...
             </div>
-            <CaretDownIcon />
+            <CaretDownIcon className="query-editor__header__action__dropdown-trigger" />
           </DropdownMenu>
 
           {editorStore.saveAsState && <QuerySaveDialog />}

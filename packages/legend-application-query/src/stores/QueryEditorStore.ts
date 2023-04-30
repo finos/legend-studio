@@ -51,6 +51,7 @@ import {
   type Service,
   createGraphBuilderReport,
   LegendSDLC,
+  QuerySearchSpecification,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -73,6 +74,7 @@ import {
 } from '@finos/legend-server-depot';
 import {
   DEFAULT_TAB_SIZE,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
@@ -89,16 +91,16 @@ import {
 import {
   LEGEND_QUERY_USER_DATA_KEY,
   USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT,
-} from '../application/LegendQueryUserData.js';
+} from '../__lib__/LegendQueryUserData.js';
 import { createModelSchema, list, primitive } from 'serializr';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export class QueryStorageState {
-  persistedQueries: string[] = [];
+  recentQueries: string[] = [];
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryStorageState, {
-      persistedQueries: list(primitive()),
+      recentQueries: list(primitive()),
     }),
   );
 
@@ -114,7 +116,7 @@ export const removePersistedQuery = (
 ): void => {
   persistedQueries.splice(idx, 1);
   const queryStorageState = new QueryStorageState();
-  queryStorageState.persistedQueries = persistedQueries;
+  queryStorageState.recentQueries = persistedQueries;
   applicationStore.userDataService.persistValue(
     LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
     QueryStorageState.serialization.toJson(queryStorageState),
@@ -149,7 +151,7 @@ export const persistQueryIds = (
     persistedQueries.unshift(val.id);
   }
   const queryStorageState = new QueryStorageState();
-  queryStorageState.persistedQueries = persistedQueries;
+  queryStorageState.recentQueries = persistedQueries;
   applicationStore.userDataService.persistValue(
     LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
     queryStorageState,
@@ -635,7 +637,7 @@ export abstract class QueryEditorStore {
     );
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      queryStorageState.persistedQueries,
+      queryStorageState.recentQueries,
       persistQueryIds,
       removePersistedQuery,
     );

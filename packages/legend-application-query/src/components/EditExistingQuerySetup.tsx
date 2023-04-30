@@ -138,7 +138,7 @@ const EditExistingQuerySetupContent = observer(() => {
           graphManager={setupStore.graphManagerState.graphManager}
           loadQuery={loadQuery}
           renameQuery={renameQuery}
-          moreOptions={{ isDeleteSupported: true }}
+          options={{ isDeleteSupported: true }}
         />
       </div>
     </div>

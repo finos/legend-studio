@@ -45,19 +45,24 @@ import type {
 
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
-  readonly loadQueriesState = ActionState.create();
-  queries: LightQuery[] = [];
-  isQueryLoaderOpen = false;
+  readonly searchQueriesState = ActionState.create();
+  queryBuilderState?: QueryBuilderState | undefined;
+
   searchText = '';
+  searchSpecificationProjectCoordinates?: QueryProjectCoordinates[];
   showCurrentUserQueriesOnly = false;
-  showPreviewViewer = false;
-  queryPreviewContent?: QueryInfo;
   extraFilters = new Map<string, boolean>();
   extraFilterOptions: LoadQueryFilterOption[] = [];
-  searchSpecificationProjectCoordinates?: QueryProjectCoordinates[];
-  currentUserId: string | undefined;
-  queryBuilderState?: QueryBuilderState | undefined;
+  queries: LightQuery[] = [];
+  showingRecentlyViewedQueries = true;
+
+  // TODO
+  isQueryLoaderOpen = false;
+  // TODO
   intialQueries: string[];
+
+  showPreviewViewer = false;
+  queryPreviewContent?: QueryInfo;
   onDeleteQuery?:
     | ((
         intialQueries: string[],
@@ -90,6 +95,7 @@ export class QueryLoaderState {
     makeObservable(this, {
       isQueryLoaderOpen: observable,
       queryPreviewContent: observable,
+      showingRecentlyViewedQueries: observable,
       queries: observable,
       showCurrentUserQueriesOnly: observable,
       showPreviewViewer: observable,
@@ -100,11 +106,12 @@ export class QueryLoaderState {
       deleteQuery: action,
       setShowCurrentUserQueriesOnly: action,
       setShowPreviewViewer: action,
-      loadQueries: flow,
+      searchQueries: flow,
       getPreviewQueryContent: flow,
       initializeWithCustomQueries: flow,
       initialize: flow,
     });
+
     this.applicationStore = applicationStore;
     this.intialQueries = intialQueries ?? [];
     this.onDeleteQuery = onDeleteQuery;
@@ -147,16 +154,6 @@ export class QueryLoaderState {
   }
 
   *initialize(queryBuilderState: QueryBuilderState): GeneratorFn<void> {
-    if (!this.currentUserId) {
-      this.currentUserId = (yield flowResult(
-        guaranteeType(
-          queryBuilderState.graphManagerState.graphManager,
-          V1_PureGraphManager,
-        )
-          .engine.getEngineServerClient()
-          .getCurrentUserId(),
-      )) as string;
-    }
     this.queryBuilderState = queryBuilderState;
     this.extraFilterOptions = this.applicationStore.pluginManager
       .getApplicationPlugins()
@@ -183,7 +180,7 @@ export class QueryLoaderState {
     graphManager: AbstractPureGraphManager,
     includeDefaultQueries?: boolean | undefined,
   ): GeneratorFn<void> {
-    this.loadQueriesState.inProgress();
+    this.searchQueriesState.inProgress();
     this.queries = [];
     try {
       for (const [idx, queryId] of this.intialQueries.entries()) {
@@ -216,31 +213,25 @@ export class QueryLoaderState {
           }
         });
       }
-      this.loadQueriesState.pass();
+      this.searchQueriesState.pass();
     } catch (error) {
-      this.loadQueriesState.fail();
+      this.searchQueriesState.fail();
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error);
     }
   }
 
-  *loadQueries(
+  *searchQueries(
     searchText: string,
     graphManager: AbstractPureGraphManager,
     includeDefaultQueries?: boolean | undefined,
   ): GeneratorFn<void> {
-    if (!this.currentUserId) {
-      this.currentUserId = (yield flowResult(
-        guaranteeType(graphManager, V1_PureGraphManager)
-          .engine.getEngineServerClient()
-          .getCurrentUserId(),
-      )) as string;
-    }
     if (
       !searchText &&
       !this.showCurrentUserQueriesOnly &&
       Array.from(this.extraFilters.values()).every((value) => value === false)
     ) {
+      this.showingRecentlyViewedQueries = true;
       this.initializeWithCustomQueries(graphManager, includeDefaultQueries);
     } else {
       if (
@@ -250,11 +241,14 @@ export class QueryLoaderState {
       ) {
         return;
       }
-      this.loadQueriesState.inProgress();
+
+      this.showingRecentlyViewedQueries = false;
+      this.searchQueriesState.inProgress();
+
       try {
         let searchSpecification = new QuerySearchSpecification();
         searchSpecification.searchTerm = searchText;
-        searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
+        searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT + 1;
         searchSpecification.showCurrentUserQueriesOnly =
           this.showCurrentUserQueriesOnly;
         if (this.queryBuilderState) {
@@ -279,9 +273,9 @@ export class QueryLoaderState {
         this.queries = (yield graphManager.searchQueries(
           searchSpecification,
         )) as LightQuery[];
-        this.loadQueriesState.pass();
+        this.searchQueriesState.pass();
       } catch (error) {
-        this.loadQueriesState.fail();
+        this.searchQueriesState.fail();
         assertErrorThrown(error);
         this.applicationStore.notificationService.notifyError(error);
       }

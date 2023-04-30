@@ -269,7 +269,7 @@
   // ---------------------------- Query Loader -------------------------------
 
   .query-loader {
-    &__filter-section {
+    &__filter {
       &__toggler__btn {
         border-color: var(--color-legacylight-dark-grey-200);
         color: var(--color-legacylight-dark-grey-200);
@@ -281,7 +281,7 @@
       }
     }
 
-    &__search-section {
+    &__search {
       &__input {
         &__search__icon {
           svg {
@@ -291,24 +291,20 @@
       }
     }
 
-    &__result__section {
+    &__result {
       border-color: var(--color-legacylight-dark-grey-200);
       background: var(--color-legacylight-light-grey-100);
-    }
 
-    &__result__section:hover {
-      background: var(--color-legacylight-light-grey-200);
+      &:hover {
+        background: var(--color-legacylight-light-grey-200);
+      }
     }
 
     &__result__title {
       color: var(--color-legacylight-dark-grey-200);
     }
 
-    &__result__section__message {
-      color: var(--color-legacylight-dark-grey-200);
-    }
-
-    &__result__section__action-btn {
+    &__result__actions__menu {
       color: var(--color-legacylight-light-grey-300);
     }
 

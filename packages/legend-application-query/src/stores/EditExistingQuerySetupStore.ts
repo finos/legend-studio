@@ -18,7 +18,7 @@ import { QueryLoaderState } from '@finos/legend-query-builder';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { PlainObject } from '@finos/legend-shared';
-import { LEGEND_QUERY_USER_DATA_KEY } from '../application/LegendQueryUserData.js';
+import { LEGEND_QUERY_USER_DATA_KEY } from '../__lib__/LegendQueryUserData.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import {
   QueryStorageState,
@@ -41,7 +41,7 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
     );
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      queryStorageState.persistedQueries,
+      queryStorageState.recentQueries,
       persistQueryIds,
       removePersistedQuery,
     );

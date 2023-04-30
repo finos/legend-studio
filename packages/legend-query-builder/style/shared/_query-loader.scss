@@ -17,15 +17,24 @@
 @use 'mixins' as *;
 
 .query-loader {
+  height: 100%;
+
+  &__header {
+    padding: 1rem;
+    height: 9.2rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+  }
+
   &__title {
     padding: 0.3rem 0.3rem 2rem;
   }
 
-  &__filter-section {
+  &__filter {
+    height: 2.8rem;
+    margin-top: 1rem;
+
     &__toggler {
       @include flexVCenter;
-
-      margin-top: 1rem;
     }
 
     &__extra__filters {
@@ -33,54 +42,43 @@
       border-left: 0.1rem solid var(--color-dark-grey-200);
     }
 
-    &__extra__filter__toggler__btn {
-      align-self: flex-start;
-      padding: 0.5rem;
-      display: flex;
-      border-radius: 1rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
-      margin-left: 0.5rem;
-      word-break: break-word;
-      color: var(--color-light-grey-400);
-      line-height: 2rem;
-      cursor: pointer;
-    }
-
-    &__extra__filter__toggler__btn--toggled {
-      background-color: var(--color-blue-100);
-      color: var(--color-light-grey-50);
-    }
-
     &__toggler__btn {
+      @include flexCenter;
+
+      height: 2.8rem;
       align-self: flex-start;
-      padding: 0.5rem;
-      display: flex;
-      border-radius: 1rem;
+      border-radius: 0.2rem;
+      padding: 0 0.5rem;
+      font-size: 1.2rem;
       border: 0.1rem solid var(--color-dark-grey-200);
-      margin-right: 0.5rem;
-      word-break: break-word;
       color: var(--color-light-grey-400);
       line-height: 2rem;
       cursor: pointer;
-    }
 
-    &__toggler__btn--toggled {
-      background-color: var(--color-blue-100);
-      color: var(--color-light-grey-50);
+      & + & {
+        margin-left: 0.5rem;
+      }
+
+      &:hover {
+        border-color: var(--color-dark-grey-250);
+        background: var(--color-dark-grey-100);
+      }
+
+      &--toggled:hover,
+      &--toggled {
+        border-color: var(--color-blue-200);
+        color: var(--color-light-grey-50);
+      }
     }
   }
 
-  &__search-section {
+  &__search {
     @include flexCenter;
 
-    margin-top: 0.5rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-250);
-    height: 4.4rem;
     position: relative;
 
     &__input {
-      font-size: 1.3rem;
-      height: 2.8rem;
+      height: 3.4rem;
       padding-right: 2.8rem;
       padding-left: 1rem;
       width: 100%;
@@ -92,7 +90,7 @@
         @include flexCenter;
 
         position: relative;
-        height: 2.8rem;
+        height: 3.4rem;
         width: 100%;
       }
 
@@ -132,79 +130,87 @@
     }
   }
 
-  &__body {
-    padding: 0;
-    margin-top: 2rem;
-    margin-bottom: 4rem;
-    height: 40rem;
+  &__content {
+    height: calc(100% - 9.2rem);
+    position: relative;
+  }
+
+  &__results {
+    padding: 0.5rem;
+    height: 100%;
     overflow-y: overlay;
+
+    &__summary {
+      @include flexVCenter;
+
+      font-size: 1.2rem;
+      height: 2rem;
+      margin-bottom: 0.5rem;
+      color: var(--color-dark-grey-400);
+      padding: 0 0.5rem;
+      user-select: none;
+    }
+
+    &__summary__info {
+      font-size: 1.2rem;
+      margin-left: 0.5rem;
+    }
   }
 
-  &__action-btn {
-    height: 1.7rem;
-    font-size: 1.2rem;
+  &__result {
     display: flex;
-    padding: 0.2rem;
-    margin-right: 0.2rem;
-  }
-
-  &__result__section {
-    width: 57rem;
-    max-height: 5.5rem;
+    width: 100%;
+    height: 5.4rem;
+    padding: 0.5rem 0;
+    border-radius: 0.2rem;
+    cursor: pointer;
     border: 0.1rem solid var(--color-dark-grey-200);
     background: var(--color-dark-grey-100);
-    display: flex;
-    margin-bottom: 1rem;
-    cursor: pointer;
+
+    &:hover {
+      background: var(--color-dark-grey-200);
+    }
+
+    & + & {
+      margin-top: 0.5rem;
+    }
   }
 
-  &__result__section:hover {
-    background: var(--color-dark-grey-200);
-  }
-
-  &__result__content__section {
+  &__result__content {
+    width: calc(100% - 5rem);
     text-align: start;
   }
 
   &__result__title {
-    padding: 1rem 1rem 0;
+    @include ellipsisTextOverflow;
+
+    height: 2.2rem;
+    line-height: 2.2rem;
+    width: 80%;
+    padding: 0 1rem;
     color: var(--color-light-grey-300);
     font-weight: 500;
   }
 
   &__result__title__editor {
     display: flex;
+    padding: 0 1rem;
 
     &__input {
-      width: 100%;
-      min-width: 35rem;
-      margin-left: 1rem;
-      margin-top: 0.5rem;
+      width: 80%;
       padding: 0.5rem;
-      border-radius: 0.1rem;
-      background: var(--color-dark-grey-50);
-      color: var(--color-light-grey-200);
-      height: 2.5rem;
-      overflow-x: overlay;
-      border: 0.1rem solid var(--color-dark-grey-300);
-
-      &:focus {
-        border: 0.1rem solid var(--color-blue-200);
-        outline: none;
-      }
+      height: 2.2rem;
     }
 
     &__actions {
       display: flex;
+      margin-left: 0.5rem;
     }
 
     &__save-btn,
     &__cancel-btn {
       font-size: 1.2rem;
       height: 2.2rem;
-      padding: 1rem;
-      margin-top: 0.8rem;
-      margin-left: 0.55rem;
 
       &[disabled] {
         cursor: not-allowed;
@@ -222,62 +228,71 @@
   }
 
   &__result__description {
-    padding: 1rem;
-    padding-top: 0.7rem;
-    font-weight: 100;
-    color: var(--color-dark-grey-500);
-    display: flex;
+    @include flexVCenter;
 
-    &__modified__date {
+    padding: 0 1rem;
+    height: 2.2rem;
+    color: var(--color-dark-grey-500);
+
+    &__date__icon svg {
+      font-size: 1.2rem;
+    }
+
+    &__date {
       margin-right: 1rem;
-      font-size: 1.3rem;
-      min-width: 10rem;
+      font-size: 1.1rem;
+      min-width: 10.5rem;
       margin-left: 0.5rem;
+    }
+
+    &__author__icon {
+      svg {
+        font-size: 1rem;
+      }
     }
 
     &__author__name {
       margin-left: 0.5rem;
       color: var(--color-light-grey-500);
-      font-size: 1.3rem;
-      min-width: 5rem;
+      font-size: 1.1rem;
     }
 
-    &__author__name--owner {
-      margin-left: 0.5rem;
-      color: var(--color-light-grey-400);
-    }
+    &__owner {
+      @include flexCenter;
 
-    &__action-btn {
-      margin-right: 1rem;
-      color: var(--color-light-grey-400);
+      padding: 0 0.5rem;
+      height: 1.4rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--color-light-grey-50);
+      border-radius: 0.2rem;
+      background: var(--color-blue-50);
     }
   }
 
-  &__result__section__message {
-    padding: 0.5rem;
-    color: var(--color-light-grey-400);
-    text-align: center;
-  }
+  &__result__actions-menu {
+    @include flexCenter;
 
-  &__result__section__action-btn {
-    width: 100%;
-    position: relative;
-    text-align: right;
-    right: 0.5rem;
-    padding: 1.2rem;
-    margin-top: 1.1rem;
-    size: 3rem;
+    height: 100%;
+    width: 2.5rem;
     cursor: pointer;
     color: var(--color-dark-grey-300);
+
+    svg {
+      font-size: 1.6rem;
+    }
+
+    &:hover svg {
+      color: var(--color-dark-grey-400);
+    }
   }
 
-  &__result__section__header {
-    display: flex;
-    width: 100%;
-  }
+  &__result__arrow {
+    @include flexCenter;
 
-  &__result__section:hover &__result__section__load__action__icon {
-    animation: nudge-horizontal 0.5s infinite ease;
+    height: 100%;
+    width: 2.5rem;
+    color: var(--color-dark-grey-280);
   }
 
   &__search-modal {
