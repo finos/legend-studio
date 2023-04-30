@@ -1122,7 +1122,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
         await Promise.all(
           this.graphBuilderExtensions.sortedExtraElementBuilders.flatMap(
-            async (builder) =>
+            (builder) =>
               (input.data.otherElementsByBuilder.get(builder) ?? []).map(
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
