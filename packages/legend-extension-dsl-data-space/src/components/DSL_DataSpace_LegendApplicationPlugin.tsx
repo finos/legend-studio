@@ -52,7 +52,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
         key: 'data-space-filter-option',
         label: (queryBuilderState): string | undefined => {
           if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
-            return 'Filter by DataSpace';
+            return 'Current Data Space';
           }
           return undefined;
         },
@@ -72,7 +72,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
         key: 'class-filter-option',
         label: (queryBuilderState): string | undefined => {
           if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
-            return 'Filter by Class';
+            return 'Current Class';
           }
           return undefined;
         },
