@@ -85,7 +85,7 @@ export const observe_ParameterValue = skipObserved(
   },
 );
 
-const observe_PostValidationAssertion = skipObserved(
+export const observe_PostValidationAssertion = skipObserved(
   (metamodel: PostValidationAssertion): PostValidationAssertion => {
     makeObservable(metamodel, {
       assertion: observable,

@@ -16,6 +16,8 @@
 
 import { observer } from 'mobx-react-lite';
 import type {
+  PostValidationAssertionState,
+  PostValidationParameterState,
   PostValidationState,
   ServicePostValidationsState,
 } from '../../../../stores/editor/editor-state/element-editor-state/service/ServicePostValidationState.js';
@@ -24,6 +26,7 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
+  PURE_FunctionIcon,
   PanelContent,
   PanelFormTextField,
   PlusIcon,
@@ -31,20 +34,169 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  TimesIcon,
   clsx,
 } from '@finos/legend-art';
 import type { PostValidation } from '@finos/legend-graph';
 import { forwardRef, useEffect, useState } from 'react';
-import { serviceValidation_setDescription } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
+import {
+  serviceValidation_setASsertionId,
+  serviceValidation_setDescription,
+} from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
+import { flowResult } from 'mobx';
+
+const ServicePostValidationAssertionEditor = observer(
+  (props: { assertionState: PostValidationAssertionState }) => {
+    const { assertionState } = props;
+    const servicePostValidationState =
+      assertionState.postValidationState.servicePostValidationState;
+    const serviceEditorState = servicePostValidationState.serviceEditorState;
+    const postValState = assertionState.postValidationState;
+    const hasParserError = postValState.hasParserError;
+    const isReadOnly = serviceEditorState.isReadOnly;
+    const assertion = assertionState.assertion;
+    const errorMessage =
+      assertion.id === ''
+        ? `assertion ID can't be empty`
+        : assertion.id.includes(' ')
+        ? `assertion ID can't include spaced`
+        : undefined;
+
+    return (
+      <div className="service-post-validation-editor__parameters">
+        <div className="service-post-validation-editor__header">
+          <div className="service-post-validation-editor__header__label">
+            <PURE_FunctionIcon />
+            <div className="service-post-validation-editor__header__label__text">
+              Assertion
+            </div>
+          </div>
+          <div className="service-post-validation-editor__header__label__actions">
+            <div className="service-post-validation-editor__header__label__action">
+              <button
+                className="service-post-validation-editor__remove-btn btn--dark btn--caution"
+                title="Delete Assertion"
+                disabled={isReadOnly}
+                onClick={(): void =>
+                  assertionState.postValidationState.deleteAssertion(assertion)
+                }
+                tabIndex={-1}
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          </div>
+        </div>
+        <PanelFormTextField
+          name="ID"
+          value={assertion.id}
+          update={(value: string | undefined): void =>
+            serviceValidation_setASsertionId(assertion, value ?? '')
+          }
+          errorMessage={errorMessage}
+        />
+        <div
+          className={clsx(
+            'service-post-validation-editor__lambda-editor__container',
+            { backdrop__element: hasParserError },
+          )}
+        >
+          <LambdaEditor
+            className="service-post-validation-editor__lambda-editor"
+            disabled={isReadOnly || postValState.isRunningLambdaConversion}
+            lambdaEditorState={assertionState}
+            forceBackdrop={hasParserError}
+          />
+        </div>
+      </div>
+    );
+  },
+);
+
+const ServicePostValidationParameterEditor = observer(
+  (props: { paramState: PostValidationParameterState }) => {
+    const { paramState } = props;
+    const serviceEditorState =
+      paramState.postValidationState.servicePostValidationState
+        .serviceEditorState;
+    const postValState = paramState.postValidationState;
+    const hasParserError = postValState.hasParserError;
+    const isReadOnly = serviceEditorState.isReadOnly;
+    return (
+      <div>
+        <div className="service-post-validation-editor__header">
+          <div className="service-post-validation-editor__header__label">
+            <PURE_FunctionIcon />
+            <div className="service-post-validation-editor__header__label__text">
+              Parameter
+            </div>
+          </div>
+          <div className="service-post-validation-editor__header__label__actions">
+            <div className="service-post-validation-editor__header__label__action">
+              <button
+                className="service-post-validation-editor__remove-btn btn--dark btn--caution"
+                title="Delete Assertion"
+                disabled={isReadOnly}
+                onClick={(): void =>
+                  paramState.postValidationState.deleteParam(paramState)
+                }
+                tabIndex={-1}
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          className={clsx(
+            'service-post-validation-editor__lambda-editor__container',
+            { backdrop__element: hasParserError },
+          )}
+        >
+          <LambdaEditor
+            className="service-post-validation-editor__lambda-editor"
+            disabled={isReadOnly || postValState.isRunningLambdaConversion}
+            lambdaEditorState={paramState}
+            forceBackdrop={hasParserError}
+          />
+        </div>
+      </div>
+    );
+  },
+);
 
 const ServicePostValidationEditor = observer(
   (props: { postValidationState: PostValidationState }) => {
     const { postValidationState } = props;
+    const serviceEditorState =
+      postValidationState.servicePostValidationState.serviceEditorState;
+    const editorStore = serviceEditorState.editorStore;
+    const applicationStore = editorStore.applicationStore;
+    const isReadOnly = serviceEditorState.isReadOnly;
     const validation = postValidationState.validation;
+    const addParameter = (): void => {
+      flowResult(postValidationState.addParameter()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+    const addAssertion = (): void => {
+      flowResult(postValidationState.addAssertion()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
 
+    useEffect(() => {
+      flowResult(postValidationState.convertAssertionsLambdas()).catch(
+        applicationStore.alertUnhandledError,
+      );
+      flowResult(postValidationState.convertParameterLambdas()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    }, [applicationStore, postValidationState]);
     return (
       <ResizablePanelGroup orientation="horizontal">
-        <ResizablePanel size={300} minSize={28}>
+        <ResizablePanel size={150} minSize={28}>
           <div className="service-test-data-editor panel">
             <div className="service-test-suite-editor__header">
               <div className="service-test-suite-editor__header__title">
@@ -68,7 +220,90 @@ const ServicePostValidationEditor = observer(
         <ResizablePanelSplitter>
           <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
         </ResizablePanelSplitter>
-        <ResizablePanel minSize={56}></ResizablePanel>
+        <ResizablePanel minSize={56}>
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel size={200} minSize={28}>
+              <div className="service-test-data-editor panel">
+                <div className="service-test-suite-editor__header">
+                  <div className="service-test-suite-editor__header__title">
+                    <div className="service-test-suite-editor__header__title__label">
+                      Parameters
+                    </div>
+                  </div>
+                  <div className="panel__header__actions">
+                    <button
+                      className="panel__header__action"
+                      tabIndex={-1}
+                      onClick={addParameter}
+                      title="Add Parameter"
+                    >
+                      <PlusIcon />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="service-test-data-editor__data">
+                  {postValidationState.parametersState.map((aState) => (
+                    <ServicePostValidationParameterEditor
+                      key={aState.uuid}
+                      paramState={aState}
+                    />
+                  ))}
+                  {!validation.parameters.length && (
+                    <BlankPanelPlaceholder
+                      text="Add Parameter"
+                      onClick={addParameter}
+                      disabled={isReadOnly}
+                      clickActionType="add"
+                      tooltipText="Click to add parameter"
+                    />
+                  )}
+                </div>
+              </div>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel minSize={56}>
+              <div className="service-test-data-editor panel">
+                <div className="service-test-suite-editor__header">
+                  <div className="service-test-suite-editor__header__title">
+                    <div className="service-test-suite-editor__header__title__label">
+                      Assertions
+                    </div>
+                  </div>
+                  <div className="panel__header__actions">
+                    <button
+                      className="panel__header__action"
+                      tabIndex={-1}
+                      onClick={addAssertion}
+                      title="Add Assertion"
+                    >
+                      <PlusIcon />
+                    </button>
+                  </div>
+                </div>
+                <div className="service-test-data-editor__data">
+                  {postValidationState.assertionStates.map((aState) => (
+                    <ServicePostValidationAssertionEditor
+                      key={aState.uuid}
+                      assertionState={aState}
+                    />
+                  ))}
+                  {!validation.assertions.length && (
+                    <BlankPanelPlaceholder
+                      text="Add Assertion"
+                      onClick={addAssertion}
+                      disabled={isReadOnly}
+                      clickActionType="add"
+                      tooltipText="Click to add assertion"
+                    />
+                  )}
+                </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
       </ResizablePanelGroup>
     );
   },
@@ -144,6 +379,10 @@ export const PostValidationItem = observer(
   },
 );
 
+// TOD: Currently editor is a very basic editor. Can improve with the following:
+// 1. generate parameters using the query parameters (verify that those parameter values are used for execution)
+//  most likely the parameter values should be consistent with other parameter value shapes such as service tests
+// 2. wire up engine api calls to generate validation as well as run the validations
 export const ServicePostValidationsEditor = observer(
   (props: { validationState: ServicePostValidationsState }) => {
     const { validationState } = props;
@@ -155,21 +394,18 @@ export const ServicePostValidationsEditor = observer(
       validationState.init();
     }, [validationState]);
     return (
-      <div className="service-registration-editor">
+      <div className="service-post-validation-editor">
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">Post Validations</div>
-          </div>
-          <div className="panel__header__actions">
-            <div className="panel__header__action"></div>
           </div>
         </div>
         <div className="service-test-editor__content">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={100} size={300}>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="panel__header__title__content">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__label">
                     Post Validations
                   </div>
                 </div>
@@ -212,7 +448,7 @@ export const ServicePostValidationsEditor = observer(
                 <div className="service-test-suite-editor__header">
                   <div className="service-test-suite-editor__header__title">
                     <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--tests-suites">
-                      suite
+                      Validation
                     </div>
                   </div>
                 </div>
