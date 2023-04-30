@@ -152,7 +152,7 @@ const QueryPreviewModal = observer((props: { queryInfo: QueryInfo }) => {
                 inputValue={queryInfo.content}
                 isReadOnly={true}
                 language={CODE_EDITOR_LANGUAGE.PURE}
-                showMiniMap={false}
+                hideMinimap={true}
                 hideGutter={true}
               />
             </div>

@@ -36,9 +36,9 @@ export const CodeEditor: React.FC<{
   isReadOnly?: boolean | undefined;
   lightTheme?: CODE_EDITOR_THEME;
   language: CODE_EDITOR_LANGUAGE;
-  showMiniMap?: boolean | undefined;
+  hideMinimap?: boolean | undefined;
   hideGutter?: boolean | undefined;
-  showPadding?: boolean | undefined;
+  hidePadding?: boolean | undefined;
   extraEditorOptions?:
     | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
     | undefined;
@@ -50,9 +50,9 @@ export const CodeEditor: React.FC<{
     lightTheme,
     language,
     isReadOnly,
-    showMiniMap,
+    hideMinimap,
     hideGutter,
-    showPadding,
+    hidePadding,
     extraEditorOptions,
   } = props;
   const applicationStore = useApplicationStore();
@@ -83,14 +83,17 @@ export const CodeEditor: React.FC<{
           .TEMPORARY__isLightColorThemeEnabled
           ? lightTheme ?? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
           : CODE_EDITOR_THEME.DEFAULT_DARK,
-        padding: showPadding ? { top: 20, bottom: 20 } : { top: 0, bottom: 0 },
+
+        // layout
+        glyphMargin: !hidePadding,
+        padding: !hidePadding ? { top: 20, bottom: 20 } : { top: 0, bottom: 0 },
 
         formatOnType: true,
         formatOnPaste: true,
       });
       setEditor(_editor);
     }
-  }, [applicationStore, lightTheme, showPadding, editor]);
+  }, [applicationStore, lightTheme, hidePadding, editor]);
 
   useEffect(() => {
     if (editor) {
@@ -121,12 +124,12 @@ export const CodeEditor: React.FC<{
     }
     editor.updateOptions({
       readOnly: Boolean(isReadOnly),
-      minimap: { enabled: Boolean(showMiniMap) },
+      minimap: { enabled: !hideMinimap },
       // Hide the line number gutter
       // See https://github.com/microsoft/vscode/issues/30795
       ...(hideGutter
         ? {
-            glyphMargin: true,
+            glyphMargin: !hidePadding,
             folding: false,
             lineNumbers: 'off',
             lineDecorationsWidth: 0,
@@ -151,7 +154,7 @@ export const CodeEditor: React.FC<{
   return (
     <div
       className={clsx('code-editor__container', {
-        'code-editor__container--padding': showPadding,
+        'code-editor__container--padding': !hidePadding,
       })}
     >
       <div className="code-editor__body" ref={textInputRef} />

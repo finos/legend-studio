@@ -242,7 +242,6 @@ const WorkflowJobLogsViewer = observer(
               inputValue={logs}
               isReadOnly={true}
               language={CODE_EDITOR_LANGUAGE.TEXT}
-              showMiniMap={true}
             />
           </ModalBody>
           <ModalFooter>

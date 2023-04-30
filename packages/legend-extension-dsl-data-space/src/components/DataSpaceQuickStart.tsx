@@ -351,8 +351,7 @@ const DataSpaceExecutableTDSResultView = observer(
                     isReadOnly={true}
                     lightTheme={CODE_EDITOR_THEME.ONE_DARK_PRO}
                     language={CODE_EDITOR_LANGUAGE.PURE}
-                    showMiniMap={false}
-                    showPadding={true}
+                    hideMinimap={true}
                     hideGutter={true}
                   />
                 </div>

@@ -206,7 +206,6 @@ const TestFailViewer = observer(
                 inputValue={failure.error}
                 isReadOnly={true}
                 language={CODE_EDITOR_LANGUAGE.TEXT}
-                showMiniMap={true}
               />
             )}
             {failure instanceof EqualToJsonAssertFail && (

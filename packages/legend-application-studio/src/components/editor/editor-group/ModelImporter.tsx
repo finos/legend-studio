@@ -200,7 +200,6 @@ export const ModelImporter = observer(() => {
             }
             inputValue={modelImportEditorState.modelText}
             updateInput={updateModel}
-            showMiniMap={true}
           />
         </div>
       );
