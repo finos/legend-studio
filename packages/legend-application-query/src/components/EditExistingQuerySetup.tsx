@@ -34,7 +34,7 @@ import {
 import { EditExistingQuerySetupStore } from '../stores/EditExistingQuerySetupStore.js';
 import { BaseQuerySetup, BaseQuerySetupStoreContext } from './QuerySetup.js';
 import type { LightQuery } from '@finos/legend-graph';
-import { QueryLoader } from '@finos/legend-query-builder';
+import { QueryLoader, QueryLoaderDialog } from '@finos/legend-query-builder';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 const EditExistingQuerySetupStoreProvider: React.FC<{

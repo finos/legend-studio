@@ -92,7 +92,7 @@ const QueryProductionizerSetupContent = observer(() => {
           queryLoaderState={setupStore.queryLoaderState}
           graphManager={setupStore.graphManagerState.graphManager}
           loadQuery={loadQuery}
-          modalTitle="productionize query"
+          loadActionLabel="productionize query"
         />
       </div>
     </div>

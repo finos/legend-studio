@@ -16,7 +16,6 @@
 
 import {
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -24,7 +23,6 @@ import {
   QuerySearchSpecification,
   type AbstractPureGraphManager,
   type QueryProjectCoordinates,
-  V1_PureGraphManager,
   type Query,
   type QueryInfo,
 } from '@finos/legend-graph';
@@ -32,7 +30,6 @@ import {
   ActionState,
   type GeneratorFn,
   assertErrorThrown,
-  guaranteeType,
   deleteEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -42,6 +39,8 @@ import type {
   LoadQueryFilterOption,
   QueryBuilder_LegendApplicationPlugin_Extension,
 } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
+
+export const QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT = 20;
 
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -201,7 +200,7 @@ export class QueryLoaderState {
       }
       if (includeDefaultQueries) {
         const searchSpecification = new QuerySearchSpecification();
-        searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
+        searchSpecification.limit = QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT;
         searchSpecification.projectCoordinates =
           this.searchSpecificationProjectCoordinates ?? [];
         const queries = (yield graphManager.searchQueries(
@@ -248,7 +247,7 @@ export class QueryLoaderState {
       try {
         let searchSpecification = new QuerySearchSpecification();
         searchSpecification.searchTerm = searchText;
-        searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT + 1;
+        searchSpecification.limit = QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT + 1;
         searchSpecification.showCurrentUserQueriesOnly =
           this.showCurrentUserQueriesOnly;
         if (this.queryBuilderState) {

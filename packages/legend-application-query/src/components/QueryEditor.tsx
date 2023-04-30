@@ -55,7 +55,6 @@ import {
 } from '../__lib__/LegendQueryNavigation.js';
 import {
   QuerySaveAsState,
-  ExistingQueryEditorStore,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
   QuerySaveState,
@@ -78,7 +77,7 @@ import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.j
 import {
   QueryBuilder,
   QueryBuilderNavigationBlocker,
-  QueryLoader,
+  QueryLoaderDialog,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
@@ -555,13 +554,12 @@ const QueryEditorHeaderContent = observer(
             <CaretDownIcon className="query-editor__header__action__dropdown-trigger" />
           </DropdownMenu>
           {editorStore.queryLoaderState.isQueryLoaderOpen && (
-            <QueryLoader
+            <QueryLoaderDialog
               queryLoaderState={editorStore.queryLoaderState}
               graphManager={queryBuilderState.graphManagerState.graphManager}
               loadQuery={loadQuery}
               renameQuery={renameQueryFromLoader}
               options={{
-                loadAsDialog: true,
                 isDeleteSupported: true,
                 includeDefaultQueries: true,
               }}

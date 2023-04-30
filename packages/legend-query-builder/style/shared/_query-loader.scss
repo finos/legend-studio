@@ -25,10 +25,6 @@
     border-bottom: 0.1rem solid var(--color-dark-grey-200);
   }
 
-  &__title {
-    padding: 0.3rem 0.3rem 2rem;
-  }
-
   &__filter {
     height: 2.8rem;
     margin-top: 1rem;
@@ -295,32 +291,40 @@
     color: var(--color-dark-grey-280);
   }
 
-  &__search-modal {
-    width: 60rem;
-    padding: 1rem;
-
-    .modal__title {
-      margin-bottom: 1rem;
-    }
+  &__dialog {
+    margin: 2vh 0;
 
     &__container {
-      overflow-y: hidden !important;
+      @include flexCenter;
+
+      height: 100%;
+      width: 100%;
     }
 
-    &__inner-container {
-      overflow-y: initial !important;
+    &__body {
+      height: 100%;
+      width: 60rem;
     }
 
-    .selector-input__menu {
-      z-index: 1;
+    &__body__content {
+      height: 100%;
+      overflow: hidden;
     }
 
-    &__actions {
-      position: absolute;
-      top: 1.5rem;
-      right: 1.5rem;
-      padding: 0.3rem;
+    &__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      height: 3.4rem;
+      padding: 0 1rem;
+    }
+
+    &__header__close-btn {
       color: var(--color-light-grey-300);
+    }
+
+    &__content {
+      height: calc(100% - 3.4rem);
     }
   }
 }

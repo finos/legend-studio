@@ -47,7 +47,7 @@ import {
   ServiceQueryBuilderState,
   LambdaParameterValuesEditor,
   QueryBuilderTextEditorMode,
-  QueryLoader,
+  QueryLoaderDialog,
   ExecutionPlanViewer,
 } from '@finos/legend-query-builder';
 import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
@@ -475,13 +475,12 @@ export const ServiceExecutionQueryEditor = observer(
           />
           <ServiceExecutionResultViewer executionState={executionState} />
           {queryState.queryLoaderState.isQueryLoaderOpen && (
-            <QueryLoader
+            <QueryLoaderDialog
               queryLoaderState={queryState.queryLoaderState}
               graphManager={editorStore.graphManagerState.graphManager}
               loadQuery={loadQuery}
-              modalTitle="import query"
+              title="import query"
               options={{
-                loadAsDialog: true,
                 includeDefaultQueries: true,
               }}
             />

@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
@@ -56,7 +53,10 @@ import {
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState, useMemo, useEffect } from 'react';
-import type { QueryLoaderState } from '../stores/QueryLoaderState.js';
+import {
+  QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT,
+  type QueryLoaderState,
+} from '../stores/QueryLoaderState.js';
 
 const QueryPreviewViewer = observer(
   (props: { queryLoaderState: QueryLoaderState }) => {
@@ -100,10 +100,11 @@ const QueryPreviewViewer = observer(
   },
 );
 
-const QueryLoaderBody = observer(
+export const QueryLoader = observer(
   (props: {
     queryLoaderState: QueryLoaderState;
     graphManager: AbstractPureGraphManager;
+    loadActionLabel?: string | undefined;
     loadQuery: (selectedQuery: LightQuery) => void;
     renameQuery?:
       | ((
@@ -112,7 +113,6 @@ const QueryLoaderBody = observer(
           renameQueryState: ActionState,
         ) => Promise<void>)
       | undefined;
-    modalTitle?: string | undefined;
     options?:
       | {
           isDeleteSupported?: boolean;
@@ -125,7 +125,7 @@ const QueryLoaderBody = observer(
       graphManager,
       loadQuery,
       renameQuery,
-      modalTitle,
+      loadActionLabel,
       options,
     } = props;
     const applicationStore = useApplicationStore();
@@ -351,9 +351,9 @@ const QueryLoaderBody = observer(
                     ) : (
                       `No recently viewed queries`
                     )
-                  ) : results.length >= DEFAULT_TYPEAHEAD_SEARCH_LIMIT ? (
+                  ) : results.length >= QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT ? (
                     <>
-                      {`Found ${DEFAULT_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
+                      {`Found ${QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
                       <InfoCircleIcon
                         title="Some queries are not listed, refine your search to get better matches"
                         className="query-loader__results__summary__info"
@@ -364,13 +364,13 @@ const QueryLoaderBody = observer(
                   )}
                 </div>
                 {results
-                  .slice(0, DEFAULT_TYPEAHEAD_SEARCH_LIMIT)
+                  .slice(0, QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT)
                   .map((query, idx) => (
                     <div
                       className="query-loader__result"
                       title={
                         showQueryNameEditInput !== idx
-                          ? `Click to ${modalTitle ?? 'load query'}...`
+                          ? `Click to ${loadActionLabel ?? 'load query'}...`
                           : ''
                       }
                       key={query.id}
@@ -509,9 +509,12 @@ const QueryLoaderBody = observer(
   },
 );
 
-export const QueryLoader = observer(
+export const QueryLoaderDialog = observer(
   (props: {
     queryLoaderState: QueryLoaderState;
+    loadActionLabel?: string | undefined;
+    title?: string | undefined;
+
     graphManager: AbstractPureGraphManager;
     loadQuery: (selectedQuery: LightQuery) => void;
     renameQuery?:
@@ -521,10 +524,8 @@ export const QueryLoader = observer(
           renameQueryState: ActionState,
         ) => Promise<void>)
       | undefined;
-    modalTitle?: string | undefined;
     options?:
       | {
-          loadAsDialog?: boolean;
           isDeleteSupported?: boolean;
           includeDefaultQueries?: boolean;
         }
@@ -532,63 +533,60 @@ export const QueryLoader = observer(
   }) => {
     const {
       queryLoaderState,
+      title,
+      loadActionLabel,
       graphManager,
       loadQuery,
       renameQuery,
-      modalTitle,
       options,
     } = props;
 
-    if (options?.loadAsDialog) {
-      const close = (): void => {
-        queryLoaderState.setIsQueryLoaderOpen(false);
-        queryLoaderState.reset();
-      };
-      return (
-        <Dialog
-          open={queryLoaderState.isQueryLoaderOpen}
-          onClose={close}
-          classes={{ container: 'query-loader__search-modal__container' }}
-          PaperProps={{
-            classes: { root: 'query-loader__search-modal__inner-container' },
-          }}
+    const close = (): void => {
+      queryLoaderState.setIsQueryLoaderOpen(false);
+      queryLoaderState.reset();
+    };
+
+    return (
+      <Dialog
+        open={queryLoaderState.isQueryLoaderOpen}
+        onClose={close}
+        classes={{
+          root: 'query-loader__dialog',
+          container: 'query-loader__dialog__container',
+        }}
+        PaperProps={{
+          classes: { root: 'query-loader__dialog__body' },
+        }}
+      >
+        <Modal
+          darkMode={true}
+          className="modal query-loader__dialog__body__content"
         >
-          <Modal darkMode={true} className="query-loader__search-modal">
+          <div className="modal query-loader__dialog__header">
             <ModalTitle
-              className="query-loader__title"
-              title={`${
-                modalTitle ? prettyCONSTName(modalTitle) : 'Load Query'
-              }`}
+              className="query-loader__dialog__header__title"
+              title={`${title ? prettyCONSTName(title) : 'Load Query'}`}
             />
             <button
-              className="query-loader__search-modal__actions"
+              className="query-loader__dialog__header__close-btn"
               title="Close"
               onClick={close}
             >
               <TimesIcon />
             </button>
-            <QueryLoaderBody
+          </div>
+          <div className="modal query-loader__dialog__content">
+            <QueryLoader
               queryLoaderState={queryLoaderState}
               graphManager={graphManager}
               loadQuery={loadQuery}
               renameQuery={renameQuery}
-              modalTitle={modalTitle}
+              loadActionLabel={loadActionLabel}
               options={options}
             />
-          </Modal>
-        </Dialog>
-      );
-    } else {
-      return (
-        <QueryLoaderBody
-          queryLoaderState={queryLoaderState}
-          graphManager={graphManager}
-          loadQuery={loadQuery}
-          renameQuery={renameQuery}
-          modalTitle={modalTitle}
-          options={options}
-        />
-      );
-    }
+          </div>
+        </Modal>
+      </Dialog>
+    );
   },
 );
