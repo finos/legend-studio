@@ -1,5 +1,15 @@
 # @finos/legend-application-query
 
+## 13.0.0
+
+### Major Changes
+
+- [#2058](https://github.com/finos/legend-studio/pull/2058) [`b407f6d66`](https://github.com/finos/legend-studio/commit/b407f6d66aff1a38f3f31df122101ad9d753b3cf) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** renamed `LegendQueryApplicationPlugin.getExtraQueryEditorHelpMenuEntries()` to `getExtraQueryEditorHelpMenuActionConfigurations().`
+
+### Patch Changes
+
+- [#2058](https://github.com/finos/legend-studio/pull/2058) [`b407f6d66`](https://github.com/finos/legend-studio/commit/b407f6d66aff1a38f3f31df122101ad9d753b3cf) ([@gayathrir11](https://github.com/gayathrir11)) - Make query loader interface consistent for various query workflows
+
 ## 12.0.9
 
 ## 12.0.8
