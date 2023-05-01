@@ -87,7 +87,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   readonly changeDetectionState: QueryBuilderChangeDetectionState;
   readonly queryCompileState = ActionState.create();
   readonly observerContext: ObserverContext;
-  readonly saveQueryProgressState = ActionState.create();
 
   explorerState: QueryBuilderExplorerState;
   functionsExplorerState: QueryFunctionsExplorerState;
@@ -162,7 +161,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeMapping: action,
 
       rebuildWithQuery: action,
-      saveQuery: action,
       compileQuery: flow,
       hashCode: computed,
     });
@@ -449,23 +447,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         .map((param) => observe_ValueSpecification(param, this.observerContext))
         .filter(filterByType(VariableExpression));
       processParameters(parameters, this, previousStateParameterValues);
-    }
-  }
-
-  async saveQuery(
-    onSaveQuery: (lambda: RawLambda) => Promise<void>,
-  ): Promise<void> {
-    this.saveQueryProgressState.inProgress();
-    try {
-      const query = this.buildQuery();
-      await onSaveQuery(query);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
-        `Can't save query: ${error.message}`,
-      );
-    } finally {
-      this.saveQueryProgressState.complete();
     }
   }
 

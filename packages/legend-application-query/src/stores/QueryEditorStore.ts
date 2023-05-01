@@ -150,14 +150,15 @@ export interface QueryPersistConfiguration {
 }
 
 export class QuerySaveAsState {
-  editorStore: QueryEditorStore;
+  readonly editorStore: QueryEditorStore;
+  readonly queryBuilderState: QueryBuilderState;
+  readonly createQueryState = ActionState.create();
+
   lambda: RawLambda;
   queryName: string;
   allowUpdate = false;
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
-  queryBuilderState: QueryBuilderState;
-  createQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -415,7 +416,7 @@ export class QueryRenameState {
   readonly editorStore: QueryEditorStore;
   readonly queryBuilderState: QueryBuilderState;
 
-  readonly saveQueryState = ActionState.create();
+  readonly renameQueryState = ActionState.create();
 
   lambda: RawLambda;
   queryName: string;
@@ -456,7 +457,7 @@ export class QueryRenameState {
     ) {
       return;
     }
-    this.saveQueryState.inProgress();
+    this.renameQueryState.inProgress();
     const query = new Query();
     query.name = this.queryName;
     query.mapping = PackageableElementExplicitReference.create(
@@ -476,7 +477,7 @@ export class QueryRenameState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.saveQueryState.reset();
+      this.renameQueryState.reset();
       return;
     }
 
@@ -511,7 +512,7 @@ export class QueryRenameState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.saveQueryState.reset();
+      this.renameQueryState.reset();
       this.editorStore.setRenameState(undefined);
     }
   }

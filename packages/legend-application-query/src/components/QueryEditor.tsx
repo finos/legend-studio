@@ -70,7 +70,6 @@ import {
   ServiceQueryCreatorStoreProvider,
   useQueryEditorStore,
 } from './QueryEditorStoreProvider.js';
-import type { RawLambda } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import {
@@ -186,7 +185,7 @@ const QuerySaveDialog = observer(() => {
       }}
     >
       <Modal darkMode={true} className="query-export">
-        <ModalHeader title={'Create New Query'} />
+        <ModalHeader title="Create New Query" />
         {saveAsState && <QuerySaveAsDialogContent saveAsState={saveAsState} />}
       </Modal>
     </Dialog>
@@ -239,9 +238,10 @@ const QueryEditorHeaderContent = observer(
 
     const renameRef = useRef<HTMLInputElement>(null);
 
-    const updateQuery = (): void => {
-      queryBuilderState
-        .saveQuery(async (lambda: RawLambda) => {
+    const updateQuery = applicationStore.guardUnhandledError(
+      async (): Promise<void> => {
+        try {
+          const lambda = queryBuilderState.buildQuery();
           editorStore.setRenameState(
             new QueryRenameState(
               editorStore,
@@ -252,24 +252,17 @@ const QueryEditorHeaderContent = observer(
               }),
             ),
           );
-        })
-        .then(() => {
           renameRef.current?.select();
-        })
-        .catch(applicationStore.alertUnhandledError);
-    };
+        } catch {
+          // do nothing
+        }
+      },
+    );
 
-    const renameQuery = (): void => {
-      if (renameState?.renameQuery) {
-        flowResult(renameState.renameQuery()).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }
-    };
-
-    const saveQuery = (): void => {
-      queryBuilderState
-        .saveQuery(async (lambda: RawLambda) => {
+    const saveQuery = applicationStore.guardUnhandledError(
+      async (): Promise<void> => {
+        try {
+          const lambda = queryBuilderState.buildQuery();
           editorStore.setSaveState(
             new QuerySaveState(
               editorStore,
@@ -280,27 +273,34 @@ const QueryEditorHeaderContent = observer(
               }),
             ),
           );
-          flowResult(editorStore.saveState?.saveQuery()).catch(
+          await flowResult(editorStore.saveState?.saveQuery()).catch(
             applicationStore.alertUnhandledError,
           );
-        })
-        .catch(applicationStore.alertUnhandledError);
-    };
+        } catch {
+          // do nothing
+        }
+      },
+    );
 
-    const saveAsQuery = (): void => {
-      queryBuilderState
-        .saveQuery(async (lambda: RawLambda) => {
+    const saveAsQuery = applicationStore.guardUnhandledError(
+      async (): Promise<void> => {
+        try {
+          const lambda = queryBuilderState.buildQuery();
           editorStore.setSaveAsState(
             new QuerySaveAsState(
               editorStore,
               queryBuilderState,
               lambda,
-              await editorStore.getPersistConfiguration(lambda),
+              await editorStore.getPersistConfiguration(lambda, {
+                update: true,
+              }),
             ),
           );
-        })
-        .catch(applicationStore.alertUnhandledError);
-    };
+        } catch {
+          // do nothing
+        }
+      },
+    );
 
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
@@ -313,6 +313,14 @@ const QueryEditorHeaderContent = observer(
       if (queryDocEntry?.url) {
         applicationStore.navigationService.navigator.visitAddress(
           queryDocEntry.url,
+        );
+      }
+    };
+
+    const renameQuery = (): void => {
+      if (renameState) {
+        flowResult(renameState.renameQuery()).catch(
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -391,7 +399,7 @@ const QueryEditorHeaderContent = observer(
                 {isExistingQueryName && (
                   <div
                     className="input--with-validation__caution"
-                    title={`Query named '${isExistingQueryName}' already exists`}
+                    title={`Query with name '${isExistingQueryName}' already exists`}
                   >
                     <ExclamationTriangleIcon className="input--with-validation__caution__indicator" />
                   </div>
@@ -447,7 +455,7 @@ const QueryEditorHeaderContent = observer(
             disabled={
               editorStore.isSaveActionDisabled ||
               !editorStore.title ||
-              queryBuilderState.saveQueryProgressState.isInProgress
+              Boolean(editorStore.saveState?.saveQueryState.isInProgress)
             }
             onClick={saveQuery}
             title="Save query"
@@ -457,7 +465,10 @@ const QueryEditorHeaderContent = observer(
           </Button>
           <Button
             className="query-editor__header__action btn--dark"
-            disabled={editorStore.isSaveActionDisabled}
+            disabled={
+              editorStore.isSaveActionDisabled ||
+              Boolean(editorStore.saveAsState?.createQueryState.isInProgress)
+            }
             onClick={saveAsQuery}
             title="Save as new query"
           >

@@ -284,7 +284,7 @@ const ServiceTestSetupEditor = observer(
                         darkMode={true}
                         isMulti={true}
                         disable={isReadOnly}
-                        placeholder={'Choose keys...'}
+                        placeholder="Choose keys..."
                       />
                     </div>
                   )}

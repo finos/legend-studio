@@ -755,7 +755,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                     options={calendarFunctionOptions}
                     onChange={onCalendarFunctionOptionChange}
                     value={selectedCalendarFunctionOption}
-                    placeholder={'Select Calendar Function'}
+                    placeholder="Select Calendar Function"
                     isClearable={true}
                     escapeClearsValue={true}
                     darkMode={
@@ -818,7 +818,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                   options={calendarTypeOptions}
                   onChange={onCalendarTypeOptionChange}
                   value={selectedCalendarTypeOption ?? calendarTypeOptions[0]}
-                  placeholder={'Select calendar type'}
+                  placeholder="Select calendar type"
                   darkMode={
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled
