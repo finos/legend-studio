@@ -155,6 +155,7 @@ export const ArchiveIcon = FA.FaArchive;
 export const BrainIcon = FA.FaBrain;
 export const DocumentationIcon = FA.FaBookOpen;
 export const LevelDownIcon = FA.FaLevelDownAlt; // to be reviewed/combined
+export const CalendarIcon = FA.FaRegCalendarAlt;
 
 const GI = ReactIcons.GI;
 export const WaterDropIcon = GI.GiWaterDrop;
@@ -212,7 +213,6 @@ export const WandIcon = VSC.VscWand;
 export const CollapseTreeIcon = VSC.VscCollapseAll;
 export const ExpandTreeIcon = VSC.VscExpandAll;
 export const SerializeIcon = VSC.VscJson;
-export const CalendarIcon = VSC.VscCalendar;
 
 const GO = ReactIcons.GO;
 export const ChevronDownIcon = GO.GoChevronDown;

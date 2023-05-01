@@ -39,8 +39,8 @@ import {
   CalendarIcon,
   CalendarClockIcon,
   CustomSelectorInput,
-  PURE_FunctionIcon,
   PanelEntryDropZonePlaceholder,
+  FunctionIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -115,7 +115,7 @@ export const buildCalendarFunctionOption = (
       className="query-builder__projection__calendar__function__label"
       title={calendarFunction.getLabel()}
     >
-      <PURE_FunctionIcon />
+      <FunctionIcon className="query-builder__projection__calendar__function__label__icon" />
       <div className="query-builder__projection__calendar__function__label__title">
         {calendarFunction.getLabel()}
       </div>
@@ -372,7 +372,7 @@ const QueryBuilderProjectionColumnEditor = observer(
       (ct) => ({
         label: (
           <div className="query-builder__projection__calendar__type__option">
-            <CalendarIcon />
+            <CalendarIcon className="query-builder__projection__calendar__type__option__icon" />
             <div className="query-builder__projection__calendar__type__option__title">
               {ct}
             </div>
@@ -661,13 +661,15 @@ const QueryBuilderProjectionColumnEditor = observer(
                   aggregateColumnState &&
                   aggregateCalendarFunctions.length > 0 && (
                     <div
-                      className={
-                        aggregateColumnState.hideCalendarColumnState
-                          ? 'query-builder__projection__column__aggregate__calendar--clock--icon__hidden'
-                          : 'query-builder__projection__column__aggregate__calendar--clock--icon'
-                      }
+                      className={clsx(
+                        'query-builder__projection__column__aggregate__calendar__toggler',
+                        {
+                          'query-builder__projection__column__aggregate__calendar__toggler--active':
+                            !aggregateColumnState.hideCalendarColumnState,
+                        },
+                      )}
                       onClick={toggleHideCalendarColumnState}
-                      title="Click to select calendar function"
+                      title="Toggle calendar aggregation"
                     >
                       <CalendarClockIcon />
                     </div>
@@ -749,21 +751,19 @@ const QueryBuilderProjectionColumnEditor = observer(
                   },
                 )}
               >
-                <div data-testid="test">
-                  <CustomSelectorInput
-                    className="query-builder__projection__calendar__function"
-                    options={calendarFunctionOptions}
-                    onChange={onCalendarFunctionOptionChange}
-                    value={selectedCalendarFunctionOption}
-                    placeholder="Select Calendar Function"
-                    isClearable={true}
-                    escapeClearsValue={true}
-                    darkMode={
-                      !applicationStore.layoutService
-                        .TEMPORARY__isLightColorThemeEnabled
-                    }
-                  />
-                </div>
+                <CustomSelectorInput
+                  className="query-builder__projection__calendar__function"
+                  options={calendarFunctionOptions}
+                  onChange={onCalendarFunctionOptionChange}
+                  value={selectedCalendarFunctionOption}
+                  placeholder="Select Calendar Function"
+                  isClearable={true}
+                  escapeClearsValue={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                />
                 <div className="query-builder__projection__calendar__value">
                   <BasicValueSpecificationEditor
                     valueSpecification={
@@ -807,7 +807,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                         </div>
                       </div>
                     ) : (
-                      <div className="query-builder__projection__calendar__date__column__dnd__placeholder">
+                      <div className="query-builder__projection__calendar__date__column__placeholder">
                         Drag and drop date column here
                       </div>
                     )}
@@ -819,6 +819,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                   onChange={onCalendarTypeOptionChange}
                   value={selectedCalendarTypeOption ?? calendarTypeOptions[0]}
                   placeholder="Select calendar type"
+                  disabled={!aggregateColumnState.calendarFunction}
                   darkMode={
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled

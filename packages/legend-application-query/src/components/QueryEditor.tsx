@@ -373,9 +373,7 @@ const QueryEditorHeaderContent = observer(
           onClick={item.onClick}
         >
           {item.icon && <MenuContentItemIcon>{item.icon}</MenuContentItemIcon>}
-          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-            {item.label}
-          </MenuContentItemLabel>
+          <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
         </MenuContentItem>
       ));
 
@@ -487,7 +485,7 @@ const QueryEditorHeaderContent = observer(
                 {queryDocEntry && (
                   <MenuContentItem onClick={openQueryTutorial}>
                     <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                    <MenuContentItemLabel>
                       Open Documentation
                     </MenuContentItemLabel>
                   </MenuContentItem>
@@ -499,7 +497,7 @@ const QueryEditorHeaderContent = observer(
                       <CheckIcon />
                     ) : null}
                   </MenuContentItemIcon>
-                  <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                  <MenuContentItemLabel>
                     Show Virtual Assistant
                   </MenuContentItemLabel>
                 </MenuContentItem>
@@ -523,7 +521,7 @@ const QueryEditorHeaderContent = observer(
           <button
             title="Toggle light/dark mode"
             onClick={TEMPORARY__toggleLightDarkMode}
-            className="query-editor__header__action"
+            className="query-editor__header__action query-editor__header__action__theme-toggler"
           >
             {applicationStore.layoutService
               .TEMPORARY__isLightColorThemeEnabled ? (
@@ -542,6 +540,15 @@ const QueryEditorHeaderContent = observer(
             disabled={editorStore.isViewProjectActionDisabled}
             content={
               <MenuContent>
+                {/* TODO: remove this and move it to inline editing directly on the title */}
+                <MenuContentItem
+                  className="query-editor__header__action__options"
+                  onClick={updateQuery}
+                  disabled={!editorStore.title}
+                >
+                  Rename Query
+                </MenuContentItem>
+
                 <MenuContentItem
                   className="query-editor__header__action__options"
                   disabled={editorStore.isViewProjectActionDisabled}
@@ -555,13 +562,6 @@ const QueryEditorHeaderContent = observer(
                   onClick={viewSDLCProject}
                 >
                   Go to SDLC project
-                </MenuContentItem>
-                <MenuContentItem
-                  className="query-editor__header__action__options"
-                  onClick={updateQuery}
-                  disabled={!editorStore.title}
-                >
-                  Rename Query
                 </MenuContentItem>
               </MenuContent>
             }

@@ -71,13 +71,13 @@ export const createQueryClassTaggedValue = (
 };
 
 export class DataSpaceQueryCreatorStore extends QueryEditorStore {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-  dataSpacePath: string;
-  executionContext: string;
-  runtimePath: string | undefined;
-  classPath: string | undefined;
+  readonly groupId: string;
+  readonly artifactId: string;
+  readonly versionId: string;
+  readonly dataSpacePath: string;
+  readonly executionContext: string;
+  readonly runtimePath: string | undefined;
+  readonly classPath: string | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
