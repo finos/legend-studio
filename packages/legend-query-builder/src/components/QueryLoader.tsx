@@ -86,7 +86,6 @@ const QueryPreviewViewer = observer(
               }
               isReadOnly={true}
               language={CODE_EDITOR_LANGUAGE.PURE}
-              showMiniMap={true}
             />
           </ModalBody>
           <ModalFooter>
