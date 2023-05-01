@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 24.2.0
+
+### Minor Changes
+
+- [#2177](https://github.com/finos/legend-studio/pull/2177) [`64532adc5`](https://github.com/finos/legend-studio/commit/64532adc53428ca254fd1f322508a05764f5e982) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add post validation editor to service editor.
+
+### Patch Changes
+
+- [#2058](https://github.com/finos/legend-studio/pull/2058) [`b407f6d66`](https://github.com/finos/legend-studio/commit/b407f6d66aff1a38f3f31df122101ad9d753b3cf) ([@gayathrir11](https://github.com/gayathrir11)) - Make query loader interface consistent for various query workflows
+
 ## 24.1.4
 
 ## 24.1.3

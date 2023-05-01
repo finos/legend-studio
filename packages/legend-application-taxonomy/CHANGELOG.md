@@ -1,5 +1,7 @@
 # @finos/legend-application-taxonomy
 
+## 8.0.11
+
 ## 8.0.10
 
 ## 8.0.9

@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 15.0.7
+
+### Patch Changes
+
+- [#2058](https://github.com/finos/legend-studio/pull/2058) [`b407f6d66`](https://github.com/finos/legend-studio/commit/b407f6d66aff1a38f3f31df122101ad9d753b3cf) ([@gayathrir11](https://github.com/gayathrir11)) - Introduce `UserDataService` to store user data in `LocalStorage`
+
 ## 15.0.6
 
 ## 15.0.5
