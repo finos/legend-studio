@@ -14,36 +14,22 @@
  * limitations under the License.
  */
 
-import {
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-} from '@finos/legend-application';
-import {
-  type LightQuery,
-  type QueryInfo,
-  QuerySearchSpecification,
-} from '@finos/legend-graph';
+import type { LightQuery } from '@finos/legend-graph';
+import { QueryLoaderState } from '@finos/legend-query-builder';
 import {
   type DepotServerClient,
   StoreProjectData,
 } from '@finos/legend-server-depot';
-import {
-  ActionState,
-  assertErrorThrown,
-  type GeneratorFn,
-} from '@finos/legend-shared';
 import { parseProjectIdentifier } from '@finos/legend-storage';
-import { flow, makeObservable, observable } from 'mobx';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl } from '../__lib__/LegendQueryNavigation.js';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
+import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
+import { quantifyList } from '@finos/legend-shared';
+import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
-  readonly loadQueriesState = ActionState.create();
-  readonly loadQueryState = ActionState.create();
-  queries: LightQuery[] = [];
-  currentQuery?: LightQuery | undefined;
-  currentQueryInfo?: QueryInfo | undefined;
+  readonly queryLoaderState: QueryLoaderState;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -51,25 +37,59 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
   ) {
     super(applicationStore, depotServerClient);
 
-    makeObservable(this, {
-      queries: observable,
-      currentQuery: observable,
-      currentQueryInfo: observable,
-      setCurrentQuery: flow,
-      loadQueries: flow,
-    });
+    this.queryLoaderState = new QueryLoaderState(
+      applicationStore,
+      this.graphManagerState,
+      {
+        loadQuery: (query: LightQuery): void => {
+          this.queryLoaderState.setQueryLoaderDialogOpen(false);
+          this.loadQueryProductionizer(query).catch(
+            applicationStore.alertUnhandledError,
+          );
+        },
+        fetchDefaultQueries: () =>
+          this.graphManagerState.graphManager.getQueries(
+            LegendQueryUserDataHelper.getRecentlyViewedQueries(
+              this.applicationStore.userDataService,
+            ),
+          ),
+        generateDefaultQueriesSummaryText: (queries) =>
+          queries.length
+            ? `Showing ${quantifyList(
+                queries,
+                'recently viewed query',
+                'recently viewed queries',
+              )}`
+            : `No recently viewed queries`,
+        onQueryDeleted: (query): void =>
+          LegendQueryUserDataHelper.removeRecentlyViewedQuery(
+            this.applicationStore.userDataService,
+            query.id,
+          ),
+        onQueryRenamed: (query): void => {
+          LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
+            applicationStore.telemetryService,
+            {
+              query: {
+                id: query.id,
+                name: query.name,
+                groupId: query.groupId,
+                artifactId: query.artifactId,
+                versionId: query.versionId,
+              },
+            },
+          );
+        },
+      },
+    );
   }
 
-  async loadQueryProductionizer(): Promise<void> {
-    if (!this.currentQuery) {
-      return;
-    }
-
+  async loadQueryProductionizer(selectedQuery: LightQuery): Promise<void> {
     // fetch project data
     const project = StoreProjectData.serialization.fromJson(
       await this.depotServerClient.getProject(
-        this.currentQuery.groupId,
-        this.currentQuery.artifactId,
+        selectedQuery.groupId,
+        selectedQuery.artifactId,
       ),
     );
 
@@ -87,62 +107,13 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
       this.applicationStore.navigationService.navigator.goToAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl(
           matchingSDLCEntry.url,
-          this.currentQuery.id,
+          selectedQuery.id,
         ),
       );
     } else {
       this.applicationStore.notificationService.notifyWarning(
         `Can't find the corresponding SDLC instance to productionize the query`,
       );
-    }
-  }
-
-  *setCurrentQuery(queryId: string | undefined): GeneratorFn<void> {
-    if (queryId) {
-      try {
-        this.loadQueryState.inProgress();
-        this.currentQuery =
-          (yield this.graphManagerState.graphManager.getLightQuery(
-            queryId,
-          )) as LightQuery;
-        const queryInfo =
-          (yield this.graphManagerState.graphManager.getQueryInfo(
-            queryId,
-          )) as QueryInfo;
-        queryInfo.content =
-          (yield this.graphManagerState.graphManager.prettyLambdaContent(
-            queryInfo.content,
-          )) as string;
-        this.currentQueryInfo = queryInfo;
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyError(error);
-      } finally {
-        this.loadQueryState.reset();
-      }
-    } else {
-      this.currentQuery = undefined;
-    }
-  }
-
-  *loadQueries(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
-    this.loadQueriesState.inProgress();
-    try {
-      const searchSpecification = new QuerySearchSpecification();
-      searchSpecification.searchTerm = isValidSearchString
-        ? searchText
-        : undefined;
-      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
-      this.queries = (yield this.graphManagerState.graphManager.searchQueries(
-        searchSpecification,
-      )) as LightQuery[];
-      this.loadQueriesState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(error);
-      this.loadQueriesState.fail();
     }
   }
 }

@@ -33,6 +33,7 @@ import {
   ActionState,
   StopWatch,
   guaranteeType,
+  quantifyList,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -45,12 +46,12 @@ import {
   RuntimePointer,
   GRAPH_MANAGER_EVENT,
   extractElementNameFromPath,
-  QuerySearchSpecification,
   Mapping,
   type Runtime,
   type Service,
   createGraphBuilderReport,
   LegendSDLC,
+  QuerySearchSpecification,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -74,7 +75,6 @@ import {
 import {
   DEFAULT_TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventHelper } from '../__lib__/LegendQueryEventHelper.js';
@@ -85,7 +85,9 @@ import {
   ClassQueryBuilderState,
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
+  QueryLoaderState,
 } from '@finos/legend-query-builder';
+import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export const createViewProjectHandler =
@@ -409,14 +411,16 @@ export class QuerySaveState {
 }
 
 export class QueryRenameState {
-  editorStore: QueryEditorStore;
+  readonly editorStore: QueryEditorStore;
+  readonly queryBuilderState: QueryBuilderState;
+
+  readonly saveQueryState = ActionState.create();
+
   lambda: RawLambda;
   queryName: string;
   allowUpdate = false;
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
-  queryBuilderState: QueryBuilderState;
-  saveQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -512,84 +516,20 @@ export class QueryRenameState {
   }
 }
 
-export class QueryLoaderState {
-  readonly editorStore: QueryEditorStore;
-
-  readonly loadQueriesState = ActionState.create();
-  queries: LightQuery[] = [];
-  isQueryLoaderOpen = false;
-  showCurrentUserQueriesOnly = false;
-
-  constructor(editorStore: QueryEditorStore) {
-    makeObservable(this, {
-      isQueryLoaderOpen: observable,
-      queries: observable,
-      showCurrentUserQueriesOnly: observable,
-      setIsQueryLoaderOpen: action,
-      setQueries: action,
-      setShowCurrentUserQueriesOnly: action,
-      loadQueries: flow,
-    });
-    this.editorStore = editorStore;
-  }
-
-  setIsQueryLoaderOpen(val: boolean): void {
-    this.isQueryLoaderOpen = val;
-  }
-
-  setQueries(val: LightQuery[]): void {
-    this.queries = val;
-  }
-
-  setShowCurrentUserQueriesOnly(val: boolean): void {
-    this.showCurrentUserQueriesOnly = val;
-  }
-
-  *loadQueries(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
-    this.loadQueriesState.inProgress();
-    try {
-      const searchSpecification = new QuerySearchSpecification();
-      searchSpecification.searchTerm = isValidSearchString
-        ? searchText
-        : undefined;
-      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
-      searchSpecification.showCurrentUserQueriesOnly =
-        this.showCurrentUserQueriesOnly;
-      this.queries =
-        (yield this.editorStore.graphManagerState.graphManager.searchQueries(
-          searchSpecification,
-        )) as LightQuery[];
-      this.loadQueriesState.pass();
-    } catch (error) {
-      this.loadQueriesState.fail();
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-    }
-  }
-
-  reset(): void {
-    this.setShowCurrentUserQueriesOnly(false);
-  }
-}
-
 export abstract class QueryEditorStore {
   readonly applicationStore: LegendQueryApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly pluginManager: LegendQueryPluginManager;
   readonly graphManagerState: GraphManagerState;
+  readonly queryLoaderState: QueryLoaderState;
 
   readonly initState = ActionState.create();
+
   queryBuilderState?: QueryBuilderState | undefined;
   saveAsState?: QuerySaveAsState | undefined;
   saveState?: QuerySaveState | undefined;
   renameState?: QueryRenameState | undefined;
 
-  // if the implementation of QueryEditorStore does not support save
-  // saveState = undefined
-
-  queryLoaderState: QueryLoaderState;
   title: string | undefined;
   existingQueryName: string | undefined;
 
@@ -621,7 +561,56 @@ export abstract class QueryEditorStore {
       applicationStore.pluginManager,
       applicationStore.logService,
     );
-    this.queryLoaderState = new QueryLoaderState(this);
+    this.queryLoaderState = new QueryLoaderState(
+      applicationStore,
+      this.graphManagerState,
+      {
+        loadQuery: (query: LightQuery): void => {
+          this.queryBuilderState?.changeDetectionState.alertUnsavedChanges(
+            () => {
+              this.queryLoaderState.setQueryLoaderDialogOpen(false);
+              applicationStore.navigationService.navigator.goToLocation(
+                generateExistingQueryEditorRoute(query.id),
+                { ignoreBlocking: true },
+              );
+            },
+          );
+        },
+        fetchDefaultQueries: () =>
+          this.graphManagerState.graphManager.getQueries(
+            LegendQueryUserDataHelper.getRecentlyViewedQueries(
+              this.applicationStore.userDataService,
+            ),
+          ),
+        generateDefaultQueriesSummaryText: (queries) =>
+          queries.length
+            ? `Showing ${quantifyList(
+                queries,
+                'recently viewed query',
+                'recently viewed queries',
+              )}`
+            : `No recently viewed queries`,
+        onQueryDeleted: (query): void =>
+          LegendQueryUserDataHelper.removeRecentlyViewedQuery(
+            this.applicationStore.userDataService,
+            query.id,
+          ),
+        onQueryRenamed: (query): void => {
+          LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
+            applicationStore.telemetryService,
+            {
+              query: {
+                id: query.id,
+                name: query.name,
+                groupId: query.groupId,
+                artifactId: query.artifactId,
+                versionId: query.versionId,
+              },
+            },
+          );
+        },
+      },
+    );
   }
 
   get isViewProjectActionDisabled(): boolean {
@@ -703,7 +692,7 @@ export abstract class QueryEditorStore {
       yield flowResult(this.buildGraph());
       this.queryBuilderState =
         (yield this.initializeQueryBuilderState()) as QueryBuilderState;
-
+      this.queryLoaderState.initialize(this.queryBuilderState);
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -1063,6 +1052,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
+    );
+    LegendQueryUserDataHelper.addRecentlyViewedQuery(
+      this.applicationStore.userDataService,
+      query.id,
     );
     let queryBuilderState: QueryBuilderState | undefined;
     const existingQueryEditorStateBuilders = this.applicationStore.pluginManager

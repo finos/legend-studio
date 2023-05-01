@@ -156,6 +156,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                   _query.stereotypes = query.stereotypes;
                   _query.content = query.content;
                   _query.owner = query.owner;
+                  _query.lastUpdatedAt = query.lastUpdatedAt;
 
                   try {
                     if (!query.isCurrentUserQuery) {

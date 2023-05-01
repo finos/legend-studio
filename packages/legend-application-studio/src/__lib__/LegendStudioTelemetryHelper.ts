@@ -74,12 +74,9 @@ export class LegendStudioTelemetryHelper {
   }
 
   static logEvent_GraphInitializationSucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: GraphInitializationReport,
   ): void {
-    telemetryService.logEvent(
-      GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
-      data,
-    );
+    service.logEvent(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS, data);
   }
 }

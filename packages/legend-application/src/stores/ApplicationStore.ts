@@ -47,6 +47,7 @@ import { NavigationService } from './navigation/NavigationService.js';
 import { SettingService } from './SettingService.js';
 import { DefaultNavigator } from './navigation/DefaultNavigator.js';
 import type { ApplicationPlatform } from './platform/ApplicationPlatform.js';
+import { UserDataService } from './UserDataService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -68,6 +69,7 @@ export class ApplicationStore<
   readonly timeService: TimeService;
   readonly logService: LogService;
   readonly storageService: StorageService;
+  readonly userDataService: UserDataService;
   readonly settingService: SettingService;
   readonly alertService: AlertService;
   readonly notificationService: NotificationService;
@@ -100,6 +102,7 @@ export class ApplicationStore<
     this.logService.registerPlugins(pluginManager.getLoggerPlugins());
     this.storageService = new StorageService(this);
     this.settingService = new SettingService(this);
+    this.userDataService = new UserDataService(this);
     this.alertService = new AlertService(this);
     this.notificationService = new NotificationService();
 

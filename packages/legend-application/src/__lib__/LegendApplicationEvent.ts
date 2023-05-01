@@ -39,6 +39,8 @@ export enum APPLICATION_EVENT {
   SETTING_CONFIGURATION_CHECK__FAILURE = 'application.setting.configuration-check.failure',
   SETTING_RETRIVE_FAILURE = 'application.setting.retrieve.failure',
 
+  USER_DATA_RETRIEVE_FAILURE = 'application.user-data.retrieve.failure',
+
   COMMAND_CENTER_REGISTRATION__FAILURE = 'application.command.registration.failure',
 
   DEVELOPMENT_ISSUE = 'development.issue',

@@ -656,6 +656,8 @@ export class V1_EngineServerClient extends AbstractServerClient {
     searchSpecification: PlainObject<V1_QuerySearchSpecification>,
   ): Promise<PlainObject<V1_LightQuery>[]> =>
     this.post(`${this._query()}/search`, searchSpecification, undefined);
+  getQueries = (queryIds: string[]): Promise<PlainObject<V1_LightQuery>[]> =>
+    this.get(`${this._query()}/batch`, {}, undefined, { queryIds: queryIds });
   getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
     this.get(this._query(queryId));
   createQuery = (

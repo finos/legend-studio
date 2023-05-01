@@ -27,6 +27,8 @@ import {
   toTitleCase,
   TITLE_CASE_EXCEPTION_WORDS,
   parseCSVString,
+  quantify,
+  quantifyList,
 } from '../FormatterUtils.js';
 import { unitTest } from '../../__test-utils__/TestUtils.js';
 
@@ -155,4 +157,20 @@ test(unitTest('Separate String to List'), () => {
     '2,0,1,0',
     '9,1',
   ]);
+});
+
+test(unitTest('Generate quantity label'), () => {
+  expect(quantify(-1, 'car')).toEqual('no cars');
+  expect(quantify(0, 'car')).toEqual('no cars');
+  expect(quantify(1, 'car')).toEqual('1 car');
+  expect(quantify(3, 'car')).toEqual('3 cars');
+
+  expect(quantifyList([], 'car')).toEqual('no cars');
+  expect(quantifyList(['dummy'], 'car')).toEqual('1 car');
+  expect(quantifyList(['dummy', 'dummy'], 'car')).toEqual('2 cars');
+
+  expect(quantify(-1, 'fish', 'fishes')).toEqual('no fishes');
+  expect(quantify(0, 'fish', 'fishes')).toEqual('no fishes');
+  expect(quantify(1, 'fish', 'fishes')).toEqual('1 fish');
+  expect(quantify(3, 'fish', 'fishes')).toEqual('3 fishes');
 });

@@ -70,3 +70,6 @@ export * from './stores/shared/ValueSpecificationEditorHelper.js';
 
 export * from './components/execution-plan/ExecutionPlanViewer.js';
 export * from './stores/execution-plan/ExecutionPlanState.js';
+export * from './components/QueryLoader.js';
+export * from './stores/QueryLoaderState.js';
+export * from './stores/QueryBuilder_LegendApplicationPlugin_Extension.js';

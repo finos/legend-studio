@@ -21,6 +21,7 @@ export enum LEGEND_QUERY_APP_EVENT {
   VIEW_QUERY__SUCCESS = 'query-editor.view-query.success',
   CREATE_QUERY__SUCCESS = 'query-editor.create-query.success',
   UPDATE_QUERY__SUCCESS = 'query-editor.update-query.success',
+  RENAME_QUERY__SUCCESS = 'query-editor.rename.query.success',
 
   VIEW_PROJECT__LAUNCH = 'query-editor.view-project.launch',
   VIEW_SDLC_PROJECT__LAUNCH = 'query-editor.view-sdlc-project.launch',

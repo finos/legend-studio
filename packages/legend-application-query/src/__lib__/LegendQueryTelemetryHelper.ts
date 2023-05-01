@@ -33,54 +33,47 @@ type Query_TelemetryData = {
 
 export class LegendQueryTelemetryHelper {
   static logEvent_ViewQuerySucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: Query_TelemetryData,
   ): void {
-    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_QUERY__SUCCESS, data);
+    service.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_QUERY__SUCCESS, data);
   }
 
   static logEvent_CreateQuerySucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: Query_TelemetryData,
   ): void {
-    telemetryService.logEvent(
-      LEGEND_QUERY_APP_EVENT.CREATE_QUERY__SUCCESS,
-      data,
-    );
+    service.logEvent(LEGEND_QUERY_APP_EVENT.CREATE_QUERY__SUCCESS, data);
   }
 
   static logEvent_UpdateQuerySucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: Query_TelemetryData,
   ): void {
-    telemetryService.logEvent(
-      LEGEND_QUERY_APP_EVENT.UPDATE_QUERY__SUCCESS,
-      data,
-    );
+    service.logEvent(LEGEND_QUERY_APP_EVENT.UPDATE_QUERY__SUCCESS, data);
   }
 
-  static logEvent_QueryViewProjectLaunched(
-    telemetryService: TelemetryService,
-  ): void {
-    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_PROJECT__LAUNCH, {});
+  static logEvent_QueryViewProjectLaunched(service: TelemetryService): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_PROJECT__LAUNCH, {});
   }
 
   static logEvent_QueryViewSdlcProjectLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
-      LEGEND_QUERY_APP_EVENT.VIEW_SDLC_PROJECT__LAUNCH,
-      {},
-    );
+    service.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_SDLC_PROJECT__LAUNCH, {});
   }
 
   static logEvent_GraphInitializationSucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: GraphInitializationReport,
   ): void {
-    telemetryService.logEvent(
-      GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS,
-      data,
-    );
+    service.logEvent(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS, data);
+  }
+
+  static logEvent_RenameQuerySucceeded(
+    service: TelemetryService,
+    data: Query_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.RENAME_QUERY__SUCCESS, data);
   }
 }

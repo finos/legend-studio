@@ -2933,6 +2933,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async getQueries(queryIds: string[]): Promise<LightQuery[]> {
+    return (await this.engine.getQueries(queryIds)).map((protocol) =>
+      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
+    );
+  }
+
   async getLightQuery(queryId: string): Promise<LightQuery> {
     return V1_buildLightQuery(
       await this.engine.getQuery(queryId),
@@ -2980,8 +2986,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async deleteQuery(queryId: string): Promise<void> {
-    await this.engine.deleteQuery(queryId);
+  async renameQuery(queryId: string, queryName: string): Promise<LightQuery> {
+    const query = await this.engine.getQuery(queryId);
+    query.name = queryName;
+    return V1_buildLightQuery(
+      await this.engine.updateQuery(query),
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  async deleteQuery(queryId: string): Promise<LightQuery> {
+    return V1_buildLightQuery(
+      await this.engine.deleteQuery(queryId),
+      this.engine.getCurrentUserId(),
+    );
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------

@@ -17,7 +17,6 @@
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import {
   type GeneratorFn,
-  ActionState,
   assertErrorThrown,
   LogEvent,
   stringifyLosslessJSON,
@@ -32,11 +31,6 @@ import {
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
 import {
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  DEFAULT_TAB_SIZE,
-} from '@finos/legend-application';
-import {
   generatePath,
   generateExtensionUrlPattern,
 } from '@finos/legend-application/browser';
@@ -46,7 +40,6 @@ import {
   type Mapping,
   type Runtime,
   type ExecutionResult,
-  type LightQuery,
   type PackageableRuntime,
   type RawExecutionPlan,
   type PackageableElementReference,
@@ -61,16 +54,16 @@ import {
   PackageableElementExplicitReference,
   buildSourceInformationSourceId,
   QueryProjectCoordinates,
-  QuerySearchSpecification,
   buildLambdaVariableExpressions,
   observe_ValueSpecification,
   VariableExpression,
   stub_PackageableRuntime,
   stub_Mapping,
   reportGraphAnalytics,
+  type LightQuery,
+  QuerySearchSpecification,
 } from '@finos/legend-graph';
 import {
-  type EntitiesWithOrigin,
   parseGACoordinates,
   generateGAVCoordinates,
 } from '@finos/legend-storage';
@@ -94,9 +87,12 @@ import {
   LambdaParameterState,
   PARAMETER_SUBMIT_ACTION,
   QueryBuilderTelemetryHelper,
+  QueryLoaderState,
   QUERY_BUILDER_EVENT,
   ExecutionPlanState,
+  QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
 } from '@finos/legend-query-builder';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 enum DSL_SERVICE_PATH_PARAM_TOKEN {
   PROJECT_ID = 'projectId',
@@ -197,22 +193,38 @@ export class UnsupportedServiceExecutionState extends ServiceExecutionState {
   }
 }
 
-interface QueryImportInfo {
-  query: LightQuery;
-  content: string;
-}
+const decorateSearchSpecificationForServiceQueryImporter = (
+  val: QuerySearchSpecification,
+  editorStore: EditorStore,
+): QuerySearchSpecification => {
+  const currentProjectCoordinates = new QueryProjectCoordinates();
+  currentProjectCoordinates.groupId =
+    editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
+  currentProjectCoordinates.artifactId =
+    editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
+  val.projectCoordinates = [
+    // either get queries for the current project
+    currentProjectCoordinates,
+    // or any of its dependencies
+    ...Array.from(
+      editorStore.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.keys(),
+    ).map((dependencyKey) => {
+      const { groupId, artifactId } = parseGACoordinates(dependencyKey);
+      const coordinates = new QueryProjectCoordinates();
+      coordinates.groupId = groupId;
+      coordinates.artifactId = artifactId;
+      return coordinates;
+    }),
+  ];
+  return val;
+};
 
 export class ServicePureExecutionQueryState extends LambdaEditorState {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+  readonly queryLoaderState: QueryLoaderState;
+
   execution: PureExecution;
   isInitializingLambda = false;
-
-  openQueryImporter = false;
-  queries: LightQuery[] = [];
-  selectedQueryInfo?: QueryImportInfo | undefined;
-  loadQueriesState = ActionState.create();
-  loadQueryInfoState = ActionState.create();
-  importQueryState = ActionState.create();
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', '');
@@ -220,20 +232,41 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
     makeObservable(this, {
       execution: observable,
       isInitializingLambda: observable,
-      openQueryImporter: observable,
-      queries: observable,
-      selectedQueryInfo: observable,
-      setOpenQueryImporter: action,
       setIsInitializingLambda: action,
       setLambda: action,
       updateLamba: flow,
-      loadQueries: flow,
-      setSelectedQueryInfo: flow,
       importQuery: flow,
     });
 
     this.editorStore = editorStore;
     this.execution = execution;
+    this.queryLoaderState = new QueryLoaderState(
+      editorStore.applicationStore,
+      editorStore.graphManagerState,
+      {
+        loadQuery: (query: LightQuery): void => {
+          flowResult(this.importQuery(query.id)).catch(
+            this.editorStore.applicationStore.alertUnhandledError,
+          );
+        },
+        decorateSearchSpecification: (val) =>
+          decorateSearchSpecificationForServiceQueryImporter(
+            val,
+            this.editorStore,
+          ),
+        fetchDefaultQueries: async (): Promise<LightQuery[]> => {
+          const searchSpecification = new QuerySearchSpecification();
+          searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT;
+          return this.editorStore.graphManagerState.graphManager.searchQueries(
+            decorateSearchSpecificationForServiceQueryImporter(
+              searchSpecification,
+              this.editorStore,
+            ),
+          );
+        },
+        isReadOnly: true,
+      },
+    );
   }
 
   get lambdaId(): string {
@@ -255,103 +288,26 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
     pureExecution_setFunction(this.execution, val);
   }
 
-  setOpenQueryImporter(val: boolean): void {
-    this.openQueryImporter = val;
-  }
-
-  *setSelectedQueryInfo(query: LightQuery | undefined): GeneratorFn<void> {
-    if (query) {
-      try {
-        this.loadQueryInfoState.inProgress();
-        const content =
-          (yield this.editorStore.graphManagerState.graphManager.prettyLambdaContent(
-            (
-              (yield this.editorStore.graphManagerState.graphManager.getQueryInfo(
-                query.id,
-              )) as QueryInfo
-            ).content,
-          )) as string;
-        this.selectedQueryInfo = {
-          query,
-          content,
-        };
-      } catch (error) {
-        assertErrorThrown(error);
-        this.editorStore.applicationStore.notificationService.notifyError(
-          error,
-        );
-      } finally {
-        this.loadQueryInfoState.reset();
-      }
-    } else {
-      this.selectedQueryInfo = undefined;
-    }
-  }
-
-  *importQuery(): GeneratorFn<void> {
-    if (this.selectedQueryInfo) {
-      try {
-        this.importQueryState.inProgress();
-        const lambda =
-          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
-            this.selectedQueryInfo.content,
-          )) as RawLambda;
-        yield flowResult(this.updateLamba(lambda));
-      } catch (error) {
-        assertErrorThrown(error);
-        this.editorStore.applicationStore.notificationService.notifyError(
-          error,
-        );
-      } finally {
-        this.setOpenQueryImporter(false);
-        this.importQueryState.reset();
-      }
-    }
-  }
-
-  *loadQueries(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
-    this.loadQueriesState.inProgress();
+  *importQuery(selectedQueryID: string): GeneratorFn<void> {
     try {
-      const searchSpecification = new QuerySearchSpecification();
-      const currentProjectCoordinates = new QueryProjectCoordinates();
-      currentProjectCoordinates.groupId =
-        this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
-      currentProjectCoordinates.artifactId =
-        this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
-      searchSpecification.searchTerm = isValidSearchString
-        ? searchText
-        : undefined;
-      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
-      searchSpecification.projectCoordinates = [
-        // either get queries for the current project
-        currentProjectCoordinates,
-        // or any of its dependencies
-        ...Array.from(
+      const content =
+        (yield this.editorStore.graphManagerState.graphManager.prettyLambdaContent(
           (
-            (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
-              string,
-              EntitiesWithOrigin
-            >
-          ).keys(),
-        ).map((coordinatesInText) => {
-          const { groupId, artifactId } = parseGACoordinates(coordinatesInText);
-          const coordinates = new QueryProjectCoordinates();
-          coordinates.groupId = groupId;
-          coordinates.artifactId = artifactId;
-          return coordinates;
-        }),
-      ];
-      this.queries =
-        (yield this.editorStore.graphManagerState.graphManager.searchQueries(
-          searchSpecification,
-        )) as LightQuery[];
-      this.loadQueriesState.pass();
+            (yield this.editorStore.graphManagerState.graphManager.getQueryInfo(
+              selectedQueryID,
+            )) as QueryInfo
+          ).content,
+        )) as string;
+      const lambda =
+        (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
+          content,
+        )) as RawLambda;
+      yield flowResult(this.updateLamba(lambda));
     } catch (error) {
       assertErrorThrown(error);
-      this.loadQueriesState.fail();
       this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.queryLoaderState.setQueryLoaderDialogOpen(false);
     }
   }
 

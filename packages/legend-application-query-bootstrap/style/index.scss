@@ -268,41 +268,48 @@
 
   // ---------------------------- Query Loader -------------------------------
 
-  .query-editor__query-loader {
-    &__filter-section {
-      &__section__toggler__btn {
-        svg {
-          color: var(--color-legacylight-light-blue-100);
+  .query-loader {
+    &__filter {
+      &__toggler__btn {
+        border-color: var(--color-legacylight-dark-grey-200);
+        color: var(--color-legacylight-dark-grey-200);
+      }
+
+      &__toggler__btn--toggled {
+        background-color: var(--color-legacylight-light-blue-100);
+        color: var(--color-legacylight-light-grey-200);
+      }
+    }
+
+    &__search {
+      &__input {
+        &__search__icon {
+          svg {
+            color: var(--color-dark-shade-100);
+          }
         }
       }
+    }
 
-      &__section__toggler__prompt {
-        color: var(--color-legacylight-dark-grey-200);
+    &__result {
+      border-color: var(--color-legacylight-dark-grey-200);
+      background: var(--color-legacylight-light-grey-100);
+
+      &:hover {
+        background: var(--color-legacylight-light-grey-200);
       }
     }
 
-    &__search-section {
-      border-color: var(--color-legacylight-light-grey-200);
-
-      &__input {
-        border-color: var(--color-legacylight-light-grey-200);
-      }
+    &__result__title {
+      color: var(--color-legacylight-dark-grey-200);
     }
 
-    &__body {
-      .table {
-        color: var(--color-legacylight-dark-grey-200);
-      }
+    &__result__actions__menu {
+      color: var(--color-legacylight-light-grey-300);
+    }
 
-      &__table__row:hover {
-        color: var(--color-legacylight-light-blue-100);
-        background: var(--color-legacylight-light-grey-200);
-      }
-
-      &__table__row--selected:hover,
-      &__table__row--selected {
-        background: var(--color-legacylight-light-grey-200);
-      }
+    &__dialog__header__close-btn {
+      color: var(--color-legacylight-dark-grey-200);
     }
   }
 

@@ -35,6 +35,7 @@ export class V1_Query {
   owner?: string | undefined;
   taggedValues?: V1_TaggedValue[] | undefined;
   stereotypes?: V1_StereotypePtr[] | undefined;
+  lastUpdatedAt?: number | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
@@ -42,6 +43,7 @@ export class V1_Query {
       content: primitive(),
       id: primitive(),
       groupId: primitive(),
+      lastUpdatedAt: optional(primitive()),
       mapping: primitive(),
       name: primitive(),
       owner: optional(primitive()),
@@ -63,12 +65,14 @@ export class V1_LightQuery {
   owner?: string | undefined;
   artifactId!: string;
   versionId!: string;
+  lastUpdatedAt?: number | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
       artifactId: primitive(),
       id: primitive(),
       groupId: primitive(),
+      lastUpdatedAt: optional(primitive()),
       name: primitive(),
       owner: optional(primitive()),
       versionId: primitive(),

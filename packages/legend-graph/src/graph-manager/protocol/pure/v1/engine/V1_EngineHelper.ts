@@ -93,6 +93,7 @@ export const V1_buildLightQuery = (
     `Query 'artifactId' field is missing`,
   );
   metamodel.owner = protocol.owner;
+  metamodel.lastUpdatedAt = protocol.lastUpdatedAt;
   metamodel.isCurrentUserQuery =
     currentUserId !== undefined && protocol.owner === currentUserId;
   return metamodel;
