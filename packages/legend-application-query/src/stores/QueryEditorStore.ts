@@ -33,7 +33,7 @@ import {
   ActionState,
   StopWatch,
   guaranteeType,
-  SerializationFactory,
+  quantifyList,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -75,7 +75,6 @@ import {
 import {
   DEFAULT_TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventHelper } from '../__lib__/LegendQueryEventHelper.js';
@@ -88,75 +87,8 @@ import {
   ServiceQueryBuilderState,
   QueryLoaderState,
 } from '@finos/legend-query-builder';
-import {
-  LEGEND_QUERY_USER_DATA_KEY,
-  USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT,
-} from '../__lib__/LegendQueryUserData.js';
-import { createModelSchema, list, primitive } from 'serializr';
+import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
-
-export class QueryStorageState {
-  recentQueries: string[] = [];
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(QueryStorageState, {
-      recentQueries: list(primitive()),
-    }),
-  );
-
-  static create(json: PlainObject<QueryStorageState>): QueryStorageState {
-    return QueryStorageState.serialization.fromJson(json);
-  }
-}
-
-export const removePersistedQuery = (
-  persistedQueries: string[],
-  idx: number,
-  applicationStore: GenericLegendApplicationStore,
-): void => {
-  persistedQueries.splice(idx, 1);
-  const queryStorageState = new QueryStorageState();
-  queryStorageState.recentQueries = persistedQueries;
-  applicationStore.userDataService.persistValue(
-    LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
-    QueryStorageState.serialization.toJson(queryStorageState),
-  );
-};
-
-/**
- * This function persists the queryIds in the local storage.
- * Number of queryIds we want to persist is `USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT`.
- * We always want the order in which the queries are stored in a way that
- * queries owned and recently edited by users comes first, followed by
- * recently viewed and owned by user, followed by queries recently viewed and not
- * owned by the user.
- */
-export const persistQueryIds = (
-  persistedQueries: string[],
-  val: LightQuery | Query,
-  applicationStore: GenericLegendApplicationStore,
-): void => {
-  let persistQuery = false;
-  if (
-    persistedQueries.length < USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT &&
-    !persistedQueries.find((queryId) => queryId === val.id)
-  ) {
-    persistQuery = true;
-  } else if (persistedQueries.find((queryId) => queryId === val.id)) {
-    persistQuery = true;
-    const idx = persistedQueries.findIndex((queryId) => queryId === val.id);
-    persistedQueries.splice(idx, 1);
-  }
-  if (persistQuery) {
-    persistedQueries.unshift(val.id);
-  }
-  const queryStorageState = new QueryStorageState();
-  queryStorageState.recentQueries = persistedQueries;
-  applicationStore.userDataService.persistValue(
-    LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
-    queryStorageState,
-  );
-};
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -479,14 +411,16 @@ export class QuerySaveState {
 }
 
 export class QueryRenameState {
-  editorStore: QueryEditorStore;
+  readonly editorStore: QueryEditorStore;
+  readonly queryBuilderState: QueryBuilderState;
+
+  readonly saveQueryState = ActionState.create();
+
   lambda: RawLambda;
   queryName: string;
   allowUpdate = false;
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
-  queryBuilderState: QueryBuilderState;
-  saveQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -587,17 +521,15 @@ export abstract class QueryEditorStore {
   readonly depotServerClient: DepotServerClient;
   readonly pluginManager: LegendQueryPluginManager;
   readonly graphManagerState: GraphManagerState;
+  readonly queryLoaderState: QueryLoaderState;
 
   readonly initState = ActionState.create();
+
   queryBuilderState?: QueryBuilderState | undefined;
   saveAsState?: QuerySaveAsState | undefined;
   saveState?: QuerySaveState | undefined;
   renameState?: QueryRenameState | undefined;
 
-  // if the implementation of QueryEditorStore does not support save
-  // saveState = undefined
-
-  queryLoaderState: QueryLoaderState;
   title: string | undefined;
   existingQueryName: string | undefined;
 
@@ -629,17 +561,55 @@ export abstract class QueryEditorStore {
       applicationStore.pluginManager,
       applicationStore.logService,
     );
-    const queryStorage = applicationStore.userDataService.getValue(
-      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
-    );
-    const queryStorageState = QueryStorageState.create(
-      queryStorage ? (queryStorage as PlainObject<QueryStorageState>) : {},
-    );
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      queryStorageState.recentQueries,
-      persistQueryIds,
-      removePersistedQuery,
+      this.graphManagerState,
+      {
+        loadQuery: (query: LightQuery): void => {
+          this.queryBuilderState?.changeDetectionState.alertUnsavedChanges(
+            () => {
+              this.queryLoaderState.setQueryLoaderDialogOpen(false);
+              applicationStore.navigationService.navigator.goToLocation(
+                generateExistingQueryEditorRoute(query.id),
+                { ignoreBlocking: true },
+              );
+            },
+          );
+        },
+        fetchDefaultQueries: () =>
+          this.graphManagerState.graphManager.getQueries(
+            LegendQueryUserDataHelper.getRecentlyViewedQueries(
+              this.applicationStore.userDataService,
+            ),
+          ),
+        generateDefaultQueriesSummaryText: (queries) =>
+          queries.length
+            ? `Showing ${quantifyList(
+                queries,
+                'recently viewed query',
+                'recently viewed queries',
+              )}`
+            : `No recently viewed queries`,
+        onQueryDeleted: (query): void =>
+          LegendQueryUserDataHelper.removeRecentlyViewedQuery(
+            this.applicationStore.userDataService,
+            query.id,
+          ),
+        onQueryRenamed: (query): void => {
+          LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
+            applicationStore.telemetryService,
+            {
+              query: {
+                id: query.id,
+                name: query.name,
+                groupId: query.groupId,
+                artifactId: query.artifactId,
+                versionId: query.versionId,
+              },
+            },
+          );
+        },
+      },
     );
   }
 
@@ -1083,10 +1053,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       this.queryId,
       this.graphManagerState.graph,
     );
-    persistQueryIds(
-      this.queryLoaderState.intialQueries,
-      query,
-      this.applicationStore,
+    LegendQueryUserDataHelper.addRecentlyViewedQuery(
+      this.applicationStore.userDataService,
+      query.id,
     );
     let queryBuilderState: QueryBuilderState | undefined;
     const existingQueryEditorStateBuilders = this.applicationStore.pluginManager

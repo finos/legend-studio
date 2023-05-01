@@ -2986,14 +2986,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async renameQuery(queryId: string, queryName: string): Promise<void> {
+  async renameQuery(queryId: string, queryName: string): Promise<LightQuery> {
     const query = await this.engine.getQuery(queryId);
     query.name = queryName;
-    await this.engine.updateQuery(query);
+    return V1_buildLightQuery(
+      await this.engine.updateQuery(query),
+      this.engine.getCurrentUserId(),
+    );
   }
 
-  async deleteQuery(queryId: string): Promise<void> {
-    await this.engine.deleteQuery(queryId);
+  async deleteQuery(queryId: string): Promise<LightQuery> {
+    return V1_buildLightQuery(
+      await this.engine.deleteQuery(queryId),
+      this.engine.getCurrentUserId(),
+    );
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------

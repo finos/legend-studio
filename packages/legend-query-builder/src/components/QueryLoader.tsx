@@ -41,20 +41,18 @@ import {
   ThinChevronRightIcon,
   InfoCircleIcon,
 } from '@finos/legend-art';
-import type { AbstractPureGraphManager, LightQuery } from '@finos/legend-graph';
+import type { LightQuery } from '@finos/legend-graph';
 import {
-  ActionState,
   debounce,
   formatDistanceToNow,
   guaranteeNonNullable,
-  prettyCONSTName,
   quantifyList,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import {
-  QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT,
+  QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   type QueryLoaderState,
 } from '../stores/QueryLoaderState.js';
 
@@ -101,43 +99,19 @@ const QueryPreviewViewer = observer(
 );
 
 export const QueryLoader = observer(
-  (props: {
-    queryLoaderState: QueryLoaderState;
-    graphManager: AbstractPureGraphManager;
-    loadActionLabel?: string | undefined;
-    loadQuery: (selectedQuery: LightQuery) => void;
-    renameQuery?:
-      | ((
-          selectedQuery: LightQuery,
-          updatedQueryName: string,
-          renameQueryState: ActionState,
-        ) => Promise<void>)
-      | undefined;
-    options?:
-      | {
-          isDeleteSupported?: boolean;
-          includeDefaultQueries?: boolean;
-        }
-      | undefined;
-  }) => {
-    const {
-      queryLoaderState,
-      graphManager,
-      loadQuery,
-      renameQuery,
-      loadActionLabel,
-      options,
-    } = props;
+  (props: { queryLoaderState: QueryLoaderState; loadActionLabel: string }) => {
+    const { queryLoaderState, loadActionLabel } = props;
     const applicationStore = useApplicationStore();
-    const inputRef = useRef<HTMLInputElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const queryRenameInputRef = useRef<HTMLInputElement>(null);
     const results = queryLoaderState.queries;
     const [isMineOnly, setIsMineOnly] = useState(false);
     const [showQueryNameEditInput, setShowQueryNameEditInput] = useState<
-      boolean | number
-    >(false);
+      number | undefined
+    >();
     useEffect(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
+      queryRenameInputRef.current?.focus();
+      queryRenameInputRef.current?.select();
     }, [showQueryNameEditInput]);
     const [queryNameInputValue, setQueryNameInputValue] = useState<string>('');
     const showEditQueryNameInput =
@@ -147,48 +121,22 @@ export const QueryLoader = observer(
         setShowQueryNameEditInput(idx);
       };
     const hideEditQueryNameInput = (): void => {
-      setShowQueryNameEditInput(false);
+      setShowQueryNameEditInput(undefined);
       setQueryNameInputValue('');
     };
     const changeQueryNameInputValue: React.ChangeEventHandler<
       HTMLInputElement
     > = (event) => setQueryNameInputValue(event.target.value);
-    const [renameQueryState] = useState(ActionState.create());
-
-    const updateQueryName =
-      (query: LightQuery): (() => void) =>
-      async (): Promise<void> => {
-        if (renameQuery) {
-          await renameQuery(query, queryNameInputValue, renameQueryState);
-        }
-        hideEditQueryNameInput();
-      };
-
-    const showPreview = (id: string): void => {
-      flowResult(
-        queryLoaderState.getPreviewQueryContent(id, graphManager),
-      ).catch(applicationStore.alertUnhandledError);
-      queryLoaderState.setShowPreviewViewer(true);
-    };
 
     // search text
     const debouncedLoadQueries = useMemo(
       () =>
         debounce((input: string): void => {
-          flowResult(
-            queryLoaderState.searchQueries(
-              input,
-              graphManager,
-              options?.includeDefaultQueries,
-            ),
-          ).catch(applicationStore.alertUnhandledError);
+          flowResult(queryLoaderState.searchQueries(input)).catch(
+            applicationStore.alertUnhandledError,
+          );
         }, 500),
-      [
-        applicationStore.alertUnhandledError,
-        graphManager,
-        options?.includeDefaultQueries,
-        queryLoaderState,
-      ],
+      [applicationStore.alertUnhandledError, queryLoaderState],
     );
     const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
       event,
@@ -221,49 +169,45 @@ export const QueryLoader = observer(
       debouncedLoadQueries(queryLoaderState.searchText);
     };
 
-    const loadSelectedQuery = (selctedQuery: LightQuery, idx: number): void => {
-      if (idx !== showQueryNameEditInput) {
-        queryLoaderState.onLoadQuery?.(
-          queryLoaderState.intialQueries,
-          selctedQuery,
-          applicationStore,
-        );
-        loadQuery(selctedQuery);
-      }
-    };
+    useEffect(() => {
+      flowResult(queryLoaderState.searchQueries('')).catch(
+        applicationStore.alertUnhandledError,
+      );
+    }, [applicationStore, queryLoaderState]);
+
+    useEffect(() => {
+      searchInputRef.current?.focus();
+    }, [queryLoaderState]);
+
+    // actions
+    const renameQuery =
+      (query: LightQuery): (() => void) =>
+      (): void => {
+        if (!queryLoaderState.isReadOnly) {
+          flowResult(
+            queryLoaderState.renameQuery(query.id, queryNameInputValue),
+          )
+            .catch(applicationStore.alertUnhandledError)
+            .finally(() => hideEditQueryNameInput());
+        }
+      };
 
     const deleteQuery =
       (query: LightQuery): (() => void) =>
-      async (): Promise<void> => {
-        const index = queryLoaderState.intialQueries.findIndex(
-          (idx) => idx === query.id,
-        );
-        queryLoaderState.onDeleteQuery?.(
-          queryLoaderState.intialQueries,
-          index,
-          queryLoaderState.applicationStore,
-        );
-        queryLoaderState.deleteQuery(query);
-        await graphManager.deleteQuery(query.id);
-        applicationStore.notificationService.notify(
-          'Query deleted successfully',
-        );
+      (): void => {
+        if (!queryLoaderState.isReadOnly) {
+          flowResult(queryLoaderState.deleteQuery(query.id)).catch(
+            applicationStore.alertUnhandledError,
+          );
+        }
       };
 
-    useEffect(() => {
-      flowResult(
-        queryLoaderState.searchQueries(
-          '',
-          graphManager,
-          options?.includeDefaultQueries,
-        ),
-      ).catch(applicationStore.alertUnhandledError);
-    }, [
-      applicationStore,
-      graphManager,
-      options?.includeDefaultQueries,
-      queryLoaderState,
-    ]);
+    const showPreview = (queryId: string): void => {
+      flowResult(queryLoaderState.getPreviewQueryContent(queryId)).catch(
+        applicationStore.alertUnhandledError,
+      );
+      queryLoaderState.setShowPreviewViewer(true);
+    };
 
     return (
       <div className="query-loader">
@@ -271,6 +215,7 @@ export const QueryLoader = observer(
           <div className="query-loader__search">
             <div className="query-loader__search__input__container">
               <input
+                ref={searchInputRef}
                 className={clsx('query-loader__search__input input--dark', {
                   'query-loader__search__input--searching':
                     queryLoaderState.searchText,
@@ -332,8 +277,10 @@ export const QueryLoader = observer(
         <div className="query-loader__content">
           <PanelLoadingIndicator
             isLoading={
-              !queryLoaderState.searchQueriesState.hasCompleted ||
-              renameQueryState.isInProgress
+              queryLoaderState.searchQueriesState.isInProgress ||
+              queryLoaderState.renameQueryState.isInProgress ||
+              queryLoaderState.deleteQueryState.isInProgress ||
+              queryLoaderState.previewQueryState.isInProgress
             }
           />
 
@@ -341,19 +288,13 @@ export const QueryLoader = observer(
             {queryLoaderState.searchQueriesState.hasCompleted && (
               <>
                 <div className="query-loader__results__summary">
-                  {queryLoaderState.showingRecentlyViewedQueries ? (
-                    results.length ? (
-                      `Showing ${quantifyList(
-                        results,
-                        'recently viewed query',
-                        'recently viewed queries',
-                      )}`
-                    ) : (
-                      `No recently viewed queries`
-                    )
-                  ) : results.length >= QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT ? (
+                  {queryLoaderState.showingDefaultQueries ? (
+                    queryLoaderState.generateDefaultQueriesSummaryText?.(
+                      results,
+                    ) ?? 'Refine your search to get better matches'
+                  ) : results.length >= QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
                     <>
-                      {`Found ${QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
+                      {`Found ${QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
                       <InfoCircleIcon
                         title="Some queries are not listed, refine your search to get better matches"
                         className="query-loader__results__summary__info"
@@ -364,17 +305,13 @@ export const QueryLoader = observer(
                   )}
                 </div>
                 {results
-                  .slice(0, QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT)
+                  .slice(0, QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
                   .map((query, idx) => (
                     <div
                       className="query-loader__result"
-                      title={
-                        showQueryNameEditInput !== idx
-                          ? `Click to ${loadActionLabel ?? 'load query'}...`
-                          : ''
-                      }
+                      title={`Click to ${loadActionLabel}...`}
                       key={query.id}
-                      onClick={(): void => loadSelectedQuery(query, idx)}
+                      onClick={() => queryLoaderState.loadQuery(query)}
                     >
                       <div className="query-loader__result__content">
                         {showQueryNameEditInput === idx ? (
@@ -382,12 +319,12 @@ export const QueryLoader = observer(
                             <input
                               className="query-loader__result__title__editor__input input--dark"
                               spellCheck={false}
-                              ref={inputRef}
+                              ref={queryRenameInputRef}
                               value={queryNameInputValue}
                               onChange={changeQueryNameInputValue}
                               onKeyDown={(event) => {
                                 if (event.code === 'Enter') {
-                                  updateQueryName(query)();
+                                  renameQuery(query)();
                                 } else if (event.code === 'Escape') {
                                   hideEditQueryNameInput();
                                 }
@@ -453,7 +390,7 @@ export const QueryLoader = observer(
                             >
                               Show Query Preview
                             </MenuContentItem>
-                            {options?.isDeleteSupported && (
+                            {!queryLoaderState.isReadOnly && (
                               <MenuContentItem
                                 disabled={!query.isCurrentUserQuery}
                                 onClick={deleteQuery(query)}
@@ -461,7 +398,7 @@ export const QueryLoader = observer(
                                 Delete
                               </MenuContentItem>
                             )}
-                            {renameQuery && (
+                            {!queryLoaderState.isReadOnly && (
                               <MenuContentItem
                                 disabled={!query.isCurrentUserQuery}
                                 onClick={showEditQueryNameInput(
@@ -512,43 +449,19 @@ export const QueryLoader = observer(
 export const QueryLoaderDialog = observer(
   (props: {
     queryLoaderState: QueryLoaderState;
+    title: string;
     loadActionLabel?: string | undefined;
-    title?: string | undefined;
-
-    graphManager: AbstractPureGraphManager;
-    loadQuery: (selectedQuery: LightQuery) => void;
-    renameQuery?:
-      | ((
-          selectedQuery: LightQuery,
-          updatedQueryName: string,
-          renameQueryState: ActionState,
-        ) => Promise<void>)
-      | undefined;
-    options?:
-      | {
-          isDeleteSupported?: boolean;
-          includeDefaultQueries?: boolean;
-        }
-      | undefined;
   }) => {
-    const {
-      queryLoaderState,
-      title,
-      loadActionLabel,
-      graphManager,
-      loadQuery,
-      renameQuery,
-      options,
-    } = props;
+    const { queryLoaderState, title, loadActionLabel } = props;
 
     const close = (): void => {
-      queryLoaderState.setIsQueryLoaderOpen(false);
+      queryLoaderState.setQueryLoaderDialogOpen(false);
       queryLoaderState.reset();
     };
 
     return (
       <Dialog
-        open={queryLoaderState.isQueryLoaderOpen}
+        open={queryLoaderState.isQueryLoaderDialogOpen}
         onClose={close}
         classes={{
           root: 'query-loader__dialog',
@@ -565,7 +478,7 @@ export const QueryLoaderDialog = observer(
           <div className="modal query-loader__dialog__header">
             <ModalTitle
               className="query-loader__dialog__header__title"
-              title={`${title ? prettyCONSTName(title) : 'Load Query'}`}
+              title={title}
             />
             <button
               className="query-loader__dialog__header__close-btn"
@@ -578,11 +491,7 @@ export const QueryLoaderDialog = observer(
           <div className="modal query-loader__dialog__content">
             <QueryLoader
               queryLoaderState={queryLoaderState}
-              graphManager={graphManager}
-              loadQuery={loadQuery}
-              renameQuery={renameQuery}
-              loadActionLabel={loadActionLabel}
-              options={options}
+              loadActionLabel={loadActionLabel ?? title.toLowerCase()}
             />
           </div>
         </Modal>

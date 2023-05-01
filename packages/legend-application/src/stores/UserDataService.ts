@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-import { LogEvent, isObject } from '@finos/legend-shared';
+import {
+  LogEvent,
+  isBoolean,
+  isNumber,
+  isObject,
+  isString,
+} from '@finos/legend-shared';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import { StorageStore } from './storage/StorageService.js';
 import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
+
+type UserDataValue = object | string | number | boolean;
 
 const APPLICATION_USER_DATA_STORAGE_KEY = 'application-user-data-storage';
 
@@ -33,19 +41,55 @@ export class UserDataService {
     );
   }
 
-  getValue(key: string): object | undefined {
+  getNumericValue(key: string): number | undefined {
     const value = this.storage.getValue(key);
-    if (!isObject(value)) {
+    if (!isNumber(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.USER_DATA_RETRIEVE_FAILURE),
-        `Can't retrieve cache value for '${key}'`,
+        `Can't retrieve numeric value for user data '${key}'`,
       );
       return undefined;
     }
     return value;
   }
 
-  persistValue(key: string, value: object | undefined): void {
+  getStringValue(key: string): string | undefined {
+    const value = this.storage.getValue(key);
+    if (!isString(value)) {
+      this.applicationStore.logService.warn(
+        LogEvent.create(APPLICATION_EVENT.USER_DATA_RETRIEVE_FAILURE),
+        `Can't retrieve string value for user data '${key}'`,
+      );
+      return undefined;
+    }
+    return value;
+  }
+
+  getBooleanValue(key: string): boolean | undefined {
+    const value = this.storage.getValue(key);
+    if (!isBoolean(value)) {
+      this.applicationStore.logService.warn(
+        LogEvent.create(APPLICATION_EVENT.USER_DATA_RETRIEVE_FAILURE),
+        `Can't retrieve boolean value for user data '${key}'`,
+      );
+      return undefined;
+    }
+    return value;
+  }
+
+  getObjectValue(key: string): object | undefined {
+    const value = this.storage.getValue(key);
+    if (!isObject(value)) {
+      this.applicationStore.logService.warn(
+        LogEvent.create(APPLICATION_EVENT.USER_DATA_RETRIEVE_FAILURE),
+        `Can't retrieve object value for user data '${key}'`,
+      );
+      return undefined;
+    }
+    return value;
+  }
+
+  persistValue(key: string, value: UserDataValue | undefined): void {
     this.storage.persistValue(key, value);
   }
 }

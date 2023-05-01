@@ -17,33 +17,67 @@
 import { QueryLoaderState } from '@finos/legend-query-builder';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import type { PlainObject } from '@finos/legend-shared';
-import { LEGEND_QUERY_USER_DATA_KEY } from '../__lib__/LegendQueryUserData.js';
+import { quantifyList } from '@finos/legend-shared';
+import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import {
-  QueryStorageState,
-  persistQueryIds,
-  removePersistedQuery,
-} from './QueryEditorStore.js';
+import type { LightQuery } from '@finos/legend-graph';
+import { generateExistingQueryEditorRoute } from '../__lib__/LegendQueryNavigation.js';
+import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
-  queryLoaderState: QueryLoaderState;
+  readonly queryLoaderState: QueryLoaderState;
+
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
   ) {
     super(applicationStore, depotServerClient);
-    const queryStorage = applicationStore.userDataService.getValue(
-      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
-    );
-    const queryStorageState = QueryStorageState.create(
-      queryStorage ? (queryStorage as PlainObject<QueryStorageState>) : {},
-    );
+
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      queryStorageState.recentQueries,
-      persistQueryIds,
-      removePersistedQuery,
+      this.graphManagerState,
+      {
+        loadQuery: (query: LightQuery): void => {
+          this.queryLoaderState.setQueryLoaderDialogOpen(false);
+          this.applicationStore.navigationService.navigator.goToLocation(
+            generateExistingQueryEditorRoute(query.id),
+            { ignoreBlocking: true },
+          );
+        },
+        fetchDefaultQueries: () =>
+          this.graphManagerState.graphManager.getQueries(
+            LegendQueryUserDataHelper.getRecentlyViewedQueries(
+              this.applicationStore.userDataService,
+            ),
+          ),
+        generateDefaultQueriesSummaryText: (queries) =>
+          queries.length
+            ? `Showing ${quantifyList(
+                queries,
+                'recently viewed query',
+                'recently viewed queries',
+              )}`
+            : `No recently viewed queries`,
+        onQueryDeleted: (query): void =>
+          LegendQueryUserDataHelper.removeRecentlyViewedQuery(
+            this.applicationStore.userDataService,
+            query.id,
+          ),
+        onQueryRenamed: (query): void => {
+          LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
+            applicationStore.telemetryService,
+            {
+              query: {
+                id: query.id,
+                name: query.name,
+                groupId: query.groupId,
+                artifactId: query.artifactId,
+                versionId: query.versionId,
+              },
+            },
+          );
+        },
+      },
     );
   }
 }

@@ -50,7 +50,6 @@ import {
   type ServiceQueryCreatorPathParams,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
-  generateExistingQueryEditorRoute,
   generateQuerySetupRoute,
 } from '../__lib__/LegendQueryNavigation.js';
 import {
@@ -71,7 +70,7 @@ import {
   ServiceQueryCreatorStoreProvider,
   useQueryEditorStore,
 } from './QueryEditorStoreProvider.js';
-import type { LightQuery, RawLambda } from '@finos/legend-graph';
+import type { RawLambda } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import {
@@ -81,11 +80,7 @@ import {
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
-import {
-  type ActionState,
-  assertErrorThrown,
-  debounce,
-} from '@finos/legend-shared';
+import { debounce } from '@finos/legend-shared';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 const QuerySaveAsDialogContent = observer(
@@ -207,7 +202,7 @@ const QueryEditorHeaderContent = observer(
 
     // actions
     const openQueryLoader = (): void => {
-      editorStore.queryLoaderState.setIsQueryLoaderOpen(true);
+      editorStore.queryLoaderState.setQueryLoaderDialogOpen(true);
     };
     const viewProject = (): void => {
       LegendQueryTelemetryHelper.logEvent_QueryViewProjectLaunched(
@@ -305,51 +300,6 @@ const QueryEditorHeaderContent = observer(
           );
         })
         .catch(applicationStore.alertUnhandledError);
-    };
-    const loadQuery = (selectedQuery: LightQuery): void => {
-      queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
-        editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-        applicationStore.navigationService.navigator.goToLocation(
-          generateExistingQueryEditorRoute(selectedQuery.id),
-          { ignoreBlocking: true },
-        );
-      });
-    };
-
-    const renameQueryFromLoader = async (
-      selectedQuery: LightQuery,
-      updatedQueryName: string,
-      renameQueryState: ActionState,
-    ): Promise<void> => {
-      try {
-        renameQueryState.inProgress();
-        await queryBuilderState.graphManagerState.graphManager.renameQuery(
-          selectedQuery.id,
-          updatedQueryName,
-        );
-        applicationStore.notificationService.notifySuccess(
-          `Successfully updated query!`,
-        );
-
-        LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
-          applicationStore.telemetryService,
-          {
-            query: {
-              id: selectedQuery.id,
-              name: selectedQuery.name,
-              groupId: selectedQuery.groupId,
-              artifactId: selectedQuery.artifactId,
-              versionId: selectedQuery.versionId,
-            },
-          },
-        );
-        selectedQuery.name = updatedQueryName;
-        renameQueryState.pass();
-      } catch (error) {
-        renameQueryState.fail();
-        assertErrorThrown(error);
-        applicationStore.notificationService.notifyError(error);
-      }
     };
 
     const toggleAssistant = (): void =>
@@ -553,16 +503,10 @@ const QueryEditorHeaderContent = observer(
             </div>
             <CaretDownIcon className="query-editor__header__action__dropdown-trigger" />
           </DropdownMenu>
-          {editorStore.queryLoaderState.isQueryLoaderOpen && (
+          {editorStore.queryLoaderState.isQueryLoaderDialogOpen && (
             <QueryLoaderDialog
               queryLoaderState={editorStore.queryLoaderState}
-              graphManager={queryBuilderState.graphManagerState.graphManager}
-              loadQuery={loadQuery}
-              renameQuery={renameQueryFromLoader}
-              options={{
-                isDeleteSupported: true,
-                includeDefaultQueries: true,
-              }}
+              title="Load query"
             />
           )}
           <button

@@ -27,176 +27,157 @@ type QueryExecution_TelemetryData = GraphManagerOperationReport & {
 };
 
 export class QueryBuilderTelemetryHelper {
-  static logEvent_QueryRunLaunched(telemetryService: TelemetryService): void {
-    telemetryService.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, {});
+  static logEvent_QueryRunLaunched(service: TelemetryService): void {
+    service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, {});
   }
 
   static logEvent_ExecutionPlanGenerationLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
-      QUERY_BUILDER_EVENT.GENERATE_EXECUTION_PLAN__LAUNCH,
-      {},
-    );
+    service.logEvent(QUERY_BUILDER_EVENT.GENERATE_EXECUTION_PLAN__LAUNCH, {});
   }
 
-  static logEvent_ExecutionPlanDebugLaunched(
-    telemetryService: TelemetryService,
-  ): void {
-    telemetryService.logEvent(
-      QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__LAUNCH,
-      {},
-    );
+  static logEvent_ExecutionPlanDebugLaunched(service: TelemetryService): void {
+    service.logEvent(QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__LAUNCH, {});
   }
 
   static logEvent_QueryRunSucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: QueryExecution_TelemetryData,
   ): void {
-    telemetryService.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__SUCCESS, data);
+    service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__SUCCESS, data);
   }
 
   static logEvent_ExecutionPlanGenerationSucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: QueryExecution_TelemetryData,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_EVENT.GENERATE_EXECUTION_PLAN__SUCCESS,
       data,
     );
   }
 
   static logEvent_ExecutionPlanDebugSucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: QueryExecution_TelemetryData,
   ): void {
-    telemetryService.logEvent(
-      QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__SUCCESS,
-      data,
-    );
+    service.logEvent(QUERY_BUILDER_EVENT.DEBUG_EXECUTION_PLAN__SUCCESS, data);
   }
 
   static logEvent_FilterCreateConditionLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_FILTER_EVENT.FILTER__CREATE__CONDITION__LAUNCH,
       {},
     );
   }
 
-  static logEvent_FilterCleanupTreeLaunched(
-    telemetryService: TelemetryService,
-  ): void {
-    telemetryService.logEvent(
+  static logEvent_FilterCleanupTreeLaunched(service: TelemetryService): void {
+    service.logEvent(
       QUERY_BUILDER_FILTER_EVENT.FILTER__CLEANUP__TREE__LAUNCH,
       {},
     );
   }
 
-  static logEvent_FilterCollapseTreeLaunched(
-    telemetryService: TelemetryService,
-  ): void {
-    telemetryService.logEvent(
+  static logEvent_FilterCollapseTreeLaunched(service: TelemetryService): void {
+    service.logEvent(
       QUERY_BUILDER_FILTER_EVENT.FILTER__COLLAPSE__TREE__LAUNCH,
       {},
     );
   }
 
   static logEvent_FilterCreateGroupFromConditionLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_FILTER_EVENT.FILTER__CREATE__GROUP__FROM__CONDITION__LAUNCH,
       {},
     );
   }
 
   static logEvent_FilterCreateLogicalGroupLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_FILTER_EVENT.FILTER__CREATE__LOGICAL__GROUP__LAUNCH,
       {},
     );
   }
 
-  static logEvent_FilterExpandTreeLaunched(
-    telemetryService: TelemetryService,
-  ): void {
-    telemetryService.logEvent(
+  static logEvent_FilterExpandTreeLaunched(service: TelemetryService): void {
+    service.logEvent(
       QUERY_BUILDER_FILTER_EVENT.FILTER__EXPAND__TREE__LAUNCH,
       {},
     );
   }
 
-  static logEvent_FilterSimplifyTreeLaunched(
-    telemetryService: TelemetryService,
-  ): void {
-    telemetryService.logEvent(
+  static logEvent_FilterSimplifyTreeLaunched(service: TelemetryService): void {
+    service.logEvent(
       QUERY_BUILDER_FILTER_EVENT.FILTER__SIMPLIFY__TREE__LAUNCH,
       {},
     );
   }
 
   static logEvent_PostFilterCreateConditionLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_POST_FILTER_EVENT.FILTER__CREATE__CONDITION__LAUNCH,
       {},
     );
   }
 
   static logEvent_PostFilterCleanupTreeLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_POST_FILTER_EVENT.FILTER__CLEANUP__TREE__LAUNCH,
       {},
     );
   }
 
   static logEvent_PostFilterCollapseTreeLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_POST_FILTER_EVENT.FILTER__COLLAPSE__TREE__LAUNCH,
       {},
     );
   }
 
   static logEvent_PostFilterCreateGroupFromConditionLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_POST_FILTER_EVENT.FILTER__CREATE__GROUP__FROM__CONDITION__LAUNCH,
       {},
     );
   }
 
   static logEvent_PostFilterCreateLogicalGroupLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_POST_FILTER_EVENT.FILTER__CREATE__LOGICAL__GROUP__LAUNCH,
       {},
     );
   }
 
   static logEvent_PostFilterExpandTreeLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_POST_FILTER_EVENT.FILTER__EXPAND__TREE__LAUNCH,
       {},
     );
   }
 
   static logEvent_PostFilterSimplifyTreeLaunched(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       QUERY_BUILDER_POST_FILTER_EVENT.FILTER__SIMPLIFY__TREE__LAUNCH,
       {},
     );

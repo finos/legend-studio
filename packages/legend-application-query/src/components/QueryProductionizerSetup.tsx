@@ -26,7 +26,6 @@ import {
 import { QueryProductionizerSetupStore } from '../stores/QueryProductionizerSetupStore.js';
 import { BaseQuerySetup, BaseQuerySetupStoreContext } from './QuerySetup.js';
 import { generateQuerySetupRoute } from '../__lib__/LegendQueryNavigation.js';
-import type { LightQuery } from '@finos/legend-graph';
 import { QueryLoader } from '@finos/legend-query-builder';
 
 const QueryProductionizerSetupStoreProvider: React.FC<{
@@ -66,13 +65,6 @@ const QueryProductionizerSetupContent = observer(() => {
     );
   };
 
-  const loadQuery = (selectedQuery: LightQuery): void => {
-    setupStore.queryLoaderState.setIsQueryLoaderOpen(false);
-    setupStore
-      .loadQueryProductionizer(selectedQuery)
-      .catch(applicationStore.alertUnhandledError);
-  };
-
   return (
     <div className="query-setup__wizard query-setup__productionize-query">
       <div className="query-setup__wizard__header query-setup__productionize-query__header">
@@ -90,8 +82,6 @@ const QueryProductionizerSetupContent = observer(() => {
       <div className="query-setup__productionize-query__content">
         <QueryLoader
           queryLoaderState={setupStore.queryLoaderState}
-          graphManager={setupStore.graphManagerState.graphManager}
-          loadQuery={loadQuery}
           loadActionLabel="productionize query"
         />
       </div>

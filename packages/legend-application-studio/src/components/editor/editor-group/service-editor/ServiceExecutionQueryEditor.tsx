@@ -37,7 +37,6 @@ import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  type LightQuery,
   isStubbed_PackageableElement,
   isStubbed_RawLambda,
   KeyedExecutionParameter,
@@ -205,12 +204,8 @@ export const ServiceExecutionQueryEditor = observer(
         }
       });
 
-    const importQuery = (): void => {
-      flowResult(queryState.initializeQueryImporter()).catch(
-        applicationStore.alertUnhandledError,
-      );
-      queryState.queryLoaderState.setIsQueryLoaderOpen(true);
-    };
+    const importQuery = (): void =>
+      queryState.queryLoaderState.setQueryLoaderDialogOpen(true);
 
     const runQuery = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.handleRunQuery()),
@@ -289,12 +284,6 @@ export const ServiceExecutionQueryEditor = observer(
             service.path,
           ),
         ),
-      );
-    };
-
-    const loadQuery = (selectedQuery: LightQuery): void => {
-      flowResult(queryState.importQuery(selectedQuery.id)).catch(
-        applicationStore.alertUnhandledError,
       );
     };
 
@@ -474,15 +463,10 @@ export const ServiceExecutionQueryEditor = observer(
             executionPlanState={executionState.executionPlanState}
           />
           <ServiceExecutionResultViewer executionState={executionState} />
-          {queryState.queryLoaderState.isQueryLoaderOpen && (
+          {queryState.queryLoaderState.isQueryLoaderDialogOpen && (
             <QueryLoaderDialog
               queryLoaderState={queryState.queryLoaderState}
-              graphManager={editorStore.graphManagerState.graphManager}
-              loadQuery={loadQuery}
               title="import query"
-              options={{
-                includeDefaultQueries: true,
-              }}
             />
           )}
           {executionState.parameterState.parameterValuesEditorState

@@ -60,9 +60,10 @@ import {
   stub_PackageableRuntime,
   stub_Mapping,
   reportGraphAnalytics,
+  type LightQuery,
+  QuerySearchSpecification,
 } from '@finos/legend-graph';
 import {
-  type EntitiesWithOrigin,
   parseGACoordinates,
   generateGAVCoordinates,
 } from '@finos/legend-storage';
@@ -89,6 +90,7 @@ import {
   QueryLoaderState,
   QUERY_BUILDER_EVENT,
   ExecutionPlanState,
+  QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
 } from '@finos/legend-query-builder';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
@@ -191,11 +193,39 @@ export class UnsupportedServiceExecutionState extends ServiceExecutionState {
   }
 }
 
+const decorateSearchSpecificationForServiceQueryImporter = (
+  val: QuerySearchSpecification,
+  editorStore: EditorStore,
+): QuerySearchSpecification => {
+  const currentProjectCoordinates = new QueryProjectCoordinates();
+  currentProjectCoordinates.groupId =
+    editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
+  currentProjectCoordinates.artifactId =
+    editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
+  val.projectCoordinates = [
+    // either get queries for the current project
+    currentProjectCoordinates,
+    // or any of its dependencies
+    ...Array.from(
+      editorStore.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.keys(),
+    ).map((dependencyKey) => {
+      const { groupId, artifactId } = parseGACoordinates(dependencyKey);
+      const coordinates = new QueryProjectCoordinates();
+      coordinates.groupId = groupId;
+      coordinates.artifactId = artifactId;
+      return coordinates;
+    }),
+  ];
+  return val;
+};
+
 export class ServicePureExecutionQueryState extends LambdaEditorState {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+  readonly queryLoaderState: QueryLoaderState;
+
   execution: PureExecution;
-  queryLoaderState: QueryLoaderState;
   isInitializingLambda = false;
+
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', '');
 
@@ -206,12 +236,37 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
       setLambda: action,
       updateLamba: flow,
       importQuery: flow,
-      initializeQueryImporter: flow,
     });
 
     this.editorStore = editorStore;
     this.execution = execution;
-    this.queryLoaderState = new QueryLoaderState(editorStore.applicationStore);
+    this.queryLoaderState = new QueryLoaderState(
+      editorStore.applicationStore,
+      editorStore.graphManagerState,
+      {
+        loadQuery: (query: LightQuery): void => {
+          flowResult(this.importQuery(query.id)).catch(
+            this.editorStore.applicationStore.alertUnhandledError,
+          );
+        },
+        decorateSearchSpecification: (val) =>
+          decorateSearchSpecificationForServiceQueryImporter(
+            val,
+            this.editorStore,
+          ),
+        fetchDefaultQueries: async (): Promise<LightQuery[]> => {
+          const searchSpecification = new QuerySearchSpecification();
+          searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT;
+          return this.editorStore.graphManagerState.graphManager.searchQueries(
+            decorateSearchSpecificationForServiceQueryImporter(
+              searchSpecification,
+              this.editorStore,
+            ),
+          );
+        },
+        isReadOnly: true,
+      },
+    );
   }
 
   get lambdaId(): string {
@@ -252,35 +307,8 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.queryLoaderState.setIsQueryLoaderOpen(false);
+      this.queryLoaderState.setQueryLoaderDialogOpen(false);
     }
-  }
-
-  *initializeQueryImporter(): GeneratorFn<void> {
-    const currentProjectCoordinates = new QueryProjectCoordinates();
-    currentProjectCoordinates.groupId =
-      this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
-    currentProjectCoordinates.artifactId =
-      this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
-    this.queryLoaderState.searchSpecificationProjectCoordinates = [
-      // either get queries for the current project
-      currentProjectCoordinates,
-      // or any of its dependencies
-      ...Array.from(
-        (
-          (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
-            string,
-            EntitiesWithOrigin
-          >
-        ).keys(),
-      ).map((coordinatesInText) => {
-        const { groupId, artifactId } = parseGACoordinates(coordinatesInText);
-        const coordinates = new QueryProjectCoordinates();
-        coordinates.groupId = groupId;
-        coordinates.artifactId = artifactId;
-        return coordinates;
-      }),
-    ];
   }
 
   *updateLamba(val: RawLambda): GeneratorFn<void> {

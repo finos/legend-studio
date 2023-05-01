@@ -15,17 +15,10 @@
  */
 
 import { ArrowLeftIcon } from '@finos/legend-art';
-import {
-  type ActionState,
-  assertErrorThrown,
-  guaranteeType,
-} from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useContext } from 'react';
-import {
-  generateExistingQueryEditorRoute,
-  generateQuerySetupRoute,
-} from '../__lib__/LegendQueryNavigation.js';
+import { generateQuerySetupRoute } from '../__lib__/LegendQueryNavigation.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   useLegendQueryApplicationStore,
@@ -33,9 +26,7 @@ import {
 } from './LegendQueryFrameworkProvider.js';
 import { EditExistingQuerySetupStore } from '../stores/EditExistingQuerySetupStore.js';
 import { BaseQuerySetup, BaseQuerySetupStoreContext } from './QuerySetup.js';
-import type { LightQuery } from '@finos/legend-graph';
-import { QueryLoader, QueryLoaderDialog } from '@finos/legend-query-builder';
-import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
+import { QueryLoader } from '@finos/legend-query-builder';
 
 const EditExistingQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -74,50 +65,6 @@ const EditExistingQuerySetupContent = observer(() => {
     );
   };
 
-  const loadQuery = (selectedQuery: LightQuery): void => {
-    setupStore.queryLoaderState.setIsQueryLoaderOpen(false);
-    applicationStore.navigationService.navigator.goToLocation(
-      generateExistingQueryEditorRoute(selectedQuery.id),
-      { ignoreBlocking: true },
-    );
-  };
-
-  const renameQuery = async (
-    selectedQuery: LightQuery,
-    updatedQueryName: string,
-    renameQueryState: ActionState,
-  ): Promise<void> => {
-    try {
-      renameQueryState.inProgress();
-      await setupStore.graphManagerState.graphManager.renameQuery(
-        selectedQuery.id,
-        updatedQueryName,
-      );
-      applicationStore.notificationService.notifySuccess(
-        `Successfully updated query!`,
-      );
-
-      LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
-        applicationStore.telemetryService,
-        {
-          query: {
-            id: selectedQuery.id,
-            name: selectedQuery.name,
-            groupId: selectedQuery.groupId,
-            artifactId: selectedQuery.artifactId,
-            versionId: selectedQuery.versionId,
-          },
-        },
-      );
-      selectedQuery.name = updatedQueryName;
-      renameQueryState.pass();
-    } catch (error) {
-      renameQueryState.fail();
-      assertErrorThrown(error);
-      applicationStore.notificationService.notifyError(error);
-    }
-  };
-
   return (
     <div className="query-setup__wizard query-setup__existing-query">
       <div className="query-setup__wizard__header query-setup__existing-query__header">
@@ -135,10 +82,7 @@ const EditExistingQuerySetupContent = observer(() => {
       <div className="query-setup__existing-query__content">
         <QueryLoader
           queryLoaderState={setupStore.queryLoaderState}
-          graphManager={setupStore.graphManagerState.graphManager}
-          loadQuery={loadQuery}
-          renameQuery={renameQuery}
-          options={{ isDeleteSupported: true }}
+          loadActionLabel="load query"
         />
       </div>
     </div>

@@ -24,32 +24,63 @@ import { parseProjectIdentifier } from '@finos/legend-storage';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl } from '../__lib__/LegendQueryNavigation.js';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
-import type { PlainObject } from '@finos/legend-shared';
-import { LEGEND_QUERY_USER_DATA_KEY } from '../__lib__/LegendQueryUserData.js';
-import {
-  QueryStorageState,
-  persistQueryIds,
-  removePersistedQuery,
-} from './QueryEditorStore.js';
+import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
+import { quantifyList } from '@finos/legend-shared';
+import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
-  queryLoaderState: QueryLoaderState;
+  readonly queryLoaderState: QueryLoaderState;
+
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
   ) {
     super(applicationStore, depotServerClient);
-    const queryStorage = applicationStore.userDataService.getValue(
-      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
-    );
-    const queryStorageState = QueryStorageState.create(
-      queryStorage ? (queryStorage as PlainObject<QueryStorageState>) : {},
-    );
+
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      queryStorageState.recentQueries,
-      persistQueryIds,
-      removePersistedQuery,
+      this.graphManagerState,
+      {
+        loadQuery: (query: LightQuery): void => {
+          this.queryLoaderState.setQueryLoaderDialogOpen(false);
+          this.loadQueryProductionizer(query).catch(
+            applicationStore.alertUnhandledError,
+          );
+        },
+        fetchDefaultQueries: () =>
+          this.graphManagerState.graphManager.getQueries(
+            LegendQueryUserDataHelper.getRecentlyViewedQueries(
+              this.applicationStore.userDataService,
+            ),
+          ),
+        generateDefaultQueriesSummaryText: (queries) =>
+          queries.length
+            ? `Showing ${quantifyList(
+                queries,
+                'recently viewed query',
+                'recently viewed queries',
+              )}`
+            : `No recently viewed queries`,
+        onQueryDeleted: (query): void =>
+          LegendQueryUserDataHelper.removeRecentlyViewedQuery(
+            this.applicationStore.userDataService,
+            query.id,
+          ),
+        onQueryRenamed: (query): void => {
+          LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
+            applicationStore.telemetryService,
+            {
+              query: {
+                id: query.id,
+                name: query.name,
+                groupId: query.groupId,
+                artifactId: query.artifactId,
+                versionId: query.versionId,
+              },
+            },
+          );
+        },
+      },
     );
   }
 

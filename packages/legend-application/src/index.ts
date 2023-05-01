@@ -46,6 +46,7 @@ export {
 export * from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
 export * from './stores/SettingService.js';
+export * from './stores/UserDataService.js';
 export * from './stores/DocumentationService.js';
 export * from './stores/CommandService.js';
 export * from './stores/event/EventService.js';

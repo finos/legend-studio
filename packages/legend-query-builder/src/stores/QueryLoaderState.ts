@@ -21,108 +21,119 @@ import {
 import {
   type LightQuery,
   QuerySearchSpecification,
-  type AbstractPureGraphManager,
-  type QueryProjectCoordinates,
-  type Query,
   type QueryInfo,
+  type BasicGraphManagerState,
+  type Query,
 } from '@finos/legend-graph';
 import {
   ActionState,
   type GeneratorFn,
   assertErrorThrown,
-  deleteEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { makeObservable, observable, action, flow, flowResult } from 'mobx';
+import { makeObservable, observable, action, flow } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type {
   LoadQueryFilterOption,
   QueryBuilder_LegendApplicationPlugin_Extension,
 } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 
-export const QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT = 20;
+export const QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT = 20;
 
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
+  readonly graphManagerState: BasicGraphManagerState;
+
   readonly searchQueriesState = ActionState.create();
+  readonly renameQueryState = ActionState.create();
+  readonly deleteQueryState = ActionState.create();
+  readonly previewQueryState = ActionState.create();
+
+  readonly decorateSearchSpecification?:
+    | ((val: QuerySearchSpecification) => QuerySearchSpecification)
+    | undefined;
+
+  readonly loadQuery: (query: LightQuery) => void;
+  readonly fetchDefaultQueries?: (() => Promise<LightQuery[]>) | undefined;
+  readonly generateDefaultQueriesSummaryText?:
+    | ((queries: LightQuery[]) => string)
+    | undefined;
+
+  readonly isReadOnly?: boolean | undefined;
+  readonly onQueryRenamed?: ((query: LightQuery) => void) | undefined;
+  readonly onQueryDeleted?: ((query: LightQuery) => void) | undefined;
+
   queryBuilderState?: QueryBuilderState | undefined;
 
   searchText = '';
-  searchSpecificationProjectCoordinates?: QueryProjectCoordinates[];
-  showCurrentUserQueriesOnly = false;
+  showCurrentUserQueriesOnly = false; // TODO: if we start having more native filters, we should make them part of `extraFilters`
   extraFilters = new Map<string, boolean>();
   extraFilterOptions: LoadQueryFilterOption[] = [];
   queries: LightQuery[] = [];
-  showingRecentlyViewedQueries = true;
 
-  // TODO
-  isQueryLoaderOpen = false;
-  // TODO
-  intialQueries: string[];
-
+  isQueryLoaderDialogOpen = false;
+  showingDefaultQueries = true;
   showPreviewViewer = false;
   queryPreviewContent?: QueryInfo;
-  onDeleteQuery?:
-    | ((
-        intialQueries: string[],
-        idx: number,
-        applicationStore: GenericLegendApplicationStore,
-      ) => void)
-    | undefined;
-  onLoadQuery?:
-    | ((
-        intialQueries: string[],
-        val: LightQuery | Query,
-        applicationStore: GenericLegendApplicationStore,
-      ) => void)
-    | undefined;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
-    intialQueries?: string[],
-    onLoadQuery?: (
-      intialQueries: string[],
-      val: LightQuery | Query,
-      applicationStore: GenericLegendApplicationStore,
-    ) => void,
-    onDeleteQuery?: (
-      intialQueries: string[],
-      idx: number,
-      applicationStore: GenericLegendApplicationStore,
-    ) => void,
+    graphManagerState: BasicGraphManagerState,
+    options: {
+      decorateSearchSpecification?:
+        | ((val: QuerySearchSpecification) => QuerySearchSpecification)
+        | undefined;
+
+      loadQuery: (query: LightQuery) => void;
+      fetchDefaultQueries?: (() => Promise<LightQuery[]>) | undefined;
+      generateDefaultQueriesSummaryText?:
+        | ((queries: LightQuery[]) => string)
+        | undefined;
+
+      isReadOnly?: boolean | undefined;
+      onQueryRenamed?: ((query: LightQuery) => void) | undefined;
+      onQueryDeleted?: ((query: LightQuery) => void) | undefined;
+    },
   ) {
     makeObservable(this, {
-      isQueryLoaderOpen: observable,
+      isQueryLoaderDialogOpen: observable,
       queryPreviewContent: observable,
-      showingRecentlyViewedQueries: observable,
+      showingDefaultQueries: observable,
       queries: observable,
       showCurrentUserQueriesOnly: observable,
       showPreviewViewer: observable,
       searchText: observable,
       setSearchText: action,
-      setIsQueryLoaderOpen: action,
+      setQueryLoaderDialogOpen: action,
       setQueries: action,
-      deleteQuery: action,
       setShowCurrentUserQueriesOnly: action,
       setShowPreviewViewer: action,
       searchQueries: flow,
       getPreviewQueryContent: flow,
-      initializeWithCustomQueries: flow,
+      deleteQuery: flow,
+      renameQuery: flow,
       initialize: flow,
     });
 
     this.applicationStore = applicationStore;
-    this.intialQueries = intialQueries ?? [];
-    this.onDeleteQuery = onDeleteQuery;
-    this.onLoadQuery = onLoadQuery;
+    this.graphManagerState = graphManagerState;
+
+    this.loadQuery = options.loadQuery;
+    this.fetchDefaultQueries = options.fetchDefaultQueries;
+    this.generateDefaultQueriesSummaryText =
+      options.generateDefaultQueriesSummaryText;
+    this.decorateSearchSpecification = options.decorateSearchSpecification;
+    this.isReadOnly = options.isReadOnly;
+    this.onQueryRenamed = options.onQueryRenamed;
+    this.onQueryDeleted = options.onQueryDeleted;
   }
 
   setSearchText(val: string): void {
     this.searchText = val;
   }
 
-  setIsQueryLoaderOpen(val: boolean): void {
-    this.isQueryLoaderOpen = val;
+  setQueryLoaderDialogOpen(val: boolean): void {
+    this.isQueryLoaderDialogOpen = val;
   }
 
   setQueries(val: LightQuery[]): void {
@@ -137,19 +148,8 @@ export class QueryLoaderState {
     this.showCurrentUserQueriesOnly = val;
   }
 
-  deleteQuery(query: LightQuery): void {
-    deleteEntry(this.queries, query);
-  }
-
-  *getPreviewQueryContent(
-    queryId: string,
-    graphManager: AbstractPureGraphManager,
-  ): GeneratorFn<void> {
-    const queryInfo = (yield graphManager.getQueryInfo(queryId)) as QueryInfo;
-    this.queryPreviewContent = queryInfo;
-    this.queryPreviewContent.content = (yield graphManager.prettyLambdaContent(
-      queryInfo.content,
-    )) as string;
+  reset(): void {
+    this.setShowCurrentUserQueriesOnly(false);
   }
 
   *initialize(queryBuilderState: QueryBuilderState): GeneratorFn<void> {
@@ -170,118 +170,129 @@ export class QueryLoaderState {
     );
   }
 
-  /**
-   * Whenever user tries to open the query loader we try to load the queryIds
-   * stored in the local cache and list of queries which are relevant to the
-   * workflow where query loader is getting used.
-   */
-  *initializeWithCustomQueries(
-    graphManager: AbstractPureGraphManager,
-    includeDefaultQueries?: boolean | undefined,
-  ): GeneratorFn<void> {
-    this.searchQueriesState.inProgress();
-    this.queries = [];
-    try {
-      for (const [idx, queryId] of this.intialQueries.entries()) {
-        let lightQuery;
-        try {
-          lightQuery = (yield flowResult(
-            graphManager.getLightQuery(queryId),
-          )) as LightQuery;
-        } catch (error) {
-          assertErrorThrown(error);
-          // do nothing
-        }
-        if (lightQuery) {
-          this.queries.push(lightQuery);
-        } else {
-          this.onDeleteQuery?.(this.intialQueries, idx, this.applicationStore);
-        }
-      }
-      if (includeDefaultQueries) {
-        const searchSpecification = new QuerySearchSpecification();
-        searchSpecification.limit = QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT;
-        searchSpecification.projectCoordinates =
-          this.searchSpecificationProjectCoordinates ?? [];
-        const queries = (yield graphManager.searchQueries(
-          searchSpecification,
-        )) as LightQuery[];
-        queries.forEach((query) => {
-          if (!this.queries.find((q) => q.id === query.id)) {
-            this.queries.push(query);
-          }
-        });
-      }
-      this.searchQueriesState.pass();
-    } catch (error) {
-      this.searchQueriesState.fail();
-      assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(error);
-    }
-  }
-
-  *searchQueries(
-    searchText: string,
-    graphManager: AbstractPureGraphManager,
-    includeDefaultQueries?: boolean | undefined,
-  ): GeneratorFn<void> {
+  *searchQueries(searchText: string): GeneratorFn<void> {
     if (
-      !searchText &&
+      searchText.length < DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH &&
       !this.showCurrentUserQueriesOnly &&
       Array.from(this.extraFilters.values()).every((value) => value === false)
     ) {
-      this.showingRecentlyViewedQueries = true;
-      this.initializeWithCustomQueries(graphManager, includeDefaultQueries);
-    } else {
-      if (
-        searchText.length < DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH &&
-        !this.showCurrentUserQueriesOnly &&
-        Array.from(this.extraFilters.values()).every((value) => value === false)
-      ) {
-        return;
-      }
-
-      this.showingRecentlyViewedQueries = false;
-      this.searchQueriesState.inProgress();
-
-      try {
-        let searchSpecification = new QuerySearchSpecification();
-        searchSpecification.searchTerm = searchText;
-        searchSpecification.limit = QUERY_LAODER_TYPEAHEAD_SEARCH_LIMIT + 1;
-        searchSpecification.showCurrentUserQueriesOnly =
-          this.showCurrentUserQueriesOnly;
-        if (this.queryBuilderState) {
-          Array.from(this.extraFilters.entries()).forEach(([key, value]) => {
-            if (value) {
-              const filterOption = this.extraFilterOptions.find(
-                (option) =>
-                  option.label(guaranteeNonNullable(this.queryBuilderState)) ===
-                  key,
-              );
-              if (filterOption) {
-                searchSpecification = filterOption.filterFunction(
-                  searchSpecification,
-                  guaranteeNonNullable(this.queryBuilderState),
-                );
-              }
-            }
-          });
+      // if no search text is specified, use fetch the default queries
+      if (!searchText) {
+        this.showingDefaultQueries = true;
+        this.searchQueriesState.inProgress();
+        this.queries = [];
+        try {
+          if (!this.fetchDefaultQueries) {
+            return;
+          }
+          this.queries = (yield this.fetchDefaultQueries()) as LightQuery[];
+          this.searchQueriesState.pass();
+        } catch (error) {
+          this.searchQueriesState.fail();
+          assertErrorThrown(error);
+          this.applicationStore.notificationService.notifyError(error);
         }
-        searchSpecification.projectCoordinates =
-          this.searchSpecificationProjectCoordinates ?? [];
-        this.queries = (yield graphManager.searchQueries(
-          searchSpecification,
-        )) as LightQuery[];
-        this.searchQueriesState.pass();
-      } catch (error) {
-        this.searchQueriesState.fail();
-        assertErrorThrown(error);
-        this.applicationStore.notificationService.notifyError(error);
       }
+
+      // skip otherwise
+      return;
+    }
+
+    // search using the search term
+    this.showingDefaultQueries = false;
+    this.searchQueriesState.inProgress();
+    try {
+      let searchSpecification = new QuerySearchSpecification();
+      searchSpecification.searchTerm = searchText;
+      searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT + 1;
+      searchSpecification.showCurrentUserQueriesOnly =
+        this.showCurrentUserQueriesOnly;
+      if (this.queryBuilderState) {
+        Array.from(this.extraFilters.entries()).forEach(([key, value]) => {
+          if (value) {
+            const filterOption = this.extraFilterOptions.find(
+              (option) =>
+                option.label(guaranteeNonNullable(this.queryBuilderState)) ===
+                key,
+            );
+            if (filterOption) {
+              searchSpecification = filterOption.filterFunction(
+                searchSpecification,
+                guaranteeNonNullable(this.queryBuilderState),
+              );
+            }
+          }
+        });
+      }
+      searchSpecification =
+        this.decorateSearchSpecification?.(searchSpecification) ??
+        searchSpecification;
+      this.queries = (yield this.graphManagerState.graphManager.searchQueries(
+        searchSpecification,
+      )) as LightQuery[];
+      this.searchQueriesState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.searchQueriesState.fail();
     }
   }
 
-  reset(): void {
-    this.setShowCurrentUserQueriesOnly(false);
+  *renameQuery(queryId: string, name: string): GeneratorFn<void> {
+    this.renameQueryState.inProgress();
+    try {
+      const query = (yield this.graphManagerState.graphManager.renameQuery(
+        queryId,
+        name,
+      )) as Query;
+      this.onQueryRenamed?.(query);
+      this.applicationStore.notificationService.notify(
+        'Renamed query successfully',
+      );
+      this.renameQueryState.pass();
+      this.searchQueries(this.searchText); // trigger a search to refresh the query list
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.renameQueryState.fail();
+    }
+  }
+
+  *deleteQuery(queryId: string): GeneratorFn<void> {
+    this.deleteQueryState.inProgress();
+    try {
+      const query = (yield this.graphManagerState.graphManager.deleteQuery(
+        queryId,
+      )) as Query;
+      this.onQueryDeleted?.(query);
+      this.applicationStore.notificationService.notify(
+        'Deleted query successfully',
+      );
+      this.deleteQueryState.pass();
+      this.searchQueries(this.searchText); // trigger a search to refresh the query list
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.deleteQueryState.fail();
+    }
+  }
+
+  *getPreviewQueryContent(queryId: string): GeneratorFn<void> {
+    this.previewQueryState.inProgress();
+    try {
+      const queryInfo = (yield this.graphManagerState.graphManager.getQueryInfo(
+        queryId,
+      )) as QueryInfo;
+      this.queryPreviewContent = queryInfo;
+      this.queryPreviewContent.content =
+        (yield this.graphManagerState.graphManager.prettyLambdaContent(
+          queryInfo.content,
+        )) as string;
+      this.previewQueryState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.previewQueryState.fail();
+    }
   }
 }

@@ -514,20 +514,12 @@
 }
 
 .query-setup__existing-query {
-  bottom: 10vh;
   position: absolute;
+  bottom: 10vh;
   top: 10vh;
 
   &__header {
     background: var(--color-magenta-50);
-  }
-
-  .query-setup__wizard__content {
-    padding: 3rem;
-  }
-
-  .query-setup__wizard__selector {
-    width: 46.7rem;
   }
 
   &__content {
@@ -536,24 +528,15 @@
 }
 
 .query-setup__productionize-query {
-  width: 60rem;
-  height: 60rem;
   position: absolute;
-  top: 5vw;
+  bottom: 10vh;
+  top: 10vh;
 
   &__header {
     background: var(--color-magenta-50);
   }
 
-  .query-setup__wizard__content {
-    padding: 3rem;
-  }
-
-  .query-setup__wizard__selector {
-    width: 50rem;
-  }
-
   &__content {
-    padding: 1rem;
+    height: calc(100% - 3.4rem);
   }
 }

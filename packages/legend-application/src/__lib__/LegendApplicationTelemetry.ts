@@ -28,10 +28,10 @@ type VirtualAssistantDocumentationEntryAccessed_TelemetryData = {
 
 export class LegendApplicationTelemetryHelper {
   static logEvent_ApplicationInitializationSucceeded(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     applicationStore: GenericLegendApplicationStore,
   ): void {
-    telemetryService.logEvent(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS, {
+    service.logEvent(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS, {
       application: {
         name: applicationStore.config.appName,
         version: applicationStore.config.appVersion,
@@ -48,31 +48,23 @@ export class LegendApplicationTelemetryHelper {
   }
 
   static logEvent_ApplicationContextAccessed(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: ApplicationContextAccessed_TelemetryData,
   ): void {
-    telemetryService.logEvent(
-      APPLICATION_EVENT.APPLICATION_CONTEXT__ACCESS,
-      data,
-    );
+    service.logEvent(APPLICATION_EVENT.APPLICATION_CONTEXT__ACCESS, data);
   }
 
   static logEvent_VirtualAssistantDocumentationEntryAccessed(
-    telemetryService: TelemetryService,
+    service: TelemetryService,
     data: VirtualAssistantDocumentationEntryAccessed_TelemetryData,
   ): void {
-    telemetryService.logEvent(
+    service.logEvent(
       APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY__ACCESS,
       data,
     );
   }
 
-  static logEvent_ApplicationUsageInterrupted(
-    telemetryService: TelemetryService,
-  ): void {
-    telemetryService.logEvent(
-      APPLICATION_EVENT.APPLICATION_USAGE__INTERRUPT,
-      {},
-    );
+  static logEvent_ApplicationUsageInterrupted(service: TelemetryService): void {
+    service.logEvent(APPLICATION_EVENT.APPLICATION_USAGE__INTERRUPT, {});
   }
 }
