@@ -21,17 +21,15 @@ import {
   VerifiedIcon,
   clsx,
 } from '@finos/legend-art';
-import {
-  type DataSpaceViewerState,
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  DATA_SPACE_WIKI_PAGE_SECTIONS,
-} from '../stores/DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceExecutionContextViewer } from './DataSpaceExecutionContextViewer.js';
 import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
 import { DataSpaceSupportPanel } from './DataSpaceSupportPanel.js';
 import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
 import { useEffect, useRef, useState } from 'react';
+import { DATA_SPACE_WIKI_PAGE_SECTIONS } from '../stores/DataSpaceLayoutState.js';
+import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../stores/DataSpaceViewerNavigation.js';
 
 const DataSpaceHeader = observer(
   (props: {

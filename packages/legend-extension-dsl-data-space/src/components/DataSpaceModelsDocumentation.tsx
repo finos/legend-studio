@@ -41,11 +41,7 @@ import {
   CaretRightIcon,
   CaretLeftIcon,
 } from '@finos/legend-art';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-  type DataSpaceViewerState,
-} from '../stores/DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import {
   DataSpaceAssociationDocumentationEntry,
@@ -83,6 +79,10 @@ import {
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
 import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-lego/application';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+} from '../stores/DataSpaceViewerNavigation.js';
 
 const getMilestoningLabel = (val: string | undefined): string | undefined => {
   switch (val) {

@@ -39,12 +39,7 @@ import {
   clsx,
   useResizeDetector,
 } from '@finos/legend-art';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-  type DataSpaceViewerState,
-  generateAnchorForDiagram,
-} from '../stores/DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useRef } from 'react';
 import { type Diagram } from '@finos/legend-extension-dsl-diagram/graph';
@@ -59,6 +54,11 @@ import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/index.js';
 import { getNonNullableEnry } from '@finos/legend-shared';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import { useCommands } from '@finos/legend-application';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+  generateAnchorForDiagram,
+} from '../stores/DataSpaceViewerNavigation.js';
 
 const DataSpaceDiagramCanvas = observer(
   forwardRef<

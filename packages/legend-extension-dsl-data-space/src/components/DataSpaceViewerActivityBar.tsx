@@ -36,12 +36,12 @@ import {
   DataReadyIcon,
   SparkleIcon,
 } from '@finos/legend-art';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import { type ActivityBarItemConfig } from '@finos/legend-lego/application';
 import {
-  type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
-} from '../stores/DataSpaceViewerState.js';
-import { type ActivityBarItemConfig } from '@finos/legend-lego/application';
+} from '../stores/DataSpaceViewerNavigation.js';
 
 const ActivityBarMenu = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {

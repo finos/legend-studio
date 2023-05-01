@@ -15,10 +15,7 @@
  */
 
 import { action, computed, makeObservable, observable } from 'mobx';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  type DataSpaceViewerState,
-} from './DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from './DataSpaceViewerState.js';
 import { type TreeData, type TreeNodeData } from '@finos/legend-art';
 import {
   ActionState,
@@ -37,6 +34,7 @@ import {
 import { CORE_PURE_PATH, ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { CommandRegistrar } from '@finos/legend-application';
 import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
+import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from './DataSpaceViewerNavigation.js';
 
 export enum ModelsDocumentationFilterTreeNodeCheckType {
   CHECKED,

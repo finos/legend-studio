@@ -27,12 +27,7 @@ import {
   StatisticsIcon,
   clsx,
 } from '@finos/legend-art';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-  type DataSpaceViewerState,
-  generateAnchorForQuickStart,
-} from '../stores/DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   DataSpaceExecutableTDSResult,
@@ -53,6 +48,11 @@ import {
   CODE_EDITOR_THEME,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+  generateAnchorForQuickStart,
+} from '../stores/DataSpaceViewerNavigation.js';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',

@@ -19,10 +19,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  type DataSpaceViewerState,
-} from './DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from './DataSpaceViewerState.js';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/index.js';
 import {
@@ -31,6 +28,7 @@ import {
 } from '@finos/legend-extension-dsl-diagram/application';
 import type { CommandRegistrar } from '@finos/legend-application';
 import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
+import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from './DataSpaceViewerNavigation.js';
 
 export class DataSpaceViewerDiagramViewerState implements CommandRegistrar {
   readonly dataSpaceViewerState: DataSpaceViewerState;
