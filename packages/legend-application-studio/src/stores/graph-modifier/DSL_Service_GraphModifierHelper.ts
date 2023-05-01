@@ -30,6 +30,8 @@ import {
   type ConnectionTestData,
   type EmbeddedData,
   type ParameterValue,
+  type PostValidationAssertion,
+  type PostValidation,
   observe_ParameterValue,
   observe_ConnectionTestData,
   DEFAULT_SERVICE_PATTERN,
@@ -41,6 +43,8 @@ import {
   observe_ServiceTestSuite,
   observe_ServiceTest,
   observe_EmbeddedData,
+  observe_PostValidation,
+  observe_PostValidationAssertion,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -247,5 +251,60 @@ export const pureMultiExecution_addExecutionParameter = action(
 export const pureMultiExecution_deleteExecutionParameter = action(
   (pe: PureMultiExecution, value: KeyedExecutionParameter): void => {
     deleteEntry(pe.executionParameters, value);
+  },
+);
+
+// ------------------------------------------- POST VALIDATION --------------------------
+export const service_addValidation = action(
+  (service: Service, val: PostValidation): void => {
+    addUniqueEntry(service.postValidations, observe_PostValidation(val));
+  },
+);
+
+export const service_deleteValidation = action(
+  (service: Service, val: PostValidation): void => {
+    deleteEntry(service.postValidations, val);
+  },
+);
+
+export const serviceValidation_setDescription = action(
+  (postValidation: PostValidation, val: string) => {
+    postValidation.description = val;
+  },
+);
+
+export const serviceValidation_addAssertion = action(
+  (postVal: PostValidation, val: PostValidationAssertion) => {
+    addUniqueEntry(postVal.assertions, observe_PostValidationAssertion(val));
+  },
+);
+
+export const serviceValidation_deleteAssertion = action(
+  (postVal: PostValidation, val: PostValidationAssertion) => {
+    deleteEntry(postVal.assertions, val);
+  },
+);
+
+export const serviceValidation_addParam = action(
+  (postVal: PostValidation, val: RawLambda) => {
+    addUniqueEntry(postVal.parameters, observe_RawLambda(val));
+  },
+);
+
+export const serviceValidation_setParam = action(
+  (postVal: PostValidation, val: RawLambda, idx: number) => {
+    postVal.parameters[idx] = val;
+  },
+);
+
+export const serviceValidation_deleteParam = action(
+  (postVal: PostValidation, val: RawLambda) => {
+    deleteEntry(postVal.parameters, val);
+  },
+);
+
+export const serviceValidation_setASsertionId = action(
+  (val: PostValidationAssertion, id: string) => {
+    val.id = id;
   },
 );

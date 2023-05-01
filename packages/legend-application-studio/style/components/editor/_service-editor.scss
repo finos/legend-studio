@@ -1226,3 +1226,123 @@
     color: var(--color-light-grey-50);
   }
 }
+
+.service-post-validation-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgb(0 0 0 / 0%);
+      cursor: pointer;
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-400) !important;
+    }
+
+    &__content {
+      height: calc(100% - 2.8rem);
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
+    }
+  }
+
+  &__lambda-editor {
+    border: 0.1rem solid var(--color-dark-grey-280);
+
+    .monaco-editor {
+      .margin,
+      .monaco-editor-background {
+        background: var(--color-dark-grey-50) !important;
+      }
+    }
+
+    &__container {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  &__parameters {
+    padding-bottom: 1.5rem;
+    padding-top: 0.5rem;
+  }
+
+  &__header {
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+
+    &__label {
+      display: flex;
+
+      &__text {
+        @include flexVCenter;
+
+        padding-left: 0.5rem;
+        font-weight: 500;
+        color: var(--color-light-grey-50);
+        line-height: 2.2rem;
+        cursor: default;
+      }
+    }
+
+    &__actions {
+      &__action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgb(0 0 0 / 0%);
+        cursor: pointer;
+        color: var(--color-light-grey-400);
+      }
+    }
+  }
+
+  &__remove-btn {
+    @include flexCenter;
+
+    flex: 2.8rem 0 0;
+    height: 2.8rem;
+    color: var(--color-light-grey-0);
+    background: var(--color-dark-grey-300);
+    border-radius: 0.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    width: 2rem;
+  }
+}

@@ -23,6 +23,9 @@ export * from './graph/metamodel/pure/packageableElements/service/ServiceTestSui
 export * from './graph/metamodel/pure/packageableElements/service/ServiceExecution.js';
 export * from './graph/metamodel/pure/packageableElements/service/ConnectionTestData.js';
 export * from './graph/metamodel/pure/packageableElements/service/ServiceTestData.js';
+export * from './graph/metamodel/pure/packageableElements/service/PostValidation.js';
+export * from './graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
+
 export * from './graph/metamodel/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
 export * from './graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
 export * from './graph/metamodel/pure/packageableElements/service/ParameterValue.js';

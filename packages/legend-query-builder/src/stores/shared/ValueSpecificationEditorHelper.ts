@@ -16,10 +16,13 @@
 
 import {
   type PureModel,
-  VariableExpression,
+  type GraphManagerState,
   type ValueSpecification,
   type Type,
   type Enum,
+  type ObserverContext,
+  type RawLambda,
+  VariableExpression,
   CollectionInstanceValue,
   Enumeration,
   EnumValueExplicitReference,
@@ -32,7 +35,12 @@ import {
   PRIMITIVE_TYPE,
   INTERNAL__PropagatedValue,
   SimpleFunctionExpression,
-  type ObserverContext,
+  LambdaFunction,
+  FunctionType,
+  PackageableElementExplicitReference,
+  Multiplicity,
+  CORE_PURE_PATH,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
@@ -176,6 +184,35 @@ export const buildDefaultInstanceValue = (
       );
   }
 };
+
+export const buildDefaultEmptyStringLambda = (
+  graph: PureModel,
+  observerContext: ObserverContext,
+): LambdaFunction => {
+  const lambdaFunction = new LambdaFunction(
+    new FunctionType(
+      PackageableElementExplicitReference.create(
+        graph.getType(CORE_PURE_PATH.ANY),
+      ),
+      Multiplicity.ONE,
+    ),
+  );
+  lambdaFunction.expressionSequence[0] = buildDefaultInstanceValue(
+    graph,
+    PrimitiveType.STRING,
+    observerContext,
+  );
+  return lambdaFunction;
+};
+
+export const buildDefaultEmptyStringRawLambda = (
+  graphState: GraphManagerState,
+  observerContext: ObserverContext,
+): RawLambda =>
+  buildRawLambdaFromLambdaFunction(
+    buildDefaultEmptyStringLambda(graphState.graph, observerContext),
+    graphState,
+  );
 
 export const generateVariableExpressionMockValue = (
   parameter: VariableExpression,
