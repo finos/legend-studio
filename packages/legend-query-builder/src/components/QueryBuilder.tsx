@@ -40,7 +40,6 @@ import {
   ModalHeader,
   BlankPanelContent,
   ModalFooterButton,
-  CalendarIcon,
   CalendarClockIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
