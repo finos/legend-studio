@@ -102,62 +102,6 @@ import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorSta
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_CALENDAR_TYPE } from '../../graph-manager/QueryBuilderConst.js';
 
-export type CalendarFunctionOption = {
-  label: string | React.ReactNode;
-  value: QueryBuilderAggregateCalendarFunction;
-};
-
-export const buildCalendarFunctionOption = (
-  calendarFunction: QueryBuilderAggregateCalendarFunction,
-): CalendarFunctionOption => ({
-  label: (
-    <div
-      className="query-builder__projection__calendar__function__label"
-      title={calendarFunction.getLabel()}
-    >
-      <FunctionIcon className="query-builder__projection__calendar__function__label__icon" />
-      <div className="query-builder__projection__calendar__function__label__title">
-        {calendarFunction.getLabel()}
-      </div>
-    </div>
-  ),
-  value: calendarFunction,
-});
-
-export type CalendarFunctionDateColumnOption = {
-  label: string;
-  value: AbstractPropertyExpression;
-};
-
-export const buildCalendarFunctionDateColumnOption = (
-  dateColumn: Property | AbstractPropertyExpression,
-  parameter: VariableExpression,
-  humanizeLabel: boolean,
-): CalendarFunctionDateColumnOption => {
-  if (dateColumn instanceof Property) {
-    const propertyExpression = new AbstractPropertyExpression('');
-    propertyExpression_setFunc(
-      propertyExpression,
-      PropertyExplicitReference.create(guaranteeNonNullable(dateColumn)),
-    );
-    propertyExpression.parametersValues = [parameter];
-    return {
-      label: getPropertyChainName(propertyExpression, humanizeLabel),
-      value: propertyExpression,
-    };
-  } else {
-    return {
-      label: getPropertyChainName(dateColumn, humanizeLabel),
-      value: dateColumn,
-    };
-  }
-};
-
-export type CalendarTypeOption = {
-  label: string;
-  value: QUERY_BUILDER_CALENDAR_TYPE;
-};
-
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
     HTMLDivElement,
@@ -304,6 +248,76 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
   },
 );
 
+type CalendarFunctionOption = {
+  label: string | React.ReactNode;
+  value: QueryBuilderAggregateCalendarFunction;
+};
+
+const buildCalendarFunctionOption = (
+  calendarFunction: QueryBuilderAggregateCalendarFunction,
+): CalendarFunctionOption => ({
+  label: (
+    <div
+      className="query-builder__projection__calendar__function__label"
+      title={calendarFunction.getLabel()}
+    >
+      <FunctionIcon className="query-builder__projection__calendar__function__label__icon" />
+      <div className="query-builder__projection__calendar__function__label__title">
+        {calendarFunction.getLabel()}
+      </div>
+    </div>
+  ),
+  value: calendarFunction,
+});
+
+type CalendarFunctionDateColumnOption = {
+  label: React.ReactNode;
+  value: AbstractPropertyExpression;
+};
+
+const buildCalendarFunctionDateColumnOption = (
+  dateColumn: Property | AbstractPropertyExpression,
+  parameter: VariableExpression,
+  humanizeLabel: boolean,
+): CalendarFunctionDateColumnOption => {
+  if (dateColumn instanceof Property) {
+    const propertyExpression = new AbstractPropertyExpression('');
+    propertyExpression_setFunc(
+      propertyExpression,
+      PropertyExplicitReference.create(guaranteeNonNullable(dateColumn)),
+    );
+    propertyExpression.parametersValues = [parameter];
+    return {
+      label: getPropertyChainName(propertyExpression, humanizeLabel),
+      value: propertyExpression,
+    };
+  } else {
+    return {
+      label: getPropertyChainName(dateColumn, humanizeLabel),
+      value: dateColumn,
+    };
+  }
+};
+
+type CalendarTypeOption = {
+  label: React.ReactNode;
+  value: QUERY_BUILDER_CALENDAR_TYPE;
+};
+
+const buildCalendarTypeOption = (
+  val: QUERY_BUILDER_CALENDAR_TYPE,
+): CalendarTypeOption => ({
+  label: (
+    <div className="query-builder__projection__calendar__type__option">
+      <CalendarIcon className="query-builder__projection__calendar__type__option__icon" />
+      <div className="query-builder__projection__calendar__type__option__title">
+        {val}
+      </div>
+    </div>
+  ),
+  value: val,
+});
+
 const QueryBuilderProjectionColumnEditor = observer(
   (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
     const handleRef = useRef<HTMLDivElement>(null);
@@ -369,31 +383,13 @@ const QueryBuilderProjectionColumnEditor = observer(
         ),
       );
     const calendarTypeOptions = Object.values(QUERY_BUILDER_CALENDAR_TYPE).map(
-      (ct) => ({
-        label: (
-          <div className="query-builder__projection__calendar__type__option">
-            <CalendarIcon className="query-builder__projection__calendar__type__option__icon" />
-            <div className="query-builder__projection__calendar__type__option__title">
-              {ct}
-            </div>
-          </div>
-        ),
-        value: ct,
-      }),
+      buildCalendarTypeOption,
     );
     const selectedCalendarTypeOption = aggregateColumnState?.calendarFunction
       ?.calendarType
-      ? {
-          label: (
-            <div className="query-builder__projection__calendar__type__option">
-              <CalendarIcon />
-              <div className="query-builder__projection__calendar__type__option__title">
-                {aggregateColumnState.calendarFunction.calendarType}
-              </div>
-            </div>
-          ),
-          value: aggregateColumnState.calendarFunction.calendarType,
-        }
+      ? buildCalendarTypeOption(
+          aggregateColumnState.calendarFunction.calendarType,
+        )
       : null;
     const onCalendarTypeOptionChange = (option: CalendarTypeOption): void => {
       if (

@@ -1558,6 +1558,7 @@
 
       svg {
         font-size: 1.6rem;
+        color: var(--color-light-grey-200);
       }
     }
 
@@ -1602,10 +1603,14 @@
         font-family: 'Roboto Mono', monospace;
       }
     }
+
+    & + & {
+      margin-top: 0.5rem;
+    }
   }
 
   &__mapping {
-    margin-bottom: 0.5rem;
+    margin-bottom: 2rem;
   }
 }
 

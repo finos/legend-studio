@@ -323,12 +323,16 @@ export const QueryLoader = observer(
                               onChange={changeQueryNameInputValue}
                               onKeyDown={(event) => {
                                 if (event.code === 'Enter') {
+                                  event.stopPropagation();
                                   renameQuery(query)();
                                 } else if (event.code === 'Escape') {
+                                  event.stopPropagation();
                                   hideEditQueryNameInput();
                                 }
                               }}
                               onBlur={() => hideEditQueryNameInput()}
+                              // avoid clicking on the input causing the call to load query
+                              onClick={(event) => event.stopPropagation()}
                             />
                           </div>
                         ) : (
