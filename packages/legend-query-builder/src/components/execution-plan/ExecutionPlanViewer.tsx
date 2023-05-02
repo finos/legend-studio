@@ -430,6 +430,9 @@ const ExecutionPlanViewerContent = observer(
   }) => {
     const { executionPlanState, rawPlan } = props;
     const plan = executionPlanState.plan;
+    const isDarkMode =
+      !executionPlanState.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     return (
       <div className="execution-plan-viewer__content">
@@ -450,7 +453,13 @@ const ExecutionPlanViewerContent = observer(
               </div>
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine
+                color={
+                  isDarkMode
+                    ? 'var(--color-dark-grey-200)'
+                    : 'var(--color-legacylight-light-grey-300)'
+                }
+              />
             </ResizablePanelSplitter>
             <ResizablePanel>
               <ExecutionPlanViewPanel
@@ -511,7 +520,13 @@ export const ExecutionPlanViewer = observer(
                   />
                 </ResizablePanel>
                 <ResizablePanelSplitter>
-                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                  <ResizablePanelSplitterLine
+                    color={
+                      isDarkMode
+                        ? 'var(--color-dark-grey-200)'
+                        : 'var(--color-legacylight-light-grey-300)'
+                    }
+                  />
                 </ResizablePanelSplitter>
                 <ResizablePanel size={200} minSize={28}>
                   <Panel className="panel execution-plan-viewer__debug-panel">

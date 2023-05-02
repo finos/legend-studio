@@ -252,8 +252,8 @@ const ServiceRegisterModal = observer(
                   </div>
                   <div className="input-group service-register-modal__input__selector">
                     <CustomSelectorInput
-                      className="service-register-modal___service-owner__selector"
-                      placeholder="Enter an owner..."
+                      className="service-register-modal__input__service-owner__selector"
+                      placeholder={'Enter an owner...'}
                       spellCheck={false}
                       inputValue={text}
                       darkMode={true}
