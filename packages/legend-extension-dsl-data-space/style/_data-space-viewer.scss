@@ -43,6 +43,7 @@
 
     &__content {
       width: min(140rem, 80vw);
+      min-width: 80rem;
       position: relative;
     }
 
@@ -64,15 +65,23 @@
       max-width: 50vw;
 
       &__label {
+        @include ellipsisTextOverflow;
+
         font-size: 2.4rem;
         font-weight: 500;
         color: var(--color-light-grey-0);
       }
 
       &__verified-badge {
+        @include flexCenter;
+
         margin-left: 1rem;
-        font-size: 2.4rem;
-        color: var(--color-light-grey-0);
+        width: 3rem;
+
+        svg {
+          font-size: 2.4rem;
+          color: var(--color-light-grey-0);
+        }
       }
     }
   }
@@ -89,6 +98,7 @@
   &__frame {
     display: flex;
     width: min(140rem, 80vw);
+    min-width: 80rem;
     height: 100%;
     padding: 4rem;
     position: relative;
@@ -225,6 +235,7 @@
 
   position: absolute;
   flex-direction: column;
+  z-index: 10;
   bottom: 2rem;
   right: 3rem;
   width: 3.4rem;
@@ -264,7 +275,7 @@
   position: absolute;
   left: 2rem;
   top: 11rem;
-  z-index: 1;
+  z-index: 10;
   overflow-x: hidden;
   overflow-y: hidden;
   border-radius: 0.2rem;
@@ -413,7 +424,7 @@
       color: var(--color-blue-100);
 
       &__label {
-        @include flexVCenter;
+        @include ellipsisTextOverflow;
 
         font-size: 2.4rem;
         text-transform: uppercase;
@@ -739,6 +750,8 @@
     }
 
     &__title {
+      @include ellipsisTextOverflow;
+
       font-size: 2.4rem;
       font-weight: 500;
       color: var(--color-light-grey-50);
@@ -752,7 +765,7 @@
       .data-space__viewer__markdown-text-viewer {
         background: transparent;
         color: var(--color-light-grey-200);
-        padding: 0.5rem 0;
+        padding-top: 0.5rem;
       }
     }
 
@@ -1351,6 +1364,8 @@
   }
 
   &__item__header__title {
+    @include ellipsisTextOverflow;
+
     color: var(--color-light-grey-400);
     font-size: 2rem;
     font-weight: 500;
@@ -1773,7 +1788,10 @@
         color: var(--color-light-grey-200);
       }
 
-      &--website svg,
+      &--website svg {
+        font-size: 2rem;
+      }
+
       &--support svg,
       &--faq svg {
         font-size: 1.8rem;

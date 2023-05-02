@@ -63,10 +63,12 @@ const DataSpaceHeader = observer(
               {analysisResult.displayName}
             </div>
             {dataSpaceViewerState.isVerified && (
-              <VerifiedIcon
+              <div
                 className="data-space__viewer__header__title__verified-badge"
                 title="Verified Data Space"
-              />
+              >
+                <VerifiedIcon />
+              </div>
             )}
           </div>
         </div>
