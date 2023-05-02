@@ -117,8 +117,13 @@ export class DataSpacePreviewState extends EditorExtensionState {
         versionId,
         analysisResult,
         {
-          retriveGraphData: () =>
+          retrieveGraphData: () =>
             new InMemoryGraphData(this.editorStore.graphManagerState.graph),
+          queryDataSpace: () => {
+            this.editorStore.applicationStore.notificationService.notifyWarning(
+              'This feature is not supported in preview mode',
+            );
+          },
           viewProject: () => {
             this.editorStore.applicationStore.notificationService.notifyWarning(
               'This feature is not supported in preview mode',

@@ -44,6 +44,7 @@ import type {
   TaxonomyTreeNodeData,
 } from './TaxonomyExplorerStore.js';
 import {
+  createQueryDataSpaceHandler,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from './LegendTaxonomyDataSpaceViewerHelper.js';
@@ -161,7 +162,7 @@ export class TaxonomyNodeViewerState {
         dataSpaceTaxonomyContext.versionId,
         analysisResult,
         {
-          retriveGraphData: () =>
+          retrieveGraphData: () =>
             new GraphDataWithOrigin(
               new LegendSDLC(
                 dataSpaceTaxonomyContext.groupId,
@@ -169,12 +170,24 @@ export class TaxonomyNodeViewerState {
                 dataSpaceTaxonomyContext.versionId,
               ),
             ),
+          queryDataSpace: createQueryDataSpaceHandler(
+            this.explorerStore.applicationStore,
+            dataSpaceTaxonomyContext.groupId,
+            dataSpaceTaxonomyContext.artifactId,
+            dataSpaceTaxonomyContext.versionId,
+            analysisResult.path,
+          ),
           viewProject: createViewProjectHandler(
             this.explorerStore.applicationStore,
+            dataSpaceTaxonomyContext.groupId,
+            dataSpaceTaxonomyContext.artifactId,
+            dataSpaceTaxonomyContext.versionId,
           ),
           viewSDLCProject: createViewSDLCProjectHandler(
             this.explorerStore.applicationStore,
             this.explorerStore.depotServerClient,
+            dataSpaceTaxonomyContext.groupId,
+            dataSpaceTaxonomyContext.artifactId,
           ),
           queryClass: (_class: Class): void => this.queryDataSpace(_class.path),
           openServiceQuery: (servicePath: string): void =>

@@ -126,12 +126,16 @@
     color: var(--color-hclight-grey-90);
 
     &:hover {
-      background: var(--color-hclight-grey-10);
+      background: var(--color-hclight-blue-50);
     }
   }
 
   .menu__item[disabled] {
     color: var(--color-hclight-grey-60);
+  }
+
+  .menu__divider {
+    background: var(--color-hclight-grey-20);
   }
 
   // ---------------------------- Input -------------------------------
@@ -323,6 +327,51 @@
 
     &__header__title__verified-badge {
       color: var(--color-hclight-white);
+    }
+
+    &__header {
+      &__actions {
+        background: var(--color-hclight-white);
+        border-color: var(--color-hclight-blue-50);
+      }
+
+      &__execution-context-selector {
+        &__trigger {
+          &__icon {
+            border-right-color: var(--color-hclight-blue-20);
+
+            svg {
+              color: var(--color-hclight-blue-50);
+            }
+          }
+
+          &__label {
+            color: var(--color-hclight-blue-50);
+          }
+
+          &__dropdown-icon {
+            svg {
+              color: var(--color-hclight-blue-30);
+            }
+          }
+        }
+
+        &__option--active {
+          background: var(--color-hclight-blue-20);
+        }
+      }
+
+      &__actions-selector {
+        border-left-color: var(--color-hclight-blue-50);
+
+        svg {
+          color: var(--color-hclight-blue-50);
+        }
+
+        &:hover svg {
+          color: var(--color-hclight-blue-60);
+        }
+      }
     }
 
     &__frame {

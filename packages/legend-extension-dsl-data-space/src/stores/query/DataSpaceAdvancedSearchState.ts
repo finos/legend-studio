@@ -197,7 +197,7 @@ export class DataSpaceAdvancedSearchState {
         dataSpace.versionId,
         analysisResult,
         {
-          retriveGraphData: () =>
+          retrieveGraphData: () =>
             new GraphDataWithOrigin(
               new LegendSDLC(
                 dataSpace.groupId,
@@ -205,8 +205,23 @@ export class DataSpaceAdvancedSearchState {
                 dataSpace.versionId,
               ),
             ),
-          viewProject: this.viewProject,
-          viewSDLCProject: this.viewSDLCProject,
+          queryDataSpace: (executionContextKey: string) =>
+            generateDataSpaceQueryCreatorRoute(
+              dataSpace.groupId,
+              dataSpace.artifactId,
+              dataSpace.versionId,
+              analysisResult.path,
+              executionContextKey,
+            ),
+          viewProject: (path: string | undefined) =>
+            this.viewProject(
+              dataSpace.groupId,
+              dataSpace.artifactId,
+              dataSpace.versionId,
+              path,
+            ),
+          viewSDLCProject: (path: string | undefined) =>
+            this.viewSDLCProject(dataSpace.groupId, dataSpace.artifactId, path),
           queryClass: (_class: Class): void => {
             this.proceedToCreateQuery(_class);
           },

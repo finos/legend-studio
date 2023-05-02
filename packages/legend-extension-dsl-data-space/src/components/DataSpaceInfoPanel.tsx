@@ -27,27 +27,12 @@ export const DataSpaceInfoPanel = observer(
     const applicationStore = useApplicationStore();
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
 
-    const viewProject = (): void =>
-      dataSpaceViewerState.viewProject(
-        dataSpaceViewerState.groupId,
-        dataSpaceViewerState.artifactId,
-        dataSpaceViewerState.versionId,
-        undefined,
-      );
+    const viewProject = (): void => dataSpaceViewerState.viewProject(undefined);
     const viewDataSpaceInProject = (): void =>
-      dataSpaceViewerState.viewProject(
-        dataSpaceViewerState.groupId,
-        dataSpaceViewerState.artifactId,
-        dataSpaceViewerState.versionId,
-        analysisResult.path,
-      );
+      dataSpaceViewerState.viewProject(analysisResult.path);
     const viewDataSpaceInSDLCProject = (): void => {
       dataSpaceViewerState
-        .viewSDLCProject(
-          dataSpaceViewerState.groupId,
-          dataSpaceViewerState.artifactId,
-          analysisResult.path,
-        )
+        .viewSDLCProject(analysisResult.path)
         .catch(applicationStore.alertUnhandledError);
     };
 

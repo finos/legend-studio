@@ -46,6 +46,7 @@ import type { LegendTaxonomyPluginManager } from '../../application/LegendTaxono
 import type { LegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStore.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../../__lib__/LegendTaxonomyNavigation.js';
 import {
+  createQueryDataSpaceHandler,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../LegendTaxonomyDataSpaceViewerHelper.js';
@@ -142,14 +143,28 @@ export class DataSpacePreviewStore {
         versionId,
         analysisResult,
         {
-          retriveGraphData: () =>
+          retrieveGraphData: () =>
             new GraphDataWithOrigin(
               new LegendSDLC(groupId, artifactId, versionId),
             ),
-          viewProject: createViewProjectHandler(this.applicationStore),
+          queryDataSpace: createQueryDataSpaceHandler(
+            this.applicationStore,
+            groupId,
+            artifactId,
+            versionId,
+            analysisResult.path,
+          ),
+          viewProject: createViewProjectHandler(
+            this.applicationStore,
+            groupId,
+            artifactId,
+            versionId,
+          ),
           viewSDLCProject: createViewSDLCProjectHandler(
             this.applicationStore,
             this.depotServerClient,
+            groupId,
+            artifactId,
           ),
           queryClass: (_class: Class): void => this.queryDataSpace(_class.path),
           openServiceQuery: (servicePath: string): void =>

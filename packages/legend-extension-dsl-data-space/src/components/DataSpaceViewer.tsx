@@ -15,7 +15,18 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { CaretUpIcon, VerifiedIcon, clsx } from '@finos/legend-art';
+import {
+  CaretDownIcon,
+  CaretUpIcon,
+  DropdownMenu,
+  MenuContent,
+  MenuContentDivider,
+  MenuContentItem,
+  MoreVerticalIcon,
+  PlayIcon,
+  VerifiedIcon,
+  clsx,
+} from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceExecutionContextViewer } from './DataSpaceExecutionContextViewer.js';
 import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
@@ -24,8 +35,12 @@ import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
 import { useEffect, useRef, useState } from 'react';
 import { DATA_SPACE_WIKI_PAGE_SECTIONS } from '../stores/DataSpaceLayoutState.js';
-import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../stores/DataSpaceViewerNavigation.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+} from '../stores/DataSpaceViewerNavigation.js';
 import { DataSpacePlaceholderPanel } from './DataSpacePlaceholder.js';
+import { useApplicationStore } from '@finos/legend-application';
 
 const DataSpaceHeader = observer(
   (props: {
@@ -33,6 +48,7 @@ const DataSpaceHeader = observer(
     showFullHeader: boolean;
   }) => {
     const { dataSpaceViewerState, showFullHeader } = props;
+    const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
 
@@ -70,6 +86,119 @@ const DataSpaceHeader = observer(
                 <VerifiedIcon />
               </div>
             )}
+          </div>
+          <div className="data-space__viewer__header__actions">
+            <DropdownMenu
+              className="data-space__viewer__header__execution-context-selector"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              title={`Current Execution Context: ${dataSpaceViewerState.currentExecutionContext.name}\nClick to switch`}
+              content={
+                <MenuContent>
+                  {Array.from(
+                    dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
+                  ).map((context) => (
+                    <MenuContentItem
+                      key={context.name}
+                      className={clsx(
+                        'data-space__viewer__header__execution-context-selector__option',
+                        {
+                          'data-space__viewer__header__execution-context-selector__option--active':
+                            context ===
+                            dataSpaceViewerState.currentExecutionContext,
+                        },
+                      )}
+                      onClick={() =>
+                        dataSpaceViewerState.setCurrentExecutionContext(context)
+                      }
+                    >
+                      {context.name}
+                    </MenuContentItem>
+                  ))}
+                </MenuContent>
+              }
+            >
+              <div className="data-space__viewer__header__execution-context-selector__trigger">
+                <div className="data-space__viewer__header__execution-context-selector__trigger__icon">
+                  <PlayIcon />
+                </div>
+                <div className="data-space__viewer__header__execution-context-selector__trigger__label">
+                  {dataSpaceViewerState.currentExecutionContext.name}
+                </div>
+                <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
+                  <CaretDownIcon />
+                </div>
+              </div>
+            </DropdownMenu>
+            <DropdownMenu
+              className="data-space__viewer__header__actions-selector"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              title="More Actions..."
+              content={
+                <MenuContent>
+                  <MenuContentItem
+                    onClick={() =>
+                      dataSpaceViewerState.queryDataSpace(
+                        dataSpaceViewerState.currentExecutionContext.name,
+                      )
+                    }
+                  >
+                    Query Data Space
+                  </MenuContentItem>
+                  <MenuContentDivider />
+                  <MenuContentItem
+                    onClick={() =>
+                      dataSpaceViewerState.viewProject(analysisResult.path)
+                    }
+                  >
+                    View Project
+                  </MenuContentItem>
+                  <MenuContentItem
+                    onClick={() => {
+                      dataSpaceViewerState
+                        .viewSDLCProject(analysisResult.path)
+                        .catch(applicationStore.alertUnhandledError);
+                    }}
+                  >
+                    View SDLC Project
+                  </MenuContentItem>
+                  <MenuContentDivider />
+                  <MenuContentItem
+                    onClick={() => {
+                      const documentationUrl =
+                        analysisResult.supportInfo?.documentationUrl;
+                      if (documentationUrl) {
+                        applicationStore.navigationService.navigator.visitAddress(
+                          documentationUrl,
+                        );
+                      }
+                    }}
+                  >
+                    View Documentation
+                  </MenuContentItem>
+                  <MenuContentItem
+                    onClick={() =>
+                      dataSpaceViewerState.changeZone(
+                        generateAnchorForActivity(
+                          DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT,
+                        ),
+                      )
+                    }
+                  >
+                    Get Help
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <MoreVerticalIcon />
+            </DropdownMenu>
           </div>
         </div>
       </div>

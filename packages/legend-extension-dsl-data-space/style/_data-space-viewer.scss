@@ -42,9 +42,11 @@
     }
 
     &__content {
+      display: flex;
+      justify-content: space-between;
       width: min(140rem, 80vw);
       min-width: 80rem;
-      position: relative;
+      padding: 2rem 8rem;
     }
 
     &__content--expanded {
@@ -54,9 +56,6 @@
     &__title {
       @include flexCenter;
 
-      position: absolute;
-      left: 8rem;
-      top: 2rem;
       height: 5rem;
       border-radius: 0.5rem;
       padding: 0 3rem;
@@ -82,6 +81,84 @@
           font-size: 2.4rem;
           color: var(--color-light-grey-0);
         }
+      }
+    }
+
+    &__actions {
+      @include flexVCenter;
+
+      height: 3.8rem;
+      background: var(--color-dark-grey-200);
+      border: 0.1rem solid var(--color-dark-grey-250);
+      border-radius: 0.2rem;
+      padding-left: 0.5rem;
+    }
+
+    &__execution-context-selector {
+      width: 20rem;
+
+      &__trigger {
+        @include flexVCenter;
+
+        height: 100%;
+
+        &__icon {
+          @include flexCenter;
+
+          height: 2.8rem;
+          width: 2.8rem;
+          border-right: 0.1rem solid var(--color-dark-grey-280);
+
+          svg {
+            color: var(--color-dark-grey-300);
+          }
+        }
+
+        &__label {
+          @include ellipsisTextOverflow;
+
+          width: 15rem;
+          height: 100%;
+          line-height: 3.8rem;
+          padding: 0 1rem;
+          color: var(--color-light-grey-300);
+        }
+
+        &__dropdown-icon {
+          @include flexCenter;
+
+          width: 2.2rem;
+          height: 100%;
+
+          svg {
+            color: var(--color-dark-grey-300);
+          }
+        }
+      }
+
+      &__option {
+        width: 17.2rem;
+      }
+
+      &__option--active {
+        background: var(--color-dark-grey-250);
+      }
+    }
+
+    &__actions-selector {
+      @include flexCenter;
+
+      width: 3.8rem;
+      height: 100%;
+      border-left: 0.1rem solid var(--color-dark-grey-250);
+
+      svg {
+        font-size: 1.6rem;
+        color: var(--color-dark-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-light-grey-400);
       }
     }
   }
@@ -448,7 +525,7 @@
       }
 
       &:hover &__anchor {
-        display: flex;
+        display: inline-flex;
       }
 
       &__documentation {
@@ -1403,7 +1480,7 @@
   }
 
   &__item__header:hover &__item__header__anchor {
-    display: flex;
+    display: inline-flex;
   }
 
   &__item__description {

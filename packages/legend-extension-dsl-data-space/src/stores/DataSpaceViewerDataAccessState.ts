@@ -74,7 +74,7 @@ export class DataSpaceViewerDataAccessState {
           this.dataSpaceViewerState.currentExecutionContext.mapping,
           this.dataSpaceViewerState.currentExecutionContext.defaultRuntime,
           undefined,
-          this.dataSpaceViewerState.retriveGraphData(),
+          this.dataSpaceViewerState.retrieveGraphData(),
         )) as DatasetSpecification[];
       this.datasets = datasets.map((dataset) => {
         const existingDataset = this.datasets.find(
@@ -105,7 +105,7 @@ export class DataSpaceViewerDataAccessState {
           this.dataSpaceViewerState.currentExecutionContext.mapping,
           this.dataSpaceViewerState.currentExecutionContext.defaultRuntime,
           undefined,
-          this.dataSpaceViewerState.retriveGraphData(),
+          this.dataSpaceViewerState.retrieveGraphData(),
         )) as DatasetEntitlementReport[];
       this.datasets.forEach((dataset) => {
         const matchingReport = reports.find(

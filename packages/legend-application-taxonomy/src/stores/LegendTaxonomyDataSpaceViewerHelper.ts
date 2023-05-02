@@ -21,18 +21,41 @@ import {
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
 } from '../__lib__/LegendTaxonomyNavigation.js';
 
-export const createViewProjectHandler =
-  (applicationStore: LegendTaxonomyApplicationStore) =>
+export const createQueryDataSpaceHandler =
   (
+    applicationStore: LegendTaxonomyApplicationStore,
     groupId: string,
     artifactId: string,
     versionId: string,
-    entityPath: string | undefined,
-  ): void =>
+    dataSpacePath: string,
+  ) =>
+  (executionContextKey: string): void =>
+    applicationStore.navigationService.navigator.visitAddress(
+      EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
+        applicationStore.config.queryApplicationUrl,
+        groupId,
+        artifactId,
+        versionId,
+        dataSpacePath,
+        executionContextKey,
+        undefined,
+        undefined,
+      ),
+    );
+
+export const createViewProjectHandler =
+  (
+    applicationStore: LegendTaxonomyApplicationStore,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+  ) =>
+  (entityPath: string | undefined): void =>
     applicationStore.navigationService.navigator.visitAddress(
       EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
         applicationStore.config.studioApplicationUrl,
@@ -47,12 +70,10 @@ export const createViewSDLCProjectHandler =
   (
     applicationStore: LegendTaxonomyApplicationStore,
     depotServerClient: DepotServerClient,
-  ) =>
-  async (
     groupId: string,
     artifactId: string,
-    entityPath: string | undefined,
-  ): Promise<void> => {
+  ) =>
+  async (entityPath: string | undefined): Promise<void> => {
     // fetch project data
     const project = StoreProjectData.serialization.fromJson(
       await depotServerClient.getProject(groupId, artifactId),

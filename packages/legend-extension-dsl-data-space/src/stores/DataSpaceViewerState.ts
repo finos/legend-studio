@@ -56,18 +56,10 @@ export class DataSpaceViewerState {
   readonly groupId: string;
   readonly artifactId: string;
   readonly versionId: string;
-  readonly retriveGraphData: () => GraphData;
-  readonly viewProject: (
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    entityPath: string | undefined,
-  ) => void;
-  readonly viewSDLCProject: (
-    groupId: string,
-    artifactId: string,
-    entityPath: string | undefined,
-  ) => Promise<void>;
+  readonly retrieveGraphData: () => GraphData;
+  readonly queryDataSpace: (executionContextKey: string) => void;
+  readonly viewProject: (path: string | undefined) => void;
+  readonly viewSDLCProject: (path: string | undefined) => Promise<void>;
   readonly onZoneChange?:
     | ((zone: NavigationZone | undefined) => void)
     | undefined;
@@ -95,18 +87,10 @@ export class DataSpaceViewerState {
     versionId: string,
     dataSpaceAnalysisResult: DataSpaceAnalysisResult,
     actions: {
-      retriveGraphData: () => GraphData;
-      viewProject: (
-        groupId: string,
-        artifactId: string,
-        versionId: string,
-        entityPath: string | undefined,
-      ) => void;
-      viewSDLCProject: (
-        groupId: string,
-        artifactId: string,
-        entityPath: string | undefined,
-      ) => Promise<void>;
+      retrieveGraphData: () => GraphData;
+      queryDataSpace: (executionContextKey: string) => void;
+      viewProject: (path: string | undefined) => void;
+      viewSDLCProject: (path: string | undefined) => Promise<void>;
       queryClass: (_class: Class) => void;
       openServiceQuery: (servicePath: string) => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
@@ -136,7 +120,8 @@ export class DataSpaceViewerState {
     this.currentExecutionContext =
       dataSpaceAnalysisResult.defaultExecutionContext;
     this.currentRuntime = this.currentExecutionContext.defaultRuntime;
-    this.retriveGraphData = actions.retriveGraphData;
+    this.retrieveGraphData = actions.retrieveGraphData;
+    this.queryDataSpace = actions.queryDataSpace;
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
     this.onZoneChange = actions.onZoneChange;
