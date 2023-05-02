@@ -26,7 +26,10 @@ import {
 import { BasicGraphManagerState } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import {
+  DEFAULT_TAB_SIZE,
+  LEGEND_APPLICATION_COLOR_THEME,
+} from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { generateQuerySetupRoute } from '../__lib__/LegendQueryNavigation.js';
@@ -61,6 +64,12 @@ export abstract class BaseQuerySetupStore {
     if (!this.initState.isInInitialState) {
       return;
     }
+
+    // TODO?: remove this when we properly support theme everywhere
+    // See https://github.com/finos/legend-studio/issues/264
+    this.applicationStore.layoutService.setColorTheme(
+      LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
+    );
 
     try {
       this.initState.inProgress();
