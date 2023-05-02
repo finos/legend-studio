@@ -944,22 +944,20 @@
   }
 
   .data-space__viewer__support {
-    &__email {
-      &__entry {
-        &__icon {
-          background: var(--color-hclight-grey-10);
+    &__entry {
+      &__icon {
+        background: var(--color-hclight-grey-10);
 
-          svg {
-            color: var(--color-hclight-grey-70);
-          }
-        }
-
-        &__content {
-          border-color: transparent;
+        svg {
           color: var(--color-hclight-grey-70);
-          background: var(--color-hclight-grey-10);
-          border-left-color: var(--color-hclight-grey-30);
         }
+      }
+
+      &__content {
+        border-color: transparent;
+        color: var(--color-hclight-grey-70);
+        background: var(--color-hclight-grey-10);
+        border-left-color: var(--color-hclight-grey-30);
       }
     }
   }

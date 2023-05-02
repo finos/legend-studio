@@ -122,6 +122,7 @@
     border-bottom: 0.2rem solid var(--color-blue-100);
     user-select: none;
     color: var(--color-blue-100);
+    margin-bottom: 2rem;
 
     &__label {
       @include flexVCenter;
@@ -133,7 +134,6 @@
   }
 
   &__content__placeholder {
-    padding-top: 1rem;
     line-height: 2.8rem;
     color: var(--color-dark-grey-300);
     user-select: none;
@@ -1724,41 +1724,55 @@
 }
 
 .data-space__viewer__support {
-  &__email {
-    &__entry {
+  &__section {
+    & + & {
+      margin-top: 2rem;
+    }
+  }
+
+  &__entry {
+    @include flexVCenter;
+
+    height: 3.4rem;
+    width: 100%;
+
+    &__icon {
+      @include flexCenter;
+
+      height: 3.4rem;
+      width: 3.4rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      background: var(--color-dark-grey-100);
+
+      svg {
+        font-size: 1.6rem;
+        color: var(--color-light-grey-200);
+      }
+
+      &--website svg,
+      &--support svg,
+      &--faq svg {
+        font-size: 1.8rem;
+      }
+    }
+
+    &__content {
       @include flexVCenter;
 
       height: 3.4rem;
-      width: 100%;
+      width: calc(100% - 3.4rem);
+      border-radius: 0 0.2rem 0.2rem 0;
+      border: 0.1rem solid var(--color-dark-grey-100);
+      color: var(--color-light-grey-400);
+      padding: 0 1rem;
+      font-family: 'Roboto Mono', monospace;
+      background: var(--color-dark-grey-100);
+      border-left: 0.1rem solid var(--color-dark-grey-50);
+      user-select: none;
+    }
 
-      &__icon {
-        @include flexCenter;
-
-        height: 3.4rem;
-        width: 3.4rem;
-        border-radius: 0.2rem 0 0 0.2rem;
-        background: var(--color-dark-grey-100);
-
-        svg {
-          font-size: 1.6rem;
-          color: var(--color-light-grey-200);
-        }
-      }
-
-      &__content {
-        @include flexVCenter;
-
-        height: 3.4rem;
-        width: calc(100% - 3.4rem);
-        border-radius: 0 0.2rem 0.2rem 0;
-        border: 0.1rem solid var(--color-dark-grey-100);
-        color: var(--color-light-grey-400);
-        padding: 0 1rem;
-        font-family: 'Roboto Mono', monospace;
-        background: var(--color-dark-grey-100);
-        border-left: 0.1rem solid var(--color-dark-grey-50);
-        user-select: none;
-      }
+    & + & {
+      margin-top: 0.5rem;
     }
   }
 }

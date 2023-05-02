@@ -193,6 +193,7 @@ export const VerifiedIcon = MD.MdVerified;
 export const QueryIcon = MD.MdQueryStats;
 export const CenterFocusIcon = MD.MdFilterCenterFocus;
 export const DescriptionIcon = MD.MdOutlineDescription;
+export const QuestionAnswerIcon = MD.MdQuestionAnswer;
 
 const VSC = ReactIcons.VSC;
 export const ErrorIcon = VSC.VscError;
@@ -240,6 +241,7 @@ export const BeakerIcon = IO.IoBeaker;
 export const FlaskIcon = IO.IoFlaskSharp;
 export const AvailabilityIcon = IO.IoSyncCircleSharp;
 export const StatisticsIcon = IO.IoStatsChart;
+export const SupportIcon = IO.IoHelpBuoy;
 
 const BS = ReactIcons.BS;
 export const DisplayIcon = BS.BsDisplayFill;

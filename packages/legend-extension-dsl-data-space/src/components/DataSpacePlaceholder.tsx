@@ -14,8 +14,30 @@
  * limitations under the License.
  */
 
+import { SparkleIcon } from '@finos/legend-art';
+
 export const DataSpaceWikiPlaceholder: React.FC<{ message: string }> = (
   props,
 ) => (
   <div className="data-space__viewer__wiki__placeholder">{props.message}</div>
 );
+
+export const DataSpacePlaceholderPanel: React.FC<{
+  header: string;
+  message: string;
+}> = (props) => {
+  const { header, message } = props;
+
+  return (
+    <div className="data-space__viewer__panel">
+      <div className="data-space__viewer__panel__header">
+        <div className="data-space__viewer__panel__header__label">{header}</div>
+      </div>
+      <div className="data-space__viewer__panel__content">
+        <div className="data-space__viewer__panel__content__placeholder">
+          <SparkleIcon /> This is work in progress.{` ${message}`}
+        </div>
+      </div>
+    </div>
+  );
+};

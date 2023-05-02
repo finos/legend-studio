@@ -115,49 +115,56 @@ export const DataSpaceExecutionContextViewer = observer(
 
     return (
       <div className="data-space__viewer__panel">
-        <div className="data-space__viewer__execution-context">
-          <div className="data-space__viewer__execution-context__entry">
-            <div className="data-space__viewer__execution-context__entry__icon">
-              <PlayIcon className="data-space__viewer__execution-context__context-icon" />
-            </div>
-            <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
-              <CustomSelectorInput
-                className="data-space__viewer__execution-context__entry__content__dropdown"
-                options={executionContextOptions}
-                onChange={onExecutionContextOptionChange}
-                value={selectedExecutionContextOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                formatOptionLabel={formatExecutionContextOptionLabel}
-              />
-            </div>
+        <div className="data-space__viewer__panel__header">
+          <div className="data-space__viewer__panel__header__label">
+            Execution Context
           </div>
-          <div className="data-space__viewer__execution-context__entry data-space__viewer__execution-context__mapping">
-            <div className="data-space__viewer__execution-context__entry__icon">
-              <PURE_MappingIcon />
+        </div>
+        <div className="data-space__viewer__panel__content">
+          <div className="data-space__viewer__execution-context">
+            <div className="data-space__viewer__execution-context__entry">
+              <div className="data-space__viewer__execution-context__entry__icon">
+                <PlayIcon className="data-space__viewer__execution-context__context-icon" />
+              </div>
+              <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
+                <CustomSelectorInput
+                  className="data-space__viewer__execution-context__entry__content__dropdown"
+                  options={executionContextOptions}
+                  onChange={onExecutionContextOptionChange}
+                  value={selectedExecutionContextOption}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                  formatOptionLabel={formatExecutionContextOptionLabel}
+                />
+              </div>
             </div>
-            <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__text">
-              {dataSpaceViewerState.currentExecutionContext.mapping.path}
+            <div className="data-space__viewer__execution-context__entry data-space__viewer__execution-context__mapping">
+              <div className="data-space__viewer__execution-context__entry__icon">
+                <PURE_MappingIcon />
+              </div>
+              <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__text">
+                {dataSpaceViewerState.currentExecutionContext.mapping.path}
+              </div>
             </div>
-          </div>
-          <div className="data-space__viewer__execution-context__entry">
-            <div className="data-space__viewer__execution-context__entry__icon">
-              <PURE_RuntimeIcon />
-            </div>
-            <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
-              <CustomSelectorInput
-                className="data-space__viewer__execution-context__entry__content__dropdown"
-                options={runtimeOptions}
-                onChange={onRuntimeOptionChange}
-                value={selectedRuntimeOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                formatOptionLabel={formatRuntimeOptionLabel}
-              />
+            <div className="data-space__viewer__execution-context__entry">
+              <div className="data-space__viewer__execution-context__entry__icon">
+                <PURE_RuntimeIcon />
+              </div>
+              <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__dropdown__container">
+                <CustomSelectorInput
+                  className="data-space__viewer__execution-context__entry__content__dropdown"
+                  options={runtimeOptions}
+                  onChange={onRuntimeOptionChange}
+                  value={selectedRuntimeOption}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                  formatOptionLabel={formatRuntimeOptionLabel}
+                />
+              </div>
             </div>
           </div>
         </div>

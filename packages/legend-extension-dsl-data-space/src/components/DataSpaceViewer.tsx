@@ -15,12 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  CaretUpIcon,
-  SparkleIcon,
-  VerifiedIcon,
-  clsx,
-} from '@finos/legend-art';
+import { CaretUpIcon, VerifiedIcon, clsx } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceExecutionContextViewer } from './DataSpaceExecutionContextViewer.js';
 import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
@@ -30,6 +25,7 @@ import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
 import { useEffect, useRef, useState } from 'react';
 import { DATA_SPACE_WIKI_PAGE_SECTIONS } from '../stores/DataSpaceLayoutState.js';
 import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../stores/DataSpaceViewerNavigation.js';
+import { DataSpacePlaceholderPanel } from './DataSpacePlaceholder.js';
 
 const DataSpaceHeader = observer(
   (props: {
@@ -78,26 +74,6 @@ const DataSpaceHeader = observer(
     );
   },
 );
-
-const DataSpacePlaceholderPanel: React.FC<{
-  header: string;
-  message: string;
-}> = (props) => {
-  const { header, message } = props;
-
-  return (
-    <div className="data-space__viewer__panel">
-      <div className="data-space__viewer__panel__header">
-        <div className="data-space__viewer__panel__header__label">{header}</div>
-      </div>
-      <div className="data-space__viewer__panel__content">
-        <div className="data-space__viewer__panel__content__placeholder">
-          <SparkleIcon /> This is work in progress.{` ${message}`}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
