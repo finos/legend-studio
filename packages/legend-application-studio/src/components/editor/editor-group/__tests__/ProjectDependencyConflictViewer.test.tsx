@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, expect, beforeEach } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import {
   type RenderResult,
   waitFor,
@@ -33,7 +33,6 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../__test-utils__/EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
-import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { TEST_DATA__ProjectDependencyReportWithConflict } from './TEST_DATA__ProjectDependencyReport.js';
 
 let renderResult: RenderResult;
@@ -113,9 +112,10 @@ const TEST_DATA__DependencyEntities = [
 
 const TEST_DATA__latestProjectStructure = { version: 11, extensionVersion: 1 };
 
-let MOCK__editorStore: EditorStore;
-beforeEach(async () => {
-  MOCK__editorStore = TEST__provideMockedEditorStore();
+// TODO: when setup is extracted out as `beforeEach` it causes flaky runs on this test.
+// Investigate this further when we add more integration tests
+test(integrationTest('Test Project Report With Conflicts'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore();
   renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: [],
     projectConfiguration: TEST_DATA__ProjectConfiguration,
@@ -132,12 +132,6 @@ beforeEach(async () => {
   const updateButton = getByText(editorGroup, 'Update');
   expect(updateButton.getAttribute('disabled')).not.toBeNull();
   await waitFor(() => renderResult.getByText('Project Structure'));
-});
-
-test(integrationTest('Test Project Report With Conflicts'), async () => {
-  const editorGroup = renderResult.getByTestId(
-    LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
-  );
   await findByText(editorGroup, 'Project Dependencies');
   fireEvent.click(getByText(editorGroup, 'Project Dependencies'));
 
