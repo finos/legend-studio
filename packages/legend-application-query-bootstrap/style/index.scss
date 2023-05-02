@@ -39,6 +39,7 @@
   --color-legacylight-light-blue-100: #7399c6;
   --color-legacylight-light-blue-200: #6a8db6;
   --color-legacylight-light-blue-250: #687b93;
+  --color-legacylight-light-blue-270: #597089;
   --color-legacylight-light-blue-300: #4d6f9c;
   --color-legacylight-light-blue-350: #475b72;
   --color-legacylight-light-blue-400: #1b4c8c;
@@ -104,12 +105,14 @@
     outline: none;
   }
 
-  .btn--medium,
-  .btn--medium:hover {
-    background: var(--color-legacylight-light-grey-300);
+  .btn--medium {
+    background: var(--color-legacylight-light-blue-250);
     color: var(--color-white);
   }
 
+  .btn--medium:hover {
+    background: var(--color-legacylight-light-blue-270);
+  }
   // ---------------------------- Table -------------------------------
 
   .query-builder__explorer__preview-data-modal__body .table {
@@ -535,6 +538,10 @@
       }
     }
 
+    .query-editor__header__action.btn--dark:hover {
+      background: var(--color-legacylight-light-blue-270);
+    }
+
     .query-editor__header__action__icon {
       background: var(--color-legacylight-light-blue-250);
       color: var(--color-white);
@@ -771,7 +778,7 @@
 
     .query-builder__fetch__structure__mode {
       background: var(--color-light-grey-250);
-      color: var(--color-dark-grey-500);
+      color: var(--color-dark-grey-400);
     }
 
     .query-builder__fetch__structure__mode--selected {
@@ -1017,6 +1024,7 @@
 
     .query-builder__result__limit__label {
       background: var(--color-legacylight-light-grey-100);
+      color: var(--color-dark-grey-300);
     }
 
     .query-builder__result__execute-btn__label {
@@ -1088,7 +1096,7 @@
     }
 
     .query-builder__result__export__dropdown {
-      border-color: transparent;
+      border-color: var(--color-legacylight-light-blue-100);
     }
 
     .query-builder__result__export__dropdown__label {

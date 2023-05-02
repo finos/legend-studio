@@ -28,7 +28,19 @@ import {
   ExclamationTriangleIcon,
   PanelContent,
   MenuContentDivider,
+  Button,
+  SQLIcon,
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
+  ModalHeader,
+  PanelDivider,
+  PanelFormSection,
 } from '@finos/legend-art';
+import { format as formatSQL } from 'sql-formatter';
+
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -56,7 +68,7 @@ import {
   prettyDuration,
   prettyCONSTName,
 } from '@finos/legend-shared';
-import { type MutableRefObject, forwardRef, useRef } from 'react';
+import { type MutableRefObject, forwardRef, useRef, useState } from 'react';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
@@ -445,6 +457,13 @@ export const QueryBuilderResultPanel = observer(
     const resultState = queryBuilderState.resultState;
     const queryParametersState = queryBuilderState.parametersState;
     const executionResult = resultState.executionResult;
+    const [showSqlModal, setShowSqlModal] = useState(false);
+    const executedSql =
+      executionResult?.activities instanceof Array
+        ? executionResult.activities
+            .map((item: { sql: string }) => item.sql)
+            .at(0)
+        : undefined;
     const fetchStructureImplementation =
       queryBuilderState.fetchStructureState.implementation;
     const USER_ATTESTATION_MESSAGE =
@@ -464,7 +483,6 @@ export const QueryBuilderResultPanel = observer(
         );
       }
     };
-
     const confirmExport = (format: string): void => {
       applicationStore.alertService.setActionAlertInfo({
         message: USER_ATTESTATION_MESSAGE,
@@ -529,6 +547,19 @@ export const QueryBuilderResultPanel = observer(
     };
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
 
+    const copyExpression = (value: string): void => {
+      applicationStore.clipboardService
+        .copyTextToClipboard(value)
+        .then(() =>
+          applicationStore.notificationService.notifySuccess(
+            'SQL Query copied',
+            undefined,
+            2500,
+          ),
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
+
     const isRunQueryDisabled =
       !isQueryValid ||
       resultState.isGeneratingPlan ||
@@ -561,14 +592,56 @@ export const QueryBuilderResultPanel = observer(
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
         className="panel query-builder__result"
       >
+        {showSqlModal && executedSql && (
+          <Dialog
+            open={Boolean(showSqlModal)}
+            onClose={() => setShowSqlModal(false)}
+          >
+            <Modal className="editor-modal" darkMode={true}>
+              <ModalHeader title="Executed SQL Query" />
+              <ModalBody>
+                <CodeEditor
+                  inputValue={formatSQL(executedSql)}
+                  isReadOnly={true}
+                  language={CODE_EDITOR_LANGUAGE.SQL}
+                  showMiniMap={false}
+                />
+                <PanelDivider />
+                <PanelFormSection></PanelFormSection>
+              </ModalBody>
+              <ModalFooter>
+                <ModalFooterButton
+                  formatText={false}
+                  onClick={() => copyExpression(executedSql)}
+                  text="Copy SQL to Clipboard"
+                />
+                <ModalFooterButton
+                  onClick={() => setShowSqlModal(false)}
+                  text="Close"
+                />
+              </ModalFooter>
+            </Modal>
+          </Dialog>
+        )}
+
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
+            {executedSql && (
+              <Button
+                onClick={() => setShowSqlModal(true)}
+                title="Executed SQL"
+                className="query-builder__result__sql__actions"
+              >
+                <SQLIcon />
+              </Button>
+            )}
             {resultState.pressedRunQuery.isInProgress && (
               <div className="panel__header__title__label__status">
                 Running Query...
               </div>
             )}
+
             <div className="query-builder__result__analytics">
               {resultDescription ?? ''}
             </div>

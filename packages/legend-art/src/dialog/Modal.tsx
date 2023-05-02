@@ -88,6 +88,7 @@ export const ModalFooterButton: React.FC<{
   children?: React.ReactNode;
   className?: string;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  formatText?: boolean | undefined;
 }> = (props) => {
   const {
     onClick,
@@ -98,8 +99,10 @@ export const ModalFooterButton: React.FC<{
     disabled,
     className,
     darkMode,
+    formatText,
   } = props;
   const isDarkMode = darkMode !== undefined ? darkMode : true;
+  const isFormatText = formatText !== undefined ? formatText : true;
 
   return (
     <button
@@ -115,7 +118,11 @@ export const ModalFooterButton: React.FC<{
       onClick={onClick}
       disabled={Boolean(inProgressText) || disabled}
     >
-      {inProgressText ? prettyCONSTName(inProgressText) : prettyCONSTName(text)}
+      {inProgressText
+        ? prettyCONSTName(inProgressText)
+        : isFormatText
+        ? prettyCONSTName(text)
+        : text}
       {children}
     </button>
   );

@@ -38,6 +38,8 @@ import {
   ModalFooter,
   PanelSideBarHeader,
   ModalFooterButton,
+  PanelHeader,
+  Panel,
 } from '@finos/legend-art';
 import {
   addUniqueEntry,
@@ -480,6 +482,9 @@ export const ExecutionPlanViewer = observer(
       executionPlanState.setDebugText(undefined);
     };
     const rawPlan = executionPlanState.rawPlan;
+    const isDarkMode =
+      !executionPlanState.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     if (!rawPlan) {
       return null;
@@ -509,14 +514,12 @@ export const ExecutionPlanViewer = observer(
                   <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
                 </ResizablePanelSplitter>
                 <ResizablePanel size={200} minSize={28}>
-                  <div className="panel execution-plan-viewer__debug-panel">
-                    <div className="panel__header">
-                      <div className="panel__header__title">
-                        <div className="panel__header__title__label">
-                          DEBUG LOG
-                        </div>
-                      </div>
-                    </div>
+                  <Panel className="panel execution-plan-viewer__debug-panel">
+                    <PanelHeader
+                      title="DEBUG LOG"
+                      keepTitleFormat={true}
+                      darkMode={isDarkMode}
+                    />
                     <PanelContent>
                       <CodeEditor
                         inputValue={executionPlanState.debugText}
@@ -524,7 +527,7 @@ export const ExecutionPlanViewer = observer(
                         language={CODE_EDITOR_LANGUAGE.TEXT}
                       />
                     </PanelContent>
-                  </div>
+                  </Panel>
                 </ResizablePanel>
               </ResizablePanelGroup>
             ) : (

@@ -431,6 +431,15 @@
     @include flexVCenter;
   }
 
+  &__sql__actions {
+    height: 2.2rem;
+    padding: 0 0.7rem;
+
+    svg {
+      font-size: 1.8rem;
+    }
+  }
+
   &__stop-btn {
     @include flexVCenter;
 
