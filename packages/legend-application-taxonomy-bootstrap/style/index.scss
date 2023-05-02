@@ -644,6 +644,11 @@
           }
         }
 
+        &__label__derived-property-badge {
+          background: var(--color-hclight-grey-10);
+          color: var(--color-hclight-blue-50);
+        }
+
         &__label__milestoning-badge svg {
           color: var(--color-hclight-blue-50);
         }
@@ -816,6 +821,11 @@
         &__dropdown__option__tag {
           background: var(--color-hclight-blue-70);
           color: var(--color-hclight-white);
+        }
+
+        .selector-input__control,
+        .selector-input__control:hover {
+          border-color: var(--color-hclight-grey-20);
         }
       }
     }

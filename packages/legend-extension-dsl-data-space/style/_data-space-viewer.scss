@@ -983,6 +983,20 @@
       @include ellipsisTextOverflow;
     }
 
+    &__label__derived-property-badge {
+      @include flexCenter;
+
+      font-size: 1.2rem;
+      font-weight: 600;
+      font-family: 'Roboto Mono', monospace;
+      margin-left: 0.5rem;
+      padding: 0 0.2rem;
+      height: 2rem;
+      border-radius: 0.2rem;
+      background: var(--color-dark-grey-100);
+      color: var(--color-blue-100);
+    }
+
     &__label__milestoning-badge {
       @include flexCenter;
       @include flexConstantDimension;
@@ -1597,6 +1611,11 @@
           font-size: 1.2rem;
           color: var(--color-light-grey-100);
         }
+      }
+
+      .selector-input--dark__control,
+      .selector-input--dark__control:hover {
+        border-color: var(--color-dark-grey-200);
       }
 
       &__text {
