@@ -1,0 +1,65 @@
+###Service
+Service test::testService
+{
+  pattern: '/093bd56b-5945-44da-8de5-4f710d3b2b48';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |'';
+    mapping: test::mapping;
+    runtime: test::runtime;
+  }
+}
+
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    QA:
+    {
+      mapping: test::mapping;
+      runtime: test::runtime;
+    },
+    PROD:
+    {
+      mapping: test::mapping;
+      runtime: test::runtime;
+    }
+  ];
+}
+
+
+###Pure
+Class test::class
+{
+  prop1: Integer[0..1];
+}
+
+
+###Mapping
+Mapping test::mapping
+(
+)
+
+
+###Connection
+JsonModelConnection test::connection
+{
+  class: test::class;
+  url: 'asd';
+}
+
+
+###Runtime
+Runtime test::runtime
+{
+  mappings:
+  [
+    test::mapping
+  ];
+}
