@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { flowResult } from 'mobx';
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -286,9 +285,7 @@ export const DataAccessOverview = observer(
     const applicationStore = useApplicationStore();
 
     useEffect(() => {
-      flowResult(dataAccessState.fetchDatasetEntitlementReports()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      dataAccessState.intialize().catch(applicationStore.alertUnhandledError);
     }, [applicationStore, dataAccessState]);
 
     return (

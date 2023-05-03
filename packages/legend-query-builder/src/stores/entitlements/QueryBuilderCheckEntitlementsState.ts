@@ -18,29 +18,76 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import { DataAccessState } from '../data-access/DataAccessState.js';
+import {
+  RuntimePointer,
+  type DatasetEntitlementReport,
+  type DatasetSpecification,
+  InMemoryGraphData,
+} from '@finos/legend-graph';
 
 export class QueryBuilderCheckEntitlementsState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
-  isCheckingEntitlements = false;
+
+  dataAccessState?: DataAccessState | undefined;
+  showCheckEntitlementsViewer = false;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
-      isCheckingEntitlements: observable,
-      setIsCheckingEntitlements: action,
+      showCheckEntitlementsViewer: observable,
+      dataAccessState: observable,
+      setShowCheckEntitlementsViewer: action,
       hashCode: computed,
     });
 
     this.queryBuilderState = queryBuilderState;
   }
 
-  setIsCheckingEntitlements(val: boolean): void {
-    this.isCheckingEntitlements = val;
+  setShowCheckEntitlementsViewer(val: boolean): void {
+    this.showCheckEntitlementsViewer = val;
+
+    this.dataAccessState = undefined;
+    if (
+      this.queryBuilderState.mapping &&
+      this.queryBuilderState.runtimeValue instanceof RuntimePointer
+    ) {
+      const mappingPath = this.queryBuilderState.mapping.path;
+      const runtimePath =
+        this.queryBuilderState.runtimeValue.packageableRuntime.value.path;
+      this.dataAccessState = new DataAccessState(
+        this.queryBuilderState.applicationStore,
+        this.queryBuilderState.graphManagerState,
+        {
+          surveyDatasets: async (): Promise<DatasetSpecification[]> =>
+            this.queryBuilderState.graphManagerState.graphManager.surveyDatasets(
+              mappingPath,
+              runtimePath,
+              this.queryBuilderState.buildQuery(),
+              new InMemoryGraphData(
+                this.queryBuilderState.graphManagerState.graph,
+              ),
+            ),
+          checkDatasetEntitlements: async (
+            datasets: DatasetSpecification[],
+          ): Promise<DatasetEntitlementReport[]> =>
+            this.queryBuilderState.graphManagerState.graphManager.checkDatasetEntitlements(
+              datasets,
+              mappingPath,
+              runtimePath,
+              this.queryBuilderState.buildQuery(),
+              new InMemoryGraphData(
+                this.queryBuilderState.graphManagerState.graph,
+              ),
+            ),
+        },
+      );
+    }
   }
 
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.CHECK_ENTITLEMENTS_STATE,
-      this.isCheckingEntitlements,
+      this.showCheckEntitlementsViewer,
     ]);
   }
 }

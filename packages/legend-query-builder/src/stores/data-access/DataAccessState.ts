@@ -76,6 +76,7 @@ export class DataAccessState {
     datasets: DatasetSpecification[],
   ) => Promise<DatasetEntitlementReport[]>;
 
+  readonly initialDatasets?: DatasetSpecification[] | undefined;
   readonly surveyDatasetsState = ActionState.create();
   readonly checkEntitlementsState = ActionState.create();
 
@@ -101,6 +102,7 @@ export class DataAccessState {
 
     this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;
+    this.initialDatasets = options.initialDatasets;
     this.datasets = (options.initialDatasets ?? []).map(
       (dataset) => new DatasetAccessInfo(dataset),
     );
@@ -301,6 +303,15 @@ export class DataAccessState {
       this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.checkEntitlementsState.complete();
+    }
+  }
+
+  async intialize(): Promise<void> {
+    if (!this.initialDatasets) {
+      await flowResult(this.fetchDatasetSpecifications());
+      await flowResult(this.fetchDatasetEntitlementReports());
+    } else {
+      await flowResult(this.fetchDatasetEntitlementReports());
     }
   }
 
