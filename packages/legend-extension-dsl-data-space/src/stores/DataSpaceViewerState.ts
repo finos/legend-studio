@@ -76,8 +76,6 @@ export class DataSpaceViewerState {
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 
-  TEMPORARY__enableExperimentalFeatures = false;
-
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: BasicGraphManagerState,
@@ -93,9 +91,6 @@ export class DataSpaceViewerState {
       queryClass: (_class: Class) => void;
       openServiceQuery: (servicePath: string) => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
-    },
-    options?: {
-      TEMPORARY__enableExperimentalFeatures?: boolean | undefined;
     },
   ) {
     makeObservable(this, {
@@ -157,10 +152,6 @@ export class DataSpaceViewerState {
       this,
     );
     this.diagramViewerState = new DataSpaceViewerDiagramViewerState(this);
-
-    this.TEMPORARY__enableExperimentalFeatures = Boolean(
-      options?.TEMPORARY__enableExperimentalFeatures,
-    );
   }
 
   get isVerified(): boolean {

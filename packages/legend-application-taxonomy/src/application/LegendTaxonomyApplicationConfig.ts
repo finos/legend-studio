@@ -66,17 +66,8 @@ export interface LegendTaxonomyApplicationConfigurationData
 }
 
 class LegendTaxonomyApplicationCoreOptions {
-  /**
-   * Enables experimental features for data-space viewer.
-   *
-   * NOTE: we should remove this when we finalize the data-space viewer feature set.
-   */
-  TEMPORARY__useDataSpaceViewerExperimentalFeatures = false;
-
   private static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendTaxonomyApplicationCoreOptions, {
-      TEMPORARY__useDataSpaceViewerExperimentalFeatures: optional(primitive()),
-    }),
+    createModelSchema(LegendTaxonomyApplicationCoreOptions, {}),
   );
 
   static create(

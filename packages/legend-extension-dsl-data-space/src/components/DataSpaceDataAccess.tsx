@@ -18,7 +18,6 @@ import { observer } from 'mobx-react-lite';
 import { AnchorLinkIcon, QuestionCircleIcon } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import { useEffect, useRef } from 'react';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
@@ -81,14 +80,9 @@ export const DataSpaceDataAccess = observer(
         </div>
         <div className="data-space__viewer__wiki__section__content">
           <div className="data-space__viewer__data-access">
-            {!dataSpaceViewerState.TEMPORARY__enableExperimentalFeatures && (
-              <DataSpaceWikiPlaceholder message="View Data Access (Work in Progress)" />
-            )}
-            {dataSpaceViewerState.TEMPORARY__enableExperimentalFeatures && (
-              <DataAccessOverview
-                dataAccessState={dataSpaceViewerState.currentDataAccessState}
-              />
-            )}
+            <DataAccessOverview
+              dataAccessState={dataSpaceViewerState.currentDataAccessState}
+            />
           </div>
         </div>
       </div>
