@@ -669,7 +669,8 @@ export const QueryBuilder = observer(
           {queryBuilderState.textEditorState.mode && (
             <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
-          {queryBuilderState.checkEntitlementsState && (
+          {queryBuilderState.checkEntitlementsState
+            .showCheckEntitlementsViewer && (
             <Dialog
               open={
                 queryBuilderState.checkEntitlementsState
