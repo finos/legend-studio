@@ -258,7 +258,7 @@ export const getNullableEntry = <T>(array: T[], idx: number): T | undefined => {
   }
   return array.length > idx ? array[idx] : undefined;
 };
-export const getNonNullableEnry = <T>(array: T[], idx: number): T => {
+export const getNonNullableEntry = <T>(array: T[], idx: number): T => {
   assertTrue(0 <= idx && idx < array.length, `Index out of bound: ${idx}`);
   return guaranteeNonNullable(array[idx]);
 };

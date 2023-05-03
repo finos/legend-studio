@@ -283,7 +283,6 @@ import {
   V1_buildDatasetSpecification,
   V1_transformDatasetSpecification,
 } from './engine/analytics/V1_StoreEntitlementAnalysis.js';
-import type { PackageableRuntime } from '../../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import type {
   DatasetEntitlementReport,
   DatasetSpecification,
@@ -3076,15 +3075,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   generateStoreEntitlementAnalysisInput(
-    mapping: Mapping,
-    runtime: PackageableRuntime,
+    mapping: string,
+    runtime: string,
     query: RawLambda | undefined,
     graphData: GraphData,
   ): V1_StoreEntitlementAnalysisInput {
     const input = new V1_StoreEntitlementAnalysisInput();
     input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
-    input.mapping = mapping.path;
-    input.runtime = runtime.path;
+    input.mapping = mapping;
+    input.runtime = runtime;
     input.query = query
       ? V1_transformRawLambda(
           query,
@@ -3111,8 +3110,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async surveyDatasets(
-    mapping: Mapping,
-    runtime: PackageableRuntime,
+    mapping: string,
+    runtime: string,
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetSpecification[]> {
@@ -3136,8 +3135,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async checkDatasetEntitlements(
     datasets: DatasetSpecification[],
-    mapping: Mapping,
-    runtime: PackageableRuntime,
+    mapping: string,
+    runtime: string,
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]> {

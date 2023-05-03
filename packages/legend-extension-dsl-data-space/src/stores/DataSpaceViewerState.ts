@@ -48,6 +48,7 @@ import {
   generateAnchorForActivity,
 } from './DataSpaceViewerNavigation.js';
 import { DataAccessState } from '@finos/legend-query-builder';
+import { DataSpaceQuickStartState } from './DataSpaceQuickStartState.js';
 
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -70,6 +71,7 @@ export class DataSpaceViewerState {
 
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
+  readonly quickStartState: DataSpaceQuickStartState;
 
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
   currentDataAccessState: DataAccessState;
@@ -130,8 +132,8 @@ export class DataSpaceViewerState {
         initialDatasets: this.currentExecutionContext.datasets,
         surveyDatasets: async (): Promise<DatasetSpecification[]> =>
           this.graphManagerState.graphManager.surveyDatasets(
-            this.currentExecutionContext.mapping,
-            this.currentExecutionContext.defaultRuntime,
+            this.currentExecutionContext.mapping.path,
+            this.currentExecutionContext.defaultRuntime.path,
             undefined,
             this.retrieveGraphData(),
           ),
@@ -140,8 +142,8 @@ export class DataSpaceViewerState {
         ): Promise<DatasetEntitlementReport[]> =>
           this.graphManagerState.graphManager.checkDatasetEntitlements(
             datasets,
-            this.currentExecutionContext.mapping,
-            this.currentExecutionContext.defaultRuntime,
+            this.currentExecutionContext.mapping.path,
+            this.currentExecutionContext.defaultRuntime.path,
             undefined,
             this.retrieveGraphData(),
           ),
@@ -152,6 +154,7 @@ export class DataSpaceViewerState {
       this,
     );
     this.diagramViewerState = new DataSpaceViewerDiagramViewerState(this);
+    this.quickStartState = new DataSpaceQuickStartState(this);
   }
 
   get isVerified(): boolean {
@@ -180,8 +183,8 @@ export class DataSpaceViewerState {
         initialDatasets: val.datasets,
         surveyDatasets: async (): Promise<DatasetSpecification[]> =>
           this.graphManagerState.graphManager.surveyDatasets(
-            val.mapping,
-            val.defaultRuntime,
+            val.mapping.path,
+            val.defaultRuntime.path,
             undefined,
             this.retrieveGraphData(),
           ),
@@ -190,8 +193,8 @@ export class DataSpaceViewerState {
         ): Promise<DatasetEntitlementReport[]> =>
           this.graphManagerState.graphManager.checkDatasetEntitlements(
             datasets,
-            val.mapping,
-            val.defaultRuntime,
+            val.mapping.path,
+            val.defaultRuntime.path,
             undefined,
             this.retrieveGraphData(),
           ),

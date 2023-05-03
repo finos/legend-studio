@@ -180,3 +180,21 @@
     }
   }
 }
+
+.data-access-overview--compact {
+  height: 30rem;
+  display: flex;
+
+  .data-access-overview__chart {
+    height: 30rem;
+    width: 30rem;
+    min-width: 30rem;
+    padding: 0;
+    margin-right: 2rem;
+  }
+
+  .data-access-overview__chart__container {
+    height: 28rem;
+    width: 28rem;
+  }
+}

@@ -51,7 +51,7 @@ import {
 } from '@finos/legend-extension-dsl-diagram/application';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/index.js';
-import { getNonNullableEnry } from '@finos/legend-shared';
+import { getNonNullableEntry } from '@finos/legend-shared';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import { useCommands } from '@finos/legend-application';
 import {
@@ -293,7 +293,7 @@ const DataSpaceDiagramViewerHeader = observer(
                   return;
                 }
                 diagramViewerState.setCurrentDiagram(
-                  getNonNullableEnry(
+                  getNonNullableEntry(
                     dataSpaceViewerState.dataSpaceAnalysisResult.diagrams,
                     value - 1,
                   ),

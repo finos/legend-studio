@@ -29,6 +29,7 @@ import {
   PanelLoadingIndicator,
   RefreshIcon,
   TimesCircleIcon,
+  clsx,
 } from '@finos/legend-art';
 import {
   DataGrid,
@@ -277,8 +278,11 @@ const DataAccessOverviewGrid = observer(
 );
 
 export const DataAccessOverview = observer(
-  (props: { dataAccessState: DataAccessState }) => {
-    const { dataAccessState } = props;
+  (props: {
+    dataAccessState: DataAccessState;
+    compact?: boolean | undefined;
+  }) => {
+    const { dataAccessState, compact } = props;
     const applicationStore = useApplicationStore();
 
     useEffect(() => {
@@ -288,7 +292,11 @@ export const DataAccessOverview = observer(
     }, [applicationStore, dataAccessState]);
 
     return (
-      <div className="data-access-overview">
+      <div
+        className={clsx('data-access-overview', {
+          'data-access-overview--compact': Boolean(compact),
+        })}
+      >
         <PanelLoadingIndicator
           isLoading={
             dataAccessState.surveyDatasetsState.isInProgress ||
