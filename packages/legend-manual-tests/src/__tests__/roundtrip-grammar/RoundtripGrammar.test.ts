@@ -77,6 +77,11 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
     ROUNTRIP_TEST_PHASES.CHECK_HASH,
   ],
+  // TODO: remove these once latest engine changes are merged
+  'DSL_ExecutionEnvironment-plus-service-models.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+    ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP,
+  ],
 };
 
 type GrammarRoundtripOptions = {
