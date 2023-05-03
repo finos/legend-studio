@@ -15,7 +15,7 @@
  */
 
 import {
-  getNonNullableEnry,
+  getNonNullableEntry,
   isNonNullable,
   isString,
 } from '@finos/legend-shared';
@@ -97,7 +97,7 @@ const parseVSCodeTheme = (
   Object.entries(rawData.colors).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       if (value.length) {
-        colors[key] = getNonNullableEnry(value, 0);
+        colors[key] = getNonNullableEntry(value, 0);
       }
     } else {
       colors[key] = value;

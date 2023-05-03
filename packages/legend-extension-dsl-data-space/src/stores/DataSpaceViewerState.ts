@@ -22,6 +22,8 @@ import {
 import type {
   BasicGraphManagerState,
   Class,
+  DatasetEntitlementReport,
+  DatasetSpecification,
   GraphData,
   PackageableRuntime,
 } from '@finos/legend-graph';
@@ -35,7 +37,6 @@ import {
   PURE_DATA_SPACE_INFO_PROFILE_PATH,
   PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
 } from '../graph-manager/DSL_DataSpace_PureGraphManagerPlugin.js';
-import { DataSpaceViewerDataAccessState } from './DataSpaceViewerDataAccessState.js';
 import { DataSpaceViewerModelsDocumentationState } from './DataSpaceModelsDocumentationState.js';
 import { DataSpaceViewerDiagramViewerState } from './DataSpaceViewerDiagramViewerState.js';
 import {
@@ -46,6 +47,8 @@ import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
 } from './DataSpaceViewerNavigation.js';
+import { DataAccessState } from '@finos/legend-query-builder';
+import { DataSpaceQuickStartState } from './DataSpaceQuickStartState.js';
 
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -68,16 +71,12 @@ export class DataSpaceViewerState {
 
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
-
-  // TODO: change this so it holds the data access state for each execution context
-  readonly dataAccessState: DataSpaceViewerDataAccessState;
-  // TODO: have a state similar to dataAccessState for each executables
+  readonly quickStartState: DataSpaceQuickStartState;
 
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
+  currentDataAccessState: DataAccessState;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
-
-  TEMPORARY__enableExperimentalFeatures = false;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -95,14 +94,12 @@ export class DataSpaceViewerState {
       openServiceQuery: (servicePath: string) => void;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
     },
-    options?: {
-      TEMPORARY__enableExperimentalFeatures?: boolean | undefined;
-    },
   ) {
     makeObservable(this, {
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
+      currentDataAccessState: observable,
       isVerified: computed,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
@@ -117,9 +114,6 @@ export class DataSpaceViewerState {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
-    this.currentExecutionContext =
-      dataSpaceAnalysisResult.defaultExecutionContext;
-    this.currentRuntime = this.currentExecutionContext.defaultRuntime;
     this.retrieveGraphData = actions.retrieveGraphData;
     this.queryDataSpace = actions.queryDataSpace;
     this.viewProject = actions.viewProject;
@@ -128,15 +122,39 @@ export class DataSpaceViewerState {
     this.queryClass = actions.queryClass;
     this.openServiceQuery = actions.openServiceQuery;
 
-    this.dataAccessState = new DataSpaceViewerDataAccessState(this);
+    this.currentExecutionContext =
+      dataSpaceAnalysisResult.defaultExecutionContext;
+    this.currentRuntime = this.currentExecutionContext.defaultRuntime;
+    this.currentDataAccessState = new DataAccessState(
+      this.applicationStore,
+      this.graphManagerState,
+      {
+        initialDatasets: this.currentExecutionContext.datasets,
+        surveyDatasets: async (): Promise<DatasetSpecification[]> =>
+          this.graphManagerState.graphManager.surveyDatasets(
+            this.currentExecutionContext.mapping.path,
+            this.currentExecutionContext.defaultRuntime.path,
+            undefined,
+            this.retrieveGraphData(),
+          ),
+        checkDatasetEntitlements: async (
+          datasets: DatasetSpecification[],
+        ): Promise<DatasetEntitlementReport[]> =>
+          this.graphManagerState.graphManager.checkDatasetEntitlements(
+            datasets,
+            this.currentExecutionContext.mapping.path,
+            this.currentExecutionContext.defaultRuntime.path,
+            undefined,
+            this.retrieveGraphData(),
+          ),
+      },
+    );
+
     this.modelsDocumentationState = new DataSpaceViewerModelsDocumentationState(
       this,
     );
     this.diagramViewerState = new DataSpaceViewerDiagramViewerState(this);
-
-    this.TEMPORARY__enableExperimentalFeatures = Boolean(
-      options?.TEMPORARY__enableExperimentalFeatures,
-    );
+    this.quickStartState = new DataSpaceQuickStartState(this);
   }
 
   get isVerified(): boolean {
@@ -158,6 +176,30 @@ export class DataSpaceViewerState {
   ): void {
     this.currentExecutionContext = val;
     this.currentRuntime = val.defaultRuntime;
+    this.currentDataAccessState = new DataAccessState(
+      this.applicationStore,
+      this.graphManagerState,
+      {
+        initialDatasets: val.datasets,
+        surveyDatasets: async (): Promise<DatasetSpecification[]> =>
+          this.graphManagerState.graphManager.surveyDatasets(
+            val.mapping.path,
+            val.defaultRuntime.path,
+            undefined,
+            this.retrieveGraphData(),
+          ),
+        checkDatasetEntitlements: async (
+          datasets: DatasetSpecification[],
+        ): Promise<DatasetEntitlementReport[]> =>
+          this.graphManagerState.graphManager.checkDatasetEntitlements(
+            datasets,
+            val.mapping.path,
+            val.defaultRuntime.path,
+            undefined,
+            this.retrieveGraphData(),
+          ),
+      },
+    );
   }
 
   setCurrentRuntime(val: PackageableRuntime): void {

@@ -17,7 +17,7 @@
 @import url('@finos/legend-art/lib/index.css');
 @import url('@finos/legend-application/lib/index.css');
 @import url('@finos/legend-lego/lib/index.css');
-
+@import url('@finos/legend-query-builder/lib/index.css');
 @import url('@finos/legend-application-taxonomy/lib/index.css');
 
 // NOTE: the following styles are temporary so we can have a poor-man version of
@@ -65,6 +65,8 @@
   --color-hclight-green-40: #43c478;
   --color-hclight-green-50: #16a163;
   --color-hclight-green-60: #077d55;
+  --color-hclight-lime-30: #aad971;
+  --color-hclight-lime-40: #78bf39;
   --color-hclight-lime-50: #52a31d;
   --color-hclight-yellow-5: #fff9e3; // non-standard
   --color-hclight-yellow-10: #faf6cf;
@@ -73,6 +75,7 @@
   --color-hclight-yellow-30: #f5c518;
   --color-hclight-orange-40: #fc9162;
   --color-hclight-orange-50: #e86427;
+  --color-hclight-red-50: #fa5343;
   --color-hclight-red-60: #d91f11;
   --color-hclight-pink-40: #fa87d4;
   --color-hclight-pink-50: #ed4cb7;
@@ -296,6 +299,73 @@
 
     .Mui-checked {
       color: var(--color-hclight-blue-50);
+    }
+  }
+
+  // ---------------------------- Data Access Overview -------------------------------
+
+  .data-access-overview__grid {
+    &--empty {
+      background: var(--color-hclight-white);
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__empty-cell {
+      color: var(--color-hclight-grey-30);
+    }
+
+    // Customize ag-grid theme
+    // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+    --ag-border-color: var(--color-hclight-grey-30);
+    --ag-background-color: var(--color-hclight-white);
+    --ag-foreground-color: var(--color-hclight-grey-90);
+    --ag-header-background-color: var(--color-hclight-grey-10);
+    --ag-header-foreground-color: var(--color-hclight-grey-90);
+    --ag-balham-active-color: transparent;
+    --ag-odd-row-background-color: var(--color-hclight-white);
+    --ag-even-row-background-color: var(--color-hclight-white);
+    --ag-row-hover-color: var(--color-hclight-grey-5);
+    --ag-row-border-color: var(--color-hclight-grey-30);
+
+    .ag-center-cols-viewport {
+      background: repeating-linear-gradient(
+        135deg,
+        var(--color-hclight-white),
+        var(--color-hclight-white) 0.5rem,
+        var(--color-hclight-grey-5) 0.5rem,
+        var(--color-hclight-grey-5) 1rem
+      );
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-hclight-grey-15);
+      border: 0.1rem solid transparent;
+      background-clip: content-box;
+      border-radius: 0.4rem;
+    }
+
+    ::-webkit-scrollbar-track-piece {
+      background: transparent;
+    }
+  }
+
+  .data-access-overview__grid__access-status-cell {
+    &__icon {
+      &--access-granted svg {
+        color: var(--color-hclight-lime-50);
+      }
+
+      &--access-approved svg {
+        color: var(--color-hclight-blue-50);
+      }
+
+      &--access-requested svg {
+        color: var(--color-hclight-yellow-30);
+      }
+
+      &--access-not-granted svg {
+        color: var(--color-hclight-red-50);
+      }
     }
   }
 

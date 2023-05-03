@@ -87,7 +87,6 @@ import type {
   DatasetEntitlementReport,
   DatasetSpecification,
 } from './action/analytics/StoreEntitlementAnalysis.js';
-import type { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import type { GraphDataOrigin } from '../graph/GraphDataOrigin.js';
 import type { GraphData } from './GraphData.js';
 import type { DEPRECATED__MappingTest } from '../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
@@ -540,16 +539,16 @@ export abstract class AbstractPureGraphManager {
   ): MappingModelCoverageAnalysisResult;
 
   abstract surveyDatasets(
-    mapping: Mapping,
-    runtime: PackageableRuntime,
+    mapping: string,
+    runtime: string,
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetSpecification[]>;
 
   abstract checkDatasetEntitlements(
     datasets: DatasetSpecification[],
-    mapping: Mapping,
-    runtime: PackageableRuntime,
+    mapping: string,
+    runtime: string,
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]>;

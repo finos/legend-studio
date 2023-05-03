@@ -15,123 +15,15 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  AnchorLinkIcon,
-  PanelLoadingIndicator,
-  QuestionCircleIcon,
-} from '@finos/legend-art';
+import { AnchorLinkIcon, QuestionCircleIcon } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import { useEffect, useRef } from 'react';
-import { flowResult } from 'mobx';
-import {
-  DatasetEntitlementAccessApprovedReport,
-  DatasetEntitlementAccessGrantedReport,
-  DatasetEntitlementAccessNotGrantedReport,
-  DatasetEntitlementAccessRequestedReport,
-  DatasetEntitlementUnsupportedReport,
-} from '@finos/legend-graph';
-import { DataGrid } from '@finos/legend-lego/data-grid';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
 } from '../stores/DataSpaceViewerNavigation.js';
-
-const DataAccessOverview = observer(
-  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
-    const { dataSpaceViewerState } = props;
-    const dataAccessState = dataSpaceViewerState.dataAccessState;
-    const applicationStore = useApplicationStore();
-
-    useEffect(() => {
-      flowResult(dataAccessState.fetchDatasetSpecifications())
-        .then(() => dataAccessState.fetchDatasetEntitlementReports())
-        .catch(applicationStore.alertUnhandledError);
-    }, [
-      applicationStore,
-      dataAccessState,
-      dataSpaceViewerState.currentExecutionContext,
-    ]);
-
-    return (
-      <div className="data-space__viewer__data-access__overview">
-        <PanelLoadingIndicator
-          isLoading={
-            dataAccessState.fetchDatasetSpecificationsState.isInProgress ||
-            dataAccessState.fetchDatasetEntitlementReportsState.isInProgress
-          }
-        />
-        <div className="data-space__viewer__data-access__chart"></div>
-        <div className="data-space__viewer__data-access__grid data-space__viewer__grid ag-theme-balham-dark">
-          <DataGrid
-            rowData={dataAccessState.datasets}
-            gridOptions={{
-              suppressScrollOnNewData: true,
-              getRowId: (rowData) => rowData.data.uuid,
-            }}
-            suppressFieldDotNotation={true}
-            columnDefs={[
-              {
-                minWidth: 50,
-                sortable: true,
-                resizable: true,
-                valueGetter: (params) => params.data?.specification.name,
-                headerName: 'Dataset',
-                flex: 1,
-              },
-              {
-                minWidth: 50,
-                sortable: true,
-                resizable: true,
-                valueGetter: (params) => params.data?.specification.type,
-                headerName: 'Type',
-                flex: 1,
-              },
-              {
-                minWidth: 50,
-                sortable: true,
-                resizable: true,
-                headerName: 'Access Status',
-                valueGetter: (params) => {
-                  const entitlementReport = params.data?.entitlementReport;
-                  if (
-                    entitlementReport instanceof
-                    DatasetEntitlementAccessGrantedReport
-                  ) {
-                    return 'Access Granted';
-                  } else if (
-                    entitlementReport instanceof
-                    DatasetEntitlementAccessApprovedReport
-                  ) {
-                    return 'Access Approved';
-                  } else if (
-                    entitlementReport instanceof
-                    DatasetEntitlementAccessRequestedReport
-                  ) {
-                    return 'Access Requested';
-                  } else if (
-                    entitlementReport instanceof
-                    DatasetEntitlementAccessNotGrantedReport
-                  ) {
-                    return '(x) Access Not Granted';
-                  } else if (
-                    entitlementReport instanceof
-                    DatasetEntitlementUnsupportedReport
-                  ) {
-                    return '(unsupported)';
-                  }
-                  return '';
-                },
-                flex: 1,
-              },
-            ]}
-          />
-        </div>
-      </div>
-    );
-  },
-);
+import { DataAccessOverview } from '@finos/legend-query-builder';
 
 export const DataSpaceDataAccess = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -188,12 +80,9 @@ export const DataSpaceDataAccess = observer(
         </div>
         <div className="data-space__viewer__wiki__section__content">
           <div className="data-space__viewer__data-access">
-            {!dataSpaceViewerState.TEMPORARY__enableExperimentalFeatures && (
-              <DataSpaceWikiPlaceholder message="View Data Access (Work in Progress)" />
-            )}
-            {dataSpaceViewerState.TEMPORARY__enableExperimentalFeatures && (
-              <DataAccessOverview dataSpaceViewerState={dataSpaceViewerState} />
-            )}
+            <DataAccessOverview
+              dataAccessState={dataSpaceViewerState.currentDataAccessState}
+            />
           </div>
         </div>
       </div>

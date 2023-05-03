@@ -18,7 +18,7 @@ import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { type DataSpaceViewerState } from './DataSpaceViewerState.js';
 import {
-  getNonNullableEnry,
+  getNonNullableEntry,
   getNullableFirstEntry,
   guaranteeNonNullable,
   isNonNullable,
@@ -150,7 +150,7 @@ export class DataSpaceLayoutState {
           ) {
             return;
           }
-          const anchor = getNonNullableEnry(this.wikiPageVisibleAnchors, 0);
+          const anchor = getNonNullableEntry(this.wikiPageVisibleAnchors, 0);
           this.dataSpaceViewerState.syncZoneWithNavigation(anchor);
           const anchorChunks = anchor.split(NAVIGATION_ZONE_SEPARATOR);
           const activity = getNullableFirstEntry(anchorChunks);

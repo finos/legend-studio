@@ -53,6 +53,7 @@ import {
   generateAnchorForActivity,
   generateAnchorForQuickStart,
 } from '../stores/DataSpaceViewerNavigation.js';
+import { DataAccessOverview } from '@finos/legend-query-builder';
 
 enum TDS_EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
@@ -107,6 +108,10 @@ const DataSpaceExecutableTDSResultView = observer(
       TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS,
     );
     const queryText = executableAnalysisResult.info?.query;
+    const dataAccessState =
+      dataSpaceViewerState.quickStartState.dataAccessStateIndex.get(
+        executableAnalysisResult,
+      );
 
     const openServiceQuery = (): void => {
       if (
@@ -328,13 +333,19 @@ const DataSpaceExecutableTDSResultView = observer(
               </div>
             </div>
           )}
-          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.DATA_ACCESS && (
-            <div className="data-space__viewer__quickstart__tds__placeholder-panel">
-              <BlankPanelContent>
-                Data Access (Work in Progress)
-              </BlankPanelContent>
-            </div>
-          )}
+          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.DATA_ACCESS &&
+            (dataAccessState ? (
+              <DataAccessOverview
+                dataAccessState={dataAccessState}
+                compact={true}
+              />
+            ) : (
+              <div className="data-space__viewer__quickstart__tds__placeholder-panel">
+                <BlankPanelContent>
+                  No data access information available
+                </BlankPanelContent>
+              </div>
+            ))}
           {selectedTab === TDS_EXECUTABLE_ACTION_TAB.USAGE_STATS && (
             <div className="data-space__viewer__quickstart__tds__placeholder-panel">
               <BlankPanelContent>

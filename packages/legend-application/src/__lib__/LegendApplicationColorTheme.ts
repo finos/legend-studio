@@ -26,6 +26,13 @@ export const DEFAULT_DARK_COLOR_THEME: ColorTheme = {
   name: 'Default Dark (default)',
   key: LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
   TEMPORARY__globalCSSClassName: 'theme__default-dark',
+  colors: {
+    'data-access-overview.chart.access-granted': '#6a9955',
+    'data-access-overview.chart.access-approved': '#007acc',
+    'data-access-overview.chart.access-requested': '#fbbc05',
+    'data-access-overview.chart.access-not-granted': '#ea4646',
+    'data-access-overview.chart.unsupported-access': '#2d2d2d',
+  },
 };
 
 export const LEGACY_LIGHT_COLOR_THEME: ColorTheme = {
@@ -38,4 +45,11 @@ export const HIGH_CONTRAST_LIGHT_COLOR_THEME: ColorTheme = {
   name: 'High-Contrast Light',
   key: LEGEND_APPLICATION_COLOR_THEME.HIGH_CONTRAST_LIGHT,
   TEMPORARY__globalCSSClassName: 'theme__hc-light',
+  colors: {
+    'data-access-overview.chart.access-granted': '#52a31d',
+    'data-access-overview.chart.access-approved': '#3d8df5',
+    'data-access-overview.chart.access-requested': '#f5c518',
+    'data-access-overview.chart.access-not-granted': '#fa5343',
+    'data-access-overview.chart.unsupported-access': '#e1e7ea',
+  },
 };

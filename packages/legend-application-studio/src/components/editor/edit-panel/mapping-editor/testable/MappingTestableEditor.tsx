@@ -30,7 +30,7 @@ import {
   isStubbed_RawLambda,
   stub_RawLambda,
 } from '@finos/legend-graph';
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import {
   BlankPanelPlaceholder,
   CaretDownIcon,

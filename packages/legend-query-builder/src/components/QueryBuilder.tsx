@@ -72,6 +72,7 @@ import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpre
 import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
+import { DataAccessOverview } from './data-access/DataAccessOverview.js';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -214,12 +215,16 @@ const renderCheckEntitlementsEditor = (
   }
 
   const handleClose = (): void => {
-    queryBuilderState.checkEntitlementsState.setIsCheckingEntitlements(false);
+    queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
+      false,
+    );
   };
 
   return (
     <Dialog
-      open={queryBuilderState.checkEntitlementsState.isCheckingEntitlements}
+      open={
+        queryBuilderState.checkEntitlementsState.showCheckEntitlementsViewer
+      }
       onClose={handleClose}
       classes={{
         root: 'editor-modal__root-container',
@@ -229,10 +234,20 @@ const renderCheckEntitlementsEditor = (
     >
       <Modal darkMode={true} className="editor-modal">
         <ModalHeader title="Query Entitlements" />
-        <ModalBody>
-          <BlankPanelContent>
-            Check Entitlements is not supported yet
-          </BlankPanelContent>
+        <ModalBody className="query-builder__data-access-overview">
+          <div className="query-builder__data-access-overview__container">
+            {queryBuilderState.checkEntitlementsState.dataAccessState ? (
+              <DataAccessOverview
+                dataAccessState={
+                  queryBuilderState.checkEntitlementsState.dataAccessState
+                }
+              />
+            ) : (
+              <BlankPanelContent>
+                No data access information available
+              </BlankPanelContent>
+            )}
+          </div>
         </ModalBody>
         <ModalFooter>
           <ModalFooterButton text="Close" onClick={handleClose} />
@@ -347,7 +362,9 @@ export const QueryBuilder = observer(
     };
 
     const openCheckEntitlmentsEditor = (): void => {
-      queryBuilderState.checkEntitlementsState.setIsCheckingEntitlements(true);
+      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
+        true,
+      );
     };
 
     useCommands(queryBuilderState);
@@ -579,19 +596,19 @@ export const QueryBuilder = observer(
                             .projectionColumns.length === 0
                         }
                       >
-                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        <MenuContentItemIcon />
                         <MenuContentItemLabel>
                           Check Entitlements
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={editQueryInPure}>
-                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        <MenuContentItemIcon />
                         <MenuContentItemLabel>
                           Edit Query in Pure
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={showQueryProtocol}>
-                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        <MenuContentItemIcon />
                         <MenuContentItemLabel>
                           Show Query Protocol
                         </MenuContentItemLabel>
@@ -707,7 +724,8 @@ export const QueryBuilder = observer(
           {queryBuilderState.textEditorState.mode && (
             <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
-          {queryBuilderState.checkEntitlementsState.isCheckingEntitlements &&
+          {queryBuilderState.checkEntitlementsState
+            .showCheckEntitlementsViewer &&
             renderCheckEntitlementsEditor(
               queryBuilderState,
               applicationStore.pluginManager

@@ -434,7 +434,7 @@ export const GlobalTestRunner = observer(
         editorStore.pluginManager
           .getApplicationPlugins()
           .flatMap(
-            (plugin) => plugin.getExtraTestRunnerTabsClassifiers?.() ?? [],
+            (plugin) => plugin.getExtraTestRunnerTabClassifiers?.() ?? [],
           ),
       )
       .map((e) => ({
@@ -570,7 +570,7 @@ export const GlobalTestRunner = observer(
         const extraTestRunnerTabEditorRenderers = editorStore.pluginManager
           .getApplicationPlugins()
           .flatMap(
-            (plugin) => plugin.getExtraTestRunnerTabsEditorRenderers?.() ?? [],
+            (plugin) => plugin.getExtraTestRunnerTabEditorRenderers?.() ?? [],
           );
         for (const editorRenderer of extraTestRunnerTabEditorRenderers) {
           const editor = editorRenderer(selectedTab, editorStore);

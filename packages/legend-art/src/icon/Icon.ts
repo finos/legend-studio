@@ -83,6 +83,7 @@ export const LightBulbIcon = FA.FaLightbulb;
 export const EmptyLightBulbIcon = FA.FaRegLightbulb;
 export const ListIcon = FA.FaList;
 export const CircleIcon = FA.FaCircle;
+export const MinusCircleIcon = FA.FaMinusCircle;
 export const TrashIcon = FA.FaTrash;
 export const EmptyCircleIcon = FA.FaRegCircle;
 export const ShieldIcon = FA.FaShieldAlt;

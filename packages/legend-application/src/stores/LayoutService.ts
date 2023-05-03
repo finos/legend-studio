@@ -22,7 +22,7 @@ import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import {
   DEFAULT_DARK_COLOR_THEME,
   LEGEND_APPLICATION_COLOR_THEME,
-} from '../__lib__/LegendApplicationTheme.js';
+} from '../__lib__/LegendApplicationColorTheme.js';
 
 export type ColorTheme = {
   name: string;
@@ -32,6 +32,7 @@ export type ColorTheme = {
    * See https://github.com/finos/legend-studio/issues/264
    */
   TEMPORARY__globalCSSClassName: string;
+  colors?: Record<string, string | undefined>;
 };
 
 export class LayoutService {
@@ -158,5 +159,17 @@ export class LayoutService {
         key,
       );
     }
+  }
+
+  getColor(key: string): string {
+    return (
+      this.currentColorTheme.colors?.[key] ??
+      guaranteeNonNullable(
+        this.colorThemeRegistry.get(
+          LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
+        ),
+      ).colors?.[key] ??
+      'transparent'
+    );
   }
 }

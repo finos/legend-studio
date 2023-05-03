@@ -17,6 +17,7 @@
 import type { LegendApplicationPlugin } from '@finos/legend-application';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { QuerySearchSpecification } from '@finos/legend-graph';
+import type { DatasetAccessInfo } from './data-access/DataAccessState.js';
 
 export type LoadQueryFilterOption = {
   key: string;
@@ -27,10 +28,19 @@ export type LoadQueryFilterOption = {
   ) => QuerySearchSpecification;
 };
 
+export type DatasetEntitlementAccessReportActionConfiguration = {
+  renderer: (info: DatasetAccessInfo) => React.ReactNode;
+};
+
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
   /**
    * Get the list of filter options for query loader.
    */
   getExtraLoadQueryFilterOptions?(): LoadQueryFilterOption[];
+
+  /**
+   * Get the list of dataset entitlement access report action configurations.
+   */
+  getExtraDatasetEntitlementAccessNotGrantedReportActionConfigurations?(): DatasetEntitlementAccessReportActionConfiguration[];
 }

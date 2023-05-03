@@ -888,3 +888,12 @@
     width: 15rem;
   }
 }
+
+.query-builder__data-access-overview {
+  overflow: overlay;
+
+  &__container {
+    height: 100%;
+    padding: 2rem;
+  }
+}
