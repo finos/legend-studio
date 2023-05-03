@@ -28,7 +28,7 @@ import { QUERY_BUILDER_SETTING_CONFIG } from '../__lib__/QueryBuilderSetting.js'
 import { QUERY_BUILDER_COMMAND_CONFIG } from '../stores/QueryBuilderCommand.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
-import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, LinearScale } from 'chart.js';
 
 export type CheckEntitlementEditorRender = (
   queryBuilderState: QueryBuilderState,
@@ -53,7 +53,15 @@ export class QueryBuilder_LegendApplicationPlugin extends LegendApplicationPlugi
         configureDataGridComponent();
 
         // configure chart component
-        ChartJS.register(ArcElement, Tooltip);
+        ChartJS.register(
+          ArcElement,
+          Tooltip,
+          // NOTE: this is a workaround for a production bundle problem where LinearScale seems to be required
+          // in only production build
+          // See https://github.com/chartjs/Chart.js/issues/10895
+          // See https://github.com/chartjs/Chart.js/issues/11157#issue-1592988375
+          LinearScale,
+        );
       },
     ];
   }

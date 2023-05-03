@@ -127,7 +127,7 @@ const AccessStatusCellRenderer = observer(
       dataAccessState: DataAccessState;
     },
   ) => {
-    const { data } = params;
+    const { data, dataAccessState } = params;
     const applicationStore = useApplicationStore();
 
     if (!data) {
@@ -193,7 +193,7 @@ const AccessStatusCellRenderer = observer(
         );
       let action: React.ReactNode | undefined;
       for (const plugin of plugins) {
-        action = plugin.renderer(data);
+        action = plugin.renderer(data, dataAccessState);
         if (action) {
           break;
         }

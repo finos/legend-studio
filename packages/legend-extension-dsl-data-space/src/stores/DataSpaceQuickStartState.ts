@@ -18,13 +18,9 @@ import { makeObservable, observable } from 'mobx';
 import { type DataSpaceViewerState } from './DataSpaceViewerState.js';
 import { DataAccessState } from '@finos/legend-query-builder';
 import {
-  type DataSpaceExecutableAnalysisResult,
   DataSpaceServiceExecutableInfo,
-} from '../graph-manager/index.js';
-import type {
-  DatasetEntitlementReport,
-  DatasetSpecification,
-} from '@finos/legend-graph';
+  type DataSpaceExecutableAnalysisResult,
+} from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 
 export class DataSpaceQuickStartState {
   readonly dataSpaceViewerState: DataSpaceViewerState;
@@ -57,26 +53,12 @@ export class DataSpaceQuickStartState {
             this.dataSpaceViewerState.graphManagerState,
             {
               initialDatasets: executable.datasets,
-              surveyDatasets: async (): Promise<DatasetSpecification[]> =>
-                this.dataSpaceViewerState.graphManagerState.graphManager.surveyDatasets(
-                  mapping,
-                  runtime,
-                  await this.dataSpaceViewerState.graphManagerState.graphManager.pureCodeToLambda(
-                    query,
-                  ),
-                  this.dataSpaceViewerState.retrieveGraphData(),
-                ),
-              checkDatasetEntitlements: async (
-                datasets: DatasetSpecification[],
-              ): Promise<DatasetEntitlementReport[]> =>
-                this.dataSpaceViewerState.graphManagerState.graphManager.checkDatasetEntitlements(
-                  datasets,
-                  mapping,
-                  runtime,
-                  await this.dataSpaceViewerState.graphManagerState.graphManager.pureCodeToLambda(
-                    query,
-                  ),
-                  this.dataSpaceViewerState.retrieveGraphData(),
+              mapping,
+              runtime,
+              graphData: this.dataSpaceViewerState.retrieveGraphData(),
+              getQuery: () =>
+                this.dataSpaceViewerState.graphManagerState.graphManager.pureCodeToLambda(
+                  query,
                 ),
             },
           );
