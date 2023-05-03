@@ -380,7 +380,7 @@ const ExecutionPlanViewPanel = observer(
                     inputValue={displayData}
                     isReadOnly={true}
                     language={CODE_EDITOR_LANGUAGE.JSON}
-                    showMiniMap={false}
+                    hideMinimap={true}
                   />
                 )}
               {executionPlanState.viewMode ===
@@ -462,7 +462,6 @@ const ExecutionPlanViewerContent = observer(
             inputValue={JSON.stringify(rawPlan, undefined, DEFAULT_TAB_SIZE)}
             isReadOnly={true}
             language={CODE_EDITOR_LANGUAGE.JSON}
-            showMiniMap={true}
           />
         )}
       </div>
@@ -523,7 +522,6 @@ export const ExecutionPlanViewer = observer(
                         inputValue={executionPlanState.debugText}
                         isReadOnly={true}
                         language={CODE_EDITOR_LANGUAGE.TEXT}
-                        showMiniMap={true}
                       />
                     </PanelContent>
                   </div>

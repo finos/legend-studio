@@ -16,22 +16,31 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  BlankPanelContent,
+  CaretDownIcon,
   CaretUpIcon,
+  DropdownMenu,
+  MenuContent,
+  MenuContentDivider,
+  MenuContentItem,
+  MoreVerticalIcon,
+  PlayIcon,
   VerifiedIcon,
   clsx,
 } from '@finos/legend-art';
-import {
-  type DataSpaceViewerState,
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  DATA_SPACE_WIKI_PAGE_SECTIONS,
-} from '../stores/DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceExecutionContextViewer } from './DataSpaceExecutionContextViewer.js';
 import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
 import { DataSpaceSupportPanel } from './DataSpaceSupportPanel.js';
 import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
 import { useEffect, useRef, useState } from 'react';
+import { DATA_SPACE_WIKI_PAGE_SECTIONS } from '../stores/DataSpaceLayoutState.js';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+} from '../stores/DataSpaceViewerNavigation.js';
+import { DataSpacePlaceholderPanel } from './DataSpacePlaceholder.js';
+import { useApplicationStore } from '@finos/legend-application';
 
 const DataSpaceHeader = observer(
   (props: {
@@ -39,6 +48,7 @@ const DataSpaceHeader = observer(
     showFullHeader: boolean;
   }) => {
     const { dataSpaceViewerState, showFullHeader } = props;
+    const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
 
@@ -69,27 +79,132 @@ const DataSpaceHeader = observer(
               {analysisResult.displayName}
             </div>
             {dataSpaceViewerState.isVerified && (
-              <VerifiedIcon
+              <div
                 className="data-space__viewer__header__title__verified-badge"
                 title="Verified Data Space"
-              />
+              >
+                <VerifiedIcon />
+              </div>
             )}
+          </div>
+          <div className="data-space__viewer__header__actions">
+            <DropdownMenu
+              className="data-space__viewer__header__execution-context-selector"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              title={`Current Execution Context: ${dataSpaceViewerState.currentExecutionContext.name}\nClick to switch`}
+              content={
+                <MenuContent>
+                  {Array.from(
+                    dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
+                  ).map((context) => (
+                    <MenuContentItem
+                      key={context.name}
+                      className={clsx(
+                        'data-space__viewer__header__execution-context-selector__option',
+                        {
+                          'data-space__viewer__header__execution-context-selector__option--active':
+                            context ===
+                            dataSpaceViewerState.currentExecutionContext,
+                        },
+                      )}
+                      onClick={() =>
+                        dataSpaceViewerState.setCurrentExecutionContext(context)
+                      }
+                    >
+                      {context.name}
+                    </MenuContentItem>
+                  ))}
+                </MenuContent>
+              }
+            >
+              <div className="data-space__viewer__header__execution-context-selector__trigger">
+                <div className="data-space__viewer__header__execution-context-selector__trigger__icon">
+                  <PlayIcon />
+                </div>
+                <div className="data-space__viewer__header__execution-context-selector__trigger__label">
+                  {dataSpaceViewerState.currentExecutionContext.name}
+                </div>
+                <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
+                  <CaretDownIcon />
+                </div>
+              </div>
+            </DropdownMenu>
+            <DropdownMenu
+              className="data-space__viewer__header__actions-selector"
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+              title="More Actions..."
+              content={
+                <MenuContent>
+                  <MenuContentItem
+                    onClick={() =>
+                      dataSpaceViewerState.queryDataSpace(
+                        dataSpaceViewerState.currentExecutionContext.name,
+                      )
+                    }
+                  >
+                    Query Data Space
+                  </MenuContentItem>
+                  <MenuContentDivider />
+                  <MenuContentItem
+                    onClick={() =>
+                      dataSpaceViewerState.viewProject(analysisResult.path)
+                    }
+                  >
+                    View Project
+                  </MenuContentItem>
+                  <MenuContentItem
+                    onClick={() => {
+                      dataSpaceViewerState
+                        .viewSDLCProject(analysisResult.path)
+                        .catch(applicationStore.alertUnhandledError);
+                    }}
+                  >
+                    View SDLC Project
+                  </MenuContentItem>
+                  <MenuContentDivider />
+                  <MenuContentItem
+                    onClick={() => {
+                      const documentationUrl =
+                        analysisResult.supportInfo?.documentationUrl;
+                      if (documentationUrl) {
+                        applicationStore.navigationService.navigator.visitAddress(
+                          documentationUrl,
+                        );
+                      }
+                    }}
+                  >
+                    View Documentation
+                  </MenuContentItem>
+                  <MenuContentItem
+                    onClick={() =>
+                      dataSpaceViewerState.changeZone(
+                        generateAnchorForActivity(
+                          DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT,
+                        ),
+                      )
+                    }
+                  >
+                    Get Help
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <MoreVerticalIcon />
+            </DropdownMenu>
           </div>
         </div>
       </div>
     );
   },
 );
-
-const DataSpacePlaceholderPanel: React.FC<{ message: string }> = (props) => {
-  const { message } = props;
-
-  return (
-    <div className="data-space__viewer__panel">
-      <BlankPanelContent>{message}</BlankPanelContent>
-    </div>
-  );
-};
 
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -182,23 +297,38 @@ export const DataSpaceViewer = observer(
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES && (
-                <DataSpacePlaceholderPanel message="View all data stores (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Stores"
+                  message="This panel will provide details about the available datasets' schema and test data"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY && (
-                <DataSpacePlaceholderPanel message="View data availability (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Availability"
+                  message="This panel will provide details about the status of data being made available to end-users and applications"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS && (
-                <DataSpacePlaceholderPanel message="View data readiness (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Readiness"
+                  message="This will provide details about the status of data being prepared to collect, process, and analyze"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST && (
-                <DataSpacePlaceholderPanel message="View data cost (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Cost"
+                  message="This will provide details about the cost of data usage"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE && (
-                <DataSpacePlaceholderPanel message="View data ownership and governance (Work in Progress)" />
+                <DataSpacePlaceholderPanel
+                  header="Data Governance"
+                  message="This will provide details about data policy, data contract, and dataset lineage information"
+                />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (

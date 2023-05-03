@@ -56,7 +56,6 @@ import {
   SubjectIcon,
   ViewHeadlineIcon,
   TimesIcon,
-  useResizeDetector,
   WordWrapIcon,
 } from '@finos/legend-art';
 import {
@@ -351,20 +350,13 @@ const TestResultConsole: React.FC<{
     undefined,
   );
   const textInputRef = useRef<HTMLDivElement>(null);
-  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
-  useEffect(() => {
-    if (width !== undefined && height !== undefined) {
-      editor?.layout({ width, height });
-    }
-  }, [editor, width, height]);
 
   useEffect(() => {
     if (!editor && textInputRef.current) {
       const element = textInputRef.current;
       const newEditor = monacoEditorAPI.create(element, {
         ...getBaseConsoleOptions(),
-        theme: CODE_EDITOR_THEME.LEGEND,
+        theme: CODE_EDITOR_THEME.DEFAULT_DARK,
         language: CODE_EDITOR_LANGUAGE.TEXT,
       });
       setEditor(newEditor);
@@ -427,12 +419,6 @@ const TestResultConsole: React.FC<{
     });
 
   useEffect(() => {
-    if (width !== undefined && height !== undefined) {
-      editor?.layout({ width, height });
-    }
-  }, [editor, width, height]);
-
-  useEffect(() => {
     if (editor) {
       const value =
         result instanceof TestSuccessResult
@@ -487,7 +473,7 @@ const TestResultConsole: React.FC<{
   );
 
   return (
-    <div ref={ref} className="code-editor__container">
+    <div className="code-editor__container">
       <div className="code-editor__body" ref={textInputRef} />
     </div>
   );

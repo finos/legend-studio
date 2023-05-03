@@ -23,9 +23,9 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   BasicGraphManagerState,
+  type Class,
   GraphDataWithOrigin,
   LegendSDLC,
 } from '@finos/legend-graph';
@@ -46,10 +46,14 @@ import type { LegendTaxonomyPluginManager } from '../../application/LegendTaxono
 import type { LegendTaxonomyApplicationStore } from '../LegendTaxonomyBaseStore.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from '../../__lib__/LegendTaxonomyNavigation.js';
 import {
+  createQueryDataSpaceHandler,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../LegendTaxonomyDataSpaceViewerHelper.js';
-import { DataSpaceViewerState } from '@finos/legend-extension-dsl-data-space/application';
+import {
+  DataSpaceViewerState,
+  EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
+} from '@finos/legend-extension-dsl-data-space/application';
 
 export class DataSpacePreviewStore {
   readonly applicationStore: LegendTaxonomyApplicationStore;
@@ -139,17 +143,40 @@ export class DataSpacePreviewStore {
         versionId,
         analysisResult,
         {
-          retriveGraphData: () =>
+          retrieveGraphData: () =>
             new GraphDataWithOrigin(
               new LegendSDLC(groupId, artifactId, versionId),
             ),
-          viewProject: createViewProjectHandler(this.applicationStore),
+          queryDataSpace: createQueryDataSpaceHandler(
+            this.applicationStore,
+            groupId,
+            artifactId,
+            versionId,
+            analysisResult.path,
+          ),
+          viewProject: createViewProjectHandler(
+            this.applicationStore,
+            groupId,
+            artifactId,
+            versionId,
+          ),
           viewSDLCProject: createViewSDLCProjectHandler(
             this.applicationStore,
             this.depotServerClient,
+            groupId,
+            artifactId,
           ),
-          onDiagramClassDoubleClick: (classView: ClassView): void =>
-            this.queryDataSpace(classView.class.value.path),
+          queryClass: (_class: Class): void => this.queryDataSpace(_class.path),
+          openServiceQuery: (servicePath: string): void =>
+            this.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
+                this.applicationStore.config.queryApplicationUrl,
+                groupId,
+                artifactId,
+                versionId,
+                servicePath,
+              ),
+            ),
           onZoneChange: (zone: NavigationZone | undefined): void => {
             if (zone === undefined) {
               this.applicationStore.navigationService.navigator.resetZone();

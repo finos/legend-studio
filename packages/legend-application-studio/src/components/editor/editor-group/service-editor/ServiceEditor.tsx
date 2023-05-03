@@ -370,7 +370,7 @@ const ServiceGeneralEditor = observer(() => {
                 <div className="panel__content__form__section__list__new-item">
                   <CustomSelectorInput
                     className="service-editor__owner__selector"
-                    placeholder={'Enter an owner...'}
+                    placeholder="Enter an owner..."
                     spellCheck={false}
                     inputValue={searchText}
                     options={userOptions}

@@ -40,7 +40,7 @@ import {
   ModalHeader,
   BlankPanelContent,
   ModalFooterButton,
-  CalendarIcon,
+  CalendarClockIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -392,26 +392,25 @@ export const QueryBuilder = observer(
         />
         <div className="query-builder__body">
           <div className="query-builder__content">
-            <div className="query-builder__sub-header">
-              <div className="query-builder__sub-header__content__icons">
+            <div className="query-builder__header">
+              <div className="query-builder__header__statuses">
                 {queryBuilderState.watermarkState.value && (
-                  <>
-                    <button
-                      className="panel__header__action"
-                      onClick={openWatermark}
-                      tabIndex={-1}
-                      title="Show Watermark"
-                    >
-                      <WaterDropIcon />
-                    </button>
-                  </>
+                  <button
+                    className="query-builder__header__status query-builder__header__status--action"
+                    onClick={openWatermark}
+                    tabIndex={-1}
+                    title="Used watermark"
+                  >
+                    <WaterDropIcon />
+                  </button>
                 )}
                 {queryBuilderState.isCalendarEnabled && (
-                  <>
-                    <div className="query-builder__sub-header__content__icon">
-                      <CalendarIcon />
-                    </div>
-                  </>
+                  <div
+                    className="query-builder__header__status"
+                    title="Used calendar aggregation"
+                  >
+                    <CalendarClockIcon className="query-builder__header__status__icon--calendar" />
+                  </div>
                 )}
                 {queryBuilderState.watermarkState.isEditingWatermark && (
                   <QueryBuilderWatermarkEditor
@@ -419,9 +418,9 @@ export const QueryBuilder = observer(
                   />
                 )}
               </div>
-              <div className="query-builder__sub-header__content__actions">
+              <div className="query-builder__header__actions">
                 <DropdownMenu
-                  className="query-builder__sub-header__custom-action"
+                  className="query-builder__header__advanced-dropdown"
                   title="Show Advanced Menu..."
                   content={
                     <MenuContent>
@@ -434,7 +433,7 @@ export const QueryBuilder = observer(
                             <CheckIcon />
                           ) : null}
                         </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                        <MenuContentItemLabel>
                           Show Function(s)
                         </MenuContentItemLabel>
                       </MenuContentItem>
@@ -452,7 +451,7 @@ export const QueryBuilder = observer(
                               <CheckIcon />
                             ) : null}
                           </MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          <MenuContentItemLabel>
                             Show Parameter(s)
                           </MenuContentItemLabel>
                         </MenuContentItem>
@@ -471,7 +470,7 @@ export const QueryBuilder = observer(
                               <CheckIcon />
                             ) : null}
                           </MenuContentItemIcon>
-                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          <MenuContentItemLabel>
                             Show Constant(s)
                           </MenuContentItemLabel>
                         </MenuContentItem>
@@ -490,10 +489,9 @@ export const QueryBuilder = observer(
                             <CheckIcon />
                           ) : null}
                         </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                          Show Filter
-                        </MenuContentItemLabel>
+                        <MenuContentItemLabel>Show Filter</MenuContentItemLabel>
                       </MenuContentItem>
+                      <MenuContentDivider />
                       <MenuContentItem
                         onClick={toggleShowOLAPGroupByPanel}
                         disabled={
@@ -516,8 +514,8 @@ export const QueryBuilder = observer(
                             <CheckIcon />
                           ) : null}
                         </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                          Show Window Func(s)
+                        <MenuContentItemLabel>
+                          Show Window Function(s)
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem
@@ -541,13 +539,13 @@ export const QueryBuilder = observer(
                             <CheckIcon />
                           ) : null}
                         </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                        <MenuContentItemLabel>
                           Show Post-Filter
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={openWatermark}>
                         <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                        <MenuContentItemLabel>
                           Show Watermark
                         </MenuContentItemLabel>
                       </MenuContentItem>
@@ -566,7 +564,7 @@ export const QueryBuilder = observer(
                             <CheckIcon />
                           ) : null}
                         </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                        <MenuContentItemLabel>
                           Enable Calendar
                         </MenuContentItemLabel>
                       </MenuContentItem>
@@ -582,19 +580,19 @@ export const QueryBuilder = observer(
                         }
                       >
                         <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                        <MenuContentItemLabel>
                           Check Entitlements
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={editQueryInPure}>
                         <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                        <MenuContentItemLabel>
                           Edit Query in Pure
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={showQueryProtocol}>
                         <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                        <MenuContentItemLabel>
                           Show Query Protocol
                         </MenuContentItemLabel>
                       </MenuContentItem>
@@ -606,10 +604,10 @@ export const QueryBuilder = observer(
                     elevation: 7,
                   }}
                 >
-                  <div className="query-builder__sub-header__custom-action__label">
+                  <div className="query-builder__header__advanced-dropdown__label">
                     Advanced
                   </div>
-                  <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
+                  <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
                 </DropdownMenu>
               </div>
             </div>

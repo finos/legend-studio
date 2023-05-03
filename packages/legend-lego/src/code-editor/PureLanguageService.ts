@@ -21,66 +21,14 @@ import {
   PURE_CONNECTION_NAME,
   PURE_PARSER,
 } from '@finos/legend-graph';
-import {
-  editor as monacoEditorAPI,
-  languages as monacoLanguagesAPI,
-} from 'monaco-editor';
-import { CODE_EDITOR_LANGUAGE, CODE_EDITOR_THEME } from './CodeEditorConfig.js';
+import { languages as monacoLanguagesAPI } from 'monaco-editor';
+import { PURE_GRAMMAR_TOKEN } from './PureLanguage.js';
+import { CODE_EDITOR_LANGUAGE } from './CodeEditorUtils.js';
 
 /**
  * The postfix to be added to all token types, i.e. identifier.pure, number.pure, etc.
  */
 const PURE_GRAMMAR_TOKEN_POSTFIX = '.pure';
-
-export enum PURE_GRAMMAR_TOKEN {
-  WHITESPACE = '',
-
-  KEYWORD = 'keyword',
-  IDENTIFIER = 'identifier',
-  OPERATOR = 'operator',
-  DELIMITER = 'delimiter',
-
-  PARSER = 'parser',
-  NUMBER = 'number',
-  DATE = 'date',
-  COLOR = 'color',
-  PACKAGE = 'package',
-  STRING = 'string',
-  COMMENT = 'comment',
-
-  LANGUAGE_STRUCT = 'language-struct',
-  MULTIPLICITY = 'multiplicity',
-  GENERICS = 'generics',
-  PROPERTY = 'property',
-  PARAMETER = 'property',
-  VARIABLE = 'variable',
-  TYPE = 'type',
-
-  INVALID = 'invalid',
-}
-
-const theme: monacoEditorAPI.IStandaloneThemeData = {
-  base: 'vs-dark', // can also be vs-dark or hc-black
-  inherit: true, // can also be false to completely replace the builtin rules
-  colors: {},
-  rules: [
-    // NOTE: unfortunately, `monaco-editor` only accepts HEX values, not CSS variables
-    { token: PURE_GRAMMAR_TOKEN.IDENTIFIER, foreground: 'dcdcaa' },
-    { token: PURE_GRAMMAR_TOKEN.NUMBER, foreground: 'b5cea8' },
-    { token: PURE_GRAMMAR_TOKEN.DATE, foreground: 'b5cea8' },
-    { token: PURE_GRAMMAR_TOKEN.COLOR, foreground: 'b5cea8' },
-    { token: PURE_GRAMMAR_TOKEN.PACKAGE, foreground: '808080' },
-    { token: PURE_GRAMMAR_TOKEN.PARSER, foreground: 'c586c0' },
-    { token: PURE_GRAMMAR_TOKEN.LANGUAGE_STRUCT, foreground: 'c586c0' },
-    { token: PURE_GRAMMAR_TOKEN.MULTIPLICITY, foreground: '2d796b' },
-    { token: PURE_GRAMMAR_TOKEN.GENERICS, foreground: '2d796b' },
-    { token: PURE_GRAMMAR_TOKEN.PROPERTY, foreground: '9cdcfe' },
-    { token: PURE_GRAMMAR_TOKEN.PARAMETER, foreground: '9cdcfe' },
-    { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '4fc1ff' },
-    { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '3dc9b0' },
-    { token: `${PURE_GRAMMAR_TOKEN.STRING}.escape`, foreground: 'd7ba7d' },
-  ],
-};
 
 // Taken from `monaco-languages` configuration for Java in order to do propert brace matching
 // See https://github.com/microsoft/monaco-languages/blob/master/src/java/java.ts
@@ -485,7 +433,6 @@ export function setupPureLanguageService(options?: {
   extraKeywords?: string[] | undefined;
   extraParserKeywords?: string[] | undefined;
 }): void {
-  monacoEditorAPI.defineTheme(CODE_EDITOR_THEME.LEGEND, theme);
   monacoLanguagesAPI.register({ id: CODE_EDITOR_LANGUAGE.PURE });
   monacoLanguagesAPI.setLanguageConfiguration(
     CODE_EDITOR_LANGUAGE.PURE,

@@ -84,7 +84,6 @@ const ServiceExecutionResultViewer = observer(
               inputValue={executionResultText ?? ''}
               isReadOnly={true}
               language={CODE_EDITOR_LANGUAGE.JSON}
-              showMiniMap={true}
             />
           </ModalBody>
           <ModalFooter>
@@ -456,7 +455,6 @@ export const ServiceExecutionQueryEditor = observer(
               inputValue={queryState.lambdaString}
               isReadOnly={true}
               language={CODE_EDITOR_LANGUAGE.PURE}
-              showMiniMap={true}
             />
           </div>
           <ExecutionPlanViewer

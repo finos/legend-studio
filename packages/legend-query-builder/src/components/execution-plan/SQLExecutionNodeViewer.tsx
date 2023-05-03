@@ -42,7 +42,7 @@ export const SQLExecutionNodeViewer: React.FC<{
       inputValue={formatSQL(query)}
       isReadOnly={true}
       language={CODE_EDITOR_LANGUAGE.SQL}
-      showMiniMap={false}
+      hideMinimap={true}
     />
   );
 });

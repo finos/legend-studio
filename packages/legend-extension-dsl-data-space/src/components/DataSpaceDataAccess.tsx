@@ -20,11 +20,7 @@ import {
   PanelLoadingIndicator,
   QuestionCircleIcon,
 } from '@finos/legend-art';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-  type DataSpaceViewerState,
-} from '../stores/DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import { useEffect, useRef } from 'react';
@@ -37,6 +33,10 @@ import {
   DatasetEntitlementUnsupportedReport,
 } from '@finos/legend-graph';
 import { DataGrid } from '@finos/legend-lego/data-grid';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+} from '../stores/DataSpaceViewerNavigation.js';
 
 const DataAccessOverview = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -124,8 +124,6 @@ const DataAccessOverview = observer(
                   return '';
                 },
                 flex: 1,
-                wrapText: true,
-                autoHeight: true,
               },
             ]}
           />

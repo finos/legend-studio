@@ -91,7 +91,6 @@ export { getElementIcon } from './components/ElementIconUtils.js';
  */
 
 export * from './stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
-export * from './stores/extensions/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 
 export { MINIMUM_SERVICE_OWNERS } from './stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';

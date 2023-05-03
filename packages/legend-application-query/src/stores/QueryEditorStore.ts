@@ -150,14 +150,15 @@ export interface QueryPersistConfiguration {
 }
 
 export class QuerySaveAsState {
-  editorStore: QueryEditorStore;
+  readonly editorStore: QueryEditorStore;
+  readonly queryBuilderState: QueryBuilderState;
+  readonly createQueryState = ActionState.create();
+
   lambda: RawLambda;
   queryName: string;
   allowUpdate = false;
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
-  queryBuilderState: QueryBuilderState;
-  createQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -258,7 +259,6 @@ export class QuerySaveAsState {
         this.queryBuilderState.changeDetectionState.initialize(this.lambda);
         // turn off change detection at this point
         // TODO: to make performance better, refrain from refreshing like this
-        this.editorStore.setTitle(query.name);
         this.editorStore.applicationStore.navigationService.navigator.goToLocation(
           generateExistingQueryEditorRoute(newQuery.id),
         );
@@ -268,7 +268,6 @@ export class QuerySaveAsState {
             query,
             this.editorStore.graphManagerState.graph,
           )) as Query;
-        this.editorStore.setTitle(updatedQuery.name);
         this.editorStore.applicationStore.notificationService.notifySuccess(
           `Successfully updated query!`,
         );
@@ -303,14 +302,15 @@ export class QuerySaveAsState {
 }
 
 export class QuerySaveState {
-  editorStore: QueryEditorStore;
+  readonly editorStore: QueryEditorStore;
+  readonly saveQueryState = ActionState.create();
+
+  queryBuilderState: QueryBuilderState;
   lambda: RawLambda;
   queryName: string;
   allowUpdate = false;
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
-  queryBuilderState: QueryBuilderState;
-  saveQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
@@ -414,7 +414,7 @@ export class QueryRenameState {
   readonly editorStore: QueryEditorStore;
   readonly queryBuilderState: QueryBuilderState;
 
-  readonly saveQueryState = ActionState.create();
+  readonly renameQueryState = ActionState.create();
 
   lambda: RawLambda;
   queryName: string;
@@ -455,7 +455,7 @@ export class QueryRenameState {
     ) {
       return;
     }
-    this.saveQueryState.inProgress();
+    this.renameQueryState.inProgress();
     const query = new Query();
     query.name = this.queryName;
     query.mapping = PackageableElementExplicitReference.create(
@@ -475,7 +475,7 @@ export class QueryRenameState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.saveQueryState.reset();
+      this.renameQueryState.reset();
       return;
     }
 
@@ -485,7 +485,6 @@ export class QueryRenameState {
           query,
           this.editorStore.graphManagerState.graph,
         )) as Query;
-      this.editorStore.setTitle(updatedQuery.name);
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Successfully renamed query!`,
       );
@@ -510,7 +509,7 @@ export class QueryRenameState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.saveQueryState.reset();
+      this.renameQueryState.reset();
       this.editorStore.setRenameState(undefined);
     }
   }
@@ -529,7 +528,6 @@ export abstract class QueryEditorStore {
   saveAsState?: QuerySaveAsState | undefined;
   saveState?: QuerySaveState | undefined;
   renameState?: QueryRenameState | undefined;
-
   title: string | undefined;
   existingQueryName: string | undefined;
 
@@ -548,7 +546,6 @@ export abstract class QueryEditorStore {
       setExistingQueryName: action,
       setSaveAsState: action,
       setSaveState: action,
-      setTitle: action,
       initialize: flow,
       buildGraph: flow,
       searchExistingQueryName: flow,
@@ -621,11 +618,6 @@ export abstract class QueryEditorStore {
     return false;
   }
 
-  setTitle(val: string | undefined): void {
-    document.title = `${val} - Legend Query`;
-    this.title = val;
-  }
-
   setSaveAsState(val: QuerySaveAsState | undefined): void {
     this.saveAsState = val;
   }
@@ -656,7 +648,7 @@ export abstract class QueryEditorStore {
    */
   protected abstract initializeQueryBuilderState(): Promise<QueryBuilderState>;
 
-  abstract getExportConfiguration(
+  abstract getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
   ): Promise<QueryPersistConfiguration>;
@@ -824,11 +816,11 @@ export abstract class QueryEditorStore {
 }
 
 export class MappingQueryCreatorStore extends QueryEditorStore {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-  mappingPath: string;
-  runtimePath: string;
+  readonly groupId: string;
+  readonly artifactId: string;
+  readonly versionId: string;
+  readonly mappingPath: string;
+  readonly runtimePath: string;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -898,7 +890,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getExportConfiguration(): Promise<QueryPersistConfiguration> {
+  async getPersistConfiguration(): Promise<QueryPersistConfiguration> {
     return {
       decorator: (query: Query): void => {
         query.id = uuid();
@@ -911,11 +903,11 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
 }
 
 export class ServiceQueryCreatorStore extends QueryEditorStore {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-  servicePath: string;
-  executionKey: string | undefined;
+  readonly groupId: string;
+  readonly artifactId: string;
+  readonly versionId: string;
+  readonly servicePath: string;
+  readonly executionKey: string | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -986,7 +978,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getExportConfiguration(
+  async getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
   ): Promise<QueryPersistConfiguration> {
@@ -1100,11 +1092,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         },
       },
     );
-    this.setTitle(this.query.name);
     return queryBuilderState;
   }
 
-  async getExportConfiguration(
+  async getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
   ): Promise<QueryPersistConfiguration> {

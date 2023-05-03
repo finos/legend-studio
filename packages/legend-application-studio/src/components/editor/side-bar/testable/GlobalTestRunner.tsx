@@ -72,7 +72,6 @@ import {
   getAtomicTest_TestResult,
   getAssertionStatus,
 } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
-import type { STO_ProjectOverview_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_ProjectOverview_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { getElementTypeIcon } from '../../../ElementIconUtils.js';
 import { UnsupportedEditorPanel } from '../../editor-group/UnsupportedElementEditor.js';
@@ -206,7 +205,6 @@ const TestFailViewer = observer(
                 inputValue={failure.error}
                 isReadOnly={true}
                 language={CODE_EDITOR_LANGUAGE.TEXT}
-                showMiniMap={true}
               />
             )}
             {failure instanceof EqualToJsonAssertFail && (
@@ -431,17 +429,13 @@ export const GlobalTestRunner = observer(
     const editorStore = useEditorStore();
     const globalTestRunnerState = props.globalTestRunnerState;
     const isDispatchingAction = globalTestRunnerState.isDispatchingAction;
-    const sdlcState = editorStore.sdlcState;
-    const currentWorkspace = sdlcState.currentWorkspace;
-    const plugins = editorStore.pluginManager.getApplicationPlugins();
     const testRunnerTabs = (Object.values(GLOBAL_TEST_RUNNER_TABS) as string[])
       .concat(
-        plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as STO_ProjectOverview_LegendStudioApplicationPlugin_Extension
-            ).getExtraTestRunnerTabsClassifiers?.() ?? [],
-        ),
+        editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) => plugin.getExtraTestRunnerTabsClassifiers?.() ?? [],
+          ),
       )
       .map((e) => ({
         value: e,
@@ -573,18 +567,13 @@ export const GlobalTestRunner = observer(
           </div>
         );
       } else {
-        const extraTestRunnerTabEditorRenderers = plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as STO_ProjectOverview_LegendStudioApplicationPlugin_Extension
-            ).getExtraTestRunnerTabsEditorRenderers?.() ?? [],
-        );
-        for (const editorRenderer of extraTestRunnerTabEditorRenderers) {
-          const editor = editorRenderer(
-            selectedTab,
-            editorStore,
-            currentWorkspace,
+        const extraTestRunnerTabEditorRenderers = editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) => plugin.getExtraTestRunnerTabsEditorRenderers?.() ?? [],
           );
+        for (const editorRenderer of extraTestRunnerTabEditorRenderers) {
+          const editor = editorRenderer(selectedTab, editorStore);
           if (editor) {
             return editor;
           }

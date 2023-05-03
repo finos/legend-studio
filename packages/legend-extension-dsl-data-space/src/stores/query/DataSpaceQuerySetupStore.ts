@@ -163,7 +163,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
     throw new UnsupportedOperationError();
   }
 
-  getExportConfiguration(
+  getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
   ): Promise<QueryPersistConfiguration> {

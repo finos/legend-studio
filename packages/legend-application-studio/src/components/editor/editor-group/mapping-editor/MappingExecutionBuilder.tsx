@@ -393,7 +393,7 @@ const MappingExecutionQueryEditor = observer(
                 inputValue={queryState.lambdaString}
                 isReadOnly={true}
                 language={CODE_EDITOR_LANGUAGE.PURE}
-                showMiniMap={false}
+                hideMinimap={true}
               />
             </div>
           </PanelContent>

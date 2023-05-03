@@ -160,47 +160,42 @@
       white-space: nowrap;
     }
 
-    &__calendar--clock--icon {
+    &__calendar__toggler {
       @include flexCenter;
 
       height: 100%;
       font-size: 1.2rem;
       font-weight: 500;
-      background: var(--color-dark-grey-280);
-      color: var(--color-light-grey-100);
-      cursor: pointer;
-
-      svg {
-        font-size: 2rem;
-      }
-    }
-
-    &__calendar--clock--icon__hidden {
-      @include flexCenter;
-
-      height: 100%;
       padding-right: 1rem;
-      font-size: 1.2rem;
-      font-weight: 500;
       background: var(--color-dark-grey-280);
       color: var(--color-dark-grey-500);
       cursor: pointer;
+      position: relative;
 
       svg {
-        font-size: 2rem;
+        font-size: 1.6rem;
+      }
+
+      &:hover {
+        color: var(--color-light-grey-400);
+      }
+
+      &--active,
+      &--active:hover {
+        color: var(--color-yellow-TEMP-2);
       }
     }
 
-    &__calendar--clock--icon::after {
+    &__calendar__toggler--active::after {
       content: '';
       height: 1rem;
-      position: relative;
-      right: 1rem;
-      top: 1.5rem;
+      position: absolute;
+      right: 1.2rem;
+      top: 2.4rem;
       bottom: 0;
-      border-left: 0.5rem solid transparent;
-      border-right: 0.5rem solid transparent;
-      border-bottom: 0.5rem solid var(--color-dark-grey-300);
+      border-left: 0.8rem solid transparent;
+      border-right: 0.8rem solid transparent;
+      border-bottom: 0.8rem solid var(--color-yellow-TEMP-2);
     }
 
     &__operator__dropdown {
@@ -245,7 +240,7 @@
 
     &__operator__badge--activated {
       border-radius: 0;
-      background: var(--color-yellow-200);
+      background: var(--color-yellow-TEMP-2);
 
       svg {
         color: var(--color-dark-grey-280);
@@ -361,13 +356,21 @@
 
   &__calendar {
     &__container {
+      @include flexVCenter;
+
       margin-top: 0.3rem;
-      display: flex;
       width: 100%;
-      background-color: var(--color-dark-grey-300);
+      background: var(--color-yellow-TEMP-2);
       border-radius: 0.2rem;
-      height: 3.2rem;
+      height: 3.4rem;
       margin-bottom: 0.5rem;
+      padding: 0.3rem;
+      user-select: none;
+
+      .selector-input--dark__control,
+      .selector-input--dark__control:hover {
+        border-color: var(--color-dark-grey-100);
+      }
     }
 
     &__container--hidden {
@@ -376,43 +379,40 @@
 
     &__function {
       min-width: 20rem;
-      padding: 0.2rem;
-      height: 2rem;
-    }
 
-    &__function__label {
-      display: flex;
+      &__label {
+        display: flex;
+        width: 100%;
 
-      &__title {
-        @include flexCenter;
+        &__icon {
+          color: var(--color-dark-grey-500);
+        }
 
-        margin-left: 0.5rem;
+        &__title {
+          margin-left: 0.5rem;
+          width: calc(100% - 2.8rem);
+          white-space: nowrap;
+        }
       }
     }
 
-    &__function--icon {
-      @include flexCenter;
-
-      padding: 0.2rem;
-      margin-left: 0.5rem;
-
-      svg {
-        font-size: 1.3rem;
-      }
-    }
-
-    &__date__column__dnd__placeholder {
-      @include flexCenter;
+    &__date__column__placeholder {
+      @include ellipsisTextOverflow;
 
       width: 100%;
-      height: 2.5rem;
+      height: 2.8rem;
+      line-height: 2.8rem;
+      margin: 0.3rem;
+      padding: 0 1rem;
+      font-size: 1.2rem;
       color: var(--color-dark-grey-400);
-      background-color: var(--color-dark-grey-100);
-      border-radius: 0.1rem;
+      background: var(--color-dark-grey-100);
+      border-radius: 0.2rem;
     }
 
     &__value {
       min-width: 15rem;
+      margin-left: 0.3rem;
     }
 
     &__label {
@@ -428,31 +428,32 @@
       width: 100%;
       height: 100%;
       display: flex;
-      margin-left: 0.5rem;
-      margin-right: 0.5rem;
       min-width: 15rem;
     }
 
     &__date__column__label__box {
-      background: var(--color-blue-200);
+      @include flexVCenter;
+
+      background: var(--color-dark-grey-200);
       width: 100%;
-      height: 2.2rem;
-      display: flex;
+      height: 2.8rem;
+      margin: 0.3rem;
+      border-radius: 0.2rem;
     }
 
     &__date__column__prefix {
-      @include flexVCenter;
+      @include flexCenter;
 
       color: var(--color-light-grey-200);
-      padding: 0.5rem;
-      margin-right: 0.5rem;
+      width: 2.8rem;
+      font-size: 1rem;
     }
 
     &__date__column__label {
       @include ellipsisTextOverflow;
       @include flexVCenter;
 
-      width: 100%;
+      width: calc(100% - 2.8rem);
       border-radius: 0.2rem;
       color: var(--color-light-grey-0);
       font-size: 1.2rem;
@@ -460,11 +461,15 @@
     }
 
     &__type {
-      padding: 0.2rem;
       min-width: 8rem;
 
       &__option {
         display: flex;
+
+        &__icon {
+          font-size: 1.2rem;
+          color: var(--color-dark-grey-500);
+        }
 
         &__title {
           @include flexCenter;

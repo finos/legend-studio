@@ -28,7 +28,6 @@
     height: 3.4rem;
     padding: 0.2rem;
     background: var(--color-dark-grey-80);
-    border-bottom: 0.1rem solid var(--color-dark-grey-100);
 
     &__menu {
       height: 3.4rem;
@@ -86,6 +85,10 @@
       &__label {
         margin-left: 0.5rem;
         font-size: 1.2rem;
+      }
+
+      &__theme-toggler {
+        border: 0.1rem solid var(--color-dark-grey-280);
       }
 
       &__icon {

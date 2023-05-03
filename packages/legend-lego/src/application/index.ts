@@ -16,6 +16,7 @@
 
 export * from './DocumentationLink.js';
 
+export * from './ActivityBar.js';
 export * from './TabManager.js';
 export * from './TabManagerState.js';
 

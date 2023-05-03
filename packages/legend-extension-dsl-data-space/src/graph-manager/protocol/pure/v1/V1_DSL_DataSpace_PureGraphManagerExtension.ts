@@ -164,7 +164,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     result.taggedValues = analysisResult.taggedValues.map((taggedValue) => {
       const info = new DataSpaceTaggedValueInfo();
       info.profile = taggedValue.profile;
-      info.tag = taggedValue.value;
+      info.tag = taggedValue.tag;
       info.value = taggedValue.value;
       return info;
     });

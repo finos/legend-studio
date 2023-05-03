@@ -15,15 +15,15 @@
  */
 
 import { AnchorLinkIcon } from '@finos/legend-art';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-  type DataSpaceViewerState,
-} from '../stores/DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import { useEffect, useRef } from 'react';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+} from '../stores/DataSpaceViewerNavigation.js';
 
 export const DataSpaceDescription = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {

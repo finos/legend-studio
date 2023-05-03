@@ -39,12 +39,7 @@ import {
   getBaseCodeEditorOptions,
   moveCursorToPosition,
 } from '@finos/legend-lego/code-editor';
-import {
-  clsx,
-  Dialog,
-  useResizeDetector,
-  WordWrapIcon,
-} from '@finos/legend-art';
+import { clsx, Dialog, WordWrapIcon } from '@finos/legend-art';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import {
   collectExtraInlineSnippetSuggestions,
@@ -164,7 +159,6 @@ export const PureFileEditor = observer(
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
     const ideStore = usePureIDEStore();
     const applicationStore = useApplicationStore();
-    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
     useEffect(() => {
       if (!editor && textInputRef.current) {
@@ -172,7 +166,7 @@ export const PureFileEditor = observer(
         const newEditor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
           language: CODE_EDITOR_LANGUAGE.PURE,
-          theme: CODE_EDITOR_THEME.LEGEND,
+          theme: CODE_EDITOR_THEME.DEFAULT_DARK,
           wordSeparators: '`~!@#%^&*()-=+[{]}\\|;:\'",.<>/?', // omit $ from default word separators
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
           readOnly: editorState.file.RO,
@@ -577,12 +571,6 @@ export const PureFileEditor = observer(
     }, [isContextMenuOpen]);
 
     useEffect(() => {
-      if (width !== undefined && height !== undefined) {
-        editor?.layout({ width, height });
-      }
-    }, [editor, width, height]);
-
-    useEffect(() => {
       if (editor) {
         if (editorState.textEditorState.forcedCursorPosition) {
           moveCursorToPosition(
@@ -644,7 +632,7 @@ export const PureFileEditor = observer(
           </div>
         </div>
         <div className="panel__content file-editor__content">
-          <div ref={ref} className="code-editor__container">
+          <div className="code-editor__container">
             <div className="code-editor__body" ref={textInputRef} />
           </div>
         </div>

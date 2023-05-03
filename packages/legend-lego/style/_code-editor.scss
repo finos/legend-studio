@@ -30,4 +30,12 @@
     left: 0;
     overflow: hidden;
   }
+
+  &__container--padding {
+    border-radius: 0.2rem;
+  }
+
+  &__container--padding &__body {
+    border-radius: 0.2rem;
+  }
 }

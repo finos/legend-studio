@@ -19,7 +19,6 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   StoreProjectData,
   retrieveProjectEntitiesWithDependencies,
@@ -45,11 +44,19 @@ import type {
   TaxonomyTreeNodeData,
 } from './TaxonomyExplorerStore.js';
 import {
+  createQueryDataSpaceHandler,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from './LegendTaxonomyDataSpaceViewerHelper.js';
-import { GraphDataWithOrigin, LegendSDLC } from '@finos/legend-graph';
-import { DataSpaceViewerState } from '@finos/legend-extension-dsl-data-space/application';
+import {
+  type Class,
+  GraphDataWithOrigin,
+  LegendSDLC,
+} from '@finos/legend-graph';
+import {
+  DataSpaceViewerState,
+  EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
+} from '@finos/legend-extension-dsl-data-space/application';
 
 interface TaxonomyNodeDataSpaceOption {
   label: string;
@@ -155,7 +162,7 @@ export class TaxonomyNodeViewerState {
         dataSpaceTaxonomyContext.versionId,
         analysisResult,
         {
-          retriveGraphData: () =>
+          retrieveGraphData: () =>
             new GraphDataWithOrigin(
               new LegendSDLC(
                 dataSpaceTaxonomyContext.groupId,
@@ -163,15 +170,36 @@ export class TaxonomyNodeViewerState {
                 dataSpaceTaxonomyContext.versionId,
               ),
             ),
+          queryDataSpace: createQueryDataSpaceHandler(
+            this.explorerStore.applicationStore,
+            dataSpaceTaxonomyContext.groupId,
+            dataSpaceTaxonomyContext.artifactId,
+            dataSpaceTaxonomyContext.versionId,
+            analysisResult.path,
+          ),
           viewProject: createViewProjectHandler(
             this.explorerStore.applicationStore,
+            dataSpaceTaxonomyContext.groupId,
+            dataSpaceTaxonomyContext.artifactId,
+            dataSpaceTaxonomyContext.versionId,
           ),
           viewSDLCProject: createViewSDLCProjectHandler(
             this.explorerStore.applicationStore,
             this.explorerStore.depotServerClient,
+            dataSpaceTaxonomyContext.groupId,
+            dataSpaceTaxonomyContext.artifactId,
           ),
-          onDiagramClassDoubleClick: (classView: ClassView): void =>
-            this.queryDataSpace(classView.class.value.path),
+          queryClass: (_class: Class): void => this.queryDataSpace(_class.path),
+          openServiceQuery: (servicePath: string): void =>
+            this.explorerStore.applicationStore.navigationService.navigator.visitAddress(
+              EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
+                this.explorerStore.applicationStore.config.queryApplicationUrl,
+                dataSpaceTaxonomyContext.groupId,
+                dataSpaceTaxonomyContext.artifactId,
+                dataSpaceTaxonomyContext.versionId,
+                servicePath,
+              ),
+            ),
         },
       );
       this.dataSpaceViewerState = dataSpaceViewerState;

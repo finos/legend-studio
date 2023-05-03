@@ -517,12 +517,12 @@ export const ProjectConfigurationEditor = observer(() => {
       selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES &&
       !configState.associatedProjectsAndVersionsFetched
     ) {
-      flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
-        applicationStore.alertUnhandledError,
-      );
-      flowResult(
-        configState.projectDependencyEditorState.fetchDependencyReport(),
-      ).catch(applicationStore.alertUnhandledError);
+      Promise.all([
+        flowResult(configState.fectchAssociatedProjectsAndVersions()),
+        flowResult(
+          configState.projectDependencyEditorState.fetchDependencyReport(),
+        ),
+      ]).catch(applicationStore.alertUnhandledError);
     }
   }, [applicationStore, configState, selectedTab]);
 

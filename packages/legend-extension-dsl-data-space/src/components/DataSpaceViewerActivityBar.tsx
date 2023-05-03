@@ -34,12 +34,14 @@ import {
   MenuIcon,
   DropdownMenu,
   DataReadyIcon,
+  SparkleIcon,
 } from '@finos/legend-art';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import { type ActivityBarItemConfig } from '@finos/legend-lego/application';
 import {
-  type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
-} from '../stores/DataSpaceViewerState.js';
+} from '../stores/DataSpaceViewerNavigation.js';
 
 const ActivityBarMenu = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -78,17 +80,20 @@ const ActivityBarMenu = observer(
   },
 );
 
-interface DataSpaceViewerActivityConfig {
-  mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
-  title: string;
-  icon: React.ReactElement;
-}
+const DataSpaceViewerActivityBarItemExperimentalBadge: React.FC = () => (
+  <div
+    className="data-space__viewer__activity-bar__item__experimental-badge"
+    title="This is work in progess"
+  >
+    <SparkleIcon />
+  </div>
+);
 
 export const DataSpaceViewerActivityBar = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const changeActivity =
-      (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
+      (activity: string): (() => void) =>
       (): void => {
         dataSpaceViewerState.changeZone(
           generateAnchorForActivity(activity),
@@ -96,7 +101,7 @@ export const DataSpaceViewerActivityBar = observer(
         );
       };
 
-    const wikiActivities: DataSpaceViewerActivityConfig[] = [
+    const wikiActivities: ActivityBarItemConfig[] = [
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
         title: 'Description',
@@ -130,7 +135,7 @@ export const DataSpaceViewerActivityBar = observer(
       },
     ];
 
-    const activities: DataSpaceViewerActivityConfig[] = [
+    const activities: ActivityBarItemConfig[] = [
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT,
         title: 'Execution Context',
@@ -138,37 +143,52 @@ export const DataSpaceViewerActivityBar = observer(
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES,
-        title: 'Data Stores',
+        title: 'Data Stores (Work In Progress)',
         icon: (
-          <DatasetIcon className="data-space__viewer__activity-bar__icon--dataset" />
+          <>
+            <DatasetIcon className="data-space__viewer__activity-bar__icon--dataset" />
+            <DataSpaceViewerActivityBarItemExperimentalBadge />
+          </>
         ),
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_AVAILABILITY,
-        title: 'Data Availability',
+        title: 'Data Availability (Work In Progress)',
         icon: (
-          <AvailabilityIcon className="data-space__viewer__activity-bar__icon--availability" />
+          <>
+            <AvailabilityIcon className="data-space__viewer__activity-bar__icon--availability" />
+            <DataSpaceViewerActivityBarItemExperimentalBadge />
+          </>
         ),
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_READINESS,
-        title: 'Data Readiness',
+        title: 'Data Readiness (Work In Progress)',
         icon: (
-          <DataReadyIcon className="data-space__viewer__activity-bar__icon--readiness" />
+          <>
+            <DataReadyIcon className="data-space__viewer__activity-bar__icon--readiness" />
+            <DataSpaceViewerActivityBarItemExperimentalBadge />
+          </>
         ),
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_COST,
-        title: 'Data Cost',
+        title: 'Data Cost (Work In Progress)',
         icon: (
-          <CostCircleIcon className="data-space__viewer__activity-bar__icon--cost" />
+          <>
+            <CostCircleIcon className="data-space__viewer__activity-bar__icon--cost" />
+            <DataSpaceViewerActivityBarItemExperimentalBadge />
+          </>
         ),
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_GOVERNANCE,
-        title: 'Governance',
+        title: 'Data Governance (Work In Progress)',
         icon: (
-          <GovernanceIcon className="data-space__viewer__activity-bar__icon--governance" />
+          <>
+            <GovernanceIcon className="data-space__viewer__activity-bar__icon--governance" />
+            <DataSpaceViewerActivityBarItemExperimentalBadge />
+          </>
         ),
       },
       {

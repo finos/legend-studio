@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-export enum CODE_EDITOR_THEME {
-  LEGEND = 'legend',
-  TEMPORARY__VSCODE_LIGHT = 'vs',
-}
+@use 'mixins' as *;
 
-export enum CODE_EDITOR_LANGUAGE {
-  TEXT = 'plaintext',
-  PURE = 'pure',
-  JSON = 'json',
-  JAVA = 'java',
-  MARKDOWN = 'markdown',
-  SQL = 'sql',
-  XML = 'xml',
-  YAML = 'yaml',
-  GRAPHQL = 'graphql',
+.activity-bar {
+  &__item &__item__experimental-badge {
+    @include flexCenter;
+
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    height: 1.6rem;
+    width: 1.6rem;
+    border-radius: 50%;
+    background: var(--color-mauve-50);
+    border: 0.1rem solid var(--color-dark-grey-280);
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-280);
+    }
+  }
 }

@@ -224,7 +224,7 @@ export const TEST__setUpEditor = async (
     projectData: PlainObject<StoreProjectData>[];
     projectDependency: PlainObject<ProjectVersionEntities>[];
     projectDependencyVersions: string[];
-    dependencyReport: PlainObject<RawProjectDependencyReport>;
+    projectDependencyReport: PlainObject<RawProjectDependencyReport>;
   },
 ): Promise<RenderResult> => {
   const {
@@ -240,7 +240,7 @@ export const TEST__setUpEditor = async (
     projects,
     projectDependency,
     projectDependencyVersions,
-    dependencyReport,
+    projectDependencyReport,
   } = data;
 
   // SDLC
@@ -306,7 +306,7 @@ export const TEST__setUpEditor = async (
   createSpy(
     MOCK__editorStore.depotServerClient,
     'analyzeDependencyTree',
-  ).mockResolvedValue(dependencyReport);
+  ).mockResolvedValue(projectDependencyReport);
 
   // TODO: we need to think of how we will mock these calls when we modularize
   const graphManagerState = MOCK__editorStore.graphManagerState;
@@ -394,7 +394,7 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projectData?: PlainObject<StoreProjectData>[];
     projectDependency?: PlainObject<ProjectVersionEntities>[];
     projectDependencyVersions?: string[];
-    dependencyReport?: PlainObject<RawProjectDependencyReport>;
+    projectDependencyReport?: PlainObject<RawProjectDependencyReport>;
   },
 ): Promise<RenderResult> =>
   TEST__setUpEditor(MOCK__editorStore, {
@@ -414,6 +414,6 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projectData: [],
     projectDependency: [],
     projectDependencyVersions: [],
-    dependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
+    projectDependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
     ...overrides,
   });

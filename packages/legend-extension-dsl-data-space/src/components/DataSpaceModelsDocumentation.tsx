@@ -41,11 +41,7 @@ import {
   CaretRightIcon,
   CaretLeftIcon,
 } from '@finos/legend-art';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-  type DataSpaceViewerState,
-} from '../stores/DataSpaceViewerState.js';
+import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 import {
   DataSpaceAssociationDocumentationEntry,
@@ -57,7 +53,7 @@ import {
   type NormalizedDataSpaceDocumentationEntry,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { debounce, isNonNullable, prettyCONSTName } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
@@ -83,6 +79,10 @@ import {
   type DataGridCellRendererParams,
 } from '@finos/legend-lego/data-grid';
 import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-lego/application';
+import {
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+  generateAnchorForActivity,
+} from '../stores/DataSpaceViewerNavigation.js';
 
 const getMilestoningLabel = (val: string | undefined): string | undefined => {
   switch (val) {
@@ -408,7 +408,9 @@ const SubElementDocContentCellRenderer = observer(
       return null;
     }
 
-    const label = showHumanizedForm ? prettyCONSTName(data.text) : data.text;
+    let label = showHumanizedForm ? prettyCONSTName(data.text) : data.text;
+    const isDerivedProperty = label.endsWith('()');
+    label = isDerivedProperty ? label.slice(0, -2) : label;
 
     if (data.entry instanceof DataSpaceModelDocumentationEntry) {
       return null;
@@ -416,7 +418,9 @@ const SubElementDocContentCellRenderer = observer(
       return (
         <div
           className="data-space__viewer__models-documentation__grid__cell"
-          title={`Property: ${data.elementEntry.path}${PROPERTY_ACCESSOR}${data.entry.name}`}
+          title={`${isDerivedProperty ? 'Derived property' : 'Property'}: ${
+            data.elementEntry.path
+          }${PROPERTY_ACCESSOR}${data.entry.name}`}
         >
           <div className="data-space__viewer__models-documentation__grid__cell__label">
             <div className="data-space__viewer__models-documentation__grid__cell__label__icon data-space__viewer__models-documentation__grid__cell__label__icon--property">
@@ -425,6 +429,11 @@ const SubElementDocContentCellRenderer = observer(
             <div className="data-space__viewer__models-documentation__grid__cell__label__text">
               {label}
             </div>
+            {isDerivedProperty && (
+              <div className="data-space__viewer__models-documentation__grid__cell__label__derived-property-badge">
+                ()
+              </div>
+            )}
             {data.entry.milestoning && (
               <div
                 className="data-space__viewer__models-documentation__grid__cell__label__milestoning-badge"
@@ -943,7 +952,7 @@ const DataSpaceModelsDocumentationSearchBar = observer(
     // actions
     const clearSearchText = (): void => {
       documentationState.resetSearch();
-      searchInputRef.current?.focus();
+      documentationState.focusSearchInput();
     };
     const toggleSearchConfigMenu = (): void =>
       documentationState.setShowSearchConfigurationMenu(
@@ -951,14 +960,22 @@ const DataSpaceModelsDocumentationSearchBar = observer(
       );
     const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
       if (event.code === 'Escape') {
-        searchInputRef.current?.select();
+        documentationState.selectSearchInput();
       }
     };
 
     // search config menu
     const closeSearchConfigMenu = (): void =>
       documentationState.setShowSearchConfigurationMenu(false);
-    const onSearchConfigMenuOpen = (): void => searchInputRef.current?.focus();
+    const onSearchConfigMenuOpen = (): void =>
+      documentationState.focusSearchInput();
+
+    useEffect(() => {
+      if (searchInputRef.current) {
+        documentationState.setSearchInput(searchInputRef.current);
+      }
+      return () => documentationState.setSearchInput(undefined);
+    }, [documentationState]);
 
     return (
       <div className="data-space__viewer__models-documentation__search">
@@ -969,7 +986,7 @@ const DataSpaceModelsDocumentationSearchBar = observer(
           spellCheck={false}
           onChange={onSearchTextChange}
           value={searchText}
-          placeholder="Search documentation"
+          placeholder="Search (Ctrl + Shift + F)"
         />
         <button
           ref={searchConfigTriggerRef}
@@ -1039,6 +1056,8 @@ export const DataSpaceModelsDocumentation = observer(
     const anchor = generateAnchorForActivity(
       DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
     );
+
+    useCommands(dataSpaceViewerState.modelsDocumentationState);
 
     useEffect(() => {
       if (sectionRef.current) {

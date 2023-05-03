@@ -152,7 +152,7 @@ const QueryPreviewModal = observer((props: { queryInfo: QueryInfo }) => {
                 inputValue={queryInfo.content}
                 isReadOnly={true}
                 language={CODE_EDITOR_LANGUAGE.PURE}
-                showMiniMap={false}
+                hideMinimap={true}
                 hideGutter={true}
               />
             </div>
@@ -559,7 +559,7 @@ const QueryProductionizerContent = observer(() => {
                   <div className="input-group query-productionizer__input__selector">
                     <CustomSelectorInput
                       className="query-productionizer___service-owner__selector"
-                      placeholder={'Enter an owner...'}
+                      placeholder="Enter an owner..."
                       isLoading={isLoadingUsers}
                       spellCheck={false}
                       inputValue={searchText}

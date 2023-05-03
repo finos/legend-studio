@@ -57,8 +57,6 @@ import {
   ModalHeader,
   Button,
 } from '@finos/legend-art';
-import { prettyCONSTName } from '@finos/legend-shared';
-
 import {
   type RelationalDatabaseConnection,
   type Store,
@@ -212,7 +210,6 @@ const LocalH2DatasourceSpecificationEditor = observer(
             Test Data Setup SQL
             <Button
               className="btn--icon--small btn--icon--margin--left"
-              darkMode={false}
               onClick={openInPopUp}
               title="Open..."
             >
@@ -1218,9 +1215,9 @@ const PostProcessorRelationalConnectionEditor = observer(
             ).getExtraPostProcessorClassifiers?.() ?? [],
         ),
       )
-      .map((e) => ({
-        value: e,
-        label: prettyCONSTName(e),
+      .map((type) => ({
+        value: type,
+        label: type,
       }));
 
     const addPostProcessor =
@@ -1569,9 +1566,9 @@ const RelationalConnectionGeneralEditor = observer(
     const plugins = editorStore.pluginManager.getApplicationPlugins();
 
     // database type
-    const typeOptions = Object.values(DatabaseType).map((e) => ({
-      value: e,
-      label: e,
+    const typeOptions = Object.values(DatabaseType).map((type) => ({
+      value: type,
+      label: type,
     }));
     const selectedType = {
       value: connection.type,
@@ -1595,13 +1592,13 @@ const RelationalConnectionGeneralEditor = observer(
             ).getExtraDatasourceSpecificationTypes?.() ?? [],
         ),
       )
-      .map((e) => ({
-        value: e,
-        label: prettyCONSTName(e),
+      .map((type) => ({
+        value: type,
+        label: type,
       }));
     const selectedSourceSpec = {
       value: connectionValueState.selectedDatasourceSpec,
-      label: prettyCONSTName(connectionValueState.selectedDatasourceSpec),
+      label: connectionValueState.selectedDatasourceSpec,
     };
     const onSourceSpecChange = (
       val: { label: string; value: string } | null,
@@ -1623,13 +1620,13 @@ const RelationalConnectionGeneralEditor = observer(
             ).getExtraAuthenticationStrategyTypes?.() ?? [],
         ),
       )
-      .map((e) => ({
-        value: e,
-        label: prettyCONSTName(e),
+      .map((type) => ({
+        value: type,
+        label: type,
       }));
     const selectedAuth = {
       value: connectionValueState.selectedAuth,
-      label: prettyCONSTName(connectionValueState.selectedAuth),
+      label: connectionValueState.selectedAuth,
     };
     const onAuthStrategyChange = (
       val: { label: string; value: string } | null,
@@ -1751,6 +1748,7 @@ export const RelationalDatabaseConnectionEditor = observer(
           tab as unknown as RELATIONAL_DATABASE_TAB_TYPE,
         );
       };
+
     return (
       <Panel>
         <PanelTabs

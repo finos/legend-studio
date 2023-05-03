@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from '../__lib__/DSL_DataSpace_LegendApplicationNavigation.js';
 export { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApplicationPlugin.js';
 export { DataSpaceViewer } from './DataSpaceViewer.js';
 export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';

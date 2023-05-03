@@ -21,7 +21,6 @@ import {
   DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { useResizeDetector } from '@finos/legend-art';
 import {
   isString,
   stringifyLosslessJSON,
@@ -29,10 +28,11 @@ import {
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import {
+  CODE_EDITOR_LANGUAGE,
   disposeDiffCodeEditor,
   getBaseCodeEditorOptions,
 } from './CodeEditorUtils.js';
-import { CODE_EDITOR_LANGUAGE, CODE_EDITOR_THEME } from './CodeEditorConfig.js';
+import { CODE_EDITOR_THEME } from './CodeEditorTheme.js';
 
 export const CodeDiffView = observer(
   (props: {
@@ -48,20 +48,12 @@ export const CodeDiffView = observer(
     const originalText = from ?? '';
     const modifiedText = to ?? '';
 
-    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
-    useEffect(() => {
-      if (width !== undefined && height !== undefined) {
-        editor?.layout({ width, height });
-      }
-    }, [editor, width, height]);
-
     useEffect(() => {
       if (!editor && editorRef.current) {
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
           ...getBaseCodeEditorOptions(),
-          theme: CODE_EDITOR_THEME.LEGEND,
+          theme: CODE_EDITOR_THEME.DEFAULT_DARK,
           readOnly: true,
         });
         setEditor(_editor);
@@ -88,7 +80,7 @@ export const CodeDiffView = observer(
     );
 
     return (
-      <div ref={ref} className="code-editor__container">
+      <div className="code-editor__container">
         <div className="code-editor__body" ref={editorRef} />
       </div>
     );

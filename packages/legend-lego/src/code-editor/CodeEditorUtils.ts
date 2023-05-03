@@ -26,6 +26,17 @@ import {
   KeyMod,
   MarkerSeverity,
 } from 'monaco-editor';
+import {
+  CODE_EDITOR_THEME,
+  DEFAULT_DARK_THEME,
+  GITHUB_DARK_DIMMED_THEME,
+  GITHUB_DARK_THEME,
+  MATERIAL_DARKER_THEME,
+  MATERIAL_DEFAULT_THEME,
+  ONE_DARK_PRO_DARKER_THEME,
+  ONE_DARK_PRO_THEME,
+  SOLARIZED_DARK_THEME,
+} from './CodeEditorTheme.js';
 
 export type CodeEditorPosition = {
   lineNumber: number;
@@ -93,6 +104,7 @@ export const getBaseCodeEditorOptions =
       // The typing is currently not correct for `bracketPairColorization`, until this is fixed, we will remove the cast
       // See https://github.com/microsoft/monaco-editor/issues/3013
       'bracketPairColorization.enabled': false,
+      automaticLayout: true,
     } as monacoEditorAPI.IStandaloneEditorConstructionOptions);
 
 export const getBaseConsoleOptions =
@@ -273,4 +285,47 @@ export const configureCodeEditorComponent = async (
       commandArgs: keyCombination,
     })),
   );
+
+  // themes
+  monacoEditorAPI.defineTheme(
+    CODE_EDITOR_THEME.DEFAULT_DARK,
+    DEFAULT_DARK_THEME,
+  );
+  monacoEditorAPI.defineTheme(
+    CODE_EDITOR_THEME.SOLARIZED_DARK,
+    SOLARIZED_DARK_THEME,
+  );
+  monacoEditorAPI.defineTheme(CODE_EDITOR_THEME.GITHUB_DARK, GITHUB_DARK_THEME);
+  monacoEditorAPI.defineTheme(
+    CODE_EDITOR_THEME.GITHUB_DARK_DIMMED,
+    GITHUB_DARK_DIMMED_THEME,
+  );
+  monacoEditorAPI.defineTheme(
+    CODE_EDITOR_THEME.MATERIAL_DEFAULT,
+    MATERIAL_DEFAULT_THEME,
+  );
+  monacoEditorAPI.defineTheme(
+    CODE_EDITOR_THEME.MATERIAL_DARKER,
+    MATERIAL_DARKER_THEME,
+  );
+  monacoEditorAPI.defineTheme(
+    CODE_EDITOR_THEME.ONE_DARK_PRO,
+    ONE_DARK_PRO_THEME,
+  );
+  monacoEditorAPI.defineTheme(
+    CODE_EDITOR_THEME.ONE_DARK_PRO_DARKER,
+    ONE_DARK_PRO_DARKER_THEME,
+  );
 };
+
+export enum CODE_EDITOR_LANGUAGE {
+  TEXT = 'plaintext',
+  PURE = 'pure',
+  JSON = 'json',
+  JAVA = 'java',
+  MARKDOWN = 'markdown',
+  SQL = 'sql',
+  XML = 'xml',
+  YAML = 'yaml',
+  GRAPHQL = 'graphql',
+}

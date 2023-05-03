@@ -19,7 +19,6 @@ import {
   queryClass,
   type EditorStore,
 } from '@finos/legend-application-studio';
-import type { ClassView } from '@finos/legend-extension-dsl-diagram/graph';
 import {
   type GeneratorFn,
   guaranteeNonNullable,
@@ -31,7 +30,8 @@ import type { DataSpace } from '../../graph/metamodel/pure/model/packageableElem
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
-import { InMemoryGraphData } from '@finos/legend-graph';
+import { type Class, InMemoryGraphData } from '@finos/legend-graph';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from '../../__lib__/DSL_DataSpace_LegendApplicationNavigation.js';
 
 export class DataSpacePreviewState extends EditorExtensionState {
   readonly editorStore: EditorStore;
@@ -117,8 +117,13 @@ export class DataSpacePreviewState extends EditorExtensionState {
         versionId,
         analysisResult,
         {
-          retriveGraphData: () =>
+          retrieveGraphData: () =>
             new InMemoryGraphData(this.editorStore.graphManagerState.graph),
+          queryDataSpace: () => {
+            this.editorStore.applicationStore.notificationService.notifyWarning(
+              'This feature is not supported in preview mode',
+            );
+          },
           viewProject: () => {
             this.editorStore.applicationStore.notificationService.notifyWarning(
               'This feature is not supported in preview mode',
@@ -129,10 +134,27 @@ export class DataSpacePreviewState extends EditorExtensionState {
               'This feature is not supported in preview mode',
             );
           },
-          onDiagramClassDoubleClick: (classView: ClassView): void => {
-            queryClass(classView.class.value, this.editorStore).catch(
+          queryClass: (_class: Class): void => {
+            queryClass(_class, this.editorStore).catch(
               this.editorStore.applicationStore.alertUnhandledError,
             );
+          },
+          openServiceQuery: (servicePath: string): void => {
+            if (this.editorStore.applicationStore.config.queryApplicationUrl) {
+              this.editorStore.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
+                  this.editorStore.applicationStore.config.queryApplicationUrl,
+                  groupId,
+                  artifactId,
+                  versionId,
+                  servicePath,
+                ),
+              );
+            } else {
+              this.editorStore.applicationStore.notificationService.notifyWarning(
+                'Query application URL is not configured',
+              );
+            }
           },
         },
       );
