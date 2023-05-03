@@ -34,7 +34,7 @@ import {
 } from '@finos/legend-art';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import React, { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN } from '../__lib__/LegendQueryNavigation.js';
 import {
   QuerySetupLandingPageStore,

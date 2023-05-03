@@ -22,6 +22,8 @@ import {
 import type {
   BasicGraphManagerState,
   Class,
+  DatasetEntitlementReport,
+  DatasetSpecification,
   GraphData,
   PackageableRuntime,
 } from '@finos/legend-graph';
@@ -35,7 +37,6 @@ import {
   PURE_DATA_SPACE_INFO_PROFILE_PATH,
   PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
 } from '../graph-manager/DSL_DataSpace_PureGraphManagerPlugin.js';
-import { DataSpaceViewerDataAccessState } from './DataSpaceViewerDataAccessState.js';
 import { DataSpaceViewerModelsDocumentationState } from './DataSpaceModelsDocumentationState.js';
 import { DataSpaceViewerDiagramViewerState } from './DataSpaceViewerDiagramViewerState.js';
 import {
@@ -46,6 +47,7 @@ import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
 } from './DataSpaceViewerNavigation.js';
+import { DataAccessState } from '@finos/legend-query-builder';
 
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -69,11 +71,8 @@ export class DataSpaceViewerState {
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
 
-  // TODO: change this so it holds the data access state for each execution context
-  readonly dataAccessState: DataSpaceViewerDataAccessState;
-  // TODO: have a state similar to dataAccessState for each executables
-
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
+  currentDataAccessState: DataAccessState;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
 
@@ -117,9 +116,6 @@ export class DataSpaceViewerState {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
-    this.currentExecutionContext =
-      dataSpaceAnalysisResult.defaultExecutionContext;
-    this.currentRuntime = this.currentExecutionContext.defaultRuntime;
     this.retrieveGraphData = actions.retrieveGraphData;
     this.queryDataSpace = actions.queryDataSpace;
     this.viewProject = actions.viewProject;
@@ -128,7 +124,34 @@ export class DataSpaceViewerState {
     this.queryClass = actions.queryClass;
     this.openServiceQuery = actions.openServiceQuery;
 
-    this.dataAccessState = new DataSpaceViewerDataAccessState(this);
+    this.currentExecutionContext =
+      dataSpaceAnalysisResult.defaultExecutionContext;
+    this.currentRuntime = this.currentExecutionContext.defaultRuntime;
+    this.currentDataAccessState = new DataAccessState(
+      this.applicationStore,
+      this.graphManagerState,
+      {
+        initialDatasets: this.currentExecutionContext.datasets,
+        surveyDatasets: async (): Promise<DatasetSpecification[]> =>
+          this.graphManagerState.graphManager.surveyDatasets(
+            this.currentExecutionContext.mapping,
+            this.currentExecutionContext.defaultRuntime,
+            undefined,
+            this.retrieveGraphData(),
+          ),
+        checkDatasetEntitlements: async (
+          datasets: DatasetSpecification[],
+        ): Promise<DatasetEntitlementReport[]> =>
+          this.graphManagerState.graphManager.checkDatasetEntitlements(
+            datasets,
+            this.currentExecutionContext.mapping,
+            this.currentExecutionContext.defaultRuntime,
+            undefined,
+            this.retrieveGraphData(),
+          ),
+      },
+    );
+
     this.modelsDocumentationState = new DataSpaceViewerModelsDocumentationState(
       this,
     );

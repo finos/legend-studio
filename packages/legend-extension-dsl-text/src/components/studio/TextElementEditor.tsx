@@ -144,6 +144,7 @@ export const TextElementEditor = observer(() => {
                   language={getTextElementEditorLanguage(textElement.type)}
                   inputValue={textElement.content}
                   updateInput={changeContent}
+                  hidePadding={true}
                 />
               </div>
             </ResizablePanel>
@@ -165,6 +166,7 @@ export const TextElementEditor = observer(() => {
               language={getTextElementEditorLanguage(textElement.type)}
               inputValue={textElement.content}
               updateInput={changeContent}
+              hidePadding={true}
             />
           </div>
         )}

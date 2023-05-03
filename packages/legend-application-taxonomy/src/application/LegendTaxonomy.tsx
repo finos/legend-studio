@@ -32,6 +32,7 @@ import {
 import { Core_LegendTaxonomyApplicationPlugin } from '../components/Core_LegendTaxonomyApplicationPlugin.js';
 import type { LegendTaxonomyApplicationStore } from '../stores/LegendTaxonomyBaseStore.js';
 import { LegendTaxonomyWebApplication } from '../components/LegendTaxonomyWebApplication.js';
+import { QueryBuilder_LegendApplicationPlugin } from '@finos/legend-query-builder';
 
 export class LegendTaxonomy extends LegendApplication {
   declare config: LegendTaxonomyApplicationConfig;
@@ -45,6 +46,7 @@ export class LegendTaxonomy extends LegendApplication {
     application.withBasePlugins([
       new Core_LegendApplicationPlugin(),
       new Core_LegendTaxonomyApplicationPlugin(),
+      new QueryBuilder_LegendApplicationPlugin(),
     ]);
     return application;
   }

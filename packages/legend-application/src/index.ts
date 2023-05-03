@@ -24,7 +24,7 @@ export * from './__lib__/LegendApplicationEvent.js';
 export * from './__lib__/LegendApplicationTelemetry.js';
 export * from './__lib__/LegendApplicationSetting.js';
 export * from './__lib__/LegendApplicationDocumentation.js';
-export { LEGEND_APPLICATION_COLOR_THEME } from './__lib__/LegendApplicationTheme.js';
+export { LEGEND_APPLICATION_COLOR_THEME } from './__lib__/LegendApplicationColorTheme.js';
 
 export * from './components/ApplicationStoreProvider.js';
 export * from './components/ApplicationFrameworkProvider.js';

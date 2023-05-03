@@ -20,7 +20,7 @@ import { LEGEND_APPLICATION_SETTING_CONFIG } from '../__lib__/LegendApplicationS
 import {
   HIGH_CONTRAST_LIGHT_COLOR_THEME,
   LEGACY_LIGHT_COLOR_THEME,
-} from '../__lib__/LegendApplicationTheme.js';
+} from '../__lib__/LegendApplicationColorTheme.js';
 import type { ColorTheme } from './LayoutService.js';
 import {
   LegendApplicationPlugin,

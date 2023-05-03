@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   clsx,
   CheckSquareIcon,

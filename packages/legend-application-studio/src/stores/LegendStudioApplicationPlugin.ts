@@ -128,12 +128,12 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   /**
    * Get the list of the supported classifers for test runner tabs.
    */
-  getExtraTestRunnerTabsClassifiers?(): string[];
+  getExtraTestRunnerTabClassifiers?(): string[];
 
   /**
    * Get the list of renderers for the editor for a test runner tab.
    */
-  getExtraTestRunnerTabsEditorRenderers?(): TestRunnerTabRenderer[];
+  getExtraTestRunnerTabEditorRenderers?(): TestRunnerTabRenderer[];
 }
 
 export type PureGrammarElementLabeler = (
