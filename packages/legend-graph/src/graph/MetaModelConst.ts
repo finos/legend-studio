@@ -159,6 +159,8 @@ export enum PackageableElementPointerType {
 export enum SUPPORTED_FUNCTIONS {
   LET = 'meta::pure::functions::lang::letFunction',
   NEW = 'meta::pure::functions::meta::new',
+  // from
+  FROM = 'meta::pure::mapping::from',
 }
 
 export const DATE_TIME_FORMAT_WITH_MILLISECONDS =

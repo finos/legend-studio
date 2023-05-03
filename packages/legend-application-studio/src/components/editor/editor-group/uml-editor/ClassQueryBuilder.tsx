@@ -19,15 +19,24 @@ import {
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
+  ConcreteFunctionDefinition,
+  Multiplicity,
+  resolvePackagePathAndElementName,
+  ELEMENT_PATH_DELIMITER,
+  RawVariableExpression,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderState,
   ClassQueryBuilderState,
 } from '@finos/legend-query-builder';
-import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import type { EmbeddedQueryBuilderState } from '../../../../stores/editor/EmbeddedQueryBuilderState.js';
 import {
@@ -36,6 +45,18 @@ import {
 } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { NewServiceModal } from '../service-editor/NewServiceModal.js';
+import {
+  CaretDownIcon,
+  Dialog,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  MenuContentItemLabel,
+  ModalTitle,
+  PanelDivider,
+  PanelFormSection,
+  PanelFormValidatedTextField,
+} from '@finos/legend-art';
 
 const promoteQueryToService = async (
   packagePath: string,
@@ -82,48 +103,263 @@ const promoteQueryToService = async (
   }
 };
 
+export const promoteQueryToFunction = async (
+  packagePath: string,
+  functionName: string,
+  embeddedQueryBuilderState: EmbeddedQueryBuilderState,
+  queryBuilderState: QueryBuilderState,
+): Promise<void> => {
+  const editorStore = embeddedQueryBuilderState.editorStore;
+  const applicationStore = editorStore.applicationStore;
+  try {
+    const query = queryBuilderState.buildFromQuery();
+    const returnType = queryBuilderState.getQueryReturnType();
+    const _function = new ConcreteFunctionDefinition(
+      functionName,
+      PackageableElementExplicitReference.create(returnType),
+      Multiplicity.ONE,
+    );
+    // we will copy the body of the query to the body of the function and extract the parameters out
+    // to the function parameters
+    _function.expressionSequence = query.body as object[];
+    _function.parameters =
+      queryBuilderState.parametersState.parameterStates.map(
+        (e) =>
+          new RawVariableExpression(
+            e.parameter.name,
+            e.parameter.multiplicity,
+            PackageableElementExplicitReference.create(
+              guaranteeNonNullable(e.parameter.genericType?.value.rawType),
+            ),
+          ),
+      );
+    await flowResult(
+      editorStore.graphEditorMode.addElement(_function, packagePath, true),
+    );
+    await flowResult(
+      embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(undefined),
+    ).catch(applicationStore.alertUnhandledError);
+    applicationStore.notificationService.notifySuccess(
+      `Function '${_function.name}' created`,
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    applicationStore.notificationService.notifyError(error);
+  }
+};
+
+enum PROMOTE_QUERY_TYPE {
+  FUNCTION = 'FUNCTION',
+  SERVICE = 'SERVICE',
+}
+
+export const NewFunctionModal = observer(
+  (props: {
+    _class: Class | undefined;
+    close: () => void;
+    showModal: boolean;
+    promoteToFunction: (
+      packagePath: string,
+      functionName: string,
+    ) => Promise<void>;
+    isReadOnly?: boolean;
+  }) => {
+    const { isReadOnly, close, _class, showModal, promoteToFunction } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
+    const nameRef = useRef<HTMLInputElement>(null);
+    const defaultFunctionname = _class
+      ? `${_class.name}_QueryFunction`
+      : `QueryFunction`;
+    const [functionPath, setFunctionPath] =
+      useState<string>(defaultFunctionname);
+    const [packagePath, funcName] = resolvePackagePathAndElementName(
+      functionPath,
+      _class?.package?.path ?? 'model::functions',
+    );
+    const [isValid, setIsValid] = useState(true);
+
+    const handleEnter = (): void => nameRef.current?.focus();
+    const create = (): void => {
+      if (functionPath && !isReadOnly && isValid) {
+        promoteToFunction(packagePath, funcName)
+          .then(() => close())
+          .catch(applicationStore.alertUnhandledError);
+      }
+    };
+
+    const validateElementDoesNotAlreadyExist = (
+      myFunctionName: string,
+    ): string | undefined => {
+      const elementAlreadyExists =
+        editorStore.graphManagerState.graph.allOwnElements
+          .map((s) => s.path)
+          .includes(packagePath + ELEMENT_PATH_DELIMITER + myFunctionName);
+
+      if (!elementAlreadyExists) {
+        return undefined;
+      } else {
+        return 'Element with same path already exists';
+      }
+    };
+
+    const changeValue = (value: string): void => {
+      setFunctionPath(value);
+    };
+
+    return (
+      <Dialog
+        open={showModal}
+        onClose={close}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
+        PaperProps={{
+          classes: {
+            root: 'search-modal__inner-container',
+          },
+        }}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            create();
+          }}
+          className="modal search-modal modal--dark"
+        >
+          <ModalTitle title="Promote to Function" />
+          <PanelFormValidatedTextField
+            ref={nameRef}
+            isReadOnly={isReadOnly ?? false}
+            update={(value: string | undefined): void => {
+              changeValue(value ?? '');
+            }}
+            validate={validateElementDoesNotAlreadyExist}
+            onValidate={(issue: string | undefined) => setIsValid(!issue)}
+            value={functionPath}
+            placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the function`}
+          />
+          <PanelDivider />
+          <PanelFormSection>
+            <div className="search-modal__actions">
+              <button
+                className="btn btn--dark"
+                disabled={Boolean(isReadOnly) || !isValid}
+                onClick={create}
+              >
+                Create
+              </button>
+            </div>
+          </PanelFormSection>
+        </form>
+      </Dialog>
+    );
+  },
+);
+
 const PromoteToServiceQueryBuilderAction = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const editorStore = useEditorStore();
     const queryBuilderExtension = editorStore.embeddedQueryBuilderState;
-    const [openNewServiceModal, setOpenNewServiceModal] = useState(false);
-    const showNewServiceModal = (): void => setOpenNewServiceModal(true);
-    const closeNewServiceModal = (): void => setOpenNewServiceModal(false);
-    const allowPromoteToService = Boolean(
-      queryBuilderState.mapping && queryBuilderState.runtimeValue,
+    const [promoteQueryModal, setPromoteQueryType] = useState<
+      PROMOTE_QUERY_TYPE | undefined
+    >(undefined);
+    const showPromoteQueryModal = (type: PROMOTE_QUERY_TYPE): void =>
+      setPromoteQueryType(type);
+    const closeNewServiceModal = (): void => setPromoteQueryType(undefined);
+    const allowPromotion = Boolean(
+      queryBuilderState.mapping &&
+        queryBuilderState.runtimeValue &&
+        !queryBuilderState.allValidationIssues.length,
     );
-    const promoteToService = async (
-      packagePath: string,
-      serviceName: string,
-    ): Promise<void> => {
-      if (allowPromoteToService) {
-        await promoteQueryToService(
-          packagePath,
-          serviceName,
-          queryBuilderExtension,
-          queryBuilderState,
-        );
-      }
-    };
-    return (
-      <>
-        <button
-          className="query-builder__dialog__header__custom-action"
-          tabIndex={-1}
-          onClick={showNewServiceModal}
-          disabled={!allowPromoteToService}
-        >
-          Promote to Service
-        </button>
-        {queryBuilderState.mapping && (
+
+    const renderPromoteModal = (): React.ReactNode => {
+      if (
+        promoteQueryModal === PROMOTE_QUERY_TYPE.SERVICE &&
+        queryBuilderState.mapping
+      ) {
+        const promoteToService = async (
+          packagePath: string,
+          serviceName: string,
+        ): Promise<void> => {
+          if (allowPromotion) {
+            await promoteQueryToService(
+              packagePath,
+              serviceName,
+              queryBuilderExtension,
+              queryBuilderState,
+            );
+          }
+        };
+
+        return (
           <NewServiceModal
             mapping={queryBuilderState.mapping}
             close={closeNewServiceModal}
-            showModal={openNewServiceModal}
+            showModal={true}
             promoteToService={promoteToService}
           />
-        )}
+        );
+      } else if (promoteQueryModal === PROMOTE_QUERY_TYPE.FUNCTION) {
+        const promoteToFunction = async (
+          packagePath: string,
+          serviceName: string,
+        ): Promise<void> => {
+          if (allowPromotion) {
+            await promoteQueryToFunction(
+              packagePath,
+              serviceName,
+              queryBuilderExtension,
+              queryBuilderState,
+            );
+          }
+        };
+
+        return (
+          <NewFunctionModal
+            _class={queryBuilderState.class}
+            close={closeNewServiceModal}
+            showModal={true}
+            promoteToFunction={promoteToFunction}
+          />
+        );
+      }
+      return null;
+    };
+
+    return (
+      <>
+        <DropdownMenu
+          className="query-builder__dialog__header__custom-action"
+          title="Promote Query..."
+          content={
+            <MenuContent>
+              {Object.values(PROMOTE_QUERY_TYPE).map((type) => (
+                <MenuContentItem
+                  key={type}
+                  disabled={!allowPromotion}
+                  onClick={(): void => showPromoteQueryModal(type)}
+                >
+                  <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                    {prettyCONSTName(type)}
+                  </MenuContentItemLabel>
+                </MenuContentItem>
+              ))}
+            </MenuContent>
+          }
+          menuProps={{
+            anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+            transformOrigin: { vertical: 'top', horizontal: 'right' },
+            elevation: 7,
+          }}
+        >
+          <div className="query-builder__sub-header__custom-action__label">
+            Promote To...
+          </div>
+          <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
+        </DropdownMenu>
+        {renderPromoteModal()}
       </>
     );
   },
