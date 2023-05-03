@@ -102,6 +102,7 @@ export class DataSpaceViewerState {
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
+      currentDataAccessState: observable,
       isVerified: computed,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
@@ -181,6 +182,30 @@ export class DataSpaceViewerState {
   ): void {
     this.currentExecutionContext = val;
     this.currentRuntime = val.defaultRuntime;
+    this.currentDataAccessState = new DataAccessState(
+      this.applicationStore,
+      this.graphManagerState,
+      {
+        initialDatasets: val.datasets,
+        surveyDatasets: async (): Promise<DatasetSpecification[]> =>
+          this.graphManagerState.graphManager.surveyDatasets(
+            val.mapping,
+            val.defaultRuntime,
+            undefined,
+            this.retrieveGraphData(),
+          ),
+        checkDatasetEntitlements: async (
+          datasets: DatasetSpecification[],
+        ): Promise<DatasetEntitlementReport[]> =>
+          this.graphManagerState.graphManager.checkDatasetEntitlements(
+            datasets,
+            val.mapping,
+            val.defaultRuntime,
+            undefined,
+            this.retrieveGraphData(),
+          ),
+      },
+    );
   }
 
   setCurrentRuntime(val: PackageableRuntime): void {
