@@ -30,6 +30,7 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   COLUMN_SORT_TYPE,
@@ -262,9 +263,7 @@ export const QueryResultModifierModal = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
+            <ModalFooterButton onClick={close} text="Close" />
           </ModalFooter>
         </Modal>
       </Dialog>
