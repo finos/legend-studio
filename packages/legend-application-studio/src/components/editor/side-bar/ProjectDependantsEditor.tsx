@@ -41,6 +41,7 @@ import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/editor/sidebar-s
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   generateViewProjectByGAVRoute,
+  generateViewProjectRoute,
   generateViewVersionRoute,
 } from '../../../__lib__/LegendStudioNavigation.js';
 
@@ -74,10 +75,12 @@ const ProjectDependantEditor = observer(
       if (dependency.projectId && dependency.versionId) {
         applicationStore.navigationService.navigator.visitAddress(
           applicationStore.navigationService.navigator.generateAddress(
-            generateViewVersionRoute(
-              dependency.projectId,
-              dependency.versionId,
-            ),
+            dependency.versionId === MASTER_SNAPSHOT_ALIAS
+              ? generateViewProjectRoute(dependency.projectId)
+              : generateViewVersionRoute(
+                  dependency.projectId,
+                  dependency.versionId,
+                ),
           ),
         );
       }

@@ -882,7 +882,12 @@ const ProjectVersionDependencyEditor = observer(
       if (projectDependencyData) {
         applicationStore.navigationService.navigator.visitAddress(
           applicationStore.navigationService.navigator.generateAddress(
-            generateViewVersionRoute(projectDependencyData.projectId, version),
+            projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
+              ? generateViewProjectRoute(projectDependencyData.projectId)
+              : generateViewVersionRoute(
+                  projectDependencyData.projectId,
+                  projectDependency.versionId,
+                ),
           ),
         );
       }
