@@ -31,6 +31,7 @@ import {
   filterByType,
   ActionState,
   hashArray,
+  assertTrue,
 } from '@finos/legend-shared';
 import { QueryBuilderFilterState } from './filter/QueryBuilderFilterState.js';
 import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
@@ -62,6 +63,15 @@ import {
   buildLambdaVariableExpressions,
   buildRawLambdaFromLambdaFunction,
   type ValueSpecification,
+  PrimitiveType,
+  type Type,
+  SimpleFunctionExpression,
+  extractElementNameFromPath,
+  SUPPORTED_FUNCTIONS,
+  PackageableElementExplicitReference,
+  InstanceValue,
+  Multiplicity,
+  RuntimePointer,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import type {
@@ -79,6 +89,8 @@ import { QUERY_BUILDER_COMMAND_KEY } from './QueryBuilderCommand.js';
 import { QueryBuilderWatermarkState } from './watermark/QueryBuilderWatermarkState.js';
 import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
 import { QueryBuilderCheckEntitlementsState } from './entitlements/QueryBuilderCheckEntitlementsState.js';
+import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
+import { QUERY_BUILDER_PURE_PATH } from '../graph/QueryBuilderMetaModelConst.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -377,6 +389,59 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       }),
       this.graphManagerState,
     );
+  }
+
+  buildFromQuery(): RawLambda {
+    assertTrue(
+      this.isQuerySupported,
+      'Query must be supported to build from function',
+    );
+    const mapping = guaranteeNonNullable(
+      this.mapping,
+      'Mapping required to build from() function',
+    );
+    const runtime = guaranteeNonNullable(
+      this.runtimeValue,
+      'Runtime required to build from query',
+    );
+    const runtimePointer = guaranteeType(
+      runtime,
+      RuntimePointer,
+    ).packageableRuntime;
+    const lambdaFunc = buildLambdaFunction(this);
+    const currentExpression = guaranteeNonNullable(
+      lambdaFunc.expressionSequence[0],
+    );
+    const _func = new SimpleFunctionExpression(
+      extractElementNameFromPath(SUPPORTED_FUNCTIONS.FROM),
+    );
+
+    const mappingInstance = new InstanceValue(Multiplicity.ONE, undefined);
+    mappingInstance.values = [
+      PackageableElementExplicitReference.create(mapping),
+    ];
+    const runtimeInstance = new InstanceValue(Multiplicity.ONE, undefined);
+    runtimeInstance.values = [
+      PackageableElementExplicitReference.create(runtimePointer.value),
+    ];
+    _func.parametersValues = [
+      currentExpression,
+      mappingInstance,
+      runtimeInstance,
+    ];
+    lambdaFunc.expressionSequence = [_func];
+    return buildRawLambdaFromLambdaFunction(lambdaFunc, this.graphManagerState);
+  }
+
+  getQueryReturnType(): Type {
+    if (
+      this.fetchStructureState.implementation instanceof QueryBuilderTDSState
+    ) {
+      return this.graphManagerState.graph.getClass(
+        QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET,
+      );
+    }
+    return PrimitiveType.STRING;
   }
 
   initializeWithQuery(query: RawLambda): void {
