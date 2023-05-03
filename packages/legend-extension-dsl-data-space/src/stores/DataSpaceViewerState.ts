@@ -22,8 +22,6 @@ import {
 import type {
   BasicGraphManagerState,
   Class,
-  DatasetEntitlementReport,
-  DatasetSpecification,
   GraphData,
   PackageableRuntime,
 } from '@finos/legend-graph';
@@ -130,23 +128,10 @@ export class DataSpaceViewerState {
       this.graphManagerState,
       {
         initialDatasets: this.currentExecutionContext.datasets,
-        surveyDatasets: async (): Promise<DatasetSpecification[]> =>
-          this.graphManagerState.graphManager.surveyDatasets(
-            this.currentExecutionContext.mapping.path,
-            this.currentExecutionContext.defaultRuntime.path,
-            undefined,
-            this.retrieveGraphData(),
-          ),
-        checkDatasetEntitlements: async (
-          datasets: DatasetSpecification[],
-        ): Promise<DatasetEntitlementReport[]> =>
-          this.graphManagerState.graphManager.checkDatasetEntitlements(
-            datasets,
-            this.currentExecutionContext.mapping.path,
-            this.currentExecutionContext.defaultRuntime.path,
-            undefined,
-            this.retrieveGraphData(),
-          ),
+        mapping: this.currentExecutionContext.mapping.path,
+        runtime: this.currentExecutionContext.defaultRuntime.path,
+        getQuery: async () => undefined,
+        graphData: this.retrieveGraphData(),
       },
     );
 
@@ -181,23 +166,10 @@ export class DataSpaceViewerState {
       this.graphManagerState,
       {
         initialDatasets: val.datasets,
-        surveyDatasets: async (): Promise<DatasetSpecification[]> =>
-          this.graphManagerState.graphManager.surveyDatasets(
-            val.mapping.path,
-            val.defaultRuntime.path,
-            undefined,
-            this.retrieveGraphData(),
-          ),
-        checkDatasetEntitlements: async (
-          datasets: DatasetSpecification[],
-        ): Promise<DatasetEntitlementReport[]> =>
-          this.graphManagerState.graphManager.checkDatasetEntitlements(
-            datasets,
-            val.mapping.path,
-            val.defaultRuntime.path,
-            undefined,
-            this.retrieveGraphData(),
-          ),
+        mapping: val.mapping.path,
+        runtime: val.defaultRuntime.path,
+        getQuery: async () => undefined,
+        graphData: this.retrieveGraphData(),
       },
     );
   }

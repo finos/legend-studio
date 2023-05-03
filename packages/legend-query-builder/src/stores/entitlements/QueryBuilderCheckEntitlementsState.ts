@@ -19,12 +19,7 @@ import { makeObservable, observable, action, computed } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { DataAccessState } from '../data-access/DataAccessState.js';
-import {
-  RuntimePointer,
-  type DatasetEntitlementReport,
-  type DatasetSpecification,
-  InMemoryGraphData,
-} from '@finos/legend-graph';
+import { RuntimePointer, InMemoryGraphData } from '@finos/legend-graph';
 
 export class QueryBuilderCheckEntitlementsState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
@@ -51,34 +46,17 @@ export class QueryBuilderCheckEntitlementsState implements Hashable {
       this.queryBuilderState.mapping &&
       this.queryBuilderState.runtimeValue instanceof RuntimePointer
     ) {
-      const mappingPath = this.queryBuilderState.mapping.path;
-      const runtimePath =
-        this.queryBuilderState.runtimeValue.packageableRuntime.value.path;
       this.dataAccessState = new DataAccessState(
         this.queryBuilderState.applicationStore,
         this.queryBuilderState.graphManagerState,
         {
-          surveyDatasets: async (): Promise<DatasetSpecification[]> =>
-            this.queryBuilderState.graphManagerState.graphManager.surveyDatasets(
-              mappingPath,
-              runtimePath,
-              this.queryBuilderState.buildQuery(),
-              new InMemoryGraphData(
-                this.queryBuilderState.graphManagerState.graph,
-              ),
-            ),
-          checkDatasetEntitlements: async (
-            datasets: DatasetSpecification[],
-          ): Promise<DatasetEntitlementReport[]> =>
-            this.queryBuilderState.graphManagerState.graphManager.checkDatasetEntitlements(
-              datasets,
-              mappingPath,
-              runtimePath,
-              this.queryBuilderState.buildQuery(),
-              new InMemoryGraphData(
-                this.queryBuilderState.graphManagerState.graph,
-              ),
-            ),
+          mapping: this.queryBuilderState.mapping.path,
+          runtime:
+            this.queryBuilderState.runtimeValue.packageableRuntime.value.path,
+          getQuery: async () => this.queryBuilderState.buildQuery(),
+          graphData: new InMemoryGraphData(
+            this.queryBuilderState.graphManagerState.graph,
+          ),
         },
       );
     }

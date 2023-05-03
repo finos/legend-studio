@@ -24,6 +24,8 @@ import {
   DatasetEntitlementAccessRequestedReport,
   DatasetEntitlementAccessNotGrantedReport,
   DatasetEntitlementUnsupportedReport,
+  type RawLambda,
+  type GraphData,
 } from '@finos/legend-graph';
 import {
   ActionState,
@@ -71,12 +73,12 @@ export class DataAccessState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: BasicGraphManagerState;
 
-  readonly surveyDatasets: () => Promise<DatasetSpecification[]>;
-  readonly checkDatasetEntitlements: (
-    datasets: DatasetSpecification[],
-  ) => Promise<DatasetEntitlementReport[]>;
-
   readonly initialDatasets?: DatasetSpecification[] | undefined;
+  readonly mapping: string;
+  readonly runtime: string;
+  readonly graphData: GraphData;
+  readonly getQuery: () => Promise<RawLambda | undefined>;
+
   readonly surveyDatasetsState = ActionState.create();
   readonly checkEntitlementsState = ActionState.create();
 
@@ -87,10 +89,10 @@ export class DataAccessState {
     graphManagerState: BasicGraphManagerState,
     options: {
       initialDatasets?: DatasetSpecification[] | undefined;
-      surveyDatasets: () => Promise<DatasetSpecification[]>;
-      checkDatasetEntitlements: (
-        datasets: DatasetSpecification[],
-      ) => Promise<DatasetEntitlementReport[]>;
+      mapping: string;
+      runtime: string;
+      graphData: GraphData;
+      getQuery: () => Promise<RawLambda | undefined>;
     },
   ) {
     makeObservable(this, {
@@ -106,8 +108,10 @@ export class DataAccessState {
     this.datasets = (options.initialDatasets ?? []).map(
       (dataset) => new DatasetAccessInfo(dataset),
     );
-    this.surveyDatasets = options.surveyDatasets;
-    this.checkDatasetEntitlements = options.checkDatasetEntitlements;
+    this.mapping = options.mapping;
+    this.runtime = options.runtime;
+    this.graphData = options.graphData;
+    this.getQuery = options.getQuery;
   }
 
   get entitlementCheckInfo(): EntitlementCheckInfo {
@@ -249,7 +253,13 @@ export class DataAccessState {
     this.surveyDatasetsState.inProgress();
 
     try {
-      const datasets = (yield this.surveyDatasets()) as DatasetSpecification[];
+      const datasets =
+        (yield this.graphManagerState.graphManager.surveyDatasets(
+          this.mapping,
+          this.runtime,
+          (yield this.getQuery()) as RawLambda | undefined,
+          this.graphData,
+        )) as DatasetSpecification[];
       this.datasets = datasets.map((dataset) => {
         const existingDataset = this.datasets.find(
           (ds) => ds.specification.hashCode === dataset.hashCode,
@@ -271,9 +281,14 @@ export class DataAccessState {
     this.checkEntitlementsState.inProgress();
 
     try {
-      const reports = (yield this.checkDatasetEntitlements(
-        this.datasets.map((dataset) => dataset.specification),
-      )) as DatasetEntitlementReport[];
+      const reports =
+        (yield this.graphManagerState.graphManager.checkDatasetEntitlements(
+          this.datasets.map((dataset) => dataset.specification),
+          this.mapping,
+          this.runtime,
+          (yield this.getQuery()) as RawLambda | undefined,
+          this.graphData,
+        )) as DatasetEntitlementReport[];
       this.datasets.forEach((dataset) => {
         const matchingReport = reports.find(
           (report) =>
