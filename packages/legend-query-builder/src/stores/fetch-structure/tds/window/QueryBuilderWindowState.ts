@@ -284,6 +284,9 @@ export class QueryBuilderWindowColumnState
               compatibleAggCol,
             ),
           );
+          this.setColumnName(
+            `${windowOp.getLabel()} of ${compatibleAggCol.columnName}`,
+          );
         }
       } else {
         this.setOperatorState(
@@ -292,6 +295,7 @@ export class QueryBuilderWindowColumnState
             windowOp,
           ),
         );
+        this.setColumnName(`${windowOp.getLabel()}`);
       }
     }
   }
