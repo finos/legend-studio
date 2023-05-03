@@ -21,16 +21,40 @@ import {
   Randomizer,
   UnsupportedOperationError,
   type PlainObject,
+  filterByType,
+  isNonNullable,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
 import {
-  type PrimitiveType,
+  PrimitiveType,
   type Enumeration,
   PRIMITIVE_TYPE,
   Class,
   getAllClassProperties,
   DATE_FORMAT,
   DATE_TIME_FORMAT,
+  TableAlias,
+  Table,
+  Column,
+  VarChar,
+  type RelationalDataType,
+  Char,
+  VarBinary,
+  TinyInt,
+  Float,
+  Timestamp,
+  Binary,
+  Bit,
+  Other,
+  Numeric,
+  Decimal,
+  Double,
+  Integer,
+  Real,
+  SmallInt,
+  Date as ColumnDate,
+  SemiStructured,
+  Json,
 } from '@finos/legend-graph';
 import {
   CLASS_PROPERTY_TYPE,
@@ -203,6 +227,85 @@ export const createMockDataForClassWithFormat = (
   }
 };
 
+export const getPrimitiveTypeFromRelationalType = (
+  type: RelationalDataType,
+): PrimitiveType | undefined => {
+  if (
+    type instanceof VarChar ||
+    type instanceof Char ||
+    type instanceof VarBinary ||
+    type instanceof Binary ||
+    type instanceof Bit ||
+    type instanceof Other
+  ) {
+    return PrimitiveType.STRING;
+  } else if (type instanceof Numeric) {
+    return PrimitiveType.NUMBER;
+  } else if (type instanceof Decimal) {
+    return PrimitiveType.DECIMAL;
+  } else if (
+    type instanceof Double ||
+    type instanceof Integer ||
+    type instanceof Real ||
+    type instanceof SmallInt ||
+    type instanceof TinyInt
+  ) {
+    return PrimitiveType.INTEGER;
+  } else if (type instanceof Float) {
+    return PrimitiveType.FLOAT;
+  } else if (type instanceof ColumnDate) {
+    return PrimitiveType.DATE;
+  } else if (type instanceof Timestamp) {
+    return PrimitiveType.DATETIME;
+  }
+  return undefined;
+};
+export const createMockDataForColumn = (
+  col: Column,
+  isPrimaryKey: boolean,
+  idx?: number | number,
+): string | undefined => {
+  const type = col.type;
+
+  if (
+    (type instanceof Double ||
+      type instanceof Integer ||
+      type instanceof Real ||
+      type instanceof SmallInt ||
+      type instanceof TinyInt) &&
+    isPrimaryKey &&
+    idx
+  ) {
+    return idx.toString();
+  }
+  const primitive = getPrimitiveTypeFromRelationalType(type);
+  if (primitive) {
+    return createMockPrimitiveProperty(primitive, col.name).toString();
+  } else if (type instanceof Json || type instanceof SemiStructured) {
+    return '{}';
+  }
+  return undefined;
+};
+
+export const createMockDataForTable = (
+  table: Table,
+  ITERATIONS = 9,
+): string => {
+  const targetedCols = table.columns.filter(filterByType(Column));
+  const colNames = targetedCols.map((e) => e.name).join(',');
+  const vals = Array.from(Array(ITERATIONS).keys())
+    .map((idx) =>
+      targetedCols
+        .map((col) =>
+          createMockDataForColumn(col, table.primaryKey.includes(col), idx),
+        )
+        .filter(isNonNullable)
+        .join(','),
+    )
+    .join('\n');
+  return `${colNames}\n${vals}`;
+};
+
 export const createMockDataForMappingElementSource = (
   srcElement: MappingElementSource,
   editorStore: EditorStore,
@@ -221,6 +324,11 @@ export const createMockDataForMappingElementSource = (
       );
       return '';
     }
+  } else if (
+    srcElement instanceof TableAlias &&
+    srcElement.relation instanceof Table
+  ) {
+    return createMockDataForTable(srcElement.relation);
   }
   editorStore.applicationStore.notificationService.notifyWarning(
     new UnsupportedOperationError(

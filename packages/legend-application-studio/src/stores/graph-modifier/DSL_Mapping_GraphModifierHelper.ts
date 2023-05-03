@@ -83,6 +83,7 @@ import {
   type MappingDataTestSuite,
   type MappingDataTest,
   type StoreTestData,
+  observe_MappingStoreTestData,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -214,6 +215,19 @@ export const mappingTestable_deleteStoreTestData = action(
     val: StoreTestData,
   ): void => {
     deleteEntry(dataHolder.storeTestData, val);
+  },
+);
+
+export const mappingTestable_addStoreTestData = action(
+  (
+    dataHolder: MappingDataTestSuite | MappingDataTest,
+    val: StoreTestData,
+    observerContext: ObserverContext,
+  ): void => {
+    addUniqueEntry(
+      dataHolder.storeTestData,
+      observe_MappingStoreTestData(val, observerContext),
+    );
   },
 );
 

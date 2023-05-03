@@ -28,6 +28,7 @@ import {
   EmbeddedRelationalInstanceSetImplementation,
   isStubbed_RawLambda,
   stub_RawLambda,
+  type Store,
 } from '@finos/legend-graph';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import {
@@ -85,6 +86,7 @@ import {
   MappingDataTestState,
   MappingDataTestSuiteState,
   MappingQueryTestState,
+  NewStoreTestDataState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/testable/MappingTestableState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
@@ -115,11 +117,93 @@ import {
   getTestableResultFromTestResult,
 } from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { getTestableResultIcon } from '../../../side-bar/testable/GlobalTestRunner.js';
+import { getMappingSourceStores } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import type { PackageableElementOption } from '@finos/legend-lego/graph-editor';
 
 interface ClassSelectOption {
   label: string;
   value: Class;
 }
+
+const CreateStoreTestDataModal = observer(
+  (props: { newStoreTestDataState: NewStoreTestDataState }) => {
+    const { newStoreTestDataState } = props;
+    const mapping =
+      newStoreTestDataState.mappingTestableDataState.mappingTestableState
+        .mapping;
+    const editorStore =
+      newStoreTestDataState.mappingTestableDataState.mappingTestableState
+        .editorStore;
+    // Class mapping selector
+    const compatibleStore = getMappingSourceStores(
+      mapping,
+      editorStore.pluginManager.getApplicationPlugins(),
+    );
+    const storeSelectorRef = useRef<SelectComponent>(null);
+    const storeOptions = uniq(compatibleStore)
+      .map((e) => ({
+        label: e.name,
+        value: e,
+      }))
+      .sort(compareLabelFn);
+    const [selectedStore, setSelectedStore] = useState<Store | undefined>(
+      compatibleStore[0],
+    );
+    const selectedStoreOption = selectedStore
+      ? {
+          label: selectedStore.name,
+          value: selectedStore,
+        }
+      : undefined;
+
+    const changeClassOption = (
+      val: PackageableElementOption<Store> | null,
+    ): void => {
+      setSelectedStore(val?.value);
+    };
+    // model
+    const close = (): void => newStoreTestDataState.setShowModal(false);
+    const create = (): void => {
+      if (selectedStore) {
+        newStoreTestDataState.create(selectedStore);
+      }
+      close();
+    };
+    return (
+      <Dialog
+        open={newStoreTestDataState.showModal}
+        onClose={close}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true} className="search-modal">
+          <ModalTitle title="Create Test Store Data" />
+          <ModalBody>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Store
+              </div>
+              <div className="panel__content__form__section__header__prompt"></div>
+              <CustomSelectorInput
+                ref={storeSelectorRef}
+                options={storeOptions}
+                onChange={changeClassOption}
+                value={selectedStoreOption}
+                darkMode={true}
+                placeholder="Choose a store..."
+                isClearable={true}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton onClick={create} text="Create" />
+            <ModalFooterButton onClick={close} text="Close" />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
 
 const CreateTestSuiteModal = observer(
   (props: { mappingTestableState: MappingTestableState }) => {
@@ -174,7 +258,6 @@ const CreateTestSuiteModal = observer(
         selectedClass ? `${selectedClass.name}_suite` : 'suite',
       ),
     );
-
     const [suiteType, setSuiteType] = useState(getDefaultSuite(selectedClass));
     const isValid = selectedClass && suiteName;
     const handleEnterClassMappingSelectorModal = (): void =>
@@ -194,7 +277,6 @@ const CreateTestSuiteModal = observer(
         setSuiteType(getDefaultSuite(undefined));
       }
     };
-
     // model
     const close = (): void => creatorState.setShowModal(false);
     const create = (): void => {
@@ -220,6 +302,14 @@ const CreateTestSuiteModal = observer(
       >
         <Modal darkMode={true} className="search-modal">
           <ModalTitle title="Create Test Suite" />
+          <PanelLoadingIndicator
+            isLoading={creatorState.isCreatingSuiteState.isInProgress}
+          />
+          {creatorState.isCreatingSuiteState.message && (
+            <div className="service-registration-editor__progress-msg">
+              {`${creatorState.isCreatingSuiteState.message}...`}
+            </div>
+          )}
           <ModalBody>
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
@@ -626,9 +716,9 @@ const StoreTestDataItem = observer(
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const icon =
-      store instanceof ModelStore ? (
+      store.value instanceof ModelStore ? (
         <PURE_ModelStoreIcon />
-      ) : store instanceof Database ? (
+      ) : store.value instanceof Database ? (
         <PURE_DatabaseIcon />
       ) : (
         <PURE_UnknownElementTypeIcon />
@@ -689,28 +779,6 @@ const StoreTestDataEditor = observer(
               data
             </div>
           </div>
-          <div className="panel__header__actions">
-            <div
-              className={clsx('panel__content__form__section__toggler', {
-                'panel__content__form__section__toggler--disabled': isReadOnly,
-              })}
-              // onClick={toggleAnonymizeGeneratedData}
-            ></div>
-            <button
-              className="panel__header__action service-execution-editor__test-data__generate-btn"
-              // onClick={generateTestData}
-              title="Generate test data if possible"
-              disabled={storeTestDataState.generatingTestDataSate.isInProgress}
-              tabIndex={-1}
-            >
-              <div className="service-execution-editor__test-data__generate-btn__label">
-                <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" />
-                <div className="service-execution-editor__test-data__generate-btn__label__title">
-                  Generate
-                </div>
-              </div>
-            </button>
-          </div>
         </div>
         <EmbeddedDataEditor
           isReadOnly={isReadOnly}
@@ -725,7 +793,7 @@ const MappingTestableStoreDataEditor = observer(
   (props: { mappingTestableDataState: MappingTestableDataState }) => {
     const { mappingTestableDataState } = props;
     const addStoreTestData = (): void => {
-      mappingTestableDataState.newConnectionDataState.openModal();
+      mappingTestableDataState.newStoreTestDataState.openModal();
     };
     return (
       <div className="service-test-data-editor panel">
@@ -734,30 +802,6 @@ const MappingTestableStoreDataEditor = observer(
             <div className="service-test-suite-editor__header__title__label">
               Data
             </div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action service-execution-editor__test-data__generate-btn"
-              // onClick={generateParameterValues}
-              title="Generate test parameter values"
-              tabIndex={-1}
-            >
-              <div className="service-execution-editor__test-data__generate-btn__label">
-                {/* <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" /> */}
-                <div className="service-execution-editor__test-data__generate-btn__label__title">
-                  Generate
-                </div>
-              </div>
-            </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              // disabled={!setupState.newParamOptions.length}
-              // onClick={addParameter}
-              title="Add Store Data"
-            >
-              <PlusIcon />
-            </button>
           </div>
         </div>
         <div className="service-test-data-editor__data">
@@ -796,18 +840,27 @@ const MappingTestableStoreDataEditor = observer(
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={600}>
-              <PanelLoadingIndicator
-                isLoading={Boolean(
-                  mappingTestableDataState.selectedDataState
-                    ?.generatingTestDataSate.isInProgress,
-                )}
-              />
               {mappingTestableDataState.selectedDataState && (
                 <StoreTestDataEditor
                   storeTestDataState={
                     mappingTestableDataState.selectedDataState
                   }
                   mappingTestableDataState={mappingTestableDataState}
+                />
+              )}
+              {!mappingTestableDataState.dataHolder.storeTestData.length && (
+                <BlankPanelPlaceholder
+                  text="Add Store Test Data"
+                  onClick={addStoreTestData}
+                  clickActionType="add"
+                  tooltipText="Click to add store test data"
+                />
+              )}
+              {mappingTestableDataState.newStoreTestDataState.showModal && (
+                <CreateStoreTestDataModal
+                  newStoreTestDataState={
+                    mappingTestableDataState.newStoreTestDataState
+                  }
                 />
               )}
             </ResizablePanel>
@@ -1039,7 +1092,7 @@ const MappingTestItem = observer(
       suiteState.setShowModal(true);
     };
     const _delete = (): void => {
-      suiteState.changeTest(mappingTest);
+      suiteState.deleteTest(mappingTest);
     };
 
     const rename = (): void => {
@@ -1088,15 +1141,20 @@ const MappingTestItem = observer(
 const MappingTestSuiteEditor = observer(
   (props: { mappingTestSuiteState: MappingTestSuiteState }) => {
     const { mappingTestSuiteState } = props;
+    const editorStore = mappingTestSuiteState.mappingTestableState.editorStore;
     const selectedTestState = mappingTestSuiteState.selectTestState;
     const isReadOnly =
       mappingTestSuiteState.mappingTestableState.mappingEditorState.isReadOnly;
     const addTest = (): void => mappingTestSuiteState.setShowModal(true);
     const runTests = (): void => {
-      mappingTestSuiteState.runTests();
+      flowResult(mappingTestSuiteState.runSuite()).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
     };
     const runFailingTests = (): void => {
-      mappingTestSuiteState.runFailingTests();
+      flowResult(mappingTestSuiteState.runFailingTests()).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
     };
     const renderMappingTestSuiteDriver = (): React.ReactNode => {
       if (mappingTestSuiteState instanceof MappingDataTestSuiteState) {
@@ -1158,7 +1216,7 @@ const MappingTestSuiteEditor = observer(
                     className="panel__header__action testable-test-explorer__play__all__icon"
                     tabIndex={-1}
                     onClick={runTests}
-                    title="Run All Tests"
+                    title="Run Suite Tests"
                   >
                     <RunAllIcon />
                   </button>
@@ -1181,7 +1239,7 @@ const MappingTestSuiteEditor = observer(
                 </div>
               </div>
               <PanelContent>
-                {mappingTestSuiteState.testsStates.map((test) => (
+                {mappingTestSuiteState.testStates.map((test) => (
                   <MappingTestItem
                     key={test.uuid}
                     mappingTestState={test}
@@ -1230,13 +1288,6 @@ const MappingTestSuiteItem = observer(
     const isReadOnly = mappingTestableState.mappingEditorState.isReadOnly;
     const openSuite = (): void => mappingTestableState.changeSuite(suite);
     const isActive = mappingTestableState.selectedTestSuite?.suite === suite;
-    // const _testableResult = getTestableResultFromTestResult(
-    //   serviceTestState.testResultState.result,
-    // );
-    // const testableResult = isRunning
-    //   ? TESTABLE_RESULT.IN_PROGRESS
-    //   : _testableResult;
-    // const resultIcon = getTestableResultIcon(testableResult);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const add = (): void => {
@@ -1276,9 +1327,6 @@ const MappingTestSuiteItem = observer(
           onClick={openSuite}
           tabIndex={-1}
         >
-          <div className="testable-test-explorer__item__label__icon">
-            {/* {resultIcon} */}
-          </div>
           <div className="testable-test-explorer__item__label__text">
             {suite.id}
           </div>
@@ -1301,10 +1349,10 @@ export const MappingTestableEditor = observer(
     const addSuite = (): void =>
       mappingTestableState.createSuiteState.setShowModal(true);
     const runSuites = (): void => {
-      mappingTestableState.runAllSuites();
+      mappingTestableState.runTestable();
     };
     const runFailingTests = (): void => {
-      mappingTestableState.runAllFailingSuites();
+      mappingTestableState.runFailingSuites();
     };
     const renderSuiteState = (): React.ReactNode => {
       if (selectedSuiteState) {
@@ -1323,7 +1371,6 @@ export const MappingTestableEditor = observer(
       }
       return null;
     };
-
     const renameSuite = (
       val: string,
       suite: MappingTestSuite | undefined,
@@ -1332,12 +1379,11 @@ export const MappingTestableEditor = observer(
         testSuite_setId(suite, val);
       }
     };
-
     return (
       <div className="service-test-suite-editor panel">
         <div className="service-test-suite-editor">
           <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel size={150} minSize={28}>
+            <ResizablePanel size={200} minSize={28}>
               <div className="binding-editor__header">
                 <div className="binding-editor__header__title">
                   <div className="panel__header__title__content">
@@ -1379,16 +1425,16 @@ export const MappingTestableEditor = observer(
                     suite={suite}
                   />
                 ))}
+                {!suites.length && (
+                  <BlankPanelPlaceholder
+                    disabled={mappingEditorState.isReadOnly}
+                    onClick={addSuite}
+                    text="Add a Test Suite"
+                    clickActionType="add"
+                    tooltipText="Click to add a new mapping test suite"
+                  />
+                )}
               </PanelContent>
-              {!suites.length && (
-                <BlankPanelPlaceholder
-                  disabled={mappingEditorState.isReadOnly}
-                  onClick={addSuite}
-                  text="Add a Test Suite"
-                  clickActionType="add"
-                  tooltipText="Click to add a new mapping test suite"
-                />
-              )}
             </ResizablePanel>
             <ResizablePanelSplitter>
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />

@@ -24,6 +24,7 @@ import {
   RunTestsTestableInput,
   TestSuite,
   TestExecutionStatus,
+  TestError,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -33,6 +34,7 @@ import {
   ActionState,
   addUniqueEntry,
   deleteEntry,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
@@ -209,5 +211,92 @@ export class TestableTestEditorState {
     return this.assertionEditorStates.filter(
       (state) => state.assertionResultState.result !== TESTABLE_RESULT.PASSED,
     ).length;
+  }
+}
+
+export class TestableTestSuiteEditorState {
+  readonly editorStore: EditorStore;
+  testable: Testable;
+  suite: TestSuite;
+  isReadOnly: boolean;
+  testStates: TestableTestEditorState[] = [];
+  isRunningTest = ActionState.create();
+  selectTestState: TestableTestEditorState | undefined;
+
+  constructor(
+    testable: Testable,
+    suite: TestSuite,
+    isReadOnly: boolean,
+    editorStore: EditorStore,
+  ) {
+    this.testable = testable;
+    this.suite = suite;
+    this.isReadOnly = isReadOnly;
+    this.editorStore = editorStore;
+  }
+
+  *runSuite(): GeneratorFn<void> {
+    try {
+      this.isRunningTest.inProgress();
+      this.testStates.forEach((t) => t.resetResult());
+      this.testStates.forEach((t) => t.runningTestAction.inProgress());
+      const input = new RunTestsTestableInput(this.testable);
+      input.unitTestIds = this.suite.tests.map(
+        (t) => new UniqueTestId(this.suite, t),
+      );
+      const testResults =
+        (yield this.editorStore.graphManagerState.graphManager.runTests(
+          [input],
+          this.editorStore.graphManagerState.graph,
+        )) as TestResult[];
+      testResults.forEach((result) => {
+        const state = this.testStates.find((t) => t.test === result.atomicTest);
+        state?.handleTestResult(result);
+      });
+      this.isRunningTest.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.isRunningTest.fail();
+    } finally {
+      this.testStates.forEach((t) => t.runningTestAction.complete());
+    }
+  }
+
+  *runFailingTests(): GeneratorFn<void> {
+    try {
+      this.isRunningTest.inProgress();
+      const input = new RunTestsTestableInput(this.testable);
+      input.unitTestIds = this.testStates
+        .map((testState) => {
+          const result = testState.testResultState.result;
+          if (
+            (result instanceof TestExecuted &&
+              result.testExecutionStatus === TestExecutionStatus.FAIL) ||
+            result instanceof TestError
+          ) {
+            testState.runningTestAction.inProgress();
+            return new UniqueTestId(this.suite, testState.test);
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      const testResults =
+        (yield this.editorStore.graphManagerState.graphManager.runTests(
+          [input],
+          this.editorStore.graphManagerState.graph,
+        )) as TestResult[];
+      testResults.forEach((result) => {
+        const state = this.testStates.find((t) => t.test === result.atomicTest);
+        state?.handleTestResult(result);
+      });
+      this.isRunningTest.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.isRunningTest.fail();
+    } finally {
+      this.testStates.forEach((t) => t.runningTestAction.complete());
+    }
   }
 }

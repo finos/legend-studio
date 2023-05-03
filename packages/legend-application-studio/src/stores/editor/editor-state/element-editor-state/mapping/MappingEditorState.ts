@@ -50,6 +50,7 @@ import {
   assertTrue,
   addUniqueEntry,
   filterByType,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState.js';
 import { RootFlatDataInstanceSetImplementationState } from './FlatDataInstanceSetImplementationState.js';
@@ -99,6 +100,8 @@ import {
   findPropertyMapping,
   DEPRECATED__MappingTest,
   PrimitiveType,
+  Store,
+  ModelStore,
 } from '@finos/legend-graph';
 import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
@@ -318,6 +321,26 @@ export const getMappingElementSource = (
     `Can't extract source of mapping element: no compatible extractor available from plugins`,
     mappingElement,
   );
+};
+
+export const getMappingSourceStores = (
+  mapping: Mapping,
+  plugins: LegendStudioApplicationPlugin[],
+): Store[] => {
+  const stores: Set<Store> = new Set<Store>();
+  const _clasMappings = getAllClassMappings(mapping);
+  const _sources = _clasMappings
+    .map((e) => returnUndefOnError(() => getMappingElementSource(e, plugins)))
+    .filter(isNonNullable);
+  _sources.forEach((e) => {
+    if (e instanceof Class) {
+      stores.add(ModelStore.INSTANCE);
+    } else if (e instanceof TableAlias) {
+      const _db = e.relation.ownerReference.value;
+      stores.add(_db);
+    }
+  });
+  return Array.from(stores);
 };
 
 export const getMappingElementType = (
