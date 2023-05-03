@@ -69,7 +69,6 @@ import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
 import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
-import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
@@ -200,63 +199,6 @@ const QueryBuilderPostGraphFetchPanel = observer(
   },
 );
 
-const renderCheckEntitlementsEditor = (
-  queryBuilderState: QueryBuilderState,
-  plugins: QueryBuilder_LegendApplicationPlugin[],
-): React.ReactNode => {
-  const checkEntitlementsEditorRenderers = plugins.flatMap(
-    (plugin) => plugin.getCheckEntitlementsEditorRender() ?? [],
-  );
-  for (const editorRenderer of checkEntitlementsEditorRenderers) {
-    const editor = editorRenderer(queryBuilderState);
-    if (editor) {
-      return editor;
-    }
-  }
-
-  const handleClose = (): void => {
-    queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
-      false,
-    );
-  };
-
-  return (
-    <Dialog
-      open={
-        queryBuilderState.checkEntitlementsState.showCheckEntitlementsViewer
-      }
-      onClose={handleClose}
-      classes={{
-        root: 'editor-modal__root-container',
-        container: 'editor-modal__container',
-        paper: 'editor-modal__content',
-      }}
-    >
-      <Modal darkMode={true} className="editor-modal">
-        <ModalHeader title="Query Entitlements" />
-        <ModalBody className="query-builder__data-access-overview">
-          <div className="query-builder__data-access-overview__container">
-            {queryBuilderState.checkEntitlementsState.dataAccessState ? (
-              <DataAccessOverview
-                dataAccessState={
-                  queryBuilderState.checkEntitlementsState.dataAccessState
-                }
-              />
-            ) : (
-              <BlankPanelContent>
-                No data access information available
-              </BlankPanelContent>
-            )}
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <ModalFooterButton text="Close" onClick={handleClose} />
-        </ModalFooter>
-      </Modal>
-    </Dialog>
-  );
-};
-
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -264,7 +206,6 @@ export const QueryBuilder = observer(
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
       fetchStructureState.implementation instanceof QueryBuilderTDSState;
-    const applicationStore = queryBuilderState.applicationStore;
     const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
       queryBuilderState.textEditorState.openModal(mode);
     const toggleShowFunctionPanel = (): void => {
@@ -366,7 +307,11 @@ export const QueryBuilder = observer(
         true,
       );
     };
-
+    const handleClose = (): void => {
+      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
+        false,
+      );
+    };
     useCommands(queryBuilderState);
     const toggleShowOLAPGroupByPanel = (): void => {
       if (isTDSState) {
@@ -725,16 +670,44 @@ export const QueryBuilder = observer(
             <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
           {queryBuilderState.checkEntitlementsState
-            .showCheckEntitlementsViewer &&
-            renderCheckEntitlementsEditor(
-              queryBuilderState,
-              applicationStore.pluginManager
-                .getApplicationPlugins()
-                .filter(
-                  (plugin) =>
-                    plugin instanceof QueryBuilder_LegendApplicationPlugin,
-                ) as QueryBuilder_LegendApplicationPlugin[],
-            )}
+            .showCheckEntitlementsViewer && (
+            <Dialog
+              open={
+                queryBuilderState.checkEntitlementsState
+                  .showCheckEntitlementsViewer
+              }
+              onClose={handleClose}
+              classes={{
+                root: 'editor-modal__root-container',
+                container: 'editor-modal__container',
+                paper: 'editor-modal__content',
+              }}
+            >
+              <Modal darkMode={true} className="editor-modal">
+                <ModalHeader title="Query Entitlements" />
+                <ModalBody className="query-builder__data-access-overview">
+                  <div className="query-builder__data-access-overview__container">
+                    {queryBuilderState.checkEntitlementsState
+                      .dataAccessState ? (
+                      <DataAccessOverview
+                        dataAccessState={
+                          queryBuilderState.checkEntitlementsState
+                            .dataAccessState
+                        }
+                      />
+                    ) : (
+                      <BlankPanelContent>
+                        No data access information available
+                      </BlankPanelContent>
+                    )}
+                  </div>
+                </ModalBody>
+                <ModalFooter>
+                  <ModalFooterButton text="Close" onClick={handleClose} />
+                </ModalFooter>
+              </Modal>
+            </Dialog>
+          )}
         </div>
         <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
       </div>
