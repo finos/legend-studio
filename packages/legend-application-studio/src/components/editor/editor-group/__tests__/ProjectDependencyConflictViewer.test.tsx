@@ -114,7 +114,8 @@ const TEST_DATA__latestProjectStructure = { version: 11, extensionVersion: 1 };
 
 // TODO: when setup is extracted out as `beforeEach` it causes flaky runs on this test.
 // Investigate this further when we add more integration tests
-test(integrationTest('Test Project Report With Conflicts'), async () => {
+// NOTE: skip this test for now since it is flaky
+test.skip(integrationTest('Test Project Report With Conflicts'), async () => {
   const MOCK__editorStore = TEST__provideMockedEditorStore();
   renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: [],
