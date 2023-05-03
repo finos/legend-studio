@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 25.0.0
+
+### Major Changes
+
+- [#2165](https://github.com/finos/legend-studio/pull/2165) [`d932f709e`](https://github.com/finos/legend-studio/commit/d932f709e88eef5f7b2423273908718171894a4a) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Merged `STO_ProjectOverview_LegendStudioApplicationPlugin_Extension` into `LegendStudioApplicationPlugin`
+
+### Minor Changes
+
+- [#2186](https://github.com/finos/legend-studio/pull/2186) [`204cd4fb1`](https://github.com/finos/legend-studio/commit/204cd4fb161982db8b680c64092613857fd18edc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add promote query to function support for embedded query builder.
+
 ## 24.2.0
 
 ### Minor Changes
