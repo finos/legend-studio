@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 3.2.3
+
+### Patch Changes
+
+- [#2183](https://github.com/finos/legend-studio/pull/2183) [`afd895c64`](https://github.com/finos/legend-studio/commit/afd895c64aab9c49b311f99b42667d917787564e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Update olap operation prefix to column name when changing operators
+
 ## 3.2.2
 
 ## 3.2.1

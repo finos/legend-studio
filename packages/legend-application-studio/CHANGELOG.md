@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 25.0.2
+
+### Patch Changes
+
+- [#2185](https://github.com/finos/legend-studio/pull/2185) [`918152f6b`](https://github.com/finos/legend-studio/commit/918152f6bb2912f4ddc676411920cd384a88df56) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where fail to view SDLC project of master-snapshot
+
 ## 25.0.1
 
 ## 25.0.0
