@@ -318,6 +318,11 @@
         color: var(--color-legacylight-dark-grey-200);
       }
 
+      &__toggler__btn:hover {
+        background: var(--color-legacylight-light-grey-100);
+        color: var(--color-legacylight-dark-grey-200);
+      }
+
       &__toggler__btn--toggled {
         background: var(--color-legacylight-light-blue-100);
         color: var(--color-legacylight-light-grey-200);

@@ -231,6 +231,7 @@
     color: var(--color-dark-grey-500);
 
     &__date__icon svg {
+      display: flex;
       font-size: 1.2rem;
     }
 
@@ -243,6 +244,7 @@
 
     &__author__icon {
       svg {
+        display: flex;
         font-size: 1rem;
       }
     }

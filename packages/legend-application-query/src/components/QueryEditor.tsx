@@ -416,6 +416,7 @@ const QueryEditorHeaderContent = observer(
           </div>
         ) : (
           <div
+            onDoubleClick={updateQuery}
             className="query-editor__header__content__main query-editor__header__content__title"
             title="Query title"
           >
@@ -540,15 +541,6 @@ const QueryEditorHeaderContent = observer(
             disabled={editorStore.isViewProjectActionDisabled}
             content={
               <MenuContent>
-                {/* TODO: remove this and move it to inline editing directly on the title */}
-                <MenuContentItem
-                  className="query-editor__header__action__options"
-                  onClick={updateQuery}
-                  disabled={!editorStore.title}
-                >
-                  Rename Query
-                </MenuContentItem>
-
                 <MenuContentItem
                   className="query-editor__header__action__options"
                   disabled={editorStore.isViewProjectActionDisabled}
