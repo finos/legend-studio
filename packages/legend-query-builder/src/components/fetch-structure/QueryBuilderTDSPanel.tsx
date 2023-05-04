@@ -433,26 +433,42 @@ const QueryBuilderProjectionColumnEditor = observer(
       if (option?.value !== aggregateColumnState?.calendarFunction) {
         const lambdaParameterName =
           aggregateColumnState?.calendarFunction?.lambdaParameterName;
+        const dateColumn = aggregateColumnState?.calendarFunction?.dateColumn;
+        const endDate = aggregateColumnState?.calendarFunction?.endDate;
+        const calendarType =
+          aggregateColumnState?.calendarFunction?.calendarType;
         aggregateColumnState?.setCalendarFunction(option?.value ?? undefined);
-        if (lambdaParameterName && aggregateColumnState.calendarFunction) {
-          aggregateColumnState.calendarFunction.setLambdaParameterName(
-            lambdaParameterName,
-          );
-        }
-        if (aggregateColumnState?.calendarFunction) {
-          if (calendarFunctionDateColumnOptions[0]) {
-            aggregateColumnState.calendarFunction.setDateColumn(
-              guaranteeNonNullable(calendarFunctionDateColumnOptions[0]).value,
-            );
+        const calendarFunction = aggregateColumnState?.calendarFunction;
+        if (calendarFunction) {
+          if (lambdaParameterName) {
+            calendarFunction.setLambdaParameterName(lambdaParameterName);
+          }
+          if (dateColumn) {
+            calendarFunction.setDateColumn(dateColumn);
           } else {
-            applicationStore.notificationService.notifyWarning(
-              'Please provide the date column field for the calendar function',
+            if (calendarFunctionDateColumnOptions[0]) {
+              calendarFunction.setDateColumn(
+                guaranteeNonNullable(calendarFunctionDateColumnOptions[0])
+                  .value,
+              );
+            } else {
+              applicationStore.notificationService.notifyWarning(
+                'Please provide the date column field for the calendar function',
+              );
+            }
+          }
+          if (endDate) {
+            calendarFunction.setEndDate(endDate);
+          } else {
+            calendarFunction.setEndDate(defaultEndDate);
+          }
+          if (calendarType) {
+            calendarFunction.setCalendarType(calendarType);
+          } else {
+            calendarFunction.setCalendarType(
+              guaranteeNonNullable(calendarTypeOptions[0]).value,
             );
           }
-          aggregateColumnState.calendarFunction.setCalendarType(
-            guaranteeNonNullable(calendarTypeOptions[0]).value,
-          );
-          aggregateColumnState.calendarFunction.setEndDate(defaultEndDate);
         }
       }
     };
