@@ -2863,11 +2863,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // NOTE: We almost should never be poking into dependency entities. However for service registration the input
   // expects only one service in the graph data. Perhaps, the service registration API should be modified to accept
   // service as a parameter outside the model
-  private createServiceRegistrationInputGraphData = (
-    graph: PureModel,
-  ): V1_PureModelContextData => {
-    const graphData = this.getFullGraphModelData(graph);
-    const prunedGraphData = this.prunePureModelContextData(
+  private pruneServicesFromGraphForRegistration = (
+    graphData: V1_PureModelContextData,
+  ): V1_PureModelContextData =>
+    this.prunePureModelContextData(
       graphData,
       (element: V1_PackageableElement) => !(element instanceof V1_Service),
       (entity: Entity) => {
@@ -2875,8 +2874,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         return content._type !== V1_SERVICE_ELEMENT_PROTOCOL_TYPE;
       },
     );
+
+  private createServiceRegistrationInputGraphData = (
+    graph: PureModel,
+  ): V1_PureModelContextData => {
+    const graphData = this.getFullGraphModelData(graph);
+    const prunedGraphData =
+      this.pruneServicesFromGraphForRegistration(graphData);
     return prunedGraphData;
   };
+
   private createBulkServiceRegistrationInput = (
     graph: PureModel,
     services: Service[],
@@ -2884,10 +2891,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graphData = this.getFullGraphModelData(graph);
     const results: ServiceRegistrationInput[] = [];
     services.forEach((service) => {
-      const prunedGraphData = this.prunePureModelContextData(
-        graphData,
-        (element: V1_PackageableElement) => !(element instanceof V1_Service),
-      );
+      const prunedGraphData =
+        this.pruneServicesFromGraphForRegistration(graphData);
       prunedGraphData.elements.push(
         this.elementToProtocol<V1_Service>(service),
       );
