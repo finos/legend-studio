@@ -160,6 +160,9 @@ export class ProjectViewerStore {
     // fetch project informations
     this.editorStore.initState.setMessage(`Fetching project information...`);
     yield flowResult(this.editorStore.sdlcState.fetchCurrentProject(projectId));
+    yield flowResult(
+      this.editorStore.depotState.fetchCurrentProject(projectId),
+    );
     const stubWorkspace = new Workspace();
     stubWorkspace.projectId = projectId;
     stubWorkspace.workspaceId = '';
@@ -181,6 +184,7 @@ export class ProjectViewerStore {
 
     // fetch project versions
     yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
+    yield flowResult(this.editorStore.depotState.fetchProjectVersions());
 
     // ensure only either version or revision is specified
     if (versionId && revisionId) {

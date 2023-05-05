@@ -215,6 +215,7 @@ export * from './graph-manager/action/generation/DatabaseBuilderInput.js';
 export * from './graph-manager/action/generation/GenerationConfigurationDescription.js';
 export { GenerationOutput } from './graph-manager/action/generation/GenerationOutput.js';
 export { ServiceExecutionMode } from './graph-manager/action/service/ServiceExecutionMode.js';
+export { ServiceExecutionServer } from './graph-manager/action/service/ServiceExecutionServer.js';
 export {
   ServiceRegistrationResult,
   ServiceRegistrationFail,

@@ -27,7 +27,6 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { ServiceExecutionMode } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
-import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
@@ -75,15 +74,12 @@ export const ServiceRegistrationEditor = observer(() => {
   // version
   const selectedVersion = registrationState.projectVersion
     ? {
-        label:
-          registrationState.projectVersion instanceof Version
-            ? registrationState.projectVersion.id.id
-            : registrationState.projectVersion,
+        label: registrationState.projectVersion,
         value: registrationState.projectVersion,
       }
     : null;
   const onVersionSelectionChange = (
-    val: { label: string; value: Version | string } | null,
+    val: { label: string; value: string } | null,
   ): void => {
     registrationState.setProjectVersion(val?.value);
   };
@@ -289,7 +285,7 @@ export const ServiceRegistrationEditor = observer(() => {
             darkMode={true}
             disabled={registrationState.versionOptions === undefined}
             placeholder={versionPlaceholder}
-            isLoading={editorStore.sdlcState.isFetchingProjectVersions}
+            isLoading={editorStore.depotState.isFetchingProjectVersions}
           />
         </div>
       </div>

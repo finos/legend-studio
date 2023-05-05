@@ -26,7 +26,6 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { ServiceExecutionMode } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
-import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
@@ -90,18 +89,13 @@ export const BulkServiceRegistrationEditor = observer(() => {
     .projectVersion
     ? {
         label:
-          globalBulkServiceRegistrationState.serviceConfigState
-            .projectVersion instanceof Version
-            ? globalBulkServiceRegistrationState.serviceConfigState
-                .projectVersion.id.id
-            : globalBulkServiceRegistrationState.serviceConfigState
-                .projectVersion,
+          globalBulkServiceRegistrationState.serviceConfigState.projectVersion,
         value:
           globalBulkServiceRegistrationState.serviceConfigState.projectVersion,
       }
     : null;
   const onVersionSelectionChange = (
-    val: { label: string; value: Version | string } | null,
+    val: { label: string; value: string } | null,
   ): void => {
     globalBulkServiceRegistrationState.serviceConfigState.setProjectVersion(
       val?.value,
