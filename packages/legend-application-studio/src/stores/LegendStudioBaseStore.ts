@@ -117,7 +117,6 @@ export class LegendStudioBaseStore {
       yield flowResult(this.initializeSDLCServerClient());
 
       try {
-        console.log('About to call /currentUser');
         const currentUser = User.serialization.fromJson(
           (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
         );
@@ -183,8 +182,7 @@ export class LegendStudioBaseStore {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
-        console.log('About to call Authorize');
-        yield new Promise((resolve) => {
+        yield new Promise(() => {
           this.applicationStore.navigationService.navigator.goToAddress(
             SDLCServerClient.authorizeCallbackUrl(
               this.applicationStore.config.sdlcServerUrl,
