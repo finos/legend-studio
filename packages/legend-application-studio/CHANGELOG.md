@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 25.0.4
+
+### Patch Changes
+
+- [#2199](https://github.com/finos/legend-studio/pull/2199) [`9c6a8bfe5`](https://github.com/finos/legend-studio/commit/9c6a8bfe53936a56c9813b302c3591e371242e35) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support service registration on branch snapshots published to metadata
+
 ## 25.0.3
 
 ## 25.0.2
