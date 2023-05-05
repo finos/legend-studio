@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import { flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import {
   guaranteeNonNullable,
@@ -29,71 +29,32 @@ import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 export class EditorDepotState {
   readonly editorStore: EditorStore;
 
-  currentProject?: StoreProjectData | undefined;
   projectVersions: string[] = [];
   isFetchingProjectVersions = false;
-  isFetchingProject = false;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
-      currentProject: observable,
       projectVersions: observable,
       isFetchingProjectVersions: observable,
-      isFetchingProject: observable,
-      activeProject: computed,
-      setCurrentProject: action,
-      fetchCurrentProject: flow,
       fetchProjectVersions: flow,
     });
 
     this.editorStore = editorStore;
   }
 
-  get activeProject(): StoreProjectData {
-    return guaranteeNonNullable(
-      this.currentProject,
-      `Active project has not been properly set`,
-    );
-  }
-
-  setCurrentProject(val: StoreProjectData): void {
-    this.currentProject = val;
-  }
-
-  *fetchCurrentProject(
-    projectId: string,
-    options?: { suppressNotification?: boolean },
-  ): GeneratorFn<void> {
-    try {
-      this.isFetchingProject = true;
-      this.currentProject = (
-        (yield this.editorStore.depotServerClient.getProjectById(
-          projectId,
-        )) as PlainObject<StoreProjectData>[]
-      ).map((v) => StoreProjectData.serialization.fromJson(v))[0];
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
-        error,
-      );
-      if (!options?.suppressNotification) {
-        this.editorStore.applicationStore.notificationService.notifyError(
-          error,
-        );
-      }
-    } finally {
-      this.isFetchingProject = false;
-    }
-  }
-
   *fetchProjectVersions(): GeneratorFn<void> {
     try {
       this.isFetchingProjectVersions = true;
+      // NOTE: this is not necessary. groupId and artifactId could be gotten from this.editorStore.projectConfigurationEditorState
+      const currentProject = (
+        (yield this.editorStore.depotServerClient.getProjectById(
+          this.editorStore.sdlcState.activeProject.projectId,
+        )) as PlainObject<StoreProjectData>[]
+      ).map((v) => StoreProjectData.serialization.fromJson(v))[0];
       this.projectVersions =
         (yield this.editorStore.depotServerClient.getVersions(
-          this.activeProject.groupId,
-          this.activeProject.artifactId,
+          guaranteeNonNullable(currentProject).groupId,
+          guaranteeNonNullable(currentProject).artifactId,
           true,
         )) as string[];
     } catch (error) {

@@ -169,15 +169,6 @@ test(
       await flowResult(MOCK__editorStore.sdlcState.fetchProjectVersions());
     });
     await act(async () => {
-      await flowResult(
-        MOCK__editorStore.depotState.fetchCurrentProject(
-          guaranteeNonNullable(
-            MOCK__editorStore.sdlcState.currentProject?.projectId,
-          ),
-        ),
-      );
-    });
-    await act(async () => {
       await flowResult(MOCK__editorStore.depotState.fetchProjectVersions());
     });
     MockedMonacoEditorInstance.getValue.mockReturnValue('');

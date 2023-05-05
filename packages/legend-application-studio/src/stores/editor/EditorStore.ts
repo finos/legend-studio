@@ -514,11 +514,6 @@ export class EditorStore implements CommandRegistrar {
         suppressNotification: true,
       }),
     );
-    yield flowResult(
-      this.depotState.fetchCurrentProject(projectId, {
-        suppressNotification: true,
-      }),
-    );
     if (!this.sdlcState.currentProject) {
       // If the project is not found or the user does not have access to it,
       // we will not automatically redirect them to the setup page as they will lose the URL
