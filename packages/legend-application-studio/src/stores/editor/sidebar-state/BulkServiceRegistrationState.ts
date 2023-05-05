@@ -30,7 +30,6 @@ import {
   ActionState,
   assertTrue,
 } from '@finos/legend-shared';
-import { Version } from '@finos/legend-server-sdlc';
 import {
   ServiceConfigState,
   ServiceRegistrationState,
@@ -193,23 +192,19 @@ export class GlobalBulkServiceRegistrationState {
         this.editorStore.projectConfigurationEditorState.projectConfiguration,
       );
 
-      const versionInput =
-        this.serviceConfigState.projectVersion instanceof Version
-          ? this.serviceConfigState.projectVersion.id.id
-          : undefined;
-
       const config = guaranteeNonNullable(
         this.serviceConfigState.options.find(
           (info) => info.env === this.serviceConfigState.serviceEnv,
         ),
       );
+
       const registrationResults =
         (yield this.editorStore.graphManagerState.graphManager.bulkServiceRegistration(
           selectedServices,
           this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,
-          versionInput,
+          this.serviceConfigState.projectVersion,
           config.executionUrl,
           guaranteeNonNullable(this.serviceConfigState.serviceExecutionMode),
           {

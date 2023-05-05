@@ -32,7 +32,6 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
-import { Version } from '@finos/legend-server-sdlc';
 import {
   type Service,
   type PureExecution,
@@ -43,14 +42,18 @@ import {
   areMultiplicitiesEqual,
   Multiplicity,
   type ServiceRegistrationSuccess,
+  ServiceExecutionServer,
 } from '@finos/legend-graph';
 import { ServiceRegistrationEnvironmentConfig } from '../../../../../application/LegendStudioApplicationConfig.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
+import { compareSemVerVersions } from '@finos/legend-storage';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
+
+export const PROJECT_SEMANTIC_VERSION_PATTERN = /^[0-9]*.[0-9]*.[0-9]*$/;
 
 export const generateServiceManagementUrl = (
   baseUrl: string,
@@ -82,7 +85,7 @@ const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
 
 interface ServiceVersionOption {
   label: string;
-  value: Version | string;
+  value: string;
 }
 
 export class ServiceConfigState {
@@ -92,7 +95,7 @@ export class ServiceConfigState {
 
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
-  projectVersion?: Version | string | undefined;
+  projectVersion?: string | undefined;
   enableModesWithVersioning: boolean;
   TEMPORARY__useStoreModel = false;
   TEMPORARY__useGenerateLineage = true;
@@ -159,19 +162,36 @@ export class ServiceConfigState {
       this.enableModesWithVersioning &&
       this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
     ) {
-      const options: ServiceVersionOption[] =
-        this.editorStore.sdlcState.projectVersions.map((version) => ({
-          label: version.id.id,
+      const semVerVersions = this.editorStore.depotState.projectVersions
+        .filter((v) => v.match(PROJECT_SEMANTIC_VERSION_PATTERN))
+        .sort((v1, v2) => compareSemVerVersions(v2, v1));
+      const snapshotVersions = this.editorStore.depotState.projectVersions
+        .filter((v) => !v.match(PROJECT_SEMANTIC_VERSION_PATTERN))
+        .sort((v1, v2) => v1.localeCompare(v2));
+      const options: ServiceVersionOption[] = snapshotVersions
+        .concat(semVerVersions)
+        .map((version) => ({
+          label: version,
           value: version,
         }));
-      if (this.serviceExecutionMode !== ServiceExecutionMode.PROD) {
-        return [
-          {
-            label: prettyCONSTName(LATEST_PROJECT_REVISION),
-            value: LATEST_PROJECT_REVISION,
-          },
-          ...options,
-        ];
+      if (
+        this.serviceEnv &&
+        this.serviceEnv.toUpperCase() === ServiceExecutionServer.PROD
+      ) {
+        return semVerVersions.map((version) => ({
+          label: version,
+          value: version,
+        }));
+      } else {
+        if (this.serviceExecutionMode !== ServiceExecutionMode.PROD) {
+          return [
+            {
+              label: prettyCONSTName(LATEST_PROJECT_REVISION),
+              value: LATEST_PROJECT_REVISION,
+            },
+            ...options,
+          ];
+        }
       }
       return options;
     }
@@ -186,7 +206,7 @@ export class ServiceConfigState {
     this.serviceExecutionMode = val;
   }
 
-  setProjectVersion(val: Version | string | undefined): void {
+  setProjectVersion(val: string | undefined): void {
     this.projectVersion = val;
   }
 
@@ -208,7 +228,7 @@ export class ServiceConfigState {
     if (this.serviceExecutionMode === ServiceExecutionMode.SEMI_INTERACTIVE) {
       this.projectVersion = LATEST_PROJECT_REVISION;
     } else if (this.serviceExecutionMode === ServiceExecutionMode.PROD) {
-      this.projectVersion = this.editorStore.sdlcState.projectVersions[0];
+      this.projectVersion = this.editorStore.depotState.projectVersions[0];
     } else {
       this.projectVersion = undefined;
     }
@@ -256,10 +276,6 @@ export class ServiceRegistrationState extends ServiceConfigState {
         this.options.find((info) => info.env === this.serviceEnv),
       );
       const serverUrl = config.executionUrl;
-      const versionInput =
-        this.projectVersion instanceof Version
-          ? this.projectVersion.id.id
-          : undefined;
       const projectConfig = guaranteeNonNullable(
         this.editorStore.projectConfigurationEditorState.projectConfiguration,
       );
@@ -270,7 +286,7 @@ export class ServiceRegistrationState extends ServiceConfigState {
           this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,
-          versionInput,
+          this.projectVersion,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
           {
