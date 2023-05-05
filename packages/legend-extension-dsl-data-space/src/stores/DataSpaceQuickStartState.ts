@@ -45,7 +45,6 @@ export class DataSpaceQuickStartState {
           executable.info.mapping &&
           executable.info.runtime
         ) {
-          const query = executable.info.query;
           const mapping = executable.info.mapping;
           const runtime = executable.info.runtime;
           dataAccessState = new DataAccessState(
@@ -56,10 +55,16 @@ export class DataSpaceQuickStartState {
               mapping,
               runtime,
               graphData: this.dataSpaceViewerState.retrieveGraphData(),
-              getQuery: () =>
-                this.dataSpaceViewerState.graphManagerState.graphManager.pureCodeToLambda(
-                  query,
-                ),
+              // TODO: we need to find a way to unify this code logic with the check in query builder
+              // and avoid the need to send over (dummy) parameter values in order to make the survey datasets
+              // call
+              // We need to also cache the datasets survey result with query as scope in addition to the work done in
+              // https://github.com/finos/legend-engine/pull/1678
+              getQuery: async () => undefined,
+              // getQuery: () =>
+              //   this.dataSpaceViewerState.graphManagerState.graphManager.pureCodeToLambda(
+              //     query,
+              //   ),
             },
           );
         }
