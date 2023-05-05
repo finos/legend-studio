@@ -24,11 +24,7 @@ import {
   act,
 } from '@testing-library/react';
 import { TEST_DATA__serviceEntities } from './TEST_DATA__ServiceEditor.js';
-import {
-  type PlainObject,
-  prettyCONSTName,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type PlainObject, prettyCONSTName } from '@finos/legend-shared';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
 import {
   TEST_DATA__DefaultDepotReport,
