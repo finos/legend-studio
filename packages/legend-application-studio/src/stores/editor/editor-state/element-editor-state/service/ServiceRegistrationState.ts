@@ -42,7 +42,6 @@ import {
   areMultiplicitiesEqual,
   Multiplicity,
   type ServiceRegistrationSuccess,
-  ServiceExecutionServer,
 } from '@finos/legend-graph';
 import { ServiceRegistrationEnvironmentConfig } from '../../../../../application/LegendStudioApplicationConfig.js';
 import {
@@ -52,6 +51,8 @@ import {
 import { compareSemVerVersions } from '@finos/legend-storage';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
+
+const PROD_SERVICE_EXECUTION_SERVER = 'PROD';
 
 export const PROJECT_SEMANTIC_VERSION_PATTERN = /^[0-9]*.[0-9]*.[0-9]*$/;
 
@@ -176,7 +177,7 @@ export class ServiceConfigState {
         }));
       if (
         this.serviceEnv &&
-        this.serviceEnv.toUpperCase() === ServiceExecutionServer.PROD
+        this.serviceEnv.toUpperCase() === PROD_SERVICE_EXECUTION_SERVER
       ) {
         return semVerVersions.map((version) => ({
           label: version,

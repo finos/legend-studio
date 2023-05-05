@@ -160,9 +160,6 @@ export class ProjectViewerStore {
     // fetch project informations
     this.editorStore.initState.setMessage(`Fetching project information...`);
     yield flowResult(this.editorStore.sdlcState.fetchCurrentProject(projectId));
-    yield flowResult(
-      this.editorStore.depotState.fetchCurrentProject(projectId),
-    );
     const stubWorkspace = new Workspace();
     stubWorkspace.projectId = projectId;
     stubWorkspace.workspaceId = '';
