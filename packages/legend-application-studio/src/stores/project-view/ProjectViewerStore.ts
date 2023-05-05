@@ -181,6 +181,7 @@ export class ProjectViewerStore {
 
     // fetch project versions
     yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
+    yield flowResult(this.editorStore.depotState.fetchProjectVersions());
 
     // ensure only either version or revision is specified
     if (versionId && revisionId) {

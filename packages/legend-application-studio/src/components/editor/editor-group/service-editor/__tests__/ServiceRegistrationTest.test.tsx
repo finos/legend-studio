@@ -48,6 +48,7 @@ import { service_deleteOwner } from '../../../../../stores/graph-modifier/DSL_Se
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { ApplicationStore } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
+import type { StoreProjectData } from '@finos/legend-server-depot';
 
 let renderResult: RenderResult;
 
@@ -55,6 +56,8 @@ const setup = async (
   project: PlainObject<Project>,
   workspace: PlainObject<Workspace>,
   versions?: PlainObject<Version>[],
+  projectData?: PlainObject<StoreProjectData>[],
+  projectDependencyVersions?: string[],
 ): Promise<EditorStore> => {
   const MOCK__editorStore = TEST__provideMockedEditorStore({
     applicationStore: new ApplicationStore(
@@ -110,9 +113,9 @@ const setup = async (
       ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
     ],
     projects: [],
-    projectData: [],
+    projectData: projectData ?? [],
     projectDependency: [],
-    projectDependencyVersions: [],
+    projectDependencyVersions: projectDependencyVersions ?? [],
     projectDependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
   });
   return MOCK__editorStore;
@@ -138,6 +141,13 @@ test(
       [
         {
           projectId: 'PROD-19481',
+          groupId: 'com.finos.legend',
+          artifactId: 'service-sdlc-testing',
+        },
+      ],
+      [
+        {
+          projectId: 'PROD-19481',
           revisionId: 'revisionId2',
           notes: 'second release',
           id: { majorVersion: 1, minorVersion: 0, patchVersion: 1 },
@@ -149,9 +159,13 @@ test(
           id: { majorVersion: 1, minorVersion: 0, patchVersion: 0 },
         },
       ],
+      ['1.0.1', '1.0.0', 'master-snapshot', 'UsedForEntitiesTest'],
     );
     await act(async () => {
       await flowResult(MOCK__editorStore.sdlcState.fetchProjectVersions());
+    });
+    await act(async () => {
+      await flowResult(MOCK__editorStore.depotState.fetchProjectVersions());
     });
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     const result = new ServiceRegistrationSuccess(
@@ -199,8 +213,8 @@ test(
     await waitFor(() => getByText(registrationEditor, 'Project Version'));
     const registrationState = serviceEditorState.registrationState;
     expect(registrationState.executionModes).toHaveLength(3);
-    const versions = MOCK__editorStore.sdlcState.projectVersions;
-    expect(versions).toHaveLength(2);
+    const versions = MOCK__editorStore.depotState.projectVersions;
+    expect(versions).toHaveLength(4);
     // TODO: rewrite how we test 'dropdown', once the issue of the dropdown options not showing is resolved
     // since `int` is the first env in the config list, it is expected to be selected by default
     // we will then change env from `int` to `prod`
@@ -214,9 +228,7 @@ test(
     // select version
     await waitFor(() => getByText(registrationEditor, 'Select...'));
     await act(async () => {
-      registrationState.setProjectVersion(
-        versions.find((v) => v.id.id === '1.0.1'),
-      );
+      registrationState.setProjectVersion(versions.find((v) => v === '1.0.1'));
     });
     expect(registrationState.versionOptions).toHaveLength(2);
     expect(registrationState.executionModes).toHaveLength(1);
@@ -243,7 +255,7 @@ test(
       ),
     );
     await waitFor(() => getByText(registrationEditor, LATEST_PROJECT_REVISION));
-    expect(registrationState.versionOptions).toHaveLength(3);
+    expect(registrationState.versionOptions).toHaveLength(5);
   },
 );
 
@@ -254,6 +266,7 @@ test(
   async () => {
     const MOCK__editorStore = await setup(
       TEST_DATA__DefaultSDLCInfo.project,
+      // TEST_DATA__DefaultSDLCInfo.projectData,
       TEST_DATA__DefaultSDLCInfo.workspace,
     );
     MockedMonacoEditorInstance.getValue.mockReturnValue('');

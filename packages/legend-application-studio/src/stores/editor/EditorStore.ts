@@ -101,6 +101,7 @@ import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
+import { EditorDepotState } from './EditorDepotState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -129,6 +130,7 @@ export class EditorStore implements CommandRegistrar {
   editorExtensionStates: EditorExtensionState[] = [];
   explorerTreeState: ExplorerTreeState;
   sdlcState: EditorSDLCState;
+  depotState: EditorDepotState;
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
   graphEditorMode: GraphEditorMode;
@@ -211,6 +213,7 @@ export class EditorStore implements CommandRegistrar {
     this.editorMode = new StandardEditorMode(this);
 
     this.sdlcState = new EditorSDLCState(this);
+    this.depotState = new EditorDepotState(this);
     this.graphState = new EditorGraphState(this);
     this.graphManagerState = new GraphManagerState(
       applicationStore.pluginManager,
@@ -675,6 +678,7 @@ export class EditorStore implements CommandRegistrar {
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.sdlcState.fetchProjectVersions(),
+      this.depotState.fetchProjectVersions(),
     ]);
   }
 
@@ -711,6 +715,7 @@ export class EditorStore implements CommandRegistrar {
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.sdlcState.fetchProjectVersions(),
+      this.depotState.fetchProjectVersions(),
     ]);
   }
 
