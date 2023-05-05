@@ -321,7 +321,7 @@ export const ActivityBar = observer(() => {
       },
       !editorStore.isInConflictResolutionMode && {
         mode: ACTIVITY_MODE.REGISTER_SERVICES,
-        title: 'Register Service (Experimental)',
+        title: 'Register Service (Beta)',
         icon: (
           <>
             <RobotIcon className="activity-bar__icon--service-registrar" />
