@@ -20,6 +20,7 @@ import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtil
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { DataAccessState } from '../data-access/DataAccessState.js';
 import { RuntimePointer, InMemoryGraphData } from '@finos/legend-graph';
+import { getExecutionQueryFromRawLambda } from '../shared/LambdaParameterState.js';
 
 export class QueryBuilderCheckEntitlementsState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
@@ -53,7 +54,12 @@ export class QueryBuilderCheckEntitlementsState implements Hashable {
           mapping: this.queryBuilderState.mapping.path,
           runtime:
             this.queryBuilderState.runtimeValue.packageableRuntime.value.path,
-          getQuery: async () => this.queryBuilderState.buildQuery(),
+          getQuery: async () =>
+            getExecutionQueryFromRawLambda(
+              this.queryBuilderState.buildQuery(),
+              this.queryBuilderState.parametersState.parameterStates,
+              this.queryBuilderState.graphManagerState,
+            ),
           graphData: new InMemoryGraphData(
             this.queryBuilderState.graphManagerState.graph,
           ),
