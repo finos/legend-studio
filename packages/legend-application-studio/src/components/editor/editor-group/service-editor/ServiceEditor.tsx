@@ -482,6 +482,23 @@ export const ServiceEditor = observer(() => {
     }
   };
 
+  const renderTabDocLInk = (tab: SERVICE_TAB): React.ReactNode => {
+    let doc: LEGEND_STUDIO_DOCUMENTATION_KEY | null = null;
+    switch (tab) {
+      case SERVICE_TAB.TEST:
+        doc =
+          LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST;
+        break;
+      case SERVICE_TAB.POST_VALIDATION:
+        doc =
+          LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_POST_VALIDATION;
+        break;
+      default:
+        break;
+    }
+    return doc ? <DocumentationLink documentationKey={doc} /> : null;
+  };
+
   return (
     <div className="service-editor">
       <div className="panel">
@@ -524,13 +541,7 @@ export const ServiceEditor = observer(() => {
                   })}
                 >
                   {prettyCONSTName(tab)}
-                  {tab === SERVICE_TAB.TEST && (
-                    <DocumentationLink
-                      documentationKey={
-                        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST
-                      }
-                    />
-                  )}
+                  {renderTabDocLInk(tab)}
                 </div>
               ))}
           </div>
