@@ -225,6 +225,9 @@ const DataSpaceExecutableTDSResultView = observer(
               <div className="data-space__viewer__quickstart__item__content__tab__icon">
                 <DataAccessIcon />
               </div>
+              <div className="data-space__viewer__quickstart__item__content__tab__label">
+                Data Access
+              </div>
             </button>
             <button
               className={clsx(

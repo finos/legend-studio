@@ -142,8 +142,9 @@ export class DataAccessState {
         dataset.entitlementReport instanceof
         DatasetEntitlementAccessGrantedReport,
     ).length;
-    const accessGrantedPercentage =
-      Math.round(accessGrantedCount / total) * 100;
+    const accessGrantedPercentage = Math.round(
+      (accessGrantedCount / total) * 100,
+    );
     info.data.push({
       label: 'Access Granted',
       count: accessGrantedCount,
@@ -192,8 +193,9 @@ export class DataAccessState {
         dataset.entitlementReport instanceof
         DatasetEntitlementAccessNotGrantedReport,
     ).length;
-    const accessNotGrantedPercentage =
-      Math.round(accessNotGrantedCount / total) * 100;
+    const accessNotGrantedPercentage = Math.round(
+      (accessNotGrantedCount / total) * 100,
+    );
     info.data.push({
       label: 'Access Not Granted',
       count: accessNotGrantedCount,
@@ -225,7 +227,7 @@ export class DataAccessState {
       accessRequestedCount -
       accessNotGrantedCount -
       unsupportedCount;
-    const unknownPercentage = Math.round(unknownCount / total) * 100;
+    const unknownPercentage = Math.round((unknownCount / total) * 100);
     info.data.push({
       label: 'Unknown',
       count: unknownCount,

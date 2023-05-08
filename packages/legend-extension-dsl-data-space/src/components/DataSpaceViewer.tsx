@@ -181,7 +181,7 @@ const DataSpaceHeader = observer(
                       }
                     }}
                   >
-                    View Documentation
+                    Read Documentation
                   </MenuContentItem>
                   <MenuContentItem
                     onClick={() =>

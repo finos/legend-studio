@@ -587,6 +587,7 @@
     width: 25rem;
 
     &__icon {
+      width: 1.6rem;
       font-size: 1.2rem;
     }
 
@@ -595,6 +596,8 @@
     }
 
     &__title {
+      white-space: nowrap;
+      width: calc(100% - 1.6rem);
       margin-left: 1rem;
     }
   }
@@ -1503,6 +1506,9 @@
 
     &__tabs {
       @include flexVCenter;
+
+      width: calc(100% - 19rem);
+      overflow-x: auto;
     }
 
     &__tab {
@@ -1518,6 +1524,7 @@
     }
 
     &__tab__label {
+      white-space: nowrap;
       font-weight: 500;
     }
 
@@ -1561,6 +1568,8 @@
 
     &__action-tab-group {
       display: flex;
+      width: 19rem;
+      border-left: 0.1rem solid var(--color-dark-grey-280);
     }
   }
 
