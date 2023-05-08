@@ -243,8 +243,9 @@
     }
 
     &__author__icon {
+      display: flex;
+
       svg {
-        display: flex;
         font-size: 1rem;
       }
     }

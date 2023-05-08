@@ -61,6 +61,10 @@
         padding: 0.5rem;
         margin-right: 10%;
       }
+
+      &__title:hover {
+        cursor: pointer;
+      }
     }
 
     &__actions {
