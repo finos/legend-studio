@@ -603,6 +603,8 @@ export class DataSpaceViewerModelsDocumentationState
       const classNode = this.packageFilterTreeData.nodes.get(classPath);
       if (classNode) {
         uncheckAllFilterTree(this.packageFilterTreeData);
+        trickleDownCheckNode(classNode);
+        trickleUpCheckNode(classNode);
         classNode.setCheckType(
           ModelsDocumentationFilterTreeNodeCheckType.CHECKED,
         );

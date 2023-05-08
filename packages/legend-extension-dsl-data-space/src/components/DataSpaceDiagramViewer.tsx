@@ -142,7 +142,7 @@ const DataSpaceDiagramCanvas = observer(
                 )
               }
             >
-              View Documentation
+              See Model Documentation
             </MenuContentItem>
           </MenuContent>
         }
