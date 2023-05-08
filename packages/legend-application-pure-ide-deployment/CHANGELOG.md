@@ -1,5 +1,7 @@
 # @finos/legend-application-pure-ide-deployment
 
+## 9.38.0
+
 ## 9.37.0
 
 ## 9.36.0
