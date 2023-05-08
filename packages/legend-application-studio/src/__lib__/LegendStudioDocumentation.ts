@@ -71,6 +71,7 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   QUESTION_HOW_TO_UPDATE_PROJECT_GAV_COORDINATES = 'question.how-to-update-project-gav-coordinates',
   QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS = 'question.when-to-configure-project-platform-dependencies-versions',
   QUESTION_HOW_TO_WRITE_A_SERVICE_TEST = 'question.how-to-write-a-service-test',
+  QUESTION_HOW_TO_WRITE_A_SERVICE_POST_VALIDATION = 'question.how-to-write-a-service-post-validation',
   QUESTION_WHY_DO_I_SEE_ERROR_WITH_ASSOCIATION_PROPERTY_TYPE = 'question.why-do-i-see-error-with-association-property-type',
   QUESTION_HOW_TO_WRITE_SERVICE_CONNECTION_TEST_DATA = 'question.how-to-write-service-connection-test-data',
   QUESTION_HOW_TO_CREATE_A_DATA_ELEMENT = 'question.how-to-create-a-data-element',
