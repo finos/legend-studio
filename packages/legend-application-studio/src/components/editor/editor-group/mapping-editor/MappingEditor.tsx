@@ -218,7 +218,13 @@ const _MappingEditor = observer(() => {
   );
 
   return (
-    <div className="mapping-editor">
+    <div
+      className={clsx('mapping-editor', {
+        mapping__theme__dark:
+          editorStore.applicationStore.config.options
+            .TEMPORARY__enableMappingTestableEditor,
+      })}
+    >
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={300} minSize={300}>
           <div className="mapping-editor__side-bar">
@@ -366,7 +372,7 @@ export const MappingEditorWithTestable = observer(() => {
                 <LockIcon />
               </div>
             )}
-            <div className="panel__header__title__label">mapaping</div>
+            <div className="panel__header__title__label">mapping</div>
             <div className="panel__header__title__content">{mapping.name}</div>
           </div>
         </div>

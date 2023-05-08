@@ -42,6 +42,7 @@ import {
   PanelContent,
   Modal,
   ModalTitle,
+  clsx,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -117,6 +118,9 @@ export const ClassMappingSelectorModal = observer(
     } = props;
     const editorStore = useEditorStore();
 
+    const darkMappingMode =
+      editorStore.applicationStore.config.options
+        .TEMPORARY__enableMappingTestableEditor;
     // Class mapping selector
     const classMappingSelectorRef = useRef<SelectComponent>(null);
     const filterOption = createFilter({
@@ -152,7 +156,11 @@ export const ClassMappingSelectorModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal className="search-modal">
+        <Modal
+          className={clsx('search-modal', {
+            'modal--dark': darkMappingMode,
+          })}
+        >
           <ModalTitle title="Choose a class mapping" />
           <CustomSelectorInput
             ref={classMappingSelectorRef}
@@ -162,6 +170,7 @@ export const ClassMappingSelectorModal = observer(
             placeholder="Choose a class mapping..."
             filterOption={filterOption}
             isClearable={true}
+            darkMode={darkMappingMode}
           />
         </Modal>
       </Dialog>

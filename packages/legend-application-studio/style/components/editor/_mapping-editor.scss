@@ -138,3 +138,115 @@
     height: 100%;
   }
 }
+
+.mapping__theme__dark {
+  background: var(--color-dark-grey-50);
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-dark-grey-200);
+  }
+
+  .mapping-editor__splash-screen__logo svg {
+    color: var(--color-dark-grey-200);
+  }
+
+  .mapping-explorer,
+  .mapping-test-explorer {
+    border-right: 0.1rem solid var(--color-dark-grey-200);
+    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  .mapping-explorer__item__label__text {
+    color: var(--color-light-grey-400);
+  }
+
+  .mapping-element-editor__metadata {
+    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  .mapping-editor__header__tab {
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-400);
+    border-right: 0.1rem solid var(--color-dark-grey-100);
+  }
+
+  .mapping-test-explorer__header__progress-bar__bar--none,
+  .mapping-test-explorer__header__progress-bar--none {
+    background: var(--color-dark-grey-100) !important;
+  }
+
+  .mapping-editor__header__tab--active {
+    border-bottom: 0.2rem solid var(--color-yellow-200);
+  }
+
+  .mapping-editor__header__tab__content button {
+    color: var(--color-light-grey-400);
+  }
+
+  .type-tree__node__type__label {
+    background: var(--color-dark-grey-250);
+    color: var(--color-light-grey-400);
+  }
+
+  .tree-view__node__container {
+    .tree-view__node__expand-icon svg {
+      color: var(--color-light-grey-100);
+    }
+  }
+
+  .tree-view__node__label button {
+    color: var(--color-light-grey-400);
+  }
+
+  // ---------------------------- Modal  -------------------------------
+
+  .mapping-modal {
+    background: var(--color-dark-grey-100) !important;
+  }
+
+  // ---------------------------- Property Editor -------------------------------
+
+  .property-mapping-editor,
+  .mapping-element-editor__metadata {
+    background: var(--color-dark-grey-50);
+  }
+
+  .property-mapping-editor__name {
+    background: var(--color-dark-grey-100);
+  }
+
+  .lambda-editor .monaco-editor .margin,
+  .lambda-editor .monaco-editor .monaco-editor-background {
+    background: var(--color-dark-grey-100) !important;
+  }
+
+  .class-mapping-editor__property-panel {
+    border-right: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  .property-mapping-editor__entry__id {
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  .property-mapping-editor__entry__visit-btn {
+    background: var(--color-dark-grey-200);
+  }
+
+  .property-mapping-editor__entry__id__label__default-badge {
+    background: var(--color-dark-grey-250);
+    color: var(--color-light-grey-400);
+  }
+
+  .background--primitive,
+  .mapping-element-editor__metadata__source-chunk {
+    background: var(--color-blue-200);
+  }
+  // ---------------------------- Blank Panel -------------------------------
+
+  .blank-panel-placeholder__action,
+  .blank-panel-placeholder__action svg {
+    color: var(--color-dark-grey-200) !important;
+    border-color: var(--color-dark-grey-200) !important;
+  }
+}

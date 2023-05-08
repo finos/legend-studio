@@ -22,6 +22,8 @@ import {
   CustomSelectorInput,
   createFilter,
   compareLabelFn,
+  clsx,
+  PanelDivider,
 } from '@finos/legend-art';
 import {
   type MappingElement,
@@ -105,6 +107,9 @@ export const NewMappingElementModal = observer(() => {
     setId(suggestedId && !mappingIds.includes(suggestedId) ? suggestedId : '');
   };
 
+  const darkMappingMode =
+    editorStore.applicationStore.config.options
+      .TEMPORARY__enableMappingTestableEditor;
   // Class Mapping Type
   const classMappingTypeSelectorRef = useRef<SelectComponent>(null);
   const classMappingTypeOptions = [
@@ -222,7 +227,9 @@ export const NewMappingElementModal = observer(() => {
             event.preventDefault();
             handleSubmit();
           }}
-          className="modal search-modal new-mapping-element-modal"
+          className={clsx('modal search-modal new-mapping-element-modal', {
+            'modal--dark': darkMappingMode,
+          })}
         >
           {titleText && <div className="modal__title">{titleText}</div>}
           {spec.showTarget && (
@@ -235,6 +242,7 @@ export const NewMappingElementModal = observer(() => {
               formatOptionLabel={getPackageableElementOptionFormatter({})}
               placeholder="Choose a target"
               isClearable={true}
+              darkMode={darkMappingMode}
             />
           )}
           {showId && (
@@ -251,16 +259,26 @@ export const NewMappingElementModal = observer(() => {
             </div>
           )}
           {spec.target instanceof Class && (
-            <CustomSelectorInput
-              ref={classMappingTypeSelectorRef}
-              options={classMappingTypeOptions}
-              onChange={changeClassMappingType}
-              value={classMappingType}
-              placeholder="Choose a class mapping type"
-            />
+            <>
+              <PanelDivider />
+              <CustomSelectorInput
+                ref={classMappingTypeSelectorRef}
+                options={classMappingTypeOptions}
+                onChange={changeClassMappingType}
+                value={classMappingType}
+                darkMode={darkMappingMode}
+                placeholder="Choose a class mapping type"
+              />
+            </>
           )}
+          <PanelDivider />
           <div className="search-modal__actions">
-            <button className="btn btn--primary" disabled={disableCreateButton}>
+            <button
+              className={clsx('btn btn--primary', {
+                'btn--dark': darkMappingMode,
+              })}
+              disabled={disableCreateButton}
+            >
               Create
             </button>
           </div>
