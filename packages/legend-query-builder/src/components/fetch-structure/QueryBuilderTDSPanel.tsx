@@ -453,7 +453,7 @@ const QueryBuilderProjectionColumnEditor = observer(
               );
             } else {
               applicationStore.notificationService.notifyWarning(
-                'Please provide the date column field for the calendar function',
+                'Please provide a date attribute for the calendar function',
               );
             }
           }
