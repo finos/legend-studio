@@ -311,16 +311,15 @@ export const QueryBuilderPropertyExpressionEditor = observer(
     ): boolean =>
       Boolean(
         derivedProperties.find((dp) => {
-          if (!variable.genericType?.value.rawType) {
+          const variableType = variable.genericType?.value.rawType;
+          if (!variableType) {
             return false;
           }
-          return (
-            isSuperType(
-              dp.derivedProperty.genericType.value.rawType,
-              variable.genericType.value.rawType,
-            ) ||
-            dp.derivedProperty.genericType.value.rawType.name ===
-              variable.genericType.value.rawType.name
+          return dp.parameters.some(
+            (p) =>
+              p.genericType &&
+              (isSuperType(variableType, p.genericType.value.rawType) ||
+                p.genericType.value.rawType.name === variableType.name),
           );
         }),
       );
