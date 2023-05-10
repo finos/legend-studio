@@ -32,16 +32,14 @@ import {
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import {
-  generateColumnTypeLabel,
-  renderColumnTypeIcon,
-} from '../../connection-editor/DatabaseEditorHelper.js';
+import { renderColumnTypeIcon } from '../../connection-editor/DatabaseEditorHelper.js';
 import {
   type Type,
   type Table,
   type Join,
   type View,
   Column,
+  stringifyDataType,
 } from '@finos/legend-graph';
 
 export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
@@ -302,7 +300,7 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
               tabIndex={-1}
               title="Column Type"
             >
-              {generateColumnTypeLabel(guaranteeType(node.column, Column).type)}
+              {stringifyDataType(guaranteeType(node.column, Column).type)}
             </button>
           </div>
         )}

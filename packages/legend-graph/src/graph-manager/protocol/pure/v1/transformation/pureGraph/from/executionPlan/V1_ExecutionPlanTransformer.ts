@@ -20,26 +20,7 @@ import type { ExecutionNode } from '../../../../../../../../graph/metamodel/pure
 import { RelationalTDSInstantiationExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/RelationalInstantiationExecutionNode.js';
 import { SQLExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/SQLExecutionNode.js';
 import type { SQLResultColumn } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/SQLResultColumn.js';
-import {
-  Real,
-  Binary,
-  Bit,
-  Other,
-  Date,
-  Timestamp,
-  Numeric,
-  Decimal,
-  VarBinary,
-  Char,
-  VarChar,
-  Double,
-  Float,
-  Integer,
-  TinyInt,
-  SmallInt,
-  BigInt,
-  RelationalDataType,
-} from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalDataType.js';
+import { RelationalDataType } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalDataType.js';
 import type { V1_ExecutionNode } from '../../../../model/executionPlan/nodes/V1_ExecutionNode.js';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode.js';
 import { V1_SQLExecutionNode } from '../../../../model/executionPlan/nodes/V1_SQLExecutionNode.js';
@@ -61,48 +42,7 @@ import { V1_transformConnection } from '../V1_ConnectionTransformer.js';
 import { V1_DatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import { PureClientVersion } from '../../../../../../../../graph-manager/GraphManagerUtils.js';
 import { V1_PureGraphManager } from '../../../../V1_PureGraphManager.js';
-
-const stringifyDataType = (dataType: RelationalDataType): string => {
-  if (dataType instanceof Integer) {
-    return 'INTEGER';
-  } else if (dataType instanceof Float) {
-    return 'FLOAT';
-  } else if (dataType instanceof Double) {
-    return 'DOUBLE';
-  } else if (dataType instanceof Real) {
-    return 'REAL';
-  } else if (dataType instanceof Timestamp) {
-    return 'TIMESTAMP';
-  } else if (dataType instanceof Date) {
-    return 'DATE';
-  } else if (dataType instanceof BigInt) {
-    return 'BIGINT';
-  } else if (dataType instanceof SmallInt) {
-    return 'SMALLINT';
-  } else if (dataType instanceof TinyInt) {
-    return 'TINYINT';
-  } else if (dataType instanceof Bit) {
-    return 'BIT';
-  } else if (dataType instanceof Other) {
-    return 'OTHER';
-  } else if (dataType instanceof VarChar) {
-    return `VARCHAR(${dataType.size})`;
-  } else if (dataType instanceof Char) {
-    return `CHAR(${dataType.size})`;
-  } else if (dataType instanceof VarBinary) {
-    return `VARBINARY(${dataType.size})`;
-  } else if (dataType instanceof Binary) {
-    return `BINARY(${dataType.size})`;
-  } else if (dataType instanceof Decimal) {
-    return `DECIMAL(${dataType.precision},${dataType.scale})`;
-  } else if (dataType instanceof Numeric) {
-    return `NUMERIC(${dataType.precision},${dataType.scale})`;
-  }
-  throw new UnsupportedOperationError(
-    `Can't stringify relational data type`,
-    dataType,
-  );
-};
+import { stringifyDataType } from '../../../../../../../../graph/helpers/DomainHelper.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 

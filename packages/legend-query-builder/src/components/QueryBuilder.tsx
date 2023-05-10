@@ -242,10 +242,6 @@ export const QueryBuilder = observer(
       }
     };
 
-    const showSql = applicationStore.guardUnhandledError(() =>
-      flowResult(queryBuilderState.resultState.getSql()),
-    );
-
     const openWatermark = (): void => {
       queryBuilderState.watermarkState.setIsEditingWatermark(true);
     };

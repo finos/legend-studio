@@ -404,18 +404,48 @@
     }
   }
 
-  // ---------------------------- SQL Query Viewer Modal -------------------------------
+  // ---------------------------- SQL Query Execution Node -------------------------------
 
-  .query-builder__sql__item {
+  .execution-plan-viewer__explorer__content__container {
+    background: var(--color-legacylight-light-grey-100);
+    border-bottom: 0.1rem solid var(--color-light-grey-300);
+  }
+
+  .execution-plan-viewer__panel__content {
+    background: var(--color-light-grey-100);
+  }
+
+  .execution-plan-viewer__debug-panel .panel__header {
+    background: var(--color-light-grey-100);
+  }
+
+  .execution-plan-viewer__panel__header,
+  .execution-plan-viewer__panel__view-mode__type {
+    background: var(--color-light-grey-200);
+    border-color: var(--color-light-grey-400);
+    color: var(--color-dark-grey-80);
+  }
+
+  .execution-plan-viewer__panel__header__tab--active {
+    background: var(--color-light-grey-100);
+    border-color: var(--color-light-grey-200);
+    color: var(--color-dark-grey-80);
+  }
+
+  .execution-plan-viewer__explorer-tree__node__container--selected {
+    background: var(--color-legacylight-light-blue-100);
+  }
+
+  .query-builder__sql__container__item {
     border: 0.1rem solid (var(--color-legacylight-light-blue-250));
   }
 
-  .query-builder__sql__item__label,
-  .query-builder__sql__item__label svg {
+  .query-builder__sql__container__item__label,
+  .query-builder__sql__container__item__label svg {
     color: (var(--color-legacylight-dark-grey-200));
   }
 
-  .query-builder__sql__item__label svg:hover {
+  .query-builder__sql__container__item__label svg:hover {
     color: (var(--color-legacylight-dark-grey-400));
   }
 

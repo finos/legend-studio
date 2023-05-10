@@ -832,29 +832,21 @@
   }
 }
 
-.query-builder__sql {
+.query-builder__sql__container {
   width: 95%;
   margin: 1% auto 0;
 
-  &__modal {
-    overflow: auto;
-    padding: 0;
-    height: 80vh;
-    width: 80vw;
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
 
-    svg {
-      margin-left: 0.5rem;
-      color: var(--color-light-grey-400);
-    }
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
 
-    svg:hover {
-      color: var(--color-white);
-    }
-
-    .modal__body {
-      min-height: calc(100% - 10rem);
-      padding: 0;
-    }
+  &__table {
+    width: 100%;
   }
 
   &__item {

@@ -37,7 +37,6 @@ import {
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   extractExecutionResultValues,
-  SQLExecutionNode,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -66,12 +65,10 @@ export class QueryBuilderResultState {
   pressedRunQuery = ActionState.create();
   isRunningQuery = false;
   isGeneratingPlan = false;
-  isShowingSqlViewer = false;
   executionResult?: ExecutionResult | undefined;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
-  sqlQueries: string[] | undefined = undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
@@ -81,20 +78,15 @@ export class QueryBuilderResultState {
       latestRunHashCode: observable,
       queryRunPromise: observable,
       isGeneratingPlan: observable,
-      isShowingSqlViewer: observable,
-      sqlQueries: observable,
       isRunningQuery: observable,
       setIsRunningQuery: action,
-      setIsShowingSqlViewer: action,
       setExecutionResult: action,
       setExecutionDuration: action,
       setPreviewLimit: action,
       setQueryRunPromise: action,
-      setSqlQueries: action,
       exportData: flow,
       runQuery: flow,
       generatePlan: flow,
-      getSql: flow,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -106,11 +98,6 @@ export class QueryBuilderResultState {
 
   setIsRunningQuery = (val: boolean): void => {
     this.isRunningQuery = val;
-  };
-
-  setIsShowingSqlViewer = (val: boolean): void => {
-    this.setSqlQueries([]);
-    this.isShowingSqlViewer = val;
   };
 
   setExecutionResult = (val: ExecutionResult | undefined): void => {
@@ -129,10 +116,6 @@ export class QueryBuilderResultState {
     promise: Promise<ExecutionResult> | undefined,
   ): void => {
     this.queryRunPromise = promise;
-  };
-
-  setSqlQueries = (val: string[] | undefined): void => {
-    this.sqlQueries = val;
   };
 
   get checkForStaleResults(): boolean {
@@ -291,10 +274,7 @@ export class QueryBuilderResultState {
     }
   }
 
-  *generatePlan(
-    debug: boolean,
-    options?: { hideExecutionPlanViewer?: boolean },
-  ): GeneratorFn<void> {
+  *generatePlan(debug: boolean): GeneratorFn<void> {
     try {
       this.isGeneratingPlan = true;
       const mapping = guaranteeNonNullable(
@@ -343,28 +323,13 @@ export class QueryBuilderResultState {
 
       stopWatch.record();
       try {
-        if (!options?.hideExecutionPlanViewer) {
-          this.executionPlanState.setRawPlan(rawPlan);
-        }
-
+        this.executionPlanState.setRawPlan(rawPlan);
         const plan =
           this.queryBuilderState.graphManagerState.graphManager.buildExecutionPlan(
             rawPlan,
             this.queryBuilderState.graphManagerState.graph,
           );
-
         this.executionPlanState.setPlan(plan);
-
-        const sqlQueries: string[] = [];
-        this.executionPlanState.plan?.rootExecutionNode.executionNodes.forEach(
-          (node) => {
-            if (node instanceof SQLExecutionNode) {
-              const sqlInNode = node.sqlQuery;
-              sqlQueries.push(sqlInNode);
-            }
-          },
-        );
-        this.setSqlQueries(sqlQueries);
       } catch {
         // do nothing
       }
@@ -398,25 +363,6 @@ export class QueryBuilderResultState {
       );
     } finally {
       this.isGeneratingPlan = false;
-    }
-  }
-
-  *getSql(): GeneratorFn<void> {
-    try {
-      if (!this.executionPlanState.plan || this.checkForStaleResults) {
-        this.generatePlan(false, { hideExecutionPlanViewer: true });
-      }
-    } catch (error) {
-      assertErrorThrown(error);
-      this.queryBuilderState.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-        error,
-      );
-      this.queryBuilderState.applicationStore.notificationService.notifyError(
-        error,
-      );
-    } finally {
-      this.setIsShowingSqlViewer(true);
     }
   }
 }

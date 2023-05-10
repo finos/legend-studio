@@ -48,16 +48,14 @@ import {
   useApplicationStore,
   useConditionedApplicationNavigationContext,
 } from '@finos/legend-application';
-import {
-  generateColumnTypeLabel,
-  renderColumnTypeIcon,
-} from './DatabaseEditorHelper.js';
+import { renderColumnTypeIcon } from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { stringifyDataType } from '@finos/legend-graph';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -151,7 +149,7 @@ const DatabaseBuilderTreeNodeContainer: React.FC<
         {node instanceof ColumnDatabaseBuilderTreeNodeData && (
           <div className="database-builder-tree__node__type">
             <div className="database-builder-tree__node__type__label">
-              {generateColumnTypeLabel(node.column.type)}
+              {stringifyDataType(node.column.type)}
             </div>
           </div>
         )}

@@ -130,10 +130,22 @@ export const PanelTabs: React.FC<{
   );
 };
 
-export const PanelContent = generateSimpleDIVComponent(
-  'PanelContent',
-  'panel__content',
-);
+export const PanelContent: React.FC<{
+  darkMode?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}> = (props) => {
+  const { className, darkMode, children } = props;
+  return (
+    <div
+      className={clsx('panel__content', className, {
+        'panel__content--dark': darkMode,
+      })}
+    >
+      {children}
+    </div>
+  );
+};
 
 export const PanelList = generateSimpleDIVComponent(
   'PanelList',
