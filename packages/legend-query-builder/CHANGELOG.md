@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 3.2.7
+
+### Patch Changes
+
+- [#2219](https://github.com/finos/legend-studio/pull/2219) [`774d74510`](https://github.com/finos/legend-studio/commit/774d74510dd75c1ebf94bb587b4bb6814474a6f3) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Create an executable query for entitlements by using let statements to handle paraneters
+
 ## 3.2.6
 
 ## 3.2.5

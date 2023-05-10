@@ -1,5 +1,7 @@
 # @finos/legend-application-taxonomy-bootstrap
 
+## 9.39.0
+
 ## 9.38.0
 
 ## 9.37.0
