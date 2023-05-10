@@ -89,7 +89,7 @@
     "sass": "1.62.1",
     "sass-loader": "13.2.2",
     "typescript": "5.0.4",
-    "webpack": "5.82.0"
+    "webpack": "5.82.1"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
