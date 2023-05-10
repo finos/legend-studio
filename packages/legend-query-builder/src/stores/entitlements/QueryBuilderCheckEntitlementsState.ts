@@ -19,8 +19,17 @@ import { makeObservable, observable, action, computed } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { DataAccessState } from '../data-access/DataAccessState.js';
-import { RuntimePointer, InMemoryGraphData } from '@finos/legend-graph';
-import { getExecutionQueryFromRawLambda } from '../shared/LambdaParameterState.js';
+import {
+  type GraphManagerState,
+  type RawLambda,
+  RuntimePointer,
+  InMemoryGraphData,
+  buildRawLambdaFromLambdaFunction,
+} from '@finos/legend-graph';
+import {
+  type LambdaParameterState,
+  buildParametersLetLambdaFunc,
+} from '../shared/LambdaParameterState.js';
 
 export class QueryBuilderCheckEntitlementsState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
@@ -55,7 +64,7 @@ export class QueryBuilderCheckEntitlementsState implements Hashable {
           runtime:
             this.queryBuilderState.runtimeValue.packageableRuntime.value.path,
           getQuery: async () =>
-            getExecutionQueryFromRawLambda(
+            this.createExecutableQuery(
               this.queryBuilderState.buildQuery(),
               this.queryBuilderState.parametersState.parameterStates,
               this.queryBuilderState.graphManagerState,
@@ -66,6 +75,32 @@ export class QueryBuilderCheckEntitlementsState implements Hashable {
         },
       );
     }
+  }
+
+  createExecutableQuery(
+    rawLambda: RawLambda,
+    parameterStates: LambdaParameterState[],
+    graphManagerState: GraphManagerState,
+  ): RawLambda {
+    if (parameterStates.length > 0) {
+      const execLambdaFunction = buildParametersLetLambdaFunc(
+        graphManagerState.graph,
+        parameterStates,
+      );
+      const execQuery = buildRawLambdaFromLambdaFunction(
+        execLambdaFunction,
+        graphManagerState,
+      );
+      //reset Parameters
+      if (Array.isArray(rawLambda.body) && Array.isArray(execQuery.body)) {
+        execQuery.body = [
+          ...(execQuery.body as object[]),
+          ...(rawLambda.body as object[]),
+        ];
+        return execQuery;
+      }
+    }
+    return rawLambda;
   }
 
   get hashCode(): string {
