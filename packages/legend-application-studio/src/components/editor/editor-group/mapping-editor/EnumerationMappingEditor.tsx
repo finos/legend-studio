@@ -121,6 +121,9 @@ const EnumerationMappingSourceSelectorModal = observer(
     };
     const handleEnter = (): void => sourceSelectorRef.current?.focus();
 
+    const isDarkMode =
+      editorStore.applicationStore.config.options
+        .TEMPORARY__enableMappingTestableEditor;
     return (
       <Dialog
         open={open}
@@ -137,7 +140,7 @@ const EnumerationMappingSourceSelectorModal = observer(
           },
         }}
       >
-        <Modal className="search-modal">
+        <Modal className="search-modal" darkMode={isDarkMode}>
           <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
             ref={sourceSelectorRef}
@@ -146,6 +149,7 @@ const EnumerationMappingSourceSelectorModal = observer(
             value={selectedSourceType}
             placeholder="Choose a type..."
             isClearable={true}
+            darkMode={isDarkMode}
             filterOption={filterOption}
             formatOptionLabel={getPackageableElementOptionFormatter({})}
           />

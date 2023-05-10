@@ -21,6 +21,8 @@ import {
   type SelectComponent,
   CustomSelectorInput,
   createFilter,
+  Modal,
+  ModalTitle,
 } from '@finos/legend-art';
 import {
   getMappingElementSource,
@@ -129,6 +131,9 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
+    const isDarkMode =
+      editorStore.applicationStore.config.options
+        .TEMPORARY__enableMappingTestableEditor;
     const options = (
       editorStore.graphManagerState.usableClasses as MappingElementSource[]
     )
@@ -207,19 +212,20 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
           },
         }}
       >
-        <div className="modal search-modal">
-          <div className="modal__title">Choose a Source</div>
+        <Modal className="modal search-modal" darkMode={isDarkMode}>
+          <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
             ref={sourceSelectorRef}
             options={options}
             onChange={changeSourceType}
             value={selectedSourceType}
             placeholder={`Select a source...`}
+            darkMode={isDarkMode}
             isClearable={true}
             filterOption={sourceFilterOption}
             formatOptionLabel={formatSourceOptionLabel}
           />
-        </div>
+        </Modal>
       </Dialog>
     );
   },

@@ -51,6 +51,10 @@
       color: var(--color-green-100) !important;
     }
 
+    &__play__all__icon svg:hover {
+      color: var(--color-green-80) !important;
+    }
+
     &__item {
       @include flexVCenter;
       @include flexHSpaceBetween;
@@ -213,7 +217,7 @@
 
     &-info {
       line-height: 2rem;
-      font-family: cursive;
+      font-family: 'Roboto Condensed', sans-serif;
       font-size: 1.3rem;
       padding-top: 0.2rem;
     }

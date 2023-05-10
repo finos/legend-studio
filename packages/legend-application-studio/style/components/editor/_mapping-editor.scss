@@ -198,6 +198,32 @@
     color: var(--color-light-grey-400);
   }
 
+  .mapping-test-explorer__item:hover {
+    background: var(--color-dark-grey-200);
+  }
+
+  .mapping-test-explorer__item__label__text {
+    color: var(--color-light-grey-400);
+  }
+
+  .mapping-test-explorer__item__label__text:active {
+    color: var(--color-light-grey-400);
+  }
+
+  .mapping-explorer__item--active,
+  .mapping-explorer__item--active svg,
+  .mapping-explorer__item--active:hover,
+  .mapping-test-explorer__item--active,
+  .mapping-test-explorer__item--active svg,
+  .mapping-test-explorer__item--active:hover {
+    background: var(--color-light-blue-450);
+    color: var(--color-light-grey-0);
+  }
+
+  .enumeration-mapping-editor__enum-value {
+    background: unset;
+  }
+
   // ---------------------------- Modal  -------------------------------
 
   .mapping-modal {
@@ -242,6 +268,7 @@
   .mapping-element-editor__metadata__source-chunk {
     background: var(--color-blue-200);
   }
+
   // ---------------------------- Blank Panel -------------------------------
 
   .blank-panel-placeholder__action,
