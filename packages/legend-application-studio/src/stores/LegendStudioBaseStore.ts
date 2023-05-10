@@ -114,7 +114,11 @@ export class LegendStudioBaseStore {
       )
     ) {
       // setup SDLC server client
-      if (!(yield flowResult(this.initializeSDLCServerClient()))) {
+      yield flowResult(this.initializeSDLCServerClient());
+
+      // initializing the landing page needs to stop if the sdlc server client is not initialized
+      // making additioanl calls to the sdlc server at that point results in failures
+      if (!this.sdlcServerClient.isInitialized) {
         return;
       }
 
@@ -179,7 +183,7 @@ export class LegendStudioBaseStore {
     this.SDLCServerTermsOfServicesUrlsToView = [];
   }
 
-  private *initializeSDLCServerClient(): GeneratorFn<boolean> {
+  private *initializeSDLCServerClient(): GeneratorFn<void> {
     try {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
@@ -190,7 +194,6 @@ export class LegendStudioBaseStore {
             this.applicationStore.navigationService.navigator.getCurrentAddress(),
           ),
         );
-        return false;
       } else {
         // Only proceed intialization after passing authorization check
 
@@ -229,7 +232,9 @@ export class LegendStudioBaseStore {
         // fetch server features config and platforms
         yield this.sdlcServerClient.fetchServerPlatforms();
         yield this.sdlcServerClient.fetchServerFeaturesConfiguration();
-        return true;
+
+        // the sdlc server client is authorized and initialized
+        this.sdlcServerClient.isInitialized = true;
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -269,7 +274,6 @@ export class LegendStudioBaseStore {
         );
         this.applicationStore.notificationService.notifyError(error);
       }
-      return false;
     }
   }
 }
