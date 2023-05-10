@@ -114,7 +114,9 @@ export class LegendStudioBaseStore {
       )
     ) {
       // setup SDLC server client
-      yield flowResult(this.initializeSDLCServerClient());
+      if (!(yield flowResult(this.initializeSDLCServerClient()))) {
+        return;
+      }
 
       try {
         const currentUser = User.serialization.fromJson(
@@ -177,19 +179,18 @@ export class LegendStudioBaseStore {
     this.SDLCServerTermsOfServicesUrlsToView = [];
   }
 
-  private *initializeSDLCServerClient(): GeneratorFn<void> {
+  private *initializeSDLCServerClient(): GeneratorFn<boolean> {
     try {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
-        yield new Promise(() => {
-          this.applicationStore.navigationService.navigator.goToAddress(
-            SDLCServerClient.authorizeCallbackUrl(
-              this.applicationStore.config.sdlcServerUrl,
-              this.applicationStore.navigationService.navigator.getCurrentAddress(),
-            ),
-          );
-        });
+        this.applicationStore.navigationService.navigator.goToAddress(
+          SDLCServerClient.authorizeCallbackUrl(
+            this.applicationStore.config.sdlcServerUrl,
+            this.applicationStore.navigationService.navigator.getCurrentAddress(),
+          ),
+        );
+        return false;
       } else {
         // Only proceed intialization after passing authorization check
 
@@ -228,6 +229,7 @@ export class LegendStudioBaseStore {
         // fetch server features config and platforms
         yield this.sdlcServerClient.fetchServerPlatforms();
         yield this.sdlcServerClient.fetchServerFeaturesConfiguration();
+        return true;
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -267,6 +269,7 @@ export class LegendStudioBaseStore {
         );
         this.applicationStore.notificationService.notifyError(error);
       }
+      return false;
     }
   }
 }
