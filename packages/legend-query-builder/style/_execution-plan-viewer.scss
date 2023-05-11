@@ -274,6 +274,10 @@
     &__content__container {
       height: 100%;
       background: var(--color-dark-grey-100);
+
+      .tree-view__node__icon {
+        padding: 0;
+      }
     }
   }
 

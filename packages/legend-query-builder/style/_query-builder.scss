@@ -845,6 +845,43 @@
   }
 }
 
+.query-builder__sql__container {
+  width: 95%;
+  margin: 1% auto 0;
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    width: 100%;
+  }
+
+  &__item {
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-family: monospace;
+    font-size: 1.3rem;
+    padding: 1rem;
+    margin: 5px 0;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-light-grey-400);
+    }
+  }
+}
+
 .query-builder__lambda-editor {
   border: 0.1rem solid var(--color-dark-grey-280);
 

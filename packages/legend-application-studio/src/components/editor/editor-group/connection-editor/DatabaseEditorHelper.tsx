@@ -47,49 +47,6 @@ import {
   Json,
 } from '@finos/legend-graph';
 
-export const generateColumnTypeLabel = (type: RelationalDataType): string => {
-  if (type instanceof VarChar) {
-    return `VARCHAR(${type.size})`;
-  } else if (type instanceof Char) {
-    return `CHAR(${type.size})`;
-  } else if (type instanceof VarBinary) {
-    return `VARBINARY(${type.size})`;
-  } else if (type instanceof Binary) {
-    return `BINARY(${type.size})`;
-  } else if (type instanceof Bit) {
-    return `BIT`;
-  } else if (type instanceof Numeric) {
-    return `NUMERIC(${type.precision},${type.scale})`;
-  } else if (type instanceof Decimal) {
-    return `DECIMAL(${type.precision},${type.scale})`;
-  } else if (type instanceof Double) {
-    return `DOUBLE`;
-  } else if (type instanceof Float) {
-    return `FLOAT`;
-  } else if (type instanceof Real) {
-    return `REAL`;
-  } else if (type instanceof Integer) {
-    return `INT`;
-  } else if (type instanceof BigInt) {
-    return `BIGINT`;
-  } else if (type instanceof SmallInt) {
-    return `SMALLINT`;
-  } else if (type instanceof TinyInt) {
-    return `TINYINT`;
-  } else if (type instanceof Date) {
-    return `DATE`;
-  } else if (type instanceof Timestamp) {
-    return `TIMESTAMP`;
-  } else if (type instanceof Other) {
-    return `OTHER`;
-  } else if (type instanceof SemiStructured) {
-    return 'SEMI-STRUCTURED';
-  } else if (type instanceof Json) {
-    return 'JSON';
-  }
-  return '(UNKNOWN)';
-};
-
 export const renderColumnTypeIcon = (
   type: RelationalDataType,
 ): React.ReactNode => {
