@@ -451,8 +451,11 @@ export class QueryRenameState {
     if (
       this.editorStore.isSaveActionDisabled ||
       !this.queryBuilderState.mapping ||
-      !(this.queryBuilderState.runtimeValue instanceof RuntimePointer)
+      !(this.queryBuilderState.runtimeValue instanceof RuntimePointer) ||
+      this.queryName === this.editorStore.title
     ) {
+      this.renameQueryState.reset();
+      this.editorStore.setRenameState(undefined);
       return;
     }
     this.renameQueryState.inProgress();
@@ -486,7 +489,7 @@ export class QueryRenameState {
           this.editorStore.graphManagerState.graph,
         )) as Query;
       this.editorStore.applicationStore.notificationService.notifySuccess(
-        `Successfully renamed query!`,
+        `Renamed query successfully`,
       );
       LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
         this.editorStore.applicationStore.telemetryService,
@@ -702,6 +705,8 @@ export abstract class QueryEditorStore {
       searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     try {
       const searchSpecification = new QuerySearchSpecification();
+      searchSpecification.showCurrentUserQueriesOnly = true;
+      searchSpecification.exactMatchName = true;
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
@@ -1024,6 +1029,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
   setQuery(val: LightQuery): void {
     this._query = val;
+    this.title = val.name;
   }
 
   getProjectInfo(): ProjectGAVCoordinates {

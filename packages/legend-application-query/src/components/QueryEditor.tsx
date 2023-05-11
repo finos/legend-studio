@@ -43,7 +43,7 @@ import {
   clsx,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { Fragment, useEffect, useMemo, useRef } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
@@ -199,6 +199,15 @@ const QueryEditorHeaderContent = observer(
     const renameState = editorStore.renameState;
     const applicationStore = useLegendQueryApplicationStore();
 
+    const renameRef = useRef<HTMLInputElement>(null);
+    const [showQueryNameEditInput, setShowQueryNameEditInput] =
+      useState<boolean>(false);
+
+    useEffect(() => {
+      renameRef.current?.focus();
+      renameRef.current?.select();
+    }, [showQueryNameEditInput]);
+
     // actions
     const openQueryLoader = (): void => {
       editorStore.queryLoaderState.setQueryLoaderDialogOpen(true);
@@ -236,8 +245,6 @@ const QueryEditorHeaderContent = observer(
       );
     };
 
-    const renameRef = useRef<HTMLInputElement>(null);
-
     const updateQuery = applicationStore.guardUnhandledError(
       async (): Promise<void> => {
         try {
@@ -252,7 +259,7 @@ const QueryEditorHeaderContent = observer(
               }),
             ),
           );
-          renameRef.current?.select();
+          setShowQueryNameEditInput(true);
         } catch {
           // do nothing
         }
@@ -384,15 +391,24 @@ const QueryEditorHeaderContent = observer(
             <PanelListItem>
               <div className="input--with-validation">
                 <input
-                  title="Query title rename"
                   ref={renameRef}
                   className={clsx('input input--dark', {
                     'input--caution': isExistingQueryName,
                   })}
                   onChange={changeQueryName}
-                  onKeyDown={onEnter}
+                  onKeyDown={(event) => {
+                    if (event.code === 'Enter') {
+                      event.stopPropagation();
+                      setShowQueryNameEditInput(false);
+                      onEnter(event);
+                    } else if (event.code === 'Escape') {
+                      setShowQueryNameEditInput(false);
+                      event.stopPropagation();
+                      renameState.renameQueryState.reset();
+                      renameState.editorStore.setRenameState(undefined);
+                    }
+                  }}
                   value={renameState.queryName}
-                  placeholder="Search"
                 />
                 {isExistingQueryName && (
                   <div
@@ -403,21 +419,13 @@ const QueryEditorHeaderContent = observer(
                   </div>
                 )}
               </div>
-              <button
-                className={clsx('input__btn', {
-                  'btn--icon__caution': isExistingQueryName,
-                })}
-                onClick={renameQuery}
-                title="Rename Query"
-              >
-                <CheckIcon />
-              </button>
             </PanelListItem>
           </div>
         ) : (
           <div
+            onDoubleClick={updateQuery}
             className="query-editor__header__content__main query-editor__header__content__title"
-            title="Query title"
+            title="Double-click to rename query"
           >
             {editorStore.title}
           </div>
@@ -540,7 +548,6 @@ const QueryEditorHeaderContent = observer(
             disabled={editorStore.isViewProjectActionDisabled}
             content={
               <MenuContent>
-                {/* TODO: remove this and move it to inline editing directly on the title */}
                 <MenuContentItem
                   className="query-editor__header__action__options"
                   onClick={updateQuery}
@@ -548,7 +555,6 @@ const QueryEditorHeaderContent = observer(
                 >
                   Rename Query
                 </MenuContentItem>
-
                 <MenuContentItem
                   className="query-editor__header__action__options"
                   disabled={editorStore.isViewProjectActionDisabled}

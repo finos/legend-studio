@@ -28,4 +28,5 @@ export class QuerySearchSpecification {
   stereotypes?: QueryStereotype[] | undefined;
   limit?: number | undefined;
   showCurrentUserQueriesOnly?: boolean | undefined;
+  exactMatchName?: boolean | undefined;
 }
