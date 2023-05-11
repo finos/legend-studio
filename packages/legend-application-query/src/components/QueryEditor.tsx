@@ -419,22 +419,13 @@ const QueryEditorHeaderContent = observer(
                   </div>
                 )}
               </div>
-              <button
-                className={clsx('input__btn', {
-                  'btn--icon__caution': isExistingQueryName,
-                })}
-                onClick={renameQuery}
-                title="Rename query"
-              >
-                <CheckIcon />
-              </button>
             </PanelListItem>
           </div>
         ) : (
           <div
             onDoubleClick={updateQuery}
             className="query-editor__header__content__main query-editor__header__content__title"
-            title="Double-click to rename Query"
+            title="Double-click to rename query"
           >
             {editorStore.title}
           </div>

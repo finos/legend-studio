@@ -205,6 +205,7 @@ export class QueryLoaderState {
       let searchSpecification = new QuerySearchSpecification();
       searchSpecification.searchTerm = searchText;
       searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT + 1;
+      searchSpecification.exactMatchName = true;
       searchSpecification.showCurrentUserQueriesOnly =
         this.showCurrentUserQueriesOnly;
       if (this.queryBuilderState) {

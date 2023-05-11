@@ -706,6 +706,7 @@ export abstract class QueryEditorStore {
     try {
       const searchSpecification = new QuerySearchSpecification();
       searchSpecification.showCurrentUserQueriesOnly = true;
+      searchSpecification.exactMatchName = true;
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
