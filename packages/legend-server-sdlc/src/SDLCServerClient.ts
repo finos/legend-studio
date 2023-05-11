@@ -78,6 +78,7 @@ export interface SDLCServerClientConfig {
 
 export class SDLCServerClient extends AbstractServerClient {
   currentUser?: User;
+  isInitialized = false;
   private _features: SDLCServerFeaturesConfiguration | undefined;
   private _platformDependencyConfiguration?: Platform[] | undefined;
 

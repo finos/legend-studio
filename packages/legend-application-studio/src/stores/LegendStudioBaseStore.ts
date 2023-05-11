@@ -116,6 +116,12 @@ export class LegendStudioBaseStore {
       // setup SDLC server client
       yield flowResult(this.initializeSDLCServerClient());
 
+      // initializing the landing page needs to stop if the sdlc server client is not initialized
+      // making additioanl calls to the sdlc server at that point results in failures
+      if (!this.sdlcServerClient.isInitialized) {
+        return;
+      }
+
       try {
         const currentUser = User.serialization.fromJson(
           (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
@@ -226,6 +232,9 @@ export class LegendStudioBaseStore {
         // fetch server features config and platforms
         yield this.sdlcServerClient.fetchServerPlatforms();
         yield this.sdlcServerClient.fetchServerFeaturesConfiguration();
+
+        // the sdlc server client is authorized and initialized
+        this.sdlcServerClient.isInitialized = true;
       }
     } catch (error) {
       assertErrorThrown(error);
