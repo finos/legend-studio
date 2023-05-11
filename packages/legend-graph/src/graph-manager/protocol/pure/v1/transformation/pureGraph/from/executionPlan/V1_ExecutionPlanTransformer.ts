@@ -42,7 +42,7 @@ import { V1_transformConnection } from '../V1_ConnectionTransformer.js';
 import { V1_DatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import { PureClientVersion } from '../../../../../../../../graph-manager/GraphManagerUtils.js';
 import { V1_PureGraphManager } from '../../../../V1_PureGraphManager.js';
-import { stringifyDataType } from '../../../../../../../../graph/helpers/DomainHelper.js';
+import { stringifyDataType } from '../../../../../../../../graph/helpers/STO_Relational_Helper.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 
