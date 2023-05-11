@@ -28,6 +28,7 @@ import {
   ModalHeader,
   PanelContent,
   PanelFormTextField,
+  PanelHeader,
   PanelLoadingIndicator,
   RefreshIcon,
   WrenchIcon,
@@ -136,10 +137,8 @@ const EqualToJsonAsssertionEditor = observer(
 
     return (
       <>
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">expected</div>
-          </div>
+        <PanelHeader>
+          <PanelHeader title="expected" />
           <div className="panel__header__actions">
             <button
               className="panel__header__action"
@@ -151,7 +150,7 @@ const EqualToJsonAsssertionEditor = observer(
               <WrenchIcon />
             </button>
           </div>
-        </div>
+        </PanelHeader>
         <div className="equal-to-json-editor__content panel__content">
           <div className="equal-to-json-editor__content__data">
             <CodeEditor

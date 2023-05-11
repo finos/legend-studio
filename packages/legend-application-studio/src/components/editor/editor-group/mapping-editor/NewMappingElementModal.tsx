@@ -247,9 +247,13 @@ export const NewMappingElementModal = observer(() => {
           )}
           {showId && (
             <div>
+              <PanelDivider />
               Default ID could not be used, please specify one:
+              <PanelDivider />
               <input
-                className="input new-mapping-element-modal__id-input"
+                className={clsx('input new-mapping-element-modal__id-input', {
+                  'input--dark': darkMappingMode,
+                })}
                 ref={mappingIdInputRef}
                 spellCheck={false}
                 value={id}
