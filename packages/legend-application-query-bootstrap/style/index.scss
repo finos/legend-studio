@@ -39,6 +39,7 @@
   --color-legacylight-light-blue-100: #7399c6;
   --color-legacylight-light-blue-200: #6a8db6;
   --color-legacylight-light-blue-250: #687b93;
+  --color-legacylight-light-blue-270: #597089;
   --color-legacylight-light-blue-300: #4d6f9c;
   --color-legacylight-light-blue-350: #475b72;
   --color-legacylight-light-blue-400: #1b4c8c;
@@ -50,7 +51,8 @@
 .theme__legacy-light {
   // ---------------------------- Input -------------------------------
 
-  input {
+  input,
+  .value-spec-editor__toggler__btn {
     background: var(--color-white);
     color: var(--color-legacylight-dark-grey-200);
     border-color: var(--color-light-grey-250);
@@ -69,6 +71,11 @@
 
   .menu__item {
     color: var(--color-legacylight-dark-grey-200);
+
+    &__label,
+    &__icon svg {
+      color: var(--color-dark-grey-300);
+    }
 
     &:hover {
       background: var(--color-legacylight-light-grey-100);
@@ -104,12 +111,14 @@
     outline: none;
   }
 
-  .btn--medium,
-  .btn--medium:hover {
-    background: var(--color-legacylight-light-grey-300);
+  .btn--medium {
+    background: var(--color-legacylight-light-blue-250);
     color: var(--color-white);
   }
 
+  .btn--medium:hover {
+    background: var(--color-legacylight-light-blue-270);
+  }
   // ---------------------------- Table -------------------------------
 
   .query-builder__explorer__preview-data-modal__body .table {
@@ -274,6 +283,14 @@
   .lambda-parameter-values__value__label,
   .value-spec-editor__list-editor__textarea__description {
     color: var(--color-legacylight-dark-grey-200);
+  }
+
+  .value-spec-editor__toggler__btn svg {
+    color: var(--color-dark-grey-500);
+  }
+
+  .value-spec-editor__toggler__btn--toggled svg {
+    color: var(--color-blue-50);
   }
 
   // ---------------------------- Derived Property Editor -------------------------------
@@ -462,6 +479,17 @@
     color: var(--color-light-grey-400);
   }
 
+  .execution-plan-viewer__content {
+    .reflex-container.vertical > .reflex-splitter:hover,
+    .reflex-container.vertical > .reflex-splitter.active {
+      background: var(--color-dark-grey-500);
+    }
+  }
+
+  .dnd__entry__placeholder__content {
+    background: var(--color-light-grey-0);
+  }
+
   // ---------------------------- Query Builder -------------------------------
 
   .query-editor {
@@ -533,6 +561,10 @@
       svg {
         color: var(--color-white);
       }
+    }
+
+    .query-editor__header__action.btn--dark:hover {
+      background: var(--color-legacylight-light-blue-270);
     }
 
     .query-editor__header__action__icon {
@@ -771,7 +803,7 @@
 
     .query-builder__fetch__structure__mode {
       background: var(--color-light-grey-250);
-      color: var(--color-dark-grey-500);
+      color: var(--color-dark-grey-400);
     }
 
     .query-builder__fetch__structure__mode--selected {
@@ -809,6 +841,15 @@
       &:hover svg {
         color: var(--color-dark-grey-350);
       }
+    }
+
+    .query-builder__projection__column__action .query-builder__icon,
+    .query-builder__projection__column__action svg {
+      color: var(--color-legacylight-light-grey-300);
+    }
+
+    .query-builder__projection__column__action[disabled] svg {
+      color: var(--color-legacylight-light-grey-200);
     }
 
     .query-builder__projection__column__aggregate__operator__label {
@@ -1017,6 +1058,7 @@
 
     .query-builder__result__limit__label {
       background: var(--color-legacylight-light-grey-100);
+      color: var(--color-dark-grey-300);
     }
 
     .query-builder__result__execute-btn__label {
@@ -1088,7 +1130,7 @@
     }
 
     .query-builder__result__export__dropdown {
-      border-color: transparent;
+      border-color: var(--color-legacylight-light-blue-100);
     }
 
     .query-builder__result__export__dropdown__label {

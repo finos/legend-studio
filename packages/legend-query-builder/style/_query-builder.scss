@@ -119,6 +119,10 @@
     }
   }
 
+  &__sql__modal {
+    overflow: auto;
+  }
+
   .panel {
     height: 100%;
     padding: 0.3rem;
@@ -429,6 +433,15 @@
 
   &__header__actions {
     @include flexVCenter;
+  }
+
+  &__sql__actions {
+    height: 2.2rem;
+    padding: 0 0.7rem;
+
+    svg {
+      font-size: 1.8rem;
+    }
   }
 
   &__stop-btn {

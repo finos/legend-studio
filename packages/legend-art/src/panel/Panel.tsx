@@ -29,16 +29,24 @@ export const PanelFullContent = generateSimpleDIVComponent(
 
 export const PanelHeader: React.FC<{
   title?: string;
-  children?: React.ReactNode;
+  keepTitleFormat?: boolean | undefined;
+  darkMode?: boolean | undefined;
   className?: string;
+  children?: React.ReactNode;
 }> = (props) => {
-  const { title, children, className } = props;
+  const { title, keepTitleFormat, darkMode, className, children } = props;
+  const isLightMode = Boolean(darkMode);
+  const isKeepTitleFormat = Boolean(keepTitleFormat);
   return (
     <div className={clsx('panel__header', className)}>
       {title && (
         <div className="panel__header__title">
-          <div className="panel__header__title__label">
-            {title.toLowerCase()}
+          <div
+            className={clsx('panel__header__title__label', {
+              'panel__header__title__label--light': isLightMode,
+            })}
+          >
+            {isKeepTitleFormat ? title : title.toLowerCase()}
           </div>
         </div>
       )}

@@ -28,17 +28,49 @@ import {
   TDSBuilder,
   INTERNAL__TDSColumn,
   RawExecutionResult,
+  RelationalExecutionActivities,
+  type ExecutionActivities,
+  UnknownExecutionActivities,
+  AggregationAwareActivities,
 } from '../../../../../../graph-manager/action/execution/ExecutionResult.js';
 import {
   type V1_ExecutionResult,
   type V1_TDSBuilder,
   type V1_INTERNAL__TDSColumn,
+  type V1_ExecutionActivities,
   V1_ClassExecutionResult,
   V1_JsonExecutionResult,
   V1_INTERNAL__UnknownExecutionResult,
   V1_TDSExecutionResult,
   V1_RawExecutionResult,
+  V1_RelationalExecutionActivities,
+  V1_UnknownExecutionActivity,
+  V1_AggregationAwareActivities,
 } from './V1_ExecutionResult.js';
+
+const buildExecutionActivities = (
+  protocol: V1_ExecutionActivities,
+): ExecutionActivities => {
+  if (protocol instanceof V1_RelationalExecutionActivities) {
+    const metamodel = new RelationalExecutionActivities(protocol.sql);
+    metamodel.comment = protocol.comment;
+    return metamodel;
+  } else if (protocol instanceof V1_AggregationAwareActivities) {
+    const metamodel = new AggregationAwareActivities();
+    metamodel.rewrittenQuery = guaranteeNonNullable(
+      protocol.rewrittenQuery,
+      `Aggregation aware execution activities 'rewritenQuery' field is missing`,
+    );
+    return metamodel;
+  } else if (protocol instanceof V1_UnknownExecutionActivity) {
+    const metamodel = new UnknownExecutionActivities(protocol);
+    return metamodel;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build execution activities`,
+    protocol,
+  );
+};
 
 const buildJSONExecutionResult = (
   protocol: V1_JsonExecutionResult,
@@ -81,7 +113,7 @@ const buildTDSExecutionResult = (
       `TDS execution result 'builder' field is missing`,
     ),
   );
-  metamodel.activities = protocol.activities;
+  metamodel.activities = protocol.activities?.map(buildExecutionActivities);
   metamodel.result.columns = (
     protocol.result as {
       columns: string[];
@@ -107,7 +139,7 @@ const buildClassExecutionResult = (
     protocol.objects,
     `Class execution result 'objects' field is missing`,
   );
-  metamodel.activities = protocol.activities;
+  metamodel.activities = protocol.activities?.map(buildExecutionActivities);
   return metamodel;
 };
 

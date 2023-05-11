@@ -196,6 +196,7 @@ export * from './graph-manager/GraphManagerStatistics.js';
 export * from './graph-manager/GraphManagerUtils.js';
 export * from './__lib__/GraphManagerEvent.js';
 export {
+  RelationalExecutionActivities,
   ExecutionResult,
   TDSExecutionResult as TDSExecutionResult,
   RawExecutionResult,

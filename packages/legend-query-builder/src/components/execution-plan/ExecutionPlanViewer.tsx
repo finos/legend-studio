@@ -38,6 +38,8 @@ import {
   ModalFooter,
   PanelSideBarHeader,
   ModalFooterButton,
+  PanelHeader,
+  Panel,
 } from '@finos/legend-art';
 import {
   addUniqueEntry,
@@ -428,6 +430,9 @@ const ExecutionPlanViewerContent = observer(
   }) => {
     const { executionPlanState, rawPlan } = props;
     const plan = executionPlanState.plan;
+    const isDarkMode =
+      !executionPlanState.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     return (
       <div className="execution-plan-viewer__content">
@@ -448,7 +453,13 @@ const ExecutionPlanViewerContent = observer(
               </div>
             </ResizablePanel>
             <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              <ResizablePanelSplitterLine
+                color={
+                  isDarkMode
+                    ? 'var(--color-dark-grey-200)'
+                    : 'var(--color-legacylight-light-grey-300)'
+                }
+              />
             </ResizablePanelSplitter>
             <ResizablePanel>
               <ExecutionPlanViewPanel
@@ -480,6 +491,9 @@ export const ExecutionPlanViewer = observer(
       executionPlanState.setDebugText(undefined);
     };
     const rawPlan = executionPlanState.rawPlan;
+    const isDarkMode =
+      !executionPlanState.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     if (!rawPlan) {
       return null;
@@ -506,17 +520,21 @@ export const ExecutionPlanViewer = observer(
                   />
                 </ResizablePanel>
                 <ResizablePanelSplitter>
-                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                  <ResizablePanelSplitterLine
+                    color={
+                      isDarkMode
+                        ? 'var(--color-dark-grey-200)'
+                        : 'var(--color-legacylight-light-grey-300)'
+                    }
+                  />
                 </ResizablePanelSplitter>
                 <ResizablePanel size={200} minSize={28}>
-                  <div className="panel execution-plan-viewer__debug-panel">
-                    <div className="panel__header">
-                      <div className="panel__header__title">
-                        <div className="panel__header__title__label">
-                          DEBUG LOG
-                        </div>
-                      </div>
-                    </div>
+                  <Panel className="panel execution-plan-viewer__debug-panel">
+                    <PanelHeader
+                      title="DEBUG LOG"
+                      keepTitleFormat={true}
+                      darkMode={isDarkMode}
+                    />
                     <PanelContent>
                       <CodeEditor
                         inputValue={executionPlanState.debugText}
@@ -524,7 +542,7 @@ export const ExecutionPlanViewer = observer(
                         language={CODE_EDITOR_LANGUAGE.TEXT}
                       />
                     </PanelContent>
-                  </div>
+                  </Panel>
                 </ResizablePanel>
               </ResizablePanelGroup>
             ) : (

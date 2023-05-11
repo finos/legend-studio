@@ -62,6 +62,11 @@
     @include flexVCenter;
 
     user-select: none;
+
+    &--light {
+      color: var(--color-dark-grey-400);
+      background: var(--color-light-grey-50);
+    }
   }
 
   &__header__title__label {
@@ -75,6 +80,11 @@
     cursor: default;
     margin-right: 0.5rem;
     white-space: nowrap;
+
+    &--light {
+      color: var(--color-dark-grey-400);
+      background: var(--color-light-grey-50);
+    }
   }
 
   &__header__title__label__status {
@@ -88,9 +98,9 @@
   }
 
   &__header__title__content {
-    font-weight: bold;
-
     @include ellipsisTextOverflow;
+
+    font-weight: bold;
   }
 
   &__header--with-tabs {
