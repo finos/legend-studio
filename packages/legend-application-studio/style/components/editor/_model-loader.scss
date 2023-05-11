@@ -63,6 +63,10 @@
         cursor: pointer;
       }
 
+      &__type:hover {
+        background: var(--color-dark-grey-200);
+      }
+
       &__type__label {
         height: 2.6rem;
         width: 23.4rem;
@@ -109,8 +113,13 @@
         color: var(--color-light-grey-400);
         cursor: pointer;
         margin-left: 0.1rem;
-        width: 2.6rem;
+        padding: 0 1rem;
         min-width: 2.6rem;
+      }
+
+      &__edit-mode:hover,
+      &__load-project-entities-btn:hover {
+        background: var(--color-dark-grey-200);
       }
 
       &__type-option__group {

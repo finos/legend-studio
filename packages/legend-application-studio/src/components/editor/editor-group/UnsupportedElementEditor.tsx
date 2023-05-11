@@ -15,7 +15,14 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent, LockIcon, Panel } from '@finos/legend-art';
+import {
+  BlankPanelContent,
+  Button,
+  LockIcon,
+  Panel,
+  PanelContent,
+  PanelHeader,
+} from '@finos/legend-art';
 import { UnsupportedElementEditorState } from '../../../stores/editor/editor-state/UnsupportedElementEditorState.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -35,12 +42,11 @@ export const UnsupportedEditorPanel = observer(
         <div className="unsupported-element-editor__main">
           <div className="unsupported-element-editor__summary">{text}</div>
           {!isReadOnly && (
-            <button
-              className="btn--dark unsupported-element-editor__to-text-mode__btn"
+            <Button
+              className="unsupported-element-editor__to-text-mode__btn"
               onClick={handleTextModeClick}
-            >
-              Edit in text mode
-            </button>
+              text="Edit in text mode"
+            />
           )}
         </div>
       </BlankPanelContent>
@@ -61,7 +67,7 @@ export const UnsupportedElementEditor = observer(() => {
   return (
     <div className="unsupported-element-editor">
       <Panel>
-        <div className="panel__header">
+        <PanelHeader>
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
@@ -71,13 +77,13 @@ export const UnsupportedElementEditor = observer(() => {
             <div className="panel__header__title__label">element</div>
             <div className="panel__header__title__content">{element.name}</div>
           </div>
-        </div>
-        <div className="panel__content unsupported-element-editor__content">
+        </PanelHeader>
+        <PanelContent className="unsupported-element-editor__content">
           <UnsupportedEditorPanel
             text="Can't display this element in form-mode"
             isReadOnly={isReadOnly}
           />
-        </div>
+        </PanelContent>
       </Panel>
     </div>
   );

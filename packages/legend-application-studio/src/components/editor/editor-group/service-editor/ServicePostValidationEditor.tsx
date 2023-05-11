@@ -36,6 +36,10 @@ import {
   ResizablePanelSplitterLine,
   TimesIcon,
   clsx,
+  Panel,
+  PanelHeader,
+  PanelHeaderActions,
+  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import type { PostValidation } from '@finos/legend-graph';
 import { forwardRef, useEffect, useState } from 'react';
@@ -395,31 +399,25 @@ export const ServicePostValidationsEditor = observer(
     }, [validationState]);
     return (
       <div className="service-post-validation-editor">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">Post Validations</div>
-          </div>
-        </div>
+        <PanelHeader title="Post validations" />
         <div className="service-test-editor__content">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={100} size={300}>
-              <div className="panel__header">
+              <PanelHeader>
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">
                     Post Validations
                   </div>
                 </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action"
-                    tabIndex={-1}
+                <PanelHeaderActions>
+                  <PanelHeaderActionItem
                     onClick={addPostValidation}
                     title="Add Post Validations"
                   >
                     <PlusIcon />
-                  </button>
-                </div>
-              </div>
+                  </PanelHeaderActionItem>
+                </PanelHeaderActions>
+              </PanelHeader>
               <PanelContent>
                 {service.postValidations.map((postValidation, _idx) => (
                   <PostValidationItem
@@ -444,15 +442,13 @@ export const ServicePostValidationsEditor = observer(
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel>
-              <div className="panel service-test-editor">
-                <div className="service-test-suite-editor__header">
-                  <div className="service-test-suite-editor__header__title">
-                    <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--tests-suites">
-                      Validation
-                    </div>
-                  </div>
-                </div>
-                <div className="service-test-editor__content">
+              <Panel className="service-test-editor">
+                <PanelHeader
+                  className="service-test-suite-editor__header"
+                  title="valiation"
+                  labelClassName="service-test-suite-editor__header__title__label--tests-suites"
+                />
+                <PanelContent className="service-test-editor__content">
                   {validationState.selectedPostValidationState && (
                     <ServicePostValidationEditor
                       postValidationState={
@@ -469,8 +465,8 @@ export const ServicePostValidationsEditor = observer(
                       tooltipText="Click to add post validation"
                     />
                   )}
-                </div>
-              </div>
+                </PanelContent>
+              </Panel>
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
