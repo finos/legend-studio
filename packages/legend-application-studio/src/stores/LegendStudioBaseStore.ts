@@ -62,6 +62,7 @@ export class LegendStudioBaseStore {
   readonly initState = ActionState.create();
 
   isSDLCAuthorized: boolean | undefined = false;
+  private isSDLCServerInitialized = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
   constructor(applicationStore: LegendStudioApplicationStore) {
@@ -116,9 +117,11 @@ export class LegendStudioBaseStore {
       // setup SDLC server client
       yield flowResult(this.initializeSDLCServerClient());
 
-      // initializing the landing page needs to stop if the sdlc server client is not initialized
-      // making additioanl calls to the sdlc server at that point results in failures
-      if (!this.sdlcServerClient.isInitialized) {
+      // if SDLC server is not properly authorized/initialized, we would need to stop making call
+      // to SDLC server, as this could intertwine and mess up OIDC/OAuth authentication on the server
+      // See https://github.com/finos/legend-studio/pull/2205
+      // See https://github.com/finos/legend-sdlc/pull/628
+      if (!this.isSDLCServerInitialized) {
         return;
       }
 
@@ -234,7 +237,7 @@ export class LegendStudioBaseStore {
         yield this.sdlcServerClient.fetchServerFeaturesConfiguration();
 
         // the sdlc server client is authorized and initialized
-        this.sdlcServerClient.isInitialized = true;
+        this.isSDLCServerInitialized = true;
       }
     } catch (error) {
       assertErrorThrown(error);
