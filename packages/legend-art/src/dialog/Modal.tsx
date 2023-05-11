@@ -101,8 +101,8 @@ export const ModalFooterButton: React.FC<{
     darkMode,
     formatText,
   } = props;
-  const isDarkMode = darkMode !== undefined ? darkMode : true;
-  const isFormatText = formatText !== undefined ? formatText : true;
+  const isDarkMode = darkMode ?? true;
+  const isFormatText = formatText ?? true;
 
   return (
     <button

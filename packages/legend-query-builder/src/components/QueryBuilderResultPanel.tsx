@@ -37,7 +37,6 @@ import {
   ModalFooterButton,
   ModalHeader,
   PanelDivider,
-  PanelFormSection,
 } from '@finos/legend-art';
 import { format as formatSQL } from 'sql-formatter';
 
@@ -53,6 +52,7 @@ import {
   RawExecutionResult,
   EnumValueInstanceValue,
   EnumValueExplicitReference,
+  RelationalExecutionActivities,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -67,6 +67,7 @@ import {
   type PlainObject,
   prettyDuration,
   prettyCONSTName,
+  filterByType,
 } from '@finos/legend-shared';
 import { type MutableRefObject, forwardRef, useRef, useState } from 'react';
 import {
@@ -458,12 +459,21 @@ export const QueryBuilderResultPanel = observer(
     const queryParametersState = queryBuilderState.parametersState;
     const executionResult = resultState.executionResult;
     const [showSqlModal, setShowSqlModal] = useState(false);
-    const executedSql =
-      executionResult?.activities instanceof Array
-        ? executionResult.activities
-            .map((item: { sql: string }) => item.sql)
-            .at(0)
-        : undefined;
+    const relationalActivities = executionResult?.activities;
+    const executedSqls = relationalActivities
+      ?.filter(filterByType(RelationalExecutionActivities))
+      .map((relationalActivity) => relationalActivity.sql);
+
+    let executedSql = '';
+    if (executedSqls?.length && executedSqls.length > 1) {
+      for (let i = 0; i < executedSqls.length; i++) {
+        executedSql += `\n--QUERY #${i + 1}\n`;
+        executedSql += `${executedSqls[i]}\n`;
+      }
+    } else {
+      executedSql += executedSqls?.[0];
+    }
+
     const fetchStructureImplementation =
       queryBuilderState.fetchStructureState.implementation;
     const USER_ATTESTATION_MESSAGE =
@@ -592,22 +602,24 @@ export const QueryBuilderResultPanel = observer(
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
         className="panel query-builder__result"
       >
-        {showSqlModal && executedSql && (
+        {showSqlModal && executedSqls && (
           <Dialog
             open={Boolean(showSqlModal)}
             onClose={() => setShowSqlModal(false)}
           >
             <Modal className="editor-modal" darkMode={true}>
               <ModalHeader title="Executed SQL Query" />
-              <ModalBody>
-                <CodeEditor
-                  inputValue={formatSQL(executedSql)}
-                  isReadOnly={true}
-                  language={CODE_EDITOR_LANGUAGE.SQL}
-                  showMiniMap={false}
-                />
-                <PanelDivider />
-                <PanelFormSection></PanelFormSection>
+              <ModalBody className="query-builder__sql__modal">
+                <>
+                  <CodeEditor
+                    inputValue={formatSQL(executedSql)}
+                    isReadOnly={true}
+                    language={CODE_EDITOR_LANGUAGE.SQL}
+                    hideMinimap={true}
+                  />
+
+                  <PanelDivider />
+                </>
               </ModalBody>
               <ModalFooter>
                 <ModalFooterButton
@@ -615,6 +627,7 @@ export const QueryBuilderResultPanel = observer(
                   onClick={() => copyExpression(executedSql)}
                   text="Copy SQL to Clipboard"
                 />
+
                 <ModalFooterButton
                   onClick={() => setShowSqlModal(false)}
                   text="Close"
@@ -627,7 +640,7 @@ export const QueryBuilderResultPanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
-            {executedSql && (
+            {executedSqls && (
               <Button
                 onClick={() => setShowSqlModal(true)}
                 title="Executed SQL"

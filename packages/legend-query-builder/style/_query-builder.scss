@@ -119,6 +119,10 @@
     }
   }
 
+  &__sql__modal {
+    overflow: auto;
+  }
+
   .panel {
     height: 100%;
     padding: 0.3rem;

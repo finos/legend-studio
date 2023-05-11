@@ -14,14 +14,25 @@
  * limitations under the License.
  */
 
-import { createModelSchema, list, optional, primitive, raw } from 'serializr';
+import {
+  createModelSchema,
+  custom,
+  list,
+  optional,
+  primitive,
+  raw,
+  SKIP,
+} from 'serializr';
 import {
   type PlainObject,
   SerializationFactory,
   usingModelSchema,
   isString,
 } from '@finos/legend-shared';
-import { BuilderType } from '../../../../../../graph-manager/action/execution/ExecutionResult.js';
+import {
+  BuilderType,
+  ExecutionActivityType,
+} from '../../../../../../graph-manager/action/execution/ExecutionResult.js';
 
 export class V1_ResultBuilder {
   static readonly builderSerialization = new SerializationFactory(
@@ -31,9 +42,41 @@ export class V1_ResultBuilder {
   );
 }
 
+export abstract class V1_ExecutionActivities {}
+
+export class V1_RelationalExecutionActivities extends V1_ExecutionActivities {
+  sql!: string;
+  comment?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_RelationalExecutionActivities, {
+      sql: primitive(),
+      comment: optional(primitive()),
+    }),
+  );
+}
+
+export class V1_AggregationAwareActivities extends V1_ExecutionActivities {
+  rewrittenQuery!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_AggregationAwareActivities, {
+      rewrittenQuery: primitive(),
+    }),
+  );
+}
 export abstract class V1_ExecutionResult {
   builder!: V1_ResultBuilder;
-  activities: object | undefined;
+  activities: V1_ExecutionActivities[] | undefined;
+}
+
+export class V1_UnknownExecutionActivity extends V1_ExecutionActivities {
+  content: object;
+
+  constructor(content: object) {
+    super();
+    this.content = content;
+  }
 }
 
 export class V1_JsonExecutionResult extends V1_ExecutionResult {
@@ -83,15 +126,29 @@ export class V1_TDSBuilder extends V1_ResultBuilder {
   );
 }
 
+function V1_serializeExecutionActivities(
+  value: PlainObject<V1_ExecutionActivities>,
+): V1_ExecutionActivities {
+  switch (value._type) {
+    case ExecutionActivityType.RELATIONAL:
+      return V1_RelationalExecutionActivities.serialization.fromJson(value);
+    case ExecutionActivityType.RELATIONAL_EXECUTION_ACTIVITY:
+      return V1_RelationalExecutionActivities.serialization.fromJson(value);
+    case ExecutionActivityType.AGGREGATION_AWARE_ACTIVITY:
+      return V1_AggregationAwareActivities.serialization.fromJson(value);
+    default:
+      return new V1_UnknownExecutionActivity(value);
+  }
+}
+
 export class V1_TDSExecutionResult extends V1_ExecutionResult {
   declare builder: V1_TDSBuilder;
   result!: object;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_TDSExecutionResult, {
-      _type: primitive(),
       builder: usingModelSchema(V1_TDSBuilder.serialization.schema),
-      activities: raw(),
+      activities: list(custom(() => SKIP, V1_serializeExecutionActivities)),
       result: raw(),
     }),
   );
@@ -102,9 +159,8 @@ export class V1_ClassExecutionResult extends V1_ExecutionResult {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_ClassExecutionResult, {
-      _type: primitive(),
       builder: usingModelSchema(V1_ResultBuilder.builderSerialization.schema),
-      activities: raw(),
+      activities: list(custom(() => SKIP, V1_serializeExecutionActivities)),
       objects: raw(),
     }),
   );

@@ -35,10 +35,8 @@ export const PanelHeader: React.FC<{
   children?: React.ReactNode;
 }> = (props) => {
   const { title, keepTitleFormat, darkMode, className, children } = props;
-  const isKeepTitleFormat =
-    keepTitleFormat !== undefined ? keepTitleFormat : false;
-  const isLightMode = darkMode !== undefined ? !darkMode : false;
-
+  const isLightMode = Boolean(darkMode);
+  const isKeepTitleFormat = Boolean(keepTitleFormat);
   return (
     <div className={clsx('panel__header', className)}>
       {title && (

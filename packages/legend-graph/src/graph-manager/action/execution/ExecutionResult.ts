@@ -23,6 +23,12 @@ export enum BuilderType {
   JSON_BUILDER = 'json',
 }
 
+export enum ExecutionActivityType {
+  RELATIONAL = 'relational',
+  RELATIONAL_EXECUTION_ACTIVITY = 'RelationalExecutionActivity',
+  AGGREGATION_AWARE_ACTIVITY = 'aggregationAware',
+}
+
 // TODO: Refactor to use external format (https://github.com/finos/legend-studio/issues/732)
 export enum EXECUTION_SERIALIZATION_FORMAT {
   CSV = 'CSV',
@@ -36,9 +42,36 @@ export class ResultBuilder {
   }
 }
 
+// ------------------------------------------ Execution Activities -----------------------------------------------
+
+export abstract class ExecutionActivities {}
+
+export class RelationalExecutionActivities extends ExecutionActivities {
+  sql!: string;
+  comment?: string | undefined;
+
+  constructor(sql: string) {
+    super();
+    this.sql = sql;
+  }
+}
+
+export class AggregationAwareActivities extends ExecutionActivities {
+  rewrittenQuery!: string;
+}
+
+export class UnknownExecutionActivities extends ExecutionActivities {
+  values!: object;
+
+  constructor(content: object) {
+    super();
+    this.values = content;
+  }
+}
+
 export abstract class ExecutionResult {
   builder!: ResultBuilder;
-  activities: object | undefined;
+  activities: ExecutionActivities[] | undefined;
 }
 
 // ------------------------------------------ Model -----------------------------------------------
