@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 3.2.8
+
+### Patch Changes
+
+- [#2124](https://github.com/finos/legend-studio/pull/2124) [`a60eac463`](https://github.com/finos/legend-studio/commit/a60eac463f679c74ac3564480c04c127281fffeb) ([@xannem](https://github.com/xannem)) - Add show sql option allowing users to view generated sql for a query.
+
 ## 3.2.7
 
 ### Patch Changes
