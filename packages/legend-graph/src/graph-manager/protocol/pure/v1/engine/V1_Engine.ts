@@ -111,6 +111,7 @@ import {
   type V1_EntitlementReportAnalyticsInput,
   V1_entitlementReportAnalyticsInputModelSchema,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
+import type { ClassifierPathMapping } from './protocol/ClassifierPathMapping.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -209,6 +210,17 @@ export class V1_Engine {
       );
     } catch {
       // do nothing
+    }
+  }
+
+  // ------------------------------------------- Protocol -------------------------------------------
+
+  async getClassifierPathMapping(): Promise<ClassifierPathMapping[]> {
+    try {
+      const mapping = await this.engineServerClient.getClassifierPathMap();
+      return mapping;
+    } catch {
+      return [];
     }
   }
 

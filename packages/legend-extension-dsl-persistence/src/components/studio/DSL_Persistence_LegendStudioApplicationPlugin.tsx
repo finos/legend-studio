@@ -75,10 +75,6 @@ export class DSL_Persistence_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_PERSISTENCE_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [
       PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,

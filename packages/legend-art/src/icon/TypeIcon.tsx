@@ -23,10 +23,9 @@ import {
   LinkIcon,
   MapIcon,
   PackageIcon,
-  QuestionIcon,
+  QuestionSquareIcon,
   RobotIcon,
   ServerIcon,
-  SettingsEthernetIcon,
   ShapeLineIcon,
   TableIcon,
   TabulatedDataFileIcon,
@@ -151,14 +150,7 @@ export const PURE_DataIcon: React.FC = () => (
 );
 
 export const PURE_UnknownElementTypeIcon: React.FC = () => (
-  <div>
-    <QuestionIcon />
-  </div>
-);
-
-// TODO: consider moving this back to `Icon`?
-export const ProjectConfigurationIcon: React.FC = () => (
-  <div className="icon icon--config color--config">
-    <SettingsEthernetIcon />
+  <div className="icon icon--unknown">
+    <QuestionSquareIcon />
   </div>
 );

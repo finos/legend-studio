@@ -99,10 +99,6 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_DIAGRAM_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL];
   }

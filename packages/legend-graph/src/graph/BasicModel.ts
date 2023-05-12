@@ -67,6 +67,7 @@ import { DataElement } from '../graph/metamodel/pure/packageableElements/data/Da
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import type { GraphDataOrigin } from './GraphDataOrigin.js';
+import { INTERNAL__UnknownPackageableElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -95,6 +96,7 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   ExecutionEnvironmentInstance,
 
   SectionIndex,
+  INTERNAL__UnknownPackageableElement,
 ]);
 
 /**
@@ -136,9 +138,13 @@ export abstract class BasicModel {
     FileGenerationSpecification
   >();
   private readonly dataElementsIndex = new Map<string, DataElement>();
-  private readonly executionEnvironmentIndex = new Map<
+  private readonly executionEnvironmentsIndex = new Map<
     string,
     ExecutionEnvironmentInstance
+  >();
+  private readonly INTERNAL__unknownElementsIndex = new Map<
+    string,
+    INTERNAL__UnknownPackageableElement
   >();
 
   constructor(
@@ -218,7 +224,7 @@ export abstract class BasicModel {
     return Array.from(this.dataElementsIndex.values());
   }
   get ownExecutionEnvironments(): ExecutionEnvironmentInstance[] {
-    return Array.from(this.executionEnvironmentIndex.values());
+    return Array.from(this.executionEnvironmentsIndex.values());
   }
   get ownGenerationSpecifications(): GenerationSpecification[] {
     return Array.from(this.generationSpecificationsIndex.values());
@@ -314,7 +320,7 @@ export abstract class BasicModel {
   getOwnNullableExecutionEnviornment = (
     path: string,
   ): ExecutionEnvironmentInstance | undefined =>
-    this.executionEnvironmentIndex.get(path);
+    this.executionEnvironmentsIndex.get(path);
   getOwnSectionIndex = (path: string): SectionIndex =>
     guaranteeNonNullable(
       this.getOwnNullableSectionIndex(path),
@@ -463,7 +469,6 @@ export abstract class BasicModel {
   setOwnFileGeneration(path: string, val: FileGenerationSpecification): void {
     this.fileGenerationsIndex.set(path, val);
   }
-
   setOwnDataElement(path: string, val: DataElement): void {
     this.dataElementsIndex.set(path, val);
   }
@@ -471,7 +476,13 @@ export abstract class BasicModel {
     path: string,
     val: ExecutionEnvironmentInstance,
   ): void {
-    this.executionEnvironmentIndex.set(path, val);
+    this.executionEnvironmentsIndex.set(path, val);
+  }
+  INTERNAL__setOwnUnknownElement(
+    path: string,
+    val: INTERNAL__UnknownPackageableElement,
+  ): void {
+    this.INTERNAL__unknownElementsIndex.set(path, val);
   }
 
   setOwnElementInExtension<T extends PackageableElement>(
@@ -500,6 +511,7 @@ export abstract class BasicModel {
       ...this.ownFileGenerations,
       ...this.ownDataElements,
       ...this.ownExecutionEnvironments,
+      ...Array.from(this.INTERNAL__unknownElementsIndex.values()),
       ...this.extensions.flatMap((extension) => extension.elements),
     ];
   }
@@ -534,6 +546,7 @@ export abstract class BasicModel {
   ): PackageableElement | undefined {
     let element: PackageableElement | undefined =
       this.sectionIndicesIndex.get(path) ??
+      this.INTERNAL__unknownElementsIndex.get(path) ??
       this.typesIndex.get(path) ??
       this.profilesIndex.get(path) ??
       this.associationsIndex.get(path) ??
@@ -545,7 +558,7 @@ export abstract class BasicModel {
       this.connectionsIndex.get(path) ??
       this.fileGenerationsIndex.get(path) ??
       this.dataElementsIndex.get(path) ??
-      this.executionEnvironmentIndex.get(path) ??
+      this.executionEnvironmentsIndex.get(path) ??
       this.generationSpecificationsIndex.get(path);
     if (!element) {
       for (const extension of this.extensions) {
@@ -645,7 +658,9 @@ export abstract class BasicModel {
     } else if (element instanceof DataElement) {
       this.dataElementsIndex.delete(element.path);
     } else if (element instanceof ExecutionEnvironmentInstance) {
-      this.executionEnvironmentIndex.delete(element.path);
+      this.executionEnvironmentsIndex.delete(element.path);
+    } else if (element instanceof INTERNAL__UnknownPackageableElement) {
+      this.INTERNAL__unknownElementsIndex.delete(element.path);
     } else if (element instanceof Package) {
       element.children.forEach((child) => this.deleteOwnElement(child));
     } else {
@@ -766,11 +781,19 @@ export abstract class BasicModel {
       this.dataElementsIndex.delete(oldPath);
       this.dataElementsIndex.set(newPath, element);
     } else if (element instanceof ExecutionEnvironmentInstance) {
-      this.executionEnvironmentIndex.delete(oldPath);
-      this.executionEnvironmentIndex.set(newPath, element);
+      this.executionEnvironmentsIndex.delete(oldPath);
+      this.executionEnvironmentsIndex.set(newPath, element);
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(oldPath);
       this.generationSpecificationsIndex.set(newPath, element);
+    } else if (element instanceof INTERNAL__UnknownPackageableElement) {
+      this.INTERNAL__unknownElementsIndex.delete(oldPath);
+      this.INTERNAL__unknownElementsIndex.set(newPath, element);
+      element.content = {
+        ...element.content,
+        name: element.name,
+        package: element.package?.path,
+      };
     } else if (element instanceof Package) {
       // Since we will modify the package name, we need to first store the original
       // paths of all of its children

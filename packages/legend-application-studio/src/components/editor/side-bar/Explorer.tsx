@@ -30,7 +30,6 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   TreeView,
-  ProjectConfigurationIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   CompressIcon,
@@ -776,7 +775,9 @@ const ProjectConfig = observer(() => {
     >
       <div className="tree-view__node__icon explorer__package-tree__node__icon">
         <div className="explorer__package-tree__node__icon__type explorer__config__icon">
-          <ProjectConfigurationIcon />
+          <div>
+            <SettingsEthernetIcon />
+          </div>
         </div>
       </div>
       <button

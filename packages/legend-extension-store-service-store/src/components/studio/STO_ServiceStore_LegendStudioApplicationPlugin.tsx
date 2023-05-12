@@ -117,10 +117,6 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [
       PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,

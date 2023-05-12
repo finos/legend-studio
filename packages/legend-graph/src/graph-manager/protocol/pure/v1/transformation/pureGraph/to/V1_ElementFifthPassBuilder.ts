@@ -45,6 +45,7 @@ import { V1_buildDatabaseSchemaViewsSecondPass } from './helpers/V1_DatabaseBuil
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
+import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 
 export class V1_ElementFifthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -59,6 +60,12 @@ export class V1_ElementFifthPassBuilder
     this.context.extensions
       .getExtraBuilderOrThrow(element)
       .runFifthPass(element, this.context);
+  }
+
+  visit_INTERNAL__UnknownPackageableElement(
+    element: V1_INTERNAL__UnknownPackageableElement,
+  ): void {
+    throw new UnsupportedOperationError();
   }
 
   visit_Profile(element: V1_Profile): void {

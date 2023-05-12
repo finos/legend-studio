@@ -139,10 +139,7 @@ export class EditorTabManagerState extends TabManagerState {
         return elementEditorState;
       }
     }
-    throw new UnsupportedOperationError(
-      `Can't create editor state for element: no compatible editor state creator available from plugins`,
-      element,
-    );
+    return new UnsupportedElementEditorState(this.editorStore, element);
   }
 
   refreshCurrentEntityDiffViewer(): void {

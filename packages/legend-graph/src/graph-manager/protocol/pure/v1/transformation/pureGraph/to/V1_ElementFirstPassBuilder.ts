@@ -68,6 +68,8 @@ import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packagea
 import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import { ExecutionEnvironmentInstance } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
+import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
+import { INTERNAL__UnknownPackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -95,6 +97,36 @@ export class V1_ElementFirstPassBuilder
         this.packageCache,
         this.elementPathCache,
       );
+  }
+
+  visit_INTERNAL__UnknownPackageableElement(
+    element: V1_INTERNAL__UnknownPackageableElement,
+  ): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Element 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Element 'name' field is missing or empty`,
+    );
+    const metamodel = new INTERNAL__UnknownPackageableElement(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    this.context.currentSubGraph.INTERNAL__setOwnUnknownElement(
+      path,
+      metamodel,
+    );
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      metamodel,
+    );
+    metamodel.content = element.content;
+    return metamodel;
   }
 
   visit_SectionIndex(element: V1_SectionIndex): PackageableElement {

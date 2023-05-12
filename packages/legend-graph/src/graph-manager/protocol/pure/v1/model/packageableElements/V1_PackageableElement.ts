@@ -34,9 +34,14 @@ import type { V1_SectionIndex } from './section/V1_SectionIndex.js';
 import type { V1_DataElement } from './data/V1_DataElement.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../../graph/MetaModelConst.js';
 import type { V1_ExecutionEnvironmentInstance } from './service/V1_ExecutionEnvironmentInstance.js';
+import type { V1_INTERNAL__UnknownPackageableElement } from './V1_INTERNAL__UnknownPackageableElement.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
+  visit_INTERNAL__UnknownPackageableElement(
+    element: V1_INTERNAL__UnknownPackageableElement,
+  ): T;
+
   visit_SectionIndex(element: V1_SectionIndex): T;
   visit_Profile(element: V1_Profile): T;
   visit_Enumeration(element: V1_Enumeration): T;

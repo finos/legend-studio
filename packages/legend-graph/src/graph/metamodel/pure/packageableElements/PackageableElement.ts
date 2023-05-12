@@ -42,9 +42,14 @@ import type { SectionIndex } from './section/SectionIndex.js';
 import type { DataElement } from './data/DataElement.js';
 import { AnnotatedElement } from './domain/AnnotatedElement.js';
 import type { ExecutionEnvironmentInstance } from './service/ExecutionEnvironmentInstance.js';
+import type { INTERNAL__UnknownPackageableElement } from './INTERNAL__UnknownPackageableElement.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
+  visit_INTERNAL__UnknownPackageableElement(
+    element: INTERNAL__UnknownPackageableElement,
+  ): T;
+
   visit_SectionIndex(element: SectionIndex): T;
   visit_Package(element: Package): T;
   visit_PrimitiveType(element: PrimitiveType): T;

@@ -835,8 +835,6 @@ export class EditorGraphState {
         return label;
       }
     }
-    throw new UnsupportedOperationError(
-      `Can't get type label for element '${element.path}': no compatible label getter available from plugins`,
-    );
+    return PACKAGEABLE_ELEMENT_TYPE.UNKNOWN;
   }
 }

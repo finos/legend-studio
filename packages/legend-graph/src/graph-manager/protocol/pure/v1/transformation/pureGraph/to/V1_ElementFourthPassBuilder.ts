@@ -53,6 +53,7 @@ import type { V1_DataElement } from '../../../model/packageableElements/data/V1_
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { MappingTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
+import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 
 export class V1_ElementFourthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -67,6 +68,12 @@ export class V1_ElementFourthPassBuilder
     this.context.extensions
       .getExtraBuilderOrThrow(element)
       .runFourthPass(element, this.context);
+  }
+
+  visit_INTERNAL__UnknownPackageableElement(
+    element: V1_INTERNAL__UnknownPackageableElement,
+  ): void {
+    throw new UnsupportedOperationError();
   }
 
   visit_Profile(element: V1_Profile): void {

@@ -198,6 +198,7 @@ export class GrammarTextEditorState {
         element,
       );
     }
+    // TODO-PR
     this.currentElementLabelRegexString = getGrammarElementTypeLabelRegexString(
       typeLabel,
       `${element.package?.path}::${generatePackageableElementTreeNodeDataLabel(

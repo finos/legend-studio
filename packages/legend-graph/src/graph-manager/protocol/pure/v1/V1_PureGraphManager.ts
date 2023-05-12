@@ -40,6 +40,7 @@ import {
   uniq,
   IllegalStateError,
   filterByType,
+  isString,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -301,6 +302,7 @@ import type { DEPRECATED__MappingTest } from '../../../../graph/metamodel/pure/p
 import { DEPRECATED__validate_MappingTest } from '../../../action/validation/DSL_Mapping_ValidationHelper.js';
 import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 import { V1_TEMPORARY__SnowflakeServiceDeploymentInput } from './engine/service/V1_TEMPORARY__SnowflakeServiceDeploymentInput.js';
+import { V1_INTERNAL__UnknownPackageableElement } from './model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -320,14 +322,15 @@ class V1_PureModelContextDataIndex {
 
   sectionIndices: V1_SectionIndex[] = [];
 
-  services: V1_Service[] = [];
-
   fileGenerations: V1_FileGenerationSpecification[] = [];
   generationSpecifications: V1_GenerationSpecification[] = [];
 
   dataElements: V1_DataElement[] = [];
 
+  services: V1_Service[] = [];
   executionEnvironments: V1_ExecutionEnvironmentInstance[] = [];
+
+  INTERNAL__unknownElements: V1_INTERNAL__UnknownPackageableElement[] = [];
 
   otherElementsByBuilder: Map<
     V1_ElementBuilder<V1_PackageableElement>,
@@ -389,6 +392,8 @@ export const V1_indexPureModelContextData = (
       index.stores.push(el);
     } else if (el instanceof V1_SectionIndex) {
       index.sectionIndices.push(el);
+    } else if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
+      index.INTERNAL__unknownElements.push(el);
     } else if (el instanceof V1_Service) {
       index.services.push(el);
     } else if (el instanceof V1_FileGenerationSpecification) {
@@ -412,6 +417,7 @@ export const V1_indexPureModelContextData = (
       index.nativeElements.push(el);
     }
   });
+
   otherElementsByClass.forEach((elements, _class) => {
     const builder = extensions.getExtraBuilderForProtocolClassOrThrow(_class);
     index.otherElementsByBuilder.set(
@@ -444,6 +450,9 @@ export const V1_indexPureModelContextData = (
   report.elementCount.measure =
     (report.elementCount.measure ?? 0) + index.measures.length;
 
+  report.elementCount.dataElement =
+    (report.elementCount.dataElement ?? 0) + index.dataElements.length;
+
   report.elementCount.store =
     (report.elementCount.store ?? 0) + index.stores.length;
   report.elementCount.mapping =
@@ -455,6 +464,12 @@ export const V1_indexPureModelContextData = (
 
   report.elementCount.service =
     (report.elementCount.service ?? 0) + index.services.length;
+  report.elementCount.executionEnvironment =
+    (report.elementCount.executionEnvironment ?? 0) +
+    index.executionEnvironments.length;
+
+  report.elementCount.unknown =
+    (report.elementCount.unknown ?? 0) + index.INTERNAL__unknownElements.length;
 
   return index;
 };
@@ -480,6 +495,8 @@ interface ServiceRegistrationInput {
 }
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
+  private readonly elementClassifierPathMap = new Map<string, string>();
+
   // Pure Client Version represent the version of the pure protocol.
   // Most Engine APIs will interrupt an undefined pure client version to mean
   // use the latest production version of the protocol i.e V20_0_0, while version
@@ -536,6 +553,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .getEngineServerClient()
       .setTracerService(options?.tracerService ?? new TracerService());
     await this.engine.setup(config);
+
+    const classifierPathMapEntries =
+      await this.engine.getClassifierPathMapping();
+    classifierPathMapEntries.forEach((entry) => {
+      this.elementClassifierPathMap.set(entry.type, entry.classifierPath);
+    });
   }
 
   getSupportedProtocolVersion(): string {
@@ -3476,6 +3499,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.DATA_ELEMENT;
     } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_PURE_PATH.GENERATION_SPECIFICATION;
+    } else if (protocol instanceof V1_INTERNAL__UnknownPackageableElement) {
+      const _type = protocol.content._type;
+      const classifierPath = isString(_type)
+        ? this.elementClassifierPathMap.get(_type)
+        : undefined;
+      if (classifierPath) {
+        return classifierPath;
+      }
+      throw new UnsupportedOperationError(
+        `Can't get classifier path for element '${protocol.path}': not classifier path mapping available`,
+      );
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()

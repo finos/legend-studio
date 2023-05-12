@@ -52,10 +52,6 @@ export class DSL_Mastery_LegendStudioApplicationPlugin
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_MASTERY_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL];
   }

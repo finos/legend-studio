@@ -106,10 +106,6 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_DATA_SPACE_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL];
   }

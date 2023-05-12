@@ -126,10 +126,6 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [
       PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,

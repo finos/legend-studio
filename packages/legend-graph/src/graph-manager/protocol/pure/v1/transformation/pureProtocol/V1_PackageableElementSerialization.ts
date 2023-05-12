@@ -105,6 +105,7 @@ import {
   V1_EXECUTION_ENVIRONMENT_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_ExecutionEnvironmentSerializationHelper.js';
 import type { V1_ExecutionEnvironmentInstance } from '../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
+import { V1_INTERNAL__UnknownPackageableElement } from '../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -131,6 +132,12 @@ class V1_PackageableElementSerializer
     throw new UnsupportedOperationError(
       `Can't serialize protocol for element '${elementProtocol.path}': no compatible serializer available from plugins`,
     );
+  }
+
+  visit_INTERNAL__UnknownPackageableElement(
+    element: V1_INTERNAL__UnknownPackageableElement,
+  ): PlainObject<V1_PackageableElement> {
+    return element.content as unknown as PlainObject<V1_PackageableElement>;
   }
 
   visit_Profile(element: V1_Profile): PlainObject<V1_PackageableElement> {
@@ -300,9 +307,12 @@ export const V1_deserializePackageableElement = (
             return elementProtocol;
           }
         }
-        throw new UnsupportedOperationError(
-          `Can't deserialize element of type '${json._type}': no compatible deserializer available from plugins`,
-        );
+        // Fall back to create unknown element if the protocol is not supported
+        const elementProtocol = new V1_INTERNAL__UnknownPackageableElement();
+        elementProtocol.name = name;
+        elementProtocol.package = packagePath;
+        elementProtocol.content = json;
+        return elementProtocol;
       }
     }
   } catch (error) {

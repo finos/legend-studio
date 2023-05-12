@@ -75,10 +75,6 @@ export class DSL_Text_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_TEXT_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL];
   }

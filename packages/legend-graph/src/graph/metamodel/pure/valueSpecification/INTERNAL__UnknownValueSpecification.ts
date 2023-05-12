@@ -45,7 +45,7 @@ export class INTERNAL__UnknownValueSpecification
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.INTERNAL_UNKNOWN_VALUE_SPECIFICATION,
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_VALUE_SPECIFICATION,
       hashObjectWithoutSourceInformation(this.content),
       this.genericType?.ownerReference.valueForSerialization ?? '',
     ]);
