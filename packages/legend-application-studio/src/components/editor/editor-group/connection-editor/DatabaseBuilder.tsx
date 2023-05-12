@@ -230,6 +230,9 @@ export const DatabaseBuilder = observer(
     );
     const closeModal = (): void => {
       databaseBuilderState.setShowModal(false);
+      databaseBuilderState.editorStore.explorerTreeState.setDatabaseBuilderState(
+        undefined,
+      );
     };
     const isExecutingAction =
       databaseBuilderState.isBuildingDatabase ||

@@ -84,7 +84,6 @@ import {
 } from '@finos/legend-graph';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
-import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   CODE_EDITOR_LANGUAGE,
@@ -1064,7 +1063,6 @@ const RelationalConnectionStoreEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly } = props;
     const connection = connectionValueState.connection;
-    const databaseBuilderState = connectionValueState.databaseBuilderState;
     // store
     const isStoreEmpty = connectionValueState.storeValidationResult;
     const noStoreLabel = (
@@ -1098,7 +1096,10 @@ const RelationalConnectionStoreEditor = observer(
       }
     };
     const openDatabaseBuilder = (): void =>
-      databaseBuilderState.setShowModal(true);
+      connectionValueState.editorStore.explorerTreeState.buildDbBuilderState(
+        connection,
+        isReadOnly,
+      );
 
     return (
       <div className="relational-connection-editor">
@@ -1124,10 +1125,6 @@ const RelationalConnectionStoreEditor = observer(
             </button>
           </PanelFormSection>
         </PanelContent>
-        <DatabaseBuilder
-          databaseBuilderState={databaseBuilderState}
-          isReadOnly={isReadOnly}
-        />
       </div>
     );
   },

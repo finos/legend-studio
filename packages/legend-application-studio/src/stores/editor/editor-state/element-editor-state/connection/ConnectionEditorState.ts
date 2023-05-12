@@ -23,7 +23,6 @@ import {
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
-import { DatabaseBuilderState } from './DatabaseBuilderState.js';
 import {
   type PackageableElement,
   type Connection,
@@ -119,7 +118,6 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
-  databaseBuilderState: DatabaseBuilderState;
   postProcessorState: PostProcessorEditorState | undefined;
 
   constructor(
@@ -128,7 +126,6 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   ) {
     super(editorStore, connection);
     makeObservable(this, {
-      databaseBuilderState: observable,
       selectedTab: observable,
       postProcessorState: observable,
       setSelectedTab: action,
@@ -136,11 +133,6 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     });
 
     this.connection = connection;
-
-    this.databaseBuilderState = new DatabaseBuilderState(
-      editorStore,
-      connection,
-    );
   }
 
   selectPostProcessor = (postProcessor: PostProcessor | undefined): void => {
