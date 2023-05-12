@@ -35,7 +35,6 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
   type ElementTypeLabelGetter,
-  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { Persistence } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
 import { PersistenceContext } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
@@ -79,19 +78,6 @@ export class DSL_Persistence_LegendStudioApplicationPlugin
     return [
       PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
       PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
-    ];
-  }
-
-  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Persistence) {
-          return PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL;
-        } else if (element instanceof PersistenceContext) {
-          return PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
     ];
   }
 

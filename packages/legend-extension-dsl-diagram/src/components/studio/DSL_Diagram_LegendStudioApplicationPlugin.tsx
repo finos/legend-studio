@@ -34,7 +34,6 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserElementSnippetSuggestionsGetter,
-  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
@@ -101,17 +100,6 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
 
   getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL];
-  }
-
-  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Diagram) {
-          return PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

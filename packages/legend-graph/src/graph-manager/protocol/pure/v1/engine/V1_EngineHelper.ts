@@ -372,7 +372,7 @@ export const V1_buildGenerationConfigurationDescription = (
   return metamodel;
 };
 
-const buildSourceInformation = (
+export const V1_buildSourceInformation = (
   sourceInformation: V1_SourceInformation,
 ): SourceInformation =>
   new SourceInformation(
@@ -403,7 +403,7 @@ export const V1_buildCompilationError = (
 ): CompilationError => {
   const metamodel = new CompilationError(protocol.message);
   metamodel.sourceInformation = protocol.sourceInformation
-    ? buildSourceInformation(protocol.sourceInformation)
+    ? V1_buildSourceInformation(protocol.sourceInformation)
     : undefined;
   return metamodel;
 };
@@ -411,7 +411,7 @@ export const V1_buildCompilationError = (
 export const V1_buildParserError = (protocol: V1_ParserError): ParserError => {
   const metamodel = new ParserError(protocol.message);
   metamodel.sourceInformation = protocol.sourceInformation
-    ? buildSourceInformation(protocol.sourceInformation)
+    ? V1_buildSourceInformation(protocol.sourceInformation)
     : undefined;
   return metamodel;
 };

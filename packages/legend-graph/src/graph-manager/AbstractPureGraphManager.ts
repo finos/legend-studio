@@ -96,6 +96,7 @@ import type { AssociationImplementation } from '../graph/metamodel/pure/packagea
 import { InstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
+import type { SourceInformation } from './action/SourceInformation.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -269,6 +270,7 @@ export abstract class AbstractPureGraphManager {
   abstract pureCodeToEntities(
     code: string,
     options?: {
+      sourceInformationIndex?: Map<string, SourceInformation>;
       TEMPORARY__keepSectionIndex?: boolean;
     },
   ): Promise<Entity[]>;

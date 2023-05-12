@@ -51,7 +51,6 @@ import {
   type PureGrammarParserKeywordSuggestionGetter,
   LegendStudioApplicationPlugin,
   type DSL_LegendStudioApplicationPlugin_Extension,
-  type PureGrammarElementLabeler,
 } from '../../stores/LegendStudioApplicationPlugin.js';
 import type {
   ConnectionEditorRenderer,
@@ -131,19 +130,6 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
       PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
       PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
       PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL,
-    ];
-  }
-
-  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element): string | undefined => {
-        if (element instanceof Binding) {
-          return PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL;
-        } else if (element instanceof SchemaSet) {
-          return PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
     ];
   }
 

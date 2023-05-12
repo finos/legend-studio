@@ -47,8 +47,8 @@ import {
 } from '../../../model/data/V1_RelationalCSVData.js';
 import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import {
-  V1_stereotypePtrSchema,
-  V1_taggedValueSchema,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
 } from './V1_DomainSerializationHelper.js';
 
 export const V1_DATA_ELEMENT_PROTOCOL_TYPE = 'dataElement';
@@ -179,10 +179,10 @@ export const V1_dataElementModelSchema = (
     ),
     name: primitive(),
     package: primitive(),
-    stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
-    taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
   });

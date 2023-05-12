@@ -34,7 +34,6 @@ import {
   type ExplorerContextMenuItemRendererConfiguration,
   type EditorExtensionStateCreator,
   type EditorExtensionComponentRendererConfiguration,
-  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import {
   PackageableElementExplicitReference,
@@ -108,17 +107,6 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
 
   getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL];
-  }
-
-  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof DataSpace) {
-          return PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

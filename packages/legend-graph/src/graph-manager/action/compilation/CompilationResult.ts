@@ -16,6 +16,7 @@
 
 import type { Entity } from '@finos/legend-storage';
 import type { CompilationWarning } from './CompilationWarning.js';
+import type { SourceInformation } from '../SourceInformation.js';
 
 export interface CompilationResult {
   warnings: CompilationWarning[] | undefined;
@@ -23,4 +24,5 @@ export interface CompilationResult {
 
 export interface TextCompilationResult extends CompilationResult {
   entities: Entity[];
+  sourceInformationIndex: Map<string, SourceInformation>;
 }

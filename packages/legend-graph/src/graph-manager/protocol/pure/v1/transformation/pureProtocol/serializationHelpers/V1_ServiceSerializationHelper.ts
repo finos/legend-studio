@@ -49,8 +49,8 @@ import {
 } from './V1_RuntimeSerializationHelper.js';
 import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
 import {
-  V1_stereotypePtrSchema,
-  V1_taggedValueSchema,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
 } from './V1_DomainSerializationHelper.js';
 import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData.js';
 import {
@@ -309,10 +309,10 @@ export const V1_serviceModelSchema = (
     owners: list(primitive()),
     package: primitive(),
     pattern: primitive(),
-    stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
-    taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
     test: optionalCustom(

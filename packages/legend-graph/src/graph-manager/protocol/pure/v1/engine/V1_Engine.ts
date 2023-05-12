@@ -112,6 +112,9 @@ import {
   V1_entitlementReportAnalyticsInputModelSchema,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
 import type { ClassifierPathMapping } from './protocol/ClassifierPathMapping.js';
+import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
+import { V1_INTERNAL__PackageableElementWithSourceInformation } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import { ELEMENT_PATH_DELIMITER } from '../../../../../graph/MetaModelConst.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -226,6 +229,30 @@ export class V1_Engine {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
+  private extractElementSourceInformationIndexFromPureModelContextDataJSON(
+    json: PlainObject<V1_PureModelContextData>,
+  ): Map<string, V1_SourceInformation> {
+    const sourceInformationIndex = new Map<string, V1_SourceInformation>();
+    const elements = json.elements;
+    if (Array.isArray(elements)) {
+      elements.forEach((elementJson) => {
+        const element =
+          returnUndefOnError(() =>
+            V1_INTERNAL__PackageableElementWithSourceInformation.serialization.fromJson(
+              elementJson,
+            ),
+          ) ?? undefined;
+        if (element && element.sourceInformation) {
+          sourceInformationIndex.set(
+            `${element.package}${ELEMENT_PATH_DELIMITER}${element.name}`,
+            element.sourceInformation,
+          );
+        }
+      });
+    }
+    return sourceInformationIndex;
+  }
+
   pureModelContextDataToPureCode(
     graph: V1_PureModelContextData,
   ): Promise<string> {
@@ -237,14 +264,25 @@ export class V1_Engine {
 
   async pureCodeToPureModelContextData(
     code: string,
-    options?: { onError?: () => void },
+    options?: {
+      sourceInformationIndex?: Map<string, V1_SourceInformation> | undefined;
+      onError?: () => void;
+    },
   ): Promise<V1_PureModelContextData> {
-    return V1_deserializePureModelContextData(
-      await this.pureCodeToPureModelContextDataJSON(code, {
-        ...options,
-        returnSourceInformation: false,
-      }),
-    );
+    const json = await this.pureCodeToPureModelContextDataJSON(code, {
+      ...options,
+      returnSourceInformation: Boolean(options?.sourceInformationIndex),
+    });
+    const sourceInformationIndex = options?.sourceInformationIndex;
+    if (sourceInformationIndex) {
+      sourceInformationIndex.clear();
+      this.extractElementSourceInformationIndexFromPureModelContextDataJSON(
+        json,
+      ).forEach((value, key) => {
+        sourceInformationIndex.set(key, value);
+      });
+    }
+    return V1_deserializePureModelContextData(json);
   }
 
   private async pureCodeToPureModelContextDataJSON(
@@ -446,8 +484,7 @@ export class V1_Engine {
   ): Promise<V1_TextCompilationResult> {
     const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
       ...options,
-      // NOTE: we need to return source information here so we can locate the compilation
-      // errors/warnings
+      // NOTE: we need to return source information here so we can locate the compilation errors/warnings
       returnSourceInformation: true,
     });
     const pureModelContextDataJson = compileContext
@@ -476,6 +513,10 @@ export class V1_Engine {
         )?.map((warning) =>
           V1_CompilationWarning.serialization.fromJson(warning),
         ),
+        sourceInformationIndex:
+          this.extractElementSourceInformationIndexFromPureModelContextDataJSON(
+            mainGraph,
+          ),
       };
     } catch (error) {
       assertErrorThrown(error);

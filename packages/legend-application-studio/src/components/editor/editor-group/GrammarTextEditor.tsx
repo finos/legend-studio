@@ -62,11 +62,7 @@ import { useDrop } from 'react-dnd';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import {
-  guaranteeNonNullable,
-  hasWhiteSpace,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { hasWhiteSpace, isNonNullable } from '@finos/legend-shared';
 import {
   PARSER_SECTION_MARKER,
   PURE_CONNECTION_NAME,
@@ -689,8 +685,6 @@ export const GrammarTextEditor = observer(() => {
   const grammarTextEditorState = editorStore.getGraphEditorMode(
     GraphEditGrammarModeState,
   ).grammarTextEditorState;
-  const currentElementLabelRegexString =
-    grammarTextEditorState.currentElementLabelRegexString;
   const error = editorStore.graphState.error;
 
   const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
@@ -982,40 +976,6 @@ export const GrammarTextEditor = observer(() => {
       moveCursorToPosition(editor, forcedCursorPosition);
     }
   }, [editor, forcedCursorPosition]);
-
-  /**
-   * This effect helps to navigate to the currently selected element in the explorer tree
-   * NOTE: this effect is placed after the effect to highlight and move cursor to error,
-   * as even when there are errors, the user should be able to click on the explorer tree
-   * to navigate to the element
-   */
-  useEffect(() => {
-    if (editor && currentElementLabelRegexString) {
-      const editorModel = editor.getModel();
-      if (editorModel) {
-        const match = editorModel.findMatches(
-          currentElementLabelRegexString,
-          true,
-          true,
-          true,
-          null,
-          true,
-        );
-        if (Array.isArray(match) && match.length) {
-          const range = guaranteeNonNullable(match[0]).range;
-          editor.focus();
-          editor.revealPositionInCenter({
-            lineNumber: range.startLineNumber,
-            column: range.startColumn,
-          });
-          editor.setPosition({
-            column: range.startColumn,
-            lineNumber: range.startLineNumber,
-          });
-        }
-      }
-    }
-  }, [editor, currentElementLabelRegexString]);
 
   // NOTE: dispose the editor to prevent potential memory-leak
   useEffect(

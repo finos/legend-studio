@@ -26,6 +26,7 @@ import {
   GraphBuilderError,
   type GraphManagerOperationReport,
   reportGraphAnalytics,
+  type SourceInformation,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -76,9 +77,21 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     this.editorStore.graphState.clearProblems();
     this.editorStore.changeDetectionState.stop();
     try {
+      const sourceInformationIndex = new Map<string, SourceInformation>();
+      const entities =
+        (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
+          this.grammarTextEditorState.graphGrammarText,
+          {
+            sourceInformationIndex,
+          },
+        )) as Entity[];
+      this.grammarTextEditorState.setSourceInformationIndex(
+        sourceInformationIndex,
+      );
+
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChangesInTextMode(
-          (yield this.computeEntitiesFromCurrentGrammar()) as Entity[],
+          entities,
         ),
       );
     } catch (error) {
@@ -100,9 +113,16 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     if (
       this.editorStore.tabManagerState.currentTab instanceof ElementEditorState
     ) {
-      this.grammarTextEditorState.setCurrentElementLabelRegexString(
-        this.editorStore.tabManagerState.currentTab.element,
-      );
+      const sourceInformation =
+        this.grammarTextEditorState.sourceInformationIndex.get(
+          this.editorStore.tabManagerState.currentTab.element.path,
+        );
+      if (sourceInformation) {
+        this.grammarTextEditorState.setForcedCursorPosition({
+          lineNumber: sourceInformation.startLine,
+          column: 0,
+        });
+      }
     }
   }
 
@@ -324,6 +344,9 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
           }
         }
       }
+      this.grammarTextEditorState.setSourceInformationIndex(
+        compilationResult.sourceInformationIndex,
+      );
 
       yield flowResult(this.updateGraphAndApplication(entities));
 
@@ -505,8 +528,13 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
   }
 
   openElement(element: PackageableElement): void {
-    // in text mode, we want to select the block of code that corresponds to the element if possible
-    // the cheap way to do this is to search by element label text, e.g. `Mapping some::package::someMapping`
-    this.grammarTextEditorState.setCurrentElementLabelRegexString(element);
+    const sourceInformation =
+      this.grammarTextEditorState.sourceInformationIndex.get(element.path);
+    if (sourceInformation) {
+      this.grammarTextEditorState.setForcedCursorPosition({
+        lineNumber: sourceInformation.startLine,
+        column: 0,
+      });
+    }
   }
 }

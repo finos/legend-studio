@@ -201,6 +201,7 @@ import {
   V1_buildGenerationOutput,
   V1_buildLightQuery,
   V1_transformQuerySearchSpecification,
+  V1_buildSourceInformation,
 } from './engine/V1_EngineHelper.js';
 import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
 import {
@@ -303,6 +304,8 @@ import { DEPRECATED__validate_MappingTest } from '../../../action/validation/DSL
 import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 import { V1_TEMPORARY__SnowflakeServiceDeploymentInput } from './engine/service/V1_TEMPORARY__SnowflakeServiceDeploymentInput.js';
 import { V1_INTERNAL__UnknownPackageableElement } from './model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
+import type { SourceInformation } from '../../../action/SourceInformation.js';
+import type { V1_SourceInformation } from './model/V1_SourceInformation.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1675,15 +1678,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async pureCodeToEntities(
     code: string,
     options?: {
+      sourceInformationIndex?: Map<string, SourceInformation>;
       TEMPORARY__keepSectionIndex?: boolean;
     },
   ): Promise<Entity[]> {
-    const pmcd = await this.engine.pureCodeToPureModelContextData(code);
+    const index = new Map<string, V1_SourceInformation>();
+    const pmcd = await this.engine.pureCodeToPureModelContextData(code, {
+      sourceInformationIndex: options?.sourceInformationIndex
+        ? index
+        : undefined,
+    });
+    const sourceInformationIndex = options?.sourceInformationIndex;
+    if (sourceInformationIndex) {
+      sourceInformationIndex.clear();
+      for (const [key, value] of index.entries()) {
+        sourceInformationIndex.set(key, value);
+      }
+    }
     pmcd.elements = pmcd.elements.filter(
       (el) =>
         options?.TEMPORARY__keepSectionIndex ??
         !(el instanceof V1_SectionIndex),
     );
+
     return this.pureModelContextDataToEntities(pmcd);
   }
 
@@ -1810,6 +1827,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const entities = this.pureModelContextDataToEntities(
       compilationResult.model,
     );
+    const sourceInformationIndex = new Map<string, SourceInformation>();
+    compilationResult.sourceInformationIndex.forEach((value, key) => {
+      sourceInformationIndex.set(key, V1_buildSourceInformation(value));
+    });
 
     report.timings = {
       ...report.timings,
@@ -1823,6 +1844,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         (warning) =>
           new CompilationWarning(warning.message, warning.sourceInformation),
       ),
+      sourceInformationIndex,
     };
   }
 

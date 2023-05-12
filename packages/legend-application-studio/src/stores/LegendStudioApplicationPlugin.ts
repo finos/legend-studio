@@ -223,11 +223,6 @@ export interface DSL_LegendStudioApplicationPlugin_Extension
   getExtraPureGrammarKeywords?(): string[];
 
   /**
-   * Get the list of Pure grammar element labelers.
-   */
-  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
-
-  /**
    * Get the list of the supported packageable element type specifiers.
    */
   getExtraSupportedElementTypes?(): string[];

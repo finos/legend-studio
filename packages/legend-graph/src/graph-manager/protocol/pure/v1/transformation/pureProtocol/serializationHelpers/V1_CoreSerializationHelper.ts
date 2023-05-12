@@ -15,7 +15,10 @@
  */
 
 import { primitive, createModelSchema, optional } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+import {
+  SerializationFactory,
+  optionalCustomUsingModelSchema,
+} from '@finos/legend-shared';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import { V1_SourceInformation } from '../../../model/V1_SourceInformation.js';
@@ -29,6 +32,22 @@ export const V1_sourceInformationSerialization = new SerializationFactory(
     endColumn: primitive(),
   }),
 );
+
+export class V1_INTERNAL__PackageableElementWithSourceInformation {
+  package!: string;
+  name!: string;
+  sourceInformation?: V1_SourceInformation;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_INTERNAL__PackageableElementWithSourceInformation, {
+      package: primitive(),
+      name: primitive(),
+      sourceInformation: optionalCustomUsingModelSchema(
+        V1_sourceInformationSerialization.schema,
+      ),
+    }),
+  );
+}
 
 export const V1_packageableElementPointerModelSchema = createModelSchema(
   V1_PackageableElementPointer,
