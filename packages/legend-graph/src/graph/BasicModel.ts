@@ -625,7 +625,9 @@ export abstract class BasicModel {
     if (element.package) {
       deleteElementFromPackage(element.package, element);
     }
-    if (element instanceof Mapping) {
+    if (element instanceof INTERNAL__UnknownPackageableElement) {
+      this.INTERNAL__unknownElementsIndex.delete(element.path);
+    } else if (element instanceof Mapping) {
       this.mappingsIndex.delete(element.path);
     } else if (element instanceof Store) {
       this.storesIndex.delete(element.path);
@@ -659,8 +661,6 @@ export abstract class BasicModel {
       this.dataElementsIndex.delete(element.path);
     } else if (element instanceof ExecutionEnvironmentInstance) {
       this.executionEnvironmentsIndex.delete(element.path);
-    } else if (element instanceof INTERNAL__UnknownPackageableElement) {
-      this.INTERNAL__unknownElementsIndex.delete(element.path);
     } else if (element instanceof Package) {
       element.children.forEach((child) => this.deleteOwnElement(child));
     } else {
@@ -734,7 +734,15 @@ export abstract class BasicModel {
     }
 
     // update index in the graph
-    if (element instanceof Mapping) {
+    if (element instanceof INTERNAL__UnknownPackageableElement) {
+      this.INTERNAL__unknownElementsIndex.delete(oldPath);
+      this.INTERNAL__unknownElementsIndex.set(newPath, element);
+      element.content = {
+        ...element.content,
+        name: element.name,
+        package: element.package?.path,
+      };
+    } else if (element instanceof Mapping) {
       this.mappingsIndex.delete(oldPath);
       this.mappingsIndex.set(newPath, element);
     } else if (element instanceof Store) {
@@ -786,14 +794,6 @@ export abstract class BasicModel {
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(oldPath);
       this.generationSpecificationsIndex.set(newPath, element);
-    } else if (element instanceof INTERNAL__UnknownPackageableElement) {
-      this.INTERNAL__unknownElementsIndex.delete(oldPath);
-      this.INTERNAL__unknownElementsIndex.set(newPath, element);
-      element.content = {
-        ...element.content,
-        name: element.name,
-        package: element.package?.path,
-      };
     } else if (element instanceof Package) {
       // Since we will modify the package name, we need to first store the original
       // paths of all of its children

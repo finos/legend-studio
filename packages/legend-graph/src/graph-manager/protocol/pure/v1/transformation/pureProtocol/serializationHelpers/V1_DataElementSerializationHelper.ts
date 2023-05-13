@@ -107,7 +107,9 @@ export const V1_serializeEmbeddedDataType = (
   protocol: V1_EmbeddedData,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_EmbeddedData> => {
-  if (protocol instanceof V1_ExternalFormatData) {
+  if (protocol instanceof V1_INTERNAL__UnknownEmbeddedData) {
+    return protocol.content;
+  } else if (protocol instanceof V1_ExternalFormatData) {
     return serialize(V1_externalFormatDataModelSchema, protocol);
   } else if (protocol instanceof V1_ModelStoreData) {
     return serialize(V1_modelStoreDataModelSchema, protocol);
@@ -115,8 +117,6 @@ export const V1_serializeEmbeddedDataType = (
     return serialize(V1_dataElementReferenceModelSchema, protocol);
   } else if (protocol instanceof V1_RelationalCSVData) {
     return serialize(V1_relationalDataModelSchema, protocol);
-  } else if (protocol instanceof V1_INTERNAL__UnknownEmbeddedData) {
-    return protocol.content as PlainObject<V1_EmbeddedData>;
   }
   const extraEmbeddedDataSerializers = plugins.flatMap(
     (plugin) =>
@@ -158,16 +158,16 @@ export const V1_deserializeEmbeddedDataType = (
           ).V1_getExtraEmbeddedDataProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraEmbeddedDataProtocolDeserializers) {
-        const embeddedDataProtocol = deserializer(json);
-        if (embeddedDataProtocol) {
-          return embeddedDataProtocol;
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
         }
       }
 
       // Fall back to create unknown stub if not supported
-      const elementProtocol = new V1_INTERNAL__UnknownEmbeddedData();
-      elementProtocol.content = json;
-      return elementProtocol;
+      const protocol = new V1_INTERNAL__UnknownEmbeddedData();
+      protocol.content = json;
+      return protocol;
     }
   }
 };

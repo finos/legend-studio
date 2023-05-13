@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
 import {
   V1_ValueSpecification,
   type V1_ValueSpecificationVisitor,
 } from './V1_ValueSpecification.js';
 
 export class V1_INTERNAL__UnknownValueSpecification extends V1_ValueSpecification {
-  content!: object;
+  content!: PlainObject;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

@@ -51,13 +51,13 @@ export const V1_buildPostProcessor = (
   protocol: V1_PostProcessor,
   context: V1_GraphBuilderContext,
 ): PostProcessor => {
-  if (protocol instanceof V1_MapperPostProcessor) {
-    const metamodel = new MapperPostProcessor();
-    metamodel.mappers = protocol.mappers.map(V1_buildMapper);
-    return metamodel;
-  } else if (protocol instanceof V1_INTERNAL__UnknownPostProcessor) {
+  if (protocol instanceof V1_INTERNAL__UnknownPostProcessor) {
     const metamodel = new INTERNAL__UnknownPostProcessor();
     metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_MapperPostProcessor) {
+    const metamodel = new MapperPostProcessor();
+    metamodel.mappers = protocol.mappers.map(V1_buildMapper);
     return metamodel;
   }
   const extraPostProcessorBuilders = context.extensions.plugins.flatMap(

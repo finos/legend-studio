@@ -104,10 +104,10 @@ export const V1_serializePostProcessor = (
   value: V1_PostProcessor,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_PostProcessor> => {
-  if (value instanceof V1_MapperPostProcessor) {
-    return serialize(V1_mapperPostProcessorModelSchema, value);
-  } else if (value instanceof V1_INTERNAL__UnknownPostProcessor) {
+  if (value instanceof V1_INTERNAL__UnknownPostProcessor) {
     return value.content as PlainObject<V1_PostProcessor>;
+  } else if (value instanceof V1_MapperPostProcessor) {
+    return serialize(V1_mapperPostProcessorModelSchema, value);
   }
   const extraPostprocessorProtocolSerializers = plugins.flatMap(
     (plugin) =>
@@ -142,16 +142,16 @@ export const V1_deserializePostProcessor = (
           ).V1_getExtraConnectionPostProcessorProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraPostprocessorProtocolDeserializers) {
-        const postProcessorProtocol = deserializer(json);
-        if (postProcessorProtocol) {
-          return postProcessorProtocol;
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
         }
       }
 
       // Fall back to create unknown stub if not supported
-      const elementProtocol = new V1_INTERNAL__UnknownPostProcessor();
-      elementProtocol.content = json;
-      return elementProtocol;
+      const protocol = new V1_INTERNAL__UnknownPostProcessor();
+      protocol.content = json;
+      return protocol;
     }
   }
 };

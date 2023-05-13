@@ -137,7 +137,7 @@ class V1_PackageableElementSerializer
   visit_INTERNAL__UnknownPackageableElement(
     element: V1_INTERNAL__UnknownPackageableElement,
   ): PlainObject<V1_PackageableElement> {
-    return element.content as PlainObject<V1_PackageableElement>;
+    return element.content;
   }
 
   visit_Profile(element: V1_Profile): PlainObject<V1_PackageableElement> {
@@ -302,18 +302,18 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_dataElementModelSchema(plugins), json);
       default: {
         for (const deserializer of extraElementProtocolDeserializers) {
-          const elementProtocol = deserializer(json, plugins);
-          if (elementProtocol) {
-            return elementProtocol;
+          const protocol = deserializer(json, plugins);
+          if (protocol) {
+            return protocol;
           }
         }
 
         // Fall back to create unknown stub if not supported
-        const elementProtocol = new V1_INTERNAL__UnknownPackageableElement();
-        elementProtocol.name = name;
-        elementProtocol.package = packagePath;
-        elementProtocol.content = json;
-        return elementProtocol;
+        const protocol = new V1_INTERNAL__UnknownPackageableElement();
+        protocol.name = name;
+        protocol.package = packagePath;
+        protocol.content = json;
+        return protocol;
       }
     }
   } catch (error) {

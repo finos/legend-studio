@@ -76,13 +76,13 @@ export const V1_transformPostProcessor = (
   metamodel: PostProcessor,
   context: V1_GraphTransformerContext,
 ): V1_PostProcessor => {
-  if (metamodel instanceof MapperPostProcessor) {
-    const protocol = new V1_MapperPostProcessor();
-    protocol.mappers = metamodel.mappers.map(V1_transformMapper);
-    return protocol;
-  } else if (metamodel instanceof INTERNAL__UnknownPostProcessor) {
+  if (metamodel instanceof INTERNAL__UnknownPostProcessor) {
     const protocol = new V1_INTERNAL__UnknownPostProcessor();
     protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof MapperPostProcessor) {
+    const protocol = new V1_MapperPostProcessor();
+    protocol.mappers = metamodel.mappers.map(V1_transformMapper);
     return protocol;
   }
   const extraConnectionPostProcessorTransformers = context.plugins.flatMap(

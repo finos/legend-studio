@@ -45,6 +45,7 @@ import {
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
   TrinoDelegatedKerberosAuthenticationStrategy,
+  INTERNAL__UnknownAuthenticationStrategy,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
@@ -71,6 +72,7 @@ import {
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
   V1_TrinoDelegatedKerberosAuthenticationStrategy,
+  V1_INTERNAL__UnknownAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 
@@ -297,7 +299,11 @@ export const V1_buildAuthenticationStrategy = (
   protocol: V1_AuthenticationStrategy,
   context: V1_GraphBuilderContext,
 ): AuthenticationStrategy => {
-  if (protocol instanceof V1_DefaultH2AuthenticationStrategy) {
+  if (protocol instanceof V1_INTERNAL__UnknownAuthenticationStrategy) {
+    const metamodel = new INTERNAL__UnknownAuthenticationStrategy();
+    metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_DefaultH2AuthenticationStrategy) {
     return new DefaultH2AuthenticationStrategy();
   } else if (protocol instanceof V1_DelegatedKerberosAuthenticationStrategy) {
     const metamodel = new DelegatedKerberosAuthenticationStrategy();

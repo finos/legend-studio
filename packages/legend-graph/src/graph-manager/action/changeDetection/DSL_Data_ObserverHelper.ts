@@ -110,7 +110,9 @@ export function observe_EmbeddedData(
   metamodel: EmbeddedData,
   context: ObserverContext,
 ): EmbeddedData {
-  if (metamodel instanceof DataElementReference) {
+  if (metamodel instanceof INTERNAL__UnknownEmbeddedData) {
+    return observe_INTERNAL__UnknownEmbeddedData(metamodel);
+  } else if (metamodel instanceof DataElementReference) {
     return observe_DataElementReference(metamodel);
   } else if (metamodel instanceof ExternalFormatData) {
     return observe_ExternalFormatData(metamodel);
@@ -118,8 +120,6 @@ export function observe_EmbeddedData(
     return observe_ModelStoreData(metamodel);
   } else if (metamodel instanceof RelationalCSVData) {
     return observe_RelationalCSVData(metamodel);
-  } else if (metamodel instanceof INTERNAL__UnknownEmbeddedData) {
-    return observe_INTERNAL__UnknownEmbeddedData(metamodel);
   }
   const extraEmbeddedDataObservers = context.plugins.flatMap(
     (plugin) =>

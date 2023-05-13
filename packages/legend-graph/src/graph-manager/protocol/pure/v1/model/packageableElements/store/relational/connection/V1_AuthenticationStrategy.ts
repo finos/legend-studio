@@ -14,11 +14,32 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../../../graph/Core_HashUtils.js';
+import {
+  type Hashable,
+  hashArray,
+  type PlainObject,
+} from '@finos/legend-shared';
 
 export abstract class V1_AuthenticationStrategy implements Hashable {
   abstract get hashCode(): string;
+}
+
+export class V1_INTERNAL__UnknownAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  content!: PlainObject;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_AUTHENTICATION_STRATEGY,
+      hashObjectWithoutSourceInformation(this.content),
+    ]);
+  }
 }
 
 export class V1_DelegatedKerberosAuthenticationStrategy

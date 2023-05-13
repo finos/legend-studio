@@ -68,6 +68,7 @@ import {
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
   V1_TrinoDelegatedKerberosAuthenticationStrategy,
+  V1_INTERNAL__UnknownAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
@@ -483,7 +484,9 @@ export const V1_serializeAuthenticationStrategy = (
   protocol: V1_AuthenticationStrategy,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_AuthenticationStrategy> => {
-  if (protocol instanceof V1_DelegatedKerberosAuthenticationStrategy) {
+  if (protocol instanceof V1_INTERNAL__UnknownAuthenticationStrategy) {
+    return protocol.content;
+  } else if (protocol instanceof V1_DelegatedKerberosAuthenticationStrategy) {
     return serialize(
       V1_delegatedKerberosAuthenticationStrategyModelSchema,
       protocol,
@@ -612,9 +615,11 @@ export const V1_deserializeAuthenticationStrategy = (
           return protocol;
         }
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize authentication strategy of type '${json._type}': no compatible deserializer available from plugins`,
-      );
+
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownAuthenticationStrategy();
+      protocol.content = json;
+      return protocol;
     }
   }
 };

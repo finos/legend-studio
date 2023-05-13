@@ -146,7 +146,9 @@ const buildClassExecutionResult = (
 export const V1_buildExecutionResult = (
   protocol: V1_ExecutionResult,
 ): ExecutionResult => {
-  if (protocol instanceof V1_ClassExecutionResult) {
+  if (protocol instanceof V1_INTERNAL__UnknownExecutionResult) {
+    return new INTERNAL__UnknownExecutionResult(protocol.content);
+  } else if (protocol instanceof V1_ClassExecutionResult) {
     return buildClassExecutionResult(protocol);
   } else if (protocol instanceof V1_TDSExecutionResult) {
     return buildTDSExecutionResult(protocol);
@@ -154,8 +156,6 @@ export const V1_buildExecutionResult = (
     return buildJSONExecutionResult(protocol);
   } else if (protocol instanceof V1_RawExecutionResult) {
     return new RawExecutionResult(protocol.value);
-  } else if (protocol instanceof V1_INTERNAL__UnknownExecutionResult) {
-    return new INTERNAL__UnknownExecutionResult(protocol.content);
   }
   throw new UnsupportedOperationError(`Can't build execution result`, protocol);
 };

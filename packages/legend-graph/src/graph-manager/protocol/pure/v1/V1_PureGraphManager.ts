@@ -373,7 +373,9 @@ export const V1_indexPureModelContextData = (
   >();
   data.elements.forEach((el) => {
     let isIndexedAsOtherElement = false;
-    if (el instanceof V1_Association) {
+    if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
+      index.INTERNAL__unknownElements.push(el);
+    } else if (el instanceof V1_Association) {
       index.associations.push(el);
     } else if (el instanceof V1_Class) {
       index.classes.push(el);
@@ -395,8 +397,6 @@ export const V1_indexPureModelContextData = (
       index.stores.push(el);
     } else if (el instanceof V1_SectionIndex) {
       index.sectionIndices.push(el);
-    } else if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
-      index.INTERNAL__unknownElements.push(el);
     } else if (el instanceof V1_Service) {
       index.services.push(el);
     } else if (el instanceof V1_FileGenerationSpecification) {
@@ -3495,7 +3495,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private getElementClassiferPath = (
     protocol: V1_PackageableElement,
   ): string => {
-    if (protocol instanceof V1_Association) {
+    if (protocol instanceof V1_INTERNAL__UnknownPackageableElement) {
+      const _type = protocol.content._type;
+      const classifierPath = isString(_type)
+        ? this.elementClassifierPathMap.get(_type)
+        : undefined;
+      if (classifierPath) {
+        return classifierPath;
+      }
+      throw new UnsupportedOperationError(
+        `Can't get classifier path for element '${protocol.path}': not classifier path mapping available`,
+      );
+    } else if (protocol instanceof V1_Association) {
       return CORE_PURE_PATH.ASSOCIATION;
     } else if (protocol instanceof V1_Class) {
       return CORE_PURE_PATH.CLASS;
@@ -3529,17 +3540,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.DATA_ELEMENT;
     } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_PURE_PATH.GENERATION_SPECIFICATION;
-    } else if (protocol instanceof V1_INTERNAL__UnknownPackageableElement) {
-      const _type = protocol.content._type;
-      const classifierPath = isString(_type)
-        ? this.elementClassifierPathMap.get(_type)
-        : undefined;
-      if (classifierPath) {
-        return classifierPath;
-      }
-      throw new UnsupportedOperationError(
-        `Can't get classifier path for element '${protocol.path}': not classifier path mapping available`,
-      );
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()

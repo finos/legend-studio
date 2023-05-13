@@ -27,6 +27,7 @@ import {
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
   TrinoDelegatedKerberosAuthenticationStrategy,
+  INTERNAL__UnknownAuthenticationStrategy,
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import {
   type DatasourceSpecification,
@@ -129,6 +130,7 @@ import {
   observe_SetImplementation,
 } from './DSL_Mapping_ObserverHelper.js';
 import type { DEPRECATED__RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
+import { INTERNAL__UnknownPostProcessor } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/INTERNAL__UnknownPostProcessor.js';
 
 // ------------------------------------- Operation -------------------------------------
 
@@ -1017,11 +1019,23 @@ export const observe_TrinoDelegatedKerberosAuthenticationStrategy =
       }),
   );
 
+const observe_INTERNAL__UnknownAuthenticationStrategy = skipObserved(
+  (
+    metamodel: INTERNAL__UnknownAuthenticationStrategy,
+  ): INTERNAL__UnknownAuthenticationStrategy =>
+    makeObservable(metamodel, {
+      hashCode: computed,
+      content: observable,
+    }),
+);
+
 export const observe_AuthenticationStrategy = (
   metamodel: AuthenticationStrategy,
   context: ObserverContext,
 ): AuthenticationStrategy => {
-  if (metamodel instanceof DelegatedKerberosAuthenticationStrategy) {
+  if (metamodel instanceof INTERNAL__UnknownAuthenticationStrategy) {
+    return observe_INTERNAL__UnknownAuthenticationStrategy(metamodel);
+  } else if (metamodel instanceof DelegatedKerberosAuthenticationStrategy) {
     return observe_DelegatedKerberosAuthenticationStrategy(metamodel);
   } else if (metamodel instanceof DefaultH2AuthenticationStrategy) {
     return observe_DefaultH2AuthenticationStrategy(metamodel);
@@ -1128,11 +1142,25 @@ export const observe_MapperPostProcessor = (
   return metamodel;
 };
 
+const observe_INTERNAL__UnknownPostProcessor = (
+  metamodel: INTERNAL__UnknownPostProcessor,
+): INTERNAL__UnknownPostProcessor => {
+  observe_Abstract_PostProcessor(metamodel);
+
+  makeObservable(metamodel, {
+    content: observable,
+  });
+
+  return metamodel;
+};
+
 export const observe_PostProcessor = (
   metamodel: PostProcessor,
   context: ObserverContext,
 ): PostProcessor => {
-  if (metamodel instanceof MapperPostProcessor) {
+  if (metamodel instanceof INTERNAL__UnknownPostProcessor) {
+    return observe_INTERNAL__UnknownPostProcessor(metamodel);
+  } else if (metamodel instanceof MapperPostProcessor) {
     return observe_MapperPostProcessor(metamodel);
   }
   const extraObservers = context.plugins.flatMap(

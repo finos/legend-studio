@@ -101,7 +101,11 @@ export const V1_transformEmbeddedData = (
   metamodel: EmbeddedData,
   context: V1_GraphTransformerContext,
 ): V1_EmbeddedData => {
-  if (metamodel instanceof ModelStoreData) {
+  if (metamodel instanceof INTERNAL__UnknownEmbeddedData) {
+    const protocol = new V1_INTERNAL__UnknownEmbeddedData();
+    protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof ModelStoreData) {
     return V1_transformModelStoreData(metamodel);
   } else if (metamodel instanceof ExternalFormatData) {
     return V1_transformExternalFormatData(metamodel);
@@ -109,10 +113,6 @@ export const V1_transformEmbeddedData = (
     return V1_transformDataElementReference(metamodel);
   } else if (metamodel instanceof RelationalCSVData) {
     return V1_transformRelationalCSVData(metamodel);
-  } else if (metamodel instanceof INTERNAL__UnknownEmbeddedData) {
-    const protocol = new V1_INTERNAL__UnknownEmbeddedData();
-    protocol.content = metamodel.content;
-    return protocol;
   }
   const extraEmbeddedDataTransformers = context.plugins.flatMap(
     (plugin) =>
