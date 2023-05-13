@@ -50,6 +50,7 @@ import {
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
 } from './V1_DomainSerializationHelper.js';
+import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
 
 export const V1_DATA_ELEMENT_PROTOCOL_TYPE = 'dataElement';
 
@@ -114,6 +115,8 @@ export const V1_serializeEmbeddedDataType = (
     return serialize(V1_dataElementReferenceModelSchema, protocol);
   } else if (protocol instanceof V1_RelationalCSVData) {
     return serialize(V1_relationalDataModelSchema, protocol);
+  } else if (protocol instanceof V1_INTERNAL__UnknownEmbeddedData) {
+    return protocol.content as unknown as PlainObject<V1_EmbeddedData>;
   }
   const extraEmbeddedDataSerializers = plugins.flatMap(
     (plugin) =>
@@ -161,9 +164,10 @@ export const V1_deserializeEmbeddedDataType = (
         }
       }
 
-      throw new UnsupportedOperationError(
-        `Can't deserialize embedded data of type '${json._type}': no compatible deserializer available from plugins`,
-      );
+      // Fall back to create unknown stub if not supported
+      const elementProtocol = new V1_INTERNAL__UnknownEmbeddedData();
+      elementProtocol.content = json;
+      return elementProtocol;
     }
   }
 };

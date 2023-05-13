@@ -307,7 +307,8 @@ export const V1_deserializePackageableElement = (
             return elementProtocol;
           }
         }
-        // Fall back to create unknown element if the protocol is not supported
+
+        // Fall back to create unknown stub if not supported
         const elementProtocol = new V1_INTERNAL__UnknownPackageableElement();
         elementProtocol.name = name;
         elementProtocol.package = packagePath;

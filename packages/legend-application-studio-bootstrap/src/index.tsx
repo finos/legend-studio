@@ -48,9 +48,9 @@ export class LegendStudioWebApplication {
       // new DSL_DataSpace_GraphManagerPreset(),
       // new DSL_Persistence_GraphManagerPreset(),
       // new DSL_Mastery_GraphManagerPreset(),
-      new FMT_JSONSchema_GraphManagerPreset(),
-      new STO_ServiceStore_GraphManagerPreset(),
-      new FMT_GraphQL_GraphManagerPreset(),
+      // new FMT_JSONSchema_GraphManagerPreset(),
+      // new STO_ServiceStore_GraphManagerPreset(),
+      // new FMT_GraphQL_GraphManagerPreset(),
     ];
   }
 
@@ -60,11 +60,11 @@ export class LegendStudioWebApplication {
       // new DSL_Text_LegendStudioApplicationPlugin(),
       // new DSL_Diagram_LegendStudioApplicationPlugin(),
       // new DSL_DataSpace_LegendStudioApplicationPlugin(),
-      new DSL_Service_LegendStudioApplicationPlugin(),
-      new DSL_ExternalFormat_LegendStudioApplicationPlugin(),
+      // new DSL_Service_LegendStudioApplicationPlugin(),
+      // new DSL_ExternalFormat_LegendStudioApplicationPlugin(),
       // new DSL_Persistence_LegendStudioApplicationPlugin(),
       // new DSL_Mastery_LegendStudioApplicationPlugin(),
-      new STO_ServiceStore_LegendStudioApplicationPlugin(),
+      // new STO_ServiceStore_LegendStudioApplicationPlugin(),
 
       // loggers
       new WebConsole(),

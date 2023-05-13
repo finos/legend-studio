@@ -36,6 +36,8 @@ import type {
 } from '../../../../model/data/V1_EmbeddedData.js';
 import type { V1_RelationalCSVData } from '../../../../model/data/V1_RelationalCSVData.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
+import type { V1_INTERNAL__UnknownEmbeddedData } from '../../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
+import { INTERNAL__UnknownEmbeddedData } from '../../../../../../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
 
 class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
   context: V1_GraphBuilderContext;
@@ -62,6 +64,14 @@ class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
       `Can't build embedded data: no compatible builder available from plugins`,
       embeddedData,
     );
+  }
+
+  visit_INTERNAL__UnknownEmbeddedData(
+    data: V1_INTERNAL__UnknownEmbeddedData,
+  ): EmbeddedData {
+    const metamodel = new INTERNAL__UnknownEmbeddedData();
+    metamodel.content = data.content;
+    return metamodel;
   }
 
   visit_ExternalFormatData(

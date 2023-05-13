@@ -73,6 +73,10 @@ export const observe_INTERNAL__UnknownPackageableElement = skipObserved(
   ): INTERNAL__UnknownPackageableElement => {
     observe_Abstract_PackageableElement(metamodel);
 
+    makeObservable(metamodel, {
+      content: observable,
+    });
+
     return metamodel;
   },
 );

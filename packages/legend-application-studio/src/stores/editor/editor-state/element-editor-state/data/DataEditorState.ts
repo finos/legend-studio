@@ -40,13 +40,10 @@ export type EmbeddedDataTypeOption = {
 };
 
 export class EmbeddedDataEditorState {
-  /**
-   * NOTE: used to force component remount on state change
-   */
   readonly uuid = uuid();
-  editorStore: EditorStore;
-  embeddedData: EmbeddedData;
-  embeddedDataState: EmbeddedDataState;
+  readonly editorStore: EditorStore;
+  readonly embeddedData: EmbeddedData;
+  readonly embeddedDataState: EmbeddedDataState;
 
   constructor(editorStore: EditorStore, embeddedData: EmbeddedData) {
     this.editorStore = editorStore;
@@ -59,7 +56,8 @@ export class EmbeddedDataEditorState {
 }
 
 export class PackageableDataEditorState extends ElementEditorState {
-  embeddedDataState: EmbeddedDataEditorState;
+  readonly embeddedDataState: EmbeddedDataEditorState;
+
   selectedTab = DATA_TAB_TYPE.GENERAL;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {

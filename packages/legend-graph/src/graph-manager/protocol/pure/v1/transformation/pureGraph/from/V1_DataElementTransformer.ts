@@ -44,6 +44,8 @@ import {
   V1_transformTaggedValue,
 } from './V1_DomainTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { INTERNAL__UnknownEmbeddedData } from '../../../../../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
+import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
 
 // ----------------------------------------------- DATA ----------------------------------------
 
@@ -107,6 +109,10 @@ export const V1_transformEmbeddedData = (
     return V1_transformDataElementReference(metamodel);
   } else if (metamodel instanceof RelationalCSVData) {
     return V1_transformRelationalCSVData(metamodel);
+  } else if (metamodel instanceof INTERNAL__UnknownEmbeddedData) {
+    const protocol = new V1_INTERNAL__UnknownEmbeddedData();
+    protocol.content = metamodel.content;
+    return protocol;
   }
   const extraEmbeddedDataTransformers = context.plugins.flatMap(
     (plugin) =>
