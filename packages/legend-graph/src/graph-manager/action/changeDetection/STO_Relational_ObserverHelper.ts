@@ -41,6 +41,7 @@ import {
   StaticDatasourceSpecification,
   SpannerDatasourceSpecification,
   TrinoDatasourceSpecification,
+  INTERNAL__UnknownDatasourceSpecification,
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import {
   type Mapper,
@@ -876,11 +877,23 @@ export const observe_TrinoDatasourceSpecification = skipObserved(
   },
 );
 
+const observe_INTERNAL__UnknownDatasourceSpecification = skipObserved(
+  (
+    metamodel: INTERNAL__UnknownDatasourceSpecification,
+  ): INTERNAL__UnknownDatasourceSpecification =>
+    makeObservable(metamodel, {
+      content: observable,
+      hashCode: computed,
+    }),
+);
+
 export const observe_DatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: ObserverContext,
 ): DatasourceSpecification => {
-  if (metamodel instanceof StaticDatasourceSpecification) {
+  if (metamodel instanceof INTERNAL__UnknownDatasourceSpecification) {
+    return observe_INTERNAL__UnknownDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof StaticDatasourceSpecification) {
     return observe_StaticDatasourceSpecification(metamodel);
   } else if (metamodel instanceof DatabricksDatasourceSpecification) {
     return observe_DatabricksDatasourceSpecification(metamodel);

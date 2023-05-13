@@ -32,6 +32,7 @@ import {
   SpannerDatasourceSpecification,
   TrinoDatasourceSpecification,
   TrinoSslSpecification,
+  INTERNAL__UnknownDatasourceSpecification,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import {
   type AuthenticationStrategy,
@@ -59,6 +60,7 @@ import {
   V1_BigQueryDatasourceSpecification,
   V1_SpannerDatasourceSpecification,
   V1_TrinoDatasourceSpecification,
+  V1_INTERNAL__UnknownDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -80,7 +82,11 @@ export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   context: V1_GraphBuilderContext,
 ): DatasourceSpecification => {
-  if (protocol instanceof V1_StaticDatasourceSpecification) {
+  if (protocol instanceof V1_INTERNAL__UnknownDatasourceSpecification) {
+    const metamodel = new INTERNAL__UnknownDatasourceSpecification();
+    metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_StaticDatasourceSpecification) {
     assertNonEmptyString(
       protocol.host,
       `Static datasource specification 'host' field is missing or empty`,

@@ -55,6 +55,7 @@ import {
   V1_SpannerDatasourceSpecification,
   V1_TrinoDatasourceSpecification,
   V1_TrinoSslSpecification,
+  V1_INTERNAL__UnknownDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -292,7 +293,9 @@ export const V1_serializeDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_DatasourceSpecification> => {
-  if (protocol instanceof V1_StaticDatasourceSpecification) {
+  if (protocol instanceof V1_INTERNAL__UnknownDatasourceSpecification) {
+    return protocol.content;
+  } else if (protocol instanceof V1_StaticDatasourceSpecification) {
     return serialize(staticDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_EmbeddedH2DatasourceSpecification) {
     return serialize(embeddedH2DatasourceSpecificationModelSchema, protocol);
@@ -369,9 +372,11 @@ export const V1_deserializeDatasourceSpecification = (
           return protocol;
         }
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize datasource specification of type '${json._type}': no compatible deserializer available from plugins`,
-      );
+
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownDatasourceSpecification();
+      protocol.content = json;
+      return protocol;
     }
   }
 };

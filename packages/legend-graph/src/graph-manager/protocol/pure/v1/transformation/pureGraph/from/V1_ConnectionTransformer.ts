@@ -53,6 +53,7 @@ import {
   BigQueryDatasourceSpecification,
   SpannerDatasourceSpecification,
   TrinoDatasourceSpecification,
+  INTERNAL__UnknownDatasourceSpecification,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import type { ModelChainConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
@@ -69,6 +70,7 @@ import {
   V1_SpannerDatasourceSpecification,
   V1_TrinoDatasourceSpecification,
   V1_TrinoSslSpecification,
+  V1_INTERNAL__UnknownDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -205,7 +207,11 @@ const transformDatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: V1_GraphTransformerContext,
 ): V1_DatasourceSpecification => {
-  if (metamodel instanceof StaticDatasourceSpecification) {
+  if (metamodel instanceof INTERNAL__UnknownDatasourceSpecification) {
+    const protocol = new V1_INTERNAL__UnknownDatasourceSpecification();
+    protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof StaticDatasourceSpecification) {
     return transformStaticDatasourceSpecification(metamodel);
   } else if (metamodel instanceof EmbeddedH2DatasourceSpecification) {
     return transformEmbeddedH2DatasourceSpecification(metamodel);
