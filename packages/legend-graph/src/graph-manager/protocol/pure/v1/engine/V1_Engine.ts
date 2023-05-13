@@ -255,10 +255,11 @@ export class V1_Engine {
 
   pureModelContextDataToPureCode(
     graph: V1_PureModelContextData,
+    pretty: boolean,
   ): Promise<string> {
     return this.engineServerClient.JSONToGrammar_model(
       this.serializePureModelContext(graph),
-      V1_RenderStyle.STANDARD,
+      pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
     );
   }
 
@@ -667,7 +668,7 @@ export class V1_Engine {
     // from the front end to engine would take up a lot of bandwidth.
     const textModel = new V1_PureModelContextText();
     textModel.serializer = model.serializer;
-    textModel.code = await this.pureModelContextDataToPureCode(model);
+    textModel.code = await this.pureModelContextDataToPureCode(model, false);
     return (
       await this.engineServerClient.generateFile(
         generationMode,

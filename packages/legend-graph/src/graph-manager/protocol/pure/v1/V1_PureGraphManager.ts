@@ -1640,11 +1640,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Grammar ---------------------------------------------
 
-  async graphToPureCode(graph: PureModel): Promise<string> {
+  async graphToPureCode(
+    graph: PureModel,
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string> {
     const startTime = Date.now();
     const graphData = this.graphToPureModelContextData(graph);
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
       graphData,
+      Boolean(options?.pretty),
     );
     this.logService.info(
       LogEvent.create(
@@ -1660,10 +1664,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.prettyLambdaContent(lambda);
   }
 
-  async entitiesToPureCode(entities: Entity[]): Promise<string> {
+  async entitiesToPureCode(
+    entities: Entity[],
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string> {
     const startTime = Date.now();
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
       await this.entitiesToPureModelContextData(entities),
+      Boolean(options?.pretty),
     );
     this.logService.info(
       LogEvent.create(

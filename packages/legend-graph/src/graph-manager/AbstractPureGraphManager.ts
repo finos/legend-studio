@@ -266,7 +266,10 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  abstract graphToPureCode(graph: PureModel): Promise<string>;
+  abstract graphToPureCode(
+    graph: PureModel,
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string>;
   abstract pureCodeToEntities(
     code: string,
     options?: {
@@ -274,7 +277,10 @@ export abstract class AbstractPureGraphManager {
       TEMPORARY__keepSectionIndex?: boolean;
     },
   ): Promise<Entity[]>;
-  abstract entitiesToPureCode(entities: Entity[]): Promise<string>;
+  abstract entitiesToPureCode(
+    entities: Entity[],
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string>;
   abstract pureCodeToLambda(
     lambda: string,
     lambdaId?: string,

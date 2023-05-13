@@ -56,17 +56,9 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     super(editorStore);
     makeObservable(this, {
       grammarTextEditorState: observable,
-      setGraphGrammar: flow,
-      setGraphGrammarFromEntites: flow,
       compileText: flow,
     });
     this.grammarTextEditorState = new GrammarTextEditorState(this.editorStore);
-  }
-
-  async computeEntitiesFromCurrentGrammar(): Promise<Entity[]> {
-    return this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
-      this.grammarTextEditorState.graphGrammarText,
-    );
   }
 
   *initialize(isFallback?: boolean): GeneratorFn<void> {
@@ -124,26 +116,6 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
         });
       }
     }
-  }
-
-  *setGraphGrammarFromEntites(entities: Entity[]): GeneratorFn<void> {
-    const editorGrammar =
-      (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
-        entities,
-      )) as string;
-    yield flowResult(
-      this.grammarTextEditorState.setGraphGrammarText(editorGrammar),
-    );
-  }
-
-  *setGraphGrammar(): GeneratorFn<void> {
-    const graphGrammar =
-      (yield this.editorStore.graphManagerState.graphManager.graphToPureCode(
-        this.editorStore.graphManagerState.graph,
-      )) as string;
-    yield flowResult(
-      this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
-    );
   }
 
   *compileText(
@@ -515,14 +487,24 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     isGraphBuildFailure?: boolean;
   }): GeneratorFn<void> {
     if (fallbackOptions?.isGraphBuildFailure) {
-      yield flowResult(
-        this.setGraphGrammarFromEntites(
+      const editorGrammar =
+        (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
           this.editorStore.changeDetectionState
             .workspaceLocalLatestRevisionState.entities,
-        ),
+          { pretty: true },
+        )) as string;
+      yield flowResult(
+        this.grammarTextEditorState.setGraphGrammarText(editorGrammar),
       );
     } else {
-      yield flowResult(this.setGraphGrammar());
+      const graphGrammar =
+        (yield this.editorStore.graphManagerState.graphManager.graphToPureCode(
+          this.editorStore.graphManagerState.graph,
+          { pretty: true },
+        )) as string;
+      yield flowResult(
+        this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
+      );
     }
     this.editorStore.applicationStore.alertService.setBlockingAlert(undefined);
   }
