@@ -120,6 +120,11 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import {
+  guaranteeRelationalDatabaseConnection,
+  isRelationalDatabaseConnection,
+} from '../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
+import { DatabaseBuilder } from '../editor-group/connection-editor/DatabaseBuilder.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -492,6 +497,16 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const buildDatabase = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (isRelationalDatabaseConnection(node?.packageableElement)) {
+          editorStore.explorerTreeState.buildDbBuilderState(
+            guaranteeRelationalDatabaseConnection(node?.packageableElement),
+            editorStore.isInViewerMode,
+          );
+        }
+      },
+    );
     const removeElement = (): void => {
       if (node) {
         flowResult(
@@ -697,6 +712,14 @@ const ExplorerContextMenu = observer(
             <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
             <MenuContentItem onClick={generateSampleData}>
               Generate Sample Data...
+            </MenuContentItem>
+            <MenuContentDivider />
+          </>
+        )}
+        {isRelationalDatabaseConnection(node.packageableElement) && (
+          <>
+            <MenuContentItem onClick={buildDatabase}>
+              Build Database...
             </MenuContentItem>
             <MenuContentDivider />
           </>
@@ -1013,6 +1036,14 @@ const ExplorerTrees = observer(() => {
               />
               <ElementRenamer />
               <SampleDataGenerator />
+              {editorStore.explorerTreeState.databaseBuilderState && (
+                <DatabaseBuilder
+                  databaseBuilderState={
+                    editorStore.explorerTreeState.databaseBuilderState
+                  }
+                  isReadOnly={false}
+                />
+              )}
               {editorStore.projectConfigurationEditorState
                 .projectConfiguration && <ProjectConfig />}
               {/* SYSTEM TREE */}

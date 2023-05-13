@@ -28,14 +28,16 @@ import {
   isNonNullable,
   filterByType,
   ActionState,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
-  type RelationalDatabaseConnection,
   type Schema,
+  type PackageableElement,
   type Table,
+  RelationalDatabaseConnection,
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
@@ -48,9 +50,24 @@ import {
   getSchema,
   getNullableSchema,
   getNullableTable,
+  PackageableConnection,
 } from '@finos/legend-graph';
 import { connection_setStore } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { GraphEditFormModeState } from '../../../GraphEditFormModeState.js';
+
+export const isRelationalDatabaseConnection = (
+  val: PackageableElement | undefined,
+): boolean =>
+  val instanceof PackageableConnection &&
+  val.connectionValue instanceof RelationalDatabaseConnection;
+
+export const guaranteeRelationalDatabaseConnection = (
+  val: PackageableElement | undefined,
+): RelationalDatabaseConnection =>
+  guaranteeType(
+    guaranteeType(val, PackageableConnection).connectionValue,
+    RelationalDatabaseConnection,
+  );
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;
@@ -108,10 +125,12 @@ export class DatabaseBuilderState {
   isSavingDatabase = false;
   targetDatabasePath: string;
   treeData?: DatabaseBuilderTreeData | undefined;
+  isReadOnly: boolean;
 
   constructor(
     editorStore: EditorStore,
     connection: RelationalDatabaseConnection,
+    isReadOnly: boolean,
   ) {
     makeObservable<
       DatabaseBuilderState,
@@ -140,6 +159,7 @@ export class DatabaseBuilderState {
     this.connection = connection;
     this.editorStore = editorStore;
     this.targetDatabasePath = this.currentDatabase?.path ?? 'store::MyDatabase';
+    this.isReadOnly = isReadOnly;
   }
 
   setShowModal(val: boolean): void {
@@ -578,9 +598,7 @@ export class DatabaseBuilderState {
         const schemas = this.getSchemasFromTreeNode(this.treeData);
         this.updateDatabase(currentDatabase, database, schemas);
         this.editorStore.applicationStore.notificationService.notifySuccess(
-          `Database successfully '${isUpdating ? 'updated' : 'created'}. ${
-            !isUpdating ? 'Recompiling...' : ''
-          }`,
+          `Database successfully '${isUpdating ? 'updated' : 'created'}.`,
         );
         this.fetchSchemaDefinitions();
         if (isUpdating) {
@@ -593,6 +611,7 @@ export class DatabaseBuilderState {
           );
         }
       }
+      this.setShowModal(false);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(

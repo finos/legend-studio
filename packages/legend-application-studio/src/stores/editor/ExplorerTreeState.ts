@@ -48,8 +48,10 @@ import {
   getElementRootPackage,
   isDependencyElement,
   type Class,
+  type RelationalDatabaseConnection,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
+import { DatabaseBuilderState } from './editor-state/element-editor-state/connection/DatabaseBuilderState.js';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',
@@ -73,6 +75,7 @@ export class ExplorerTreeState {
 
   elementToRename?: PackageableElement | undefined;
   classToGenerateSampleData?: Class | undefined;
+  databaseBuilderState: DatabaseBuilderState | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -85,6 +88,7 @@ export class ExplorerTreeState {
       selectedNode: observable.ref,
       elementToRename: observable,
       classToGenerateSampleData: observable,
+      databaseBuilderState: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -99,6 +103,8 @@ export class ExplorerTreeState {
       buildTreeInTextMode: action,
       openExplorerTreeNodes: action,
       reprocess: action,
+      buildDbBuilderState: action,
+      setDatabaseBuilderState: action,
       onTreeNodeSelect: action,
       openNode: action,
     });
@@ -168,6 +174,22 @@ export class ExplorerTreeState {
   }
   setClassToGenerateSampleData(val: Class | undefined): void {
     this.classToGenerateSampleData = val;
+  }
+
+  setDatabaseBuilderState(val: DatabaseBuilderState | undefined): void {
+    this.databaseBuilderState = val;
+  }
+  buildDbBuilderState(
+    val: RelationalDatabaseConnection,
+    isReadOnly: boolean,
+  ): void {
+    const dbBuilderState = new DatabaseBuilderState(
+      this.editorStore,
+      val,
+      isReadOnly,
+    );
+    dbBuilderState.setShowModal(true);
+    this.setDatabaseBuilderState(dbBuilderState);
   }
 
   setSelectedNode(node: PackageTreeNodeData | undefined): void {
