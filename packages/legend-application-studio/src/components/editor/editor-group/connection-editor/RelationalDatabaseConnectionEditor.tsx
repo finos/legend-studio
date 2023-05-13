@@ -1572,7 +1572,7 @@ const RelationalConnectionGeneralEditor = observer(
       label: connection.type,
     };
     const onTypeChange = (
-      val: { label: string; value: DatabaseType } | null,
+      val: { label: string; value: string } | null,
     ): void => {
       dBConnection_setType(connection, val?.value ?? DatabaseType.H2);
     };

@@ -83,10 +83,7 @@ import {
   V1_TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
-import {
-  type V1_DatabaseType,
-  V1_RelationalDatabaseConnection,
-} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
+import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
@@ -344,7 +341,7 @@ export const V1_transformRelationalDatabaseConnection = (
     metamodel.datasourceSpecification,
     context,
   );
-  connection.type = metamodel.type as unknown as V1_DatabaseType;
+  connection.type = metamodel.type;
   connection.databaseType = connection.type;
   connection.timeZone = metamodel.timeZone;
   connection.quoteIdentifiers = metamodel.quoteIdentifiers;

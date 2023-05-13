@@ -61,15 +61,12 @@ export abstract class DatabaseConnection extends Connection {
    *
    * @discrepancy model
    */
-  type: DatabaseType;
+  type: string;
   timeZone?: string | undefined;
   quoteIdentifiers?: boolean | undefined;
   postProcessorWithParameter: unknown[] = [];
 
-  constructor(
-    store: PackageableElementReference<Database>,
-    type: DatabaseType,
-  ) {
+  constructor(store: PackageableElementReference<Database>, type: string) {
     super(store);
     this.type = type;
   }
@@ -82,7 +79,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
 
   constructor(
     store: PackageableElementReference<Database>,
-    type: DatabaseType,
+    type: string,
     datasourceSpecification: DatasourceSpecification,
     authenticationStrategy: AuthenticationStrategy,
   ) {
