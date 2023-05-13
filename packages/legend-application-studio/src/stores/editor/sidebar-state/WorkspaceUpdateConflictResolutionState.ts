@@ -59,8 +59,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     super(editorStore, sdlcState);
     makeObservable<
       WorkspaceUpdateConflictResolutionState,
-      | 'initProjectConfigurationInConflictResolutionMode'
-      | 'initChangeDetectionInConflictResolutionMode'
+      'initChangeDetectionInConflictResolutionMode'
     >(this, {
       editorStore: false,
       sdlcState: false,
@@ -230,7 +229,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     this.mergeEditorStates = []; // make sure we clean this to avoid any potential memory-leak
   }
 
-  private *initProjectConfigurationInConflictResolutionMode(): GeneratorFn<void> {
+  *initProjectConfigurationInConflictResolutionMode(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',
@@ -296,10 +295,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     );
     try {
       this.isInitializingConflictResolution = true;
-      yield Promise.all([
-        this.initProjectConfigurationInConflictResolutionMode(),
-        this.initChangeDetectionInConflictResolutionMode(),
-      ]);
+      yield flowResult(this.initChangeDetectionInConflictResolutionMode());
       /**
        * NOTE: There is a weird case where conflict resolution operations failed to delete the conflict resolution
        * workspace, so the user after accepting conflict resolution, ending up in conflict resolution mode

@@ -163,12 +163,13 @@ export class ServiceConfigState {
       this.enableModesWithVersioning &&
       this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
     ) {
-      const semVerVersions = this.editorStore.depotState.projectVersions
+      const semVerVersions = this.editorStore.sdlcState.projectPublishedVersions
         .filter((v) => v.match(PROJECT_SEMANTIC_VERSION_PATTERN))
         .sort((v1, v2) => compareSemVerVersions(v2, v1));
-      const snapshotVersions = this.editorStore.depotState.projectVersions
-        .filter((v) => !v.match(PROJECT_SEMANTIC_VERSION_PATTERN))
-        .sort((v1, v2) => v1.localeCompare(v2));
+      const snapshotVersions =
+        this.editorStore.sdlcState.projectPublishedVersions
+          .filter((v) => !v.match(PROJECT_SEMANTIC_VERSION_PATTERN))
+          .sort((v1, v2) => v1.localeCompare(v2));
       const options: ServiceVersionOption[] = snapshotVersions
         .concat(semVerVersions)
         .map((version) => ({
@@ -229,7 +230,8 @@ export class ServiceConfigState {
     if (this.serviceExecutionMode === ServiceExecutionMode.SEMI_INTERACTIVE) {
       this.projectVersion = LATEST_PROJECT_REVISION;
     } else if (this.serviceExecutionMode === ServiceExecutionMode.PROD) {
-      this.projectVersion = this.editorStore.depotState.projectVersions[0];
+      this.projectVersion =
+        this.editorStore.sdlcState.projectPublishedVersions[0];
     } else {
       this.projectVersion = undefined;
     }

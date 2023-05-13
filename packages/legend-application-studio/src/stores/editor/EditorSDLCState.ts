@@ -32,6 +32,7 @@ import {
   HttpStatus,
   guaranteeNonNullable,
   assertTrue,
+  ActionState,
 } from '@finos/legend-shared';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig.js';
 import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
@@ -56,16 +57,20 @@ export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
 export class EditorSDLCState {
   readonly editorStore: EditorStore;
 
+  readonly fetchPublishedProjectVersionsState = ActionState.create();
+
+  isWorkspaceOutdated = false;
+  isCheckingIfWorkspaceIsOutdated = false;
+  isFetchingProjectVersions = false;
+  isFetchingProject = false;
+
   currentProject?: Project | undefined;
   currentWorkspace?: Workspace | undefined;
   remoteWorkspaceRevision?: Revision | undefined;
   currentRevision?: Revision | undefined;
-  isWorkspaceOutdated = false;
   workspaceWorkflows: Workflow[] = [];
   projectVersions: Version[] = [];
-  isCheckingIfWorkspaceIsOutdated = false;
-  isFetchingProjectVersions = false;
-  isFetchingProject = false;
+  projectPublishedVersions: string[] = [];
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -79,6 +84,7 @@ export class EditorSDLCState {
       isCheckingIfWorkspaceIsOutdated: observable,
       isFetchingProjectVersions: observable,
       isFetchingProject: observable,
+      projectPublishedVersions: observable,
       activeProject: computed,
       activeWorkspace: computed,
       activeRevision: computed,
@@ -99,6 +105,7 @@ export class EditorSDLCState {
       buildWorkspaceBaseRevisionEntityHashesIndex: flow,
       buildProjectLatestRevisionEntityHashesIndex: flow,
       fetchWorkspaceWorkflows: flow,
+      fetchPublishedProjectVersions: flow,
     });
 
     this.editorStore = editorStore;
@@ -475,6 +482,28 @@ export class EditorSDLCState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
+    }
+  }
+
+  *fetchPublishedProjectVersions(): GeneratorFn<void> {
+    try {
+      this.fetchPublishedProjectVersionsState.inProgress();
+      this.projectPublishedVersions =
+        (yield this.editorStore.depotServerClient.getVersions(
+          this.editorStore.projectConfigurationEditorState
+            .currentProjectConfiguration.groupId,
+          this.editorStore.projectConfigurationEditorState
+            .currentProjectConfiguration.artifactId,
+          true,
+        )) as string[];
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        error,
+      );
+    } finally {
+      this.fetchPublishedProjectVersionsState.complete();
     }
   }
 }

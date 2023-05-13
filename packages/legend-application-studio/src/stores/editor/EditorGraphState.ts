@@ -727,7 +727,7 @@ export class EditorGraphState {
     projectDependencies: ProjectDependency[],
   ): Promise<ProjectDependencyCoordinates[]> {
     return Promise.all(
-      projectDependencies.map((dep) => {
+      projectDependencies.map(async (dep) => {
         /**
          * We expect current dependency ids to be in the format of {groupId}:{artifactId}.
          * For the legacy dependency we must fetch the corresponding coordinates (group, artifact ids) from the depot server
