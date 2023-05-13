@@ -37,6 +37,7 @@ import {
 import { V1_MapperPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import { V1_INTERNAL__UnknownPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_INTERNAL__UnknownPostProcessor.js';
 
 enum V1_MapperType {
   TABLE = 'table',
@@ -105,6 +106,8 @@ export const V1_serializePostProcessor = (
 ): PlainObject<V1_PostProcessor> => {
   if (value instanceof V1_MapperPostProcessor) {
     return serialize(V1_mapperPostProcessorModelSchema, value);
+  } else if (value instanceof V1_INTERNAL__UnknownPostProcessor) {
+    return value.content as PlainObject<V1_PostProcessor>;
   }
   const extraPostprocessorProtocolSerializers = plugins.flatMap(
     (plugin) =>
@@ -125,12 +128,12 @@ export const V1_serializePostProcessor = (
 };
 
 export const V1_deserializePostProcessor = (
-  value: PlainObject<V1_PostProcessor>,
+  json: PlainObject<V1_PostProcessor>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_PostProcessor => {
-  switch (value._type) {
+  switch (json._type) {
     case V1_PostProcessorType.MAPPER:
-      return deserialize(V1_mapperPostProcessorModelSchema, value);
+      return deserialize(V1_mapperPostProcessorModelSchema, json);
     default: {
       const extraPostprocessorProtocolDeserializers = plugins.flatMap(
         (plugin) =>
@@ -139,14 +142,16 @@ export const V1_deserializePostProcessor = (
           ).V1_getExtraConnectionPostProcessorProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraPostprocessorProtocolDeserializers) {
-        const postProcessorProtocol = deserializer(value);
+        const postProcessorProtocol = deserializer(json);
         if (postProcessorProtocol) {
           return postProcessorProtocol;
         }
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize post-processor of type '${value._type}': no compatible deserializer available from plugins`,
-      );
+
+      // Fall back to create unknown stub if not supported
+      const elementProtocol = new V1_INTERNAL__UnknownPostProcessor();
+      elementProtocol.content = json;
+      return elementProtocol;
     }
   }
 };

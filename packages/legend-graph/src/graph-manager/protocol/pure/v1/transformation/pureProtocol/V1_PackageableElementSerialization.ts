@@ -137,7 +137,7 @@ class V1_PackageableElementSerializer
   visit_INTERNAL__UnknownPackageableElement(
     element: V1_INTERNAL__UnknownPackageableElement,
   ): PlainObject<V1_PackageableElement> {
-    return element.content as unknown as PlainObject<V1_PackageableElement>;
+    return element.content as PlainObject<V1_PackageableElement>;
   }
 
   visit_Profile(element: V1_Profile): PlainObject<V1_PackageableElement> {

@@ -116,7 +116,7 @@ export const V1_serializeEmbeddedDataType = (
   } else if (protocol instanceof V1_RelationalCSVData) {
     return serialize(V1_relationalDataModelSchema, protocol);
   } else if (protocol instanceof V1_INTERNAL__UnknownEmbeddedData) {
-    return protocol.content as unknown as PlainObject<V1_EmbeddedData>;
+    return protocol.content as PlainObject<V1_EmbeddedData>;
   }
   const extraEmbeddedDataSerializers = plugins.flatMap(
     (plugin) =>

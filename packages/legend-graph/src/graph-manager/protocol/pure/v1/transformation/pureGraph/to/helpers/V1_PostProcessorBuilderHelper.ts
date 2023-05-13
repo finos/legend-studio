@@ -31,6 +31,8 @@ import {
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/Mapper.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import { V1_INTERNAL__UnknownPostProcessor } from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_INTERNAL__UnknownPostProcessor.js';
+import { INTERNAL__UnknownPostProcessor } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/INTERNAL__UnknownPostProcessor.js';
 
 const buildSchemaNameMapper = (schema: V1_SchemaNameMapper): SchemaNameMapper =>
   new SchemaNameMapper(schema.from, schema.to);
@@ -50,9 +52,13 @@ export const V1_buildPostProcessor = (
   context: V1_GraphBuilderContext,
 ): PostProcessor => {
   if (protocol instanceof V1_MapperPostProcessor) {
-    const mapperPostProcessor = new MapperPostProcessor();
-    mapperPostProcessor.mappers = protocol.mappers.map(V1_buildMapper);
-    return mapperPostProcessor;
+    const metamodel = new MapperPostProcessor();
+    metamodel.mappers = protocol.mappers.map(V1_buildMapper);
+    return metamodel;
+  } else if (protocol instanceof V1_INTERNAL__UnknownPostProcessor) {
+    const metamodel = new INTERNAL__UnknownPostProcessor();
+    metamodel.content = protocol.content;
+    return metamodel;
   }
   const extraPostProcessorBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
@@ -61,9 +67,9 @@ export const V1_buildPostProcessor = (
       ).V1_getExtraConnectionPostProcessorBuilders?.() ?? [],
   );
   for (const builder of extraPostProcessorBuilders) {
-    const postProcessor = builder(protocol, context);
-    if (postProcessor) {
-      return postProcessor;
+    const metamodel = builder(protocol, context);
+    if (metamodel) {
+      return metamodel;
     }
   }
   throw new UnsupportedOperationError(

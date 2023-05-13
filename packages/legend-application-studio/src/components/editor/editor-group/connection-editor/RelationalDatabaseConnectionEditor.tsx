@@ -1163,7 +1163,7 @@ const renderEditorPostProcessor = (
       <UnsupportedEditorPanel
         isReadOnly={true}
         text="Can't display post-processor in form mode"
-      ></UnsupportedEditorPanel>
+      />
     );
   }
 };
