@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-import {
-  LegendStudio,
-  DSL_ExternalFormat_LegendStudioApplicationPlugin,
-} from '@finos/legend-application-studio';
+import { LegendStudio } from '@finos/legend-application-studio';
 import {
   type AbstractPreset,
   type AbstractPlugin,
   WebConsole,
 } from '@finos/legend-shared';
-import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/graph';
-import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
-import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
-import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
-import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery/graph';
-import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
-import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service/application-studio';
-import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema/graph';
-import { FMT_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql/graph';
-import { DSL_Text_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-text/application-studio';
-import { DSL_Diagram_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-diagram/application-studio';
-import { DSL_DataSpace_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application-studio';
-import { DSL_Persistence_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-persistence/application-studio';
-import { DSL_Mastery_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-mastery/application-studio';
-import { STO_ServiceStore_LegendStudioApplicationPlugin } from '@finos/legend-extension-store-service-store/application-studio';
+// import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/graph';
+// import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
+// import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
+// import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
+// import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery/graph';
+// import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
+// import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service/application-studio';
+// import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema/graph';
+// import { FMT_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql/graph';
+// import { DSL_Text_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-text/application-studio';
+// import { DSL_Diagram_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-diagram/application-studio';
+// import { DSL_DataSpace_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application-studio';
+// import { DSL_Persistence_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-persistence/application-studio';
+// import { DSL_Mastery_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-mastery/application-studio';
+// import { STO_ServiceStore_LegendStudioApplicationPlugin } from '@finos/legend-extension-store-service-store/application-studio';
 
 export class LegendStudioWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -61,7 +58,6 @@ export class LegendStudioWebApplication {
       // new DSL_Diagram_LegendStudioApplicationPlugin(),
       // new DSL_DataSpace_LegendStudioApplicationPlugin(),
       // new DSL_Service_LegendStudioApplicationPlugin(),
-      // new DSL_ExternalFormat_LegendStudioApplicationPlugin(),
       // new DSL_Persistence_LegendStudioApplicationPlugin(),
       // new DSL_Mastery_LegendStudioApplicationPlugin(),
       // new STO_ServiceStore_LegendStudioApplicationPlugin(),

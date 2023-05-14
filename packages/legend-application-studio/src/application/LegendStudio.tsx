@@ -36,6 +36,7 @@ import {
   QueryBuilder_LegendApplicationPlugin,
 } from '@finos/legend-query-builder';
 import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';
+import { DSL_ExternalFormat_LegendStudioApplicationPlugin } from '../components/extensions/DSL_ExternalFormat_LegendStudioApplicationPlugin.js';
 
 export class LegendStudio extends LegendApplication {
   declare config: LegendStudioApplicationConfig;
@@ -51,6 +52,7 @@ export class LegendStudio extends LegendApplication {
       new Core_LegendApplicationPlugin(),
       new Core_LegendStudioApplicationPlugin(),
       new QueryBuilder_LegendApplicationPlugin(),
+      new DSL_ExternalFormat_LegendStudioApplicationPlugin(),
     ]);
     return application;
   }
