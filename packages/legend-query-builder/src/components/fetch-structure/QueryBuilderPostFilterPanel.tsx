@@ -371,15 +371,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
       showDroppableSuggestion:
         monitor.isDragging() &&
         (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE ||
-          monitor.getItemType() ===
-            QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION),
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
     }));
-    // [
-    //   ...Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE),
-    //   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-    //   QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
-    // ]
 
     return (
       <div className="query-builder-post-filter-tree__node__label__content dnd__entry__container">
@@ -657,9 +650,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       showDroppableSuggestion:
         monitor.isDragging() &&
         (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE ||
-          monitor.getItemType() ===
-            QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION),
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
     }));
 
     return (
@@ -972,16 +963,11 @@ const QueryBuilderPostFilterPanelContent = observer(
       showDroppableSuggestion:
         monitor.isDragging() &&
         (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE ||
-          monitor.getItemType() ===
-            QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION),
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
     }));
 
     return (
-      <div
-        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER}
-        className="panel"
-      >
+      <>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">post-filter</div>
@@ -1066,12 +1052,15 @@ const QueryBuilderPostFilterPanelContent = observer(
         <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver && postFilterState.isEmpty}
+            showDroppableSuggestion={
+              showDroppableSuggestion && postFilterState.isEmpty
+            }
+            className="query-builder__panel--droppable"
             dropTargetConnector={dropTargetConnector}
           >
             {postFilterState.isEmpty && (
               <BlankPanelPlaceholder
                 text="Add a post-filter condition"
-                showDroppableSuggestion={showDroppableSuggestion}
                 tooltipText="Drag and drop properties here"
               />
             )}
@@ -1089,6 +1078,7 @@ const QueryBuilderPostFilterPanelContent = observer(
 
             {showDroppableSuggestion && (
               <div
+                ref={dropTargetConnector}
                 className={clsx(
                   'query-builder-post-filter-tree__blank-node--droppable--tall',
                   {
@@ -1101,7 +1091,7 @@ const QueryBuilderPostFilterPanelContent = observer(
             )}
           </PanelDropZone>
         </PanelContent>
-      </div>
+      </>
     );
   },
 );

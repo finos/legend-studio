@@ -88,7 +88,7 @@ import {
 } from '../shared/BasicValueSpecificationEditor.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
-export const IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED = [
+export const IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
@@ -236,7 +236,7 @@ const QueryBuilderFilterConditionEditor = observer(
       showDroppableSuggestion:
         monitor.isDragging() &&
         (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
           : IS_DRAGGABLE_FILTER_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
@@ -530,7 +530,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       () => ({
         accept:
           queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-            ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED
+            ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
             : IS_DRAGGABLE_FILTER_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
@@ -564,7 +564,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       showDroppableSuggestion:
         monitor.isDragging() &&
         (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
           : IS_DRAGGABLE_FILTER_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
@@ -815,7 +815,7 @@ export const QueryBuilderFilterPanel = observer(
       showDroppableSuggestion:
         monitor.isDragging() &&
         (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCHSUPPORTED
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
           : IS_DRAGGABLE_FILTER_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
@@ -868,6 +868,7 @@ export const QueryBuilderFilterPanel = observer(
       },
       [applicationStore, filterState],
     );
+
     const [{ isDragOver }, dropTargetConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
       void,
@@ -897,6 +898,7 @@ export const QueryBuilderFilterPanel = observer(
       [handleDrop],
     );
 
+    console.log("isdragover', isDragOver)", isDragOver);
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER}
@@ -987,12 +989,15 @@ export const QueryBuilderFilterPanel = observer(
         <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver && filterState.isEmpty}
+            showDroppableSuggestion={
+              showDroppableSuggestion && filterState.isEmpty
+            }
+            className="query-builder__panel--droppable"
             dropTargetConnector={dropTargetConnector}
           >
             {filterState.isEmpty && (
               <BlankPanelPlaceholder
                 text="Add a filter condition"
-                showDroppableSuggestion={showDroppableSuggestion}
                 tooltipText="Drag and drop properties here"
               />
             )}
@@ -1010,6 +1015,7 @@ export const QueryBuilderFilterPanel = observer(
 
             {showDroppableSuggestion && !filterState.isEmpty && (
               <div
+                ref={dropTargetConnector}
                 className={clsx(
                   'query-builder-post-filter-tree__blank-node--droppable--tall',
                   {

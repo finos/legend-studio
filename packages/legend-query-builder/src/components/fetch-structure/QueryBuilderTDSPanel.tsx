@@ -990,12 +990,12 @@ export const QueryBuilderTDSPanel = observer(
           <PanelDropZone
             isDragOver={isDragOver}
             showDroppableSuggestion={showDroppableSuggestion}
+            className="query-builder__panel--droppable"
             dropTargetConnector={dropTargetConnector}
           >
             {!projectionColumns.length && (
               <BlankPanelPlaceholder
                 text="Add a projection column"
-                showDroppableSuggestion={showDroppableSuggestion}
                 tooltipText="Drag and drop properties here"
               />
             )}
