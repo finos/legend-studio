@@ -56,7 +56,6 @@ import {
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
-import { ProjectDependantsEditor } from './ProjectDependantsEditor.js';
 
 const ShareProjectModal = observer(
   (props: { open: boolean; closeModal: () => void }) => {
@@ -812,7 +811,6 @@ export const ProjectOverviewActivityBar = observer(() => {
       mode: PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE,
       title: 'Release',
     },
-    { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.DEPENDANTS, title: 'Dependants' },
     { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS, title: 'Versions' },
     { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES, title: 'Workspaces' },
   ].filter((activity): activity is ProjectOverviewActivityDisplay =>
@@ -863,9 +861,6 @@ export const ProjectOverview = observer(() => {
         return <OverviewViewer />;
       case PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE:
         return <ReleaseEditor />;
-      // TODO: @xannem move this into dependency dashboard extension
-      case PROJECT_OVERVIEW_ACTIVITY_MODE.DEPENDANTS:
-        return <ProjectDependantsEditor />;
       case PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS:
         return <VersionsViewer />;
       case PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES:

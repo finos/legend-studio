@@ -26,25 +26,27 @@ import {
   debounce,
   guaranteeNonNullable,
   type PlainObject,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  clsx,
   CustomSelectorInput,
   PencilIcon,
   RefreshIcon,
   TimesIcon,
-  CheckSquareIcon,
-  SquareIcon,
   LockIcon,
   SaveIcon,
   PanelDropZone,
   Panel,
   PanelContent,
   PanelFormSection,
+  PanelHeader,
+  PanelFormTextField,
+  PanelFormBooleanField,
+  Button,
 } from '@finos/legend-art';
 import {
   type FileGenerationSourceDropTarget,
@@ -205,22 +207,18 @@ const FileGenerationScopeEditor = observer(
                       onChange={changeItemInputValue}
                     />
                     <div className="panel__content__form__section__list__new-item__actions">
-                      <button
-                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                      <Button
+                        className="panel__content__form__section__list__new-item__add-btn"
                         disabled={isDisabled}
                         onClick={updateValue(value)}
-                        tabIndex={-1}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                        text="save"
+                      />
+                      <Button
+                        className="panel__content__form__section__list__new-item__cancel-btn"
                         disabled={isReadOnly}
                         onClick={hideAddOrEditItemInput}
-                        tabIndex={-1}
-                      >
-                        Cancel
-                      </button>
+                        text="cancel"
+                      />
                     </div>
                   </>
                 ) : (
@@ -337,7 +335,7 @@ const GenerationStringPropertyEditor = observer(
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
-          {property.name}
+          {prettyCONSTName(property.name)}
         </div>
         <div className="panel__content__form__section__header__prompt">
           {property.description}
@@ -409,36 +407,16 @@ const GenerationBooleanPropertyEditor = observer(
       | undefined;
     const value =
       (getConfigValue(property.name) as boolean | undefined) ?? defaultValue;
-    const toggle = (): void => {
-      if (!isReadOnly) {
-        update(property, !value as unknown as PlainObject);
-      }
-    };
     return (
-      <div className="panel__content__form__section">
-        <div className="panel__content__form__section__header__label">
-          {property.name}
-        </div>
-        <div
-          className={clsx('panel__content__form__section__toggler', {
-            'panel__content__form__section__toggler--disabled': isReadOnly,
-          })}
-          onClick={toggle}
-        >
-          <button
-            className={clsx('panel__content__form__section__toggler__btn', {
-              'panel__content__form__section__toggler__btn--toggled': value,
-            })}
-            disabled={isReadOnly}
-            tabIndex={-1}
-          >
-            {value ? <CheckSquareIcon /> : <SquareIcon />}
-          </button>
-          <div className="panel__content__form__section__toggler__prompt">
-            {property.description}
-          </div>
-        </div>
-      </div>
+      <PanelFormBooleanField
+        isReadOnly={isReadOnly}
+        value={value}
+        name={prettyCONSTName(property.name)}
+        prompt={property.description}
+        update={(newValue: boolean | undefined): void => {
+          update(property, newValue as unknown as PlainObject);
+        }}
+      />
     );
   },
 );
@@ -672,14 +650,12 @@ const GenerationArrayPropertyEditor = observer(
           </div>
           {showEditInput !== true && (
             <div className="panel__content__form__section__list__new-item__add">
-              <button
-                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+              <Button
+                className="panel__content__form__section__list__new-item__add-btn"
                 disabled={isReadOnly}
                 onClick={showAddItemInput}
-                tabIndex={-1}
-              >
-                Add Value
-              </button>
+                text="Add Value"
+              />
             </div>
           )}
         </div>
@@ -770,7 +746,7 @@ const GenerationMapPropertyEditor = observer(
         }
       };
     return (
-      <div className="panel__content__form__section">
+      <PanelFormSection>
         <div className="panel__content__form__section__header__label">
           {property.name}
         </div>
@@ -918,7 +894,7 @@ const GenerationMapPropertyEditor = observer(
             </div>
           )}
         </div>
-      </div>
+      </PanelFormSection>
     );
   },
 );
@@ -1039,12 +1015,6 @@ export const FileGenerationConfigurationEditor = observer(
       fileGenerationState.resetGenerator();
       debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
     };
-
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      const val = event.target.value;
-      fileGeneration_setGenerationOutputPath(fileGeneration, val || undefined);
-    };
-
     // Drag and Drop
     const handleDrop = useCallback(
       (item: FileGenerationSourceDropTarget): void => {
@@ -1094,8 +1064,8 @@ export const FileGenerationConfigurationEditor = observer(
       getNullableFileGenerationConfig(fileGeneration, name)?.value;
 
     return (
-      <div className="panel file-generation-editor__configuration">
-        <div className="panel__header">
+      <Panel className="file-generation-editor__configuration">
+        <PanelHeader>
           <div className="panel__header__title">
             <div className="panel__header__title__label">{`${fileGeneration.type} configuration`}</div>
           </div>
@@ -1123,7 +1093,7 @@ export const FileGenerationConfigurationEditor = observer(
               </button>
             )}
           </div>
-        </div>
+        </PanelHeader>
         <PanelContent>
           <PanelDropZone
             dropTargetConnector={scopeElementDropRef}
@@ -1137,22 +1107,20 @@ export const FileGenerationConfigurationEditor = observer(
                 regenerate={debouncedRegenerate}
                 isReadOnly={isReadOnly || Boolean(elementGenerationState)}
               />
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Generation Output Path
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  Specifies the root path where files will be generated.
-                  Defaults to the file specification path
-                </div>
-                <input
-                  className="panel__content__form__section__input"
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={fileGeneration.generationOutputPath ?? ''}
-                  onChange={changeValue}
-                />
-              </div>
+
+              <PanelFormTextField
+                isReadOnly={isReadOnly}
+                value={fileGeneration.generationOutputPath ?? ''}
+                name="Generation Output Path"
+                prompt="Specifies the root path where files will be generated.
+                Defaults to the file specification path"
+                update={(value: string | undefined): void =>
+                  fileGeneration_setGenerationOutputPath(
+                    fileGeneration,
+                    value ?? '',
+                  )
+                }
+              />
               {fileGenerationConfiguration.map((abstractGenerationProperty) => (
                 <GenerationPropertyEditor
                   key={
@@ -1168,7 +1136,7 @@ export const FileGenerationConfigurationEditor = observer(
             </div>
           </PanelDropZone>
         </PanelContent>
-      </div>
+      </Panel>
     );
   },
 );
@@ -1185,7 +1153,7 @@ export const FileGenerationEditor = observer(() => {
   return (
     <div className="file-generation-editor">
       <Panel>
-        <div className="panel__header">
+        <PanelHeader>
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
@@ -1197,8 +1165,8 @@ export const FileGenerationEditor = observer(() => {
               {fileGeneration.name}
             </div>
           </div>
-        </div>
-        <div className="panel__content file-generation-editor__content">
+        </PanelHeader>
+        <PanelContent className="file-generation-editor__content">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={400} minSize={300}>
               <FileGenerationConfigurationEditor
@@ -1219,7 +1187,7 @@ export const FileGenerationEditor = observer(() => {
               />
             </ResizablePanel>
           </ResizablePanelGroup>
-        </div>
+        </PanelContent>
       </Panel>
     </div>
   );

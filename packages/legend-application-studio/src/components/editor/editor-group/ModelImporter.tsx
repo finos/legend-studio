@@ -35,6 +35,7 @@ import {
   BlankPanelContent,
   PanelLoadingIndicator,
   clsx,
+  Button,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -167,14 +168,18 @@ export const ModelImporter = observer(() => {
         () => flowResult(modelImportEditorState.loadCurrentProjectEntities()),
       );
       return (
-        <button
+        <div
           className="model-loader__header__configs__load-project-entities-btn"
-          tabIndex={-1}
           onClick={loadCurrentProjectEntities}
           title="Load current project entities"
         >
-          <TruckLoadingIcon />
-        </button>
+          <div className="model-loader__header__configs__edit-mode__icon">
+            <TruckLoadingIcon />
+          </div>
+          <div className="model-loader__header__configs__edit-mode__label">
+            current entities
+          </div>
+        </div>
       );
     }
     return null;
@@ -323,18 +328,16 @@ export const ModelImporter = observer(() => {
           {renderExtraActions()}
         </div>
         <div className="model-loader__header__action">
-          <button
-            className="btn--dark model-loader__header__load-btn"
+          <Button
+            className="model-loader__header__load-btn"
             onClick={loadModel}
             disabled={
               modelImportEditorState.loadModelActionState.isInProgress ||
               modelImportEditorState.isLoadingDisabled
             }
-            tabIndex={-1}
             title="Load model"
-          >
-            Load
-          </button>
+            text="Load"
+          />
         </div>
       </div>
 

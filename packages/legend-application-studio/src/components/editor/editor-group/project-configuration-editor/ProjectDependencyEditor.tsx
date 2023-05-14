@@ -49,6 +49,10 @@ import {
   RepoIcon,
   ModalFooterButton,
   Button,
+  Panel,
+  PanelHeader,
+  PanelHeaderActions,
+  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import {
   MASTER_SNAPSHOT_ALIAS,
@@ -134,15 +138,13 @@ const ProjectDependencyActions = observer(
           text="View Dependency Explorer"
         />
         {Boolean(hasConflicts) && (
-          <button
+          <Button
             className="project-dependency-editor__conflicts-btn"
-            tabIndex={-1}
+            text="View Conflicts"
             onClick={viewConflict}
             disabled={!dependencyEditorState.dependencyReport?.conflicts.length}
             title="View any conflicts in your dependencies"
-          >
-            View Conflicts
-          </button>
+          />
         )}
       </div>
     );
@@ -650,7 +652,6 @@ const ProjectDependencyReportModal = observer(
       >
         <Modal darkMode={true} className="editor-modal">
           <ModalHeader title="Dependency Explorer" />
-
           <ModalBody>
             <div className="panel project-dependency-report">
               <PanelLoadingIndicator
@@ -660,7 +661,6 @@ const ProjectDependencyReportModal = observer(
                     dependencyEditorState.buildConflictPathState.isInProgress,
                 )}
               />
-
               <div className="panel__header project-dependency-report__tabs__header">
                 <div className="project-dependency-report__tabs">
                   {tabs.map((tab) => (
@@ -678,32 +678,30 @@ const ProjectDependencyReportModal = observer(
                 </div>
               </div>
               {reportTab === DEPENDENCY_REPORT_TAB.EXPLORER && (
-                <div className="panel project-dependency-explorer">
-                  <div className="panel__header">
+                <Panel className="project-dependency-explorer">
+                  <PanelHeader>
                     <div className="panel__header__title">
                       <div className="panel__header__title__label">
                         explorer
                       </div>
                     </div>
-                    <div className="panel__header__actions">
+                    <PanelHeaderActions>
                       {!flattenView && (
                         <>
-                          <button
-                            className="panel__header__action"
+                          <PanelHeaderActionItem
                             disabled={!treeData}
                             onClick={collapseTree}
-                            tabIndex={-1}
+                            title="Collapse Tree"
                           >
-                            <CompressIcon title="Collapse Tree" />
-                          </button>
-                          <button
-                            className="panel__header__action"
+                            <CompressIcon />
+                          </PanelHeaderActionItem>
+                          <PanelHeaderActionItem
                             disabled={!treeData || !dependencyReport}
                             onClick={openAllDependencyNodes}
-                            tabIndex={-1}
+                            title="Expand All Dependencies"
                           >
-                            <ExpandAllIcon title="Expand All Dependencies" />
-                          </button>
+                            <ExpandAllIcon />
+                          </PanelHeaderActionItem>
                         </>
                       )}
                       <div className="panel__header__action query-builder__functions-explorer__custom-icon">
@@ -719,8 +717,8 @@ const ProjectDependencyReportModal = observer(
                           />
                         )}
                       </div>
-                    </div>
-                  </div>
+                    </PanelHeaderActions>
+                  </PanelHeader>
                   <div className="project-dependency-explorer__content">
                     {treeData && (
                       <DependencyTreeView
@@ -729,7 +727,7 @@ const ProjectDependencyReportModal = observer(
                       />
                     )}
                   </div>
-                </div>
+                </Panel>
               )}
               {reportTab === DEPENDENCY_REPORT_TAB.CONFLICTS &&
                 dependencyReport && (

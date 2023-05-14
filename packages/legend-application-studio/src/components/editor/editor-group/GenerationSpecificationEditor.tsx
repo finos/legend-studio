@@ -44,6 +44,9 @@ import {
   Panel,
   PanelContent,
   PanelDnDEntry,
+  PanelHeader,
+  PanelHeaderActions,
+  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -455,23 +458,21 @@ const FileGenerationSpecifications = observer(
       [handleDrop],
     );
     return (
-      <div className="panel generation-spec-file-generation-editor">
-        <div className="panel__header">
+      <Panel className="generation-spec-file-generation-editor">
+        <PanelHeader>
           <div className="panel__header__title">
             <div className="panel__header__title__label">File Generations</div>
           </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
               onClick={addFileGeneration}
               disabled={!fileGenerationsOptions.length}
-              tabIndex={-1}
               title="Add File Generation"
             >
               <PlusIcon />
-            </button>
-          </div>
-        </div>
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
         <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
@@ -499,7 +500,7 @@ const FileGenerationSpecifications = observer(
             )}
           </PanelDropZone>
         </PanelContent>
-      </div>
+      </Panel>
     );
   },
 );
@@ -523,7 +524,7 @@ export const GenerationSpecificationEditor = observer(() => {
   return (
     <div className="generation-spec-editor">
       <Panel>
-        <div className="panel__header">
+        <PanelHeader>
           <div className="panel__header__title">
             <div className="panel__header__title__label">
               Generation Specification
@@ -532,8 +533,8 @@ export const GenerationSpecificationEditor = observer(() => {
               {generationSpec.name}
             </div>
           </div>
-          <div className="panel__header__actions">
-            <button
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
               className={clsx(
                 'editor__status-bar__action editor__status-bar__generate-btn',
                 {
@@ -541,13 +542,12 @@ export const GenerationSpecificationEditor = observer(() => {
                     modelGenerationState.isRunningGlobalGenerate,
                 },
               )}
-              tabIndex={-1}
               onClick={generate}
               title="Generate"
             >
               <FireIcon />
-            </button>
-            <button
+            </PanelHeaderActionItem>
+            <PanelHeaderActionItem
               className={clsx(
                 'editor__status-bar__action editor__status-bar__generate-btn',
                 {
@@ -557,14 +557,13 @@ export const GenerationSpecificationEditor = observer(() => {
                 },
               )}
               onClick={emptyGenerationEntities}
-              tabIndex={-1}
               title="Clear generation entities"
             >
               <RefreshIcon />
-            </button>
-          </div>
-        </div>
-        <div className="panel__content generation-spec-editor__content">
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        <PanelContent className="generation-spec-editor__content">
           <ResizablePanelGroup orientation="horizontal">
             <ResizablePanel size={400} minSize={25}>
               <ModelGenerationSpecifications
@@ -582,7 +581,7 @@ export const GenerationSpecificationEditor = observer(() => {
               />
             </ResizablePanel>
           </ResizablePanelGroup>
-        </div>
+        </PanelContent>
       </Panel>
     </div>
   );

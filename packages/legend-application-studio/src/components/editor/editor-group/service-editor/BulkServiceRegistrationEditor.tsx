@@ -21,6 +21,7 @@ import {
   CheckSquareIcon,
   SquareIcon,
   PanelLoadingIndicator,
+  PanelFormBooleanField,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
@@ -164,7 +165,6 @@ export const BulkServiceRegistrationEditor = observer(() => {
               className="btn--dark model-loader__header__load-btn"
               onClick={registerService}
               disabled={disableRegistration}
-              tabIndex={-1}
               title="Register Service"
             >
               Register
@@ -185,32 +185,17 @@ export const BulkServiceRegistrationEditor = observer(() => {
             {`${globalBulkServiceRegistrationState.serviceConfigState.registrationState.message}...`}
           </div>
         )}
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Activate Service
-          </div>
-          <div
-            className="panel__content__form__section__toggler"
-            onClick={toggleActivatePostRegistration}
-          >
-            <button
-              className={clsx('panel__content__form__section__toggler__btn', {
-                'panel__content__form__section__toggler__btn--toggled':
-                  globalBulkServiceRegistrationState.activatePostRegistration,
-              })}
-              tabIndex={-1}
-            >
-              {globalBulkServiceRegistrationState.activatePostRegistration ? (
-                <CheckSquareIcon />
-              ) : (
-                <SquareIcon />
-              )}
-            </button>
-            <div className="panel__content__form__section__toggler__prompt">
-              Activates service after registration
-            </div>
-          </div>
-        </div>
+
+        <PanelFormBooleanField
+          isReadOnly={false}
+          value={globalBulkServiceRegistrationState.activatePostRegistration}
+          name="Activate Service"
+          prompt="Activates service after registration"
+          update={(value: boolean | undefined): void =>
+            toggleActivatePostRegistration()
+          }
+        />
+
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
             Execution Server
@@ -272,34 +257,18 @@ export const BulkServiceRegistrationEditor = observer(() => {
           </div>
         )}
         {
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Generate Lineage
-            </div>
-            <div
-              className="panel__content__form__section__toggler"
-              onClick={toggleUseGenerateLineage}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    globalBulkServiceRegistrationState.serviceConfigState
-                      .TEMPORARY__useGenerateLineage,
-                })}
-                tabIndex={-1}
-              >
-                {globalBulkServiceRegistrationState.serviceConfigState
-                  .TEMPORARY__useGenerateLineage ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Use Generate (slower)
-              </div>
-            </div>
-          </div>
+          <PanelFormBooleanField
+            isReadOnly={false}
+            value={
+              globalBulkServiceRegistrationState.serviceConfigState
+                .TEMPORARY__useGenerateLineage
+            }
+            name="Generate Lineage"
+            prompt="Use Generate (slower)"
+            update={(value: boolean | undefined): void =>
+              toggleUseGenerateLineage()
+            }
+          />
         }
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">

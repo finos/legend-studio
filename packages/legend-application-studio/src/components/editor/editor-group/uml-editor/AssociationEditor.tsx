@@ -44,6 +44,7 @@ import {
   PanelDropZone,
   Panel,
   InfoCircleIcon,
+  PanelHeader,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
@@ -512,7 +513,7 @@ export const AssociationEditor = observer(
             minSize={56}
           >
             <Panel>
-              <div className="panel__header">
+              <PanelHeader>
                 <div className="panel__header__title">
                   {isReadOnly && (
                     <div className="uml-element-editor__header__lock">
@@ -524,8 +525,8 @@ export const AssociationEditor = observer(
                     {association.name}
                   </div>
                 </div>
-              </div>
-              <div className="panel__header uml-element-editor__tabs__header">
+              </PanelHeader>
+              <PanelHeader className="uml-element-editor__tabs__header">
                 <div className="uml-element-editor__tabs">
                   {tabs.map((tab) => (
                     <div
@@ -552,7 +553,7 @@ export const AssociationEditor = observer(
                     <PlusIcon />
                   </button>
                 </div>
-              </div>
+              </PanelHeader>
               <div
                 className={clsx('panel__content', {
                   'panel__content--with-backdrop-element':
