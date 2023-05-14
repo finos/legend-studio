@@ -111,7 +111,7 @@ import {
   type V1_EntitlementReportAnalyticsInput,
   V1_entitlementReportAnalyticsInputModelSchema,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
-import type { ClassifierPathMapping } from './protocol/ClassifierPathMapping.js';
+import type { V1_ClassifierPathMapping } from './protocol/V1_ClassifierPathMapping.js';
 import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
 import { V1_INTERNAL__PackageableElementWithSourceInformation } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../graph/MetaModelConst.js';
@@ -218,7 +218,7 @@ export class V1_Engine {
 
   // ------------------------------------------- Protocol -------------------------------------------
 
-  async getClassifierPathMapping(): Promise<ClassifierPathMapping[]> {
+  async getClassifierPathMapping(): Promise<V1_ClassifierPathMapping[]> {
     try {
       const mapping = await this.engineServerClient.getClassifierPathMap();
       return mapping;
@@ -242,7 +242,7 @@ export class V1_Engine {
               elementJson,
             ),
           ) ?? undefined;
-        if (element && element.sourceInformation) {
+        if (element?.sourceInformation) {
           sourceInformationIndex.set(
             `${element.package}${ELEMENT_PATH_DELIMITER}${element.name}`,
             element.sourceInformation,
