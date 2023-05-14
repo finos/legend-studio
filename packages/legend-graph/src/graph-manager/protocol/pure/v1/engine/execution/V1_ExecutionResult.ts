@@ -33,6 +33,7 @@ import {
   BuilderType,
   ExecutionActivityType,
 } from '../../../../../../graph-manager/action/execution/ExecutionResult.js';
+import { V1_INTERNAL__UnknownExecutionResult } from './V1_INTERNAL__UnknownExecutionResult.js';
 
 export class V1_ResultBuilder {
   static readonly builderSerialization = new SerializationFactory(
@@ -175,29 +176,24 @@ export class V1_RawExecutionResult extends V1_ExecutionResult {
   }
 }
 
-export class V1_INTERNAL__UnknownExecutionResult extends V1_ExecutionResult {
-  content: object;
-
-  constructor(content: object) {
-    super();
-    this.content = content;
-  }
-}
-
 export const V1_serializeExecutionResult = (
-  value: PlainObject<V1_ExecutionResult> | string,
+  json: PlainObject<V1_ExecutionResult> | string,
 ): V1_ExecutionResult => {
-  if (isString(value)) {
-    return new V1_RawExecutionResult(value);
+  if (isString(json)) {
+    return new V1_RawExecutionResult(json);
   }
-  switch ((value.builder as PlainObject<V1_ResultBuilder>)._type) {
+  switch ((json.builder as PlainObject<V1_ResultBuilder>)._type) {
     case BuilderType.CLASS_BUILDER:
-      return V1_ClassExecutionResult.serialization.fromJson(value);
+      return V1_ClassExecutionResult.serialization.fromJson(json);
     case BuilderType.TDS_BUILDER:
-      return V1_TDSExecutionResult.serialization.fromJson(value);
+      return V1_TDSExecutionResult.serialization.fromJson(json);
     case BuilderType.JSON_BUILDER:
-      return V1_JsonExecutionResult.serialization.fromJson(value);
-    default:
-      return new V1_INTERNAL__UnknownExecutionResult(value);
+      return V1_JsonExecutionResult.serialization.fromJson(json);
+    default: {
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownExecutionResult();
+      protocol.content = json;
+      return protocol;
+    }
   }
 };

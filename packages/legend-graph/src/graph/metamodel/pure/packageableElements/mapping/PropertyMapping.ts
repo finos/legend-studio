@@ -88,7 +88,6 @@ export abstract class PropertyMapping implements Hashable {
   sourceSetImplementation: SetImplementationReference;
   targetSetImplementation?: SetImplementationReference | undefined;
   localMappingProperty?: LocalMappingPropertyInfo | undefined;
-  // store?: Store | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,

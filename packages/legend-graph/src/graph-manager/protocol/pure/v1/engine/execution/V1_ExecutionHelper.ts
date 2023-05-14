@@ -21,7 +21,6 @@ import {
 import {
   type ExecutionResult,
   TDSRow,
-  INTERNAL__UnknownExecutionResult,
   ClassExecutionResult,
   JsonExecutionResult,
   TDSExecutionResult,
@@ -40,13 +39,14 @@ import {
   type V1_ExecutionActivities,
   V1_ClassExecutionResult,
   V1_JsonExecutionResult,
-  V1_INTERNAL__UnknownExecutionResult,
   V1_TDSExecutionResult,
   V1_RawExecutionResult,
   V1_RelationalExecutionActivities,
   V1_UnknownExecutionActivity,
   V1_AggregationAwareActivities,
 } from './V1_ExecutionResult.js';
+import { V1_INTERNAL__UnknownExecutionResult } from './V1_INTERNAL__UnknownExecutionResult.js';
+import { INTERNAL__UnknownExecutionResult } from '../../../../../action/execution/INTERNAL__UnknownExecutionResult.js';
 
 const buildExecutionActivities = (
   protocol: V1_ExecutionActivities,
@@ -147,7 +147,9 @@ export const V1_buildExecutionResult = (
   protocol: V1_ExecutionResult,
 ): ExecutionResult => {
   if (protocol instanceof V1_INTERNAL__UnknownExecutionResult) {
-    return new INTERNAL__UnknownExecutionResult(protocol.content);
+    const metamodel = new INTERNAL__UnknownExecutionResult();
+    metamodel.content = protocol.content;
+    return metamodel;
   } else if (protocol instanceof V1_ClassExecutionResult) {
     return buildClassExecutionResult(protocol);
   } else if (protocol instanceof V1_TDSExecutionResult) {

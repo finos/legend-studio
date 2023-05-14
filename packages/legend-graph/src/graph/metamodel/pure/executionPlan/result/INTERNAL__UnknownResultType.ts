@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-shared';
-import type { Multiplicity } from '../../packageableElements/domain/Multiplicity.js';
-import type { ResultType } from '../result/ResultType.js';
+import { type PlainObject } from '@finos/legend-shared';
+import { ResultType } from './ResultType.js';
 
-export class ExecutionNode {
-  readonly _UUID = uuid();
-
-  // fromCluster : ClusteredValueSpecification[0..1];
-  resultType!: ResultType;
-  resultSizeRange?: Multiplicity | undefined;
-  executionNodes: ExecutionNode[] = [];
-  authDependent?: boolean | undefined;
-  supportFunctions: string[] = [];
-  // implementation : PlatformImplementation[0..1];
+export class INTERNAL__UnknownResultType extends ResultType {
+  content!: PlainObject;
 }

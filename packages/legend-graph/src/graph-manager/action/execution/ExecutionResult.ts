@@ -138,12 +138,3 @@ export class ClassExecutionResult extends ExecutionResult {
   override builder = new ClassBuilder(BuilderType.CLASS_BUILDER);
   objects!: object;
 }
-
-export class INTERNAL__UnknownExecutionResult extends ExecutionResult {
-  content: object;
-
-  constructor(content: object) {
-    super();
-    this.content = content;
-  }
-}

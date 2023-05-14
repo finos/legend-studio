@@ -48,6 +48,8 @@ import {
   V1_deserializeDatabaseConnectionValue,
   V1_serializeDatabaseConnectionValue,
 } from '../V1_ConnectionSerializationHelper.js';
+import { V1_INTERNAL__UnknownResultType } from '../../../../model/executionPlan/results/V1_INTERNAL__UnknownResultType.js';
+import { V1_INTERNAL__UnknownExecutionNode } from '../../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 
@@ -80,7 +82,9 @@ const TDSResultTypeModelSchema = createModelSchema(V1_TDSResultType, {
 const V1_serializeResultType = (
   protocol: V1_ResultType,
 ): PlainObject<V1_ResultType> => {
-  if (protocol instanceof V1_DataTypeResultType) {
+  if (protocol instanceof V1_INTERNAL__UnknownResultType) {
+    return protocol.content;
+  } else if (protocol instanceof V1_DataTypeResultType) {
     return serialize(dataTypeResultTypeModelSchema, protocol);
   } else if (protocol instanceof V1_TDSResultType) {
     return serialize(TDSResultTypeModelSchema, protocol);
@@ -99,10 +103,12 @@ const V1_deserializeResultType = (
       return deserialize(dataTypeResultTypeModelSchema, json);
     case V1_ExecutionResultTypeType.TDS:
       return deserialize(TDSResultTypeModelSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize execution result type of type '${json._type}'`,
-      );
+    default: {
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownResultType();
+      protocol.content = json;
+      return protocol;
+    }
   }
 };
 
@@ -153,7 +159,9 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
 export function V1_serializeExecutionNode(
   protocol: V1_ResultType,
 ): PlainObject<V1_ResultType> {
-  if (protocol instanceof V1_RelationalTDSInstantiationExecutionNode) {
+  if (protocol instanceof V1_INTERNAL__UnknownExecutionNode) {
+    return protocol.content;
+  } else if (protocol instanceof V1_RelationalTDSInstantiationExecutionNode) {
     return serialize(
       relationalTDSInstantationExecutionNodeModelSchema,
       protocol,
@@ -167,6 +175,18 @@ export function V1_serializeExecutionNode(
   );
 }
 
+const V1_INTERNAL__UnknownExecutionNodeModelSchema = createModelSchema(
+  V1_INTERNAL__UnknownExecutionNode,
+  {
+    executionNodes: customList(
+      V1_serializeExecutionNode,
+      V1_deserializeExecutionNode,
+    ),
+    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    resultType: custom(V1_serializeResultType, V1_deserializeResultType),
+  },
+);
+
 export function V1_deserializeExecutionNode(
   json: PlainObject<V1_ResultType>,
 ): V1_ResultType {
@@ -178,10 +198,15 @@ export function V1_deserializeExecutionNode(
       );
     case V1_ExecutionNodeType.SQL:
       return deserialize(SQLExecutionNodeModelSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize execution node of type '${json._type}'`,
+    default: {
+      // Fall back to create unknown stub if not supported
+      const protocol = deserialize(
+        V1_INTERNAL__UnknownExecutionNodeModelSchema,
+        json,
       );
+      protocol.content = json;
+      return protocol;
+    }
   }
 }
 
