@@ -536,7 +536,19 @@
     }
   }
 
+  .dnd__entry-potential__dropzone__indicator {
+    border-color: var(--color-light-grey-250);
+    color: var(--color-light-grey-400);
+    background: var(--color-white);
+  }
+
+  .dnd__entry-potential__dropzone__indicator--dragover {
+    background: var(--color-dark-blue-shade-100);
+  }
+
   .dnd__entry__placeholder__content {
+    border: 0.2rem dashed var(--color-light-grey-300);
+    height: 100%;
     background: var(--color-light-grey-0);
   }
 

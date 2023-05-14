@@ -111,7 +111,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
         {isPotentiallyDragging ? (
           <div
             className={clsx('dnd__entry-potential__dropzone__indicator ', {
-              'dnd__entry-potential__dropzone__indicator--dragOver': isDragOver,
+              'dnd__entry-potential__dropzone__indicator--dragover': isDragOver,
             })}
           >
             <div
@@ -133,29 +133,23 @@ const QueryBuilderFilterGroupConditionEditor = observer(
             </div>
           </div>
         ) : (
-          <PanelEntryDropZonePlaceholder
-            showPlaceholder={isDragOver}
-            label="Add to Logical Group"
-            className="query-builder__dnd__placeholder"
+          <div
+            className={clsx('query-builder-filter-tree__group-node', {
+              'query-builder-filter-tree__group-node--and':
+                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
+              'query-builder-filter-tree__group-node--or':
+                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
+            })}
+            title="Switch Operation"
+            onClick={switchOperation}
           >
-            <div
-              className={clsx('query-builder-filter-tree__group-node', {
-                'query-builder-filter-tree__group-node--and':
-                  node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
-                'query-builder-filter-tree__group-node--or':
-                  node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
-              })}
-              title="Switch Operation"
-              onClick={switchOperation}
-            >
-              <div className="query-builder-filter-tree__group-node__label">
-                {node.groupOperation}
-              </div>
-              <button className="query-builder-filter-tree__group-node__action">
-                <FilledTriangleIcon />
-              </button>
+            <div className="query-builder-filter-tree__group-node__label">
+              {node.groupOperation}
             </div>
-          </PanelEntryDropZonePlaceholder>
+            <button className="query-builder-filter-tree__group-node__action">
+              <FilledTriangleIcon />
+            </button>
+          </div>
         )}
       </div>
     );
@@ -269,7 +263,7 @@ const QueryBuilderFilterConditionEditor = observer(
               className={clsx(
                 'dnd__entry-potential__dropzone__indicator dnd__entry-potential__dropzone__indicator--full',
                 {
-                  'dnd__entry-potential__dropzone__indicator--dragOver':
+                  'dnd__entry-potential__dropzone__indicator--dragover':
                     isDragOver,
                 },
               )}
@@ -1108,7 +1102,7 @@ export const QueryBuilderFilterPanel = observer(
               <PanelFormSection>
                 <div
                   className={clsx('dnd__entry-potential__dropzone__indicator', {
-                    'dnd__entry-potential__dropzone__indicator--dragOver':
+                    'dnd__entry-potential__dropzone__indicator--dragover':
                       isDragOver,
                   })}
                 >
