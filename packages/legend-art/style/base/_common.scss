@@ -107,6 +107,25 @@
   }
 }
 
+.dnd__entry-potential__dropzone__indicator {
+  @include flexCenter;
+
+  border: 0.2rem dashed var(--color-light-grey-400);
+  background: var(--color-dark-grey-100);
+  height: 100%;
+  font-weight: 700;
+  padding: 1rem 0.5rem;
+  color: var(--color-light-grey-400);
+
+  &--full {
+    width: 100%;
+  }
+
+  &--dragOver {
+    background: var(--color-dnd__overlay);
+  }
+}
+
 .dnd__drag-preview-layer {
   position: fixed;
   pointer-events: none;

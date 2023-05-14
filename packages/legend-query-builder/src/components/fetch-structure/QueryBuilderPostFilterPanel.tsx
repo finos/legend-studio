@@ -46,6 +46,7 @@ import {
   MoreVerticalIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
   type ValueSpecification,
@@ -61,7 +62,7 @@ import {
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
-import { useDrop, useDrag } from 'react-dnd';
+import { useDrop, useDrag, useDragLayer } from 'react-dnd';
 import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import type { QueryBuilderPostFilterOperator } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterOperator.js';
 import {
@@ -153,8 +154,9 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
   (props: {
     node: QueryBuilderPostFilterTreeGroupNodeData;
     isDragOver: boolean;
+    isPotentiallyDragging: boolean;
   }) => {
-    const { node, isDragOver } = props;
+    const { node, isDragOver, isPotentiallyDragging } = props;
     const switchOperation: React.MouseEventHandler<HTMLDivElement> = (
       event,
     ): void => {
@@ -167,29 +169,61 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
     };
     return (
       <div className="query-builder-post-filter-tree__node__label__content">
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isDragOver}
-          label="Add to Logical Group"
-          className="query-builder__dnd__placeholder"
-        >
+        {isPotentiallyDragging ? (
           <div
-            className={clsx('query-builder-post-filter-tree__group-node', {
-              'query-builder-post-filter-tree__group-node--and':
-                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
-              'query-builder-post-filter-tree__group-node--or':
-                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
+            className={clsx('dnd__entry-potential__dropzone__indicator ', {
+              'dnd__entry-potential__dropzone__indicator--dragOver': isDragOver,
             })}
-            title="Switch Operation"
-            onClick={switchOperation}
           >
-            <div className="query-builder-post-filter-tree__group-node__label">
-              {node.groupOperation}
-            </div>
-            <button className="query-builder-post-filter-tree__group-node__action">
-              <FilledTriangleIcon />
-            </button>
+            <PanelEntryDropZonePlaceholder
+              showPlaceholder={isDragOver}
+              label="Add to Logical Group"
+              className="query-builder__dnd__placeholder"
+            >
+              <div
+                className={clsx('query-builder-post-filter-tree__group-node', {
+                  'query-builder-post-filter-tree__group-node--and':
+                    node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
+                  'query-builder-post-filter-tree__group-node--or':
+                    node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
+                })}
+                title="Switch Operation"
+                onClick={switchOperation}
+              >
+                <div className="query-builder-post-filter-tree__group-node__label">
+                  {node.groupOperation}
+                </div>
+                <button className="query-builder-post-filter-tree__group-node__action">
+                  <FilledTriangleIcon />
+                </button>
+              </div>
+            </PanelEntryDropZonePlaceholder>
           </div>
-        </PanelEntryDropZonePlaceholder>
+        ) : (
+          <PanelEntryDropZonePlaceholder
+            showPlaceholder={isDragOver}
+            label="Add to Logical Group"
+            className="query-builder__dnd__placeholder"
+          >
+            <div
+              className={clsx('query-builder-post-filter-tree__group-node', {
+                'query-builder-post-filter-tree__group-node--and':
+                  node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
+                'query-builder-post-filter-tree__group-node--or':
+                  node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
+              })}
+              title="Switch Operation"
+              onClick={switchOperation}
+            >
+              <div className="query-builder-post-filter-tree__group-node__label">
+                {node.groupOperation}
+              </div>
+              <button className="query-builder-post-filter-tree__group-node__action">
+                <FilledTriangleIcon />
+              </button>
+            </div>
+          </PanelEntryDropZonePlaceholder>
+        )}
       </div>
     );
   },
@@ -359,80 +393,170 @@ const QueryBuilderPostFilterConditionEditor = observer(
       cleanUpReloadValues,
     };
 
+    const { isPotentiallyDragging } = useDragLayer((monitor) => ({
+      isPotentiallyDragging:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+    }));
+
     return (
       <div className="query-builder-post-filter-tree__node__label__content">
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isDragOver}
-          label="Add New Logical Group"
-          className="query-builder__dnd__placeholder"
-        >
-          <div className="query-builder-post-filter-tree__condition-node">
-            <div className="query-builder-post-filter-tree__condition-node__property">
-              <QueryBuilderColumnBadge
-                postFilterConditionState={node.condition}
-                onColumnChange={changeColumn}
-              />
-            </div>
-            <DropdownMenu
-              className="query-builder-post-filter-tree__condition-node__operator"
-              title="Choose Operator..."
-              content={
-                <MenuContent>
-                  {node.condition.operators.map((op) => (
-                    <MenuContentItem
-                      key={op.uuid}
-                      className="query-builder-post-filter-tree__condition-node__operator__dropdown__option"
-                      onClick={changeOperator(op)}
-                    >
-                      {op.getLabel()}
-                    </MenuContentItem>
-                  ))}
-                </MenuContent>
-              }
-              menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-                transformOrigin: { vertical: 'top', horizontal: 'left' },
-                elevation: 7,
-              }}
-            >
-              <div className="query-builder-post-filter-tree__condition-node__operator__label">
-                {node.condition.operator.getLabel()}
-              </div>
-              <div className="query-builder-post-filter-tree__condition-node__operator__dropdown__trigger">
-                <CaretDownIcon />
-              </div>
-            </DropdownMenu>
-            {node.condition.value && (
-              <div
-                ref={dropConnector}
-                className="query-builder-post-filter-tree__condition-node__value"
-              >
-                <PanelEntryDropZonePlaceholder
-                  showPlaceholder={isFilterValueDragOver}
-                  label="Change Filter Value"
-                  className="query-builder__dnd__placeholder"
-                >
-                  <BasicValueSpecificationEditor
-                    valueSpecification={node.condition.value}
-                    setValueSpecification={changeValueSpecification}
-                    graph={graph}
-                    obseverContext={queryBuilderState.observerContext}
-                    typeCheckOption={{
-                      expectedType: guaranteeNonNullable(
-                        node.condition.columnState.getColumnType(),
-                      ),
-                    }}
-                    resetValue={resetNode}
-                    selectorConfig={selectorConfig}
-                    isConstant={queryBuilderState.constantState.isValueSpecConstant(
-                      node.condition.value,
-                    )}
-                  />
-                </PanelEntryDropZonePlaceholder>
-              </div>
+        {isPotentiallyDragging ? (
+          <div
+            className={clsx(
+              'dnd__entry-potential__dropzone__indicator dnd__entry-potential__dropzone__indicator--full',
+              {
+                'dnd__entry-potential__dropzone__indicator--dragOver':
+                  isDragOver,
+              },
             )}
+          >
+            {' '}
+            <div className="query-builder-post-filter-tree__condition-node">
+              <div className="query-builder-post-filter-tree__condition-node__property">
+                <QueryBuilderColumnBadge
+                  postFilterConditionState={node.condition}
+                  onColumnChange={changeColumn}
+                />
+              </div>
+              <DropdownMenu
+                className="query-builder-post-filter-tree__condition-node__operator"
+                title="Choose Operator..."
+                content={
+                  <MenuContent>
+                    {node.condition.operators.map((op) => (
+                      <MenuContentItem
+                        key={op.uuid}
+                        className="query-builder-post-filter-tree__condition-node__operator__dropdown__option"
+                        onClick={changeOperator(op)}
+                      >
+                        {op.getLabel()}
+                      </MenuContentItem>
+                    ))}
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                  transformOrigin: { vertical: 'top', horizontal: 'left' },
+                  elevation: 7,
+                }}
+              >
+                <div className="query-builder-post-filter-tree__condition-node__operator__label">
+                  {node.condition.operator.getLabel()}
+                </div>
+                <div className="query-builder-post-filter-tree__condition-node__operator__dropdown__trigger">
+                  <CaretDownIcon />
+                </div>
+              </DropdownMenu>
+              {node.condition.value && (
+                <div
+                  ref={dropConnector}
+                  className="query-builder-post-filter-tree__condition-node__value"
+                >
+                  <PanelEntryDropZonePlaceholder
+                    showPlaceholder={isFilterValueDragOver}
+                    label="Change Filter Value"
+                    className="query-builder__dnd__placeholder"
+                  >
+                    <BasicValueSpecificationEditor
+                      valueSpecification={node.condition.value}
+                      setValueSpecification={changeValueSpecification}
+                      graph={graph}
+                      obseverContext={queryBuilderState.observerContext}
+                      typeCheckOption={{
+                        expectedType: guaranteeNonNullable(
+                          node.condition.columnState.getColumnType(),
+                        ),
+                      }}
+                      resetValue={resetNode}
+                      selectorConfig={selectorConfig}
+                      isConstant={queryBuilderState.constantState.isValueSpecConstant(
+                        node.condition.value,
+                      )}
+                    />
+                  </PanelEntryDropZonePlaceholder>
+                </div>
+              )}
+            </div>
           </div>
-        </PanelEntryDropZonePlaceholder>
+        ) : (
+          <>
+            {' '}
+            <PanelEntryDropZonePlaceholder
+              showPlaceholder={isDragOver}
+              label="Add New Logical Group"
+              className="query-builder__dnd__placeholder"
+            >
+              <div className="query-builder-post-filter-tree__condition-node">
+                <div className="query-builder-post-filter-tree__condition-node__property">
+                  <QueryBuilderColumnBadge
+                    postFilterConditionState={node.condition}
+                    onColumnChange={changeColumn}
+                  />
+                </div>
+                <DropdownMenu
+                  className="query-builder-post-filter-tree__condition-node__operator"
+                  title="Choose Operator..."
+                  content={
+                    <MenuContent>
+                      {node.condition.operators.map((op) => (
+                        <MenuContentItem
+                          key={op.uuid}
+                          className="query-builder-post-filter-tree__condition-node__operator__dropdown__option"
+                          onClick={changeOperator(op)}
+                        >
+                          {op.getLabel()}
+                        </MenuContentItem>
+                      ))}
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                    transformOrigin: { vertical: 'top', horizontal: 'left' },
+                    elevation: 7,
+                  }}
+                >
+                  <div className="query-builder-post-filter-tree__condition-node__operator__label">
+                    {node.condition.operator.getLabel()}
+                  </div>
+                  <div className="query-builder-post-filter-tree__condition-node__operator__dropdown__trigger">
+                    <CaretDownIcon />
+                  </div>
+                </DropdownMenu>
+                {node.condition.value && (
+                  <div
+                    ref={dropConnector}
+                    className="query-builder-post-filter-tree__condition-node__value"
+                  >
+                    <PanelEntryDropZonePlaceholder
+                      showPlaceholder={isFilterValueDragOver}
+                      label="Change Filter Value"
+                      className="query-builder__dnd__placeholder"
+                    >
+                      <BasicValueSpecificationEditor
+                        valueSpecification={node.condition.value}
+                        setValueSpecification={changeValueSpecification}
+                        graph={graph}
+                        obseverContext={queryBuilderState.observerContext}
+                        typeCheckOption={{
+                          expectedType: guaranteeNonNullable(
+                            node.condition.columnState.getColumnType(),
+                          ),
+                        }}
+                        resetValue={resetNode}
+                        selectorConfig={selectorConfig}
+                        isConstant={queryBuilderState.constantState.isValueSpecConstant(
+                          node.condition.value,
+                        )}
+                      />
+                    </PanelEntryDropZonePlaceholder>
+                  </div>
+                )}
+              </div>
+            </PanelEntryDropZonePlaceholder>
+          </>
+        )}
       </div>
     );
   },
@@ -588,6 +712,13 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
+    const { isPotentiallyDragging } = useDragLayer((monitor) => ({
+      isPotentiallyDragging:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+    }));
+
     return (
       <ContextMenu
         content={
@@ -642,6 +773,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
               {node instanceof QueryBuilderPostFilterTreeGroupNodeData && (
                 <QueryBuilderPostFilterGroupConditionEditor
                   node={node}
+                  isPotentiallyDragging={isPotentiallyDragging}
                   isDragOver={isDragOver}
                 />
               )}
@@ -892,6 +1024,13 @@ const QueryBuilderPostFilterPanelContent = observer(
       [applicationStore, handleDrop],
     );
 
+    const { isPotentiallyDragging } = useDragLayer((monitor) => ({
+      isPotentiallyDragging:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+    }));
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER}
@@ -980,12 +1119,13 @@ const QueryBuilderPostFilterPanelContent = observer(
         </div>
         <PanelContent>
           <PanelDropZone
-            isDragOver={isDragOver}
+            isDragOver={isDragOver && postFilterState.isEmpty}
             dropTargetConnector={dropTargetConnector}
           >
             {postFilterState.isEmpty && (
               <BlankPanelPlaceholder
                 text="Add a post-filter condition"
+                draggableActive={isPotentiallyDragging}
                 tooltipText="Drag and drop properties here"
               />
             )}
@@ -999,6 +1139,19 @@ const QueryBuilderPostFilterPanelContent = observer(
                 />
                 <QueryBuilderPostFilterTree tdsState={tdsState} />
               </>
+            )}
+
+            {isPotentiallyDragging && (
+              <PanelFormSection>
+                <div
+                  className={clsx('dnd__entry-potential__dropzone__indicator', {
+                    'dnd__entry-potential__dropzone__indicator--dragOver':
+                      isDragOver,
+                  })}
+                >
+                  Add post-filter to main group
+                </div>
+              </PanelFormSection>
             )}
           </PanelDropZone>
         </PanelContent>

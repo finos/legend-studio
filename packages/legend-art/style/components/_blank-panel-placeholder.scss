@@ -42,6 +42,10 @@
     overflow: hidden;
   }
 
+  &--draggable--active {
+    border: 0.2rem dashed var(--color-light-grey-400);
+  }
+
   &__text {
     @include flexHCenter;
 
