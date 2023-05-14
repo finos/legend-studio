@@ -75,6 +75,7 @@ import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProces
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
+import { V1_INTERNAL__UnknownConnection } from '../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
 
@@ -634,7 +635,9 @@ export const V1_serializeConnectionValue = (
   allowPointer: boolean,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_Connection> => {
-  if (protocol instanceof V1_JsonModelConnection) {
+  if (protocol instanceof V1_INTERNAL__UnknownConnection) {
+    return protocol.content;
+  } else if (protocol instanceof V1_JsonModelConnection) {
     return serialize(V1_jsonModelConnectionModelSchema, protocol);
   } else if (protocol instanceof V1_ModelChainConnection) {
     return serialize(V1_modelChainConnectionModelSchema, protocol);
@@ -706,9 +709,12 @@ export const V1_deserializeConnectionValue = (
           return protocol;
         }
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize connection of type '${json._type}': no compatible deserializer available from plugins`,
-      );
+
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownConnection();
+      protocol.store = undefined;
+      protocol.content = json;
+      return protocol;
     }
   }
 };

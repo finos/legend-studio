@@ -21,9 +21,14 @@ import type { V1_JsonModelConnection } from '../../../model/packageableElements/
 import type { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
 import type { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
 import type { V1_ConnectionPointer } from './V1_ConnectionPointer.js';
+import type { V1_INTERNAL__UnknownConnection } from './V1_INTERNAL__UnknownConnection.js';
 
 export interface V1_ConnectionVisitor<T> {
   visit_Connection(connection: V1_Connection): T;
+  visit_INTERNAL__UnknownConnection(
+    connection: V1_INTERNAL__UnknownConnection,
+  ): T;
+
   visit_ConnectionPointer(connection: V1_ConnectionPointer): T;
   visit_JsonModelConnection(connection: V1_JsonModelConnection): T;
   visit_ModelChainConnection(connection: V1_ModelChainConnection): T;

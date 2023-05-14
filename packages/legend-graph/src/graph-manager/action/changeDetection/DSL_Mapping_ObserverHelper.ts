@@ -136,6 +136,7 @@ import {
 import type { StoreTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
+import type { INTERNAL__UnknownConnection } from '../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -944,6 +945,19 @@ export const observe_ModelChainConnection = skipObserved(
   },
 );
 
+const observe_INTERNAL__UnknownConnection = skipObserved(
+  (metamodel: INTERNAL__UnknownConnection): INTERNAL__UnknownConnection => {
+    observe_Abstract_Connection(metamodel);
+
+    makeObservable(metamodel, {
+      content: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
 class ConnectionObserver implements ConnectionVisitor<void> {
   observerContext: ObserverContext;
 
@@ -964,6 +978,12 @@ class ConnectionObserver implements ConnectionVisitor<void> {
         return;
       }
     }
+  }
+
+  visit_INTERNAL__UnknownConnection(
+    connection: INTERNAL__UnknownConnection,
+  ): void {
+    observe_INTERNAL__UnknownConnection(connection);
   }
 
   visit_ConnectionPointer(connection: ConnectionPointer): void {

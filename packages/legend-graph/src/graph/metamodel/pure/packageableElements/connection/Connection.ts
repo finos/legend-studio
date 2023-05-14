@@ -24,9 +24,12 @@ import type { PackageableConnection } from './PackageableConnection.js';
 import type { RelationalDatabaseConnection } from '../store/relational/connection/RelationalDatabaseConnection.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { ModelChainConnection } from '../store/modelToModel/connection/ModelChainConnection.js';
+import type { INTERNAL__UnknownConnection } from './INTERNAL__UnknownConnection.js';
 
 export interface ConnectionVisitor<T> {
   visit_Connection(connection: Connection): T;
+  visit_INTERNAL__UnknownConnection(connection: INTERNAL__UnknownConnection): T;
+
   visit_ConnectionPointer(connection: ConnectionPointer): T;
   visit_ModelChainConnection(connection: ModelChainConnection): T;
   visit_JsonModelConnection(connection: JsonModelConnection): T;

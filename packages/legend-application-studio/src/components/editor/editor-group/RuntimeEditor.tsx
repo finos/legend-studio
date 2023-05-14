@@ -72,11 +72,7 @@ import {
   ElementDragSource,
 } from '../../../stores/editor/utils/DnDUtils.js';
 import { useDrop } from 'react-dnd';
-import {
-  assertErrorThrown,
-  guaranteeType,
-  UnsupportedOperationError,
-} from '@finos/legend-shared';
+import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -147,10 +143,7 @@ const getConnectionTooltipText = (
       return tooltipText;
     }
   }
-  throw new UnsupportedOperationError(
-    `Can't build tooltip text for connection: no compatible builder available from plugins`,
-    connection,
-  );
+  return `Unknown connection`;
 };
 
 const IdentifiedConnectionsPerStoreExplorerContextMenu = observer(

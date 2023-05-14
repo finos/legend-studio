@@ -97,6 +97,8 @@ import { V1_transformPostProcessor } from './V1_PostProcessorTransformer.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { V1_INTERNAL__UnknownConnection } from '../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
+import type { INTERNAL__UnknownConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 
 const transformStaticDatasourceSpecification = (
   metamodel: StaticDatasourceSpecification,
@@ -438,6 +440,15 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
       `Can't transform connection: no compatible transformer available from plugins`,
       connection,
     );
+  }
+
+  visit_INTERNAL__UnknownConnection(
+    connection: INTERNAL__UnknownConnection,
+  ): V1_Connection {
+    const protocol = new V1_INTERNAL__UnknownConnection();
+    protocol.store = undefined;
+    protocol.content = connection.content;
+    return protocol;
   }
 
   visit_ConnectionPointer(connection: ConnectionPointer): V1_Connection {

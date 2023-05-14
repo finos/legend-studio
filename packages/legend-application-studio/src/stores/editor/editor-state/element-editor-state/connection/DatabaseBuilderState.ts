@@ -55,12 +55,6 @@ import {
 import { connection_setStore } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { GraphEditFormModeState } from '../../../GraphEditFormModeState.js';
 
-export const isRelationalDatabaseConnection = (
-  val: PackageableElement | undefined,
-): boolean =>
-  val instanceof PackageableConnection &&
-  val.connectionValue instanceof RelationalDatabaseConnection;
-
 export const guaranteeRelationalDatabaseConnection = (
   val: PackageableElement | undefined,
 ): RelationalDatabaseConnection =>

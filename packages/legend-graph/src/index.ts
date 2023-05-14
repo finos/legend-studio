@@ -123,8 +123,10 @@ export { V1_Multiplicity } from './graph-manager/protocol/pure/v1/model/packagea
 export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_ExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
-export { V1_buildExecutionResult } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
-export { V1_serializeExecutionResult } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
+export {
+  V1_buildExecutionResult,
+  V1_serializeExecutionResult,
+} from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
 
@@ -424,6 +426,7 @@ export {
 } from './graph/metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
 export { PropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 export * from './graph/metamodel/pure/packageableElements/connection/Connection.js';
+export * from './graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 export { PackageableConnection } from './graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
 export { ModelStore } from './graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 export { PureModelConnection } from './graph/metamodel/pure/packageableElements/store/modelToModel/connection/PureModelConnection.js';

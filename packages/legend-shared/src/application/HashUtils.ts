@@ -25,6 +25,7 @@ import {
   isBoolean,
   isNumber,
   isString,
+  isNonNullable,
 } from '../error/AssertionUtils.js';
 import type { Clazz, PlainObject } from '../CommonUtils.js';
 
@@ -68,10 +69,11 @@ export const hashUnknownValue = (val: unknown): string => {
 };
 
 export const hashArray = (
-  arr: (string | boolean | number | Hashable)[],
+  arr: (string | boolean | number | Hashable | undefined | null)[],
 ): string =>
   hashValue(
     arr
+      .filter(isNonNullable)
       .map((val) =>
         typeof val === 'string' ||
         typeof val === 'boolean' ||

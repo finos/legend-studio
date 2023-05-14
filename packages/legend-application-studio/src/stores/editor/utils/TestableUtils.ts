@@ -37,6 +37,7 @@ import {
   EqualToJson,
   DEFAULT_TEST_ASSERTION_PREFIX,
   RelationalCSVDataTable,
+  type INTERNAL__UnknownConnection,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -128,6 +129,12 @@ export class TEMPORARY__EmbeddedDataConnectionVisitor
   visit_Connection(connection: Connection): EmbeddedData {
     throw new UnsupportedOperationError();
   }
+  visit_INTERNAL__UnknownConnection(
+    connection: INTERNAL__UnknownConnection,
+  ): EmbeddedData {
+    throw new UnsupportedOperationError();
+  }
+
   visit_ConnectionPointer(connection: ConnectionPointer): EmbeddedData {
     const packageableConnection =
       connection.packageableConnection.value.connectionValue;
@@ -166,6 +173,12 @@ export class EmbeddedDataConnectionTypeVisitor
   visit_Connection(connection: Connection): string {
     return EmbeddedDataType.EXTERNAL_FORMAT_DATA;
   }
+  visit_INTERNAL__UnknownConnection(
+    connection: INTERNAL__UnknownConnection,
+  ): string {
+    return EmbeddedDataType.EXTERNAL_FORMAT_DATA;
+  }
+
   visit_ConnectionPointer(connection: ConnectionPointer): string {
     const packageableConnection =
       connection.packageableConnection.value.connectionValue;

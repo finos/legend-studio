@@ -17,6 +17,8 @@
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
+  type PlainObject,
+  isString,
 } from '@finos/legend-shared';
 import {
   type ExecutionResult,
@@ -31,6 +33,7 @@ import {
   type ExecutionActivities,
   UnknownExecutionActivities,
   AggregationAwareActivities,
+  BuilderType,
 } from '../../../../../../graph-manager/action/execution/ExecutionResult.js';
 import {
   type V1_ExecutionResult,
@@ -44,6 +47,7 @@ import {
   V1_RelationalExecutionActivities,
   V1_UnknownExecutionActivity,
   V1_AggregationAwareActivities,
+  type V1_ResultBuilder,
 } from './V1_ExecutionResult.js';
 import { V1_INTERNAL__UnknownExecutionResult } from './V1_INTERNAL__UnknownExecutionResult.js';
 import { INTERNAL__UnknownExecutionResult } from '../../../../../action/execution/INTERNAL__UnknownExecutionResult.js';
@@ -160,4 +164,26 @@ export const V1_buildExecutionResult = (
     return new RawExecutionResult(protocol.value);
   }
   throw new UnsupportedOperationError(`Can't build execution result`, protocol);
+};
+
+export const V1_serializeExecutionResult = (
+  json: PlainObject<V1_ExecutionResult> | string,
+): V1_ExecutionResult => {
+  if (isString(json)) {
+    return new V1_RawExecutionResult(json);
+  }
+  switch ((json.builder as PlainObject<V1_ResultBuilder>)._type) {
+    case BuilderType.CLASS_BUILDER:
+      return V1_ClassExecutionResult.serialization.fromJson(json);
+    case BuilderType.TDS_BUILDER:
+      return V1_TDSExecutionResult.serialization.fromJson(json);
+    case BuilderType.JSON_BUILDER:
+      return V1_JsonExecutionResult.serialization.fromJson(json);
+    default: {
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownExecutionResult();
+      protocol.content = json;
+      return protocol;
+    }
+  }
 };

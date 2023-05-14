@@ -71,10 +71,7 @@ import {
   V1_TestDataGenerationExecutionInput,
 } from './execution/V1_ExecuteInput.js';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan.js';
-import {
-  type V1_ExecutionResult,
-  V1_serializeExecutionResult,
-} from './execution/V1_ExecutionResult.js';
+import { type V1_ExecutionResult } from './execution/V1_ExecutionResult.js';
 import { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
@@ -115,6 +112,7 @@ import type { V1_ClassifierPathMapping } from './protocol/V1_ClassifierPathMappi
 import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
 import { V1_INTERNAL__PackageableElementWithSourceInformation } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../graph/MetaModelConst.js';
+import { V1_serializeExecutionResult } from './execution/V1_ExecutionHelper.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
