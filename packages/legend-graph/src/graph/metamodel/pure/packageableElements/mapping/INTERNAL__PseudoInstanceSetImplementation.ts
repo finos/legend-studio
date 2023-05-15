@@ -14,32 +14,26 @@
  * limitations under the License.
  */
 
-import { INTERNAL__PseudoClass } from '../domain/INTERNAL__PseudoClass.js';
-import { PackageableElementExplicitReference } from '../PackageableElementReference.js';
+import { UnsupportedOperationError } from '@finos/legend-shared';
+import { InstanceSetImplementation } from './InstanceSetImplementation.js';
+import type { SetImplementationVisitor } from './SetImplementation.js';
 import { InferableMappingElementIdExplicitValue } from './InferableMappingElementId.js';
+import { PackageableElementExplicitReference } from '../PackageableElementReference.js';
 import { InferableMappingElementRootExplicitValue } from './InferableMappingElementRoot.js';
-import type { Mapping } from './Mapping.js';
-import {
-  SetImplementation,
-  type SetImplementationVisitor,
-} from './SetImplementation.js';
+import { INTERNAL__PseudoClass } from '../domain/INTERNAL__PseudoClass.js';
+import { INTERNAL__PseudoMapping } from './INTERNAL__PseudoMapping.js';
 
-/**
- * When set implementation cannot be resolved by ID, we try to avoid failing graph building
- * for now instead, we will leave this loose end unresolved.
- *
- * NOTE: this is just a temporary solutions until we make this a hard-fail post migration.
- *
- * See https://github.com/finos/legend-studio/issues/880
- * See https://github.com/finos/legend-studio/issues/941
- *
- * @discrepancy graph-building
- */
-export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
-  constructor(id: string, parent: Mapping) {
+export class INTERNAL__PseudoInstanceSetImplementation extends InstanceSetImplementation {
+  static readonly NAME = 'INTERNAL__PseudoInstanceSetImplementation';
+  static readonly INSTANCE = new INTERNAL__PseudoInstanceSetImplementation();
+
+  private constructor() {
     super(
-      InferableMappingElementIdExplicitValue.create(id, ''),
-      parent,
+      InferableMappingElementIdExplicitValue.create(
+        '',
+        INTERNAL__PseudoClass.INSTANCE.path,
+      ),
+      INTERNAL__PseudoMapping.INSTANCE,
       PackageableElementExplicitReference.create(
         INTERNAL__PseudoClass.INSTANCE,
       ),
@@ -48,6 +42,6 @@ export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
   }
 
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
-    return visitor.visit_TEMPORARY__UnresolvedSetImplementation(this);
+    throw new UnsupportedOperationError();
   }
 }

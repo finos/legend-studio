@@ -60,7 +60,7 @@ import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../..
 import type { V1_ModelChainConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
 import { V1_buildPostProcessor } from './V1_PostProcessorBuilderHelper.js';
 import type { V1_INTERNAL__UnknownConnection } from '../../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
-import { INTERNAL__UnknownStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
+import { INTERNAL__PseudoStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__PseudoStore.js';
 import { INTERNAL__UnknownConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 
 class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
@@ -100,7 +100,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
   ): Connection {
     const metamodel = new INTERNAL__UnknownConnection(
       PackageableElementExplicitReference.create(
-        INTERNAL__UnknownStore.INSTANCE,
+        INTERNAL__PseudoStore.INSTANCE,
       ),
     );
     metamodel.content = connection.content;

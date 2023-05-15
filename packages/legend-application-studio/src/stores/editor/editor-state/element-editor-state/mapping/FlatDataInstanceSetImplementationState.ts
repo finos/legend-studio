@@ -320,7 +320,7 @@ export class EmbeddedFlatDataInstanceSetImplementationState
     });
   }
 
-  // dummy lambda editor states needed because embedded flat-data should be seen as `PropertMappingState`
+  // dummy lambda editor states needed because embedded flat-data should be seen as `PropertyMappingState`
   lambdaPrefix = '';
   lambdaString = '';
   parserError?: ParserError | undefined;

@@ -291,7 +291,7 @@ export class STO_ServiceStore_PureProtocolProcessorPlugin
 
   V1_getExtraClassMappingSerializers(): V1_ClassMappingSerializer[] {
     return [
-      (value: V1_ClassMapping): V1_ClassMapping | undefined => {
+      (value) => {
         if (value instanceof V1_RootServiceStoreClassMapping) {
           return serialize(V1_rootServiceStoreClassMappingModelSchema, value);
         }
@@ -302,7 +302,7 @@ export class STO_ServiceStore_PureProtocolProcessorPlugin
 
   V1_getExtraClassMappingDeserializers(): V1_ClassMappingDeserializer[] {
     return [
-      (json: PlainObject<V1_ClassMapping>): V1_ClassMapping | undefined => {
+      (json) => {
         if (json._type === V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE) {
           return deserialize(V1_rootServiceStoreClassMappingModelSchema, json);
         }

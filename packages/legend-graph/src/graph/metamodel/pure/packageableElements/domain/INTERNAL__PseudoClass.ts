@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-shared';
-import { Store } from './Store.js';
-import type { PackageableElementVisitor } from '../PackageableElement.js';
+import { Class } from './Class.js';
 
-export class INTERNAL__UnknownStore extends Store {
-  static readonly NAME = 'UnknownStore';
-  static readonly INSTANCE = new INTERNAL__UnknownStore();
+export class INTERNAL__PseudoClass extends Class {
+  static readonly NAME = 'INTERNAL__PseudoClass';
+  static readonly INSTANCE = new INTERNAL__PseudoClass();
 
   private constructor() {
-    super(INTERNAL__UnknownStore.NAME);
-  }
-
-  accept_PackageableElementVisitor<T>(
-    visitor: PackageableElementVisitor<T>,
-  ): T {
-    throw new UnsupportedOperationError();
+    super(INTERNAL__PseudoClass.NAME);
   }
 }

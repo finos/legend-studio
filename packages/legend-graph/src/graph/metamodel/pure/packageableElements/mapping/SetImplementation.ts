@@ -32,9 +32,14 @@ import type { InstanceSetImplementation } from './InstanceSetImplementation.js';
 import type { MergeOperationSetImplementation } from './MergeOperationSetImplementation.js';
 import type { TEMPORARY__UnresolvedSetImplementation } from './TEMPORARY__UnresolvedSetImplementation.js';
 import type { Class } from '../domain/Class.js';
+import type { INTERNAL__UnknownSetImplementation } from './INTERNAL__UnknownSetImplementation.js';
 
 export interface SetImplementationVisitor<T> {
   visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
+  visit_INTERNAL__UnknownSetImplementation(
+    setImplementation: INTERNAL__UnknownSetImplementation,
+  ): T;
+
   visit_MergeOperationSetImplementation(
     setImplementation: MergeOperationSetImplementation,
   ): T;

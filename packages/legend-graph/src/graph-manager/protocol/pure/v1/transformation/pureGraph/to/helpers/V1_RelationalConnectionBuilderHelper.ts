@@ -32,7 +32,6 @@ import {
   SpannerDatasourceSpecification,
   TrinoDatasourceSpecification,
   TrinoSslSpecification,
-  INTERNAL__UnknownDatasourceSpecification,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import {
   type AuthenticationStrategy,
@@ -46,7 +45,6 @@ import {
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
   TrinoDelegatedKerberosAuthenticationStrategy,
-  INTERNAL__UnknownAuthenticationStrategy,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
@@ -60,7 +58,6 @@ import {
   V1_BigQueryDatasourceSpecification,
   V1_SpannerDatasourceSpecification,
   V1_TrinoDatasourceSpecification,
-  V1_INTERNAL__UnknownDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -74,9 +71,11 @@ import {
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
   V1_TrinoDelegatedKerberosAuthenticationStrategy,
-  V1_INTERNAL__UnknownAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import { INTERNAL__UnknownDatasourceSpecification } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownDatasourceSpecification.js';
+import { V1_INTERNAL__UnknownDatasourceSpecification } from '../../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownDatasourceSpecification.js';
+import { V1_INTERNAL__UnknownAuthenticationStrategy } from '../../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownAuthenticationStrategy.js';
 
 export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
@@ -306,7 +305,7 @@ export const V1_buildAuthenticationStrategy = (
   context: V1_GraphBuilderContext,
 ): AuthenticationStrategy => {
   if (protocol instanceof V1_INTERNAL__UnknownAuthenticationStrategy) {
-    const metamodel = new INTERNAL__UnknownAuthenticationStrategy();
+    const metamodel = new V1_INTERNAL__UnknownAuthenticationStrategy();
     metamodel.content = protocol.content;
     return metamodel;
   } else if (protocol instanceof V1_DefaultH2AuthenticationStrategy) {

@@ -64,6 +64,7 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
   SetImplementationExplicitReference,
+  type INTERNAL__UnknownSetImplementation,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -139,6 +140,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
 
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
+  }
+
+  visit_INTERNAL__UnknownSetImplementation(
+    setImplementation: INTERNAL__UnknownSetImplementation,
+  ): void {
+    return;
   }
 
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
@@ -662,6 +669,12 @@ export class MappingElementDecorationCleaner
 
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
+  }
+
+  visit_INTERNAL__UnknownSetImplementation(
+    setImplementation: INTERNAL__UnknownSetImplementation,
+  ): void {
+    return;
   }
 
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {

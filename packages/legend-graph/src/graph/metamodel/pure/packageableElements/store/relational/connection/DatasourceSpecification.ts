@@ -14,32 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  type PlainObject,
-} from '@finos/legend-shared';
-import {
-  CORE_HASH_STRUCTURE,
-  hashObjectWithoutSourceInformation,
-} from '../../../../../../../graph/Core_HashUtils.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 
 export abstract class DatasourceSpecification implements Hashable {
   abstract get hashCode(): string;
-}
-
-export class INTERNAL__UnknownDatasourceSpecification
-  extends DatasourceSpecification
-  implements Hashable
-{
-  content!: PlainObject;
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_DATASOURCE_SPECIFICATION,
-      hashObjectWithoutSourceInformation(this.content),
-    ]);
-  }
 }
 
 export class StaticDatasourceSpecification

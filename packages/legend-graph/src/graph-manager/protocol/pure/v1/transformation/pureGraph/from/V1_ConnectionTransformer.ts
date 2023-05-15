@@ -40,7 +40,6 @@ import {
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   MiddleTierUsernamePasswordAuthenticationStrategy,
   TrinoDelegatedKerberosAuthenticationStrategy,
-  INTERNAL__UnknownAuthenticationStrategy,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import {
   type DatasourceSpecification,
@@ -53,7 +52,6 @@ import {
   BigQueryDatasourceSpecification,
   SpannerDatasourceSpecification,
   TrinoDatasourceSpecification,
-  INTERNAL__UnknownDatasourceSpecification,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import type { ModelChainConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
@@ -70,7 +68,6 @@ import {
   V1_SpannerDatasourceSpecification,
   V1_TrinoDatasourceSpecification,
   V1_TrinoSslSpecification,
-  V1_INTERNAL__UnknownDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -84,7 +81,6 @@ import {
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
   V1_TrinoDelegatedKerberosAuthenticationStrategy,
-  V1_INTERNAL__UnknownAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
 import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
@@ -99,6 +95,10 @@ import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../..
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { V1_INTERNAL__UnknownConnection } from '../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
 import type { INTERNAL__UnknownConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
+import { INTERNAL__UnknownDatasourceSpecification } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownDatasourceSpecification.js';
+import { INTERNAL__UnknownAuthenticationStrategy } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownAuthenticationStrategy.js';
+import { V1_INTERNAL__UnknownDatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownDatasourceSpecification.js';
+import { V1_INTERNAL__UnknownAuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownAuthenticationStrategy.js';
 
 const transformStaticDatasourceSpecification = (
   metamodel: StaticDatasourceSpecification,

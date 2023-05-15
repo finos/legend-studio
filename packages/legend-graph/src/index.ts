@@ -132,6 +132,10 @@ export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpec
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
+export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
+export { INTERNAL__UnknownExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
+export { INTERNAL__UnknownResultType } from './graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
+
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
 export { ResultType } from './graph/metamodel/pure/executionPlan/result/ResultType.js';
@@ -341,6 +345,8 @@ export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js
 
 // ------------------------------------- DSL Data --------------------------------------------
 
+export { INTERNAL__UnknownEmbeddedData } from './graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
+
 export { DataElement } from './graph/metamodel/pure/packageableElements/data/DataElement.js';
 export { V1_DataElement } from './graph-manager/protocol/pure/v1/model/packageableElements/data/V1_DataElement.js';
 export {
@@ -409,6 +415,10 @@ export { V1_GenerationOutput } from './graph-manager/protocol/pure/v1/engine/gen
 export * from './graph-manager/extensions/DSL_Mapping_PureGraphManagerPlugin_Extension.js';
 
 // metamodels
+export { INTERNAL__UnknownSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
+export { INTERNAL__UnknownPropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
+export { INTERNAL__UnknownConnection } from './graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
+
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 export {
@@ -426,7 +436,6 @@ export {
 } from './graph/metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
 export { PropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 export * from './graph/metamodel/pure/packageableElements/connection/Connection.js';
-export * from './graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 export { PackageableConnection } from './graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
 export { ModelStore } from './graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 export { PureModelConnection } from './graph/metamodel/pure/packageableElements/store/modelToModel/connection/PureModelConnection.js';

@@ -36,6 +36,7 @@ import {
   fromElementPathToMappingElementId,
   OperationSetImplementation,
   OperationType,
+  INTERNAL__UnknownSetImplementation,
 } from '@finos/legend-graph';
 import {
   setImpl_nominateRoot,
@@ -44,6 +45,7 @@ import {
   setImplementation_setRoot,
 } from '../../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 
 export const OperatorSelector = observer(
   (props: {
@@ -183,7 +185,10 @@ export const ClassMappingEditor = observer(
             </div>
           </div>
           {/* Instance Set Implementation Source */}
-          {!(setImplementation instanceof OperationSetImplementation) && (
+          {!(
+            setImplementation instanceof OperationSetImplementation ||
+            setImplementation instanceof INTERNAL__UnknownSetImplementation
+          ) && (
             <div
               className={clsx(
                 'mapping-element-editor__metadata__chunk',
@@ -247,20 +252,30 @@ export const ClassMappingEditor = observer(
             </button>
           )}
         </div>
+        {setImplementation instanceof INTERNAL__UnknownSetImplementation && (
+          <UnsupportedEditorPanel
+            text="Can't display this set implementation in form-mode"
+            isReadOnly={isReadOnly}
+          />
+        )}
         {setImplementation instanceof OperationSetImplementation && (
           <OperationSetImplementationEditor
             setImplementation={setImplementation}
             isReadOnly={isReadOnly}
           />
         )}
-        {editorStore.graphManagerState.graphManager.isInstanceSetImplementation(
-          setImplementation,
-        ) && (
-          <InstanceSetImplementationEditor
-            setImplementation={setImplementation}
-            isReadOnly={isReadOnly}
-          />
-        )}
+        {!(
+          setImplementation instanceof OperationSetImplementation ||
+          setImplementation instanceof INTERNAL__UnknownSetImplementation
+        ) &&
+          editorStore.graphManagerState.graphManager.isInstanceSetImplementation(
+            setImplementation,
+          ) && (
+            <InstanceSetImplementationEditor
+              setImplementation={setImplementation}
+              isReadOnly={isReadOnly}
+            />
+          )}
       </div>
     );
   },

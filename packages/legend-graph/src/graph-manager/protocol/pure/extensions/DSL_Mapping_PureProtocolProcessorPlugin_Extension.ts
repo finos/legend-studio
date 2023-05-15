@@ -51,7 +51,7 @@ export type PropertyMappingTransformationExcludabilityChecker = (
 
 export type V1_ClassMappingSerializer = (
   value: V1_ClassMapping,
-) => V1_ClassMapping | undefined;
+) => PlainObject<V1_ClassMapping> | undefined;
 
 export type V1_ClassMappingDeserializer = (
   json: PlainObject<V1_ClassMapping>,

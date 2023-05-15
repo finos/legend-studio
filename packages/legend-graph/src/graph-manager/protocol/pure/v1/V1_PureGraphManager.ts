@@ -3504,7 +3504,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         return classifierPath;
       }
       throw new UnsupportedOperationError(
-        `Can't get classifier path for element '${protocol.path}': not classifier path mapping available`,
+        `Can't get classifier path for element '${protocol.path}': no classifier path mapping available`,
       );
     } else if (protocol instanceof V1_Association) {
       return CORE_PURE_PATH.ASSOCIATION;

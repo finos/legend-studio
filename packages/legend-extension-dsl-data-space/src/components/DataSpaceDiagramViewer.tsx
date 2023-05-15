@@ -50,7 +50,6 @@ import {
   DiagramRenderer,
 } from '@finos/legend-extension-dsl-diagram/application';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
-import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/index.js';
 import { getNonNullableEntry } from '@finos/legend-shared';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import { useCommands } from '@finos/legend-application';
@@ -59,6 +58,7 @@ import {
   generateAnchorForActivity,
   generateAnchorForDiagram,
 } from '../stores/DataSpaceViewerNavigation.js';
+import type { DataSpaceDiagramAnalysisResult } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 
 const DataSpaceDiagramCanvas = observer(
   forwardRef<
