@@ -558,7 +558,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.engine.setup(config);
 
     const classifierPathMapEntries =
-      await this.engine.getClassifierPathMapping();
+      config.TEMPORARY__classifierPathMapping ??
+      (await this.engine.getClassifierPathMapping());
     classifierPathMapEntries.forEach((entry) => {
       this.elementClassifierPathMap.set(entry.type, entry.classifierPath);
     });

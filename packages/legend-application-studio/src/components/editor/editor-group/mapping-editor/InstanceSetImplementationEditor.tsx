@@ -325,37 +325,47 @@ export const InstanceSetImplementationSourceExplorer = observer(
             dropTargetConnector={dropRef}
             isDragOver={isDragOver && !isReadOnly}
           >
-            {srcElement ? (
-              <div className="source-panel__explorer">
-                {srcElement instanceof Type && (
-                  <TypeTree
-                    type={srcElement}
-                    selectedType={instanceSetImplementationState.selectedType}
+            {!isUnsupported && (
+              <>
+                {srcElement ? (
+                  <div className="source-panel__explorer">
+                    {srcElement instanceof Type && (
+                      <TypeTree
+                        type={srcElement}
+                        selectedType={
+                          instanceSetImplementationState.selectedType
+                        }
+                      />
+                    )}
+                    {srcElement instanceof RootFlatDataRecordType && (
+                      <FlatDataRecordTypeTree
+                        recordType={srcElement}
+                        selectedType={
+                          instanceSetImplementationState.selectedType
+                        }
+                      />
+                    )}
+                    {srcElement instanceof TableAlias && (
+                      <TableOrViewSourceTree
+                        relation={srcElement.relation.value}
+                        selectedType={
+                          instanceSetImplementationState.selectedType
+                        }
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <BlankPanelPlaceholder
+                    text="Choose a source"
+                    onClick={showSourceSelectorModal}
+                    clickActionType="add"
+                    tooltipText="Drop a class mapping source, or click to choose one"
+                    isDropZoneActive={canDrop}
+                    disabled={isReadOnly}
+                    previewText="No source"
                   />
                 )}
-                {srcElement instanceof RootFlatDataRecordType && (
-                  <FlatDataRecordTypeTree
-                    recordType={srcElement}
-                    selectedType={instanceSetImplementationState.selectedType}
-                  />
-                )}
-                {srcElement instanceof TableAlias && (
-                  <TableOrViewSourceTree
-                    relation={srcElement.relation.value}
-                    selectedType={instanceSetImplementationState.selectedType}
-                  />
-                )}
-              </div>
-            ) : (
-              <BlankPanelPlaceholder
-                text="Choose a source"
-                onClick={showSourceSelectorModal}
-                clickActionType="add"
-                tooltipText="Drop a class mapping source, or click to choose one"
-                isDropZoneActive={canDrop}
-                disabled={isReadOnly}
-                previewText="No source"
-              />
+              </>
             )}
             {isUnsupported && (
               <UnsupportedEditorPanel

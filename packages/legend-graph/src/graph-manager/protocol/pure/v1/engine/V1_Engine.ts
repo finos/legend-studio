@@ -108,11 +108,11 @@ import {
   type V1_EntitlementReportAnalyticsInput,
   V1_entitlementReportAnalyticsInputModelSchema,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
-import type { V1_ClassifierPathMapping } from './protocol/V1_ClassifierPathMapping.js';
 import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
 import { V1_INTERNAL__PackageableElementWithSourceInformation } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../graph/MetaModelConst.js';
 import { V1_serializeExecutionResult } from './execution/V1_ExecutionHelper.js';
+import type { ClassifierPathMapping } from '../../../../action/protocol/ClassifierPathMapping.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -216,10 +216,9 @@ export class V1_Engine {
 
   // ------------------------------------------- Protocol -------------------------------------------
 
-  async getClassifierPathMapping(): Promise<V1_ClassifierPathMapping[]> {
+  async getClassifierPathMapping(): Promise<ClassifierPathMapping[]> {
     try {
-      const mapping = await this.engineServerClient.getClassifierPathMap();
-      return mapping;
+      return this.engineServerClient.getClassifierPathMap();
     } catch {
       return [];
     }

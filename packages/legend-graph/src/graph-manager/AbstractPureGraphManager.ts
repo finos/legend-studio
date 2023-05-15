@@ -97,6 +97,7 @@ import { InstanceSetImplementation } from '../graph/metamodel/pure/packageableEl
 import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import type { SourceInformation } from './action/SourceInformation.js';
+import type { ClassifierPathMapping } from './action/protocol/ClassifierPathMapping.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -104,6 +105,13 @@ export interface TEMPORARY__EngineSetupConfig {
   clientConfig: ServerClientConfig & {
     queryBaseUrl?: string | undefined;
   };
+  /**
+   * This is a workaround we need to manually supply the classifier path mapping
+   * for roundtrip grammar test, as the network call to engine is blocked in test
+   * environment, till we figure out the best way to do this, we can remove this
+   * config
+   */
+  TEMPORARY__classifierPathMapping?: ClassifierPathMapping[] | undefined;
 }
 
 export interface GraphBuilderOptions {

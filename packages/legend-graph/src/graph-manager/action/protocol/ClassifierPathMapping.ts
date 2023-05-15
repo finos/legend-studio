@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export type V1_ClassifierPathMapping = { type: string; classifierPath: string };
+export type ClassifierPathMapping = { type: string; classifierPath: string };

@@ -217,6 +217,7 @@ export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
 
+export * from './graph-manager/action/protocol/ClassifierPathMapping.js';
 export * from './graph-manager/action/SourceInformationHelper.js';
 export * from './graph-manager/action/generation/DatabaseBuilderInput.js';
 export * from './graph-manager/action/generation/GenerationConfigurationDescription.js';

@@ -64,7 +64,7 @@ import type {
 } from './analytics/V1_StoreEntitlementAnalysis.js';
 import type { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
 import type { V1_TEMPORARY__SnowflakeServiceDeploymentInput } from './service/V1_TEMPORARY__SnowflakeServiceDeploymentInput.js';
-import type { V1_ClassifierPathMapping } from './protocol/V1_ClassifierPathMapping.js';
+import type { ClassifierPathMapping } from '../../../../action/protocol/ClassifierPathMapping.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -164,7 +164,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Protocol -------------------------------------------
 
-  getClassifierPathMap = (): Promise<V1_ClassifierPathMapping[]> =>
+  getClassifierPathMap = (): Promise<ClassifierPathMapping[]> =>
     this.get(`${this._pure()}/protocol/pure/getClassifierPathMap`);
 
   // ------------------------------------------- Grammar -------------------------------------------
