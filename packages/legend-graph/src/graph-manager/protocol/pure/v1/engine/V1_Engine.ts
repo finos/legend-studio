@@ -873,7 +873,7 @@ export class V1_Engine {
     try {
       return (
         await this.engineServerClient.getAvailableFunctionActivators()
-      ).map(V1_FunctionActivatorInfo.serialization.fromJson);
+      ).map((info) => V1_FunctionActivatorInfo.serialization.fromJson(info));
     } catch {
       return [];
     }
@@ -888,7 +888,9 @@ export class V1_Engine {
     if (errors.length) {
       throw new Error(
         `Function activator validation failed:\n${errors
-          .map(V1_FunctionActivatorError.serialization.fromJson)
+          .map((error) =>
+            V1_FunctionActivatorError.serialization.fromJson(error),
+          )
           .map((error) => `- ${error.message}`)
           .join('\n')}`,
       );
@@ -905,7 +907,9 @@ export class V1_Engine {
     if (errors.length) {
       throw new Error(
         `Function activator validation failed:\n${errors
-          .map(V1_FunctionActivatorError.serialization.fromJson)
+          .map((error) =>
+            V1_FunctionActivatorError.serialization.fromJson(error),
+          )
           .map((error) => `- ${error.message}`)
           .join('\n')}`,
       );

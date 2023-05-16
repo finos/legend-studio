@@ -232,6 +232,7 @@ export { DEPRECATED__ServiceTestResult } from './graph-manager/action/service/DE
 export { SourceInformation } from './graph-manager/action/SourceInformation.js';
 export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
+export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 

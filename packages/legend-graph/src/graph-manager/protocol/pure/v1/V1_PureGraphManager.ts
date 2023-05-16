@@ -2962,6 +2962,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             return config;
           } catch (error) {
             assertErrorThrown(error);
+            this.logService.warn(
+              LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+              `Can't build function activator config: ${error.message}`,
+            );
             return undefined;
           }
         }),

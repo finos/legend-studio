@@ -623,7 +623,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Function ---------------------------------------
 
-  _functionActivator = (): string => `${this._pure()}/functionActivator`;
+  _functionActivator = (): string => `${this.baseUrl}/functionActivator`;
 
   getAvailableFunctionActivators(): Promise<
     PlainObject<V1_FunctionActivatorInfo>[]

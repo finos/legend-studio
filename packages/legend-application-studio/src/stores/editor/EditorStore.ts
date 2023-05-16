@@ -128,14 +128,18 @@ export class EditorStore implements CommandRegistrar {
   mode = EDITOR_MODE.STANDARD;
 
   editorExtensionStates: EditorExtensionState[] = [];
-  explorerTreeState: ExplorerTreeState;
+
+  // SDLC
   sdlcState: EditorSDLCState;
+  changeDetectionState: ChangeDetectionState;
+
+  // TODO: make EditorGraphState extend GraphMangerState and merge the state together for Studio
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
   graphEditorMode: GraphEditorMode;
-  changeDetectionState: ChangeDetectionState;
-  modelImporterState: ModelImporterState;
-  projectConfigurationEditorState: ProjectConfigurationEditorState;
+
+  // sidebar and panel
+  explorerTreeState: ExplorerTreeState;
   projectOverviewState: ProjectOverviewState;
   workspaceWorkflowManagerState: WorkspaceWorkflowManagerState;
   globalTestRunnerState: GlobalTestRunnerState;
@@ -143,10 +147,13 @@ export class EditorStore implements CommandRegistrar {
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
+  globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
   devToolState: DevToolPanelState;
+
+  modelImporterState: ModelImporterState;
+  projectConfigurationEditorState: ProjectConfigurationEditorState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
   newElementState: NewElementState;
-  globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
    * per file generation configuration type.
@@ -689,6 +696,7 @@ export class EditorStore implements CommandRegistrar {
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
+      this.graphState.fetchAvailableFunctionActivatorConfigurations(),
       this.sdlcState.fetchProjectVersions(),
       this.sdlcState.fetchPublishedProjectVersions(),
     ]);
@@ -729,6 +737,7 @@ export class EditorStore implements CommandRegistrar {
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
+      this.graphState.fetchAvailableFunctionActivatorConfigurations(),
       this.sdlcState.fetchProjectVersions(),
       this.sdlcState.fetchPublishedProjectVersions(),
     ]);
