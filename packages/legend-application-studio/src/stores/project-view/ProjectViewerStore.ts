@@ -440,7 +440,7 @@ export class ProjectViewerStore {
         this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       );
       yield flowResult(
-        this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
+        this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
       );
 
       return true;

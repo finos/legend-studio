@@ -37,7 +37,7 @@ import type { Mapping } from '../graph/metamodel/pure/packageableElements/mappin
 import type { Profile } from '../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import type { Store } from '../graph/metamodel/pure/packageableElements/store/Store.js';
 import { DependencyManager } from '../graph/DependencyManager.js';
-import { ConcreteFunctionDefinition } from '../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import { ConcreteFunctionDefinition } from './metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
 import { BasicModel } from './BasicModel.js';
 import { FlatData } from '../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';

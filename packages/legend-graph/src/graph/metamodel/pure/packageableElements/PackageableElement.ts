@@ -27,7 +27,7 @@ import type { Profile } from './domain/Profile.js';
 import type { Enumeration } from './domain/Enumeration.js';
 import type { Class } from './domain/Class.js';
 import type { Association } from './domain/Association.js';
-import type { ConcreteFunctionDefinition } from './domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from './function/ConcreteFunctionDefinition.js';
 import type { FlatData } from './store/flatData/model/FlatData.js';
 import type { Mapping } from './mapping/Mapping.js';
 import type { Service } from './service/Service.js';

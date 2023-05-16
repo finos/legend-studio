@@ -67,7 +67,7 @@ import type { Constraint } from '../metamodel/pure/packageableElements/domain/Co
 import type { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
 import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { AnnotatedElement } from '../metamodel/pure/packageableElements/domain/AnnotatedElement.js';
-import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { extractDependencyGACoordinateFromRootPackageName } from '../DependencyManager.js';
 
 export const addElementToPackage = (

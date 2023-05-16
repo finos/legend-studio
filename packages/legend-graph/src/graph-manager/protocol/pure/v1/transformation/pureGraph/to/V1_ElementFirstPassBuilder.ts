@@ -21,7 +21,7 @@ import { Enumeration } from '../../../../../../../graph/metamodel/pure/packageab
 import { Measure } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Measure.js';
 import { Class } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import { Association } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
-import { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { FlatData } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import { Database } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { Mapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';

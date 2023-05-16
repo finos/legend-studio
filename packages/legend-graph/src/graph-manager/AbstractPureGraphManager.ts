@@ -98,6 +98,8 @@ import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/package
 import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import type { SourceInformation } from './action/SourceInformation.js';
 import type { ClassifierPathMapping } from './action/protocol/ClassifierPathMapping.js';
+import type { FunctionActivatorConfiguration } from './action/functionActivator/FunctionActivatorConfiguration.js';
+import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -412,7 +414,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<SchemaSet[]>;
 
-  // ------------------------------------------- Import -------------------------------------------
+  // ------------------------------------------- Model Import -------------------------------------------
 
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
@@ -485,51 +487,6 @@ export abstract class AbstractPureGraphManager {
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
-  // ------------------------------------------- Service -------------------------------------------
-  /**
-   * @modularize
-   * See https://github.com/finos/legend-studio/issues/65
-   */
-
-  abstract registerService(
-    service: Service,
-    graph: PureModel,
-    groupId: string,
-    artifactId: string,
-    version: string | undefined,
-    server: string,
-    executionMode: ServiceExecutionMode,
-    options?: ServiceRegistrationOptions,
-  ): Promise<ServiceRegistrationSuccess>;
-  abstract bulkServiceRegistration(
-    service: Service[],
-    graph: PureModel,
-    groupId: string,
-    artifactId: string,
-    version: string | undefined,
-    server: string,
-    executionMode: ServiceExecutionMode,
-    options?: ServiceRegistrationOptions,
-  ): Promise<ServiceRegistrationResult[]>;
-  abstract activateService(
-    serviceUrl: string,
-    serviceId: string,
-  ): Promise<void>;
-  abstract TEMPORARY__deploySnowflakeService(
-    query: RawLambda,
-    graph: PureModel,
-  ): Promise<PlainObject>;
-
-  // ------------------------------------------- Database -------------------------------------------
-  /**
-   * @modularize
-   * See https://github.com/finos/legend-studio/issues/65
-   */
-
-  abstract buildDatabase(
-    databaseBuilderInput: DatabaseBuilderInput,
-  ): Promise<Entity[]>;
-
   // ------------------------------------------- Query -------------------------------------------
 
   abstract searchQueries(
@@ -570,6 +527,68 @@ export abstract class AbstractPureGraphManager {
     query: RawLambda | undefined,
     graphData: GraphData,
   ): Promise<DatasetEntitlementReport[]>;
+
+  /**
+   * TODO: Move this to store relational extension
+   *
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
+  abstract buildDatabase(
+    databaseBuilderInput: DatabaseBuilderInput,
+  ): Promise<Entity[]>;
+
+  // ------------------------------------------- Function -------------------------------------------
+
+  abstract getAvailableFunctionActivatorConfigurations(
+    coreModel: CoreModel,
+    systemModel: SystemModel,
+  ): Promise<FunctionActivatorConfiguration[]>;
+
+  abstract validateFunctionActivator(
+    functionActivator: FunctionActivator,
+    graphData: GraphData,
+  ): Promise<void>;
+
+  abstract publishFunctionActivatorToSandbox(
+    functionActivator: FunctionActivator,
+    graphData: GraphData,
+  ): Promise<void>;
+
+  // ------------------------------------------- Service -------------------------------------------
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
+
+  abstract registerService(
+    service: Service,
+    graph: PureModel,
+    groupId: string,
+    artifactId: string,
+    version: string | undefined,
+    server: string,
+    executionMode: ServiceExecutionMode,
+    options?: ServiceRegistrationOptions,
+  ): Promise<ServiceRegistrationSuccess>;
+  abstract bulkServiceRegistration(
+    service: Service[],
+    graph: PureModel,
+    groupId: string,
+    artifactId: string,
+    version: string | undefined,
+    server: string,
+    executionMode: ServiceExecutionMode,
+    options?: ServiceRegistrationOptions,
+  ): Promise<ServiceRegistrationResult[]>;
+  abstract activateService(
+    serviceUrl: string,
+    serviceId: string,
+  ): Promise<void>;
+  abstract TEMPORARY__deploySnowflakeService(
+    query: RawLambda,
+    graph: PureModel,
+  ): Promise<PlainObject>;
 
   // ------------------------------------------- Change detection -------------------------------------------
 

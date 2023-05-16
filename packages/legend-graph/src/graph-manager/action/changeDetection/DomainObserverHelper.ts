@@ -24,7 +24,7 @@ import {
 } from 'mobx';
 import type { Association } from '../../../graph/metamodel/pure/packageableElements/domain/Association.js';
 import { Class } from '../../../graph/metamodel/pure/packageableElements/domain/Class.js';
-import type { ConcreteFunctionDefinition } from '../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from '../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Constraint } from '../../../graph/metamodel/pure/packageableElements/domain/Constraint.js';
 import type { DataType } from '../../../graph/metamodel/pure/packageableElements/domain/DataType.js';
 import type { DerivedProperty } from '../../../graph/metamodel/pure/packageableElements/domain/DerivedProperty.js';

@@ -41,60 +41,58 @@ export enum EmbeddedDataType {
 export class ExternalFormatState {
   fetchingDescriptionsState = ActionState.create();
   editorStore: EditorStore;
-  externalFormatsDescriptions: ExternalFormatDescription[] = [];
+  externalFormatDescriptions: ExternalFormatDescription[] = [];
   schemaGenerationStates: ElementXTSchemaGenerationState[] = [];
 
   constructor(editorStore: EditorStore) {
     makeObservable<ExternalFormatState>(this, {
-      externalFormatsDescriptions: observable,
+      externalFormatDescriptions: observable,
       schemaGenerationStates: observable,
-      setExternalFormatsDescriptions: action,
-      fetchExternalFormatsDescriptions: flow,
+      setExternalFormatDescriptions: action,
+      fetchExternalFormatDescriptions: flow,
     });
 
     this.editorStore = editorStore;
   }
 
   get formatTypes(): string[] {
-    return this.externalFormatsDescriptions.map((e) => e.name);
+    return this.externalFormatDescriptions.map((e) => e.name);
   }
 
   get formatTypeOptions(): ExternalFormatTypeOption[] {
-    return this.externalFormatsDescriptions.map((types) => ({
+    return this.externalFormatDescriptions.map((types) => ({
       value: types.name,
       label: types.name,
     }));
   }
 
   get formatContentTypes(): string[] {
-    return this.externalFormatsDescriptions.map((e) => e.contentTypes).flat();
+    return this.externalFormatDescriptions.map((e) => e.contentTypes).flat();
   }
 
   get externalFormatDescriptionsWithModelGenerationSupport(): ExternalFormatDescription[] {
-    return this.externalFormatsDescriptions.filter(
+    return this.externalFormatDescriptions.filter(
       (d) => d.supportsModelGeneration,
     );
   }
 
   getFormatTypeForContentType(contentType: string): string | undefined {
-    return this.externalFormatsDescriptions.find(
+    return this.externalFormatDescriptions.find(
       (externalFormatDescription) =>
         externalFormatDescription.contentTypes[0] === contentType,
     )?.name;
   }
 
-  setExternalFormatsDescriptions(
-    externalFormatsDescriptions: ExternalFormatDescription[],
-  ): void {
-    this.externalFormatsDescriptions = externalFormatsDescriptions;
+  setExternalFormatDescriptions(val: ExternalFormatDescription[]): void {
+    this.externalFormatDescriptions = val;
   }
 
-  *fetchExternalFormatsDescriptions(): GeneratorFn<void> {
+  *fetchExternalFormatDescriptions(): GeneratorFn<void> {
     try {
       this.fetchingDescriptionsState.inProgress();
       const externalFormatDescriptions =
         (yield this.editorStore.graphManagerState.graphManager.getAvailableExternalFormatsDescriptions()) as ExternalFormatDescription[];
-      this.setExternalFormatsDescriptions(externalFormatDescriptions);
+      this.setExternalFormatDescriptions(externalFormatDescriptions);
       this.schemaGenerationStates = externalFormatDescriptions
         .filter((s) => s.supportsSchemaGeneration)
         .map(
@@ -114,6 +112,6 @@ export class ExternalFormatState {
   }
 
   getTypeDescription(type: string): ExternalFormatDescription | undefined {
-    return this.externalFormatsDescriptions.find((e) => e.name === type);
+    return this.externalFormatDescriptions.find((e) => e.name === type);
   }
 }

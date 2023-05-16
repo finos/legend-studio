@@ -34,7 +34,7 @@ import { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/
 import { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { Profile } from '../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
-import { ConcreteFunctionDefinition } from '../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import { ConcreteFunctionDefinition } from './metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { Store } from '../graph/metamodel/pure/packageableElements/store/Store.js';
 import { FlatData } from '../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';

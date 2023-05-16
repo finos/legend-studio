@@ -183,7 +183,7 @@ export const EditorGroup = observer(() => {
       : [];
   const externalformatViewModes =
     currentTabState instanceof ElementEditorState
-      ? editorStore.graphState.graphGenerationState.externalFormatState.externalFormatsDescriptions
+      ? editorStore.graphState.graphGenerationState.externalFormatState.externalFormatDescriptions
           .filter((f) => f.supportsSchemaGeneration)
           .slice()
           .sort((a, b): number => a.name.localeCompare(b.name))

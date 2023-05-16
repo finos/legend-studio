@@ -60,7 +60,7 @@ export {
   PropertyReference,
   PropertyExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/PropertyReference.js';
-export { ConcreteFunctionDefinition } from './graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+export { ConcreteFunctionDefinition } from './graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 export {
   StereotypeReference,
   StereotypeExplicitReference,

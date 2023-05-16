@@ -688,7 +688,7 @@ export class EditorStore implements CommandRegistrar {
       this.workspaceUpdaterState.fetchLatestCommittedReviews(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
-      this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
+      this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
       this.sdlcState.fetchProjectVersions(),
       this.sdlcState.fetchPublishedProjectVersions(),
     ]);
@@ -728,7 +728,7 @@ export class EditorStore implements CommandRegistrar {
       this.sdlcState.checkIfWorkspaceIsOutdated(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
-      this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
+      this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
       this.sdlcState.fetchProjectVersions(),
       this.sdlcState.fetchPublishedProjectVersions(),
     ]);

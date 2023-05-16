@@ -26,7 +26,7 @@ import type { Class } from '../graph/metamodel/pure/packageableElements/domain/C
 import type { Mapping } from '../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Profile } from '../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import { Package } from '../graph/metamodel/pure/packageableElements/domain/Package.js';
-import type { ConcreteFunctionDefinition } from '../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from './metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Store } from '../graph/metamodel/pure/packageableElements/store/Store.js';
 import type { Association } from '../graph/metamodel/pure/packageableElements/domain/Association.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';

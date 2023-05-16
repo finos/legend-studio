@@ -21,7 +21,7 @@ import {
   MULTIPLICITY_RANGE_OPERATOR,
   PRIMITIVE_TYPE,
 } from '../MetaModelConst.js';
-import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Type } from '../metamodel/pure/packageableElements/domain/Type.js';
 import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { Enumeration } from '../metamodel/pure/packageableElements/domain/Enumeration.js';

@@ -306,6 +306,9 @@ import { V1_TEMPORARY__SnowflakeServiceDeploymentInput } from './engine/service/
 import { V1_INTERNAL__UnknownPackageableElement } from './model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { SourceInformation } from '../../../action/SourceInformation.js';
 import type { V1_SourceInformation } from './model/V1_SourceInformation.js';
+import type { FunctionActivator } from '../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
+import { FunctionActivatorConfiguration } from '../../../action/functionActivator/FunctionActivatorConfiguration.js';
+import { V1_FunctionActivatorInput } from './engine/functionActivator/V1_FunctionActivatorInput.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2296,6 +2299,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Execution ---------------------------------------------
 
+  private prepareExecutionContextGraphData(
+    graphData: GraphData,
+  ): V1_PureModelContext {
+    if (graphData instanceof InMemoryGraphData) {
+      return this.buildExecutionInputGraphData(graphData.graph);
+    } else if (graphData instanceof GraphDataWithOrigin) {
+      return this.buildPureModelSDLCPointer(
+        graphData.origin,
+        V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+      );
+    }
+    throw new UnsupportedOperationError(
+      `Can't build Pure model context from unsupported graph data`,
+      graphData,
+    );
+  }
+
   public createExecutionInput = (
     graph: PureModel,
     mapping: Mapping | undefined,
@@ -2663,6 +2683,314 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  // --------------------------------------------- Query ---------------------------------------------
+
+  async searchQueries(
+    searchSpecification: QuerySearchSpecification,
+  ): Promise<LightQuery[]> {
+    return (
+      await this.engine.searchQueries(
+        V1_transformQuerySearchSpecification(searchSpecification),
+      )
+    ).map((protocol) =>
+      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
+    );
+  }
+
+  async getQueries(queryIds: string[]): Promise<LightQuery[]> {
+    return (await this.engine.getQueries(queryIds)).map((protocol) =>
+      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
+    );
+  }
+
+  async getLightQuery(queryId: string): Promise<LightQuery> {
+    return V1_buildLightQuery(
+      await this.engine.getQuery(queryId),
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  async getQuery(queryId: string, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.getQuery(queryId),
+      graph,
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  async getQueryInfo(queryId: string): Promise<QueryInfo> {
+    const query = await this.engine.getQuery(queryId);
+    return {
+      name: query.name,
+      id: query.id,
+      versionId: query.versionId,
+      groupId: query.groupId,
+      artifactId: query.artifactId,
+      mapping: query.mapping,
+      runtime: query.runtime,
+      content: query.content,
+    };
+  }
+
+  async createQuery(query: Query, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.createQuery(V1_transformQuery(query)),
+      graph,
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  async updateQuery(query: Query, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.updateQuery(V1_transformQuery(query)),
+      graph,
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  async renameQuery(queryId: string, queryName: string): Promise<LightQuery> {
+    const query = await this.engine.getQuery(queryId);
+    query.name = queryName;
+    return V1_buildLightQuery(
+      await this.engine.updateQuery(query),
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  async deleteQuery(queryId: string): Promise<LightQuery> {
+    return V1_buildLightQuery(
+      await this.engine.deleteQuery(queryId),
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  // --------------------------------------------- Analysis ---------------------------------------------
+
+  async analyzeMappingModelCoverage(
+    mapping: Mapping,
+    graph: PureModel,
+  ): Promise<MappingModelCoverageAnalysisResult> {
+    const input = new V1_MappingModelCoverageAnalysisInput();
+    input.clientVersion = V1_PureGraphManager.DEV_PROTOCOL_VERSION;
+    input.mapping = mapping.path;
+    input.model = graph.origin
+      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+      : this.buildExecutionInputGraphData(graph);
+    return V1_buildModelCoverageAnalysisResult(
+      await this.engine.analyzeMappingModelCoverage(input),
+      mapping,
+    );
+  }
+
+  buildMappingModelCoverageAnalysisResult(
+    input: RawMappingModelCoverageAnalysisResult,
+    mapping: Mapping,
+  ): MappingModelCoverageAnalysisResult {
+    return V1_buildModelCoverageAnalysisResult(
+      deserialize(
+        V1_MappingModelCoverageAnalysisResult,
+        input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
+      ),
+      mapping,
+    );
+  }
+
+  private generateStoreEntitlementAnalysisInput(
+    mapping: string,
+    runtime: string,
+    query: RawLambda | undefined,
+    graphData: GraphData,
+  ): V1_StoreEntitlementAnalysisInput {
+    const input = new V1_StoreEntitlementAnalysisInput();
+    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
+    input.mapping = mapping;
+    input.runtime = runtime;
+    input.query = query
+      ? V1_transformRawLambda(
+          query,
+          new V1_GraphTransformerContextBuilder(
+            this.pluginManager.getPureProtocolProcessorPlugins(),
+          ).build(),
+        )
+      : undefined;
+    input.model = this.prepareExecutionContextGraphData(graphData);
+    return input;
+  }
+
+  async surveyDatasets(
+    mapping: string,
+    runtime: string,
+    query: RawLambda | undefined,
+    graphData: GraphData,
+  ): Promise<DatasetSpecification[]> {
+    return (
+      await this.engine.surveyDatasets(
+        this.generateStoreEntitlementAnalysisInput(
+          mapping,
+          runtime,
+          query,
+          graphData,
+        ),
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      )
+    ).map((dataset) =>
+      V1_buildDatasetSpecification(
+        dataset,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
+    );
+  }
+
+  async checkDatasetEntitlements(
+    datasets: DatasetSpecification[],
+    mapping: string,
+    runtime: string,
+    query: RawLambda | undefined,
+    graphData: GraphData,
+  ): Promise<DatasetEntitlementReport[]> {
+    const input = new V1_EntitlementReportAnalyticsInput();
+    input.storeEntitlementAnalyticsInput =
+      this.generateStoreEntitlementAnalysisInput(
+        mapping,
+        runtime,
+        query,
+        graphData,
+      );
+    input.reports = datasets.map((dataset) =>
+      V1_transformDatasetSpecification(
+        dataset,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
+    );
+    return (
+      await this.engine.checkDatasetEntitlements(
+        input,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      )
+    ).map((report) =>
+      V1_buildDatasetEntitlementReport(
+        report,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
+    );
+  }
+
+  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
+    const dbBuilderInput = new V1_DatabaseBuilderInput();
+    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
+      input.connection,
+      new V1_GraphTransformerContextBuilder(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+    const targetDatabase = new V1_TargetDatabase();
+    targetDatabase.package = input.targetDatabase.package;
+    targetDatabase.name = input.targetDatabase.name;
+    dbBuilderInput.targetDatabase = targetDatabase;
+    const config = new V1_DatabaseBuilderConfig();
+    config.maxTables = input.config.maxTables;
+    config.enrichTables = input.config.enrichTables;
+    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
+    config.enrichColumns = input.config.enrichColumns;
+    config.patterns = input.config.patterns.map(
+      (storePattern: DatabasePattern): V1_DatabasePattern => {
+        const pattern = new V1_DatabasePattern();
+        pattern.schemaPattern = storePattern.schemaPattern;
+        pattern.tablePattern = storePattern.tablePattern;
+        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
+        pattern.escapeTablePattern = storePattern.escapeTablePattern;
+        return pattern;
+      },
+    );
+    dbBuilderInput.config = config;
+    return this.pureModelContextDataToEntities(
+      await this.engine.buildDatabase(dbBuilderInput),
+    );
+  }
+
+  // --------------------------------------------- Function ---------------------------------------------
+
+  async getAvailableFunctionActivatorConfigurations(
+    coreModel: CoreModel,
+    systemModel: SystemModel,
+  ): Promise<FunctionActivatorConfiguration[]> {
+    return (
+      await Promise.all(
+        (
+          await this.engine.getAvailableFunctionActivators()
+        ).map(async (info) => {
+          try {
+            const config = new FunctionActivatorConfiguration();
+            config.name = info.name;
+            config.description = info.description;
+            config.packageableElementJSONType =
+              info.configuration.packageableElementJSONType;
+
+            // build the mini graph for configuration
+            const graph = new PureModel(
+              coreModel,
+              systemModel,
+              this.pluginManager.getPureGraphPlugins(),
+            );
+            const _report = createGraphBuilderReport();
+            const _stopWatch = new StopWatch();
+            const _buildState = ActionState.create();
+            const data = new V1_PureModelContextData();
+            data.elements = info.configuration.model;
+            const buildInputs: V1_PureGraphBuilderInput[] = [
+              {
+                model: graph,
+                data: V1_indexPureModelContextData(
+                  _report,
+                  data,
+                  this.graphBuilderExtensions,
+                ),
+              },
+            ];
+            await this.buildGraphFromInputs(
+              graph,
+              buildInputs,
+              _report,
+              _stopWatch,
+              _buildState,
+              {},
+            );
+            config.graph = graph;
+            config.configurationType = graph.getClass(
+              info.configuration.topElement,
+            );
+            return config;
+          } catch (error) {
+            assertErrorThrown(error);
+            return undefined;
+          }
+        }),
+      )
+    ).filter(isNonNullable);
+  }
+
+  async validateFunctionActivator(
+    functionActivator: FunctionActivator,
+    graphData: GraphData,
+  ): Promise<void> {
+    const input = new V1_FunctionActivatorInput();
+    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
+    input.functionActivator = functionActivator.path;
+    input.model = this.prepareExecutionContextGraphData(graphData);
+    await this.engine.validateFunctionActivator(input);
+  }
+
+  async publishFunctionActivatorToSandbox(
+    functionActivator: FunctionActivator,
+    graphData: GraphData,
+  ): Promise<void> {
+    const input = new V1_FunctionActivatorInput();
+    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
+    input.functionActivator = functionActivator.path;
+    input.model = this.prepareExecutionContextGraphData(graphData);
+    await this.engine.publishFunctionActivatorToSandbox(input);
+  }
+
   // --------------------------------------------- Service ---------------------------------------------
 
   async registerService(
@@ -2977,88 +3305,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       );
   }
-  // -----------------------------/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html---------------- Query ---------------------------------------------
-
-  async searchQueries(
-    searchSpecification: QuerySearchSpecification,
-  ): Promise<LightQuery[]> {
-    return (
-      await this.engine.searchQueries(
-        V1_transformQuerySearchSpecification(searchSpecification),
-      )
-    ).map((protocol) =>
-      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
-    );
-  }
-
-  async getQueries(queryIds: string[]): Promise<LightQuery[]> {
-    return (await this.engine.getQueries(queryIds)).map((protocol) =>
-      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
-    );
-  }
-
-  async getLightQuery(queryId: string): Promise<LightQuery> {
-    return V1_buildLightQuery(
-      await this.engine.getQuery(queryId),
-      this.engine.getCurrentUserId(),
-    );
-  }
-
-  // --------------------------------------------- Query ------------------------------------------------------
-
-  async getQuery(queryId: string, graph: PureModel): Promise<Query> {
-    return V1_buildQuery(
-      await this.engine.getQuery(queryId),
-      graph,
-      this.engine.getCurrentUserId(),
-    );
-  }
-
-  async getQueryInfo(queryId: string): Promise<QueryInfo> {
-    const query = await this.engine.getQuery(queryId);
-    return {
-      name: query.name,
-      id: query.id,
-      versionId: query.versionId,
-      groupId: query.groupId,
-      artifactId: query.artifactId,
-      mapping: query.mapping,
-      runtime: query.runtime,
-      content: query.content,
-    };
-  }
-
-  async createQuery(query: Query, graph: PureModel): Promise<Query> {
-    return V1_buildQuery(
-      await this.engine.createQuery(V1_transformQuery(query)),
-      graph,
-      this.engine.getCurrentUserId(),
-    );
-  }
-
-  async updateQuery(query: Query, graph: PureModel): Promise<Query> {
-    return V1_buildQuery(
-      await this.engine.updateQuery(V1_transformQuery(query)),
-      graph,
-      this.engine.getCurrentUserId(),
-    );
-  }
-
-  async renameQuery(queryId: string, queryName: string): Promise<LightQuery> {
-    const query = await this.engine.getQuery(queryId);
-    query.name = queryName;
-    return V1_buildLightQuery(
-      await this.engine.updateQuery(query),
-      this.engine.getCurrentUserId(),
-    );
-  }
-
-  async deleteQuery(queryId: string): Promise<LightQuery> {
-    return V1_buildLightQuery(
-      await this.engine.deleteQuery(queryId),
-      this.engine.getCurrentUserId(),
-    );
-  }
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
     return this.engine.cancelUserExecutions(broadcastToCluster);
@@ -3108,164 +3354,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return hashMap;
   }
 
-  async analyzeMappingModelCoverage(
-    mapping: Mapping,
-    graph: PureModel,
-  ): Promise<MappingModelCoverageAnalysisResult> {
-    const input = new V1_MappingModelCoverageAnalysisInput();
-    input.clientVersion = V1_PureGraphManager.DEV_PROTOCOL_VERSION;
-    input.mapping = mapping.path;
-    input.model = graph.origin
-      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
-      : this.buildExecutionInputGraphData(graph);
-    return V1_buildModelCoverageAnalysisResult(
-      await this.engine.analyzeMappingModelCoverage(input),
-      mapping,
-    );
-  }
-
-  buildMappingModelCoverageAnalysisResult(
-    input: RawMappingModelCoverageAnalysisResult,
-    mapping: Mapping,
-  ): MappingModelCoverageAnalysisResult {
-    return V1_buildModelCoverageAnalysisResult(
-      deserialize(
-        V1_MappingModelCoverageAnalysisResult,
-        input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
-      ),
-      mapping,
-    );
-  }
-
-  generateStoreEntitlementAnalysisInput(
-    mapping: string,
-    runtime: string,
-    query: RawLambda | undefined,
-    graphData: GraphData,
-  ): V1_StoreEntitlementAnalysisInput {
-    const input = new V1_StoreEntitlementAnalysisInput();
-    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
-    input.mapping = mapping;
-    input.runtime = runtime;
-    input.query = query
-      ? V1_transformRawLambda(
-          query,
-          new V1_GraphTransformerContextBuilder(
-            this.pluginManager.getPureProtocolProcessorPlugins(),
-          ).build(),
-        )
-      : undefined;
-
-    if (graphData instanceof InMemoryGraphData) {
-      input.model = this.buildExecutionInputGraphData(graphData.graph);
-    } else if (graphData instanceof GraphDataWithOrigin) {
-      input.model = this.buildPureModelSDLCPointer(
-        graphData.origin,
-        V1_PureGraphManager.PROD_PROTOCOL_VERSION,
-      );
-    } else {
-      throw new UnsupportedOperationError(
-        `Can't process unsupported graph data`,
-        graphData,
-      );
-    }
-    return input;
-  }
-
-  async surveyDatasets(
-    mapping: string,
-    runtime: string,
-    query: RawLambda | undefined,
-    graphData: GraphData,
-  ): Promise<DatasetSpecification[]> {
-    return (
-      await this.engine.surveyDatasets(
-        this.generateStoreEntitlementAnalysisInput(
-          mapping,
-          runtime,
-          query,
-          graphData,
-        ),
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      )
-    ).map((dataset) =>
-      V1_buildDatasetSpecification(
-        dataset,
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
-    );
-  }
-
-  async checkDatasetEntitlements(
-    datasets: DatasetSpecification[],
-    mapping: string,
-    runtime: string,
-    query: RawLambda | undefined,
-    graphData: GraphData,
-  ): Promise<DatasetEntitlementReport[]> {
-    const input = new V1_EntitlementReportAnalyticsInput();
-    input.storeEntitlementAnalyticsInput =
-      this.generateStoreEntitlementAnalysisInput(
-        mapping,
-        runtime,
-        query,
-        graphData,
-      );
-    input.reports = datasets.map((dataset) =>
-      V1_transformDatasetSpecification(
-        dataset,
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
-    );
-    return (
-      await this.engine.checkDatasetEntitlements(
-        input,
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      )
-    ).map((report) =>
-      V1_buildDatasetEntitlementReport(
-        report,
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
-    );
-  }
-
-  // --------------------------------------------- Database ---------------------------------------------
-
-  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
-    const dbBuilderInput = new V1_DatabaseBuilderInput();
-    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
-      input.connection,
-      new V1_GraphTransformerContextBuilder(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
-    const targetDatabase = new V1_TargetDatabase();
-    targetDatabase.package = input.targetDatabase.package;
-    targetDatabase.name = input.targetDatabase.name;
-    dbBuilderInput.targetDatabase = targetDatabase;
-    const config = new V1_DatabaseBuilderConfig();
-    config.maxTables = input.config.maxTables;
-    config.enrichTables = input.config.enrichTables;
-    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
-    config.enrichColumns = input.config.enrichColumns;
-    config.patterns = input.config.patterns.map(
-      (storePattern: DatabasePattern): V1_DatabasePattern => {
-        const pattern = new V1_DatabasePattern();
-        pattern.schemaPattern = storePattern.schemaPattern;
-        pattern.tablePattern = storePattern.tablePattern;
-        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
-        pattern.escapeTablePattern = storePattern.escapeTablePattern;
-        return pattern;
-      },
-    );
-    dbBuilderInput.config = config;
-    return this.pureModelContextDataToEntities(
-      await this.engine.buildDatabase(dbBuilderInput),
-    );
-  }
-
-  // --------------------------------------------- Utilities ---------------------------------------------
+  // --------------------------------------------- Shared ---------------------------------------------
 
   elementToEntity = (
     element: PackageableElement,
@@ -3281,8 +3370,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
     return entity;
   };
-
-  // --------------------------------------------- Shared ---------------------------------------------
 
   private prunePureModelContextData = (
     data: V1_PureModelContextData,
