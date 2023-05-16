@@ -133,6 +133,7 @@ import {
   V1_MappingQueryTest,
 } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
+import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -167,23 +168,7 @@ const V1_localMappingPropertyInfoModelSchema = createModelSchema(
   },
 );
 
-// ------------------------------------- M2M Mapping -------------------------------------
-
-const purePropertyMappingModelSchema = createModelSchema(
-  V1_PurePropertyMapping,
-  {
-    _type: usingConstantValueSchema(V1_PropertyMappingType.PURE),
-    enumMappingId: optional(primitive()),
-    explodeProperty: optional(primitive()),
-    localMappingProperty: usingModelSchema(
-      V1_localMappingPropertyInfoModelSchema,
-    ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: primitive(),
-    target: optional(primitive()),
-    transform: usingModelSchema(V1_rawLambdaModelSchema),
-  },
-);
+// ------------------------------------- Operation Mapping -------------------------------------
 
 const operationClassMappingModelSchema = createModelSchema(
   V1_OperationClassMapping,
@@ -212,7 +197,25 @@ const mergeOperationClassMappingModelSchema = createModelSchema(
   },
 );
 
-function V1_serializeM2MPropertyMapping(
+// ------------------------------------- Model-to-model Mapping -------------------------------------
+
+const purePropertyMappingModelSchema = createModelSchema(
+  V1_PurePropertyMapping,
+  {
+    _type: usingConstantValueSchema(V1_PropertyMappingType.PURE),
+    enumMappingId: optional(primitive()),
+    explodeProperty: optional(primitive()),
+    localMappingProperty: usingModelSchema(
+      V1_localMappingPropertyInfoModelSchema,
+    ),
+    property: usingModelSchema(V1_propertyPointerModelSchema),
+    source: primitive(),
+    target: optional(primitive()),
+    transform: usingModelSchema(V1_rawLambdaModelSchema),
+  },
+);
+
+function V1_serializePurePropertyMapping(
   protocol: V1_PurePropertyMapping,
 ): PlainObject<V1_PurePropertyMapping> | typeof SKIP {
   if (protocol instanceof V1_PurePropertyMapping) {
@@ -221,7 +224,7 @@ function V1_serializeM2MPropertyMapping(
   return SKIP;
 }
 
-function V1_deserializeM2MPropertyMapping(
+function V1_deserializePurePropertyMapping(
   json: PlainObject<V1_PurePropertyMapping>,
 ): V1_PurePropertyMapping | typeof SKIP {
   switch (json._type) {
@@ -242,8 +245,8 @@ const pureInstanceClassMappingModelSchema = createModelSchema(
     id: optional(primitive()),
     propertyMappings: list(
       custom(
-        (val) => V1_serializeM2MPropertyMapping(val),
-        (val) => V1_deserializeM2MPropertyMapping(val),
+        V1_serializePurePropertyMapping,
+        V1_deserializePurePropertyMapping,
       ),
     ),
     root: primitive(),
@@ -272,14 +275,14 @@ const rootRelationalClassMappingModelSchema = createModelSchema(
     mainTable: usingModelSchema(V1_tablePtrModelSchema),
     primaryKey: list(
       custom(
-        (val) => V1_serializeRelationalOperationElement(val),
-        (val) => V1_deserializeRelationalOperationElement(val),
+        V1_serializeRelationalOperationElement,
+        V1_deserializeRelationalOperationElement,
       ),
     ),
     propertyMappings: list(
       custom(
-        (val) => V1_serializeRelationalPropertyMapping(val),
-        (val) => V1_deserializeRelationalPropertyMapping(val),
+        V1_serializeRelationalPropertyMapping,
+        V1_deserializeRelationalPropertyMapping,
       ),
     ),
     root: optional(primitive()),
@@ -512,8 +515,8 @@ const embeddedFlatDataPropertyMappingModelSchema = createModelSchema(
     property: usingModelSchema(V1_propertyPointerModelSchema),
     propertyMappings: list(
       custom(
-        (val) => V1_serializeFlatDataPropertyMapping(val),
-        (val) => V1_deserializeFlatDataPropertyMapping(val),
+        V1_serializeFlatDataPropertyMapping,
+        V1_deserializeFlatDataPropertyMapping,
       ),
     ),
     root: primitive(),
@@ -557,8 +560,8 @@ const rootFlatDataCLassMappingModelSchema = createModelSchema(
     id: optional(primitive()),
     propertyMappings: list(
       custom(
-        (val) => V1_serializeFlatDataPropertyMapping(val),
-        (val) => V1_deserializeFlatDataPropertyMapping(val),
+        V1_serializeFlatDataPropertyMapping,
+        V1_deserializeFlatDataPropertyMapping,
       ),
     ),
     root: primitive(),
@@ -648,8 +651,8 @@ const aggregationAwareClassMappingModelSchema = (
     ),
     propertyMappings: list(
       custom(
-        (val) => V1_serializeAggregationAwarePropertyMapping(val),
-        (val) => V1_deserializeAggregationAwarePropertyMapping(val),
+        V1_serializeAggregationAwarePropertyMapping,
+        V1_deserializeAggregationAwarePropertyMapping,
       ),
     ),
     root: primitive(),
@@ -660,8 +663,10 @@ const aggregationAwareClassMappingModelSchema = (
 function V1_serializeClassMapping(
   value: V1_ClassMapping,
   plugins: PureProtocolProcessorPlugin[],
-): V1_ClassMapping {
-  if (value instanceof V1_MergeOperationClassMapping) {
+): PlainObject<V1_ClassMapping> {
+  if (value instanceof V1_INTERNAL__UnknownClassMapping) {
+    return value.content;
+  } else if (value instanceof V1_MergeOperationClassMapping) {
     return serialize(mergeOperationClassMappingModelSchema, value);
   } else if (value instanceof V1_OperationClassMapping) {
     return serialize(operationClassMappingModelSchema, value);
@@ -693,6 +698,15 @@ function V1_serializeClassMapping(
     value,
   );
 }
+
+const V1_INTERNAL__UnknownClassMappingModelSchema = createModelSchema(
+  V1_INTERNAL__UnknownClassMapping,
+  {
+    class: primitive(),
+    id: optional(primitive()),
+    root: primitive(),
+  },
+);
 
 function V1_deserializeClassMapping(
   json: PlainObject<V1_ClassMapping>,
@@ -729,9 +743,14 @@ function V1_deserializeClassMapping(
           return protocol;
         }
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize class mapping of type '${json._type}': no compatible deserializer available from plugins`,
+
+      // Fall back to create unknown stub if not supported
+      const protocol = deserialize(
+        V1_INTERNAL__UnknownClassMappingModelSchema,
+        json,
       );
+      protocol.content = json;
+      return protocol;
     }
   }
 }
@@ -846,16 +865,8 @@ const V1_deserializeTestAssert = (
 const V1_mappingTestModelLegacySchema = createModelSchema(
   V1_DEPRECATED__MappingTest,
   {
-    assert: custom(
-      (val) => V1_serializeTestAssert(val),
-      (val) => V1_deserializeTestAssert(val),
-    ),
-    inputData: list(
-      custom(
-        (val) => V1_serializeInputData(val),
-        (val) => V1_deserializeInputData(val),
-      ),
-    ),
+    assert: custom(V1_serializeTestAssert, V1_deserializeTestAssert),
+    inputData: list(custom(V1_serializeInputData, V1_deserializeInputData)),
     name: primitive(),
     query: usingModelSchema(V1_rawLambdaModelSchema),
   },
@@ -877,10 +888,7 @@ export const V1_mappingQueryTestModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Mapping_Query_Test),
     assertions: list(
-      custom(
-        (val) => V1_serializeTestAssertion(val),
-        (val) => V1_deserializeTestAssertion(val),
-      ),
+      custom(V1_serializeTestAssertion, V1_deserializeTestAssertion),
     ),
     id: primitive(),
     doc: optional(primitive()),
@@ -894,10 +902,7 @@ export const V1_mappingDataTestModelSchema = (
   createModelSchema(V1_MappingDataTest, {
     _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Mapping_Data_Test),
     assertions: list(
-      custom(
-        (val) => V1_serializeTestAssertion(val),
-        (val) => V1_deserializeTestAssertion(val),
-      ),
+      custom(V1_serializeTestAssertion, V1_deserializeTestAssertion),
     ),
     doc: optional(primitive()),
     id: primitive(),
@@ -948,7 +953,7 @@ enum V1_AssociationMappingType {
   FLAT_DATA = 'flatData',
 }
 
-const V1_serializeAssociationPropertMapping = (
+const V1_serializeAssociationPropertyMapping = (
   protocol: V1_PropertyMapping,
 ): PlainObject<V1_PropertyMapping> | typeof SKIP => {
   if (protocol instanceof V1_RelationalPropertyMapping) {
@@ -961,7 +966,7 @@ const V1_serializeAssociationPropertMapping = (
   return SKIP;
 };
 
-const V1_deserializeAssociationPropertMapping = (
+const V1_deserializeAssociationPropertyMapping = (
   json: PlainObject<V1_PropertyMapping>,
 ): V1_PropertyMapping | typeof SKIP => {
   switch (json._type) {
@@ -984,8 +989,8 @@ const relationalAssociationMappingModelschema = createModelSchema(
     id: optional(primitive()),
     propertyMappings: list(
       custom(
-        (val) => V1_serializeAssociationPropertMapping(val),
-        (val) => V1_deserializeAssociationPropertMapping(val),
+        V1_serializeAssociationPropertyMapping,
+        V1_deserializeAssociationPropertyMapping,
       ),
     ),
     stores: list(primitive()),
@@ -1000,8 +1005,8 @@ const flatDataAssociationMappingModelschema = createModelSchema(
     id: optional(primitive()),
     propertyMappings: list(
       custom(
-        (val) => V1_serializeAssociationPropertMapping(val),
-        (val) => V1_deserializeAssociationPropertMapping(val),
+        V1_serializeAssociationPropertyMapping,
+        V1_deserializeAssociationPropertyMapping,
       ),
     ),
     stores: list(primitive()),
@@ -1016,8 +1021,8 @@ const xStoreAssociationMappingModelschema = createModelSchema(
     id: optional(primitive()),
     propertyMappings: list(
       custom(
-        (val) => V1_serializeAssociationPropertMapping(val),
-        (val) => V1_deserializeAssociationPropertMapping(val),
+        V1_serializeAssociationPropertyMapping,
+        V1_deserializeAssociationPropertyMapping,
       ),
     ),
     stores: list(primitive()),

@@ -496,9 +496,7 @@ export const GlobalTestRunner = observer(
     const reset = (): void => globalTestRunnerState.init(true);
 
     const renderTestRunnerTab = (): React.ReactNode => {
-      if (
-        selectedTab === GLOBAL_TEST_RUNNER_TABS.GLOBAL_TEST_RUNNER.valueOf()
-      ) {
+      if (selectedTab === GLOBAL_TEST_RUNNER_TABS.GLOBAL_TEST_RUNNER) {
         return (
           <div
             data-testid={LEGEND_STUDIO_TEST_ID.GLOBAL_TEST_RUNNER}
@@ -580,7 +578,7 @@ export const GlobalTestRunner = observer(
         }
         return (
           <UnsupportedEditorPanel
-            text="Can't display this editor"
+            text="Can't display this tab"
             isReadOnly={true}
           />
         );

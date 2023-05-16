@@ -103,6 +103,11 @@
 
   &__config__icon {
     padding-left: 2rem;
+
+    svg {
+      font-size: 1.6rem;
+      color: var(--color-orange-100);
+    }
   }
 
   &__package-tree__node__container {

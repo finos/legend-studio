@@ -73,6 +73,9 @@ import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProces
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
+import { V1_INTERNAL__UnknownConnection } from '../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
+import { V1_INTERNAL__UnknownAuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownAuthenticationStrategy.js';
+import { V1_INTERNAL__UnknownDatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownDatasourceSpecification.js';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
 
@@ -291,7 +294,9 @@ export const V1_serializeDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_DatasourceSpecification> => {
-  if (protocol instanceof V1_StaticDatasourceSpecification) {
+  if (protocol instanceof V1_INTERNAL__UnknownDatasourceSpecification) {
+    return protocol.content;
+  } else if (protocol instanceof V1_StaticDatasourceSpecification) {
     return serialize(staticDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_EmbeddedH2DatasourceSpecification) {
     return serialize(embeddedH2DatasourceSpecificationModelSchema, protocol);
@@ -368,9 +373,11 @@ export const V1_deserializeDatasourceSpecification = (
           return protocol;
         }
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize datasource specification of type '${json._type}': no compatible deserializer available from plugins`,
-      );
+
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownDatasourceSpecification();
+      protocol.content = json;
+      return protocol;
     }
   }
 };
@@ -483,7 +490,9 @@ export const V1_serializeAuthenticationStrategy = (
   protocol: V1_AuthenticationStrategy,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_AuthenticationStrategy> => {
-  if (protocol instanceof V1_DelegatedKerberosAuthenticationStrategy) {
+  if (protocol instanceof V1_INTERNAL__UnknownAuthenticationStrategy) {
+    return protocol.content;
+  } else if (protocol instanceof V1_DelegatedKerberosAuthenticationStrategy) {
     return serialize(
       V1_delegatedKerberosAuthenticationStrategyModelSchema,
       protocol,
@@ -612,9 +621,11 @@ export const V1_deserializeAuthenticationStrategy = (
           return protocol;
         }
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize authentication strategy of type '${json._type}': no compatible deserializer available from plugins`,
-      );
+
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownAuthenticationStrategy();
+      protocol.content = json;
+      return protocol;
     }
   }
 };
@@ -624,7 +635,9 @@ export const V1_serializeConnectionValue = (
   allowPointer: boolean,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_Connection> => {
-  if (protocol instanceof V1_JsonModelConnection) {
+  if (protocol instanceof V1_INTERNAL__UnknownConnection) {
+    return protocol.content;
+  } else if (protocol instanceof V1_JsonModelConnection) {
     return serialize(V1_jsonModelConnectionModelSchema, protocol);
   } else if (protocol instanceof V1_ModelChainConnection) {
     return serialize(V1_modelChainConnectionModelSchema, protocol);
@@ -696,9 +709,12 @@ export const V1_deserializeConnectionValue = (
           return protocol;
         }
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize connection of type '${json._type}': no compatible deserializer available from plugins`,
-      );
+
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownConnection();
+      protocol.store = undefined;
+      protocol.content = json;
+      return protocol;
     }
   }
 };

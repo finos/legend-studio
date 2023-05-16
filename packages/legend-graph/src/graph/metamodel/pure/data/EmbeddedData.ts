@@ -23,13 +23,16 @@ import type { DataElement } from '../packageableElements/data/DataElement.js';
 import type { Class } from '../packageableElements/domain/Class.js';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
 import type { RelationalCSVData } from './RelationalCSVData.js';
+import type { INTERNAL__UnknownEmbeddedData } from './INTERNAL__UnknownEmbeddedData.js';
 
 export interface EmbeddedDataVisitor<T> {
-  visit_EmbeddedData(embeddedData: EmbeddedData): T;
-  visit_ExternalFormatData(externalFormatData: ExternalFormatData): T;
-  visit_ModelStoreData(modelStoreData: ModelStoreData): T;
-  visit_DataElementReference(dataElementReference: DataElementReference): T;
-  visit_RelationalCSVData(relationalData: RelationalCSVData): T;
+  visit_EmbeddedData(data: EmbeddedData): T;
+  visit_INTERNAL__UnknownEmbeddedData(data: INTERNAL__UnknownEmbeddedData): T;
+
+  visit_ExternalFormatData(data: ExternalFormatData): T;
+  visit_ModelStoreData(data: ModelStoreData): T;
+  visit_DataElementReference(data: DataElementReference): T;
+  visit_RelationalCSVData(data: RelationalCSVData): T;
 }
 
 export abstract class EmbeddedData implements Hashable {

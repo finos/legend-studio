@@ -17,11 +17,12 @@
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
+  type PlainObject,
+  isString,
 } from '@finos/legend-shared';
 import {
   type ExecutionResult,
   TDSRow,
-  INTERNAL__UnknownExecutionResult,
   ClassExecutionResult,
   JsonExecutionResult,
   TDSExecutionResult,
@@ -32,6 +33,7 @@ import {
   type ExecutionActivities,
   UnknownExecutionActivities,
   AggregationAwareActivities,
+  BuilderType,
 } from '../../../../../../graph-manager/action/execution/ExecutionResult.js';
 import {
   type V1_ExecutionResult,
@@ -40,13 +42,15 @@ import {
   type V1_ExecutionActivities,
   V1_ClassExecutionResult,
   V1_JsonExecutionResult,
-  V1_INTERNAL__UnknownExecutionResult,
   V1_TDSExecutionResult,
   V1_RawExecutionResult,
   V1_RelationalExecutionActivities,
   V1_UnknownExecutionActivity,
   V1_AggregationAwareActivities,
+  type V1_ResultBuilder,
 } from './V1_ExecutionResult.js';
+import { V1_INTERNAL__UnknownExecutionResult } from './V1_INTERNAL__UnknownExecutionResult.js';
+import { INTERNAL__UnknownExecutionResult } from '../../../../../action/execution/INTERNAL__UnknownExecutionResult.js';
 
 const buildExecutionActivities = (
   protocol: V1_ExecutionActivities,
@@ -146,7 +150,11 @@ const buildClassExecutionResult = (
 export const V1_buildExecutionResult = (
   protocol: V1_ExecutionResult,
 ): ExecutionResult => {
-  if (protocol instanceof V1_ClassExecutionResult) {
+  if (protocol instanceof V1_INTERNAL__UnknownExecutionResult) {
+    const metamodel = new INTERNAL__UnknownExecutionResult();
+    metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_ClassExecutionResult) {
     return buildClassExecutionResult(protocol);
   } else if (protocol instanceof V1_TDSExecutionResult) {
     return buildTDSExecutionResult(protocol);
@@ -154,8 +162,28 @@ export const V1_buildExecutionResult = (
     return buildJSONExecutionResult(protocol);
   } else if (protocol instanceof V1_RawExecutionResult) {
     return new RawExecutionResult(protocol.value);
-  } else if (protocol instanceof V1_INTERNAL__UnknownExecutionResult) {
-    return new INTERNAL__UnknownExecutionResult(protocol.content);
   }
   throw new UnsupportedOperationError(`Can't build execution result`, protocol);
+};
+
+export const V1_serializeExecutionResult = (
+  json: PlainObject<V1_ExecutionResult> | string,
+): V1_ExecutionResult => {
+  if (isString(json)) {
+    return new V1_RawExecutionResult(json);
+  }
+  switch ((json.builder as PlainObject<V1_ResultBuilder>)._type) {
+    case BuilderType.CLASS_BUILDER:
+      return V1_ClassExecutionResult.serialization.fromJson(json);
+    case BuilderType.TDS_BUILDER:
+      return V1_TDSExecutionResult.serialization.fromJson(json);
+    case BuilderType.JSON_BUILDER:
+      return V1_JsonExecutionResult.serialization.fromJson(json);
+    default: {
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownExecutionResult();
+      protocol.content = json;
+      return protocol;
+    }
+  }
 };

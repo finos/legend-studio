@@ -68,6 +68,9 @@ import type { DataElement } from '../../../../../../../graph/metamodel/pure/pack
 import { V1_transformDataElement } from './V1_DataElementTransformer.js';
 import type { ExecutionEnvironmentInstance } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { V1_transformExecutionEnvirnoment } from './V1_ExecutionEnvironmentTransformer.js';
+import type { INTERNAL__UnknownPackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
+import { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -96,6 +99,15 @@ class V1_PackageableElementTransformer
       `Can't transform element '${element.path}': no compatible transformer available from plugins`,
       element,
     );
+  }
+
+  visit_INTERNAL__UnknownPackageableElement(
+    element: INTERNAL__UnknownPackageableElement,
+  ): V1_PackageableElement {
+    const protocol = new V1_INTERNAL__UnknownPackageableElement();
+    V1_initPackageableElement(protocol, element);
+    protocol.content = element.content;
+    return protocol;
   }
 
   visit_Package(element: Package): V1_PackageableElement {

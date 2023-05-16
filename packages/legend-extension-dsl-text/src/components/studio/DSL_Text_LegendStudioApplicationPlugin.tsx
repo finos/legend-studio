@@ -31,7 +31,6 @@ import {
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserElementDocumentationGetter,
-  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
@@ -75,23 +74,8 @@ export class DSL_Text_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_TEXT_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL];
-  }
-
-  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Text) {
-          return PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

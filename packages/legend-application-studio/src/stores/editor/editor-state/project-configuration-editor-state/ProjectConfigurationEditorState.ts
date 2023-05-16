@@ -51,7 +51,10 @@ export enum CONFIGURATION_EDITOR_TAB {
 }
 
 export class ProjectConfigurationEditorState extends EditorState {
-  sdlcState: EditorSDLCState;
+  readonly sdlcState: EditorSDLCState;
+  readonly updatingConfigurationState = ActionState.create();
+  readonly fetchingProjectVersionsState = ActionState.create();
+
   projectDependencyEditorState: ProjectDependencyEditorState;
   originalProjectConfiguration?: ProjectConfiguration | undefined; // TODO: we might want to remove this when we do change detection for project configuration
   projectConfiguration?: ProjectConfiguration | undefined;
@@ -59,11 +62,8 @@ export class ProjectConfigurationEditorState extends EditorState {
   isReadOnly = false;
   projects = new Map<string, StoreProjectData>();
   versions = new Map<string, string[]>();
-  queryHistory = new Set<string>();
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
 
-  updatingConfigurationState = ActionState.create();
-  fetchingProjectVersionsState = ActionState.create();
   associatedProjectsAndVersionsFetched = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
@@ -77,7 +77,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       isReadOnly: observable,
       projects: observable,
       versions: observable,
-      queryHistory: observable,
       associatedProjectsAndVersionsFetched: observable,
       fetchingProjectVersionsState: observable,
       latestProjectStructureVersion: observable,

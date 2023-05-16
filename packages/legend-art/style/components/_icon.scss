@@ -26,14 +26,18 @@
   user-select: none;
 }
 
+.icon--unknown {
+  font-size: 1.5rem;
+  color: var(--color-dark-grey-400);
+}
+
 .icon--flat-data {
   svg {
     font-size: 1.2rem;
   }
 }
 
-.icon--connection,
-.icon--config {
+.icon--connection {
   svg {
     font-size: 1.6rem;
   }

@@ -19,8 +19,8 @@ import { createModelSchema, list, optional, primitive } from 'serializr';
 import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../../model/packageableElements/domain/V1_TaggedValue.js';
 import {
-  V1_stereotypePtrSchema,
-  V1_taggedValueSchema,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 
 export class V1_QueryProjectCoordinates {
@@ -51,8 +51,10 @@ export class V1_QuerySearchSpecification {
       ),
       searchTerm: optional(primitive()),
       showCurrentUserQueriesOnly: optional(primitive()),
-      stereotypes: optional(list(usingModelSchema(V1_stereotypePtrSchema))),
-      taggedValues: optional(list(usingModelSchema(V1_taggedValueSchema))),
+      stereotypes: optional(
+        list(usingModelSchema(V1_stereotypePtrModelSchema)),
+      ),
+      taggedValues: optional(list(usingModelSchema(V1_taggedValueModelSchema))),
     }),
     {
       deserializeNullAsUndefined: true,

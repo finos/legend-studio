@@ -15,12 +15,7 @@
  */
 
 /* eslint-disable prefer-named-capture-group */
-import {
-  PARSER_SECTION_MARKER,
-  PURE_ELEMENT_NAME,
-  PURE_CONNECTION_NAME,
-  PURE_PARSER,
-} from '@finos/legend-graph';
+import { PURE_ELEMENT_NAME, PURE_CONNECTION_NAME } from '@finos/legend-graph';
 import { languages as monacoLanguagesAPI } from 'monaco-editor';
 import { PURE_GRAMMAR_TOKEN } from './PureLanguage.js';
 import { CODE_EDITOR_LANGUAGE } from './CodeEditorUtils.js';
@@ -84,7 +79,6 @@ const configuration: monacoLanguagesAPI.LanguageConfiguration = {
  */
 const generateLanguageMonarch = (
   extraKeywords: string[],
-  extraParsers: string[],
 ): monacoLanguagesAPI.IMonarchLanguage =>
   // TODO: complete syntax-highlighter for core features like constraint, derived properties, etc.
   // TODO: add syntax highlighting for modules/plugins (come up with a plugin mechanism to do this).
@@ -177,23 +171,6 @@ const generateLanguageMonarch = (
 
     languageStructs: ['import', 'native'],
 
-    parsers: (
-      [
-        PURE_PARSER.PURE,
-        PURE_PARSER.CONNECTION,
-        PURE_PARSER.RUNTIME,
-        PURE_PARSER.MAPPING,
-        PURE_PARSER.SERVICE,
-        PURE_PARSER.FLATDATA,
-        PURE_PARSER.RELATIONAL,
-        PURE_PARSER.GENERATION_SPECIFICATION,
-        PURE_PARSER.FILE_GENERATION_SPECIFICATION,
-        PURE_PARSER.DATA,
-      ] as string[]
-    )
-      .concat(extraParsers)
-      .map((parser) => `${PARSER_SECTION_MARKER}${parser}`),
-
     // common regular expressions to be used in tokenizer
     identifier: /[a-zA-Z_$][\w$]*/,
     symbols: /[=><!~?:&|+\-*/^%#@]+/,
@@ -237,12 +214,7 @@ const generateLanguageMonarch = (
         [
           // NOTE: any leading whitespace to the section header is considered invalid syntax
           /^\s*###[\w]+/,
-          {
-            cases: {
-              '@parsers': PURE_GRAMMAR_TOKEN.PARSER,
-              '@default': PURE_GRAMMAR_TOKEN.INVALID,
-            },
-          },
+          PURE_GRAMMAR_TOKEN.PARSER,
         ],
 
         // identifiers and keywords
@@ -431,7 +403,6 @@ const generateLanguageMonarch = (
 
 export function setupPureLanguageService(options?: {
   extraKeywords?: string[] | undefined;
-  extraParserKeywords?: string[] | undefined;
 }): void {
   monacoLanguagesAPI.register({ id: CODE_EDITOR_LANGUAGE.PURE });
   monacoLanguagesAPI.setLanguageConfiguration(
@@ -440,9 +411,6 @@ export function setupPureLanguageService(options?: {
   );
   monacoLanguagesAPI.setMonarchTokensProvider(
     CODE_EDITOR_LANGUAGE.PURE,
-    generateLanguageMonarch(
-      options?.extraKeywords ?? [],
-      options?.extraParserKeywords ?? [],
-    ),
+    generateLanguageMonarch(options?.extraKeywords ?? []),
   );
 }

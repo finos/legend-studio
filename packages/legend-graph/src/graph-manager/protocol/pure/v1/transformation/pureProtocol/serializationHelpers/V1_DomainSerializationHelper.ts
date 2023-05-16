@@ -71,22 +71,22 @@ export const V1_propertyPointerModelSchema = createModelSchema(
 
 // ------------------------------------- Profile -------------------------------------
 
-export const V1_stereotypePtrSchema = createModelSchema(V1_StereotypePtr, {
+export const V1_stereotypePtrModelSchema = createModelSchema(V1_StereotypePtr, {
   profile: primitive(),
   value: primitive(),
 });
 
-export const V1_tagPtrSchema = createModelSchema(V1_TagPtr, {
+export const V1_tagPtrModelSchema = createModelSchema(V1_TagPtr, {
   profile: primitive(),
   value: primitive(),
 });
 
-export const V1_taggedValueSchema = createModelSchema(V1_TaggedValue, {
-  tag: usingModelSchema(V1_tagPtrSchema),
+export const V1_taggedValueModelSchema = createModelSchema(V1_TaggedValue, {
+  tag: usingModelSchema(V1_tagPtrModelSchema),
   value: primitive(),
 });
 
-export const V1_profileSchema = createModelSchema(V1_Profile, {
+export const V1_profileModelSchema = createModelSchema(V1_Profile, {
   _type: usingConstantValueSchema(V1_PROFILE_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
   package: primitive(),
@@ -96,32 +96,32 @@ export const V1_profileSchema = createModelSchema(V1_Profile, {
 
 // ------------------------------------- Enumeration -------------------------------------
 
-export const V1_enumValueSchema = createModelSchema(V1_EnumValue, {
-  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+export const V1_enumValueModelSchema = createModelSchema(V1_EnumValue, {
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
-  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
   value: primitive(),
 });
 
-export const V1_enumerationSchema = createModelSchema(V1_Enumeration, {
+export const V1_enumerationModelSchema = createModelSchema(V1_Enumeration, {
   _type: usingConstantValueSchema(V1_ENUMERATION_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
   package: primitive(),
-  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
-  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
-  values: list(usingModelSchema(V1_enumValueSchema)),
+  values: list(usingModelSchema(V1_enumValueModelSchema)),
 });
 
 // ------------------------------------- Measure -------------------------------------
 
-export const V1_unitSchema = createModelSchema(V1_Unit, {
+export const V1_unitModelSchema = createModelSchema(V1_Unit, {
   _type: usingConstantValueSchema(V1_UNIT_ELEMENT_PROTOCOL_TYPE),
   conversionFunction: optional(usingModelSchema(V1_rawLambdaModelSchema)),
   measure: primitive(),
@@ -129,44 +129,47 @@ export const V1_unitSchema = createModelSchema(V1_Unit, {
   package: primitive(),
 });
 
-export const V1_measureSchema = createModelSchema(V1_Measure, {
+export const V1_measureModelSchema = createModelSchema(V1_Measure, {
   _type: usingConstantValueSchema(V1_MEASURE_ELEMENT_PROTOCOL_TYPE),
-  canonicalUnit: optional(usingModelSchema(V1_unitSchema)),
+  canonicalUnit: optional(usingModelSchema(V1_unitModelSchema)),
   name: primitive(),
-  nonCanonicalUnits: list(usingModelSchema(V1_unitSchema)),
+  nonCanonicalUnits: list(usingModelSchema(V1_unitModelSchema)),
   package: primitive(),
 });
 
 // ------------------------------------- Class -------------------------------------
 
-export const V1_propertySchema = createModelSchema(V1_Property, {
+export const V1_propertyModelSchema = createModelSchema(V1_Property, {
   aggregation: optional(primitive()),
   multiplicity: usingModelSchema(V1_multiplicityModelSchema),
   name: primitive(),
-  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
-  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
   type: primitive(),
 });
 
-export const V1_derivedPropertySchema = createModelSchema(V1_DerivedProperty, {
-  body: raw(),
-  name: primitive(),
-  parameters: raw(),
-  returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
-  returnType: primitive(),
-  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
-    INTERNAL__forceReturnEmptyInTest: true,
-  }),
-  taggedValues: customListWithSchema(V1_taggedValueSchema, {
-    INTERNAL__forceReturnEmptyInTest: true,
-  }),
-});
+export const V1_derivedPropertyModelSchema = createModelSchema(
+  V1_DerivedProperty,
+  {
+    body: raw(),
+    name: primitive(),
+    parameters: raw(),
+    returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
+    returnType: primitive(),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+  },
+);
 
-export const V1_constraintSchema = createModelSchema(V1_Constraint, {
+export const V1_constraintModelSchema = createModelSchema(V1_Constraint, {
   enforcementLevel: optional(primitive()),
   externalId: optional(primitive()),
   functionDefinition: usingModelSchema(V1_rawLambdaModelSchema),
@@ -174,9 +177,9 @@ export const V1_constraintSchema = createModelSchema(V1_Constraint, {
   name: primitive(),
 });
 
-export const V1_classSchema = createModelSchema(V1_Class, {
+export const V1_classModelSchema = createModelSchema(V1_Class, {
   _type: usingConstantValueSchema(V1_CLASS_ELEMENT_PROTOCOL_TYPE),
-  constraints: customListWithSchema(V1_constraintSchema, {
+  constraints: customListWithSchema(V1_constraintModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
   name: primitive(),
@@ -196,29 +199,29 @@ export const V1_classSchema = createModelSchema(V1_Class, {
     },
   ),
   package: primitive(),
-  properties: customListWithSchema(V1_propertySchema, {
+  properties: customListWithSchema(V1_propertyModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
-    customListWithSchema(V1_derivedPropertySchema, {
+    customListWithSchema(V1_derivedPropertyModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
   ),
-  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
   superTypes: customEquivalentList({
     INTERNAL__forceReturnEmptyInTest: true,
   }),
-  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
 });
 
 // ------------------------------------- Association -------------------------------------
 
-export const V1_associationSchema = createModelSchema(V1_Association, {
+export const V1_associationModelSchema = createModelSchema(V1_Association, {
   _type: usingConstantValueSchema(V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
   /**
@@ -237,24 +240,24 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
     },
   ),
   package: primitive(),
-  properties: list(usingModelSchema(V1_propertySchema)),
+  properties: list(usingModelSchema(V1_propertyModelSchema)),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
-    customListWithSchema(V1_derivedPropertySchema, {
+    customListWithSchema(V1_derivedPropertyModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
   ),
-  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
-  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
 });
 
 // ------------------------------------- Function -------------------------------------
 
-export const V1_functionSchema = createModelSchema(
+export const V1_functionModelSchema = createModelSchema(
   V1_ConcreteFunctionDefinition,
   {
     _type: usingConstantValueSchema(V1_FUNCTION_ELEMENT_PROTOCOL_TYPE),
@@ -266,10 +269,10 @@ export const V1_functionSchema = createModelSchema(
     preConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
     returnType: primitive(),
-    stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
-    taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
   },

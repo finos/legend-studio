@@ -101,6 +101,7 @@ import {
   PrimitiveType,
   type Store,
   ModelStore,
+  INTERNAL__UnknownSetImplementation,
 } from '@finos/legend-graph';
 import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
@@ -270,7 +271,9 @@ export const getMappingElementSource = (
   mappingElement: MappingElement,
   plugins: LegendStudioApplicationPlugin[],
 ): MappingElementSource | undefined => {
-  if (mappingElement instanceof OperationSetImplementation) {
+  if (mappingElement instanceof INTERNAL__UnknownSetImplementation) {
+    return undefined;
+  } else if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
     // in the mapping, so if we use this method on all class mappings of a mapping, we don't miss anything
     return undefined;

@@ -30,7 +30,6 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   TreeView,
-  ProjectConfigurationIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   CompressIcon,
@@ -98,6 +97,9 @@ import {
   getFunctionSignature,
   getFunctionNameWithPath,
   getElementRootPackage,
+  type PackageableElement,
+  PackageableConnection,
+  RelationalDatabaseConnection,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -120,10 +122,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
-import {
-  guaranteeRelationalDatabaseConnection,
-  isRelationalDatabaseConnection,
-} from '../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
+import { guaranteeRelationalDatabaseConnection } from '../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
 import { DatabaseBuilder } from '../editor-group/connection-editor/DatabaseBuilder.js';
 
 const ElementRenamer = observer(() => {
@@ -435,6 +434,12 @@ const SampleDataGenerator = observer(() => {
     </Dialog>
   );
 });
+
+const isRelationalDatabaseConnection = (
+  val: PackageableElement | undefined,
+): boolean =>
+  val instanceof PackageableConnection &&
+  val.connectionValue instanceof RelationalDatabaseConnection;
 
 const ExplorerContextMenu = observer(
   forwardRef<
@@ -776,7 +781,9 @@ const ProjectConfig = observer(() => {
     >
       <div className="tree-view__node__icon explorer__package-tree__node__icon">
         <div className="explorer__package-tree__node__icon__type explorer__config__icon">
-          <ProjectConfigurationIcon />
+          <div>
+            <SettingsEthernetIcon />
+          </div>
         </div>
       </div>
       <button

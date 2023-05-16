@@ -39,6 +39,7 @@ import { ModelStore } from '../../../../../../../../graph/metamodel/pure/package
 import {
   type PackageableElementReference,
   PackageableElementImplicitReference,
+  PackageableElementExplicitReference,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { ModelChainConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
@@ -58,6 +59,9 @@ import {
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_ModelChainConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
 import { V1_buildPostProcessor } from './V1_PostProcessorBuilderHelper.js';
+import type { V1_INTERNAL__UnknownConnection } from '../../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
+import { INTERNAL__PseudoStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__PseudoStore.js';
+import { INTERNAL__UnknownConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 
 class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
   context: V1_GraphBuilderContext;
@@ -89,6 +93,18 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
       `Can't build connection: no compatible builder available from plugins`,
       connection,
     );
+  }
+
+  visit_INTERNAL__UnknownConnection(
+    connection: V1_INTERNAL__UnknownConnection,
+  ): Connection {
+    const metamodel = new INTERNAL__UnknownConnection(
+      PackageableElementExplicitReference.create(
+        INTERNAL__PseudoStore.INSTANCE,
+      ),
+    );
+    metamodel.content = connection.content;
+    return metamodel;
   }
 
   visit_ConnectionPointer(connection: V1_ConnectionPointer): Connection {

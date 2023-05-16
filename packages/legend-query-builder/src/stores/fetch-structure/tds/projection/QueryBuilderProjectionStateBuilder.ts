@@ -36,7 +36,6 @@ import {
   guaranteeType,
   isNonNullable,
   returnUndefOnError,
-  type PlainObject,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
@@ -218,9 +217,7 @@ export const processTDSProjectionDerivationExpression = (
       queryBuilderState.fetchStructureState.implementation;
     const rawLambdaProtocol = returnUndefOnError(() =>
       guaranteeType(
-        V1_deserializeRawValueSpecification(
-          value.content as PlainObject<V1_RawLambda>,
-        ),
+        V1_deserializeRawValueSpecification(value.content),
         V1_RawLambda,
       ),
     );

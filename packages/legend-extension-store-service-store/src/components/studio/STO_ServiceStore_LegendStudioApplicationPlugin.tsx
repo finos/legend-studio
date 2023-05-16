@@ -53,7 +53,6 @@ import {
   type EmbeddedDataCreator,
   type MappingElementSource,
   type ConnectionTypeOption,
-  type PureGrammarElementLabeler,
   type PureGrammarConnectionLabeler,
 } from '@finos/legend-application-studio';
 import { SwaggerIcon } from '@finos/legend-art';
@@ -117,26 +116,11 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [
       PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
       PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
       PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL,
-    ];
-  }
-
-  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof ServiceStore) {
-          return PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
     ];
   }
 

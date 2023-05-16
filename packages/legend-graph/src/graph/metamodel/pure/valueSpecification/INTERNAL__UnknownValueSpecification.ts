@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  type PlainObject,
+} from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   hashObjectWithoutSourceInformation,
@@ -35,9 +39,9 @@ export class INTERNAL__UnknownValueSpecification
   extends ValueSpecification
   implements Hashable
 {
-  readonly content: object;
+  readonly content: PlainObject;
 
-  constructor(content: object) {
+  constructor(content: PlainObject) {
     super(Multiplicity.ZERO);
 
     this.content = content;
@@ -45,7 +49,7 @@ export class INTERNAL__UnknownValueSpecification
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.INTERNAL_UNKNOWN_VALUE_SPECIFICATION,
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_VALUE_SPECIFICATION,
       hashObjectWithoutSourceInformation(this.content),
       this.genericType?.ownerReference.valueForSerialization ?? '',
     ]);

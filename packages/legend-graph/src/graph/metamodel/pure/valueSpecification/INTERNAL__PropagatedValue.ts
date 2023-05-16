@@ -45,7 +45,7 @@ export class INTERNAL__PropagatedValue
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.INTERNAL_PROPAGATED_VALUE,
+      CORE_HASH_STRUCTURE.INTERNAL__PROPAGATED_VALUE,
       this.genericType?.ownerReference.valueForSerialization ?? '',
       this.multiplicity,
     ]);

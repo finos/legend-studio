@@ -218,19 +218,9 @@ export type PureGrammarParserElementSnippetSuggestionsGetter = (
 export interface DSL_LegendStudioApplicationPlugin_Extension
   extends LegendStudioApplicationPlugin {
   /**
-   * Get the list of supported Pure grammar parsers.
-   */
-  getExtraPureGrammarParserNames?(): string[];
-
-  /**
    * Get the list of supported Pure grammar keywords.
    */
   getExtraPureGrammarKeywords?(): string[];
-
-  /**
-   * Get the list of Pure grammar element labelers.
-   */
-  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 
   /**
    * Get the list of the supported packageable element type specifiers.

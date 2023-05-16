@@ -165,7 +165,9 @@ test(
       await flowResult(MOCK__editorStore.sdlcState.fetchProjectVersions());
     });
     await act(async () => {
-      await flowResult(MOCK__editorStore.depotState.fetchProjectVersions());
+      await flowResult(
+        MOCK__editorStore.sdlcState.fetchPublishedProjectVersions(),
+      );
     });
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     const result = new ServiceRegistrationSuccess(
@@ -213,7 +215,7 @@ test(
     await waitFor(() => getByText(registrationEditor, 'Project Version'));
     const registrationState = serviceEditorState.registrationState;
     expect(registrationState.executionModes).toHaveLength(3);
-    const versions = MOCK__editorStore.depotState.projectVersions;
+    const versions = MOCK__editorStore.sdlcState.projectPublishedVersions;
     expect(versions).toHaveLength(4);
     // TODO: rewrite how we test 'dropdown', once the issue of the dropdown options not showing is resolved
     // since `int` is the first env in the config list, it is expected to be selected by default

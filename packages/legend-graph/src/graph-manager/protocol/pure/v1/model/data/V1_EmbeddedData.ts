@@ -20,13 +20,18 @@ import {
   hashObjectWithoutSourceInformation,
 } from '../../../../../../graph/Core_HashUtils.js';
 import type { V1_RelationalCSVData } from './V1_RelationalCSVData.js';
+import type { V1_INTERNAL__UnknownEmbeddedData } from './V1_INTERNAL__UnknownEmbeddedData.js';
 
 export interface V1_EmbeddedDataVisitor<T> {
-  visit_EmbeddedData(embeddedData: V1_EmbeddedData): T;
-  visit_ExternalFormatData(externalFormatData: V1_ExternalFormatData): T;
-  visit_ModelStoreData(modelStoreData: V1_ModelStoreData): T;
-  visit_DataElementReference(dataElementReference: V1_DataElementReference): T;
-  visit_RelationalData(relationalData: V1_RelationalCSVData): T;
+  visit_EmbeddedData(data: V1_EmbeddedData): T;
+  visit_INTERNAL__UnknownEmbeddedData(
+    data: V1_INTERNAL__UnknownEmbeddedData,
+  ): T;
+
+  visit_ExternalFormatData(data: V1_ExternalFormatData): T;
+  visit_ModelStoreData(data: V1_ModelStoreData): T;
+  visit_DataElementReference(data: V1_DataElementReference): T;
+  visit_RelationalData(data: V1_RelationalCSVData): T;
 }
 
 export abstract class V1_EmbeddedData implements Hashable {
@@ -34,6 +39,7 @@ export abstract class V1_EmbeddedData implements Hashable {
 
   abstract accept_EmbeddedDataVisitor<T>(visitor: V1_EmbeddedDataVisitor<T>): T;
 }
+
 export class V1_DataElementReference
   extends V1_EmbeddedData
   implements Hashable

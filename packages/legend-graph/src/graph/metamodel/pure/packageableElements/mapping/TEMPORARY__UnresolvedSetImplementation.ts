@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Class } from '../domain/Class.js';
+import { INTERNAL__PseudoClass } from '../domain/INTERNAL__PseudoClass.js';
 import { PackageableElementExplicitReference } from '../PackageableElementReference.js';
 import { InferableMappingElementIdExplicitValue } from './InferableMappingElementId.js';
 import { InferableMappingElementRootExplicitValue } from './InferableMappingElementRoot.js';
@@ -40,7 +40,9 @@ export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
     super(
       InferableMappingElementIdExplicitValue.create(id, ''),
       parent,
-      PackageableElementExplicitReference.create(new Class('')),
+      PackageableElementExplicitReference.create(
+        INTERNAL__PseudoClass.INSTANCE,
+      ),
       InferableMappingElementRootExplicitValue.create(false),
     );
   }

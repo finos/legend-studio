@@ -179,10 +179,6 @@ export class ProjectViewerStore {
       )) as PlainObject<Version>,
     );
 
-    // fetch project versions
-    yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
-    yield flowResult(this.editorStore.depotState.fetchProjectVersions());
-
     // ensure only either version or revision is specified
     if (versionId && revisionId) {
       throw new IllegalStateError(
@@ -262,19 +258,25 @@ export class ProjectViewerStore {
     this.editorStore.initState.setMessage(undefined);
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
 
-    const entities = graphBuildingMaterial[0];
+    // fetch project configuration
     const projectConfiguration = ProjectConfiguration.serialization.fromJson(
       graphBuildingMaterial[1],
     );
-
     this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
       projectConfiguration,
     );
-
-    // make sure we set the original project configuration to a different object
     this.editorStore.projectConfigurationEditorState.setOriginalProjectConfiguration(
       projectConfiguration,
     );
+
+    // fetch project versions
+    yield Promise.all([
+      this.editorStore.sdlcState.fetchProjectVersions(),
+      this.editorStore.sdlcState.fetchPublishedProjectVersions(),
+    ]);
+
+    // fetch entities
+    const entities = graphBuildingMaterial[0];
     this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
       entities,
     );

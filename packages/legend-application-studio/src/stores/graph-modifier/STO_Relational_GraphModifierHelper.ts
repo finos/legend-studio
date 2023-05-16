@@ -20,7 +20,6 @@ import {
   type BigQueryDatasourceSpecification,
   type BindingTransformer,
   type DatabaseConnection,
-  type DatabaseType,
   type DatabricksDatasourceSpecification,
   type DatasourceSpecification,
   type DelegatedKerberosAuthenticationStrategy,
@@ -66,7 +65,7 @@ import type { RelationalDatabaseConnectionValueState } from '../editor/editor-st
 // --------------------------------------------- DB Connection -------------------------------------
 
 export const dBConnection_setType = action(
-  (con: DatabaseConnection, val: DatabaseType): void => {
+  (con: DatabaseConnection, val: string): void => {
     con.type = val;
   },
 );

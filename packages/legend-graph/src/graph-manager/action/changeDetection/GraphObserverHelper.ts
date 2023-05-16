@@ -50,7 +50,8 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     | 'generationSpecificationsIndex'
     | 'fileGenerationsIndex'
     | 'dataElementsIndex'
-    | 'executionEnvironmentIndex'
+    | 'executionEnvironmentsIndex'
+    | 'INTERNAL__unknownElementsIndex'
   >(metamodel, {
     elementSectionIndex: observable,
     extensions: observable,
@@ -68,7 +69,8 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     generationSpecificationsIndex: observable,
     fileGenerationsIndex: observable,
     dataElementsIndex: observable,
-    executionEnvironmentIndex: observable,
+    executionEnvironmentsIndex: observable,
+    INTERNAL__unknownElementsIndex: observable,
 
     ownSectionIndices: computed,
     ownProfiles: computed,

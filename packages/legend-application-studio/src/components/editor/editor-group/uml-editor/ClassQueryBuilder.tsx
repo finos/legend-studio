@@ -274,7 +274,7 @@ const PromoteToServiceQueryBuilderAction = observer(
         !queryBuilderState.allValidationIssues.length,
     );
 
-    const renderPromoteModal = (): React.ReactNode => {
+    const renderSaveAsModal = (): React.ReactNode => {
       if (
         promoteQueryModal === PROMOTE_QUERY_TYPE.SERVICE &&
         queryBuilderState.mapping
@@ -355,11 +355,11 @@ const PromoteToServiceQueryBuilderAction = observer(
           }}
         >
           <div className="query-builder__sub-header__custom-action__label">
-            Promote To...
+            Save As...
           </div>
           <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
         </DropdownMenu>
-        {renderPromoteModal()}
+        {renderSaveAsModal()}
       </>
     );
   },

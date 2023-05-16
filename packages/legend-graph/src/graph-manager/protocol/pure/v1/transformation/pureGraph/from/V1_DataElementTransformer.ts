@@ -44,6 +44,8 @@ import {
   V1_transformTaggedValue,
 } from './V1_DomainTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { INTERNAL__UnknownEmbeddedData } from '../../../../../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
+import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
 
 // ----------------------------------------------- DATA ----------------------------------------
 
@@ -99,7 +101,11 @@ export const V1_transformEmbeddedData = (
   metamodel: EmbeddedData,
   context: V1_GraphTransformerContext,
 ): V1_EmbeddedData => {
-  if (metamodel instanceof ModelStoreData) {
+  if (metamodel instanceof INTERNAL__UnknownEmbeddedData) {
+    const protocol = new V1_INTERNAL__UnknownEmbeddedData();
+    protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof ModelStoreData) {
     return V1_transformModelStoreData(metamodel);
   } else if (metamodel instanceof ExternalFormatData) {
     return V1_transformExternalFormatData(metamodel);

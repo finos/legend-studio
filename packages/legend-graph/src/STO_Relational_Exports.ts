@@ -15,6 +15,10 @@
  */
 
 // metamodels
+export { INTERNAL__UnknownAuthenticationStrategy } from './graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownAuthenticationStrategy.js';
+export { INTERNAL__UnknownDatasourceSpecification } from './graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownDatasourceSpecification.js';
+export { INTERNAL__UnknownPostProcessor } from './graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/INTERNAL__UnknownPostProcessor.js';
+
 export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 export { Table } from './graph/metamodel/pure/packageableElements/store/relational/model/Table.js';
 export { Column } from './graph/metamodel/pure/packageableElements/store/relational/model/Column.js';

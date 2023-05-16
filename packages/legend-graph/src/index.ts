@@ -123,12 +123,18 @@ export { V1_Multiplicity } from './graph-manager/protocol/pure/v1/model/packagea
 export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_ExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
-export { V1_buildExecutionResult } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
-export { V1_serializeExecutionResult } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
+export {
+  V1_buildExecutionResult,
+  V1_serializeExecutionResult,
+} from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
+
+export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
+export { INTERNAL__UnknownExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
+export { INTERNAL__UnknownResultType } from './graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
 
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
@@ -211,6 +217,7 @@ export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
 
+export * from './graph-manager/action/protocol/ClassifierPathMapping.js';
 export * from './graph-manager/action/SourceInformationHelper.js';
 export * from './graph-manager/action/generation/DatabaseBuilderInput.js';
 export * from './graph-manager/action/generation/GenerationConfigurationDescription.js';
@@ -272,8 +279,8 @@ export {
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export {
   V1_propertyPointerModelSchema,
-  V1_stereotypePtrSchema,
-  V1_taggedValueSchema,
+  V1_stereotypePtrModelSchema as V1_stereotypePtrSchema,
+  V1_taggedValueModelSchema as V1_taggedValueSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 export {
   V1_deserializeValueSpecification,
@@ -338,6 +345,8 @@ export * from './graph-manager/action/changeDetection/DSL_Generation_ObserverHel
 export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
+
+export { INTERNAL__UnknownEmbeddedData } from './graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
 
 export { DataElement } from './graph/metamodel/pure/packageableElements/data/DataElement.js';
 export { V1_DataElement } from './graph-manager/protocol/pure/v1/model/packageableElements/data/V1_DataElement.js';
@@ -407,6 +416,10 @@ export { V1_GenerationOutput } from './graph-manager/protocol/pure/v1/engine/gen
 export * from './graph-manager/extensions/DSL_Mapping_PureGraphManagerPlugin_Extension.js';
 
 // metamodels
+export { INTERNAL__UnknownSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
+export { INTERNAL__UnknownPropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
+export { INTERNAL__UnknownConnection } from './graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
+
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 export {

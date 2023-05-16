@@ -73,12 +73,19 @@ import {
   V1_TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
+import { INTERNAL__UnknownDatasourceSpecification } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownDatasourceSpecification.js';
+import { V1_INTERNAL__UnknownDatasourceSpecification } from '../../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownDatasourceSpecification.js';
+import { V1_INTERNAL__UnknownAuthenticationStrategy } from '../../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownAuthenticationStrategy.js';
 
 export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   context: V1_GraphBuilderContext,
 ): DatasourceSpecification => {
-  if (protocol instanceof V1_StaticDatasourceSpecification) {
+  if (protocol instanceof V1_INTERNAL__UnknownDatasourceSpecification) {
+    const metamodel = new INTERNAL__UnknownDatasourceSpecification();
+    metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_StaticDatasourceSpecification) {
     assertNonEmptyString(
       protocol.host,
       `Static datasource specification 'host' field is missing or empty`,
@@ -297,7 +304,11 @@ export const V1_buildAuthenticationStrategy = (
   protocol: V1_AuthenticationStrategy,
   context: V1_GraphBuilderContext,
 ): AuthenticationStrategy => {
-  if (protocol instanceof V1_DefaultH2AuthenticationStrategy) {
+  if (protocol instanceof V1_INTERNAL__UnknownAuthenticationStrategy) {
+    const metamodel = new V1_INTERNAL__UnknownAuthenticationStrategy();
+    metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_DefaultH2AuthenticationStrategy) {
     return new DefaultH2AuthenticationStrategy();
   } else if (protocol instanceof V1_DelegatedKerberosAuthenticationStrategy) {
     const metamodel = new DelegatedKerberosAuthenticationStrategy();

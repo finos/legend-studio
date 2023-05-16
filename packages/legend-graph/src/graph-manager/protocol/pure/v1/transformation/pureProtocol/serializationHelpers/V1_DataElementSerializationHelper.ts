@@ -47,9 +47,10 @@ import {
 } from '../../../model/data/V1_RelationalCSVData.js';
 import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import {
-  V1_stereotypePtrSchema,
-  V1_taggedValueSchema,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
 } from './V1_DomainSerializationHelper.js';
+import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
 
 export const V1_DATA_ELEMENT_PROTOCOL_TYPE = 'dataElement';
 
@@ -106,7 +107,9 @@ export const V1_serializeEmbeddedDataType = (
   protocol: V1_EmbeddedData,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_EmbeddedData> => {
-  if (protocol instanceof V1_ExternalFormatData) {
+  if (protocol instanceof V1_INTERNAL__UnknownEmbeddedData) {
+    return protocol.content;
+  } else if (protocol instanceof V1_ExternalFormatData) {
     return serialize(V1_externalFormatDataModelSchema, protocol);
   } else if (protocol instanceof V1_ModelStoreData) {
     return serialize(V1_modelStoreDataModelSchema, protocol);
@@ -155,15 +158,16 @@ export const V1_deserializeEmbeddedDataType = (
           ).V1_getExtraEmbeddedDataProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraEmbeddedDataProtocolDeserializers) {
-        const embeddedDataProtocol = deserializer(json);
-        if (embeddedDataProtocol) {
-          return embeddedDataProtocol;
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
         }
       }
 
-      throw new UnsupportedOperationError(
-        `Can't deserialize embedded data of type '${json._type}': no compatible deserializer available from plugins`,
-      );
+      // Fall back to create unknown stub if not supported
+      const protocol = new V1_INTERNAL__UnknownEmbeddedData();
+      protocol.content = json;
+      return protocol;
     }
   }
 };
@@ -179,10 +183,10 @@ export const V1_dataElementModelSchema = (
     ),
     name: primitive(),
     package: primitive(),
-    stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
-    taggedValues: customListWithSchema(V1_taggedValueSchema, {
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
   });

@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  LegendStudio,
-  DSL_ExternalFormat_LegendStudioApplicationPlugin,
-} from '@finos/legend-application-studio';
+import { LegendStudio } from '@finos/legend-application-studio';
 import {
   type AbstractPreset,
   type AbstractPlugin,
@@ -61,7 +58,6 @@ export class LegendStudioWebApplication {
       new DSL_Diagram_LegendStudioApplicationPlugin(),
       new DSL_DataSpace_LegendStudioApplicationPlugin(),
       new DSL_Service_LegendStudioApplicationPlugin(),
-      new DSL_ExternalFormat_LegendStudioApplicationPlugin(),
       new DSL_Persistence_LegendStudioApplicationPlugin(),
       new DSL_Mastery_LegendStudioApplicationPlugin(),
       new STO_ServiceStore_LegendStudioApplicationPlugin(),

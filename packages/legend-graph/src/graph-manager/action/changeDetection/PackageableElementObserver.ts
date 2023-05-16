@@ -48,6 +48,7 @@ import {
 import {
   type ObserverContext,
   skipObservedWithContext,
+  observe_INTERNAL__UnknownPackageableElement,
 } from './CoreObserverHelper.js';
 import {
   observe_FileGenerationSpecification,
@@ -65,6 +66,7 @@ import type { DataElement } from '../../../graph/metamodel/pure/packageableEleme
 import { observe_DataElement } from './DSL_Data_ObserverHelper.js';
 import type { ExecutionEnvironmentInstance } from '../../../graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { observe_ExecutionEnvironmentInstance } from './DSL_ExecutionEnvironment_ObseverHelper.js';
+import type { INTERNAL__UnknownPackageableElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -83,6 +85,12 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
         return;
       }
     }
+  }
+
+  visit_INTERNAL__UnknownPackageableElement(
+    element: INTERNAL__UnknownPackageableElement,
+  ): void {
+    observe_INTERNAL__UnknownPackageableElement(element);
   }
 
   visit_Package(element: Package): void {

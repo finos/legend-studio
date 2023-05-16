@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { V1_SourceInformation } from '../../model/V1_SourceInformation.js';
 import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 import type { V1_CompilationWarning } from './V1_CompilationWarning.js';
 
@@ -23,4 +24,5 @@ export interface V1_CompilationResult {
 
 export interface V1_TextCompilationResult extends V1_CompilationResult {
   model: V1_PureModelContextData;
+  sourceInformationIndex: Map<string, V1_SourceInformation>;
 }

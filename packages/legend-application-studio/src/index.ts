@@ -105,7 +105,6 @@ export {
   FileGenerationState,
   GeneratedFileStructureState,
 } from './stores/editor/editor-state/FileGenerationState.js';
-export { DSL_ExternalFormat_LegendStudioApplicationPlugin } from './components/extensions/DSL_ExternalFormat_LegendStudioApplicationPlugin.js';
 export {
   externalFormatData_setData,
   externalFormatData_setContentType,

@@ -129,6 +129,9 @@ import {
   observe_SetImplementation,
 } from './DSL_Mapping_ObserverHelper.js';
 import type { DEPRECATED__RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
+import { INTERNAL__UnknownPostProcessor } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/INTERNAL__UnknownPostProcessor.js';
+import { INTERNAL__UnknownDatasourceSpecification } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownDatasourceSpecification.js';
+import { INTERNAL__UnknownAuthenticationStrategy } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownAuthenticationStrategy.js';
 
 // ------------------------------------- Operation -------------------------------------
 
@@ -874,11 +877,23 @@ export const observe_TrinoDatasourceSpecification = skipObserved(
   },
 );
 
+const observe_INTERNAL__UnknownDatasourceSpecification = skipObserved(
+  (
+    metamodel: INTERNAL__UnknownDatasourceSpecification,
+  ): INTERNAL__UnknownDatasourceSpecification =>
+    makeObservable(metamodel, {
+      content: observable,
+      hashCode: computed,
+    }),
+);
+
 export const observe_DatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: ObserverContext,
 ): DatasourceSpecification => {
-  if (metamodel instanceof StaticDatasourceSpecification) {
+  if (metamodel instanceof INTERNAL__UnknownDatasourceSpecification) {
+    return observe_INTERNAL__UnknownDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof StaticDatasourceSpecification) {
     return observe_StaticDatasourceSpecification(metamodel);
   } else if (metamodel instanceof DatabricksDatasourceSpecification) {
     return observe_DatabricksDatasourceSpecification(metamodel);
@@ -1017,11 +1032,23 @@ export const observe_TrinoDelegatedKerberosAuthenticationStrategy =
       }),
   );
 
+const observe_INTERNAL__UnknownAuthenticationStrategy = skipObserved(
+  (
+    metamodel: INTERNAL__UnknownAuthenticationStrategy,
+  ): INTERNAL__UnknownAuthenticationStrategy =>
+    makeObservable(metamodel, {
+      hashCode: computed,
+      content: observable,
+    }),
+);
+
 export const observe_AuthenticationStrategy = (
   metamodel: AuthenticationStrategy,
   context: ObserverContext,
 ): AuthenticationStrategy => {
-  if (metamodel instanceof DelegatedKerberosAuthenticationStrategy) {
+  if (metamodel instanceof INTERNAL__UnknownAuthenticationStrategy) {
+    return observe_INTERNAL__UnknownAuthenticationStrategy(metamodel);
+  } else if (metamodel instanceof DelegatedKerberosAuthenticationStrategy) {
     return observe_DelegatedKerberosAuthenticationStrategy(metamodel);
   } else if (metamodel instanceof DefaultH2AuthenticationStrategy) {
     return observe_DefaultH2AuthenticationStrategy(metamodel);
@@ -1128,11 +1155,25 @@ export const observe_MapperPostProcessor = (
   return metamodel;
 };
 
+const observe_INTERNAL__UnknownPostProcessor = (
+  metamodel: INTERNAL__UnknownPostProcessor,
+): INTERNAL__UnknownPostProcessor => {
+  observe_Abstract_PostProcessor(metamodel);
+
+  makeObservable(metamodel, {
+    content: observable,
+  });
+
+  return metamodel;
+};
+
 export const observe_PostProcessor = (
   metamodel: PostProcessor,
   context: ObserverContext,
 ): PostProcessor => {
-  if (metamodel instanceof MapperPostProcessor) {
+  if (metamodel instanceof INTERNAL__UnknownPostProcessor) {
+    return observe_INTERNAL__UnknownPostProcessor(metamodel);
+  } else if (metamodel instanceof MapperPostProcessor) {
     return observe_MapperPostProcessor(metamodel);
   }
   const extraObservers = context.plugins.flatMap(

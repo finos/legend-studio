@@ -37,6 +37,7 @@ import {
   observe_StereotypeReference,
   observe_TaggedValue,
 } from './DomainObserverHelper.js';
+import { INTERNAL__UnknownEmbeddedData } from '../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
 
 export const observe_ExternalFormatData = skipObserved(
   (metamodel: ExternalFormatData): ExternalFormatData => {
@@ -95,11 +96,23 @@ const observe_RelationalCSVData = skipObserved(
   },
 );
 
+export const observe_INTERNAL__UnknownEmbeddedData = skipObserved(
+  (metamodel: INTERNAL__UnknownEmbeddedData): INTERNAL__UnknownEmbeddedData => {
+    makeObservable(metamodel, {
+      content: observable,
+    });
+
+    return metamodel;
+  },
+);
+
 export function observe_EmbeddedData(
   metamodel: EmbeddedData,
   context: ObserverContext,
 ): EmbeddedData {
-  if (metamodel instanceof DataElementReference) {
+  if (metamodel instanceof INTERNAL__UnknownEmbeddedData) {
+    return observe_INTERNAL__UnknownEmbeddedData(metamodel);
+  } else if (metamodel instanceof DataElementReference) {
     return observe_DataElementReference(metamodel);
   } else if (metamodel instanceof ExternalFormatData) {
     return observe_ExternalFormatData(metamodel);

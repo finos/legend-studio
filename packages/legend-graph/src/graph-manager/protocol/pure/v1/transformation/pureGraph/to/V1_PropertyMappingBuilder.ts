@@ -101,6 +101,8 @@ import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../..
 import { EnumerationMappingExplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumerationMappingReference.js';
 import type { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 import { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
+import type { V1_INTERNAL__UnknownPropertyMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownPropertyMapping.js';
+import { INTERNAL__UnknownPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 
 const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
   mapping: Mapping,
@@ -210,6 +212,14 @@ export class V1_PropertyMappingBuilder
       `Can't build property mapping: no compatible builder available from plugins`,
       propertyMapping,
     );
+  }
+
+  visit_INTERNAL__UnknownPropertyMapping(
+    propertyMapping: V1_INTERNAL__UnknownPropertyMapping,
+  ): PropertyMapping {
+    const metamodel = new INTERNAL__UnknownPropertyMapping();
+    metamodel.content = propertyMapping.content;
+    return metamodel;
   }
 
   visit_PurePropertyMapping(protocol: V1_PurePropertyMapping): PropertyMapping {

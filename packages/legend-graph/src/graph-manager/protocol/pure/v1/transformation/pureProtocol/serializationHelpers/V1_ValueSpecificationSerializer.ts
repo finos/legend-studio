@@ -784,7 +784,7 @@ class V1_ValueSpecificationSerializer
   visit_INTERNAL__UnknownValueSpecfication(
     valueSpecification: V1_INTERNAL__UnknownValueSpecification,
   ): PlainObject<V1_ValueSpecification> {
-    return valueSpecification.content as PlainObject<V1_ValueSpecification>;
+    return valueSpecification.content;
   }
 
   visit_Variable(

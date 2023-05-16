@@ -31,7 +31,6 @@ import {
   type ElementTypeLabelGetter,
   LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
-  type PureGrammarElementLabeler,
 } from '@finos/legend-application-studio';
 import { MasterRecordDefinition } from '../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from '../../__lib__/studio/DSL_Mastery_LegendStudioCodeSnippet.js';
@@ -52,23 +51,8 @@ export class DSL_Mastery_LegendStudioApplicationPlugin
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
-  getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_MASTERY_PARSER_NAME];
-  }
-
   getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL];
-  }
-
-  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof MasterRecordDefinition) {
-          return PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

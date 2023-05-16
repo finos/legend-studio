@@ -43,6 +43,10 @@ import { V1_DatabaseConnection } from '../../../../model/packageableElements/sto
 import { PureClientVersion } from '../../../../../../../../graph-manager/GraphManagerUtils.js';
 import { V1_PureGraphManager } from '../../../../V1_PureGraphManager.js';
 import { stringifyDataType } from '../../../../../../../../graph/helpers/STO_Relational_Helper.js';
+import { V1_INTERNAL__UnknownResultType } from '../../../../model/executionPlan/results/V1_INTERNAL__UnknownResultType.js';
+import { INTERNAL__UnknownResultType } from '../../../../../../../../graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
+import { INTERNAL__UnknownExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
+import { V1_INTERNAL__UnknownExecutionNode } from '../../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 
@@ -85,7 +89,11 @@ const transformResultType = (
   metamodel: ResultType,
   context: V1_GraphTransformerContext,
 ): V1_ResultType => {
-  if (metamodel instanceof DataTypeResultType) {
+  if (metamodel instanceof INTERNAL__UnknownResultType) {
+    const protocol = new V1_INTERNAL__UnknownResultType();
+    protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof DataTypeResultType) {
     return transformDataTypeResultType(metamodel, context);
   } else if (metamodel instanceof TDSResultType) {
     return transformTDSResultType(metamodel, context);
@@ -158,7 +166,12 @@ export function V1_transformExecutionNode(
   metamodel: ExecutionNode,
   context: V1_GraphTransformerContext,
 ): V1_ExecutionNode {
-  if (metamodel instanceof SQLExecutionNode) {
+  if (metamodel instanceof INTERNAL__UnknownExecutionNode) {
+    const protocol = new V1_INTERNAL__UnknownExecutionNode();
+    transformBaseExecutionNode(metamodel, protocol, context);
+    protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof SQLExecutionNode) {
     return transformSQLExecutionNode(metamodel, context);
   } else if (metamodel instanceof RelationalTDSInstantiationExecutionNode) {
     return transformRelationalTDSInstantiationExecutionNode(metamodel, context);

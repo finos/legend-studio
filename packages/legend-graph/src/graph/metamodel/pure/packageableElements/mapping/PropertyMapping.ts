@@ -30,9 +30,14 @@ import type { AggregationAwarePropertyMapping } from './aggregationAware/Aggrega
 import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping.js';
 import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo.js';
 import type { SetImplementationReference } from './SetImplementationReference.js';
+import type { INTERNAL__UnknownPropertyMapping } from './INTERNAL__UnknownPropertyMapping.js';
 
 export interface PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: PropertyMapping): T;
+  visit_INTERNAL__UnknownPropertyMapping(
+    propertyMapping: INTERNAL__UnknownPropertyMapping,
+  ): T;
+
   visit_PurePropertyMapping(propertyMapping: PurePropertyMapping): T;
   visit_FlatDataAssociationPropertyMapping(
     propertyMapping: FlatDataAssociationPropertyMapping,
@@ -88,7 +93,6 @@ export abstract class PropertyMapping implements Hashable {
   sourceSetImplementation: SetImplementationReference;
   targetSetImplementation?: SetImplementationReference | undefined;
   localMappingProperty?: LocalMappingPropertyInfo | undefined;
-  // store?: Store | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,

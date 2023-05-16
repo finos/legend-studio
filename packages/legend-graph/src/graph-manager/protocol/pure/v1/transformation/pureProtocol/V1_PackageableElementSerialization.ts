@@ -77,17 +77,17 @@ import {
   V1_DATABASE_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_DatabaseSerializationHelper.js';
 import {
-  V1_associationSchema,
+  V1_associationModelSchema,
   V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE,
-  V1_classSchema,
+  V1_classModelSchema,
   V1_CLASS_ELEMENT_PROTOCOL_TYPE,
-  V1_enumerationSchema,
+  V1_enumerationModelSchema,
   V1_ENUMERATION_ELEMENT_PROTOCOL_TYPE,
-  V1_functionSchema,
+  V1_functionModelSchema,
   V1_FUNCTION_ELEMENT_PROTOCOL_TYPE,
-  V1_measureSchema,
+  V1_measureModelSchema,
   V1_MEASURE_ELEMENT_PROTOCOL_TYPE,
-  V1_profileSchema,
+  V1_profileModelSchema,
   V1_PROFILE_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_DomainSerializationHelper.js';
 import type {
@@ -105,6 +105,7 @@ import {
   V1_EXECUTION_ENVIRONMENT_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_ExecutionEnvironmentSerializationHelper.js';
 import type { V1_ExecutionEnvironmentInstance } from '../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
+import { V1_INTERNAL__UnknownPackageableElement } from '../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -133,34 +134,40 @@ class V1_PackageableElementSerializer
     );
   }
 
+  visit_INTERNAL__UnknownPackageableElement(
+    element: V1_INTERNAL__UnknownPackageableElement,
+  ): PlainObject<V1_PackageableElement> {
+    return element.content;
+  }
+
   visit_Profile(element: V1_Profile): PlainObject<V1_PackageableElement> {
-    return serialize(V1_profileSchema, element);
+    return serialize(V1_profileModelSchema, element);
   }
 
   visit_Enumeration(
     element: V1_Enumeration,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_enumerationSchema, element);
+    return serialize(V1_enumerationModelSchema, element);
   }
 
   visit_Measure(element: V1_Measure): PlainObject<V1_PackageableElement> {
-    return serialize(V1_measureSchema, element);
+    return serialize(V1_measureModelSchema, element);
   }
 
   visit_Class(element: V1_Class): PlainObject<V1_PackageableElement> {
-    return serialize(V1_classSchema, element);
+    return serialize(V1_classModelSchema, element);
   }
 
   visit_Association(
     element: V1_Association,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_associationSchema, element);
+    return serialize(V1_associationModelSchema, element);
   }
 
   visit_ConcreteFunctionDefinition(
     element: V1_ConcreteFunctionDefinition,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_functionSchema, element);
+    return serialize(V1_functionModelSchema, element);
   }
 
   visit_FlatData(element: V1_FlatData): PlainObject<V1_PackageableElement> {
@@ -260,17 +267,17 @@ export const V1_deserializePackageableElement = (
     );
     switch (json._type) {
       case V1_PROFILE_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_profileSchema, json);
+        return deserialize(V1_profileModelSchema, json);
       case V1_ENUMERATION_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_enumerationSchema, json);
+        return deserialize(V1_enumerationModelSchema, json);
       case V1_MEASURE_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_measureSchema, json);
+        return deserialize(V1_measureModelSchema, json);
       case V1_CLASS_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_classSchema, json);
+        return deserialize(V1_classModelSchema, json);
       case V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_associationSchema, json);
+        return deserialize(V1_associationModelSchema, json);
       case V1_FUNCTION_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_functionSchema, json);
+        return deserialize(V1_functionModelSchema, json);
       case V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_flatDataModelSchema, json);
       case V1_DATABASE_ELEMENT_PROTOCOL_TYPE:
@@ -295,14 +302,18 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_dataElementModelSchema(plugins), json);
       default: {
         for (const deserializer of extraElementProtocolDeserializers) {
-          const elementProtocol = deserializer(json, plugins);
-          if (elementProtocol) {
-            return elementProtocol;
+          const protocol = deserializer(json, plugins);
+          if (protocol) {
+            return protocol;
           }
         }
-        throw new UnsupportedOperationError(
-          `Can't deserialize element of type '${json._type}': no compatible deserializer available from plugins`,
-        );
+
+        // Fall back to create unknown stub if not supported
+        const protocol = new V1_INTERNAL__UnknownPackageableElement();
+        protocol.name = name;
+        protocol.package = packagePath;
+        protocol.content = json;
+        return protocol;
       }
     }
   } catch (error) {

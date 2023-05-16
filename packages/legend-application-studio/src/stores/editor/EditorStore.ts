@@ -101,7 +101,6 @@ import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
-import { EditorDepotState } from './EditorDepotState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -118,6 +117,7 @@ export class EditorStore implements CommandRegistrar {
   readonly pluginManager: LegendStudioPluginManager;
 
   readonly initState = ActionState.create();
+
   initialEntityPath?: string | undefined;
   editorMode: EditorMode;
   // NOTE: once we clear up the editor store to make modes more separated
@@ -130,7 +130,6 @@ export class EditorStore implements CommandRegistrar {
   editorExtensionStates: EditorExtensionState[] = [];
   explorerTreeState: ExplorerTreeState;
   sdlcState: EditorSDLCState;
-  depotState: EditorDepotState;
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
   graphEditorMode: GraphEditorMode;
@@ -213,7 +212,6 @@ export class EditorStore implements CommandRegistrar {
     this.editorMode = new StandardEditorMode(this);
 
     this.sdlcState = new EditorSDLCState(this);
-    this.depotState = new EditorDepotState(this);
     this.graphState = new EditorGraphState(this);
     this.graphManagerState = new GraphManagerState(
       applicationStore.pluginManager,
@@ -669,6 +667,20 @@ export class EditorStore implements CommandRegistrar {
   }
 
   private *initStandardMode(): GeneratorFn<void> {
+    const projectId = this.sdlcState.activeProject.projectId;
+    const activeWorkspace = this.sdlcState.activeWorkspace;
+    const projectConfiguration = (yield this.sdlcServerClient.getConfiguration(
+      projectId,
+      activeWorkspace,
+    )) as PlainObject<ProjectConfiguration>;
+    this.projectConfigurationEditorState.setProjectConfiguration(
+      ProjectConfiguration.serialization.fromJson(projectConfiguration),
+    );
+    // make sure we set the original project configuration to a different object
+    this.projectConfigurationEditorState.setOriginalProjectConfiguration(
+      ProjectConfiguration.serialization.fromJson(projectConfiguration),
+    );
+
     yield Promise.all([
       this.buildGraph(),
       this.sdlcState.checkIfWorkspaceIsOutdated(),
@@ -678,11 +690,14 @@ export class EditorStore implements CommandRegistrar {
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.sdlcState.fetchProjectVersions(),
-      this.depotState.fetchProjectVersions(),
+      this.sdlcState.fetchPublishedProjectVersions(),
     ]);
   }
 
   private *initConflictResolutionMode(): GeneratorFn<void> {
+    yield flowResult(
+      this.conflictResolutionState.initProjectConfigurationInConflictResolutionMode(),
+    );
     this.applicationStore.alertService.setActionAlertInfo({
       message: 'Failed to update workspace.',
       prompt:
@@ -715,33 +730,23 @@ export class EditorStore implements CommandRegistrar {
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.sdlcState.fetchProjectVersions(),
-      this.depotState.fetchProjectVersions(),
+      this.sdlcState.fetchPublishedProjectVersions(),
     ]);
   }
 
   *buildGraph(graphEntities?: Entity[]): GeneratorFn<void> {
     const startTime = Date.now();
     let entities: Entity[];
-    let projectConfiguration: PlainObject<ProjectConfiguration>;
 
     this.initState.setMessage(`Fetching entities...`);
     try {
       // fetch workspace entities and config at the same time
       const projectId = this.sdlcState.activeProject.projectId;
       const activeWorkspace = this.sdlcState.activeWorkspace;
-      const result = (yield Promise.all([
-        this.sdlcServerClient.getEntities(projectId, activeWorkspace),
-        this.sdlcServerClient.getConfiguration(projectId, activeWorkspace),
-      ])) as [Entity[], PlainObject<ProjectConfiguration>];
-      entities = result[0];
-      projectConfiguration = result[1];
-      this.projectConfigurationEditorState.setProjectConfiguration(
-        ProjectConfiguration.serialization.fromJson(projectConfiguration),
-      );
-      // make sure we set the original project configuration to a different object
-      this.projectConfigurationEditorState.setOriginalProjectConfiguration(
-        ProjectConfiguration.serialization.fromJson(projectConfiguration),
-      );
+      entities = (yield this.sdlcServerClient.getEntities(
+        projectId,
+        activeWorkspace,
+      )) as Entity[];
       this.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
         entities,
       );

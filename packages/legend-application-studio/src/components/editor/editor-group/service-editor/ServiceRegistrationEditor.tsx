@@ -285,7 +285,10 @@ export const ServiceRegistrationEditor = observer(() => {
             darkMode={true}
             disabled={registrationState.versionOptions === undefined}
             placeholder={versionPlaceholder}
-            isLoading={editorStore.depotState.isFetchingProjectVersions}
+            isLoading={
+              editorStore.sdlcState.fetchPublishedProjectVersionsState
+                .isInProgress
+            }
           />
         </div>
       </div>

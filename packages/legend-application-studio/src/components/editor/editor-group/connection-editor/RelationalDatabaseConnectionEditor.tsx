@@ -1163,7 +1163,7 @@ const renderEditorPostProcessor = (
       <UnsupportedEditorPanel
         isReadOnly={true}
         text="Can't display post-processor in form mode"
-      ></UnsupportedEditorPanel>
+      />
     );
   }
 };
@@ -1572,7 +1572,7 @@ const RelationalConnectionGeneralEditor = observer(
       label: connection.type,
     };
     const onTypeChange = (
-      val: { label: string; value: DatabaseType } | null,
+      val: { label: string; value: string } | null,
     ): void => {
       dBConnection_setType(connection, val?.value ?? DatabaseType.H2);
     };
@@ -1594,15 +1594,16 @@ const RelationalConnectionGeneralEditor = observer(
         label: type,
       }));
     const selectedSourceSpec = {
-      value: connectionValueState.selectedDatasourceSpec,
-      label: connectionValueState.selectedDatasourceSpec,
+      label:
+        connectionValueState.selectedDatasourceSpecificationType ?? 'Unknown',
+      value: connectionValueState.selectedDatasourceSpecificationType,
     };
     const onSourceSpecChange = (
-      val: { label: string; value: string } | null,
+      val: { label: string; value: string | undefined } | null,
     ): void => {
-      connectionValueState.changeDatasourceSpec(
-        val?.value ?? CORE_DATASOURCE_SPEC_TYPE.STATIC,
-      );
+      if (val?.value) {
+        connectionValueState.changeDatasourceSpec(val.value);
+      }
     };
 
     // auth type
@@ -1622,15 +1623,16 @@ const RelationalConnectionGeneralEditor = observer(
         label: type,
       }));
     const selectedAuth = {
-      value: connectionValueState.selectedAuth,
-      label: connectionValueState.selectedAuth,
+      label:
+        connectionValueState.selectedAuthenticationStrategyType ?? 'Unknown',
+      value: connectionValueState.selectedAuthenticationStrategyType,
     };
     const onAuthStrategyChange = (
-      val: { label: string; value: string } | null,
+      val: { label: string; value: string | undefined } | null,
     ): void => {
-      connectionValueState.changeAuthenticationStrategy(
-        val?.value ?? CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH,
-      );
+      if (val?.value) {
+        connectionValueState.changeAuthenticationStrategy(val.value);
+      }
     };
 
     return (
@@ -1669,7 +1671,7 @@ const RelationalConnectionGeneralEditor = observer(
               <ResizablePanelGroup orientation="vertical">
                 <ResizablePanel size={450} minSize={50}>
                   <div className="relational-connection-editor__auth">
-                    <PanelHeader title="datasource spec"></PanelHeader>
+                    <PanelHeader title="datasource specification"></PanelHeader>
                     <PanelContent className="relational-connection-editor__auth__content">
                       <PanelFormSection>
                         <div className="panel__content__form__section__header__label">
@@ -1696,7 +1698,7 @@ const RelationalConnectionGeneralEditor = observer(
                 <ResizablePanelSplitter />
                 <ResizablePanel>
                   <div className="relational-connection-editor__source">
-                    <PanelHeader title="authentication spec"></PanelHeader>
+                    <PanelHeader title="authentication strategy"></PanelHeader>
                     <PanelContent className="relational-connection-editor__source__content">
                       <PanelFormSection>
                         <div className="panel__content__form__section__header__label">

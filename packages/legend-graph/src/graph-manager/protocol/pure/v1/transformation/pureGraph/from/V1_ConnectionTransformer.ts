@@ -83,10 +83,7 @@ import {
   V1_TrinoDelegatedKerberosAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
-import {
-  type V1_DatabaseType,
-  V1_RelationalDatabaseConnection,
-} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
+import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
@@ -96,6 +93,12 @@ import { V1_transformPostProcessor } from './V1_PostProcessorTransformer.js';
 import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { V1_INTERNAL__UnknownConnection } from '../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
+import type { INTERNAL__UnknownConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
+import { INTERNAL__UnknownDatasourceSpecification } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownDatasourceSpecification.js';
+import { INTERNAL__UnknownAuthenticationStrategy } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/INTERNAL__UnknownAuthenticationStrategy.js';
+import { V1_INTERNAL__UnknownDatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownDatasourceSpecification.js';
+import { V1_INTERNAL__UnknownAuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_INTERNAL__UnknownAuthenticationStrategy.js';
 
 const transformStaticDatasourceSpecification = (
   metamodel: StaticDatasourceSpecification,
@@ -206,7 +209,11 @@ const transformDatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: V1_GraphTransformerContext,
 ): V1_DatasourceSpecification => {
-  if (metamodel instanceof StaticDatasourceSpecification) {
+  if (metamodel instanceof INTERNAL__UnknownDatasourceSpecification) {
+    const protocol = new V1_INTERNAL__UnknownDatasourceSpecification();
+    protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof StaticDatasourceSpecification) {
     return transformStaticDatasourceSpecification(metamodel);
   } else if (metamodel instanceof EmbeddedH2DatasourceSpecification) {
     return transformEmbeddedH2DatasourceSpecification(metamodel);
@@ -260,7 +267,11 @@ const transformAuthenticationStrategy = (
   metamodel: AuthenticationStrategy,
   context: V1_GraphTransformerContext,
 ): V1_AuthenticationStrategy => {
-  if (metamodel instanceof DefaultH2AuthenticationStrategy) {
+  if (metamodel instanceof INTERNAL__UnknownAuthenticationStrategy) {
+    const protocol = new V1_INTERNAL__UnknownAuthenticationStrategy();
+    protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof DefaultH2AuthenticationStrategy) {
     return new V1_DefaultH2AuthenticationStrategy();
   } else if (metamodel instanceof DelegatedKerberosAuthenticationStrategy) {
     const auth = new V1_DelegatedKerberosAuthenticationStrategy();
@@ -344,7 +355,7 @@ export const V1_transformRelationalDatabaseConnection = (
     metamodel.datasourceSpecification,
     context,
   );
-  connection.type = metamodel.type as unknown as V1_DatabaseType;
+  connection.type = metamodel.type;
   connection.databaseType = connection.type;
   connection.timeZone = metamodel.timeZone;
   connection.quoteIdentifiers = metamodel.quoteIdentifiers;
@@ -429,6 +440,15 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
       `Can't transform connection: no compatible transformer available from plugins`,
       connection,
     );
+  }
+
+  visit_INTERNAL__UnknownConnection(
+    connection: INTERNAL__UnknownConnection,
+  ): V1_Connection {
+    const protocol = new V1_INTERNAL__UnknownConnection();
+    protocol.store = undefined;
+    protocol.content = connection.content;
+    return protocol;
   }
 
   visit_ConnectionPointer(connection: ConnectionPointer): V1_Connection {

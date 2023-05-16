@@ -20,23 +20,23 @@ import {
   JsonExecutionResult,
   TDSExecutionResult,
   ClassExecutionResult,
-  INTERNAL__UnknownExecutionResult,
 } from './ExecutionResult.js';
+import { INTERNAL__UnknownExecutionResult } from './INTERNAL__UnknownExecutionResult.js';
 
 // Execution Results often wrap the result values with additional metadata.
 // This method extracts the actual values from the execution result
 export const extractExecutionResultValues = (
   executionResult: ExecutionResult,
 ): object => {
-  if (executionResult instanceof JsonExecutionResult) {
+  if (executionResult instanceof INTERNAL__UnknownExecutionResult) {
+    return executionResult.content;
+  } else if (executionResult instanceof JsonExecutionResult) {
     return executionResult.values;
   } else if (executionResult instanceof TDSExecutionResult) {
     // Note we need the result values in object format to run test results
     return executionResult.result.rows.map((v) => ({ values: v.values }));
   } else if (executionResult instanceof ClassExecutionResult) {
     return executionResult.objects;
-  } else if (executionResult instanceof INTERNAL__UnknownExecutionResult) {
-    return executionResult.content;
   }
   throw new UnsupportedOperationError(
     `Can't extract values from execution result`,

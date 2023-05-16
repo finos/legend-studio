@@ -26,7 +26,6 @@ export class ExecutionNode {
   resultSizeRange?: Multiplicity | undefined;
   executionNodes: ExecutionNode[] = [];
   authDependent?: boolean | undefined;
-  kerberos?: string | undefined;
   supportFunctions: string[] = [];
   // implementation : PlatformImplementation[0..1];
 }

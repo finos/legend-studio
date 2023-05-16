@@ -50,6 +50,8 @@ import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMap
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { MergeOperationSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
+import type { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
+import { INTERNAL__UnknownSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
 
 const getClassMappingOperationType = (value: string): OperationType =>
   guaranteeNonNullable(
@@ -89,6 +91,28 @@ export class V1_ClassMappingFirstPassBuilder
       `Can't build new class mapping: no compatible builder available from plugins`,
       classMapping,
     );
+  }
+
+  visit_INTERNAL__UnknownClassMapping(
+    classMapping: V1_INTERNAL__UnknownClassMapping,
+  ): SetImplementation {
+    assertNonEmptyString(
+      classMapping.class,
+      `Unknown class mapping 'class' field is missing or empty`,
+    );
+    assertNonNullable(
+      classMapping.root,
+      `Unknown class mapping 'root' field is missing`,
+    );
+    const targetClass = this.context.resolveClass(classMapping.class);
+    const metamodel = new INTERNAL__UnknownSetImplementation(
+      V1_getInferredClassMappingId(targetClass.value, classMapping),
+      this.parent,
+      targetClass,
+      InferableMappingElementRootExplicitValue.create(classMapping.root),
+    );
+    metamodel.content = classMapping.content;
+    return metamodel;
   }
 
   visit_OperationClassMapping(

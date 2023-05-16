@@ -89,6 +89,7 @@ import { GraphBuilderError } from '../../../../../../GraphManagerUtils.js';
 import { PostValidation } from '../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
 import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import { V1_buildExecutionParameters } from './V1_ExecutionEnvironmentBuilderHelper.js';
+import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -103,6 +104,12 @@ export class V1_ElementSecondPassBuilder
     this.context.extensions
       .getExtraBuilderOrThrow(element)
       .runSecondPass(element, this.context);
+  }
+
+  visit_INTERNAL__UnknownPackageableElement(
+    element: V1_INTERNAL__UnknownPackageableElement,
+  ): void {
+    throw new UnsupportedOperationError();
   }
 
   visit_Profile(element: V1_Profile): void {

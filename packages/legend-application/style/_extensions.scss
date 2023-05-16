@@ -28,7 +28,6 @@
   --color-generated: var(--color-pink-200);
   --color-system: var(--color-light-blue-50);
   --color-dependency: var(--color-lime-50);
-  --color-config: var(--color-orange-100);
   --color-flat-data: var(--color-orange-100);
   --color-relational: var(--color-blue-500);
   --color-file-generation: var(--color-blue-50);
@@ -97,10 +96,6 @@
 
   &--dependency {
     color: var(--color-dependency);
-  }
-
-  &--config {
-    color: var(--color-config);
   }
 
   &--flat-data {

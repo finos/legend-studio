@@ -31,6 +31,7 @@ import {
   type V1_PackageableElement,
   GRAPH_MANAGER_EVENT,
   Core_GraphManagerPreset,
+  type ClassifierPathMapping,
 } from '@finos/legend-graph';
 import {
   TEST__checkGraphHashUnchanged,
@@ -86,6 +87,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
 
 type GrammarRoundtripOptions = {
   debug?: boolean;
+  noExtensions?: boolean;
 };
 
 const logPhase = (
@@ -128,20 +130,36 @@ const checkGrammarRoundtrip = async (
   // extensions, this will be updated accordingly
   // See https://github.com/finos/legend-studio/issues/820
   pluginManager
-    .usePresets([
-      new Core_GraphManagerPreset(),
-      new DSL_Text_GraphManagerPreset(),
-      new DSL_Diagram_GraphManagerPreset(),
-      new DSL_DataSpace_GraphManagerPreset(),
-      new DSL_Persistence_GraphManagerPreset(),
-      new DSL_Mastery_GraphManagerPreset(),
-      new STO_ServiceStore_GraphManagerPreset(),
-    ])
+    .usePresets(
+      options?.noExtensions
+        ? [new Core_GraphManagerPreset()]
+        : [
+            new Core_GraphManagerPreset(),
+            new DSL_Text_GraphManagerPreset(),
+            new DSL_Diagram_GraphManagerPreset(),
+            new DSL_DataSpace_GraphManagerPreset(),
+            new DSL_Persistence_GraphManagerPreset(),
+            new DSL_Mastery_GraphManagerPreset(),
+            new STO_ServiceStore_GraphManagerPreset(),
+          ],
+    )
     .usePlugins([new WebConsole()]);
   pluginManager.install();
   const log = new LogService();
   log.registerPlugins(pluginManager.getLoggerPlugins());
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager, log);
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {
+      baseUrl: ENGINE_SERVER_URL,
+    },
+    TEMPORARY__classifierPathMapping: (
+      await axios.get<unknown, AxiosResponse<ClassifierPathMapping[]>>(
+        `${ENGINE_SERVER_URL}/pure/v1/protocol/pure/getClassifierPathMap`,
+      )
+    ).data,
+  });
 
   if (options?.debug) {
     log.info(LogEvent.create(`Roundtrip test case: ${testCase}`));
@@ -332,6 +350,17 @@ describe('Grammar roundtrip test', () => {
     if (!isSkipped) {
       await checkGrammarRoundtrip(testName, filePath, {
         debug: false,
+      });
+    }
+  });
+});
+
+describe('Grammar roundtrip test (without extensions)', () => {
+  test.each(cases)('%s', async (testName, filePath, isSkipped) => {
+    if (!isSkipped) {
+      await checkGrammarRoundtrip(testName, filePath, {
+        debug: false,
+        noExtensions: true,
       });
     }
   });

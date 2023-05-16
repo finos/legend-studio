@@ -128,6 +128,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     makeObservable(this, {
       selectedTab: observable,
       postProcessorState: observable,
+      selectedDatasourceSpecificationType: computed,
+      selectedAuthenticationStrategyType: computed,
       setSelectedTab: action,
       selectPostProcessor: action,
     });
@@ -178,7 +180,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     return `${this.connection.type} connection`;
   }
 
-  get selectedDatasourceSpec(): string {
+  get selectedDatasourceSpecificationType(): string | undefined {
     const spec = this.connection.datasourceSpecification;
     if (spec instanceof StaticDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.STATIC;
@@ -214,10 +216,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         return type;
       }
     }
-    throw new UnsupportedOperationError(
-      `Can't classify datasource specification: no compatible classifer available from plugins`,
-      spec,
-    );
+    return undefined;
   }
 
   changeDatasourceSpec(type: string): void {
@@ -302,7 +301,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       observerContext,
     );
   }
-  get selectedAuth(): string {
+
+  get selectedAuthenticationStrategyType(): string | undefined {
     const auth = this.connection.authenticationStrategy;
     if (auth instanceof DelegatedKerberosAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS;
@@ -347,10 +347,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         return type;
       }
     }
-    throw new UnsupportedOperationError(
-      `Can't classify authentication strategy: no compatible classifier available from plugins`,
-      auth,
-    );
+
+    return undefined;
   }
 
   changeAuthenticationStrategy(type: string): void {

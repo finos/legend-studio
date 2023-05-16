@@ -62,6 +62,10 @@ import { TDSResultType } from '../../../../../../../graph/metamodel/pure/executi
 import { TDSColumn } from '../../../../../../../graph/metamodel/pure/executionPlan/result/TDSColumn.js';
 import type { V1_TDSColumn } from '../../../model/executionPlan/results/V1_TDSColumn.js';
 import { CORE_PURE_PATH } from '../../../../../../../graph/MetaModelConst.js';
+import { V1_INTERNAL__UnknownResultType } from '../../../model/executionPlan/results/V1_INTERNAL__UnknownResultType.js';
+import { INTERNAL__UnknownResultType } from '../../../../../../../graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
+import { V1_INTERNAL__UnknownExecutionNode } from '../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
+import { INTERNAL__UnknownExecutionNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
 
 const parseDataType = (val: string): RelationalDataType => {
   const getTypeParams = (typeVal: string): number[] =>
@@ -189,7 +193,12 @@ const buildResultType = (
   protocol: V1_ResultType,
   context: V1_GraphBuilderContext,
 ): ResultType => {
-  if (protocol instanceof V1_DataTypeResultType) {
+  if (protocol instanceof V1_INTERNAL__UnknownResultType) {
+    const metamodel = new INTERNAL__UnknownResultType();
+    metamodel.type = context.resolveType(CORE_PURE_PATH.ANY);
+    metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_DataTypeResultType) {
     return buildDataTypeResultType(protocol, context);
   } else if (protocol instanceof V1_TDSResultType) {
     return buildTDSResultType(protocol, context);
@@ -269,7 +278,12 @@ function buildExecutionNode(
   protocol: V1_ExecutionNode,
   context: V1_GraphBuilderContext,
 ): ExecutionNode {
-  if (protocol instanceof V1_SQLExecutionNode) {
+  if (protocol instanceof V1_INTERNAL__UnknownExecutionNode) {
+    const metamodel = new INTERNAL__UnknownExecutionNode();
+    buildBaseExecutionNode(metamodel, protocol, context);
+    metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_SQLExecutionNode) {
     return buildSQLExecutionNode(protocol, context);
   } else if (protocol instanceof V1_RelationalTDSInstantiationExecutionNode) {
     return buildRelationalTDSInstantiationExecutionNode(protocol, context);

@@ -96,6 +96,8 @@ import type { AssociationImplementation } from '../graph/metamodel/pure/packagea
 import { InstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
+import type { SourceInformation } from './action/SourceInformation.js';
+import type { ClassifierPathMapping } from './action/protocol/ClassifierPathMapping.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -103,6 +105,13 @@ export interface TEMPORARY__EngineSetupConfig {
   clientConfig: ServerClientConfig & {
     queryBaseUrl?: string | undefined;
   };
+  /**
+   * This is a workaround we need to manually supply the classifier path mapping
+   * for roundtrip grammar test, as the network call to engine is blocked in test
+   * environment, till we figure out the best way to do this, we can remove this
+   * config
+   */
+  TEMPORARY__classifierPathMapping?: ClassifierPathMapping[] | undefined;
 }
 
 export interface GraphBuilderOptions {
@@ -265,14 +274,21 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  abstract graphToPureCode(graph: PureModel): Promise<string>;
+  abstract graphToPureCode(
+    graph: PureModel,
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string>;
   abstract pureCodeToEntities(
     code: string,
     options?: {
+      sourceInformationIndex?: Map<string, SourceInformation>;
       TEMPORARY__keepSectionIndex?: boolean;
     },
   ): Promise<Entity[]>;
-  abstract entitiesToPureCode(entities: Entity[]): Promise<string>;
+  abstract entitiesToPureCode(
+    entities: Entity[],
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string>;
   abstract pureCodeToLambda(
     lambda: string,
     lambdaId?: string,

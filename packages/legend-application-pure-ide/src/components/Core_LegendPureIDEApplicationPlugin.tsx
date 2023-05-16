@@ -26,10 +26,7 @@ import {
   LEGEND_PURE_IDE_DIAGRAM_EDITOR_COMMAND_CONFIG,
   LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_CONFIG,
 } from '../__lib__/LegendPureIDECommand.js';
-import {
-  PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
-  PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
-} from '../stores/PureFileEditorUtils.js';
+import { PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL } from '../stores/PureFileEditorUtils.js';
 import {
   configureCodeEditorComponent,
   setupPureLanguageService,
@@ -51,7 +48,6 @@ export class Core_LegendPureIDEApplicationPlugin extends LegendPureIDEApplicatio
           // also, in this particular case, for convenience, we would consider DSL Diagram as part of core Pure
           {
             extraKeywords: [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL],
-            extraParserKeywords: [PURE_GRAMMAR_DIAGRAM_PARSER_NAME],
           },
         );
       },

@@ -60,14 +60,6 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
                   plugin as DSL_LegendStudioApplicationPlugin_Extension
                 ).getExtraPureGrammarKeywords?.() ?? [],
             ),
-          extraParserKeywords: applicationStore.pluginManager
-            .getApplicationPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as DSL_LegendStudioApplicationPlugin_Extension
-                ).getExtraPureGrammarParserNames?.() ?? [],
-            ),
         });
       },
     ];

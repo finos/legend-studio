@@ -180,6 +180,10 @@ import {
 import type { StoreTestData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { V1_MappingStoreTestData } from '../../../model/packageableElements/mapping/V1_MappingStoreTestData.js';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
+import { INTERNAL__UnknownPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
+import { V1_INTERNAL__UnknownPropertyMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownPropertyMapping.js';
+import type { INTERNAL__UnknownSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
+import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -483,7 +487,9 @@ const transformClassMappingPropertyMappings = (
 ): V1_PropertyMapping[] =>
   values
     .filter((value) => {
-      if (value instanceof PurePropertyMapping) {
+      if (value instanceof INTERNAL__UnknownPropertyMapping) {
+        return true;
+      } else if (value instanceof PurePropertyMapping) {
         return !isStubbed_RawLambda(value.transform);
       } else if (value instanceof FlatDataPropertyMapping) {
         return !isStubbed_RawLambda(value.transform);
@@ -832,6 +838,14 @@ class PropertyMappingTransformer
       `Can't transform property mapping: no compatible transformer available from plugins`,
       propertyMapping,
     );
+  }
+
+  visit_INTERNAL__UnknownPropertyMapping(
+    propertyMapping: INTERNAL__UnknownPropertyMapping,
+  ): V1_PropertyMapping {
+    const protocol = new V1_INTERNAL__UnknownPropertyMapping();
+    protocol.content = propertyMapping.content;
+    return protocol;
   }
 
   visit_PurePropertyMapping(
@@ -1227,6 +1241,17 @@ export class V1_SetImplementationTransformer
       `Can't transform class mapping: no compatible transformer available from plugins`,
       setImplementation,
     );
+  }
+
+  visit_INTERNAL__UnknownSetImplementation(
+    setImplementation: INTERNAL__UnknownSetImplementation,
+  ): V1_ClassMapping | undefined {
+    const protocol = new V1_INTERNAL__UnknownClassMapping();
+    protocol.class = setImplementation.class.valueForSerialization ?? '';
+    protocol.id = mappingElementIdSerializer(setImplementation.id);
+    protocol.root = setImplementation.root.valueForSerialization;
+    protocol.content = setImplementation.content;
+    return protocol;
   }
 
   visit_OperationSetImplementation(

@@ -34,6 +34,8 @@ import type { ViewReference } from '../../../../../../../graph/metamodel/pure/pa
 import type { TableReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TableReference.js';
 import { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { INTERNAL__UnknownPostProcessor } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/INTERNAL__UnknownPostProcessor.js';
+import { V1_INTERNAL__UnknownPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_INTERNAL__UnknownPostProcessor.js';
 
 const V1_transformSchemaNameMapper = (
   val: SchemaNameMapper,
@@ -71,13 +73,17 @@ export const V1_transformRelation = (
 };
 
 export const V1_transformPostProcessor = (
-  postProcessor: PostProcessor,
+  metamodel: PostProcessor,
   context: V1_GraphTransformerContext,
 ): V1_PostProcessor => {
-  if (postProcessor instanceof MapperPostProcessor) {
-    const mapperPostProcessor = new V1_MapperPostProcessor();
-    mapperPostProcessor.mappers = postProcessor.mappers.map(V1_transformMapper);
-    return mapperPostProcessor;
+  if (metamodel instanceof INTERNAL__UnknownPostProcessor) {
+    const protocol = new V1_INTERNAL__UnknownPostProcessor();
+    protocol.content = metamodel.content;
+    return protocol;
+  } else if (metamodel instanceof MapperPostProcessor) {
+    const protocol = new V1_MapperPostProcessor();
+    protocol.mappers = metamodel.mappers.map(V1_transformMapper);
+    return protocol;
   }
   const extraConnectionPostProcessorTransformers = context.plugins.flatMap(
     (plugin) =>
@@ -86,13 +92,13 @@ export const V1_transformPostProcessor = (
       ).V1_getExtraConnectionPostProcessorTransformers?.() ?? [],
   );
   for (const transformer of extraConnectionPostProcessorTransformers) {
-    const postProcessorProtocol = transformer(postProcessor, context);
-    if (postProcessorProtocol) {
-      return postProcessorProtocol;
+    const protocol = transformer(metamodel, context);
+    if (protocol) {
+      return protocol;
     }
   }
   throw new UnsupportedOperationError(
     `Can't transform post-processor: no compatible transformer available from plugins`,
-    postProcessor,
+    metamodel,
   );
 };

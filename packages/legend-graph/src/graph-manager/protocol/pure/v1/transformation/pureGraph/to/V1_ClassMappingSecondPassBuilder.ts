@@ -66,6 +66,7 @@ import {
 } from '../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
+import type { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
 
 export class V1_ClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
@@ -88,6 +89,12 @@ export class V1_ClassMappingSecondPassBuilder
     for (const builder of extraClassMappingBuilders) {
       builder(classMapping, this.context, this.parent);
     }
+  }
+
+  visit_INTERNAL__UnknownClassMapping(
+    classMapping: V1_INTERNAL__UnknownClassMapping,
+  ): void {
+    return;
   }
 
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): void {
