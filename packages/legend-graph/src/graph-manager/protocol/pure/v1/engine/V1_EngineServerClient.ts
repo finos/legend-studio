@@ -63,7 +63,6 @@ import type {
   V1_SurveyDatasetsResult,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
 import type { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
-import type { V1_TEMPORARY__SnowflakeServiceDeploymentInput } from './service/V1_TEMPORARY__SnowflakeServiceDeploymentInput.js';
 import type { ClassifierPathMapping } from '../../../../action/protocol/ClassifierPathMapping.js';
 import type { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionActivatorInfo.js';
 import type { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
@@ -127,19 +126,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // getting the user from the main engine server, which seems problematic.
   private queryBaseUrl?: string | undefined;
 
-  // NOTE: this is temporary solution to allow us test out the Snowflake service deployment flow
-  private TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
-
   constructor(
     config: ServerClientConfig & {
       queryBaseUrl?: string | undefined;
-      TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
     },
   ) {
     super(config);
     this.queryBaseUrl = config.queryBaseUrl;
-    this.TEMPORARY__snowflakeServiceDeploymentUrl =
-      config.TEMPORARY__snowflakeServiceDeploymentUrl;
   }
 
   setEnv = (value: string | undefined): void => {
@@ -164,7 +157,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Server -------------------------------------------
 
   _server = (): string => `${this.baseUrl}/server/v1`;
-  _executionManager = (): string => `${this._server()}/executionManager`;
   getCurrentUserId = (): Promise<string> =>
     this.get(`${this._server()}/currentUser`);
 
@@ -469,6 +461,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Execute -------------------------------------------
 
   _execution = (): string => `${this._pure()}/execution`;
+  _executionManager = (): string => `${this._server()}/executionManager`;
 
   execute = (
     input: PlainObject<V1_ExecuteInput>,
@@ -528,6 +521,20 @@ export class V1_EngineServerClient extends AbstractServerClient {
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
       undefined,
+      { enableCompression: true },
+    );
+
+  cancelUserExecutions = (
+    userID: string,
+    broadcastToCluster: boolean,
+  ): Promise<string> =>
+    this.deleteWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CANCEL_USER_EXECUTIONS),
+      `${this._executionManager()}/cancelUserExecution`,
+      {},
+      {},
+      {},
+      { userID, broadcastToCluster },
       { enableCompression: true },
     );
 
@@ -711,30 +718,5 @@ export class V1_EngineServerClient extends AbstractServerClient {
       {},
       {},
       { skipProcessing: true },
-    );
-
-  // ------------------------------------------- Snowflake Service -------------------------------------------
-
-  TEMPORARY__deploySnowflakeService = (
-    input: PlainObject<V1_TEMPORARY__SnowflakeServiceDeploymentInput>,
-  ): Promise<PlainObject> =>
-    this.post(
-      `${this.TEMPORARY__snowflakeServiceDeploymentUrl ?? this.baseUrl}`,
-      input,
-      undefined,
-    );
-
-  cancelUserExecutions = (
-    userID: string,
-    broadcastToCluster: boolean,
-  ): Promise<string> =>
-    this.deleteWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CANCEL_USER_EXECUTIONS),
-      `${this._executionManager()}/cancelUserExecution`,
-      {},
-      {},
-      {},
-      { userID, broadcastToCluster },
-      { enableCompression: true },
     );
 }

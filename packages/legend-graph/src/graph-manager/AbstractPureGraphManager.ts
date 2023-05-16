@@ -585,10 +585,6 @@ export abstract class AbstractPureGraphManager {
     serviceUrl: string,
     serviceId: string,
   ): Promise<void>;
-  abstract TEMPORARY__deploySnowflakeService(
-    query: RawLambda,
-    graph: PureModel,
-  ): Promise<PlainObject>;
 
   // ------------------------------------------- Change detection -------------------------------------------
 

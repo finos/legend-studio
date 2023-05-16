@@ -36,7 +36,6 @@ import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { ServiceRegistrationEditor } from './ServiceRegistrationEditor.js';
-import { TEMPORARY__SnowflakeServiceDeployer } from './TEMPORARY__SnowflakeServiceDeployer.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   service_addOwner,
@@ -475,8 +474,6 @@ export const ServiceEditor = observer(() => {
             validationState={serviceState.postValidationState}
           />
         );
-      case SERVICE_TAB.TEMPORARY__SNOWFLAKE_SERVICE_DEPLOYMENT:
-        return <TEMPORARY__SnowflakeServiceDeployer />;
       default:
         return null;
     }
@@ -521,13 +518,6 @@ export const ServiceEditor = observer(() => {
                   return Boolean(
                     editorStore.applicationStore.config.options
                       .TEMPORARY__serviceRegistrationConfig.length,
-                  );
-                } else if (
-                  tab === SERVICE_TAB.TEMPORARY__SNOWFLAKE_SERVICE_DEPLOYMENT
-                ) {
-                  return Boolean(
-                    editorStore.applicationStore.config
-                      .TEMPORARY__snowflakeServiceDeploymentUrl,
                   );
                 }
                 return true;

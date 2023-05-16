@@ -302,7 +302,6 @@ import {
 import type { DEPRECATED__MappingTest } from '../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import { DEPRECATED__validate_MappingTest } from '../../../action/validation/DSL_Mapping_ValidationHelper.js';
 import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
-import { V1_TEMPORARY__SnowflakeServiceDeploymentInput } from './engine/service/V1_TEMPORARY__SnowflakeServiceDeploymentInput.js';
 import { V1_INTERNAL__UnknownPackageableElement } from './model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { SourceInformation } from '../../../action/SourceInformation.js';
 import type { V1_SourceInformation } from './model/V1_SourceInformation.js';
@@ -3286,29 +3285,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     });
     return results;
   };
-  async TEMPORARY__deploySnowflakeService(
-    query: RawLambda,
-    graph: PureModel,
-  ): Promise<PlainObject> {
-    const input = new V1_TEMPORARY__SnowflakeServiceDeploymentInput();
-    input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
-    input.query = V1_transformRawLambda(
-      query,
-      new V1_GraphTransformerContextBuilder(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
-    input.model = graph.origin
-      ? this.buildPureModelSDLCPointer(graph.origin, undefined)
-      : this.buildExecutionInputGraphData(graph);
-    return this.engine
-      .getEngineServerClient()
-      .TEMPORARY__deploySnowflakeService(
-        V1_TEMPORARY__SnowflakeServiceDeploymentInput.serialization.toJson(
-          input,
-        ),
-      );
-  }
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
     return this.engine.cancelUserExecutions(broadcastToCluster);

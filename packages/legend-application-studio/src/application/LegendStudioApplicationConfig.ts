@@ -67,6 +67,19 @@ class LegendStudioApplicationCoreOptions {
    * See https://github.com/finos/legend-studio/issues/1067
    */
   TEMPORARY__preserveSectionIndex = false;
+
+  /**
+   * This flag can be removed when the support for function activator is official
+   * See https://github.com/finos/legend-engine/compare/snowflakeApp
+   */
+  TEMPORARY__enableFunctionActivatorSupport = false;
+
+  /**
+   * Indicates whether we should render the new mapping testable editor or the deprecated legacy editor.
+   * This flag will be removed once the editor for testable editor is agreed on.
+   */
+  TEMPORARY__enableMappingTestableEditor = false;
+
   /**
    * Provides service registration environment configs.
    *
@@ -79,17 +92,12 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
-  /**
-   * Indicates whether we should render the new mapping testable editor or the deprecated legacy editor.
-   * This flag will be removed once the editor for testable editor is agreed on.
-   */
-  TEMPORARY__enableMappingTestableEditor = false;
-
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
+      TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
       TEMPORARY__enableMappingTestableEditor: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
@@ -113,13 +121,6 @@ export interface LegendStudioApplicationConfigurationData
   engine: {
     url: string;
     queryUrl?: string;
-    /**
-     * Provides the URL to deploy a Snowflake service.
-     *
-     * TODO: to be removed when we're done with the POC and potentially have own packageable element
-     * to house Snowflake service specification
-     */
-    TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
   };
   query?: { url: string };
 }
@@ -129,7 +130,6 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
 
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
-  readonly TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
   readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
@@ -155,12 +155,6 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       this.engineQueryServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.engine.queryUrl,
       );
-    }
-    if (input.configData.engine.TEMPORARY__snowflakeServiceDeploymentUrl) {
-      this.TEMPORARY__snowflakeServiceDeploymentUrl =
-        LegendApplicationConfig.resolveAbsoluteUrl(
-          input.configData.engine.TEMPORARY__snowflakeServiceDeploymentUrl,
-        );
     }
 
     // depot
