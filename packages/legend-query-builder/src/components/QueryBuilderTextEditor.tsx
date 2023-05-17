@@ -101,10 +101,6 @@ export const QueryBuilderTextEditor = observer(
                   disabled={queryTextEditorState.isConvertingLambdaToString}
                   lambdaEditorState={queryTextEditorState}
                   forceBackdrop={false}
-                  forceExpansion={true}
-                  useBaseTextEditorSettings={true}
-                  hideErrorBar={true}
-                  disablePopUp={true}
                 />
               )}
               {mode === QueryBuilderTextEditorMode.JSON && (

@@ -134,7 +134,7 @@ import {
   getClassPropertyType,
 } from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
-import { LambdaEditor } from '@finos/legend-query-builder';
+import { InlineLambdaEditor } from '@finos/legend-query-builder';
 
 type ClassPropertyDragSource = {
   property: Property;
@@ -836,7 +836,7 @@ const DerivedPropertyBasicEditor = observer(
                 </button>
               )}
             </div>
-            <LambdaEditor
+            <InlineLambdaEditor
               disabled={
                 editorState.classState
                   .isConvertingDerivedPropertyLambdaObjects ||
@@ -1006,7 +1006,7 @@ const ConstraintEditor = observer(
               </button>
             )}
           </div>
-          <LambdaEditor
+          <InlineLambdaEditor
             disabled={
               editorState.classState.isConvertingConstraintLambdaObjects ||
               isReadOnly ||

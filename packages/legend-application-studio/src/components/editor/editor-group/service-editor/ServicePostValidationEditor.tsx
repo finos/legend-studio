@@ -47,7 +47,7 @@ import {
   serviceValidation_setASsertionId,
   serviceValidation_setDescription,
 } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
-import { LambdaEditor } from '@finos/legend-query-builder';
+import { InlineLambdaEditor } from '@finos/legend-query-builder';
 import { flowResult } from 'mobx';
 
 const ServicePostValidationAssertionEditor = observer(
@@ -106,7 +106,7 @@ const ServicePostValidationAssertionEditor = observer(
             { backdrop__element: hasParserError },
           )}
         >
-          <LambdaEditor
+          <InlineLambdaEditor
             className="service-post-validation-editor__lambda-editor"
             disabled={isReadOnly || postValState.isRunningLambdaConversion}
             lambdaEditorState={assertionState}
@@ -158,7 +158,7 @@ const ServicePostValidationParameterEditor = observer(
             { backdrop__element: hasParserError },
           )}
         >
-          <LambdaEditor
+          <InlineLambdaEditor
             className="service-post-validation-editor__lambda-editor"
             disabled={isReadOnly || postValState.isRunningLambdaConversion}
             lambdaEditorState={paramState}

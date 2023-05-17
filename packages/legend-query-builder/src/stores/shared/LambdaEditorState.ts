@@ -28,6 +28,7 @@ import {
  */
 export abstract class LambdaEditorState {
   readonly uuid = uuid();
+
   lambdaPrefix: string;
   lambdaString: string; // value shown in lambda editor which can be edited
   parserError?: ParserError | undefined;

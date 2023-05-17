@@ -86,7 +86,7 @@ import {
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../stores/QueryBuilderConfig.js';
 import type { QueryBuilderAggregateOperator } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregateOperator.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
-import { LambdaEditor } from '../shared/LambdaEditor.js';
+import { InlineLambdaEditor } from '../shared/LambdaEditor.js';
 import {
   type QueryBuilderVariableDragSource,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
@@ -235,7 +235,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           { backdrop__element: hasParserError },
         )}
       >
-        <LambdaEditor
+        <InlineLambdaEditor
           className="query-builder__lambda-editor"
           disabled={
             projectionColumnState.tdsState.isConvertDerivationProjectionObjects

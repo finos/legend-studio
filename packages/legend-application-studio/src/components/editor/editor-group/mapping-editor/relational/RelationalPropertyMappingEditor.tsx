@@ -51,7 +51,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../../stores/editor/utils/ModelClassifierUtils.js';
-import { LambdaEditor } from '@finos/legend-query-builder';
+import { InlineLambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -67,7 +67,7 @@ const SimplePropertyMappingEditor = observer(
     return (
       <div className="property-mapping-editor__entry__container">
         <div ref={drop} className="property-mapping-editor__entry">
-          <LambdaEditor
+          <InlineLambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}
@@ -168,7 +168,7 @@ const EnumerationPropertyMappingEditor = observer(
               <ArrowCircleRightIcon />
             </button>
           </div>
-          <LambdaEditor
+          <InlineLambdaEditor
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
             )}
@@ -249,7 +249,7 @@ const ClassPropertyMappingEditor = observer(
               <ArrowCircleRightIcon />
             </button>
           </div>
-          <LambdaEditor
+          <InlineLambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}

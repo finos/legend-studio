@@ -54,7 +54,7 @@ import {
 } from '@finos/legend-application';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
-const LambdaErrorFeedback: React.FC<{
+const LambdaEditor_ErrorFeedback: React.FC<{
   error?: EngineError | undefined;
   discardChanges: () => void;
 }> = (props) => {
@@ -83,23 +83,24 @@ const LambdaErrorFeedback: React.FC<{
   );
 };
 
-const LambdaEditorInline = observer(
+const LambdaEditor_Inner = observer(
   (props: {
     className?: string | undefined;
     disabled: boolean;
+    inline?: boolean | undefined;
     lambdaEditorState: LambdaEditorState;
     transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | undefined;
     expectedType?: Type | undefined;
     matchedExpectedType?: (() => boolean) | undefined;
     onExpectedTypeLabelSelect?: (() => void) | undefined;
-    useBaseTextEditorSettings?: boolean | undefined;
     hideErrorBar?: boolean | undefined;
     forceBackdrop: boolean;
+    disablePopUp?: boolean | undefined;
+    autoFocus?: boolean | undefined;
+    openInPopUp?: (() => void) | undefined;
+    onEditorFocus?: (() => void) | undefined;
     disableExpansion?: boolean | undefined;
     forceExpansion?: boolean | undefined;
-    disablePopUp?: boolean | undefined;
-    openInPopUp: () => void;
-    onEditorFocus?: (() => void) | undefined;
   }) => {
     const {
       className,
@@ -113,8 +114,9 @@ const LambdaEditorInline = observer(
       disableExpansion,
       forceExpansion,
       disablePopUp,
-      useBaseTextEditorSettings,
+      inline,
       hideErrorBar,
+      autoFocus,
       openInPopUp,
       onEditorFocus,
     } = props;
@@ -157,9 +159,8 @@ const LambdaEditorInline = observer(
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const lambdaEditorOptions: monacoEditorAPI.IStandaloneEditorConstructionOptions =
-          useBaseTextEditorSettings
-            ? {}
-            : {
+          inline
+            ? {
                 renderLineHighlight: 'none',
                 lineHeight: 24,
                 overviewRulerBorder: false, // hide overview ruler (no current way to hide this completely yet)
@@ -173,6 +174,9 @@ const LambdaEditorInline = observer(
                 lineDecorationsWidth: 5,
                 snippetSuggestions: 'none',
                 scrollbar: { vertical: 'hidden' },
+              }
+            : {
+                padding: { top: 20, bottom: 20 },
               };
         const _editor = monacoEditorAPI.create(element, {
           ...getBaseCodeEditorOptions(),
@@ -185,7 +189,7 @@ const LambdaEditorInline = observer(
         });
         setEditor(_editor);
       }
-    }, [editor, applicationStore, useBaseTextEditorSettings]);
+    }, [editor, applicationStore, inline]);
 
     // set styling for expanded mode
     useEffect(() => {
@@ -313,6 +317,13 @@ const LambdaEditorInline = observer(
       }
     }
 
+    // auto-focus
+    useEffect(() => {
+      if (editor && autoFocus) {
+        editor.focus();
+      }
+    }, [autoFocus, editor]);
+
     // dispose editor
     useEffect(
       () => (): void => {
@@ -388,14 +399,14 @@ const LambdaEditorInline = observer(
               onClick={openInPopUp}
               disabled={Boolean(parserError)}
               tabIndex={-1}
-              title="Open..."
+              title="Open in a popup..."
             >
               <FilledWindowMaximizeIcon />
             </button>
           )}
         </div>
         {!hideErrorBar && (
-          <LambdaErrorFeedback
+          <LambdaEditor_ErrorFeedback
             error={parserError ?? compilationError}
             discardChanges={discardChanges}
           />
@@ -405,7 +416,7 @@ const LambdaEditorInline = observer(
   },
 );
 
-const LambdaEditorPopUp = observer(
+const LambdaEditor_PopUp = observer(
   (props: {
     className?: string | undefined;
     disabled: boolean;
@@ -625,63 +636,61 @@ const LambdaEditorPopUp = observer(
   },
 );
 
-/**
- * This is not strictly meant for lambda. The idea is to create an editor that allows
- * editing _something_ but allows user to edit via text.
- */
-export const LambdaEditor = observer(
-  (props: {
-    className?: string | undefined;
-    disabled: boolean;
-    lambdaEditorState: LambdaEditorState;
-    /**
-     * TODO: when we pass in these expected type we should match a type as expected type if it's covariance, i.e. it is a subtype of
-     * the expected type. Note that we also have to handle that relationship for Primitive type
-     * See https://dzone.com/articles/covariance-and-contravariance
-     */
-    expectedType?: Type | undefined;
-    matchedExpectedType?: (() => boolean) | undefined;
-    onExpectedTypeLabelSelect?: (() => void) | undefined;
-    /**
-     * As backdrop element is often shared in the application, and there could be multiple
-     * editor using that backdrop, we could end up in situation where some such editors
-     * have parser errors and some don't (this can happen when user make edits very quickly 2 lambda
-     * editor and causes parsers error simultaneously). In this case, we want to make sure when
-     * parser error is fixed in one editor, the backdrop is not dismissed immediately.
-     *
-     * NOTE: the current approach has a critical flaw, where on the same screen, there could be multiple
-     * sets of lambda editors with different values for `forceBackdrop`. So really, the only way to
-     * accomondate for this is to have `forceBackdrop` as a global value. Or we should get rid of this
-     * backdrop mechanism altogether as it's not really a good UX pattern. i.e. quick evaluation makes
-     * us believe that this is a good option, user will lose what they type, but the most recent parsable
-     * input will still be captured.
-     */
-    forceBackdrop: boolean;
-    /**
-     * To whether or not disable expasipn toggler
-     */
-    disableExpansion?: boolean | undefined;
-    /**
-     * To whether show the inline editor in expanded mode initially and
-     * disable expansion toggler
-     *
-     * This flag will override the effect of `forceExpansion`
-     */
-    forceExpansion?: boolean | undefined;
-    /**
-     * To whether or not disable popup mode
-     */
-    disablePopUp?: boolean | undefined;
-    /**
-     * To whether or not style inline editor
-     */
-    useBaseTextEditorSettings?: boolean | undefined;
-    /**
-     * To whether or not hide parser error bar in inline mode
-     */
-    hideErrorBar?: boolean | undefined;
-    onEditorFocus?: (() => void) | undefined;
-  }) => {
+type LambdaEditorBaseProps = {
+  className?: string | undefined;
+  disabled: boolean;
+  lambdaEditorState: LambdaEditorState;
+  /**
+   * TODO: when we pass in these expected type we should match a type as expected type if it's covariance, i.e. it is a subtype of
+   * the expected type. Note that we also have to handle that relationship for Primitive type
+   * See https://dzone.com/articles/covariance-and-contravariance
+   */
+  expectedType?: Type | undefined;
+  matchedExpectedType?: (() => boolean) | undefined;
+  onExpectedTypeLabelSelect?: (() => void) | undefined;
+  /**
+   * As backdrop element is often shared in the application, and there could be multiple
+   * editor using that backdrop, we could end up in situation where some such editors
+   * have parser errors and some don't (this can happen when user make edits very quickly 2 lambda
+   * editor and causes parsers error simultaneously). In this case, we want to make sure when
+   * parser error is fixed in one editor, the backdrop is not dismissed immediately.
+   *
+   * NOTE: the current approach has a critical flaw, where on the same screen, there could be multiple
+   * sets of lambda editors with different values for `forceBackdrop`. So really, the only way to
+   * accomondate for this is to have `forceBackdrop` as a global value. Or we should get rid of this
+   * backdrop mechanism altogether as it's not really a good UX pattern. i.e. quick evaluation makes
+   * us believe that this is a good option, user will lose what they type, but the most recent parsable
+   * input will still be captured.
+   */
+  forceBackdrop: boolean;
+  autoFocus?: boolean | undefined;
+  onEditorFocus?: (() => void) | undefined;
+};
+
+export const InlineLambdaEditor = observer(
+  (
+    props: LambdaEditorBaseProps & {
+      /**
+       * To whether or not disable expasipn toggler
+       */
+      disableExpansion?: boolean | undefined;
+      /**
+       * To whether show the inline editor in expanded mode initially and
+       * disable expansion toggler
+       *
+       * This flag will override the effect of `forceExpansion`
+       */
+      forceExpansion?: boolean | undefined;
+      /**
+       * To whether or not disable popup mode
+       */
+      disablePopUp?: boolean | undefined;
+      /**
+       * To whether or not hide parser error bar in inline mode
+       */
+      hideErrorBar?: boolean | undefined;
+    },
+  ) => {
     const {
       className,
       lambdaEditorState,
@@ -693,8 +702,8 @@ export const LambdaEditor = observer(
       disableExpansion,
       forceExpansion,
       disablePopUp,
-      useBaseTextEditorSettings,
       hideErrorBar,
+      autoFocus,
       onEditorFocus,
     } = props;
     const [showPopUp, setShowPopUp] = useState(false);
@@ -715,7 +724,7 @@ export const LambdaEditor = observer(
       return (
         <>
           <div className="lambda-editor" />
-          <LambdaEditorPopUp
+          <LambdaEditor_PopUp
             className={className}
             disabled={disabled}
             lambdaEditorState={lambdaEditorState}
@@ -726,7 +735,7 @@ export const LambdaEditor = observer(
       );
     }
     return (
-      <LambdaEditorInline
+      <LambdaEditor_Inner
         /**
          * See the usage of `transformStringToLambda` as well as the instatiation of the editor in `LambdaEditorInner`.
          * One of the big problem is that the editor uses lambda editor state (there are some non-trivial logic there, that
@@ -753,6 +762,7 @@ export const LambdaEditor = observer(
          */
         key={lambdaEditorState.uuid}
         className={className}
+        inline={true}
         disabled={disabled}
         lambdaEditorState={lambdaEditorState}
         transformStringToLambda={debouncedTransformStringToLambda}
@@ -761,17 +771,60 @@ export const LambdaEditor = observer(
         onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
         forceBackdrop={forceBackdrop}
         disableExpansion={disableExpansion}
+        disablePopUp={disablePopUp}
+        autoFocus={autoFocus}
+        openInPopUp={openInPopUp}
+        onEditorFocus={onEditorFocus}
+        hideErrorBar={hideErrorBar}
         forceExpansion={
           disableExpansion !== undefined
             ? !disableExpansion && forceExpansion
             : forceExpansion
         }
-        disablePopUp={disablePopUp}
-        useBaseTextEditorSettings={useBaseTextEditorSettings}
-        hideErrorBar={hideErrorBar}
-        openInPopUp={openInPopUp}
-        onEditorFocus={onEditorFocus}
       />
     );
   },
 );
+
+export const LambdaEditor = observer((props: LambdaEditorBaseProps) => {
+  const {
+    className,
+    lambdaEditorState,
+    disabled,
+    forceBackdrop,
+    expectedType,
+    onExpectedTypeLabelSelect,
+    matchedExpectedType,
+    autoFocus,
+    onEditorFocus,
+  } = props;
+  const debouncedTransformStringToLambda = useMemo(
+    () =>
+      disabled
+        ? undefined
+        : debounce(
+            () => lambdaEditorState.convertLambdaGrammarStringToObject(),
+            1000,
+          ),
+    [lambdaEditorState, disabled],
+  );
+  return (
+    <LambdaEditor_Inner
+      key={lambdaEditorState.uuid}
+      className={className}
+      disabled={disabled}
+      lambdaEditorState={lambdaEditorState}
+      transformStringToLambda={debouncedTransformStringToLambda}
+      expectedType={expectedType}
+      matchedExpectedType={matchedExpectedType}
+      onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
+      forceBackdrop={forceBackdrop}
+      autoFocus={autoFocus}
+      onEditorFocus={onEditorFocus}
+      disableExpansion={true}
+      forceExpansion={true}
+      disablePopUp={true}
+      hideErrorBar={true}
+    />
+  );
+});

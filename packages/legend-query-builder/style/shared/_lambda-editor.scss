@@ -41,6 +41,7 @@
     position: relative;
     height: 100%;
     width: 100%;
+    background: var(--color-dark-grey-300);
   }
 
   &__editor__input__compressed {
@@ -230,6 +231,10 @@
     .monaco-editor-background {
       background: var(--color-dark-grey-50) !important;
     }
+  }
+
+  .lambda-editor__editor__input {
+    background: var(--color-dark-grey-50);
   }
 
   .lambda-editor__editor__info {

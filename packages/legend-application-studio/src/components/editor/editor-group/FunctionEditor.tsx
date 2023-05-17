@@ -748,8 +748,7 @@ export const FunctionMainEditor = observer(
               lambdaEditorState={lambdaEditorState}
               expectedType={functionElement.returnType.value}
               forceBackdrop={false}
-              forceExpansion={true}
-              disablePopUp={true}
+              autoFocus={true}
             />
           </div>
         </div>
