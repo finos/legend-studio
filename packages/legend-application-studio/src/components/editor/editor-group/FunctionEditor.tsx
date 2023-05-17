@@ -18,7 +18,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   FunctionEditorState,
-  FUNCTION_SPEC_TAB,
+  FUNCTION_EDITOR_TAB,
 } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 import {
   CORE_DND_TYPE,
@@ -719,6 +719,11 @@ export const FunctionMainEditor = observer(
                 isReadOnly={isReadOnly}
               />
             ))}
+            {functionElement.parameters.length === 0 && (
+              <div className="function-editor__element__item__content--empty">
+                No parameters
+              </div>
+            )}
           </div>
         </div>
         <div className="function-editor__element__item">
@@ -767,10 +772,10 @@ export const FunctionEditor = observer(() => {
   const selectedTab = functionEditorState.selectedTab;
   let addButtonTitle = '';
   switch (selectedTab) {
-    case FUNCTION_SPEC_TAB.TAGGED_VALUES:
+    case FUNCTION_EDITOR_TAB.TAGGED_VALUES:
       addButtonTitle = 'Add stereotype';
       break;
-    case FUNCTION_SPEC_TAB.STEREOTYPES:
+    case FUNCTION_EDITOR_TAB.STEREOTYPES:
       addButtonTitle = 'Add tagged value';
       break;
     default:
@@ -779,12 +784,12 @@ export const FunctionEditor = observer(() => {
   // Tagged Values and Stereotype
   const add = (): void => {
     if (!isReadOnly) {
-      if (selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES) {
+      if (selectedTab === FUNCTION_EDITOR_TAB.TAGGED_VALUES) {
         annotatedElement_addTaggedValue(
           functionElement,
           stub_TaggedValue(stub_Tag(stub_Profile())),
         );
-      } else if (selectedTab === FUNCTION_SPEC_TAB.STEREOTYPES) {
+      } else if (selectedTab === FUNCTION_EDITOR_TAB.STEREOTYPES) {
         annotatedElement_addStereotype(
           functionElement,
           StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
@@ -853,7 +858,7 @@ export const FunctionEditor = observer(() => {
     (): void =>
       annotatedElement_deleteTaggedValue(functionElement, val);
   const changeTab =
-    (tab: FUNCTION_SPEC_TAB): (() => void) =>
+    (tab: FUNCTION_EDITOR_TAB): (() => void) =>
     (): void =>
       functionEditorState.setSelectedTab(tab);
 
@@ -888,23 +893,33 @@ export const FunctionEditor = observer(() => {
         </div>
         <div className="panel__header function-editor__tabs__header">
           <div className="function-editor__tabs">
-            {Object.values(FUNCTION_SPEC_TAB).map((tab) => (
-              <div
-                key={tab}
-                onClick={changeTab(tab)}
-                className={clsx('function-editor__tab', {
-                  'function-editor__tab--active': tab === selectedTab,
-                })}
-              >
-                {prettyCONSTName(tab)}
-              </div>
-            ))}
+            {Object.values(FUNCTION_EDITOR_TAB)
+              .filter((tab) => {
+                if (tab === FUNCTION_EDITOR_TAB.ACTIVATOR) {
+                  return Boolean(
+                    editorStore.applicationStore.config.options
+                      .TEMPORARY__enableFunctionActivatorSupport,
+                  );
+                }
+                return true;
+              })
+              .map((tab) => (
+                <div
+                  key={tab}
+                  onClick={changeTab(tab)}
+                  className={clsx('function-editor__tab', {
+                    'function-editor__tab--active': tab === selectedTab,
+                  })}
+                >
+                  {prettyCONSTName(tab)}
+                </div>
+              ))}
           </div>
           <div className="panel__header__actions">
             <button
               className="panel__header__action"
               disabled={
-                isReadOnly || selectedTab === FUNCTION_SPEC_TAB.DEFINITION
+                isReadOnly || selectedTab === FUNCTION_EDITOR_TAB.DEFINITION
               }
               onClick={add}
               tabIndex={-1}
@@ -914,7 +929,7 @@ export const FunctionEditor = observer(() => {
             </button>
           </div>
         </div>
-        {selectedTab === FUNCTION_SPEC_TAB.DEFINITION ? (
+        {selectedTab === FUNCTION_EDITOR_TAB.DEFINITION ? (
           <FunctionMainEditor
             functionEditorState={functionEditorState}
             functionElement={functionElement}
@@ -922,7 +937,7 @@ export const FunctionEditor = observer(() => {
           />
         ) : (
           <PanelContent>
-            {selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES && (
+            {selectedTab === FUNCTION_EDITOR_TAB.TAGGED_VALUES && (
               <div
                 ref={dropTaggedValueRef}
                 className={clsx('panel__content__lists', {
@@ -943,7 +958,7 @@ export const FunctionEditor = observer(() => {
                 ))}
               </div>
             )}
-            {selectedTab === FUNCTION_SPEC_TAB.STEREOTYPES && (
+            {selectedTab === FUNCTION_EDITOR_TAB.STEREOTYPES && (
               <div
                 ref={dropStereotypeRef}
                 className={clsx('panel__content__lists', {

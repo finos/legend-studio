@@ -80,15 +80,9 @@ export const setup = (outputDir) => {
             },
           ],
         },
-        extensions: {
-          '@finos/legend-application-studio-plugin-external-language-morphir': {
-            visualizer: { url: 'http://localhost:8092' },
-            linterServer: { url: 'http://localhost:8091' },
-            linterApp: { url: 'http://localhost:8090' },
-          },
-        },
         core: {
-          TEMPORARY__enableMappingTestableEditor: true,
+          TEMPORARY__enableMappingTestableEditor: false,
+          TEMPORARY__enableFunctionActivatorSupport: false,
         },
       },
       undefined,

@@ -156,6 +156,18 @@
         padding: 1rem;
         padding-top: 0.5rem;
       }
+
+      &__content--empty {
+        @include flexCenter;
+
+        margin-top: 0.5rem;
+        height: 4rem;
+        width: 100%;
+        color: var(--color-dark-grey-300);
+        font-weight: 500;
+        user-select: none;
+        border: 0.2rem dashed var(--color-dark-grey-200);
+      }
     }
 
     &__lambda-editor {

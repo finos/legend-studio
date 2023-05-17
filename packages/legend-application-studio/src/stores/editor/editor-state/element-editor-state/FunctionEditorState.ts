@@ -37,10 +37,11 @@ import {
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 
-export enum FUNCTION_SPEC_TAB {
+export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
   TAGGED_VALUES = 'TAGGED_VALUES',
   STEREOTYPES = 'STEREOTYPES',
+  ACTIVATOR = 'ACTIVATOR',
 }
 
 export class FunctionBodyEditorState extends LambdaEditorState {
@@ -153,7 +154,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
 }
 
 export class FunctionEditorState extends ElementEditorState {
-  selectedTab: FUNCTION_SPEC_TAB;
+  selectedTab: FUNCTION_EDITOR_TAB;
   functionBodyEditorState: FunctionBodyEditorState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -171,7 +172,7 @@ export class FunctionEditorState extends ElementEditorState {
       ConcreteFunctionDefinition,
       'Element inside function editor state must be a function',
     );
-    this.selectedTab = FUNCTION_SPEC_TAB.DEFINITION;
+    this.selectedTab = FUNCTION_EDITOR_TAB.DEFINITION;
     this.functionBodyEditorState = new FunctionBodyEditorState(
       element,
       this.editorStore,
@@ -185,7 +186,7 @@ export class FunctionEditorState extends ElementEditorState {
       'Element inside function editor state must be a function',
     );
   }
-  setSelectedTab(tab: FUNCTION_SPEC_TAB): void {
+  setSelectedTab(tab: FUNCTION_EDITOR_TAB): void {
     this.selectedTab = tab;
   }
 
@@ -193,7 +194,7 @@ export class FunctionEditorState extends ElementEditorState {
     let revealed = false;
     try {
       if (compilationError.sourceInformation) {
-        this.setSelectedTab(FUNCTION_SPEC_TAB.DEFINITION);
+        this.setSelectedTab(FUNCTION_EDITOR_TAB.DEFINITION);
         this.functionBodyEditorState.setCompilationError(compilationError);
         revealed = true;
       }

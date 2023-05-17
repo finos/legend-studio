@@ -146,6 +146,7 @@
       width: 100%;
       color: var(--color-dark-grey-300);
       font-weight: 500;
+      user-select: none;
       border: 0.2rem dashed var(--color-dark-grey-200);
     }
   }
