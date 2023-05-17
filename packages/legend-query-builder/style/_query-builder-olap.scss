@@ -42,24 +42,13 @@
     background: var(--color-dark-blue-shade-100);
   }
 
-  &__column__drag-handle {
+  &__column__drag-handle__container {
     @include flexCenter;
 
-    background: var(--color-dark-grey-100);
-    height: 2.4rem;
-    width: 1.6rem;
-    min-width: 1.6rem;
-    margin-left: 0.5rem;
+    height: 3.4rem;
 
-    svg {
-      color: var(--color-dark-grey-300);
-      font-size: 1.2rem;
-    }
-
-    &__container {
-      @include flexCenter;
-
-      height: 3.4rem;
+    .dnd__entry-drag-handle {
+      background: var(--color-dark-grey-200);
     }
   }
 

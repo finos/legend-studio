@@ -22,16 +22,31 @@
 
   .panel {
     height: 100%;
+    width: 100%;
 
     &__header {
-      color: var(--color-dark-grey-300);
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
       font-weight: bold;
-      background: var(--color-light-grey-100);
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-300) !important;
     }
 
     &__content {
       height: calc(100% - 5.6rem);
-      background: var(--color-light-grey-0);
+      background: var(--color-dark-grey-50);
     }
 
     &__content > div:first-child {
@@ -43,12 +58,11 @@
       width: 100%;
       padding: 1rem;
       overflow: overlay;
-      padding-top: 0.5rem;
     }
+  }
 
-    &__content--with-backdrop-element .panel__content__lists {
-      padding: 0;
-    }
+  &__content {
+    position: relative;
   }
 
   &__tabs__header {
@@ -64,28 +78,40 @@
   }
 
   &__tab {
-    height: 100%;
+    @include flexCenter;
+
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    height: 100%;
+    color: var(--color-light-grey-400);
     padding: 0 1rem;
-    border-right: 0.1rem solid var(--color-light-grey-200);
+    border-right: 0.1rem solid var(--color-dark-grey-80);
     white-space: nowrap;
     cursor: pointer;
   }
 
   &__tab--active {
-    color: var(--color-dark-grey-50);
     position: relative;
   }
 
   &__tab--active::after {
     content: '';
-    height: 0.4rem;
+    height: 0.2rem;
     width: 100%;
     position: absolute;
     bottom: 0;
     background: var(--color-yellow-200);
+  }
+
+  &__tab__hint {
+    @include flexCenter;
+
+    border-radius: 0.2rem;
+    margin-left: 1rem;
+    color: var(--color-light-grey-300);
+
+    svg {
+      font-size: 1.2rem;
+    }
   }
 
   &__element {
@@ -110,11 +136,6 @@
 
         height: 2.8rem;
         width: 2.8rem;
-        background: var(--color-light-blue-200);
-        font-weight: 500;
-        color: var(--color-light-grey-0);
-        border-radius: 0.2rem;
-        cursor: pointer;
       }
 
       &__header__title {
@@ -122,7 +143,7 @@
 
         @include flexVCenter;
 
-        background: var(--color-dark-grey-300);
+        background: var(--color-dark-grey-200);
         color: var(--color-light-grey-100);
         padding: 0 1rem;
         border-radius: 0.2rem;
@@ -133,15 +154,12 @@
       &__content {
         width: 100%;
         padding: 1rem;
-        background: var(--color-light-grey-0);
         padding-top: 0.5rem;
       }
     }
 
-    &__lambda {
-      &-editor {
-        height: 35rem !important;
-      }
+    &__lambda-editor {
+      height: 35rem !important;
     }
   }
 

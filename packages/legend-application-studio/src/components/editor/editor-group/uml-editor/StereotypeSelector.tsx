@@ -25,6 +25,7 @@ import {
   PanelDnDEntry,
   DragPreviewLayer,
   useDragPreviewLayer,
+  clsx,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -182,12 +183,12 @@ export const StereotypeSelector = observer(
           dropTargetConnector={handleRef}
           isBeingDragged={isBeingDragged}
         />
-        <div className="stereotype-selector">
-          <div
-            className={`stereotype-selector__profile ${
-              darkTheme ? 'stereotype-selector-dark-theme' : ''
-            } stereotype-selector__profile`}
-          >
+        <div
+          className={clsx('stereotype-selector', {
+            'stereotype-selector--dark': darkTheme,
+          })}
+        >
+          <div className="stereotype-selector__profile">
             <CustomSelectorInput
               className="stereotype-selector__profile__selector"
               disabled={isReadOnly}
@@ -199,9 +200,7 @@ export const StereotypeSelector = observer(
               darkMode={Boolean(darkTheme)}
             />
             <button
-              className={`stereotype-selector__profile__visit-btn ${
-                darkTheme ? 'stereotype-selector-dark-theme' : ''
-              }`}
+              className="stereotype-selector__profile__visit-btn"
               disabled={isStubbed_PackageableElement(stereotype.value._OWNER)}
               onClick={visitProfile}
               tabIndex={-1}
@@ -218,11 +217,13 @@ export const StereotypeSelector = observer(
             value={selectedStereotype}
             placeholder="Choose a stereotype"
             filterOption={stereotypeFilterOption}
-            darkMode={darkTheme ?? false}
+            darkMode={Boolean(darkTheme)}
           />
           {!isReadOnly && (
             <button
-              className="uml-element-editor__remove-btn"
+              className={clsx('uml-element-editor__remove-btn', {
+                'btn--dark btn--caution': darkTheme,
+              })}
               disabled={isReadOnly}
               onClick={deleteStereotype}
               tabIndex={-1}

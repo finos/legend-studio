@@ -86,7 +86,6 @@
   background: var(--color-dark-shade-50);
   color: var(--color-light-grey-400);
   border-radius: 0.2rem;
-  margin-right: 0.5rem;
   // NOTE: here we use `move` instead of `grab` since grab requires
   // a more sophisticated control, i.e. when dragging, the cursor should
   // be changed

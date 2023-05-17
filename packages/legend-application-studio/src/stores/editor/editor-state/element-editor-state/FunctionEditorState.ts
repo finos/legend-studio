@@ -38,7 +38,7 @@ import {
 import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export enum FUNCTION_SPEC_TAB {
-  GENERAL = 'GENERAL',
+  DEFINITION = 'DEFINITION',
   TAGGED_VALUES = 'TAGGED_VALUES',
   STEREOTYPES = 'STEREOTYPES',
 }
@@ -171,7 +171,7 @@ export class FunctionEditorState extends ElementEditorState {
       ConcreteFunctionDefinition,
       'Element inside function editor state must be a function',
     );
-    this.selectedTab = FUNCTION_SPEC_TAB.GENERAL;
+    this.selectedTab = FUNCTION_SPEC_TAB.DEFINITION;
     this.functionBodyEditorState = new FunctionBodyEditorState(
       element,
       this.editorStore,
@@ -193,7 +193,7 @@ export class FunctionEditorState extends ElementEditorState {
     let revealed = false;
     try {
       if (compilationError.sourceInformation) {
-        this.setSelectedTab(FUNCTION_SPEC_TAB.GENERAL);
+        this.setSelectedTab(FUNCTION_SPEC_TAB.DEFINITION);
         this.functionBodyEditorState.setCompilationError(compilationError);
         revealed = true;
       }

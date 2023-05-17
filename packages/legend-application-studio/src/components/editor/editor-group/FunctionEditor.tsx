@@ -312,7 +312,7 @@ const ParameterBasicEditor = observer(
             </div>
           )}
           <input
-            className="property-basic-editor__name"
+            className="property-basic-editor__name input--dark"
             disabled={isReadOnly}
             value={parameter.name}
             spellCheck={false}
@@ -327,6 +327,7 @@ const ParameterBasicEditor = observer(
               value={selectedType}
               placeholder="Choose a type..."
               filterOption={filterOption}
+              darkMode={true}
             />
           )}
           {!isReadOnly && !isEditingType && (
@@ -419,7 +420,7 @@ const ParameterBasicEditor = observer(
           </div>
           {!isReadOnly && (
             <button
-              className="uml-element-editor__remove-btn"
+              className="uml-element-editor__remove-btn btn--dark btn--caution"
               disabled={isReadOnly}
               onClick={deleteParameter}
               tabIndex={-1}
@@ -521,6 +522,7 @@ const ReturnTypeEditor = observer(
             value={selectedType}
             placeholder="Choose a type..."
             filterOption={filterOption}
+            darkMode={true}
           />
         )}
         {!isReadOnly && !isEditingType && (
@@ -612,7 +614,7 @@ const ReturnTypeEditor = observer(
           />
         </div>
         <button
-          className="uml-element-editor__remove-btn"
+          className="uml-element-editor__remove-btn btn--dark btn--caution"
           disabled={true}
           tabIndex={-1}
         >
@@ -633,6 +635,7 @@ export const FunctionMainEditor = observer(
     const applicationStore = useApplicationStore();
     const { functionElement, isReadOnly, functionEditorState } = props;
     const lambdaEditorState = functionEditorState.functionBodyEditorState;
+
     // Parameters
     const addParameter = (): void => {
       function_addParameter(
@@ -676,6 +679,7 @@ export const FunctionMainEditor = observer(
       }),
       [handleDropParameter],
     );
+
     return (
       <div className="panel__content function-editor__element">
         <div className="function-editor__element__item">
@@ -684,7 +688,7 @@ export const FunctionMainEditor = observer(
               PARAMETERS
             </div>
             <button
-              className="function-editor__element__item__header__add-btn"
+              className="function-editor__element__item__header__add-btn btn--dark"
               disabled={isReadOnly}
               onClick={addParameter}
               tabIndex={-1}
@@ -737,7 +741,7 @@ export const FunctionMainEditor = observer(
             })}
           >
             <LambdaEditor
-              className="function-editor__element__lambda-editor"
+              className="function-editor__element__lambda-editor lambda-editor--dark"
               disabled={
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly
               }
@@ -745,6 +749,7 @@ export const FunctionMainEditor = observer(
               expectedType={functionElement.returnType.value}
               forceBackdrop={false}
               forceExpansion={true}
+              disablePopUp={true}
             />
           </div>
         </div>
@@ -867,7 +872,7 @@ export const FunctionEditor = observer(() => {
   );
 
   return (
-    <div className="function-editor">
+    <div className="function-editor uml-editor uml-editor--dark">
       <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
@@ -899,7 +904,9 @@ export const FunctionEditor = observer(() => {
           <div className="panel__header__actions">
             <button
               className="panel__header__action"
-              disabled={isReadOnly || selectedTab === FUNCTION_SPEC_TAB.GENERAL}
+              disabled={
+                isReadOnly || selectedTab === FUNCTION_SPEC_TAB.DEFINITION
+              }
               onClick={add}
               tabIndex={-1}
               title={addButtonTitle}
@@ -908,7 +915,7 @@ export const FunctionEditor = observer(() => {
             </button>
           </div>
         </div>
-        {selectedTab === FUNCTION_SPEC_TAB.GENERAL ? (
+        {selectedTab === FUNCTION_SPEC_TAB.DEFINITION ? (
           <FunctionMainEditor
             functionEditorState={functionEditorState}
             functionElement={functionElement}
@@ -932,6 +939,7 @@ export const FunctionEditor = observer(() => {
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
                     isReadOnly={isReadOnly}
+                    darkTheme={true}
                   />
                 ))}
               </div>
@@ -952,6 +960,7 @@ export const FunctionEditor = observer(() => {
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
+                    darkTheme={true}
                   />
                 ))}
               </div>

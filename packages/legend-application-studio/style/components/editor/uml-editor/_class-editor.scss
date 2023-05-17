@@ -85,8 +85,6 @@
     height: 2.8rem;
     background: var(--color-dark-grey-300);
     color: var(--color-light-grey-100);
-    padding: 0 1rem;
-    border-radius: 0.2rem;
     margin-right: 0.5rem;
     width: calc(100% - 36rem);
     min-width: calc(100% - 36rem);
@@ -214,10 +212,12 @@
   }
 
   // Show click to edit label
+  &__type .selector-input--dark__control,
   &__type .selector-input__control {
     width: 100%;
   }
 
+  &__type .selector-input--dark__menu,
   &__type .selector-input__menu {
     color: var(--color-dark-grey-100);
   }
@@ -248,22 +248,6 @@
     width: 100%;
     min-width: 0;
     margin-right: 0.5rem;
-  }
-
-  &__qualified-property__lambda:hover {
-    border: 0.1rem solid var(--color-input-border--hover);
-  }
-
-  &__qualified-property__lambda:focus {
-    border: 0.1rem solid var(--color-input-border--focus);
-  }
-
-  &__locked-property-end-block {
-    width: 2.8rem;
-    min-width: 2.8rem;
-    display: flex;
-    flex: 0 0 2.8rem;
-    margin-left: 0.5rem;
   }
 }
 

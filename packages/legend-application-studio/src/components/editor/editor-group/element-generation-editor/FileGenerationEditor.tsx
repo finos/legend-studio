@@ -904,10 +904,7 @@ export const GenerationPropertyEditor = observer(
     property: GenerationProperty;
     getConfigValue: (name: string) => unknown | undefined;
     isReadOnly: boolean;
-    update: (
-      AbstractGenerationProperty: GenerationProperty,
-      newValue: object,
-    ) => void;
+    update: (property: GenerationProperty, newValue: object) => void;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     switch (property.type) {
