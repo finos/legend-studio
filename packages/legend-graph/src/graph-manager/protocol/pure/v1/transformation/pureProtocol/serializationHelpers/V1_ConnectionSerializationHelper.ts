@@ -339,7 +339,8 @@ export const V1_serializeDatasourceSpecification = (
 export const V1_deserializeDatasourceSpecification = (
   json: PlainObject<V1_DatasourceSpecification>,
   plugins: PureProtocolProcessorPlugin[],
-): V1_DatasourceSpecification => {
+): V1_DatasourceSpecification | undefined => {
+  if (json == null) return;
   switch (json._type) {
     case V1_DatasourceSpecificationType.STATIC:
       return deserialize(staticDatasourceSpecificationModelSchema, json);
@@ -568,7 +569,8 @@ export const V1_serializeAuthenticationStrategy = (
 export const V1_deserializeAuthenticationStrategy = (
   json: PlainObject<V1_AuthenticationStrategy>,
   plugins: PureProtocolProcessorPlugin[],
-): V1_AuthenticationStrategy => {
+): V1_AuthenticationStrategy | undefined => {
+  if (json == null) return;
   switch (json._type) {
     case V1_AuthenticationStrategyType.DELEGATED_KERBEROS:
       return deserialize(
