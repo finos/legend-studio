@@ -293,7 +293,8 @@ const trinoDatasourceSpecificationModelSchema = createModelSchema(
 export const V1_serializeDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_DatasourceSpecification> => {
+): PlainObject<V1_DatasourceSpecification> | undefined => {
+  if (protocol == null) return;
   if (protocol instanceof V1_INTERNAL__UnknownDatasourceSpecification) {
     return protocol.content;
   } else if (protocol instanceof V1_StaticDatasourceSpecification) {
@@ -489,7 +490,8 @@ const V1_oAuthAuthenticationStrategyModelSchema = createModelSchema(
 export const V1_serializeAuthenticationStrategy = (
   protocol: V1_AuthenticationStrategy,
   plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_AuthenticationStrategy> => {
+): PlainObject<V1_AuthenticationStrategy> | undefined => {
+  if (protocol == null) return;
   if (protocol instanceof V1_INTERNAL__UnknownAuthenticationStrategy) {
     return protocol.content;
   } else if (protocol instanceof V1_DelegatedKerberosAuthenticationStrategy) {
