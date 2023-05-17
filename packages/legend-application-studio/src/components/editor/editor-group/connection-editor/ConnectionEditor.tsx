@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { FlatDataConnectionEditor } from './FlatDataConnectionEditor.js';
-import { RelationalDatabaseConnectionEditor } from './RelationalDatabaseConnectionEditor.js';
+import { RelationalDatabaseConnectionWrapperEditor } from './RelationalDatabaseConnectionEditor.js';
 import {
   type ConnectionEditorState,
   RelationalDatabaseConnectionValueState,
@@ -140,7 +140,7 @@ export const ConnectionEditor = observer(
         connectionValueState instanceof RelationalDatabaseConnectionValueState
       ) {
         return (
-          <RelationalDatabaseConnectionEditor
+          <RelationalDatabaseConnectionWrapperEditor
             connectionValueState={connectionValueState}
             isReadOnly={isReadOnly}
           />

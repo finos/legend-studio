@@ -257,26 +257,35 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
       connection.type,
       `Relational database connection 'type' field is missing`,
     );
-    assertNonNullable(
-      connection.datasourceSpecification,
-      `Relational database connection 'datasourceSpecification' field is missing`,
-    );
-    assertNonNullable(
-      connection.authenticationStrategy,
-      `Relational database connection 'authenticationStrategy' field is missing`,
-    );
+    if (connection.localMode == false) {
+      assertNonNullable(
+        connection.datasourceSpecification,
+        `Relational database connection 'datasourceSpecification' field is missing`,
+      );
+      assertNonNullable(
+        connection.authenticationStrategy,
+        `Relational database connection 'authenticationStrategy' field is missing`,
+      );
+    }
+    const spec = connection.datasourceSpecification
+      ? V1_buildDatasourceSpecification(
+          connection.datasourceSpecification,
+          this.context,
+        )
+      : undefined;
+    const auth = connection.authenticationStrategy
+      ? V1_buildAuthenticationStrategy(
+          connection.authenticationStrategy,
+          this.context,
+        )
+      : undefined;
+
     const val = new RelationalDatabaseConnection(
       store,
       // TODO: create a function to validate this is of the type we support
       connection.type as unknown as DatabaseType,
-      V1_buildDatasourceSpecification(
-        connection.datasourceSpecification,
-        this.context,
-      ),
-      V1_buildAuthenticationStrategy(
-        connection.authenticationStrategy,
-        this.context,
-      ),
+      spec,
+      auth,
     );
     val.localMode = connection.localMode;
     val.timeZone = connection.timeZone;

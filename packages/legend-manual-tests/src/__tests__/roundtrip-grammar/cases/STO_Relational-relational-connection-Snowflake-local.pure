@@ -1,0 +1,13 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relational::MySnowflakeConn
+{
+  store: store::db;
+  type: Snowflake;
+  mode: local;
+}

@@ -529,12 +529,12 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
     _type: usingConstantValueSchema(
       V1_ConnectionType.RELATIONAL_DATABASE_CONNECTION,
     ),
-    authenticationStrategy: custom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
     databaseType: primitive(),
-    datasourceSpecification: custom(
+    datasourceSpecification: optionalCustom(
       (val) => V1_serializeDatasourceSpecification(val, plugins),
       (val) => V1_deserializeDatasourceSpecification(val, plugins),
     ),

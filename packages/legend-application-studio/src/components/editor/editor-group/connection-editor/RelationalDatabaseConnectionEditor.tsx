@@ -56,6 +56,7 @@ import {
   ModalFooterButton,
   ModalHeader,
   Button,
+  LockIcon,
 } from '@finos/legend-art';
 import {
   type RelationalDatabaseConnection,
@@ -1451,6 +1452,7 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec == undefined) {
   } else {
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
@@ -1535,6 +1537,7 @@ const renderAuthenticationStrategyEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (authSpec == undefined) {
   } else {
     const extraAuthenticationStrategyEditorRenderers = plugins.flatMap(
       (plugin) =>
@@ -1756,6 +1759,36 @@ const RelationalConnectionGeneralEditor = observer(
   },
 );
 
+export const LocalRelationalDatabaseConnectionEditor = observer(
+  (props: {
+    connectionValueState: RelationalDatabaseConnectionValueState;
+    isReadOnly: boolean;
+  }) => {
+    const { connectionValueState, isReadOnly } = props;
+    return (
+      <div className="unsupported-element-editor">
+        <Panel>
+          <PanelHeader>
+            <div className="panel__header__title">
+              {isReadOnly && (
+                <div className="uml-element-editor__header__lock">
+                  <LockIcon />
+                </div>
+              )}
+            </div>
+          </PanelHeader>
+          <PanelContent className="unsupported-element-editor__content">
+            <UnsupportedEditorPanel
+              text="Can't display Local Relational connection in form-mode.Please edit in text mode"
+              isReadOnly={isReadOnly}
+            />
+          </PanelContent>
+        </Panel>
+      </div>
+    );
+  },
+);
+
 export const RelationalDatabaseConnectionEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
@@ -1803,5 +1836,32 @@ export const RelationalDatabaseConnectionEditor = observer(
         </PanelContent>
       </Panel>
     );
+  },
+);
+
+export const RelationalDatabaseConnectionWrapperEditor = observer(
+  (props: {
+    connectionValueState: RelationalDatabaseConnectionValueState;
+    isReadOnly: boolean;
+  }) => {
+    const { connectionValueState, isReadOnly } = props;
+    if (
+      props.connectionValueState.connection.datasourceSpecification &&
+      props.connectionValueState.connection.authenticationStrategy
+    ) {
+      return (
+        <RelationalDatabaseConnectionEditor
+          connectionValueState={connectionValueState}
+          isReadOnly={isReadOnly}
+        />
+      );
+    } else {
+      return (
+        <LocalRelationalDatabaseConnectionEditor
+          connectionValueState={connectionValueState}
+          isReadOnly={isReadOnly}
+        />
+      );
+    }
   },
 );

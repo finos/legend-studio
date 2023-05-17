@@ -63,8 +63,8 @@ export class V1_RelationalDatabaseConnection
   extends V1_DatabaseConnection
   implements Hashable
 {
-  datasourceSpecification!: V1_DatasourceSpecification;
-  authenticationStrategy!: V1_AuthenticationStrategy;
+  datasourceSpecification: V1_DatasourceSpecification | undefined;
+  authenticationStrategy: V1_AuthenticationStrategy | undefined;
   postProcessors: V1_PostProcessor[] = [];
 
   /**
@@ -79,8 +79,8 @@ export class V1_RelationalDatabaseConnection
       this.store ?? '',
       this.timeZone ?? '',
       this.quoteIdentifiers?.toString() ?? '',
-      this.datasourceSpecification,
-      this.authenticationStrategy,
+      this.datasourceSpecification ?? '',
+      this.authenticationStrategy ?? '',
       this.localMode?.toString() ?? '',
       hashArray(this.postProcessors),
     ]);

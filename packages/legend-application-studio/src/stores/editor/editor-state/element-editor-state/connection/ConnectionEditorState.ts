@@ -208,6 +208,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.SPANNER;
     } else if (spec instanceof TrinoDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.TRINO;
+    } else if (spec == undefined) {
+      return undefined;
     }
     const extraDatasourceSpecificationClassifiers =
       this.editorStore.pluginManager
@@ -342,6 +344,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD;
     } else if (auth instanceof TrinoDelegatedKerberosAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.TRINO_DELEGATED_KERBEROS;
+    } else if (auth == undefined) {
+      return undefined;
     }
 
     const extraAuthenticationStrategyClassifiers =

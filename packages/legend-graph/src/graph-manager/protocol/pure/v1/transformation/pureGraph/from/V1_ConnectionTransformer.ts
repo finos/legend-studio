@@ -347,14 +347,19 @@ export const V1_transformRelationalDatabaseConnection = (
 ): V1_RelationalDatabaseConnection => {
   const connection = new V1_RelationalDatabaseConnection();
   connection.store = metamodel.store.valueForSerialization ?? '';
-  connection.authenticationStrategy = transformAuthenticationStrategy(
-    metamodel.authenticationStrategy,
-    context,
-  );
-  connection.datasourceSpecification = transformDatasourceSpecification(
-    metamodel.datasourceSpecification,
-    context,
-  );
+  if (metamodel.authenticationStrategy && metamodel.datasourceSpecification) {
+    connection.authenticationStrategy = transformAuthenticationStrategy(
+      metamodel.authenticationStrategy,
+      context,
+    );
+    connection.datasourceSpecification = transformDatasourceSpecification(
+      metamodel.datasourceSpecification,
+      context,
+    );
+  } else {
+    connection.authenticationStrategy = undefined;
+    connection.datasourceSpecification = undefined;
+  }
   connection.localMode = metamodel.localMode;
   connection.type = metamodel.type;
   connection.databaseType = connection.type;
