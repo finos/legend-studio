@@ -164,6 +164,10 @@ const ProtocolValueNodeView = observer(
     >,
   ) => {
     const { node, level, getChildNodes, classPrefix } = props;
+    const childNodes = getChildNodes(node);
+    if (!childNodes.length) {
+      return <ProtocolValueFieldEditor {...props} />;
+    }
     return (
       <div
         className={clsx('tree-view__node__block panel__content__form', {
@@ -172,7 +176,7 @@ const ProtocolValueNodeView = observer(
       >
         <ProtocolValueFieldEditor {...props} level={level + 1} />
         {node.isOpen &&
-          getChildNodes(node).map((childNode) => (
+          childNodes.map((childNode) => (
             <ProtocolValueNodeView {...props} key={childNode.id} />
           ))}
       </div>
@@ -203,7 +207,7 @@ export const ProtocolValueBuilder = observer(
     }
     return (
       <TreeView
-        className="protocol-value-builder"
+        className="protocol-value-builder panel__content__form"
         components={{
           TreeNodeContainer: ProtocolValueFieldEditor,
           TreeNodeView: ProtocolValueNodeView,

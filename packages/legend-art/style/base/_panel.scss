@@ -311,6 +311,12 @@
     & + & {
       margin-top: 2rem;
     }
+
+    &__divider {
+      height: 1rem;
+      width: 100%;
+      border-bottom: 0.1rem solid var(--color-dark-grey-100);
+    }
   }
 
   &__divider {
@@ -350,6 +356,7 @@
     margin: 0;
     padding: 1rem;
     border-radius: 0.1rem;
+    border: 0.1rem solid var(--color-dark-grey-100);
     background: var(--color-dark-grey-100);
     color: var(--color-light-grey-200);
     height: 2.8rem;

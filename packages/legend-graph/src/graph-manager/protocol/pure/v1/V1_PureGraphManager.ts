@@ -308,6 +308,8 @@ import type { V1_SourceInformation } from './model/V1_SourceInformation.js';
 import type { FunctionActivator } from '../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import { FunctionActivatorConfiguration } from '../../../action/functionActivator/FunctionActivatorConfiguration.js';
 import { V1_FunctionActivatorInput } from './engine/functionActivator/V1_FunctionActivatorInput.js';
+import { V1_FunctionActivator } from './model/packageableElements/function/V1_FunctionActivator.js';
+import { V1_INTERNAL__UnknownFunctionActivator } from './model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -317,6 +319,7 @@ class V1_PureModelContextDataIndex {
   classes: V1_Class[] = [];
   enumerations: V1_Enumeration[] = [];
   functions: V1_ConcreteFunctionDefinition[] = [];
+  functionActivators: V1_FunctionActivator[] = [];
   profiles: V1_Profile[] = [];
   measures: V1_Measure[] = [];
 
@@ -385,6 +388,8 @@ export const V1_indexPureModelContextData = (
       index.enumerations.push(el);
     } else if (el instanceof V1_ConcreteFunctionDefinition) {
       index.functions.push(el);
+    } else if (el instanceof V1_FunctionActivator) {
+      index.functionActivators.push(el);
     } else if (el instanceof V1_Profile) {
       index.profiles.push(el);
     } else if (el instanceof V1_Measure) {
@@ -450,6 +455,9 @@ export const V1_indexPureModelContextData = (
     (report.elementCount.enumeration ?? 0) + index.enumerations.length;
   report.elementCount.function =
     (report.elementCount.function ?? 0) + index.functions.length;
+  report.elementCount.functionActivators =
+    (report.elementCount.functionActivators ?? 0) +
+    index.functionActivators.length;
   report.elementCount.profile =
     (report.elementCount.profile ?? 0) + index.profiles.length;
   report.elementCount.measure =
@@ -3567,7 +3575,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private getElementClassiferPath = (
     protocol: V1_PackageableElement,
   ): string => {
-    if (protocol instanceof V1_INTERNAL__UnknownPackageableElement) {
+    if (
+      protocol instanceof V1_INTERNAL__UnknownPackageableElement ||
+      protocol instanceof V1_INTERNAL__UnknownFunctionActivator
+    ) {
       const _type = protocol.content._type;
       const classifierPath = isString(_type)
         ? this.elementClassifierPathMap.get(_type)

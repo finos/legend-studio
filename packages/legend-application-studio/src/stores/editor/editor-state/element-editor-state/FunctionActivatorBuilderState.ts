@@ -14,11 +14,30 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import type { FunctionEditorState } from './FunctionEditorState.js';
-import type { FunctionActivatorConfiguration } from '@finos/legend-graph';
+import {
+  INTERNAL__UnknownFunctionActivator,
+  type FunctionActivatorConfiguration,
+  PackageableElementExplicitReference,
+  buildPath,
+} from '@finos/legend-graph';
 import { ProtocolValueBuilderState } from './ProtocolValueBuilderState.js';
-import type { PlainObject } from '@finos/legend-shared';
+import {
+  generateEnumerableNameFromToken,
+  type GeneratorFn,
+  type PlainObject,
+} from '@finos/legend-shared';
+import { INTERNAL__UnknownFunctionActivator_setContent } from '../../../graph-modifier/DomainGraphModifierHelper.js';
+
+const BASE_ACTIVATOR_NAME = 'NewActivator';
 
 export class FunctionActivatorBuilderState {
   readonly functionEditorState: FunctionEditorState;
@@ -27,15 +46,45 @@ export class FunctionActivatorBuilderState {
   functionActivatorProtocolValueBuilderState?:
     | ProtocolValueBuilderState
     | undefined;
+  activatorName = BASE_ACTIVATOR_NAME;
+  functionActivator?: INTERNAL__UnknownFunctionActivator | undefined;
 
   constructor(functionEditorState: FunctionEditorState) {
     makeObservable(this, {
       currentActivatorConfiguration: observable,
       functionActivatorProtocolValueBuilderState: observable,
+      functionActivator: observable,
+      activatorName: observable,
+      isDuplicated: computed,
+      isValid: computed,
+      setActivatorName: action,
       setCurrentActivatorConfiguration: action,
+      activate: flow,
     });
 
     this.functionEditorState = functionEditorState;
+  }
+
+  get isDuplicated(): boolean {
+    return Boolean(
+      this.functionEditorState.editorStore.graphManagerState.graph.getNullableElement(
+        buildPath(
+          this.functionEditorState.functionElement.package?.path,
+          this.activatorName,
+        ),
+      ),
+    );
+  }
+
+  get isValid(): boolean {
+    if (!this.functionActivator) {
+      return false;
+    }
+    return this.activatorName.length !== 0 && !this.isDuplicated;
+  }
+
+  setActivatorName(val: string): void {
+    this.activatorName = val;
   }
 
   setCurrentActivatorConfiguration(
@@ -49,25 +98,62 @@ export class FunctionActivatorBuilderState {
           initialValue: undefined,
           excludedPaths: [
             'meta::protocols::pure::vX_X_X::metamodel::functionActivator::FunctionActivator.function',
+            'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.stereotypes',
+            'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.taggedValues',
+            'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.sourceInformation',
             'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.sourceInformation',
             'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.package',
             'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.name',
             'meta::protocols::pure::vX_X_X::metamodel::PackageableElement._type',
           ],
           onValueChange: (value: PlainObject) => {
-            // TODO-PR
-            console.log(value);
+            if (this.functionActivator) {
+              INTERNAL__UnknownFunctionActivator_setContent(
+                this.functionActivator,
+                value,
+              );
+            }
           },
           decorateValue: (value: PlainObject): PlainObject => {
             value._type = val.packageableElementJSONType;
             value.package =
               this.functionEditorState.functionElement.package?.path;
+            value.name = this.activatorName;
             value.function = this.functionEditorState.functionElement.path;
             return value;
           },
         });
+      this.activatorName = generateEnumerableNameFromToken(
+        this.functionEditorState.functionElement.package?.children.map(
+          (child) => child.name,
+        ) ?? [],
+        BASE_ACTIVATOR_NAME,
+      );
+      this.functionActivator = new INTERNAL__UnknownFunctionActivator(
+        this.activatorName,
+      );
+      this.functionActivator.function =
+        PackageableElementExplicitReference.create(
+          this.functionEditorState.functionElement,
+        );
+      this.functionActivator.content =
+        this.functionActivatorProtocolValueBuilderState.getValue();
     } else {
       this.functionActivatorProtocolValueBuilderState = undefined;
     }
+  }
+
+  *activate(): GeneratorFn<void> {
+    if (!this.isValid || !this.functionActivator) {
+      return;
+    }
+
+    yield flowResult(
+      this.functionEditorState.editorStore.graphEditorMode.addElement(
+        this.functionActivator,
+        this.functionEditorState.functionElement.package?.path,
+        true,
+      ),
+    );
   }
 }

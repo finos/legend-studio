@@ -16,10 +16,98 @@
 
 import { observer } from 'mobx-react-lite';
 import { type FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
-import { type FunctionActivatorConfiguration } from '@finos/legend-graph';
+import {
+  getClassProperty,
+  type FunctionActivatorConfiguration,
+  extractAnnotatedElementDocumentation,
+} from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { BlankPanelContent, CustomSelectorInput } from '@finos/legend-art';
 import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
+import { returnUndefOnError } from '@finos/legend-shared';
+import type { ProtocolValueBuilderState } from '../../../stores/editor/editor-state/element-editor-state/ProtocolValueBuilderState.js';
+import { useEffect, useRef } from 'react';
+import { flowResult } from 'mobx';
+import { useApplicationStore } from '@finos/legend-application';
+
+const FunctionActivatorContentBuilder = observer(
+  (props: {
+    functionEditorState: FunctionEditorState;
+    valueBuilderState: ProtocolValueBuilderState;
+  }) => {
+    const { functionEditorState, valueBuilderState } = props;
+    const builderState = functionEditorState.activatorBuilderState;
+
+    // name
+    const nameInputRef = useRef<HTMLInputElement>(null);
+    const nameValidationErrorMessage =
+      builderState.activatorName.length === 0
+        ? 'Element name cannot be empty'
+        : builderState.isDuplicated
+        ? `Element of the same path already existed`
+        : undefined;
+    useEffect(() => {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }, [valueBuilderState]);
+
+    // function
+    const functionFieldProperty = returnUndefOnError(() =>
+      getClassProperty(valueBuilderState.type, 'function'),
+    );
+    const functionFieldDocumentation = functionFieldProperty
+      ? extractAnnotatedElementDocumentation(functionFieldProperty)
+      : undefined;
+
+    return (
+      <>
+        <div className="panel__content__form">
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Name
+            </div>
+            <div className="input-group">
+              <input
+                className="panel__content__form__section__input"
+                spellCheck={false}
+                ref={nameInputRef}
+                value={builderState.activatorName}
+                onChange={(event) =>
+                  builderState.setActivatorName(event.target.value)
+                }
+              />
+              {nameValidationErrorMessage && (
+                <div className="input-group__error-message">
+                  {nameValidationErrorMessage}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Function
+            </div>
+            {functionFieldDocumentation && (
+              <div className="panel__content__form__section__header__prompt">
+                {functionFieldDocumentation}
+              </div>
+            )}
+            <input
+              className="panel__content__form__section__input"
+              spellCheck={false}
+              disabled={true}
+              value={functionEditorState.functionElement.path}
+            />
+          </div>
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__divider"></div>
+          </div>
+        </div>
+        <ProtocolValueBuilder builderState={valueBuilderState} />
+      </>
+    );
+  },
+);
 
 type FunctionActivatorOption = {
   label: React.ReactNode;
@@ -49,6 +137,7 @@ export const FunctionActivatorBuilder = observer(
     const { functionEditorState } = props;
     const builderState = functionEditorState.activatorBuilderState;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const activatorOptions =
       editorStore.graphState.functionActivatorConfigurations.map(
         buildFunctionActivatorOption,
@@ -62,7 +151,9 @@ export const FunctionActivatorBuilder = observer(
       }
     };
     const activate = (): void => {
-      // do something
+      flowResult(builderState.activate()).catch(
+        applicationStore.alertUnhandledError,
+      );
     };
 
     return (
@@ -87,8 +178,9 @@ export const FunctionActivatorBuilder = observer(
         </div>
         <div className="function-activator-builder__body">
           {builderState.functionActivatorProtocolValueBuilderState && (
-            <ProtocolValueBuilder
-              builderState={
+            <FunctionActivatorContentBuilder
+              functionEditorState={functionEditorState}
+              valueBuilderState={
                 builderState.functionActivatorProtocolValueBuilderState
               }
             />
@@ -100,13 +192,12 @@ export const FunctionActivatorBuilder = observer(
         <div className="function-activator-builder__footer">
           <button
             className="btn--wide btn--dark"
-            disabled={false}
+            disabled={!builderState.isValid}
             onClick={activate}
           >
             Activate
           </button>
         </div>
-        <div className="function-activator-builder__content"></div>
       </div>
     );
   },

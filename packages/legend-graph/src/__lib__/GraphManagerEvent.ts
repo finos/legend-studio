@@ -19,7 +19,7 @@ export enum GRAPH_MANAGER_EVENT {
   GRAPH_BUILDER_INDEX_ELEMENTS__SUCCESS = 'graph-manager.graph-builder.indexing.success',
   GRAPH_BUILDER_BUILD_SECTION_INDICES__SUCCESS = 'graph-manager.graph-builder.build-section-indices.success',
   GRAPH_BUILDER_BUILD_DOMAIN_MODELS__SUCCESS = 'graph-manager.graph-builder.build-domain-models.success',
-  GRAPH_BUILDER_BUILD_STORES__SUCCESS = 'graph-manager.graph-builder.build-store.success',
+  GRAPH_BUILDER_BUILD_STORES__SUCCESS = 'graph-manager.graph-builder.build-stores.success',
   GRAPH_BUILDER_BUILD_MAPPINGS__SUCCESS = 'graph-manager.graph-builder.build-mappings.success',
   GRAPH_BUILDER_BUILD_CONNECTIONS_AND_RUNTIMES__SUCCESS = 'graph-manager.graph-builder.build-connections-and-runtimes.success',
   GRAPH_BUILDER_BUILD_SERVICES__SUCCESS = 'graph-manager.graph-builder.build-services.success',
