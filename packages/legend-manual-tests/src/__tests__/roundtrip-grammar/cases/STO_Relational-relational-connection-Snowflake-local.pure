@@ -5,9 +5,9 @@ Database store::db
 
 
 ###Connection
-RelationalDatabaseConnection connection::relational::MyTrino
+RelationalDatabaseConnection connection::relational::MySnowflakeConn
 {
   store: store::db;
-  type: Trino;
+  type: Snowflake;
   mode: local;
 }
