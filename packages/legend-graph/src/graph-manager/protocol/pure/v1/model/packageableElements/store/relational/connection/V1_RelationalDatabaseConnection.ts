@@ -66,7 +66,7 @@ export class V1_RelationalDatabaseConnection
   datasourceSpecification!: V1_DatasourceSpecification;
   authenticationStrategy!: V1_AuthenticationStrategy;
   postProcessors: V1_PostProcessor[] = [];
-  localMode: boolean = false;
+  localMode: boolean;
 
   get hashCode(): string {
     return hashArray([
