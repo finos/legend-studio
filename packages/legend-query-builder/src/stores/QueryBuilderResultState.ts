@@ -86,6 +86,7 @@ export class QueryBuilderResultState {
       setQueryRunPromise: action,
       exportData: flow,
       runQuery: flow,
+      cancelQuery: flow,
       generatePlan: flow,
     });
 
@@ -205,6 +206,7 @@ export class QueryBuilderResultState {
   }
 
   *runQuery(): GeneratorFn<void> {
+    let promise;
     try {
       this.setIsRunningQuery(true);
       const currentHashCode = this.queryBuilderState.hashCode;
@@ -231,16 +233,15 @@ export class QueryBuilderResultState {
         this.queryBuilderState.graphManagerState.graph,
       );
 
-      const promise =
-        this.queryBuilderState.graphManagerState.graphManager.runQuery(
-          query,
-          mapping,
-          runtime,
-          this.queryBuilderState.graphManagerState.graph,
-          {
-            parameterValues,
-          },
-        );
+      promise = this.queryBuilderState.graphManagerState.graphManager.runQuery(
+        query,
+        mapping,
+        runtime,
+        this.queryBuilderState.graphManagerState.graph,
+        {
+          parameterValues,
+        },
+      );
 
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
@@ -260,17 +261,39 @@ export class QueryBuilderResultState {
         );
       }
     } catch (error) {
-      assertErrorThrown(error);
+      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
+      // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
+      // When cancelled the query, we set the queryRunPromise as undefined.
+      if (this.queryRunPromise === promise) {
+        assertErrorThrown(error);
+        this.queryBuilderState.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+          error,
+        );
+        this.queryBuilderState.applicationStore.notificationService.notifyError(
+          error,
+        );
+      }
+    } finally {
+      this.setIsRunningQuery(false);
+      this.pressedRunQuery.complete();
+    }
+  }
+
+  *cancelQuery(): GeneratorFn<void> {
+    this.pressedRunQuery.complete();
+    this.setIsRunningQuery(false);
+    this.setQueryRunPromise(undefined);
+    try {
+      yield this.queryBuilderState.graphManagerState.graphManager.cancelUserExecutions(
+        true,
+      );
+    } catch (error) {
+      // Don't notify users about success or failure
       this.queryBuilderState.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.queryBuilderState.applicationStore.notificationService.notifyError(
-        error,
-      );
-    } finally {
-      this.setIsRunningQuery(false);
-      this.pressedRunQuery.complete();
     }
   }
 

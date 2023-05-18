@@ -215,10 +215,9 @@ export const ServiceExecutionQueryEditor = observer(
       executionState.isGeneratingPlan ||
       executionState.isGeneratingPlan;
 
-    const cancelQuery = (): void => {
-      executionState.setIsRunningQuery(false);
-      executionState.setQueryRunPromise(undefined);
-    };
+    const cancelQuery = applicationStore.guardUnhandledError(() =>
+      flowResult(executionState.cancelQuery()),
+    );
 
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan(false)),

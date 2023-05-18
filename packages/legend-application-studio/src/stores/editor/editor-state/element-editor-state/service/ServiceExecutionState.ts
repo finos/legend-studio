@@ -466,6 +466,9 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     execution: PureExecution,
   ) {
     super(editorStore, serviceEditorState, execution);
+    makeObservable(this, {
+      cancelQuery: flow,
+    });
 
     this.execution = execution;
     this.queryState = new ServicePureExecutionQueryState(
@@ -618,15 +621,14 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       this.editorStore.applicationStore.telemetryService,
     );
 
+    let promise;
     try {
       this.isRunningQuery = true;
-
       const stopWatch = new StopWatch();
       const report = reportGraphAnalytics(
         this.editorStore.graphManagerState.graph,
       );
-
-      const promise = this.editorStore.graphManagerState.graphManager.runQuery(
+      promise = this.editorStore.graphManagerState.graphManager.runQuery(
         this.getExecutionQuery(),
         this.selectedExecutionContextState?.executionContext.mapping.value,
         this.selectedExecutionContextState?.executionContext.runtime,
@@ -640,7 +642,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         },
         report,
       );
-
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
@@ -648,7 +649,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
           stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
         );
         this.parameterState.setParameters([]);
-
         // report
         report.timings =
           this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
@@ -661,14 +661,37 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         );
       }
     } catch (error) {
-      assertErrorThrown(error);
+      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
+      // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
+      // When cancelled the query, we set the queryRunPromise as undefined.
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
+      if (this.queryRunPromise === promise) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
+      }
     } finally {
       this.isRunningQuery = false;
+    }
+  }
+
+  *cancelQuery(): GeneratorFn<void> {
+    this.setIsRunningQuery(false);
+    this.setQueryRunPromise(undefined);
+    try {
+      yield this.editorStore.graphManagerState.graphManager.cancelUserExecutions(
+        true,
+      );
+    } catch (error) {
+      // Don't notify users about success or failure
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
     }
   }
 

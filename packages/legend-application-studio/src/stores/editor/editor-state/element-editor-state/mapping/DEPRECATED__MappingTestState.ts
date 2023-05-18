@@ -457,6 +457,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
       generatePlan: flow,
       regenerateExpectedResult: flow,
       runTest: flow,
+      cancelTest: flow,
       onTestStateOpen: flow,
     });
 
@@ -734,8 +735,13 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
         this.handleResult(result);
       }
     } catch (error) {
-      assertErrorThrown(error);
-      this.handleError(error, promise);
+      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
+      // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
+      // When cancelled the query, we set the queryRunPromise as undefined.
+      if (this.testRunPromise === promise) {
+        assertErrorThrown(error);
+        this.handleError(error, promise);
+      }
     } finally {
       this.isRunningTest = false;
       this.runTime = Date.now() - startTime;
@@ -747,6 +753,22 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
       ) {
         this.setSelectedTab(MAPPING_TEST_EDITOR_TAB_TYPE.RESULT);
       }
+    }
+  }
+
+  *cancelTest(): GeneratorFn<void> {
+    this.setIsRunningTest(false);
+    this.setTestRunPromise(undefined);
+    try {
+      yield this.editorStore.graphManagerState.graphManager.cancelUserExecutions(
+        true,
+      );
+    } catch (error) {
+      // don't notify users about success or failure
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
     }
   }
 

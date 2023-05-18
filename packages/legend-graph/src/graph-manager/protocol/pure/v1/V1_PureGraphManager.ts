@@ -3060,6 +3060,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
+    return this.engine.cancelUserExecutions(broadcastToCluster);
+  }
+
   // --------------------------------------------- Change Detection ---------------------------------------------
 
   async buildHashesIndex(entities: Entity[]): Promise<Map<string, string>> {

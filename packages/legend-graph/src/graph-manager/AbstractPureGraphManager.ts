@@ -430,6 +430,8 @@ export abstract class AbstractPureGraphManager {
     report?: GraphManagerOperationReport,
   ): Promise<ExecutionResult>;
 
+  abstract cancelUserExecutions(broadcastToCluster: boolean): Promise<string>;
+
   abstract DEPRECATED__runLegacyMappingTests(
     tests: {
       test: DEPRECATED__MappingTest;

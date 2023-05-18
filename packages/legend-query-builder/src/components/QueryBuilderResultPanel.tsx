@@ -531,17 +531,17 @@ export const QueryBuilderResultPanel = observer(
             ),
           PARAMETER_SUBMIT_ACTION.RUN,
         );
-        resultState.pressedRunQuery.complete();
       } else {
         flowResult(resultState.runQuery()).catch(
           applicationStore.alertUnhandledError,
         );
       }
+      resultState.pressedRunQuery.complete();
     };
-    const cancelQuery = (): void => {
-      resultState.setIsRunningQuery(false);
-      queryBuilderState.resultState.setQueryRunPromise(undefined);
-    };
+    const cancelQuery = applicationStore.guardUnhandledError(() =>
+      flowResult(resultState.cancelQuery()),
+    );
+
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(false)),
     );
