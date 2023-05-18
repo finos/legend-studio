@@ -257,14 +257,16 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
       connection.type,
       `Relational database connection 'type' field is missing`,
     );
-    assertNonNullable(
-      connection.datasourceSpecification,
-      `Relational database connection 'datasourceSpecification' field is missing`,
-    );
-    assertNonNullable(
-      connection.authenticationStrategy,
-      `Relational database connection 'authenticationStrategy' field is missing`,
-    );
+    if (connection.localMode == false) {
+      assertNonNullable(
+        connection.datasourceSpecification,
+        `Relational database connection 'datasourceSpecification' field is missing`,
+      );
+      assertNonNullable(
+        connection.authenticationStrategy,
+        `Relational database connection 'authenticationStrategy' field is missing`,
+      );
+    }
     const val = new RelationalDatabaseConnection(
       store,
       // TODO: create a function to validate this is of the type we support
