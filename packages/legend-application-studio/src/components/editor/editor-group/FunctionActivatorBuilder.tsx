@@ -20,6 +20,7 @@ import {
   getClassProperty,
   type FunctionActivatorConfiguration,
   extractAnnotatedElementDocumentation,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { BlankPanelContent, CustomSelectorInput } from '@finos/legend-art';
@@ -96,7 +97,13 @@ const FunctionActivatorContentBuilder = observer(
               className="panel__content__form__section__input"
               spellCheck={false}
               disabled={true}
-              value={functionEditorState.functionElement.path}
+              value={generateFunctionPrettyName(
+                functionEditorState.functionElement,
+                {
+                  fullPath: true,
+                  spacing: false,
+                },
+              )}
             />
           </div>
           <div className="panel__content__form__section">

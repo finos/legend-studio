@@ -1,31 +1,30 @@
 {
-  "name": "@finos/legend-application-studio-bootstrap",
-  "version": "9.43.0",
-  "description": "Legend Studio application bootrap",
+  "name": "@finos/legend-extension-dsl-snowflake-app",
+  "version": "0.0.0",
+  "description": "Legend extension for Snowflake App DSL",
   "keywords": [
     "legend",
-    "legend-application",
-    "legend-studio",
-    "bootstrap",
-    "app",
-    "webapp"
+    "legend-extension",
+    "dsl",
+    "dsl-snowflake-app",
+    "snowflake"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-studio-bootstrap",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-snowflake-app",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-application-studio-bootstrap"
+    "directory": "packages/legend-extension-dsl-snowflake-app"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": "./lib/index.js",
-    "./lib/index.css": "./lib/index.css",
-    "./scripts/setup.js": "./scripts/setup.js"
+    "./graph": "./lib/graph-manager/index.js",
+    "./application-studio": "./lib/components/studio/index.js",
+    "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -41,38 +40,44 @@
     "dev:ts": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
-    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
-    "@finos/legend-extension-dsl-data-space": "workspace:*",
-    "@finos/legend-extension-dsl-diagram": "workspace:*",
-    "@finos/legend-extension-dsl-mastery": "workspace:*",
-    "@finos/legend-extension-dsl-persistence": "workspace:*",
-    "@finos/legend-extension-dsl-service": "workspace:*",
-    "@finos/legend-extension-dsl-snowflake-app": "workspace:*",
-    "@finos/legend-extension-dsl-text": "workspace:*",
-    "@finos/legend-extension-format-graphql": "workspace:*",
-    "@finos/legend-extension-format-json-schema": "workspace:*",
-    "@finos/legend-extension-store-service-store": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "@types/react": "18.2.6",
-    "react": "18.2.0"
+    "mobx": "6.9.0",
+    "mobx-react-lite": "3.4.3",
+    "react": "18.2.0",
+    "serializr": "3.0.2"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
+    "@jest/globals": "29.5.0",
     "cross-env": "7.0.3",
     "eslint": "8.40.0",
+    "jest": "29.5.0",
     "npm-run-all": "4.1.5",
     "rimraf": "5.0.0",
     "sass": "1.62.1",
     "typescript": "5.0.4"
   },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
   "publishConfig": {
     "directory": "build/publishContent"
+  },
+  "extensions": {
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-snowflake-app",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-snowflake-app",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-snowflake-app"
   }
 }

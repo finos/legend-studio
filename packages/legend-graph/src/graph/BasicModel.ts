@@ -372,6 +372,11 @@ export abstract class BasicModel {
       this.getOwnNullableFunction(path),
       `Can't find function '${path}'`,
     );
+  getOwnFunctionActivator = (path: string): FunctionActivator =>
+    guaranteeNonNullable(
+      this.getOwnNullableFunctionActivator(path),
+      `Can't find function activator '${path}'`,
+    );
   getOwnStore = (path: string): Store =>
     guaranteeNonNullable(
       this.getOwnNullableStore(path),

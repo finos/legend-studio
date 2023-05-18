@@ -28,6 +28,7 @@ import {
   type FunctionActivatorConfiguration,
   PackageableElementExplicitReference,
   buildPath,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 import { ProtocolValueBuilderState } from './ProtocolValueBuilderState.js';
 import {
@@ -119,7 +120,13 @@ export class FunctionActivatorBuilderState {
             value.package =
               this.functionEditorState.functionElement.package?.path;
             value.name = this.activatorName;
-            value.function = this.functionEditorState.functionElement.path;
+            value.function = generateFunctionPrettyName(
+              this.functionEditorState.functionElement,
+              {
+                fullPath: true,
+                spacing: false,
+              },
+            ).replaceAll(' ', '');
             return value;
           },
         });

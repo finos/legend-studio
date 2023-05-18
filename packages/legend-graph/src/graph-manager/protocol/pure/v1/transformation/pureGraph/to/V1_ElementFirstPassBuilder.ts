@@ -155,7 +155,6 @@ export class V1_ElementFirstPassBuilder
       metamodel,
     );
     metamodel.content = element.content;
-    metamodel.function = this.context.resolveFunction(element.function);
     return metamodel;
   }
 

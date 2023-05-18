@@ -23,6 +23,7 @@ import {
   assertTrue,
   LogEvent,
   guaranteeType,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { Stereotype } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Stereotype.js';
 import { Tag } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Tag.js';
@@ -91,6 +92,8 @@ import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageable
 import { V1_buildExecutionParameters } from './V1_ExecutionEnvironmentBuilderHelper.js';
 import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+import { PackageableElementExplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -116,7 +119,35 @@ export class V1_ElementSecondPassBuilder
   visit_INTERNAL__UnknownFunctionActivator(
     element: V1_INTERNAL__UnknownFunctionActivator,
   ): void {
-    throw new UnsupportedOperationError();
+    const metamodel = this.context.currentSubGraph.getOwnFunctionActivator(
+      V1_buildFullPath(element.package, element.name),
+    );
+    // this.context.graph.functions.find((fn) => {
+    //   console.log(
+    //     generateFunctionPrettyName(fn, {
+    //       fullPath: true,
+    //       spacing: false,
+    //     }),
+    //     element.function.replaceAll(/\s*/gu, ''),
+    //   );
+    //   return (
+    //     generateFunctionPrettyName(fn, {
+    //       fullPath: true,
+    //       spacing: false,
+    //     }) === element.function.replaceAll(/\s*/gu, '')
+    //   );
+    // });
+    metamodel.function = PackageableElementExplicitReference.create(
+      guaranteeNonNullable(
+        this.context.graph.functions.find(
+          (fn) =>
+            generateFunctionPrettyName(fn, {
+              fullPath: true,
+              spacing: false,
+            }) === element.function.replaceAll(/\s*/gu, ''),
+        ),
+      ),
+    );
   }
 
   visit_Profile(element: V1_Profile): void {

@@ -45,7 +45,9 @@ test(unitTest('Generate default parameter value for type'), async () => {
   expect(generateFunctionCallString(setFunction)).toBe(
     "model::functions::set('', model::IncType.Corp, %2020-11-01, %2020-11-01T00:00:00)",
   );
-  expect(generateFunctionPrettyName(setFunction, true)).toBe(
+  expect(
+    generateFunctionPrettyName(setFunction, { fullPath: true, spacing: true }),
+  ).toBe(
     'model::functions::set(name: String[1], type: IncType[1], date: Date[1], dateTime: DateTime[1]): String[1]',
   );
 });

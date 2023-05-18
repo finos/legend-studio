@@ -191,7 +191,7 @@ export const ProtocolValueBuilder = observer(
     const getChildNodes = (
       node: ProtocolValueFieldNode,
     ): ProtocolValueFieldNode[] => {
-      if (!node.childrenIds || !treeData) {
+      if (!node.childrenIds.length || !treeData) {
         return [];
       }
       return node.childrenIds

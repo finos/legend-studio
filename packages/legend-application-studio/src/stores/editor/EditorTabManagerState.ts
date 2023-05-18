@@ -32,6 +32,7 @@ import {
   Profile,
   Service,
   type PackageableElement,
+  INTERNAL__UnknownFunctionActivator,
 } from '@finos/legend-graph';
 import {
   type Clazz,
@@ -57,6 +58,7 @@ import { UnsupportedElementEditorState } from './editor-state/UnsupportedElement
 import type { EditorStore } from './EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import { TabManagerState } from '@finos/legend-lego/application';
+import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditor.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
@@ -124,6 +126,11 @@ export class EditorTabManagerState extends TabManagerState {
       return new FileGenerationEditorState(this.editorStore, element);
     } else if (element instanceof DataElement) {
       return new PackageableDataEditorState(this.editorStore, element);
+    } else if (element instanceof INTERNAL__UnknownFunctionActivator) {
+      return new INTERNAL__UnknownFunctionActivatorEdtiorState(
+        this.editorStore,
+        element,
+      );
     }
     const extraElementEditorStateCreators = this.editorStore.pluginManager
       .getApplicationPlugins()

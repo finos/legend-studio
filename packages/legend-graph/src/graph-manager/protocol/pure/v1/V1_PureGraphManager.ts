@@ -1060,6 +1060,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_CONNECTIONS_AND_RUNTIMES__SUCCESS,
     );
 
+    // build function activators
+    graphBuilderState.setMessage(`Building function activators...`);
+    await this.buildFunctionActivators(graph, inputs, options);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DOMAIN_MODELS__SUCCESS,
+    );
+
     // build services
     graphBuilderState.setMessage(
       `Building services and execution environments...`,
@@ -1304,6 +1311,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ElementFifthPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  private async buildFunctionActivators(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    await Promise.all(
+      inputs.flatMap((input) =>
+        input.data.functionActivators.map((element) =>
+          this.visitWithGraphBuilderErrorHandling(
+            element,
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -2405,6 +2431,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         element instanceof V1_Profile ||
         element instanceof V1_Association ||
         element instanceof V1_ConcreteFunctionDefinition ||
+        element instanceof V1_FunctionActivator ||
         element instanceof V1_Measure ||
         element instanceof V1_Store ||
         element instanceof V1_PackageableConnection ||

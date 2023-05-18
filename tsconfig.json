@@ -57,6 +57,9 @@
       "path": "packages/legend-extension-dsl-persistence"
     },
     {
+      "path": "packages/legend-extension-dsl-snowflake-app"
+    },
+    {
       "path": "packages/legend-extension-dsl-mastery"
     },
     {

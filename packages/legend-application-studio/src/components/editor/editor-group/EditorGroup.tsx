@@ -73,6 +73,8 @@ import { PackageableDataEditorState } from '../../../stores/editor/editor-state/
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
 import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';
 import { TabManager, type TabState } from '@finos/legend-lego/application';
+import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditor.js';
+import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -254,6 +256,15 @@ export const EditorGroup = observer(() => {
             return <GenerationSpecificationEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof UnsupportedElementEditorState) {
             return <UnsupportedElementEditor key={currentTabState.uuid} />;
+          } else if (
+            currentTabState instanceof
+            INTERNAL__UnknownFunctionActivatorEdtiorState
+          ) {
+            return (
+              <INTERNAL__UnknownFunctionActivatorEdtior
+                key={currentTabState.uuid}
+              />
+            );
           }
           const extraElementEditorCreators = editorStore.pluginManager
             .getApplicationPlugins()

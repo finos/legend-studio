@@ -131,6 +131,7 @@ export {
 } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
+export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -282,8 +283,9 @@ export {
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export {
   V1_propertyPointerModelSchema,
-  V1_stereotypePtrModelSchema as V1_stereotypePtrSchema,
-  V1_taggedValueModelSchema as V1_taggedValueSchema,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
+  V1_INTERNAL__UnknownFunctionActivatorModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 export {
   V1_deserializeValueSpecification,

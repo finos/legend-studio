@@ -52,6 +52,7 @@ import {
   V1_rawLambdaModelSchema,
   V1_rawVariableModelSchema,
 } from './V1_RawValueSpecificationSerializationHelper.js';
+import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -277,3 +278,10 @@ export const V1_functionModelSchema = createModelSchema(
     }),
   },
 );
+
+export const V1_INTERNAL__UnknownFunctionActivatorModelSchema =
+  createModelSchema(V1_INTERNAL__UnknownFunctionActivator, {
+    function: primitive(),
+    name: primitive(),
+    package: primitive(),
+  });

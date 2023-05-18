@@ -22,6 +22,7 @@ export enum GRAPH_MANAGER_EVENT {
   GRAPH_BUILDER_BUILD_STORES__SUCCESS = 'graph-manager.graph-builder.build-stores.success',
   GRAPH_BUILDER_BUILD_MAPPINGS__SUCCESS = 'graph-manager.graph-builder.build-mappings.success',
   GRAPH_BUILDER_BUILD_CONNECTIONS_AND_RUNTIMES__SUCCESS = 'graph-manager.graph-builder.build-connections-and-runtimes.success',
+  GRAPH_BUILDER_BUILD_FUNCTION_ACTIVATORS__SUCCESS = 'graph-manager.graph-builder.build-function-activators.success',
   GRAPH_BUILDER_BUILD_SERVICES__SUCCESS = 'graph-manager.graph-builder.build-services.success',
   GRAPH_BUILDER_BUILD_DATA_ELEMENTS__SUCCESS = 'graph-manager.graph-builder.build-data.success',
   GRAPH_BUILDER_BUILD_OTHER_ELEMENTS__SUCCESS = 'graph-manager.graph-builder.build-other-elements.success',
