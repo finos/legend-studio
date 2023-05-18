@@ -1,0 +1,13 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relational::MyTrino
+{
+  store: store::db;
+  type: Trino;
+  mode: local;
+}

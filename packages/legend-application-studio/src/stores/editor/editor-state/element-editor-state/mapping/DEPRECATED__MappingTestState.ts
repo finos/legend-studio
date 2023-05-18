@@ -333,6 +333,7 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
       DatabaseType.H2,
       datasourceSpecification,
       new DefaultH2AuthenticationStrategy(),
+      false,
     );
     runtime_addIdentifiedConnection(
       runtime,

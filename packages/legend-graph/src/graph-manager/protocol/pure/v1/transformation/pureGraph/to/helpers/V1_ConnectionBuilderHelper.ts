@@ -277,6 +277,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
         connection.authenticationStrategy,
         this.context,
       ),
+      connection.localMode,
     );
     val.timeZone = connection.timeZone;
     val.quoteIdentifiers = connection.quoteIdentifiers;

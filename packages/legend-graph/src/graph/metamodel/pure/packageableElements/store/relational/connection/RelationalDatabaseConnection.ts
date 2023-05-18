@@ -76,16 +76,19 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
   datasourceSpecification: DatasourceSpecification;
   authenticationStrategy: AuthenticationStrategy;
   postProcessors: PostProcessor[] = [];
+  localMode: boolean = false;
 
   constructor(
     store: PackageableElementReference<Database>,
     type: string,
     datasourceSpecification: DatasourceSpecification,
     authenticationStrategy: AuthenticationStrategy,
+    localMode: boolean,
   ) {
     super(store, type);
     this.datasourceSpecification = datasourceSpecification;
     this.authenticationStrategy = authenticationStrategy;
+    this.localMode = localMode;
   }
 
   get hashCode(): string {
@@ -96,6 +99,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,
       this.authenticationStrategy,
+      this.localMode,
       hashArray(this.postProcessors),
     ]);
   }
