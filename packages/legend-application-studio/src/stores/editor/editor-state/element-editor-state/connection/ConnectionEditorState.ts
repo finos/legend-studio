@@ -308,6 +308,11 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       dataSpec,
       observerContext,
     );
+    relationDbConnection_setLocalMode(
+      this.connection,
+      this.connection.localMode,
+      observerContext,
+    );
   }
 
   get selectedAuthenticationStrategyType(): string | undefined {
