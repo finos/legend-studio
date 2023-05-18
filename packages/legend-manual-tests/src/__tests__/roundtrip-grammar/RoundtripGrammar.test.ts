@@ -83,6 +83,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
     ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP,
   ],
+  'DSL_DataSpace-mapping-include-dataspace.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {

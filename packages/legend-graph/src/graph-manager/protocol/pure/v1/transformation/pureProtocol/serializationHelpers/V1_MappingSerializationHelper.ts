@@ -1277,7 +1277,7 @@ const V1_deserializeMappingInclude = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't deserialize class mapping of type '${json._type}': no compatible deserializer available from plugins`,
+    `Can't deserialize mapping include of type '${json._type}': no compatible deserializer available from plugins`,
   );
 };
 
