@@ -194,4 +194,9 @@ export type LambdaFunctionBuilderOption = {
    */
   useAllVersionsForMilestoning?: boolean | undefined;
   keepSourceInformation?: boolean | undefined;
+  /**
+   * Set this to `true` when we export query results since we do want to ignore an overriding
+   * limit for the query results if it exists so the exported results contain all the data
+   */
+  isExportingResult?: boolean | undefined;
 };
