@@ -771,3 +771,25 @@ test(
     ).toBe('sum sum Age');
   },
 );
+
+test(integrationTest('Query builder query cancellation'), async () => {
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    TEST_DATA__ComplexRelationalModel,
+    stub_RawLambda(),
+    'model::relational::tests::simpleRelationalMapping',
+    'model::MyRuntime',
+    TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  );
+
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+    );
+  });
+
+  await waitFor(() => renderResult.getByText('Run Query'));
+  fireEvent.click(renderResult.getByText('Run Query'));
+  await waitFor(() => renderResult.getByText('Stop'));
+  fireEvent.click(renderResult.getByText('Stop'));
+  await waitFor(() => renderResult.getByText('Run Query'));
+});

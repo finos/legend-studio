@@ -92,6 +92,8 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   UPDATE_QUERY = 'update query',
   DELETE_QUERY = 'delete query',
 
+  CANCEL_USER_EXECUTIONS = 'cancel user executions',
+
   MAPPING_MODEL_COVERAGE_ANALYTICS = 'mapping model coverage analytics',
   SURVEY_DATASET_ANALYTICS = 'survey dataset analytics',
   STORE_ENTITLEMENT_ANALYTICS = 'store entitlement analytics',
@@ -159,6 +161,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Server -------------------------------------------
 
   _server = (): string => `${this.baseUrl}/server/v1`;
+  _executionManager = (): string => `${this._server()}/executionManager`;
   getCurrentUserId = (): Promise<string> =>
     this.get(`${this._server()}/currentUser`);
 
@@ -698,5 +701,19 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this.TEMPORARY__snowflakeServiceDeploymentUrl ?? this.baseUrl}`,
       input,
       undefined,
+    );
+
+  cancelUserExecutions = (
+    userID: string,
+    broadcastToCluster: boolean,
+  ): Promise<string> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CANCEL_USER_EXECUTIONS),
+      `${this._executionManager()}/cancelUserExecution`,
+      {},
+      {},
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+      { userID, broadcastToCluster },
+      { enableCompression: true },
     );
 }

@@ -734,10 +734,11 @@ export const DEPRECATED__MappingTestEditor = observer(
     const runTest = applicationStore.guardUnhandledError(() =>
       flowResult(testState.runTest()),
     );
-    const cancelTest = (): void => {
-      testState.setIsRunningTest(false);
-      testState.setTestRunPromise(undefined);
-    };
+
+    const cancelTest = applicationStore.guardUnhandledError(() =>
+      flowResult(testState.cancelTest()),
+    );
+
     const executionPlanState = testState.executionPlanState;
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(testState.generatePlan(false)),

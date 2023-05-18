@@ -27,6 +27,7 @@ import {
   returnUndefOnError,
   deserializeMap,
   StopWatch,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
@@ -803,6 +804,13 @@ export class V1_Engine {
   async deleteQuery(queryId: string): Promise<V1_Query> {
     return V1_Query.serialization.fromJson(
       await this.engineServerClient.deleteQuery(queryId),
+    );
+  }
+
+  async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
+    return this.engineServerClient.cancelUserExecutions(
+      guaranteeNonNullable(this.getCurrentUserId()),
+      broadcastToCluster,
     );
   }
 
