@@ -164,6 +164,7 @@ export const appendProjection = (
      */
     isBuildingExecutionQuery?: boolean | undefined;
     keepSourceInformation?: boolean | undefined;
+    isExportingResult?: boolean | undefined;
   },
 ): void => {
   const queryBuilderState = tdsState.queryBuilderState;
@@ -394,8 +395,9 @@ export const appendProjection = (
 
   // build result set modifiers
   appendResultSetModifier(tdsState.resultSetModifierState, lambdaFunction, {
-    overridingLimit: options?.isBuildingExecutionQuery
-      ? queryBuilderState.resultState.previewLimit
-      : undefined,
+    overridingLimit:
+      options?.isBuildingExecutionQuery && !options.isExportingResult
+        ? queryBuilderState.resultState.previewLimit
+        : undefined,
   });
 };

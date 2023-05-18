@@ -163,7 +163,9 @@ export class QueryBuilderResultState {
       const contentType = exportData.contentType;
       const serializationFormat = exportData.serializationFormat;
       this.exportDataState.inProgress();
-      const query = this.buildExecutionRawLambda();
+      const query = this.buildExecutionRawLambda({
+        isExportingResult: true,
+      });
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
           query,
