@@ -105,6 +105,15 @@ import {
 } from '@finos/legend-lego/code-editor';
 import { ExecutionPlanViewer } from './execution-plan/ExecutionPlanViewer.js';
 
+export const tryToFormatSql = (sql: string): string => {
+  try {
+    const formattedSql = formatSQL(sql);
+    return formattedSql;
+  } catch {
+    return sql;
+  }
+};
+
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
@@ -612,7 +621,7 @@ export const QueryBuilderResultPanel = observer(
               <ModalBody className="query-builder__sql__modal">
                 <>
                   <CodeEditor
-                    inputValue={formatSQL(executedSql)}
+                    inputValue={tryToFormatSql(executedSql)}
                     isReadOnly={true}
                     language={CODE_EDITOR_LANGUAGE.SQL}
                     hideMinimap={true}

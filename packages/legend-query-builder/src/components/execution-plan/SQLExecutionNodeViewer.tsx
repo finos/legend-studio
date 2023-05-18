@@ -19,7 +19,6 @@ import {
   type ExecutionPlanState,
   EXECUTION_PLAN_VIEW_MODE,
 } from '../../stores/execution-plan/ExecutionPlanState.js';
-import { format as formatSQL } from 'sql-formatter';
 import { type SQLResultColumn, stringifyDataType } from '@finos/legend-graph';
 import {
   PanelListItem,
@@ -28,6 +27,7 @@ import {
   Button,
   PanelContent,
 } from '@finos/legend-art';
+import { tryToFormatSql } from '../QueryBuilderResultPanel.js';
 
 /**
  * TODO: Create a new `AbstractPlugin` for this, called `ExecutionPlanViewerPlugin`
@@ -82,7 +82,7 @@ export const SQLExecutionNodeViewer: React.FC<{
             </PanelListItem>
           </div>
           <PanelListItem className="query-builder__sql__container__item">
-            <pre>{formatSQL(query)} </pre>
+            <pre>{tryToFormatSql(query)} </pre>
           </PanelListItem>
           <PanelDivider />
         </div>
