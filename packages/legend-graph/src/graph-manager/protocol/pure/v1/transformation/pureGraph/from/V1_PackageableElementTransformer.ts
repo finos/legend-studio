@@ -71,6 +71,8 @@ import { V1_transformExecutionEnvirnoment } from './V1_ExecutionEnvironmentTrans
 import type { INTERNAL__UnknownPackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
+import type { INTERNAL__UnknownFunctionActivator } from '../../../../../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
+import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -106,6 +108,16 @@ class V1_PackageableElementTransformer
   ): V1_PackageableElement {
     const protocol = new V1_INTERNAL__UnknownPackageableElement();
     V1_initPackageableElement(protocol, element);
+    protocol.content = element.content;
+    return protocol;
+  }
+
+  visit_INTERNAL__UnknownFunctionActivator(
+    element: INTERNAL__UnknownFunctionActivator,
+  ): V1_PackageableElement {
+    const protocol = new V1_INTERNAL__UnknownFunctionActivator();
+    V1_initPackageableElement(protocol, element);
+    protocol.function = element.function.valueForSerialization ?? '';
     protocol.content = element.content;
     return protocol;
   }

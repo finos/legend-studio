@@ -43,6 +43,7 @@ import { V1_Service } from '../../../model/packageableElements/service/V1_Servic
 import { V1_Store } from '../../../model/packageableElements/store/V1_Store.js';
 import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_ElementBuilder } from './V1_ElementBuilder.js';
+import { V1_FunctionActivator } from '../../../model/packageableElements/function/V1_FunctionActivator.js';
 
 const FORBIDDEN_BUILDER_PROTOCOL_CLASSES = new Set<
   GenericClazz<V1_PackageableElement>
@@ -57,6 +58,7 @@ const FORBIDDEN_BUILDER_PROTOCOL_CLASSES = new Set<
   V1_Unit,
   V1_SectionIndex,
   V1_Store,
+  V1_FunctionActivator,
   V1_Mapping,
   V1_PackageableConnection,
   V1_PackageableRuntime,

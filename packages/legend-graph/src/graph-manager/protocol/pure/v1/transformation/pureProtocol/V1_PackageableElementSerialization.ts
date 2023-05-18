@@ -106,6 +106,7 @@ import {
 } from './serializationHelpers/V1_ExecutionEnvironmentSerializationHelper.js';
 import type { V1_ExecutionEnvironmentInstance } from '../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
+import type { V1_INTERNAL__UnknownFunctionActivator } from '../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -136,6 +137,12 @@ class V1_PackageableElementSerializer
 
   visit_INTERNAL__UnknownPackageableElement(
     element: V1_INTERNAL__UnknownPackageableElement,
+  ): PlainObject<V1_PackageableElement> {
+    return element.content;
+  }
+
+  visit_INTERNAL__UnknownFunctionActivator(
+    element: V1_INTERNAL__UnknownFunctionActivator,
   ): PlainObject<V1_PackageableElement> {
     return element.content;
   }

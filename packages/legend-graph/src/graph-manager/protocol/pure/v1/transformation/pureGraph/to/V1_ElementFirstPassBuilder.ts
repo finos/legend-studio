@@ -70,6 +70,8 @@ import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageable
 import { ExecutionEnvironmentInstance } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import { INTERNAL__UnknownPackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
+import { INTERNAL__UnknownFunctionActivator } from '../../../../../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
+import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -126,6 +128,34 @@ export class V1_ElementFirstPassBuilder
       metamodel,
     );
     metamodel.content = element.content;
+    return metamodel;
+  }
+
+  visit_INTERNAL__UnknownFunctionActivator(
+    element: V1_INTERNAL__UnknownFunctionActivator,
+  ): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Function activator 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Function activator 'name' field is missing or empty`,
+    );
+    const metamodel = new INTERNAL__UnknownFunctionActivator(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    this.context.currentSubGraph.setOwnFunctionActivator(path, metamodel);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      metamodel,
+    );
+    metamodel.content = element.content;
+    metamodel.function = this.context.resolveFunction(element.function);
     return metamodel;
   }
 

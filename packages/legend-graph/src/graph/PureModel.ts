@@ -59,6 +59,7 @@ import type { PackageableElement } from '../graph/metamodel/pure/packageableElem
 import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
 import type { PropertyOwner } from './metamodel/pure/packageableElements/domain/AbstractProperty.js';
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
+import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -250,6 +251,15 @@ export class PureModel extends BasicModel {
       ...this.generationModel.ownFunctions,
     ];
   }
+  get functionActivators(): FunctionActivator[] {
+    return [
+      ...this.coreModel.ownFunctionActivators,
+      ...this.systemModel.ownFunctionActivators,
+      ...this.dependencyManager.functionActivators,
+      ...this.ownFunctionActivators,
+      ...this.generationModel.ownFunctionActivators,
+    ];
+  }
   get stores(): Store[] {
     return [
       ...this.coreModel.ownStores,
@@ -418,6 +428,15 @@ export class PureModel extends BasicModel {
         this.systemModel.getOwnNullableFunction(path),
       ConcreteFunctionDefinition,
       `Can't find function '${path}'`,
+    );
+  getFunctionActivator = (path: string): FunctionActivator =>
+    guaranteeType(
+      this.getOwnNullableFunctionActivator(path) ??
+        this.generationModel.getOwnNullableFunctionActivator(path) ??
+        this.dependencyManager.getOwnNullableFunctionActivator(path) ??
+        this.systemModel.getOwnNullableFunctionActivator(path),
+      FunctionActivator,
+      `Can't find function activator '${path}'`,
     );
   getStore = (path: string): Store =>
     guaranteeNonNullable(

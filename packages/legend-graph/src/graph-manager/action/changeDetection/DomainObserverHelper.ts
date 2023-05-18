@@ -65,6 +65,7 @@ import {
   observe_RawLambda,
   observe_RawVariableExpression,
 } from './RawValueSpecificationObserver.js';
+import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 
 const _observe_Abstract_Package = (metamodel: Package): void => {
   observe_Abstract_PackageableElement(metamodel);
@@ -467,6 +468,20 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
     observe_PackageableElementReference(metamodel.returnType);
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
+
+    return metamodel;
+  },
+);
+
+export const observe_INTERNAL__UnknownFunctionActivator = skipObserved(
+  (
+    metamodel: INTERNAL__UnknownFunctionActivator,
+  ): INTERNAL__UnknownFunctionActivator => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable(metamodel, {
+      content: observable.ref,
+    });
 
     return metamodel;
   },

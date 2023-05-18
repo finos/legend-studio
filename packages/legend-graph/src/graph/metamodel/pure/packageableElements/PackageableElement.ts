@@ -43,11 +43,15 @@ import type { DataElement } from './data/DataElement.js';
 import { AnnotatedElement } from './domain/AnnotatedElement.js';
 import type { ExecutionEnvironmentInstance } from './service/ExecutionEnvironmentInstance.js';
 import type { INTERNAL__UnknownPackageableElement } from './INTERNAL__UnknownPackageableElement.js';
+import type { INTERNAL__UnknownFunctionActivator } from './function/INTERNAL__UnknownFunctionActivator.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
   visit_INTERNAL__UnknownPackageableElement(
     element: INTERNAL__UnknownPackageableElement,
+  ): T;
+  visit_INTERNAL__UnknownFunctionActivator(
+    element: INTERNAL__UnknownFunctionActivator,
   ): T;
 
   visit_SectionIndex(element: SectionIndex): T;

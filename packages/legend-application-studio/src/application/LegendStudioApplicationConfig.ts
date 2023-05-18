@@ -70,7 +70,7 @@ class LegendStudioApplicationCoreOptions {
 
   /**
    * This flag can be removed when the support for function activator is official
-   * See https://github.com/finos/legend-engine/compare/snowflakeApp
+   * See https://github.com/finos/legend-engine/pull/1815
    */
   TEMPORARY__enableFunctionActivatorSupport = false;
 
