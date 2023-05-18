@@ -81,7 +81,10 @@ export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
   context: V1_GraphBuilderContext,
 ): DatasourceSpecification => {
-  if (protocol instanceof V1_INTERNAL__UnknownDatasourceSpecification) {
+  if (protocol == null) {
+    const metamodel = new INTERNAL__UnknownDatasourceSpecification();
+    return metamodel;
+  } else if (protocol instanceof V1_INTERNAL__UnknownDatasourceSpecification) {
     const metamodel = new INTERNAL__UnknownDatasourceSpecification();
     metamodel.content = protocol.content;
     return metamodel;
@@ -304,7 +307,10 @@ export const V1_buildAuthenticationStrategy = (
   protocol: V1_AuthenticationStrategy,
   context: V1_GraphBuilderContext,
 ): AuthenticationStrategy => {
-  if (protocol instanceof V1_INTERNAL__UnknownAuthenticationStrategy) {
+  if (protocol == null) {
+    const metamodel = new V1_INTERNAL__UnknownAuthenticationStrategy();
+    return metamodel;
+  } else if (protocol instanceof V1_INTERNAL__UnknownAuthenticationStrategy) {
     const metamodel = new V1_INTERNAL__UnknownAuthenticationStrategy();
     metamodel.content = protocol.content;
     return metamodel;
