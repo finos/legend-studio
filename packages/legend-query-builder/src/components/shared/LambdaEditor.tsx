@@ -641,14 +641,6 @@ type LambdaEditorBaseProps = {
   disabled: boolean;
   lambdaEditorState: LambdaEditorState;
   /**
-   * TODO: when we pass in these expected type we should match a type as expected type if it's covariance, i.e. it is a subtype of
-   * the expected type. Note that we also have to handle that relationship for Primitive type
-   * See https://dzone.com/articles/covariance-and-contravariance
-   */
-  expectedType?: Type | undefined;
-  matchedExpectedType?: (() => boolean) | undefined;
-  onExpectedTypeLabelSelect?: (() => void) | undefined;
-  /**
    * As backdrop element is often shared in the application, and there could be multiple
    * editor using that backdrop, we could end up in situation where some such editors
    * have parser errors and some don't (this can happen when user make edits very quickly 2 lambda
@@ -658,7 +650,7 @@ type LambdaEditorBaseProps = {
    * NOTE: the current approach has a critical flaw, where on the same screen, there could be multiple
    * sets of lambda editors with different values for `forceBackdrop`. So really, the only way to
    * accomondate for this is to have `forceBackdrop` as a global value. Or we should get rid of this
-   * backdrop mechanism altogether as it's not really a good UX pattern. i.e. quick evaluation makes
+   * backdrop mechanism altogether as it's not a common UX pattern. i.e. quick evaluation makes
    * us believe that this is a good option, user will lose what they type, but the most recent parsable
    * input will still be captured.
    */
@@ -670,6 +662,14 @@ type LambdaEditorBaseProps = {
 export const InlineLambdaEditor = observer(
   (
     props: LambdaEditorBaseProps & {
+      /**
+       * TODO: when we pass in these expected type we should match a type as expected type if it's covariance, i.e. it is a subtype of
+       * the expected type. Note that we also have to handle that relationship for Primitive type
+       * See https://dzone.com/articles/covariance-and-contravariance
+       */
+      expectedType?: Type | undefined;
+      matchedExpectedType?: (() => boolean) | undefined;
+      onExpectedTypeLabelSelect?: (() => void) | undefined;
       /**
        * To whether or not disable expasipn toggler
        */
@@ -792,9 +792,6 @@ export const LambdaEditor = observer((props: LambdaEditorBaseProps) => {
     lambdaEditorState,
     disabled,
     forceBackdrop,
-    expectedType,
-    onExpectedTypeLabelSelect,
-    matchedExpectedType,
     autoFocus,
     onEditorFocus,
   } = props;
@@ -815,9 +812,6 @@ export const LambdaEditor = observer((props: LambdaEditorBaseProps) => {
       disabled={disabled}
       lambdaEditorState={lambdaEditorState}
       transformStringToLambda={debouncedTransformStringToLambda}
-      expectedType={expectedType}
-      matchedExpectedType={matchedExpectedType}
-      onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
       forceBackdrop={forceBackdrop}
       autoFocus={autoFocus}
       onEditorFocus={onEditorFocus}

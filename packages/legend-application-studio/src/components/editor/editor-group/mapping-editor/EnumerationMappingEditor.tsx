@@ -510,7 +510,7 @@ export const EnumerationMappingEditor = observer(
                       onClick={showSourceSelectorModal}
                       disabled={isReadOnly}
                       tabIndex={-1}
-                      title="Select a source..."
+                      title="Choose a source..."
                     >
                       <PencilIcon />
                     </button>

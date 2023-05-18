@@ -226,7 +226,7 @@ export const MapperPostProcessorEditor = observer(
                     <BlankPanelContent>
                       {!mappers.length
                         ? 'Add a mapper'
-                        : 'Select a mapper to view'}
+                        : 'Choose a mapper to view'}
                     </BlankPanelContent>
                   )}
                   {selectedMapper && (

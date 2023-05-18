@@ -31,6 +31,7 @@ import {
   getAllClassProperties,
   DATE_FORMAT,
   DATE_TIME_FORMAT,
+  classHasCycle,
 } from '@finos/legend-graph';
 import {
   CLASS_PROPERTY_TYPE,
@@ -132,38 +133,14 @@ export const createMockClassInstance = (
   return mockData;
 };
 
-export const classHasCycle = (
-  _class: Class,
-  traverseNonRequiredProperties: boolean,
-  classesIndex: Set<string>,
-): boolean => {
-  if (classesIndex.has(_class.path)) {
-    return true;
-  }
-  const properties = traverseNonRequiredProperties
-    ? getAllClassProperties(_class)
-    : getAllClassProperties(_class).filter((p) => p.multiplicity.lowerBound);
-  const complexProperties = properties
-    .map((property) => property.genericType.value.rawType)
-    .filter((c) => getClassPropertyType(c) === CLASS_PROPERTY_TYPE.CLASS);
-  if (complexProperties.length > 0) {
-    // we only count classes with complex properties in the cycle. Example an address class with all primitive should not tigger a class to be cycled
-    classesIndex.add(_class.path);
-  }
-  // we only check unique complex property classes; 2 same property classes on the same level do not count as a cycle
-  return Boolean(
-    Array.from(new Set(complexProperties)).find((c) =>
-      classHasCycle(c as Class, traverseNonRequiredProperties, classesIndex),
-    ),
-  );
-};
-
 export const createMockDataForClass = (
   element: Class,
   maxDepth = 100,
   depthForCycle = 3,
 ): PlainObject => {
-  const depth = classHasCycle(element, true, new Set<string>())
+  const depth = classHasCycle(element, {
+    traverseNonRequiredProperties: true,
+  })
     ? Math.max(depthForCycle, 0)
     : Math.max(maxDepth, 0);
   return createMockClassInstance(element, true, depth);
@@ -181,7 +158,9 @@ export const createMockDataForClassWithFormat = (
   maxDepth = 100,
   depthForCycle = 3,
 ): string => {
-  const depth = classHasCycle(element, true, new Set<string>())
+  const depth = classHasCycle(element, {
+    traverseNonRequiredProperties: true,
+  })
     ? Math.max(depthForCycle, 0)
     : Math.max(maxDepth, 0);
   const obj = createMockClassInstance(element, true, depth);

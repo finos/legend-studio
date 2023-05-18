@@ -1369,7 +1369,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                     <BlankPanelContent>
                       {!postProcessors.length
                         ? 'Add a post-processor'
-                        : 'Select a post-processor to view'}
+                        : 'Choose a post-processor to view'}
                     </BlankPanelContent>
                   )}
                 </ResizablePanel>

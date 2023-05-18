@@ -322,11 +322,11 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
           className="workspace-selector__option"
           title={
             isCurrentOptionInvalid
-              ? `Selected workspace does not have the specified service${
+              ? `Chosen workspace does not have the specified service${
                   setupStore.currentSnapshotService
                     ? ` '${setupStore.currentSnapshotService.path}'`
                     : ''
-                }\nPlease select another appropriate workspace or create and use a new workspace`
+                }\nPlease choose another appropriate workspace or create and use a new workspace`
               : setupStore.checkWorkspaceCompatibilityState.isInProgress
               ? `Checking if the specified service is present in the workspace`
               : undefined
@@ -430,11 +430,11 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                       setupStore.loadWorkspacesState.isInProgress
                         ? 'Loading workspaces...'
                         : !setupStore.currentProject
-                        ? 'In order to select a workspace, a project must be selected'
+                        ? 'In order to choose a workspace, a project must be chosen'
                         : workspaceOptions.length
                         ? 'Choose an existing workspace'
                         : setupStore.loadWorkspacesState.hasFailed
-                        ? `Can't fetch project workspaces. Please try again or select another service`
+                        ? `Can't fetch project workspaces. Please try again or choose another service`
                         : 'You have no workspaces. Please create one to proceed...'
                     }
                     isClearable={true}

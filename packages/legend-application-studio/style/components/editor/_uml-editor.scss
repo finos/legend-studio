@@ -35,6 +35,10 @@
 }
 
 .uml-editor--dark {
+  .panel__content__form__section__header__label {
+    color: var(--color-light-grey-100);
+  }
+
   .dnd__entry-drag-handle {
     background: var(--color-dark-grey-100);
   }

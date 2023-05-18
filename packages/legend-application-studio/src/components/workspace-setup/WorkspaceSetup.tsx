@@ -297,7 +297,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                         setupStore.loadWorkspacesState.isInProgress
                           ? 'Loading workspaces...'
                           : !setupStore.currentProject
-                          ? 'In order to select a workspace, a project must be selected'
+                          ? 'In order to choose a workspace, a project must be chosen'
                           : workspaceOptions.length
                           ? 'Choose an existing workspace'
                           : 'You have no workspaces. Please create one to proceed...'

@@ -49,10 +49,10 @@ export class MappingQueryBuilderState extends QueryBuilderState {
 
   /**
    * Propagation after changing the mapping:
-   * - If no runtime is selected, try to select a compatible runtime
-   * - If the chosen runtime is compatible with the new selected mapping, do nothing, otherwise, try to select a compatible runtime
-   * - If no class is selected, try to select a compatible class
-   * - If the chosen class is compatible with the new selected mapping, do nothing, otherwise, try to select a compatible class
+   * - If no runtime is chosen, try to choose a compatible runtime
+   * - If the chosen runtime is compatible with the new chosen mapping, do nothing, otherwise, try to choose a compatible runtime
+   * - If no class is chosen, try to choose a compatible class
+   * - If the chosen class is compatible with the new chosen mapping, do nothing, otherwise, try to choose a compatible class
    */
   propagateMappingChange(mapping: Mapping): void {
     // try to select the first compatible runtime,

@@ -74,7 +74,7 @@ export const observe_INTERNAL__UnknownPackageableElement = skipObserved(
     observe_Abstract_PackageableElement(metamodel);
 
     makeObservable(metamodel, {
-      content: observable,
+      content: observable.ref,
     });
 
     return metamodel;

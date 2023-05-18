@@ -35,4 +35,5 @@ import Select = require('react-select');
 export = {
   CreatableSelect,
   Select,
+  SelectComponents: Select.components,
 };

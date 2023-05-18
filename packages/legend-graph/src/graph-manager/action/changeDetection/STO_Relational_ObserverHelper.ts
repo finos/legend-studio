@@ -882,7 +882,7 @@ const observe_INTERNAL__UnknownDatasourceSpecification = skipObserved(
     metamodel: INTERNAL__UnknownDatasourceSpecification,
   ): INTERNAL__UnknownDatasourceSpecification =>
     makeObservable(metamodel, {
-      content: observable,
+      content: observable.ref,
       hashCode: computed,
     }),
 );
@@ -1037,8 +1037,8 @@ const observe_INTERNAL__UnknownAuthenticationStrategy = skipObserved(
     metamodel: INTERNAL__UnknownAuthenticationStrategy,
   ): INTERNAL__UnknownAuthenticationStrategy =>
     makeObservable(metamodel, {
+      content: observable.ref,
       hashCode: computed,
-      content: observable,
     }),
 );
 
@@ -1161,7 +1161,7 @@ const observe_INTERNAL__UnknownPostProcessor = (
   observe_Abstract_PostProcessor(metamodel);
 
   makeObservable(metamodel, {
-    content: observable,
+    content: observable.ref,
   });
 
   return metamodel;

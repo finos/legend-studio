@@ -349,7 +349,7 @@ const observe_INTERNAL__UnknownPropertyMapping = skipObserved(
     metamodel: INTERNAL__UnknownPropertyMapping,
   ): INTERNAL__UnknownPropertyMapping =>
     makeObservable(metamodel, {
-      content: observable,
+      content: observable.ref,
     }),
 );
 
@@ -602,7 +602,7 @@ const observe_INTERNAL__UnknownSetImplementation = skipObserved(
     observe_Abstract_SetImplementation(metamodel);
 
     makeObservable(metamodel, {
-      content: observable,
+      content: observable.ref,
     });
 
     return metamodel;
@@ -987,7 +987,7 @@ const observe_INTERNAL__UnknownConnection = skipObserved(
     observe_Abstract_Connection(metamodel);
 
     makeObservable(metamodel, {
-      content: observable,
+      content: observable.ref,
       hashCode: computed,
     });
 

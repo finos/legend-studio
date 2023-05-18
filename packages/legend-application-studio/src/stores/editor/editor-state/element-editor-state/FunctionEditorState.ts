@@ -36,6 +36,7 @@ import {
   isStubbed_PackageableElement,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import { FunctionActivatorBuilderState } from './FunctionActivatorBuilderState.js';
 
 export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
@@ -45,8 +46,9 @@ export enum FUNCTION_EDITOR_TAB {
 }
 
 export class FunctionBodyEditorState extends LambdaEditorState {
-  editorStore: EditorStore;
-  functionElement: ConcreteFunctionDefinition;
+  readonly editorStore: EditorStore;
+  readonly functionElement: ConcreteFunctionDefinition;
+
   isConvertingFunctionBodyToString = false;
 
   constructor(
@@ -156,6 +158,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
 export class FunctionEditorState extends ElementEditorState {
   selectedTab: FUNCTION_EDITOR_TAB;
   functionBodyEditorState: FunctionBodyEditorState;
+  activatorBuilderState: FunctionActivatorBuilderState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -177,6 +180,7 @@ export class FunctionEditorState extends ElementEditorState {
       element,
       this.editorStore,
     );
+    this.activatorBuilderState = new FunctionActivatorBuilderState(this);
   }
 
   get functionElement(): ConcreteFunctionDefinition {

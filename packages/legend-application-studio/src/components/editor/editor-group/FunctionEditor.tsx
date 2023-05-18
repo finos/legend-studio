@@ -111,6 +111,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib
 import { LambdaEditor } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../stores/graph-modifier/GraphModifierHelper.js';
+import { FunctionActivatorBuilder } from './FunctionActivatorBuilder.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -118,9 +119,7 @@ enum FUNCTION_PARAMETER_TYPE {
   PRIMITIVE = 'PRIMITIVE',
 }
 
-export const getFunctionParameterType = (
-  type: Type,
-): FUNCTION_PARAMETER_TYPE => {
+const getFunctionParameterType = (type: Type): FUNCTION_PARAMETER_TYPE => {
   if (type instanceof PrimitiveType) {
     return FUNCTION_PARAMETER_TYPE.PRIMITIVE;
   } else if (type instanceof Enumeration) {
@@ -625,16 +624,16 @@ const ReturnTypeEditor = observer(
   },
 );
 
-export const FunctionMainEditor = observer(
+const FunctionDefinitionEditor = observer(
   (props: {
-    functionElement: ConcreteFunctionDefinition;
-    isReadOnly: boolean;
     functionEditorState: FunctionEditorState;
+    isReadOnly: boolean;
   }) => {
+    const { functionEditorState, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const { functionElement, isReadOnly, functionEditorState } = props;
     const lambdaEditorState = functionEditorState.functionBodyEditorState;
+    const functionElement = functionEditorState.functionElement;
 
     // Parameters
     const addParameter = (): void => {
@@ -681,7 +680,7 @@ export const FunctionMainEditor = observer(
     );
 
     return (
-      <div className="panel__content function-editor__element">
+      <div className="function-editor__element">
         <div className="function-editor__element__item">
           <div className="function-editor__element__item__header">
             <div className="function-editor__element__item__header__title">
@@ -751,7 +750,6 @@ export const FunctionMainEditor = observer(
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly
               }
               lambdaEditorState={lambdaEditorState}
-              expectedType={functionElement.returnType.value}
               forceBackdrop={false}
               autoFocus={true}
             />
@@ -929,58 +927,61 @@ export const FunctionEditor = observer(() => {
             </button>
           </div>
         </div>
-        {selectedTab === FUNCTION_EDITOR_TAB.DEFINITION ? (
-          <FunctionMainEditor
-            functionEditorState={functionEditorState}
-            functionElement={functionElement}
-            isReadOnly={isReadOnly}
-          />
-        ) : (
-          <PanelContent>
-            {selectedTab === FUNCTION_EDITOR_TAB.TAGGED_VALUES && (
-              <div
-                ref={dropTaggedValueRef}
-                className={clsx('panel__content__lists', {
-                  'panel__content__lists--dnd-over':
-                    isTaggedValueDragOver && !isReadOnly,
-                })}
-              >
-                <TaggedValueDragPreviewLayer />
-                {functionElement.taggedValues.map((taggedValue) => (
-                  <TaggedValueEditor
-                    annotatedElement={functionElement}
-                    key={taggedValue._UUID}
-                    taggedValue={taggedValue}
-                    deleteValue={_deleteTaggedValue(taggedValue)}
-                    isReadOnly={isReadOnly}
-                    darkTheme={true}
-                  />
-                ))}
-              </div>
-            )}
-            {selectedTab === FUNCTION_EDITOR_TAB.STEREOTYPES && (
-              <div
-                ref={dropStereotypeRef}
-                className={clsx('panel__content__lists', {
-                  'panel__content__lists--dnd-over':
-                    isStereotypeDragOver && !isReadOnly,
-                })}
-              >
-                <StereotypeDragPreviewLayer />
-                {functionElement.stereotypes.map((stereotype) => (
-                  <StereotypeSelector
-                    key={stereotype.value._UUID}
-                    annotatedElement={functionElement}
-                    stereotype={stereotype}
-                    deleteStereotype={_deleteStereotype(stereotype)}
-                    isReadOnly={isReadOnly}
-                    darkTheme={true}
-                  />
-                ))}
-              </div>
-            )}
-          </PanelContent>
-        )}
+        <PanelContent>
+          {selectedTab === FUNCTION_EDITOR_TAB.DEFINITION && (
+            <FunctionDefinitionEditor
+              functionEditorState={functionEditorState}
+              isReadOnly={isReadOnly}
+            />
+          )}
+          {selectedTab === FUNCTION_EDITOR_TAB.TAGGED_VALUES && (
+            <div
+              ref={dropTaggedValueRef}
+              className={clsx('panel__content__lists', {
+                'panel__content__lists--dnd-over':
+                  isTaggedValueDragOver && !isReadOnly,
+              })}
+            >
+              <TaggedValueDragPreviewLayer />
+              {functionElement.taggedValues.map((taggedValue) => (
+                <TaggedValueEditor
+                  annotatedElement={functionElement}
+                  key={taggedValue._UUID}
+                  taggedValue={taggedValue}
+                  deleteValue={_deleteTaggedValue(taggedValue)}
+                  isReadOnly={isReadOnly}
+                  darkTheme={true}
+                />
+              ))}
+            </div>
+          )}
+          {selectedTab === FUNCTION_EDITOR_TAB.STEREOTYPES && (
+            <div
+              ref={dropStereotypeRef}
+              className={clsx('panel__content__lists', {
+                'panel__content__lists--dnd-over':
+                  isStereotypeDragOver && !isReadOnly,
+              })}
+            >
+              <StereotypeDragPreviewLayer />
+              {functionElement.stereotypes.map((stereotype) => (
+                <StereotypeSelector
+                  key={stereotype.value._UUID}
+                  annotatedElement={functionElement}
+                  stereotype={stereotype}
+                  deleteStereotype={_deleteStereotype(stereotype)}
+                  isReadOnly={isReadOnly}
+                  darkTheme={true}
+                />
+              ))}
+            </div>
+          )}
+          {selectedTab === FUNCTION_EDITOR_TAB.ACTIVATOR && (
+            <FunctionActivatorBuilder
+              functionEditorState={functionEditorState}
+            />
+          )}
+        </PanelContent>
       </Panel>
     </div>
   );

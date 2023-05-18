@@ -407,11 +407,11 @@ export const UpdateProjectServiceQuerySetup =
                         setupStore.loadWorkspacesState.isInProgress
                           ? 'Loading workspaces...'
                           : !setupStore.currentProject
-                          ? 'In order to select a workspace, a project must be selected'
+                          ? 'In order to choose a workspace, a project must be selected'
                           : workspaceOptions.length
                           ? 'Choose an existing workspace'
                           : setupStore.loadWorkspacesState.hasFailed
-                          ? `Can't fetch project workspaces. Please try again or select another service`
+                          ? `Can't fetch project workspaces. Please try again or choose another service`
                           : 'You have no workspaces. Please create one to proceed...'
                       }
                       isClearable={true}
@@ -446,7 +446,7 @@ export const UpdateProjectServiceQuerySetup =
                       onChange={onServiceOptionChange}
                       placeholder={
                         !setupStore.currentGroupWorkspace
-                          ? 'In order to select a service, a workspace must be selected'
+                          ? 'In order to choose a service, a workspace must be chosen'
                           : serviceOptions.length
                           ? 'Choose an existing service'
                           : 'You have no services to load'

@@ -318,10 +318,7 @@ const GenerationStringPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
     isReadOnly: boolean;
-    update: (
-      AbstractGenerationProperty: GenerationProperty,
-      newValue: PlainObject,
-    ) => void;
+    update: (property: GenerationProperty, newValue: PlainObject) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
@@ -356,10 +353,7 @@ const GenerationIntegerPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
     isReadOnly: boolean;
-    update: (
-      AbstractGenerationProperty: GenerationProperty,
-      newValue: PlainObject,
-    ) => void;
+    update: (property: GenerationProperty, newValue: PlainObject) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
@@ -395,10 +389,7 @@ const GenerationBooleanPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
     isReadOnly: boolean;
-    update: (
-      AbstractGenerationProperty: GenerationProperty,
-      newValue: PlainObject,
-    ) => void;
+    update: (property: GenerationProperty, newValue: PlainObject) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
@@ -425,10 +416,7 @@ const GenerationEnumPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
     isReadOnly: boolean;
-    update: (
-      AbstractGenerationProperty: GenerationProperty,
-      newValue: PlainObject,
-    ) => void;
+    update: (property: GenerationProperty, newValue: PlainObject) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
@@ -475,10 +463,7 @@ const GenerationArrayPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
     isReadOnly: boolean;
-    update: (
-      AbstractGenerationProperty: GenerationProperty,
-      newValue: object,
-    ) => void;
+    update: (property: GenerationProperty, newValue: object) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
@@ -668,10 +653,7 @@ const GenerationMapPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
     isReadOnly: boolean;
-    update: (
-      AbstractGenerationProperty: GenerationProperty,
-      newValue: object,
-    ) => void;
+    update: (property: GenerationProperty, newValue: object) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;

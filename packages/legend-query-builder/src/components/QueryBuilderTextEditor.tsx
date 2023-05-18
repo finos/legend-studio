@@ -101,6 +101,7 @@ export const QueryBuilderTextEditor = observer(
                   disabled={queryTextEditorState.isConvertingLambdaToString}
                   lambdaEditorState={queryTextEditorState}
                   forceBackdrop={false}
+                  autoFocus={true}
                 />
               )}
               {mode === QueryBuilderTextEditorMode.JSON && (

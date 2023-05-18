@@ -16,7 +16,7 @@
 
 import { test, expect, beforeAll } from '@jest/globals';
 import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json';
-import { classHasCycle, createMockClassInstance } from '../MockDataUtils.js';
+import { createMockClassInstance } from '../MockDataUtils.js';
 import { type PlainObject } from '@finos/legend-shared';
 import {
   type TEMPORARY__JestMatcher,
@@ -25,6 +25,7 @@ import {
 import { TEST__getTestEditorStore } from '../../__test-utils__/EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
 import { TEST__buildGraphWithEntities } from '@finos/legend-graph/test';
+import { classHasCycle } from '@finos/legend-graph';
 
 const editorStore = TEST__getTestEditorStore();
 beforeAll(async () => {
@@ -63,11 +64,21 @@ test(unitTest('Class with hierarchy cycle is detected'), () => {
   const simpleClass = editorStore.graphManagerState.graph.getClass(
     'myPackage::test::shared::src::Address',
   );
-  expect(classHasCycle(cycledComplexClass, true, new Set<string>())).toBe(true);
-  expect(classHasCycle(nonComplexStyleClass, true, new Set<string>())).toBe(
-    false,
-  );
-  expect(classHasCycle(simpleClass, true, new Set<string>())).toBe(false);
+  expect(
+    classHasCycle(cycledComplexClass, {
+      traverseNonRequiredProperties: true,
+    }),
+  ).toBe(true);
+  expect(
+    classHasCycle(nonComplexStyleClass, {
+      traverseNonRequiredProperties: true,
+    }),
+  ).toBe(false);
+  expect(
+    classHasCycle(simpleClass, {
+      traverseNonRequiredProperties: true,
+    }),
+  ).toBe(false);
 });
 
 // TODO: maybe we should isolate this to another test for mock data util

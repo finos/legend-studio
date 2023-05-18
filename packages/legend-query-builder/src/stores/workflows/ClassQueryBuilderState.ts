@@ -33,9 +33,9 @@ export class ClassQueryBuilderState extends QueryBuilderState {
 
   /**
    * Propagation after changing the class:
-   * - If no mapping is selected, try to select a compatible mapping
-   * - If the chosen mapping is compatible with the new selected class, do nothing, otherwise, try to select a compatible mapping
-   * - This change will propagate to runtime: we will attempt to select a compatible runtime with the newly selected mapping
+   * - If no mapping is chosen, try to choose a compatible mapping
+   * - If the chosen mapping is compatible with the new selected class, do nothing, otherwise, try to choose a compatible mapping
+   * - This change will propagate to runtime: we will attempt to choose a compatible runtime with the newly selected mapping
    */
   propagateClassChange(_class: Class): void {
     const compatibleMappings = getClassCompatibleMappings(
@@ -58,11 +58,11 @@ export class ClassQueryBuilderState extends QueryBuilderState {
 
   /**
    * Propagation after changing the mapping:
-   * - If no runtime is selected, try to select a compatible runtime
-   * - If the chosen runtime is compatible with the new selected mapping, do nothing, otherwise, try to select a compatible runtime
+   * - If no runtime is chosen, try to choose a compatible runtime
+   * - If the chosen runtime is compatible with the new chosen mapping, do nothing, otherwise, try to choose a compatible runtime
    */
   propagateMappingChange(mapping: Mapping): void {
-    // try to select the first compatible runtime,
+    // try to choose the first compatible runtime,
     // if none found, just unset the current runtime value
     const compatibleRuntimes = getMappingCompatibleRuntimes(
       mapping,
