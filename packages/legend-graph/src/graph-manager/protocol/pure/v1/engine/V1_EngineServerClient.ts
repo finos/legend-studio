@@ -707,7 +707,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     userID: string,
     broadcastToCluster: boolean,
   ): Promise<string> =>
-    this.postWithTracing(
+    this.deleteWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CANCEL_USER_EXECUTIONS),
       `${this._executionManager()}/cancelUserExecution`,
       {},
