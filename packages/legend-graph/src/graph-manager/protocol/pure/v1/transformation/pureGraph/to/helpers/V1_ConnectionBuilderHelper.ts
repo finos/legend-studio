@@ -278,6 +278,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
         this.context,
       ),
     );
+    val.localMode = connection.localMode;
     val.timeZone = connection.timeZone;
     val.quoteIdentifiers = connection.quoteIdentifiers;
     val.postProcessors = connection.postProcessors.map((p) =>

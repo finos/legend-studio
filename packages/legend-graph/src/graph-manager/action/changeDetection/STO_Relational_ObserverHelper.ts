@@ -1213,6 +1213,7 @@ export const observe_RelationalDatabaseConnection = skipObservedWithContext(
     makeObservable(metamodel, {
       datasourceSpecification: observable,
       authenticationStrategy: observable,
+      localMode: observable,
       postProcessors: observable,
       hashCode: computed,
     });

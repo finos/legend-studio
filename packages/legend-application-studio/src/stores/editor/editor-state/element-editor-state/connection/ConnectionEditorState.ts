@@ -62,6 +62,7 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
+  relationDbConnection_setLocalMode,
 } from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import {
   MapperPostProcessorEditorState,
@@ -117,6 +118,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
   override connection: RelationalDatabaseConnection;
+  localMode = false;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   postProcessorState: PostProcessorEditorState | undefined;
 
@@ -126,10 +128,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   ) {
     super(editorStore, connection);
     makeObservable(this, {
+      localMode: observable,
       selectedTab: observable,
       postProcessorState: observable,
       selectedDatasourceSpecificationType: computed,
       selectedAuthenticationStrategyType: computed,
+      setLocalMode: action,
       setSelectedTab: action,
       selectPostProcessor: action,
     });
@@ -174,6 +178,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
 
   setSelectedTab(val: RELATIONAL_DATABASE_TAB_TYPE): void {
     this.selectedTab = val;
+  }
+
+  setLocalMode(val: boolean): void {
+    this.localMode = val;
   }
 
   label(): string {
@@ -299,6 +307,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       this.connection,
       dataSpec,
       observerContext,
+    );
+    relationDbConnection_setLocalMode(
+      this.connection,
+      this.connection.localMode,
     );
   }
 

@@ -77,6 +77,12 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
   authenticationStrategy: AuthenticationStrategy;
   postProcessors: PostProcessor[] = [];
 
+  /**
+   * HACKY: this is done to quickly add support for local connection
+   * See https://github.com/finos/legend-engine/pull/1807
+   */
+  localMode?: boolean | undefined;
+
   constructor(
     store: PackageableElementReference<Database>,
     type: string,
@@ -96,6 +102,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,
       this.authenticationStrategy,
+      this.localMode?.toString() ?? '',
       hashArray(this.postProcessors),
     ]);
   }

@@ -1552,6 +1552,7 @@ const renderAuthenticationStrategyEditor = (
     return null;
   }
 };
+
 const RelationalConnectionGeneralEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
@@ -1634,6 +1635,30 @@ const RelationalConnectionGeneralEditor = observer(
         connectionValueState.changeAuthenticationStrategy(val.value);
       }
     };
+
+    // HACKY:
+    if (connection.localMode) {
+      return (
+        <div className="relational-connection-editor">
+          <Panel>
+            <PanelHeader title="general"></PanelHeader>
+            <PanelContent className="relational-connection-editor__general">
+              <PanelFormSection>
+                <div className="panel__content__form__section__header__label">
+                  Database type
+                </div>
+                <CustomSelectorInput
+                  options={typeOptions}
+                  onChange={onTypeChange}
+                  value={selectedType}
+                  darkMode={true}
+                />
+              </PanelFormSection>
+            </PanelContent>
+          </Panel>
+        </div>
+      );
+    }
 
     return (
       <div className="relational-connection-editor">
