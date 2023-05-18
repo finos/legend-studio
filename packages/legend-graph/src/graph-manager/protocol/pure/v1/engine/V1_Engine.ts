@@ -218,7 +218,7 @@ export class V1_Engine {
 
   async getClassifierPathMapping(): Promise<ClassifierPathMapping[]> {
     try {
-      return this.engineServerClient.getClassifierPathMap();
+      return await this.engineServerClient.getClassifierPathMap();
     } catch {
       return [];
     }
