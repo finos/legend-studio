@@ -37,8 +37,12 @@ import { deserialize } from 'serializr';
 import {
   V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE,
   V1_deserializeDataSpace,
+  V1_MAPPING_INCLUDE_DATASPACE_TYPE,
   V1_serializeDataSpace,
+  V1_serializeMappingInclude,
+  V1_deserializeMappingInclude,
 } from './v1/transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';
+import { V1_resolveDataSpace } from './v1/transformation/pureGraph/V1_DSL_DataSpace_GraphBuilderHelper.js';
 import { getOwnDataSpace } from '../../DSL_DataSpace_GraphManagerHelper.js';
 import {
   DataSpace,
@@ -51,6 +55,7 @@ import {
   DataSpaceElementPointer,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
+  type PureModel,
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
@@ -75,15 +80,29 @@ import {
   Class,
   Enumeration,
   Association,
+  type Mapping,
+  type MappingInclude,
   type PackageableElementReference,
   Package,
+  type V1_MappingInclude,
+  type DSL_Mapping_PureProtocolProcessorPlugin_Extension,
+  type V1_MappingIncludeBuilder,
+  type V1_MappingIncludeTransformer,
+  type V1_MappingIncludeProtocolSerializer,
+  type V1_MappingIncludeProtocolDeserializer,
+  type V1_ExecutionInputCollector,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
+import { V1_MappingIncludeDataSpace } from './v1/model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
+import { MappingIncludeDataSpace } from '../../../graph/metamodel/pure/model/packageableElements/mapping/DSL_DataSpace_MappingIncludeDataSpace.js';
 
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
 
-export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class DSL_DataSpace_PureProtocolProcessorPlugin
+  extends PureProtocolProcessorPlugin
+  implements DSL_Mapping_PureProtocolProcessorPlugin_Extension
+{
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
@@ -106,29 +125,6 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
             elementProtocol.package,
             elementProtocol.name,
           );
-          context.currentSubGraph.setOwnElementInExtension(
-            path,
-            element,
-            DataSpace,
-          );
-          return element;
-        },
-        secondPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): void => {
-          assertType(elementProtocol, V1_DataSpace);
-          const path = V1_buildFullPath(
-            elementProtocol.package,
-            elementProtocol.name,
-          );
-          const element = getOwnDataSpace(path, context.currentSubGraph);
-          element.stereotypes = elementProtocol.stereotypes
-            .map((stereotype) => context.resolveStereotype(stereotype))
-            .filter(isNonNullable);
-          element.taggedValues = elementProtocol.taggedValues
-            .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
-            .filter(isNonNullable);
           element.executionContexts = guaranteeNonNullable(
             elementProtocol.executionContexts,
             `Data space 'executionContexts' field is missing`,
@@ -160,6 +156,29 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
             ),
             `Can't find default execution context '${elementProtocol.defaultExecutionContext}'`,
           );
+          context.currentSubGraph.setOwnElementInExtension(
+            path,
+            element,
+            DataSpace,
+          );
+          return element;
+        },
+        secondPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): void => {
+          assertType(elementProtocol, V1_DataSpace);
+          const path = V1_buildFullPath(
+            elementProtocol.package,
+            elementProtocol.name,
+          );
+          const element = getOwnDataSpace(path, context.currentSubGraph);
+          element.stereotypes = elementProtocol.stereotypes
+            .map((stereotype) => context.resolveStereotype(stereotype))
+            .filter(isNonNullable);
+          element.taggedValues = elementProtocol.taggedValues
+            .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
+            .filter(isNonNullable);
           element.title = elementProtocol.title;
           element.description = elementProtocol.description;
           if (elementProtocol.elements) {
@@ -383,6 +402,83 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProce
         }
         return undefined;
       },
+    ];
+  }
+
+  V1_getExtraMappingIncludeBuilders(): V1_MappingIncludeBuilder[] {
+    return [
+      (
+        protocol: V1_MappingInclude,
+        parentMapping: Mapping,
+        context: V1_GraphBuilderContext,
+      ): MappingInclude | undefined => {
+        if (protocol instanceof V1_MappingIncludeDataSpace) {
+          const dataSpace = V1_resolveDataSpace(
+            protocol.includedDataSpace,
+            context,
+          );
+          const includedMapping = new MappingIncludeDataSpace(
+            parentMapping,
+            dataSpace.value.defaultExecutionContext.mapping,
+            dataSpace,
+          );
+          return includedMapping;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraMappingIncludeTransformers(): V1_MappingIncludeTransformer[] {
+    return [
+      (
+        metamodel: MappingInclude,
+        context: V1_GraphTransformerContext,
+      ): V1_MappingInclude | undefined => {
+        if (metamodel instanceof MappingIncludeDataSpace) {
+          const mappingInclude = new V1_MappingIncludeDataSpace();
+          mappingInclude.includedDataSpace =
+            metamodel.includedDataSpace.valueForSerialization ?? '';
+          return mappingInclude;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraMappingIncludeProtocolSerializers(): V1_MappingIncludeProtocolSerializer[] {
+    return [
+      (
+        protocol: V1_MappingInclude,
+      ): PlainObject<V1_MappingInclude> | undefined => {
+        if (protocol instanceof V1_MappingIncludeDataSpace) {
+          return V1_serializeMappingInclude(protocol);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraMappingIncludeProtocolDeserializers(): V1_MappingIncludeProtocolDeserializer[] {
+    return [
+      (json: PlainObject<V1_MappingInclude>): V1_MappingInclude | undefined => {
+        if (json._type === V1_MAPPING_INCLUDE_DATASPACE_TYPE) {
+          return V1_deserializeMappingInclude(json);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraExecutionInputCollectors(): V1_ExecutionInputCollector[] {
+    return [
+      (
+        graph: PureModel,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter(
+          (element) => element instanceof V1_DataSpace,
+        ),
     ];
   }
 }

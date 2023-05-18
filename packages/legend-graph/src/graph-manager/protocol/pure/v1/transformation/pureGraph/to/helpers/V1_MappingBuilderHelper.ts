@@ -46,7 +46,8 @@ import {
   PackageableElementExplicitReference,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { EnumValueImplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/EnumValueReference.js';
-import { MappingInclude } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
+import type { MappingInclude } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
+import { MappingIncludeMapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingIncludeMapping.js';
 import { SubstituteStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
 import type { SetImplementation } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import { InferableMappingElementRootImplicitValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementRoot.js';
@@ -65,7 +66,10 @@ import {
   V1_DEPRECATED__RelationalInputData,
 } from '../../../../model/packageableElements/mapping/V1_DEPRECATED__MappingTest.js';
 import type { V1_ClassMapping } from '../../../../model/packageableElements/mapping/V1_ClassMapping.js';
-import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import {
+  type V1_MappingInclude,
+  V1_MappingIncludeMapping,
+} from '../../../../model/packageableElements/mapping/V1_MappingInclude.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 import {
   getAllClassMappings,
@@ -100,6 +104,7 @@ import type { V1_MappingStoreTestData } from '../../../../model/packageableEleme
 import { StoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { ModelStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -212,20 +217,41 @@ export const V1_buildMappingInclude = (
   context: V1_GraphBuilderContext,
   parentMapping: Mapping,
 ): MappingInclude => {
-  const includedMapping = new MappingInclude(
-    parentMapping,
-    context.resolveMapping(mappingInclude.includedMapping),
-  );
-  if (mappingInclude.sourceDatabasePath && mappingInclude.targetDatabasePath) {
-    includedMapping.storeSubstitutions.push(
-      new SubstituteStore(
-        includedMapping,
-        context.resolveStore(mappingInclude.sourceDatabasePath),
-        context.resolveStore(mappingInclude.targetDatabasePath),
-      ),
+  if (mappingInclude instanceof V1_MappingIncludeMapping) {
+    const includedMapping = new MappingIncludeMapping(
+      parentMapping,
+      context.resolveMapping(mappingInclude.includedMapping),
     );
+    if (
+      mappingInclude.sourceDatabasePath &&
+      mappingInclude.targetDatabasePath
+    ) {
+      includedMapping.storeSubstitutions.push(
+        new SubstituteStore(
+          includedMapping,
+          context.resolveStore(mappingInclude.sourceDatabasePath),
+          context.resolveStore(mappingInclude.targetDatabasePath),
+        ),
+      );
+    }
+    return includedMapping;
   }
-  return includedMapping;
+  const extraIncludeMappingBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMappingIncludeBuilders?.() ?? [],
+  );
+  for (const builder of extraIncludeMappingBuilders) {
+    const builtInclude = builder(mappingInclude, parentMapping, context);
+    if (builtInclude) {
+      return builtInclude;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform mapping include: no compatible transformer available from plugins`,
+    mappingInclude,
+  );
 };
 
 const buildMappingStoreTestData = (

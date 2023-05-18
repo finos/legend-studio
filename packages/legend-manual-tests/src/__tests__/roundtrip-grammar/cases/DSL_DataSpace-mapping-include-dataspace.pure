@@ -1,0 +1,235 @@
+###DataSpace
+DataSpace entity::dataspace::LegalEntityDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'default';
+      mapping: entity::mapping::LegalEntityMapping;
+      defaultRuntime: entity::runtime::LegalEntityRuntime;
+    }
+  ];
+  defaultExecutionContext: 'default';
+}
+
+
+###Service
+Service trade::service::TradeService
+{
+  pattern: '/aeadc3bd-27ac-46ae-8989-073ea134aceb';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |trade::model::Trade.all()->graphFetch(#{trade::model::Trade{quantity,ticker,client{legalName,identifier}}}#)->serialize(#{trade::model::Trade{quantity,ticker,client{legalName,identifier}}}#);
+    mapping: trade::mapping::TradeMapping;
+    runtime: trade::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_2:
+            Relational
+            #{
+              LEGAL_ENTITY_SCHEMA.LEGAL_ENTITY_TABLE:
+                'LEGAL_ENTITY_ID,LEGAL_NAME\n'+
+                '1,Tesla\n';
+            }#,
+          connection_1:
+            Relational
+            #{
+              TRADE_SCHEMA.TRADE_TABLE:
+                'TICKER,QUANTITY,CLIENT_IDENTIFIER\n'+
+                'APPL,10,1\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_1:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\n  "quantity": 10,\n  "ticker": "APPL",\n  "client": {\n    "legalName": "Tesla",\n    "identifier": "1"\n  }\n}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+###Relational
+Database entity::store::LegalEntityDatabase
+(
+  Schema LEGAL_ENTITY_SCHEMA
+  (
+    Table LEGAL_ENTITY_TABLE
+    (
+      LEGAL_ENTITY_ID VARCHAR(100) PRIMARY KEY,
+      LEGAL_NAME VARCHAR(100)
+    )
+  )
+)
+
+Database trade::store::TradeDatabase
+(
+  Schema TRADE_SCHEMA
+  (
+    Table TRADE_TABLE
+    (
+      TICKER VARCHAR(100) PRIMARY KEY,
+      QUANTITY INTEGER,
+      CLIENT_IDENTIFIER VARCHAR(100)
+    )
+  )
+)
+
+
+###Pure
+Class entity::model::LegalEntity
+{
+  identifier: String[1];
+  legalName: String[1];
+}
+
+Class trade::model::Trade
+{
+  ticker: String[1];
+  quantity: Integer[1];
+}
+
+Association trade::model::Trade_LegalEntity
+{
+  client: entity::model::LegalEntity[1];
+  trades: trade::model::Trade[*];
+}
+
+
+###Mapping
+Mapping entity::mapping::LegalEntityMapping
+(
+  *entity::model::LegalEntity[legal_entity]: Relational
+  {
+    ~primaryKey
+    (
+      [entity::store::LegalEntityDatabase]LEGAL_ENTITY_SCHEMA.LEGAL_ENTITY_TABLE.LEGAL_ENTITY_ID
+    )
+    ~mainTable [entity::store::LegalEntityDatabase]LEGAL_ENTITY_SCHEMA.LEGAL_ENTITY_TABLE
+    identifier: [entity::store::LegalEntityDatabase]LEGAL_ENTITY_SCHEMA.LEGAL_ENTITY_TABLE.LEGAL_ENTITY_ID,
+    legalName: [entity::store::LegalEntityDatabase]LEGAL_ENTITY_SCHEMA.LEGAL_ENTITY_TABLE.LEGAL_NAME
+  }
+)
+
+Mapping trade::mapping::TradeMapping
+(
+  include dataspace entity::dataspace::LegalEntityDataSpace
+
+  *trade::model::Trade[trade]: Relational
+  {
+    ~primaryKey
+    (
+      [trade::store::TradeDatabase]TRADE_SCHEMA.TRADE_TABLE.TICKER,
+      [trade::store::TradeDatabase]TRADE_SCHEMA.TRADE_TABLE.QUANTITY,
+      [trade::store::TradeDatabase]TRADE_SCHEMA.TRADE_TABLE.CLIENT_IDENTIFIER
+    )
+    ~mainTable [trade::store::TradeDatabase]TRADE_SCHEMA.TRADE_TABLE
+    ticker: [trade::store::TradeDatabase]TRADE_SCHEMA.TRADE_TABLE.TICKER,
+    quantity: [trade::store::TradeDatabase]TRADE_SCHEMA.TRADE_TABLE.QUANTITY,
+    +clientIdentifier: String[1]: [trade::store::TradeDatabase]TRADE_SCHEMA.TRADE_TABLE.CLIENT_IDENTIFIER
+  }
+
+  trade::model::Trade_LegalEntity: XStore
+  {
+    client[trade, legal_entity]: $this.clientIdentifier == $that.identifier,
+    trades[legal_entity, trade]: $this.identifier == $that.clientIdentifier
+  }
+)
+
+
+###Runtime
+Runtime trade::runtime::TradeRuntime
+{
+  mappings:
+  [
+    trade::mapping::TradeMapping
+  ];
+  connections:
+  [
+    trade::store::TradeDatabase:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: trade::store::TradeDatabase;
+          type: H2;
+          specification: LocalH2
+          {
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ],
+    entity::store::LegalEntityDatabase:
+    [
+      connection_2:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: entity::store::LegalEntityDatabase;
+          type: H2;
+          specification: LocalH2
+          {
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+Runtime entity::runtime::LegalEntityRuntime
+{
+  mappings:
+  [
+    entity::mapping::LegalEntityMapping
+  ];
+  connections:
+  [
+    entity::store::LegalEntityDatabase:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: entity::store::LegalEntityDatabase;
+          type: H2;
+          specification: LocalH2
+          {
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}

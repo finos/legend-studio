@@ -17,11 +17,13 @@
 import type { PlainObject } from '@finos/legend-shared';
 import type { Connection } from '../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
 import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import type { MappingInclude } from '../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
 import type { InstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin.js';
 import type { V1_Connection } from '../../pure/v1/model/packageableElements/connection/V1_Connection.js';
 import type { V1_GraphTransformerContext } from '../v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type { V1_ClassMapping } from '../../pure/v1/model/packageableElements/mapping/V1_ClassMapping.js';
+import type { V1_MappingInclude } from '../../pure/v1/model/packageableElements/mapping/V1_MappingInclude.js';
 import type { V1_GraphBuilderContext } from '../v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type { Store } from '../../../../graph/metamodel/pure/packageableElements/store/Store.js';
 import type { PackageableElementReference } from '../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
@@ -86,6 +88,25 @@ export type V1_PropertyMappingTransformer = (
   context: V1_GraphTransformerContext,
 ) => V1_PropertyMapping | undefined;
 
+export type V1_MappingIncludeBuilder = (
+  protocol: V1_MappingInclude,
+  parentMapping: Mapping,
+  context: V1_GraphBuilderContext,
+) => MappingInclude | undefined;
+
+export type V1_MappingIncludeTransformer = (
+  metamodel: MappingInclude,
+  context: V1_GraphTransformerContext,
+) => V1_MappingInclude | undefined;
+
+export type V1_MappingIncludeProtocolSerializer = (
+  protocol: V1_MappingInclude,
+) => PlainObject<V1_MappingInclude> | undefined;
+
+export type V1_MappingIncludeProtocolDeserializer = (
+  json: PlainObject<V1_MappingInclude>,
+) => V1_MappingInclude | undefined;
+
 export interface DSL_Mapping_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
   /**
@@ -115,4 +136,12 @@ export interface DSL_Mapping_PureProtocolProcessorPlugin_Extension
   V1_getExtraConnectionProtocolSerializers?(): V1_ConnectionProtocolSerializer[];
 
   V1_getExtraConnectionProtocolDeserializers?(): V1_ConnectionProtocolDeserializer[];
+
+  V1_getExtraMappingIncludeBuilders?(): V1_MappingIncludeBuilder[];
+
+  V1_getExtraMappingIncludeTransformers?(): V1_MappingIncludeTransformer[];
+
+  V1_getExtraMappingIncludeProtocolSerializers?(): V1_MappingIncludeProtocolSerializer[];
+
+  V1_getExtraMappingIncludeProtocolDeserializers?(): V1_MappingIncludeProtocolDeserializer[];
 }

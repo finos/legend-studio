@@ -73,7 +73,10 @@ import {
   V1_filterMappingModelSchema,
   V1_tablePtrModelSchema,
 } from './V1_DatabaseSerializationHelper.js';
-import { V1_MappingInclude } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import {
+  type V1_MappingInclude,
+  V1_MappingIncludeMapping,
+} from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
 import {
   type V1_EnumValueMappingSourceValue,
   V1_EnumValueMappingEnumSourceValue,
@@ -1209,11 +1212,74 @@ const V1_enumerationMappingModelSchema = createModelSchema(
 
 export const V1_MAPPING_ELEMENT_PROTOCOL_TYPE = 'mapping';
 
-const V1_mappingIncludeModelSchema = createModelSchema(V1_MappingInclude, {
-  includedMapping: primitive(),
-  sourceDatabasePath: optional(primitive()),
-  targetDatabasePath: optional(primitive()),
-});
+const V1_MAPPING_INCLUDE_MAPPING_TYPE = 'mappingIncludeMapping';
+
+const V1_mappingIncludeMappingModelSchema = createModelSchema(
+  V1_MappingIncludeMapping,
+  {
+    _type: usingConstantValueSchema(V1_MAPPING_INCLUDE_MAPPING_TYPE),
+    includedMapping: primitive(),
+    sourceDatabasePath: optional(primitive()),
+    targetDatabasePath: optional(primitive()),
+  },
+);
+
+const V1_serializeMappingInclude = (
+  protocol: V1_MappingInclude,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_MappingInclude> => {
+  if (protocol instanceof V1_MappingIncludeMapping) {
+    return serialize(V1_mappingIncludeMappingModelSchema, protocol);
+  }
+  const extraMappingIncludeSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMappingIncludeProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraMappingIncludeSerializers) {
+    const json = serializer(protocol);
+    if (json) {
+      return json;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize mapping include: no compatible deserializer available from plugins`,
+  );
+};
+
+const V1_deserializeMappingInclude = (
+  json: PlainObject<V1_MappingInclude>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_MappingInclude => {
+  if (!json._type || json._type === V1_MAPPING_INCLUDE_MAPPING_TYPE) {
+    return deserialize(V1_mappingIncludeMappingModelSchema, {
+      ...json,
+      /**
+       * @backwardCompatibility
+       */
+
+      includedMapping:
+        json.includedMapping ??
+        `${json.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${json.includedMappingName}`,
+    });
+  }
+  const extraMappingIncludeDeserializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMappingIncludeProtocolDeserializers?.() ?? [],
+  );
+  for (const deserializer of extraMappingIncludeDeserializers) {
+    const protocol = deserializer(json);
+    if (protocol) {
+      return protocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize class mapping of type '${json._type}': no compatible deserializer available from plugins`,
+  );
+};
 
 export const V1_mappingModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
@@ -1238,18 +1304,8 @@ export const V1_mappingModelSchema = (
     ),
     includedMappings: list(
       custom(
-        (val) => serialize(V1_mappingIncludeModelSchema, val),
-        (val) =>
-          deserialize(V1_mappingIncludeModelSchema, {
-            ...val,
-            /**
-             * @backwardCompatibility
-             */
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            includedMapping:
-              val.includedMapping ??
-              `${val.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${val.includedMappingName}`,
-          }),
+        (val) => V1_serializeMappingInclude(val, plugins),
+        (val) => V1_deserializeMappingInclude(val, plugins),
       ),
     ),
     name: primitive(),

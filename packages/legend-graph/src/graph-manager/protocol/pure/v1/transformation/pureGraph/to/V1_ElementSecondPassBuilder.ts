@@ -329,16 +329,17 @@ export class V1_ElementSecondPassBuilder
     );
     const mappingIncludesSet = new Set<string>();
     mapping.includes = element.includedMappings.map((mappingInclude) => {
-      const includedMappingPath = mappingInclude.includedMapping;
+      // Identifier that is unique within each mapping include provider
+      const includedMappingIdentifier = mappingInclude.identifier;
       assertNonEmptyString(
-        includedMappingPath,
-        `Mapping include path is missing or empty`,
+        includedMappingIdentifier,
+        `Mapping identifier is missing or empty`,
       );
       assertTrue(
-        !mappingIncludesSet.has(includedMappingPath),
-        `Duplicated mapping include '${includedMappingPath}' in mapping '${mapping.path}'`,
+        !mappingIncludesSet.has(includedMappingIdentifier),
+        `Duplicated mapping include '${includedMappingIdentifier}' in mapping '${mapping.path}'`,
       );
-      mappingIncludesSet.add(includedMappingPath);
+      mappingIncludesSet.add(includedMappingIdentifier);
       return V1_buildMappingInclude(mappingInclude, this.context, mapping);
     });
     mapping.enumerationMappings = element.enumerationMappings.map(

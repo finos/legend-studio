@@ -1,0 +1,132 @@
+--- BEFORE ---
+###Relational
+Database demo::TestDatabase
+(
+  Table DUMMY
+  (
+    TEST VARCHAR(100)
+  )
+)
+
+
+###Mapping
+Mapping demo::TestEnumMapping
+(
+  demo::TestEnum: EnumerationMapping
+  {
+    Value1: ['value1']
+  }
+  demo::TestEnum: EnumerationMapping testEnumMapping1
+  {
+    Value1: ['value1']
+  }
+)
+
+Mapping demo::TestMapping
+(
+  include demo::TestEnumMapping
+
+  *demo::TestClass: Pure
+  {
+    ~src demo::S_testClass
+    testEnum: EnumerationMapping demo_TestEnum: $src.testEnum
+  }
+  demo::TestClass[testClassMapping1]: Pure
+  {
+    ~src demo::S_testClass
+    testEnum: EnumerationMapping testEnumMapping1: $src.testEnum
+  }
+  demo::TestClass[testClassMapping2]: Pure
+  {
+    ~src demo::S_testClass
+    testEnum: EnumerationMapping testEnumMapping2: $src.testEnum
+  }
+
+  demo::TestEnum: EnumerationMapping testEnumMapping2
+  {
+    Value1: ['value1']
+  }
+)
+
+
+###Pure
+Enum demo::TestEnum
+{
+  Value1
+}
+
+Class demo::TestClass
+{
+  testEnum: demo::TestEnum[1];
+}
+
+Class demo::S_testClass
+{
+  testEnum: String[1];
+}
+--- AFTER ---
+###Relational
+Database demo::TestDatabase
+(
+  Table DUMMY
+  (
+    TEST VARCHAR(100)
+  )
+)
+
+
+###Pure
+Enum demo::TestEnum
+{
+  Value1
+}
+
+Class demo::TestClass
+{
+  testEnum: demo::TestEnum[1];
+}
+
+Class demo::S_testClass
+{
+  testEnum: String[1];
+}
+
+
+###Mapping
+Mapping demo::TestEnumMapping
+(
+  demo::TestEnum: EnumerationMapping
+  {
+    Value1: ['value1']
+  }
+  demo::TestEnum: EnumerationMapping testEnumMapping1
+  {
+    Value1: ['value1']
+  }
+)
+
+Mapping demo::TestMapping
+(
+  include demo::TestEnumMapping
+
+  *demo::TestClass: Pure
+  {
+    ~src demo::S_testClass
+    testEnum: EnumerationMapping demo_TestEnum: $src.testEnum
+  }
+  demo::TestClass[testClassMapping1]: Pure
+  {
+    ~src demo::S_testClass
+    testEnum: EnumerationMapping testEnumMapping1: $src.testEnum
+  }
+  demo::TestClass[testClassMapping2]: Pure
+  {
+    ~src demo::S_testClass
+    testEnum: EnumerationMapping testEnumMapping2: $src.testEnum
+  }
+
+  demo::TestEnum: EnumerationMapping testEnumMapping2
+  {
+    Value1: ['value1']
+  }
+)

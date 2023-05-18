@@ -6990,7 +6990,12 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
     path: 'meta::relational::tests::simpleRelationalMapping',
     content: {
       _type: 'mapping',
-      includedMappings: [{ includedMapping: 'simpleRelationalMappingInc' }],
+      includedMappings: [
+        {
+          _type: 'mappingIncludeMapping',
+          includedMapping: 'simpleRelationalMappingInc',
+        },
+      ],
       classMappings: [
         {
           _type: 'relational',
@@ -8414,6 +8419,17 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           parserName: 'Mapping',
         },
         {
+          _type: 'importAware',
+          imports: [
+            'meta::pure::tests::model::simple',
+            'meta::relational::tests',
+          ],
+          elements: [
+            'meta::relational::tests::simpleRelationalMappingWithBackwardCompatibleProtocol',
+          ],
+          parserName: 'Mapping',
+        },
+        {
           _type: 'default',
           elements: ['meta::relational::tests::db'],
           parserName: 'Relational',
@@ -8834,6 +8850,22 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
       ],
     },
     classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+  {
+    path: 'meta::relational::tests::simpleRelationalMappingWithBackwardCompatibleProtocol',
+    content: {
+      _type: 'mapping',
+      includedMappings: [
+        {
+          includedMapping: 'simpleRelationalMappingInc',
+        },
+      ],
+      classMappings: [],
+      name: 'simpleRelationalMappingWithBackwardCompatibleProtocol',
+      package: 'meta::relational::tests',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
 

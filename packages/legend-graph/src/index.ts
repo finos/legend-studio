@@ -499,6 +499,10 @@ export {
 } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_Connection.js';
 export { V1_ConnectionPointer } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_ConnectionPointer.js';
 export { V1_Mapping } from './graph-manager/protocol/pure/v1/model/packageableElements/mapping/V1_Mapping.js';
+export {
+  V1_MappingInclude,
+  V1_MappingIncludeMapping,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/mapping/V1_MappingInclude.js';
 export { V1_PackageableRuntime } from './graph-manager/protocol/pure/v1/model/packageableElements/runtime/V1_PackageableRuntime.js';
 export { V1_Store } from './graph-manager/protocol/pure/v1/model/packageableElements/store/V1_Store.js';
 export {
@@ -521,6 +525,7 @@ export {
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
 export { MappingInclude } from './graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
+export { MappingIncludeMapping } from './graph/metamodel/pure/packageableElements/mapping/MappingIncludeMapping.js';
 export { V1_buildConnection } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ConnectionBuilderHelper.js';
 export {
   V1_deserializeConnectionValue,
