@@ -66,7 +66,7 @@ export class V1_RelationalDatabaseConnection
   datasourceSpecification!: V1_DatasourceSpecification;
   authenticationStrategy!: V1_AuthenticationStrategy;
   postProcessors: V1_PostProcessor[] = [];
-  localMode: boolean = false;
+  localMode?: boolean | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -76,7 +76,7 @@ export class V1_RelationalDatabaseConnection
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,
       this.authenticationStrategy,
-      this.localMode,
+      this.localMode?.toString() ?? '',
       hashArray(this.postProcessors),
     ]);
   }

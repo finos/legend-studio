@@ -468,7 +468,6 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
         DatabaseType.H2,
         datasourceSpecification,
         new DefaultH2AuthenticationStrategy(),
-        false,
       ),
       this.editorStore,
     );

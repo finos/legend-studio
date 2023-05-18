@@ -77,11 +77,7 @@ export const dBConnection_setQuoteIdentifiers = action(
 );
 
 export const relationDbConnection_setLocalMode = action(
-  (
-    con: RelationalDatabaseConnection,
-    val: boolean,
-    context: ObserverContext,
-  ): void => {
+  (con: RelationalDatabaseConnection, val: boolean | undefined): void => {
     con.localMode = val;
   },
 );

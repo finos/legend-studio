@@ -499,7 +499,6 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
         DatabaseType.H2,
         new StaticDatasourceSpecification('host', 80, 'db'),
         new DefaultH2AuthenticationStrategy(),
-        false,
       );
     }
     const extraDefaultConnectionValueBuilders = this.editorStore.pluginManager

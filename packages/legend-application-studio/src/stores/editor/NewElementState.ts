@@ -332,7 +332,6 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
       DatabaseType.H2,
       new StaticDatasourceSpecification('dummyHost', 80, 'myDb'),
       new DefaultH2AuthenticationStrategy(),
-      false,
     );
   }
 }

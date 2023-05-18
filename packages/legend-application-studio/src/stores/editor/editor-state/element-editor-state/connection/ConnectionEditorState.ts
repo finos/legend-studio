@@ -311,7 +311,6 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     relationDbConnection_setLocalMode(
       this.connection,
       this.connection.localMode,
-      observerContext,
     );
   }
 
