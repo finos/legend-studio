@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 3.2.9
+
+### Patch Changes
+
+- [#2228](https://github.com/finos/legend-studio/pull/2228) [`2892517ce`](https://github.com/finos/legend-studio/commit/2892517cec73d5e03a41ace0b7076a7ade4f222a) ([@xannem](https://github.com/xannem)) - remove user limit for export query CSV results.
+
+- [#2227](https://github.com/finos/legend-studio/pull/2227) [`6f047730d`](https://github.com/finos/legend-studio/commit/6f047730d20db8deea796a5a42f38b325344b3a6) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Utilize the `cancelUserExecution` API to cancel query execution both on the server's and client's side.
+
+- [#2214](https://github.com/finos/legend-studio/pull/2214) [`64a06816c`](https://github.com/finos/legend-studio/commit/64a06816c51c0a635a87e8929cbde357d934d585) ([@gayathrir11](https://github.com/gayathrir11)) - Use previous calendar function parameter states when you change the calendar aggregation function
+
 ## 3.2.8
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 26.0.0
+
+### Major Changes
+
+- [#2226](https://github.com/finos/legend-studio/pull/2226) [`58f3818ad`](https://github.com/finos/legend-studio/commit/58f3818ada62b957ec569652a7aa84583b70c7c6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `LegendStudioApplicationPlugin.getExtraPureGrammarParserNames()` and `LegendStudioApplicationPlugin.getExtraPureGrammarElementLabelers()`.
+
+### Patch Changes
+
+- [#2227](https://github.com/finos/legend-studio/pull/2227) [`6f047730d`](https://github.com/finos/legend-studio/commit/6f047730d20db8deea796a5a42f38b325344b3a6) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Utilize the `cancelUserExecution` API to cancel query execution both on the server's and client's side.
+
 ## 25.0.7
 
 ## 25.0.6

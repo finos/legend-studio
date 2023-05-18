@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 29.0.0
+
+### Major Changes
+
+- [#2226](https://github.com/finos/legend-studio/pull/2226) [`58f3818ad`](https://github.com/finos/legend-studio/commit/58f3818ada62b957ec569652a7aa84583b70c7c6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE**: Renamed `V1_taggedValueSchema` to `V1_taggedValueModelSchema` and `V1_stereotypePtrSchema` to `V1_stereotypePtrModelSchema`.
+
+### Minor Changes
+
+- [#2226](https://github.com/finos/legend-studio/pull/2226) [`58f3818ad`](https://github.com/finos/legend-studio/commit/58f3818ada62b957ec569652a7aa84583b70c7c6) ([@akphi](https://github.com/akphi)) - Unsupported elements, connections, set-implementations, etc. are now supported natively without extensions support, these are treated as unknown (sub) elements in the graph and instantiated with classes like `INTERNAL__UnknownPackageableElement`, `INTERNAL__UnknownConnection`, etc.
+
 ## 28.1.8
 
 ## 28.1.7
