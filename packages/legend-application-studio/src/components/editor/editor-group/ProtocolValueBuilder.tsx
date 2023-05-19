@@ -117,7 +117,8 @@ const OptionalStringFieldEditor = observer(
           <input
             className="panel__content__form__section__input"
             spellCheck={false}
-            value={node.value}
+            value={node.value ?? ''}
+            placeholder={node.value === undefined ? '(empty)' : undefined}
             onChange={(event) => node.setValue(event.target.value)}
           />
           <button

@@ -64,12 +64,10 @@ export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditor
             initialValue: this.activator.content,
             excludedPaths: FUNCTION_ACTIVATOR_EXCLUDED_PATHS,
             onValueChange: (value: PlainObject) => {
-              if (this.activator) {
-                INTERNAL__UnknownFunctionActivator_setContent(
-                  this.activator,
-                  value,
-                );
-              }
+              INTERNAL__UnknownFunctionActivator_setContent(
+                this.activator,
+                value,
+              );
             },
             decorateValue: (value: PlainObject): PlainObject => {
               value._type =

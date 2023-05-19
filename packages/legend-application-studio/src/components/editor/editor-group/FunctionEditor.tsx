@@ -57,6 +57,7 @@ import {
   BlankPanelContent,
   MenuContent,
   MenuContentItem,
+  Modal,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
@@ -1075,14 +1076,19 @@ export const FunctionEditor = observer(() => {
                       container: 'editor-modal__container',
                       paper: 'editor-modal__content',
                     }}
-                  >
-                    <form
-                      onSubmit={(event) => {
+                    // NOTE: this is a safer way compared to using <form> as it will not trigger click event
+                    // on nested button
+                    // See https://stackoverflow.com/questions/11353105/why-browser-trigger-a-click-event-instead-of-a-submit-in-a-form
+                    // See https://stackoverflow.com/questions/3350247/how-to-prevent-form-from-being-submitted
+                    // See https://gomakethings.com/how-to-prevent-buttons-from-causing-a-form-to-submit-with-html/
+                    onKeyDown={(event) => {
+                      if (event.code === 'Enter' && !event.shiftKey) {
                         event.preventDefault();
                         activate();
-                      }}
-                      className="modal modal--dark editor-modal"
-                    >
+                      }
+                    }}
+                  >
+                    <Modal darkMode={true} className="editor-modal">
                       <ModalHeader>
                         <ModalTitle
                           title={`Function Activator: ${functionEditorState.activatorBuilderState.currentActivatorConfiguration.name}`}
@@ -1111,6 +1117,7 @@ export const FunctionEditor = observer(() => {
                       <ModalFooter>
                         <button
                           className="btn btn--dark function-editor__activator__btn"
+                          type="submit"
                           disabled={
                             !functionEditorState.activatorBuilderState.isValid
                           }
@@ -1129,7 +1136,7 @@ export const FunctionEditor = observer(() => {
                           Close
                         </button>
                       </ModalFooter>
-                    </form>
+                    </Modal>
                   </Dialog>
                 )}
               </>
