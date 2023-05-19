@@ -16,10 +16,17 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditor.js';
+import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { BlankPanelContent, Panel } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
+import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
+import {
+  extractAnnotatedElementDocumentation,
+  generateFunctionPrettyName,
+  getClassProperty,
+} from '@finos/legend-graph';
+import { returnUndefOnError } from '@finos/legend-shared';
 
 export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
   const editorStore = useEditorStore();
@@ -38,6 +45,17 @@ export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
     );
   };
 
+  // function
+  const valueBuilderState = editorState.protocolValueBuilderState;
+  const functionFieldProperty = valueBuilderState
+    ? returnUndefOnError(() =>
+        getClassProperty(valueBuilderState.type, 'function'),
+      )
+    : undefined;
+  const functionFieldDocumentation = functionFieldProperty
+    ? extractAnnotatedElementDocumentation(functionFieldProperty)
+    : undefined;
+
   return (
     <div className="function-activator-editor">
       <Panel>
@@ -50,26 +68,59 @@ export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
         </div>
         <div className="panel__content">
           <div className="function-activator-editor__content">
-            {/* TODO-PR */}
-            <BlankPanelContent>Work In Progress</BlankPanelContent>
-            <div className="function-activator-editor__footer">
-              <button
-                className="function-activator-editor__footer__action btn--dark"
-                onClick={validate}
-                disabled={editorState.validateState.isInProgress}
-                tabIndex={-1}
-              >
-                Validate
-              </button>
-              <button
-                className="function-activator-editor__footer__action btn--dark"
-                onClick={publishToSandbox}
-                disabled={editorState.publishToSandboxState.isInProgress}
-                tabIndex={-1}
-              >
-                Publish to Sandbox
-              </button>
-            </div>
+            {valueBuilderState && (
+              <>
+                <div className="panel__content__form">
+                  <div className="panel__content__form__section">
+                    <div className="panel__content__form__section__header__label">
+                      Function
+                    </div>
+                    {functionFieldDocumentation && (
+                      <div className="panel__content__form__section__header__prompt">
+                        {functionFieldDocumentation}
+                      </div>
+                    )}
+                    <input
+                      className="panel__content__form__section__input"
+                      spellCheck={false}
+                      disabled={true}
+                      value={generateFunctionPrettyName(
+                        editorState.activator.function.value,
+                        {
+                          fullPath: true,
+                          spacing: false,
+                        },
+                      )}
+                    />
+                  </div>
+                  <div className="panel__content__form__section">
+                    <div className="panel__content__form__section__divider"></div>
+                  </div>
+                </div>
+                <ProtocolValueBuilder builderState={valueBuilderState} />
+              </>
+            )}
+            {!valueBuilderState && (
+              <BlankPanelContent>{`Can't display function activator in form mode`}</BlankPanelContent>
+            )}
+          </div>
+          <div className="function-activator-editor__footer">
+            <button
+              className="function-activator-editor__footer__action btn--dark"
+              onClick={validate}
+              disabled={editorState.validateState.isInProgress}
+              tabIndex={-1}
+            >
+              Validate
+            </button>
+            <button
+              className="function-activator-editor__footer__action btn--dark"
+              onClick={publishToSandbox}
+              disabled={editorState.publishToSandboxState.isInProgress}
+              tabIndex={-1}
+            >
+              Publish to Sandbox
+            </button>
           </div>
         </div>
       </Panel>

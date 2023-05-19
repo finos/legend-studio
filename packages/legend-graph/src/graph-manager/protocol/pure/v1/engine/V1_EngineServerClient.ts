@@ -524,7 +524,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  cancelUserExecutions = (
+  /**
+   * TODO: this is an internal API that should me refactored out using extension mechanism
+   */
+  INTERNAL__cancelUserExecutions = (
     userID: string,
     broadcastToCluster: boolean,
   ): Promise<string> =>

@@ -114,7 +114,87 @@
     }
   }
 
-  &__element {
+  &__activator__selector__option {
+    display: block;
+    height: 7rem;
+    padding-bottom: 0.4rem;
+    max-width: 45rem;
+
+    &__name {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      padding: 0 0.5rem;
+    }
+
+    &__description {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      text-align: left;
+      height: calc(100% - 2.8rem);
+      padding: 0 0.5rem;
+      line-height: 1.8rem;
+      font-size: 1.2rem;
+    }
+  }
+
+  &__activate-btn {
+    @include flexVCenter;
+
+    height: 100%;
+    width: 12rem;
+    margin: 0 0.3rem;
+
+    &__label {
+      @include flexVCenter;
+
+      height: 2.2rem;
+      width: 10rem;
+      background: var(--color-blue-200);
+      padding: 1rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+    }
+
+    &__label__icon {
+      font-size: 1.2rem;
+      color: var(--color-light-grey-180);
+    }
+
+    &__label__title {
+      margin-left: 0.7rem;
+      color: var(--color-light-grey-180);
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    &__dropdown-btn {
+      @include flexCenter;
+
+      height: 2.2rem;
+      width: 2rem;
+      background: var(--color-blue-200);
+      border-radius: 0 0.2rem 0.2rem 0;
+      border-left: 0.1rem solid var(--color-dark-shade-280);
+
+      svg {
+        color: var(--color-light-grey-180);
+      }
+    }
+
+    &__label:hover &__label__icon,
+    &__label:hover &__label__title,
+    &__dropdown-btn:hover svg {
+      color: var(--color-light-grey-50);
+    }
+
+    &__option {
+      width: 12rem;
+    }
+  }
+
+  &__definition {
     height: 100%;
     width: 100%;
     padding: 1rem;
@@ -180,55 +260,9 @@
     display: flex;
     justify-content: flex-end;
   }
-}
 
-.function-activator-builder {
-  height: 100%;
-  width: 100%;
-
-  &__header {
-    height: 10rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-100);
-  }
-
-  &__body {
-    height: calc(100% - 15rem);
-    overflow: auto;
-  }
-
-  &__footer {
-    @include flexVCenter;
-
-    justify-content: flex-end;
-    border-top: 0.1rem solid var(--color-dark-grey-100);
-    height: 5rem;
-    padding: 0 1rem;
-
-    button {
-      width: 15rem;
-    }
-  }
-
-  &__activator__selector__option {
+  &__activator-builder {
     height: 100%;
-    padding-bottom: 0.4rem;
-
-    &__name {
-      @include flexVCenter;
-
-      height: 2.8rem;
-      padding: 0 0.5rem;
-    }
-
-    &__description {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
-      height: calc(100% - 2.8rem);
-      padding: 0 0.5rem;
-      line-height: 1.8rem;
-      font-size: 1.2rem;
-    }
+    width: 100%;
   }
 }

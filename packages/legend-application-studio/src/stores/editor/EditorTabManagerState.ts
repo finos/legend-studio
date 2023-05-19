@@ -58,7 +58,7 @@ import { UnsupportedElementEditorState } from './editor-state/UnsupportedElement
 import type { EditorStore } from './EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import { TabManagerState } from '@finos/legend-lego/application';
-import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditor.js';
+import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;

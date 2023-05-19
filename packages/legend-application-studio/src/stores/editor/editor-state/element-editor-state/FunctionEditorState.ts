@@ -42,10 +42,9 @@ export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
   TAGGED_VALUES = 'TAGGED_VALUES',
   STEREOTYPES = 'STEREOTYPES',
-  ACTIVATOR = 'ACTIVATOR',
 }
 
-export class FunctionBodyEditorState extends LambdaEditorState {
+export class FunctionDefinitionEditorState extends LambdaEditorState {
   readonly editorStore: EditorStore;
   readonly functionElement: ConcreteFunctionDefinition;
 
@@ -156,9 +155,10 @@ export class FunctionBodyEditorState extends LambdaEditorState {
 }
 
 export class FunctionEditorState extends ElementEditorState {
+  readonly functionDefinitionEditorState: FunctionDefinitionEditorState;
+  readonly activatorBuilderState: FunctionActivatorBuilderState;
+
   selectedTab: FUNCTION_EDITOR_TAB;
-  functionBodyEditorState: FunctionBodyEditorState;
-  activatorBuilderState: FunctionActivatorBuilderState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -176,7 +176,7 @@ export class FunctionEditorState extends ElementEditorState {
       'Element inside function editor state must be a function',
     );
     this.selectedTab = FUNCTION_EDITOR_TAB.DEFINITION;
-    this.functionBodyEditorState = new FunctionBodyEditorState(
+    this.functionDefinitionEditorState = new FunctionDefinitionEditorState(
       element,
       this.editorStore,
     );
@@ -190,6 +190,7 @@ export class FunctionEditorState extends ElementEditorState {
       'Element inside function editor state must be a function',
     );
   }
+
   setSelectedTab(tab: FUNCTION_EDITOR_TAB): void {
     this.selectedTab = tab;
   }
@@ -199,7 +200,9 @@ export class FunctionEditorState extends ElementEditorState {
     try {
       if (compilationError.sourceInformation) {
         this.setSelectedTab(FUNCTION_EDITOR_TAB.DEFINITION);
-        this.functionBodyEditorState.setCompilationError(compilationError);
+        this.functionDefinitionEditorState.setCompilationError(
+          compilationError,
+        );
         revealed = true;
       }
     } catch (error) {
@@ -214,7 +217,7 @@ export class FunctionEditorState extends ElementEditorState {
   }
 
   override clearCompilationError(): void {
-    this.functionBodyEditorState.setCompilationError(undefined);
+    this.functionDefinitionEditorState.setCompilationError(undefined);
   }
 
   reprocess(

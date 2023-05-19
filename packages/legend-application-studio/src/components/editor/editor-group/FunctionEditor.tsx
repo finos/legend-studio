@@ -28,6 +28,7 @@ import {
 import {
   assertErrorThrown,
   prettyCONSTName,
+  returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { useDrag, useDrop } from 'react-dnd';
@@ -45,6 +46,17 @@ import {
   Panel,
   PanelContent,
   PanelDnDEntry,
+  Dialog,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalTitle,
+  CaretDownIcon,
+  DropdownMenu,
+  LaunchIcon,
+  BlankPanelContent,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
@@ -77,6 +89,9 @@ import {
   stub_RawVariableExpression,
   getFunctionNameWithPath,
   getFunctionSignature,
+  generateFunctionPrettyName,
+  extractAnnotatedElementDocumentation,
+  getClassProperty,
 } from '@finos/legend-graph';
 import {
   type ApplicationStore,
@@ -111,7 +126,8 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib
 import { LambdaEditor } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../stores/graph-modifier/GraphModifierHelper.js';
-import { FunctionActivatorBuilder } from './FunctionActivatorBuilder.js';
+import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
+import type { ProtocolValueBuilderState } from '../../../stores/editor/editor-state/element-editor-state/ProtocolValueBuilderState.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -632,7 +648,7 @@ const FunctionDefinitionEditor = observer(
     const { functionEditorState, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const lambdaEditorState = functionEditorState.functionBodyEditorState;
+    const lambdaEditorState = functionEditorState.functionDefinitionEditorState;
     const functionElement = functionEditorState.functionElement;
 
     // Parameters
@@ -680,14 +696,14 @@ const FunctionDefinitionEditor = observer(
     );
 
     return (
-      <div className="function-editor__element">
-        <div className="function-editor__element__item">
-          <div className="function-editor__element__item__header">
-            <div className="function-editor__element__item__header__title">
+      <div className="function-editor__definition">
+        <div className="function-editor__definition__item">
+          <div className="function-editor__definition__item__header">
+            <div className="function-editor__definition__item__header__title">
               PARAMETERS
             </div>
             <button
-              className="function-editor__element__item__header__add-btn btn--dark"
+              className="function-editor__definition__item__header__add-btn btn--dark"
               disabled={isReadOnly}
               onClick={addParameter}
               tabIndex={-1}
@@ -704,7 +720,7 @@ const FunctionDefinitionEditor = observer(
           />
           <div
             ref={dropParameterRef}
-            className={clsx('function-editor__element__item__content', {
+            className={clsx('function-editor__definition__item__content', {
               'panel__content__lists--dnd-over':
                 isParameterDragOver && !isReadOnly,
             })}
@@ -719,15 +735,15 @@ const FunctionDefinitionEditor = observer(
               />
             ))}
             {functionElement.parameters.length === 0 && (
-              <div className="function-editor__element__item__content--empty">
+              <div className="function-editor__definition__item__content--empty">
                 No parameters
               </div>
             )}
           </div>
         </div>
-        <div className="function-editor__element__item">
-          <div className="function-editor__element__item__header">
-            <div className="function-editor__element__item__header__title">
+        <div className="function-editor__definition__item">
+          <div className="function-editor__definition__item__header">
+            <div className="function-editor__definition__item__header__title">
               LAMBDA
             </div>
             <div className="">
@@ -738,14 +754,14 @@ const FunctionDefinitionEditor = observer(
             </div>
           </div>
           <div
-            className={clsx('function-editor__element__item__content', {
+            className={clsx('function-editor__definition__item__content', {
               backdrop__element: Boolean(
-                functionEditorState.functionBodyEditorState.parserError,
+                functionEditorState.functionDefinitionEditorState.parserError,
               ),
             })}
           >
             <LambdaEditor
-              className="function-editor__element__lambda-editor lambda-editor--dark"
+              className="function-editor__definition__lambda-editor lambda-editor--dark"
               disabled={
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly
               }
@@ -756,6 +772,91 @@ const FunctionDefinitionEditor = observer(
           </div>
         </div>
       </div>
+    );
+  },
+);
+
+const FunctionActivatorContentBuilder = observer(
+  (props: {
+    functionEditorState: FunctionEditorState;
+    valueBuilderState: ProtocolValueBuilderState;
+  }) => {
+    const { functionEditorState, valueBuilderState } = props;
+    const builderState = functionEditorState.activatorBuilderState;
+
+    // name
+    const nameInputRef = useRef<HTMLInputElement>(null);
+    const nameValidationErrorMessage =
+      builderState.activatorName.length === 0
+        ? 'Element name cannot be empty'
+        : builderState.isDuplicated
+        ? `Element of the same path already existed`
+        : undefined;
+    useEffect(() => {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }, [valueBuilderState]);
+
+    // function
+    const functionFieldProperty = returnUndefOnError(() =>
+      getClassProperty(valueBuilderState.type, 'function'),
+    );
+    const functionFieldDocumentation = functionFieldProperty
+      ? extractAnnotatedElementDocumentation(functionFieldProperty)
+      : undefined;
+
+    return (
+      <>
+        <div className="panel__content__form">
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Name
+            </div>
+            <div className="input-group">
+              <input
+                className="panel__content__form__section__input"
+                spellCheck={false}
+                ref={nameInputRef}
+                value={builderState.activatorName}
+                onChange={(event) =>
+                  builderState.setActivatorName(event.target.value)
+                }
+              />
+              {nameValidationErrorMessage && (
+                <div className="input-group__error-message">
+                  {nameValidationErrorMessage}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Function
+            </div>
+            {functionFieldDocumentation && (
+              <div className="panel__content__form__section__header__prompt">
+                {functionFieldDocumentation}
+              </div>
+            )}
+            <input
+              className="panel__content__form__section__input"
+              spellCheck={false}
+              disabled={true}
+              value={generateFunctionPrettyName(
+                functionEditorState.functionElement,
+                {
+                  fullPath: true,
+                  spacing: false,
+                },
+              )}
+            />
+          </div>
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__divider"></div>
+          </div>
+        </div>
+        <ProtocolValueBuilder builderState={valueBuilderState} />
+      </>
     );
   },
 );
@@ -860,9 +961,15 @@ export const FunctionEditor = observer(() => {
     (): void =>
       functionEditorState.setSelectedTab(tab);
 
+  const activate = (): void => {
+    flowResult(functionEditorState.activatorBuilderState.activate()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  };
+
   useEffect(() => {
     flowResult(
-      functionEditorState.functionBodyEditorState.convertLambdaObjectToGrammarString(
+      functionEditorState.functionDefinitionEditorState.convertLambdaObjectToGrammarString(
         true,
         true,
       ),
@@ -891,29 +998,142 @@ export const FunctionEditor = observer(() => {
         </div>
         <div className="panel__header function-editor__tabs__header">
           <div className="function-editor__tabs">
-            {Object.values(FUNCTION_EDITOR_TAB)
-              .filter((tab) => {
-                if (tab === FUNCTION_EDITOR_TAB.ACTIVATOR) {
-                  return Boolean(
-                    editorStore.applicationStore.config.options
-                      .TEMPORARY__enableFunctionActivatorSupport,
-                  );
-                }
-                return true;
-              })
-              .map((tab) => (
-                <div
-                  key={tab}
-                  onClick={changeTab(tab)}
-                  className={clsx('function-editor__tab', {
-                    'function-editor__tab--active': tab === selectedTab,
-                  })}
-                >
-                  {prettyCONSTName(tab)}
-                </div>
-              ))}
+            {Object.values(FUNCTION_EDITOR_TAB).map((tab) => (
+              <div
+                key={tab}
+                onClick={changeTab(tab)}
+                className={clsx('function-editor__tab', {
+                  'function-editor__tab--active': tab === selectedTab,
+                })}
+              >
+                {prettyCONSTName(tab)}
+              </div>
+            ))}
           </div>
           <div className="panel__header__actions">
+            {editorStore.applicationStore.config.options
+              .TEMPORARY__enableFunctionActivatorSupport && (
+              <>
+                <DropdownMenu
+                  className="function-editor__activate-btn"
+                  content={
+                    <MenuContent>
+                      {editorStore.graphState.functionActivatorConfigurations.map(
+                        (config) => (
+                          <MenuContentItem
+                            key={config.uuid}
+                            className="function-editor__activator__selector__option"
+                            onClick={() =>
+                              functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
+                                config,
+                              )
+                            }
+                            title={config.description}
+                          >
+                            <div className="function-editor__activator__selector__option__name">
+                              {config.name}
+                            </div>
+                            <div className="function-editor__activator__selector__option__description">
+                              {config.description}
+                            </div>
+                          </MenuContentItem>
+                        ),
+                      )}
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  }}
+                >
+                  <div className="function-editor__activate-btn__label">
+                    <div className="function-editor__activate-btn__label__icon">
+                      <LaunchIcon />
+                    </div>
+                    <div className="function-editor__activate-btn__label__title">
+                      Activate
+                    </div>
+                  </div>
+                  <div className="function-editor__activate-btn__dropdown-btn">
+                    <CaretDownIcon />
+                  </div>
+                </DropdownMenu>
+                {functionEditorState.activatorBuilderState
+                  .currentActivatorConfiguration && (
+                  <Dialog
+                    open={Boolean(
+                      functionEditorState.activatorBuilderState
+                        .currentActivatorConfiguration,
+                    )}
+                    onClose={() =>
+                      functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
+                        undefined,
+                      )
+                    }
+                    classes={{
+                      root: 'editor-modal__root-container',
+                      container: 'editor-modal__container',
+                      paper: 'editor-modal__content',
+                    }}
+                  >
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        activate();
+                      }}
+                      className="modal modal--dark editor-modal"
+                    >
+                      <ModalHeader>
+                        <ModalTitle
+                          title={`Function Activator: ${functionEditorState.activatorBuilderState.currentActivatorConfiguration.name}`}
+                        />
+                      </ModalHeader>
+                      <ModalBody>
+                        <div className="function-editor__activator-builder">
+                          {functionEditorState.activatorBuilderState
+                            .functionActivatorProtocolValueBuilderState && (
+                            <FunctionActivatorContentBuilder
+                              functionEditorState={functionEditorState}
+                              valueBuilderState={
+                                functionEditorState.activatorBuilderState
+                                  .functionActivatorProtocolValueBuilderState
+                              }
+                            />
+                          )}
+                          {!functionEditorState.activatorBuilderState
+                            .functionActivatorProtocolValueBuilderState && (
+                            <BlankPanelContent>
+                              No activator chosen
+                            </BlankPanelContent>
+                          )}
+                        </div>
+                      </ModalBody>
+                      <ModalFooter>
+                        <button
+                          className="btn btn--dark function-editor__activator__btn"
+                          disabled={
+                            !functionEditorState.activatorBuilderState.isValid
+                          }
+                          onClick={activate}
+                        >
+                          Activate
+                        </button>
+                        <button
+                          className="btn btn--dark"
+                          onClick={() =>
+                            functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
+                              undefined,
+                            )
+                          }
+                        >
+                          Close
+                        </button>
+                      </ModalFooter>
+                    </form>
+                  </Dialog>
+                )}
+              </>
+            )}
             <button
               className="panel__header__action"
               disabled={
@@ -975,11 +1195,6 @@ export const FunctionEditor = observer(() => {
                 />
               ))}
             </div>
-          )}
-          {selectedTab === FUNCTION_EDITOR_TAB.ACTIVATOR && (
-            <FunctionActivatorBuilder
-              functionEditorState={functionEditorState}
-            />
           )}
         </PanelContent>
       </Panel>

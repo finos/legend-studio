@@ -73,7 +73,7 @@ import { PackageableDataEditorState } from '../../../stores/editor/editor-state/
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
 import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';
 import { TabManager, type TabState } from '@finos/legend-lego/application';
-import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditor.js';
+import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {

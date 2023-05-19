@@ -39,6 +39,16 @@ import {
 import { INTERNAL__UnknownFunctionActivator_setContent } from '../../../graph-modifier/DomainGraphModifierHelper.js';
 
 const BASE_ACTIVATOR_NAME = 'NewActivator';
+export const FUNCTION_ACTIVATOR_EXCLUDED_PATHS = [
+  'meta::protocols::pure::vX_X_X::metamodel::functionActivator::FunctionActivator.function',
+  'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.stereotypes',
+  'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.taggedValues',
+  'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.sourceInformation',
+  'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.sourceInformation',
+  'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.package',
+  'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.name',
+  'meta::protocols::pure::vX_X_X::metamodel::PackageableElement._type',
+];
 
 export class FunctionActivatorBuilderState {
   readonly functionEditorState: FunctionEditorState;
@@ -97,16 +107,7 @@ export class FunctionActivatorBuilderState {
         new ProtocolValueBuilderState(val.configurationType, {
           graph: val.graph,
           initialValue: undefined,
-          excludedPaths: [
-            'meta::protocols::pure::vX_X_X::metamodel::functionActivator::FunctionActivator.function',
-            'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.stereotypes',
-            'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.taggedValues',
-            'meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement.sourceInformation',
-            'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.sourceInformation',
-            'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.package',
-            'meta::protocols::pure::vX_X_X::metamodel::PackageableElement.name',
-            'meta::protocols::pure::vX_X_X::metamodel::PackageableElement._type',
-          ],
+          excludedPaths: FUNCTION_ACTIVATOR_EXCLUDED_PATHS,
           onValueChange: (value: PlainObject) => {
             if (this.functionActivator) {
               INTERNAL__UnknownFunctionActivator_setContent(
@@ -155,12 +156,20 @@ export class FunctionActivatorBuilderState {
       return;
     }
 
-    yield flowResult(
-      this.functionEditorState.editorStore.graphEditorMode.addElement(
-        this.functionActivator,
-        this.functionEditorState.functionElement.package?.path,
-        true,
-      ),
-    );
+    try {
+      yield flowResult(
+        this.functionEditorState.editorStore.graphEditorMode.addElement(
+          this.functionActivator,
+          this.functionEditorState.functionElement.package?.path,
+          true,
+        ),
+      );
+    } catch {
+      this.functionEditorState.editorStore.applicationStore.notificationService.notifyError(
+        `Can't activate function`,
+      );
+    } finally {
+      this.setCurrentActivatorConfiguration(undefined);
+    }
   }
 }

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+import { uuid } from '@finos/legend-shared';
 import type { PureModel } from '../../../graph/PureModel.js';
 import type { Class } from '../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 
 export class FunctionActivatorConfiguration {
+  uuid = uuid();
   name!: string;
   description!: string;
   packageableElementJSONType!: string;

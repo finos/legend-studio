@@ -15,6 +15,7 @@
  */
 
 import {
+  generateFunctionPrettyName,
   InMemoryGraphData,
   type INTERNAL__UnknownFunctionActivator,
 } from '@finos/legend-graph';
@@ -25,12 +26,17 @@ import {
   ActionState,
   assertErrorThrown,
   type GeneratorFn,
+  type PlainObject,
 } from '@finos/legend-shared';
+import { ProtocolValueBuilderState } from './ProtocolValueBuilderState.js';
+import { INTERNAL__UnknownFunctionActivator_setContent } from '../../../graph-modifier/DomainGraphModifierHelper.js';
+import { FUNCTION_ACTIVATOR_EXCLUDED_PATHS } from './FunctionActivatorBuilderState.js';
 
 export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditorState {
   readonly activator: INTERNAL__UnknownFunctionActivator;
   readonly validateState = ActionState.create();
   readonly publishToSandboxState = ActionState.create();
+  protocolValueBuilderState?: ProtocolValueBuilderState | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -45,6 +51,43 @@ export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditor
     });
 
     this.activator = element;
+    const matchingFunctionActivatorConfiguration =
+      this.editorStore.graphState.functionActivatorConfigurations.find(
+        (config) =>
+          config.packageableElementJSONType === this.activator.content._type,
+      );
+    this.protocolValueBuilderState = matchingFunctionActivatorConfiguration
+      ? new ProtocolValueBuilderState(
+          matchingFunctionActivatorConfiguration.configurationType,
+          {
+            graph: matchingFunctionActivatorConfiguration.graph,
+            initialValue: this.activator.content,
+            excludedPaths: FUNCTION_ACTIVATOR_EXCLUDED_PATHS,
+            onValueChange: (value: PlainObject) => {
+              if (this.activator) {
+                INTERNAL__UnknownFunctionActivator_setContent(
+                  this.activator,
+                  value,
+                );
+              }
+            },
+            decorateValue: (value: PlainObject): PlainObject => {
+              value._type =
+                matchingFunctionActivatorConfiguration.packageableElementJSONType;
+              value.package = this.activator.package?.path;
+              value.name = this.activator.name;
+              value.function = generateFunctionPrettyName(
+                this.activator.function.value,
+                {
+                  fullPath: true,
+                  spacing: false,
+                },
+              ).replaceAll(' ', '');
+              return value;
+            },
+          },
+        )
+      : undefined;
   }
 
   *validate(): GeneratorFn<void> {

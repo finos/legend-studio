@@ -811,7 +811,7 @@ export class V1_Engine {
   }
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
-    return this.engineServerClient.cancelUserExecutions(
+    return this.engineServerClient.INTERNAL__cancelUserExecutions(
       guaranteeNonNullable(this.getCurrentUserId()),
       broadcastToCluster,
     );
