@@ -22,8 +22,14 @@ import {
   type EditorStore,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserKeywordSuggestionGetter,
+  type ElementIconGetter,
 } from '@finos/legend-application-studio';
 import { SNOWFLAKE_APP_CODE_SNIPPET } from '../../__lib__/studio/DSL_SnowflakeApp_LegendStudioCodeSnippet.js';
+import {
+  INTERNAL__UnknownFunctionActivator,
+  type PackageableElement,
+} from '@finos/legend-graph';
+import { Snowflake_BrandIcon } from '@finos/legend-art';
 
 const PURE_GRAMMAR_SNOWFLAKE_APP_PARSER_NAME = 'Snowflake';
 const PURE_GRAMMAR_SNOWFLAKE_APP_ELEMENT_TYPE_LABEL = 'SnowflakeApp';
@@ -34,6 +40,24 @@ export class DSL_SnowflakeApp_LegendStudioApplicationPlugin
 {
   constructor() {
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
+  }
+
+  getExtraElementIconGetters(): ElementIconGetter[] {
+    return [
+      (
+        type: string,
+        element: PackageableElement | undefined,
+      ): React.ReactNode | undefined => {
+        // NOTE: this is temporary until we fully support snowflake app element
+        if (
+          element instanceof INTERNAL__UnknownFunctionActivator &&
+          element.content._type === 'snowflakeApp'
+        ) {
+          return <Snowflake_BrandIcon className="icon__snowflake-app" />;
+        }
+        return undefined;
+      },
+    ];
   }
 
   getExtraPureGrammarKeywords(): string[] {

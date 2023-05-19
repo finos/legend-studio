@@ -144,21 +144,30 @@ export type ElementClassifier = (
   metamodel: PackageableElement,
 ) => string | undefined;
 
+// TODO: we should consider restrict the usage of type classifier and consider using the element instead
+// the only mechanism that really needs the type classifier is element creation, which we could refactor
+// to have a plugin that produces a single configuration for the creation ceremony
+// e.g.
+// export type ElementCreatorConfiguration = {
+//   key: string;
+//   label: string;
+//   icon: React.ReactNode;
+//   ...
+// }
+export type ElementIconGetter = (
+  type: string,
+  element: PackageableElement | undefined,
+) => React.ReactNode | undefined;
 export type ElementTypeLabelGetter = (type: string) => string | undefined;
-
-export type ElementIconGetter = (type: string) => React.ReactNode | undefined;
-
 export type NewElementFromStateCreator = (
   type: string,
   name: string,
   state: NewElementState,
 ) => PackageableElement | undefined;
-
 export type NewElementDriverCreator = (
   editorStore: EditorStore,
   type: string,
 ) => NewElementDriver<PackageableElement> | undefined;
-
 export type NewElementDriverEditorRenderer = (
   type: string,
 ) => React.ReactNode | undefined;

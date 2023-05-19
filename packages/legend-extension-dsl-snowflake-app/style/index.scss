@@ -16,6 +16,7 @@
 
 @use 'mixins' as *;
 
-.dummy {
-  height: 100%;
+.icon__snowflake-app {
+  color: var(--color-light-blue-20);
+  font-size: 1.7rem;
 }
