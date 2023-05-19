@@ -4,4 +4,4 @@
 '@finos/legend-graph': patch
 ---
 
-handle mapping include dataspace
+Add support for `MappingIncludeDataSpace`
