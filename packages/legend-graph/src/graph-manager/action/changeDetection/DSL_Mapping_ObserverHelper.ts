@@ -734,6 +734,7 @@ export const observe_SubstituteStore = skipObserved(
 
 export const observe_MappingInclude = skipObserved(
   (metamodel: MappingInclude): MappingInclude => {
+    // TODO: handle for mapping include dataspace
     if (metamodel instanceof MappingIncludeMapping) {
       makeObservable(metamodel, {
         included: observable,
