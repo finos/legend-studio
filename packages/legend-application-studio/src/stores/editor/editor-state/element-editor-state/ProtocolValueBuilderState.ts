@@ -280,9 +280,8 @@ export class ProtocolValueBuilderState {
             break;
           }
         }
-
-        nodes.set(childNodeId, childNode);
       }
+      nodes.set(childNodeId, childNode);
     });
 
     nodes.forEach((node) => {

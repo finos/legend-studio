@@ -96,6 +96,9 @@ export class FunctionActivatorBuilderState {
 
   setActivatorName(val: string): void {
     this.activatorName = val;
+    if (this.functionActivator) {
+      this.functionActivator.name = val;
+    }
   }
 
   setCurrentActivatorConfiguration(
