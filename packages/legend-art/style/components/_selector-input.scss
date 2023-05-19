@@ -22,6 +22,7 @@
   }
 }
 
+.selector-input,
 .selector-input .selector-input {
   &__control {
     cursor: text;
@@ -117,16 +118,29 @@
     @include flexVCenter;
   }
 
-  &__option--custom {
-    @include flexVCenter;
+  &__option {
+    height: 100%;
+    width: 100%;
+    cursor: default;
+    display: block;
+    font-size: inherit;
+    padding: 0.8rem 1.2rem;
 
-    height: 3.5rem;
-    padding-top: 0;
-    padding-bottom: 0;
+    &:hover,
+    &--is-focused:hover,
+    &--is-focused {
+      background-color: var(--color-light-blue-0) !important;
+    }
+
+    &--is-selected:hover,
+    &--is-selected {
+      background-color: var(--color-blue-100) !important;
+      color: var(--color-white);
+    }
   }
 
-  &__option--custom:hover {
-    background: var(--color-light-grey-100);
+  &__option--custom {
+    padding: 0 !important;
   }
 }
 
@@ -231,6 +245,7 @@
 
     width: 1.5rem;
     font-size: 1.3rem;
+    background: var(--color-dark-grey-100);
     color: var(--color-light-grey-200);
   }
 
@@ -284,18 +299,6 @@
     color: var(--color-light-grey-400) !important;
   }
 
-  &__option--custom {
-    @include flexVCenter;
-
-    height: 3.5rem;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-
-  &__option--custom:hover {
-    background: var(--color-dark-grey-100);
-  }
-
   &__menu {
     background: var(--color-dark-grey-100);
     border: 0.1rem solid var(--color-dark-grey-100);
@@ -303,6 +306,7 @@
   }
 
   &__option {
+    height: 100%;
     color: var(--color-light-grey-200) !important;
 
     &--is-focused {
@@ -356,5 +360,13 @@
 
   &__indicator-separator {
     background: var(--color-red-100);
+  }
+}
+
+.selector-input--custom {
+  .selector-input__single-value,
+  .selector-input--dark__single-value {
+    align-items: flex-start;
+    height: 100%;
   }
 }

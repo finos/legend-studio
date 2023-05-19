@@ -99,7 +99,7 @@ const observe_RelationalCSVData = skipObserved(
 export const observe_INTERNAL__UnknownEmbeddedData = skipObserved(
   (metamodel: INTERNAL__UnknownEmbeddedData): INTERNAL__UnknownEmbeddedData => {
     makeObservable(metamodel, {
-      content: observable,
+      content: observable.ref,
     });
 
     return metamodel;

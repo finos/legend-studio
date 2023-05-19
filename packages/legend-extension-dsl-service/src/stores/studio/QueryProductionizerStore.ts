@@ -404,7 +404,7 @@ export class QueryProductionizerStore {
         );
       } catch {
         // NOTE: we don't throw error here if project could not be found
-        // quietly select another project instead
+        // quietly choose another project instead
         currentProject = this.projects.length ? this.projects[0] : undefined;
       }
       if (currentProject) {

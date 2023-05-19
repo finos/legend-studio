@@ -302,6 +302,7 @@ export const OffIcon = TB.TbCircleOff;
 export const CalendarClockIcon = TB.TbCalendarTime;
 export const LastModifiedIcon = TB.TbClockEdit;
 export const SQLIcon = TB.TbSql;
+export const Snowflake_BrandIcon = TB.TbBrandSnowflake;
 
 const HI = ReactIcons.HI;
 export const CodeIcon = HI.HiCode;

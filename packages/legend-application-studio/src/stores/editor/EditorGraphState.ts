@@ -90,6 +90,7 @@ import {
   type PureModel,
   createGraphBuilderReport,
   ExecutionEnvironmentInstance,
+  type FunctionActivatorConfiguration,
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
@@ -128,6 +129,8 @@ export class EditorGraphState {
   isUpdatingGraph = false; // critical synchronous update to refresh the graph
   isUpdatingApplication = false; // including graph update and async operations such as change detection
 
+  functionActivatorConfigurations: FunctionActivatorConfiguration[] = [];
+
   warnings: CompilationWarning[] = [];
   error: EngineError | undefined;
   compilationResultEntities: Entity[] = [];
@@ -144,6 +147,9 @@ export class EditorGraphState {
       isApplicationLeavingGraphEditMode: observable,
       isUpdatingGraph: observable,
       isUpdatingApplication: observable,
+
+      functionActivatorConfigurations: observable,
+
       mostRecentCompilationGraphHash: observable,
       mostRecentCompilationOutcome: observable,
       warnings: observable,
@@ -155,6 +161,7 @@ export class EditorGraphState {
       clearProblems: action,
       setEnableStrictMode: action,
       setMostRecentCompilationGraphHash: action,
+      fetchAvailableFunctionActivatorConfigurations: flow,
       buildGraph: flow,
       loadEntityChangesToGraph: flow,
       updateGenerationGraphAndApplication: flow,
@@ -267,6 +274,23 @@ export class EditorGraphState {
 
   setEnableStrictMode(val: boolean): void {
     this.enableStrictMode = val;
+  }
+
+  *fetchAvailableFunctionActivatorConfigurations(): GeneratorFn<void> {
+    try {
+      this.functionActivatorConfigurations =
+        (yield this.editorStore.graphManagerState.graphManager.getAvailableFunctionActivatorConfigurations(
+          this.editorStore.graphManagerState.coreModel,
+          this.editorStore.graphManagerState.systemModel,
+        )) as FunctionActivatorConfiguration[];
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERIC_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    }
   }
 
   *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderResult> {

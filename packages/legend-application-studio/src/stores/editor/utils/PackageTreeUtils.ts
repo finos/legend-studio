@@ -117,7 +117,7 @@ export const generatePackageableElementTreeNodeDataLabel = (
   element: PackageableElement,
 ): string =>
   element instanceof ConcreteFunctionDefinition
-    ? generateFunctionPrettyName(element, false)
+    ? generateFunctionPrettyName(element)
     : element.name;
 
 export const getPackableElementTreeNodeData = (

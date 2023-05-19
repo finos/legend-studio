@@ -193,12 +193,12 @@ export const TaggedValueEditor = observer(
           dropTargetConnector={handleRef}
           isBeingDragged={isBeingDragged}
         />
-        <div className="tagged-value-editor">
-          <div
-            className={`tagged-value-editor__profile ${
-              darkTheme ? 'tagged-value-editor-dark-theme' : ''
-            }`}
-          >
+        <div
+          className={clsx('tagged-value-editor', {
+            'tagged-value-editor--dark': darkTheme,
+          })}
+        >
+          <div className="tagged-value-editor__profile">
             <CustomSelectorInput
               className="tagged-value-editor__profile__selector"
               disabled={isReadOnly}
@@ -207,12 +207,10 @@ export const TaggedValueEditor = observer(
               value={selectedProfile}
               placeholder="Choose a profile"
               filterOption={profileFilterOption}
-              darkMode={darkTheme ?? false}
+              darkMode={Boolean(darkTheme)}
             />
             <button
-              className={`tagged-value-editor__profile__visit-btn ${
-                darkTheme ? 'tagged-value-editor-dark-theme' : ''
-              }`}
+              className="tagged-value-editor__profile__visit-btn"
               disabled={isStubbed_PackageableElement(
                 taggedValue.tag.value._OWNER,
               )}
@@ -235,7 +233,9 @@ export const TaggedValueEditor = observer(
           />
           {!isReadOnly && (
             <button
-              className="uml-element-editor__remove-btn"
+              className={clsx('uml-element-editor__remove-btn', {
+                'btn--dark btn--caution': darkTheme,
+              })}
               disabled={isReadOnly}
               onClick={deleteValue}
               tabIndex={-1}
@@ -251,9 +251,9 @@ export const TaggedValueEditor = observer(
           >
             {isExpanded && (
               <textarea
-                className={`tagged-value-editor__value__input ${
-                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                }`}
+                className={clsx('tagged-value-editor__value__input', {
+                  'input--dark': darkTheme,
+                })}
                 spellCheck={false}
                 disabled={isReadOnly}
                 value={taggedValue.value}
@@ -263,9 +263,9 @@ export const TaggedValueEditor = observer(
             )}
             {!isExpanded && (
               <input
-                className={`tagged-value-editor__value__input ${
-                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                }`}
+                className={clsx('tagged-value-editor__value__input', {
+                  'input--dark': darkTheme,
+                })}
                 spellCheck={false}
                 disabled={isReadOnly}
                 value={taggedValue.value}
@@ -274,9 +274,7 @@ export const TaggedValueEditor = observer(
               />
             )}
             <button
-              className={`tagged-value-editor__value__expand-btn ${
-                darkTheme ? 'tagged-value-editor-dark-theme' : ''
-              }`}
+              className="tagged-value-editor__value__expand-btn"
               onClick={toggleExpandedMode}
               tabIndex={-1}
               title="Expand/Collapse"

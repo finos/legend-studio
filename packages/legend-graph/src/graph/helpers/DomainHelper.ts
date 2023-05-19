@@ -67,7 +67,7 @@ import type { Constraint } from '../metamodel/pure/packageableElements/domain/Co
 import type { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
 import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { AnnotatedElement } from '../metamodel/pure/packageableElements/domain/AnnotatedElement.js';
-import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { extractDependencyGACoordinateFromRootPackageName } from '../DependencyManager.js';
 
 export const addElementToPackage = (
@@ -713,3 +713,44 @@ export const getFunctionName = (
 export const getFunctionNameWithPath = (
   func: ConcreteFunctionDefinition,
 ): string => func.package?.path + ELEMENT_PATH_DELIMITER + func.functionName;
+
+const _classHasCycle = (
+  _class: Class,
+  __classesIndex: Set<string>,
+  options?: {
+    traverseNonRequiredProperties?: boolean | undefined;
+    excludedPaths?: Map<string, string[]> | undefined;
+  },
+): boolean => {
+  if (__classesIndex.has(_class.path)) {
+    return true;
+  }
+  const excludedProperties = options?.excludedPaths?.get(_class.path) ?? [];
+  const properties = options?.traverseNonRequiredProperties
+    ? getAllClassProperties(_class)
+    : getAllClassProperties(_class).filter(
+        (property) => property.multiplicity.lowerBound,
+      );
+  const complexPropertyTypes = properties
+    .filter((property) => !excludedProperties.includes(property.name))
+    .map((property) => property.genericType.value.rawType)
+    .filter(filterByType(Class));
+  if (complexPropertyTypes.length > 0) {
+    // we only count classes with complex properties in the cycle
+    __classesIndex.add(_class.path);
+  }
+  // we only check unique complex property classes; 2 same property classes on the same level do not count as a cycle
+  return Boolean(
+    Array.from(new Set(complexPropertyTypes)).find((type) =>
+      _classHasCycle(type, __classesIndex, options),
+    ),
+  );
+};
+
+export const classHasCycle = (
+  _class: Class,
+  options?: {
+    traverseNonRequiredProperties?: boolean | undefined;
+    excludedPaths?: Map<string, string[]> | undefined;
+  },
+): boolean => _classHasCycle(_class, new Set<string>(), options);

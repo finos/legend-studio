@@ -42,6 +42,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     | 'typesIndex'
     | 'associationsIndex'
     | 'functionsIndex'
+    | 'functionActivatorsIndex'
     | 'storesIndex'
     | 'mappingsIndex'
     | 'connectionsIndex'
@@ -60,6 +61,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     profilesIndex: observable,
     typesIndex: observable,
     associationsIndex: observable,
+    functionActivatorsIndex: observable,
     functionsIndex: observable,
     storesIndex: observable,
     mappingsIndex: observable,
@@ -80,6 +82,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     ownTypes: computed,
     ownAssociations: computed,
     ownFunctions: computed,
+    ownFunctionActivators: computed,
     ownStores: computed,
     ownFlatDatas: computed,
     ownDatabases: computed,
@@ -116,6 +119,7 @@ export const observe_DependencyManager = skipObserved(
       types: computed,
       associations: computed,
       functions: computed,
+      functionActivators: computed,
       stores: computed,
       databases: computed,
       mappings: computed,
@@ -163,6 +167,7 @@ export const observe_Graph = (metamodel: PureModel): PureModel => {
     types: computed,
     associations: computed,
     functions: computed,
+    functionActivators: computed,
     stores: computed,
     databases: computed,
     mappings: computed,

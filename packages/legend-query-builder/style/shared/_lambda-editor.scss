@@ -41,6 +41,7 @@
     position: relative;
     height: 100%;
     width: 100%;
+    background: var(--color-dark-grey-300);
   }
 
   &__editor__input__compressed {
@@ -67,13 +68,10 @@
   }
 
   &__editor__info {
-    @include flexVCenter;
-
+    display: flex;
     height: 100%;
-    padding: 0 0.5rem;
-    border: 0.1rem solid var(--color-dark-grey-300);
-    border-right: none;
-    border-left: none;
+    align-items: flex-start;
+    padding: 0.5rem;
     background: var(--color-dark-grey-300);
   }
 
@@ -86,9 +84,10 @@
     padding: 0 0.5rem;
     color: var(--color-dark-grey-400);
     background: var(--color-light-grey-0);
-    border: 0.1rem solid var(--color-light-grey-0);
-    font-size: 1.1rem;
+    font-size: 1rem;
+    font-weight: 500;
     cursor: default;
+    user-select: none;
   }
 
   &__editor__expected-return-type--clickable {
@@ -121,11 +120,6 @@
 
   &__expanded {
     height: 28rem !important;
-  }
-
-  &__expanded &__editor__info {
-    align-items: flex-start;
-    padding: 0.4rem 0.5rem;
   }
 
   &__expanded &__editor__expand-btn {
@@ -226,5 +220,29 @@
         background: var(--color-dark-grey-50) !important;
       }
     }
+  }
+}
+
+.lambda-editor--dark {
+  border: 0.1rem solid var(--color-dark-grey-280);
+
+  .monaco-editor {
+    .margin,
+    .monaco-editor-background {
+      background: var(--color-dark-grey-50) !important;
+    }
+  }
+
+  .lambda-editor__editor__input {
+    background: var(--color-dark-grey-50);
+  }
+
+  .lambda-editor__editor__info {
+    background: var(--color-dark-grey-50);
+    border-left: 0.1rem solid var(--color-dark-grey-85);
+  }
+
+  .lambda-editor__error-feedback {
+    background: var(--color-red-200);
   }
 }

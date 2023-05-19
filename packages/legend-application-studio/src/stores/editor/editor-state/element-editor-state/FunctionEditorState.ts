@@ -36,16 +36,18 @@ import {
   isStubbed_PackageableElement,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-query-builder';
+import { FunctionActivatorBuilderState } from './FunctionActivatorBuilderState.js';
 
-export enum FUNCTION_SPEC_TAB {
-  GENERAL = 'GENERAL',
+export enum FUNCTION_EDITOR_TAB {
+  DEFINITION = 'DEFINITION',
   TAGGED_VALUES = 'TAGGED_VALUES',
   STEREOTYPES = 'STEREOTYPES',
 }
 
-export class FunctionBodyEditorState extends LambdaEditorState {
-  editorStore: EditorStore;
-  functionElement: ConcreteFunctionDefinition;
+export class FunctionDefinitionEditorState extends LambdaEditorState {
+  readonly editorStore: EditorStore;
+  readonly functionElement: ConcreteFunctionDefinition;
+
   isConvertingFunctionBodyToString = false;
 
   constructor(
@@ -153,8 +155,10 @@ export class FunctionBodyEditorState extends LambdaEditorState {
 }
 
 export class FunctionEditorState extends ElementEditorState {
-  selectedTab: FUNCTION_SPEC_TAB;
-  functionBodyEditorState: FunctionBodyEditorState;
+  readonly functionDefinitionEditorState: FunctionDefinitionEditorState;
+  readonly activatorBuilderState: FunctionActivatorBuilderState;
+
+  selectedTab: FUNCTION_EDITOR_TAB;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -171,11 +175,12 @@ export class FunctionEditorState extends ElementEditorState {
       ConcreteFunctionDefinition,
       'Element inside function editor state must be a function',
     );
-    this.selectedTab = FUNCTION_SPEC_TAB.GENERAL;
-    this.functionBodyEditorState = new FunctionBodyEditorState(
+    this.selectedTab = FUNCTION_EDITOR_TAB.DEFINITION;
+    this.functionDefinitionEditorState = new FunctionDefinitionEditorState(
       element,
       this.editorStore,
     );
+    this.activatorBuilderState = new FunctionActivatorBuilderState(this);
   }
 
   get functionElement(): ConcreteFunctionDefinition {
@@ -185,7 +190,8 @@ export class FunctionEditorState extends ElementEditorState {
       'Element inside function editor state must be a function',
     );
   }
-  setSelectedTab(tab: FUNCTION_SPEC_TAB): void {
+
+  setSelectedTab(tab: FUNCTION_EDITOR_TAB): void {
     this.selectedTab = tab;
   }
 
@@ -193,8 +199,10 @@ export class FunctionEditorState extends ElementEditorState {
     let revealed = false;
     try {
       if (compilationError.sourceInformation) {
-        this.setSelectedTab(FUNCTION_SPEC_TAB.GENERAL);
-        this.functionBodyEditorState.setCompilationError(compilationError);
+        this.setSelectedTab(FUNCTION_EDITOR_TAB.DEFINITION);
+        this.functionDefinitionEditorState.setCompilationError(
+          compilationError,
+        );
         revealed = true;
       }
     } catch (error) {
@@ -209,7 +217,7 @@ export class FunctionEditorState extends ElementEditorState {
   }
 
   override clearCompilationError(): void {
-    this.functionBodyEditorState.setCompilationError(undefined);
+    this.functionDefinitionEditorState.setCompilationError(undefined);
   }
 
   reprocess(

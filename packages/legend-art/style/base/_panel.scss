@@ -311,6 +311,12 @@
     & + & {
       margin-top: 2rem;
     }
+
+    &__divider {
+      height: 1rem;
+      width: 100%;
+      border-bottom: 0.1rem solid var(--color-dark-grey-100);
+    }
   }
 
   &__divider {
@@ -350,6 +356,7 @@
     margin: 0;
     padding: 1rem;
     border-radius: 0.1rem;
+    border: 0.1rem solid var(--color-dark-grey-100);
     background: var(--color-dark-grey-100);
     color: var(--color-light-grey-200);
     height: 2.8rem;
@@ -362,6 +369,30 @@
     &[disabled] {
       color: var(--color-dark-grey-500);
       cursor: not-allowed;
+    }
+
+    &__container {
+      @include flexVCenter;
+
+      position: relative;
+    }
+
+    &__container & {
+      padding-right: 3.8rem;
+    }
+
+    &__reset-btn {
+      @include flexCenter;
+
+      position: absolute;
+      right: 0;
+      height: 2.8rem;
+      width: 2.8rem;
+      color: var(--color-dark-grey-400);
+
+      &:hover {
+        color: var(--color-light-grey-400);
+      }
     }
   }
 

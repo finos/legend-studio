@@ -42,7 +42,7 @@ import type { Enumeration } from '../../../../../../../graph/metamodel/pure/pack
 import type { Association } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
 import type { Mapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Profile } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Profile.js';
-import type { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Store } from '../../../../../../../graph/metamodel/pure/packageableElements/store/Store.js';
 import type { Service } from '../../../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import type { FlatData } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';

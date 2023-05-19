@@ -26,8 +26,8 @@ import {
   SKIP,
 } from 'serializr';
 import {
-  V1_stereotypePtrSchema,
-  V1_taggedValueSchema,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
   V1_packageableElementPointerModelSchema,
   V1_PackageableElementPointer,
 } from '@finos/legend-graph';
@@ -157,14 +157,14 @@ const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   ),
   name: primitive(),
   package: primitive(),
-  stereotypes: customListWithSchema(V1_stereotypePtrSchema, {
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
   supportInfo: custom(
     (val) => V1_serializeSupportInfo(val),
     (val) => V1_deserializeSupportInfo(val),
   ),
-  taggedValues: customListWithSchema(V1_taggedValueSchema, {
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
   title: optional(primitive()),

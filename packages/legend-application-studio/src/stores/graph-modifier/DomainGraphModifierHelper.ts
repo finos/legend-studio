@@ -20,6 +20,7 @@ import {
   deleteEntry,
   guaranteeType,
   swapEntry,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { action } from 'mobx';
 import {
@@ -65,9 +66,10 @@ import {
   observe_RawLambda,
   isStubbed_PackageableElement,
   getOtherAssociatedProperty,
+  type INTERNAL__UnknownFunctionActivator,
 } from '@finos/legend-graph';
 
-// --------------------------------------------- PackageableElementReference -------------------------------------
+// --------------------------------------------- Packageable Element -------------------------------------
 
 export const packageableElementReference_setValue = action(
   <T extends PackageableElement>(
@@ -372,6 +374,12 @@ export const function_swapParameters = action(
     targetParameter: RawVariableExpression,
   ): void => {
     swapEntry(_func.parameters, sourceParameter, targetParameter);
+  },
+);
+
+export const INTERNAL__UnknownFunctionActivator_setContent = action(
+  (metamodel: INTERNAL__UnknownFunctionActivator, val: PlainObject) => {
+    metamodel.content = val;
   },
 );
 

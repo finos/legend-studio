@@ -47,6 +47,9 @@
       "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
     },
     {
+      "path": "packages/legend-extension-dsl-snowflake-app/tsconfig.build.json"
+    },
+    {
       "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
     },
     {

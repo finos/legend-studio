@@ -73,7 +73,7 @@ import {
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import type { MappingEditorTabState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTabManagerState.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
-import { MappingTestableEditor } from '../../edit-panel/mapping-editor/testable/MappingTestableEditor.js';
+import { MappingTestableEditor } from './MappingTestableEditor.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;

@@ -61,7 +61,7 @@ import {
   type V1_PackageableElement,
   type V1_PureModelContextData,
   type V1_TaggedValue,
-  V1_taggedValueSchema,
+  V1_taggedValueModelSchema,
   PackageableElementExplicitReference,
   V1_PackageableElementPointer,
   PackageableElementPointerType,
@@ -400,7 +400,7 @@ export const extractDataSpaceTaxonomyNodes = (
       const taggedValues = (
         json.taggedValues as PlainObject<V1_TaggedValue>[]
       ).map((taggedValueJson) =>
-        deserialize(V1_taggedValueSchema, taggedValueJson),
+        deserialize(V1_taggedValueModelSchema, taggedValueJson),
       );
       taggedValues
         .filter(

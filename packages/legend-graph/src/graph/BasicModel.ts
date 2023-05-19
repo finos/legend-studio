@@ -34,7 +34,7 @@ import { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/
 import { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { Profile } from '../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
-import { ConcreteFunctionDefinition } from '../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import { ConcreteFunctionDefinition } from './metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { Store } from '../graph/metamodel/pure/packageableElements/store/Store.js';
 import { FlatData } from '../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
@@ -68,6 +68,7 @@ import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import type { GraphDataOrigin } from './GraphDataOrigin.js';
 import { INTERNAL__UnknownPackageableElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
+import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -123,6 +124,10 @@ export abstract class BasicModel {
   private readonly functionsIndex = new Map<
     string,
     ConcreteFunctionDefinition
+  >();
+  private readonly functionActivatorsIndex = new Map<
+    string,
+    FunctionActivator
   >();
   private readonly storesIndex = new Map<string, Store>();
   private readonly mappingsIndex = new Map<string, Mapping>();
@@ -195,6 +200,9 @@ export abstract class BasicModel {
   }
   get ownFunctions(): ConcreteFunctionDefinition[] {
     return Array.from(this.functionsIndex.values());
+  }
+  get ownFunctionActivators(): FunctionActivator[] {
+    return Array.from(this.functionActivatorsIndex.values());
   }
   get ownStores(): Store[] {
     return Array.from(this.storesIndex.values());
@@ -296,6 +304,9 @@ export abstract class BasicModel {
   getOwnNullableFunction = (
     path: string,
   ): ConcreteFunctionDefinition | undefined => this.functionsIndex.get(path);
+  getOwnNullableFunctionActivator = (
+    path: string,
+  ): FunctionActivator | undefined => this.functionActivatorsIndex.get(path);
   getOwnNullableStore = (path: string): Store | undefined =>
     this.storesIndex.get(path);
   getOwnNullableMapping = (path: string): Mapping | undefined =>
@@ -360,6 +371,11 @@ export abstract class BasicModel {
     guaranteeNonNullable(
       this.getOwnNullableFunction(path),
       `Can't find function '${path}'`,
+    );
+  getOwnFunctionActivator = (path: string): FunctionActivator =>
+    guaranteeNonNullable(
+      this.getOwnNullableFunctionActivator(path),
+      `Can't find function activator '${path}'`,
     );
   getOwnStore = (path: string): Store =>
     guaranteeNonNullable(
@@ -445,6 +461,9 @@ export abstract class BasicModel {
   setOwnFunction(path: string, val: ConcreteFunctionDefinition): void {
     this.functionsIndex.set(path, val);
   }
+  setOwnFunctionActivator(path: string, val: FunctionActivator): void {
+    this.functionActivatorsIndex.set(path, val);
+  }
   setOwnStore(path: string, val: Store): void {
     this.storesIndex.set(path, val);
   }
@@ -502,6 +521,7 @@ export abstract class BasicModel {
       ...this.ownClasses,
       ...this.ownAssociations,
       ...this.ownFunctions,
+      ...this.ownFunctionActivators,
       ...this.ownStores,
       ...this.ownMappings,
       ...this.ownServices,
@@ -551,6 +571,7 @@ export abstract class BasicModel {
       this.profilesIndex.get(path) ??
       this.associationsIndex.get(path) ??
       this.functionsIndex.get(path) ??
+      this.functionActivatorsIndex.get(path) ??
       this.storesIndex.get(path) ??
       this.mappingsIndex.get(path) ??
       this.servicesIndex.get(path) ??
@@ -597,6 +618,8 @@ export abstract class BasicModel {
       this.setOwnProfile(element.path, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
       this.setOwnFunction(element.path, element);
+    } else if (element instanceof FunctionActivator) {
+      this.setOwnFunctionActivator(element.path, element);
     } else if (element instanceof Service) {
       this.setOwnService(element.path, element);
     } else if (element instanceof PackageableConnection) {
@@ -647,6 +670,8 @@ export abstract class BasicModel {
       this.profilesIndex.delete(element.path);
     } else if (element instanceof ConcreteFunctionDefinition) {
       this.functionsIndex.delete(element.path);
+    } else if (element instanceof FunctionActivator) {
+      this.functionActivatorsIndex.delete(element.path);
     } else if (element instanceof Service) {
       this.servicesIndex.delete(element.path);
     } else if (element instanceof PackageableRuntime) {
@@ -773,6 +798,9 @@ export abstract class BasicModel {
     } else if (element instanceof ConcreteFunctionDefinition) {
       this.functionsIndex.delete(oldPath);
       this.functionsIndex.set(newPath, element);
+    } else if (element instanceof FunctionActivator) {
+      this.functionActivatorsIndex.delete(oldPath);
+      this.functionActivatorsIndex.set(newPath, element);
     } else if (element instanceof Service) {
       this.servicesIndex.delete(oldPath);
       this.servicesIndex.set(newPath, element);

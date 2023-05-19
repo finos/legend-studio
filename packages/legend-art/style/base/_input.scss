@@ -60,6 +60,10 @@
   padding: 0 0.5rem;
   border: 0.1rem solid var(--color-dark-grey-100);
 
+  &::placeholder {
+    color: var(--color-dark-grey-300);
+  }
+
   &:hover {
     border: 0.1rem solid var(--color-dark-grey-280);
   }

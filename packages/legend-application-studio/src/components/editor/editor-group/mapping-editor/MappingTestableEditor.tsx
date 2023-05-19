@@ -85,39 +85,39 @@ import {
   MappingDataTestState,
   MappingDataTestSuiteState,
   MappingQueryTestState,
-} from '../../../../../stores/editor/editor-state/element-editor-state/mapping/testable/MappingTestableState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/mapping/testable/MappingTestableState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import {
   QueryBuilderTextEditorMode,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import { MappingExecutionQueryBuilderState } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
+import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
-import { TESTABLE_TEST_TAB } from '../../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
+import { TESTABLE_TEST_TAB } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
 import {
   atomicTest_setDoc,
   testAssertion_setId,
-} from '../../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
 import {
   RenameModal,
   TestAssertionEditor,
   TestAssertionItem,
-} from '../../../editor-group/testable/TestableSharedComponents.js';
-import { EmbeddedDataEditor } from '../../../editor-group/data-editor/EmbeddedDataEditor.js';
+} from '../testable/TestableSharedComponents.js';
+import { EmbeddedDataEditor } from '../data-editor/EmbeddedDataEditor.js';
 import {
   TESTABLE_RESULT,
   getTestableResultFromTestResult,
-} from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
-import { getTestableResultIcon } from '../../../side-bar/testable/GlobalTestRunner.js';
-import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
-import { getMappingStores } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { EmbeddedDataType } from '../../../../../stores/editor/editor-state/ExternalFormatState.js';
-import type { EmbeddedDataTypeOption } from '../../../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
+} from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
+import { getTestableResultIcon } from '../../side-bar/testable/GlobalTestRunner.js';
+import { validateTestableId } from '../../../../stores/editor/utils/TestableUtils.js';
+import { getMappingStores } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+import { EmbeddedDataType } from '../../../../stores/editor/editor-state/ExternalFormatState.js';
+import type { EmbeddedDataTypeOption } from '../../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import {
   buildElementOption,
   type PackageableElementOption,

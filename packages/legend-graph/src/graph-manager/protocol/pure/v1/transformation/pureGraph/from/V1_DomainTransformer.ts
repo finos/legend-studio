@@ -27,7 +27,7 @@ import type { TaggedValue } from '../../../../../../../graph/metamodel/pure/pack
 import type { Enumeration } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
 import type { Class } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { Association } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
-import type { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Property } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Property.js';
 import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
 import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';

@@ -355,6 +355,7 @@ export const V1_transformRelationalDatabaseConnection = (
     metamodel.datasourceSpecification,
     context,
   );
+  connection.localMode = metamodel.localMode;
   connection.type = metamodel.type;
   connection.databaseType = connection.type;
   connection.timeZone = metamodel.timeZone;

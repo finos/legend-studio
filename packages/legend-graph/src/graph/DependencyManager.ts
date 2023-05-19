@@ -26,7 +26,7 @@ import type { Class } from '../graph/metamodel/pure/packageableElements/domain/C
 import type { Mapping } from '../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Profile } from '../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import { Package } from '../graph/metamodel/pure/packageableElements/domain/Package.js';
-import type { ConcreteFunctionDefinition } from '../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from './metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Store } from '../graph/metamodel/pure/packageableElements/store/Store.js';
 import type { Association } from '../graph/metamodel/pure/packageableElements/domain/Association.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
@@ -42,6 +42,7 @@ import type { Database } from './metamodel/pure/packageableElements/store/relati
 import type { DataElement } from './metamodel/pure/packageableElements/data/DataElement.js';
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { LegendSDLC, type GraphDataOrigin } from './GraphDataOrigin.js';
+import type { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 
 const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
 const generateDependencyRootPackageName = (dependencyKey: string): string =>
@@ -181,6 +182,11 @@ export class DependencyManager {
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableFunction(path),
   );
+  getOwnNullableFunctionActivator = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) =>
+      dep.getOwnNullableFunctionActivator(path),
+  );
   getOwnNullableStore = buildDependencyElementGetter(
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableStore(path),
@@ -257,6 +263,9 @@ export class DependencyManager {
   }
   get functions(): ConcreteFunctionDefinition[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownFunctions);
+  }
+  get functionActivators(): FunctionActivator[] {
+    return this.dependencyGraphs.flatMap((dep) => dep.ownFunctionActivators);
   }
   get stores(): Store[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownStores);

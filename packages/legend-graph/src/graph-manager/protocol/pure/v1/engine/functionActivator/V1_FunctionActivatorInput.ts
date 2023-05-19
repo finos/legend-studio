@@ -14,38 +14,21 @@
  * limitations under the License.
  */
 
-import {
-  SKIP,
-  createModelSchema,
-  custom,
-  optional,
-  primitive,
-  serialize,
-} from 'serializr';
+import { primitive, createModelSchema, optional } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
-import { V1_rawLambdaModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 
-export class V1_TEMPORARY__SnowflakeServiceDeploymentInput {
-  clientVersion: string | undefined;
-  /**
-   * Studio does not process value specification, they are left in raw JSON form
-   *
-   * @discrepancy model
-   */
-  query!: V1_RawLambda;
+export class V1_FunctionActivatorInput {
+  clientVersion!: string | undefined;
+  functionActivator!: string;
   model!: V1_PureModelContext;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_TEMPORARY__SnowflakeServiceDeploymentInput, {
+    createModelSchema(V1_FunctionActivatorInput, {
       clientVersion: optional(primitive()),
       model: V1_pureModelContextPropSchema,
-      query: custom(
-        (val) => serialize(V1_rawLambdaModelSchema, val),
-        () => SKIP,
-      ),
+      functionActivator: primitive(),
     }),
   );
 }

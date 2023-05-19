@@ -50,7 +50,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/editor/utils/ModelClassifierUtils.js';
-import { LambdaEditor } from '@finos/legend-query-builder';
+import { InlineLambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -83,7 +83,7 @@ const SimplePropertyMappingEditor = observer(
     return (
       <div className="property-mapping-editor__entry__container">
         <div ref={drop} className="property-mapping-editor__entry">
-          <LambdaEditor
+          <InlineLambdaEditor
             className={clsx({ 'lambda-editor--dnd-match': canDrop })}
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
@@ -194,7 +194,7 @@ const EnumerationPropertyMappingEditor = observer(
               options={options}
               onChange={handleSelectionChange}
               value={{ value: transformerLabel, label: transformerLabel }}
-              placeholder="Select an existing enumeration mapping"
+              placeholder="Choose an existing enumeration mapping"
             />
             <button
               className="property-mapping-editor__entry__visit-btn"
@@ -205,7 +205,7 @@ const EnumerationPropertyMappingEditor = observer(
               <ArrowCircleRightIcon />
             </button>
           </div>
-          <LambdaEditor
+          <InlineLambdaEditor
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
               { 'lambda-editor--dnd-match': canDrop },

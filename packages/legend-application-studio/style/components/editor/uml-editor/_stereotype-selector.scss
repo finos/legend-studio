@@ -59,8 +59,17 @@
   }
 }
 
-.stereotype-selector-dark-theme {
-  color: var(--color-light-grey-50);
-  background: var(--color-dark-grey-100);
-  border: 0.1rem solid var(--color-dark-grey-400);
+.stereotype-selector--dark {
+  .stereotype-selector__profile {
+    background: var(--color-dark-grey-200);
+  }
+
+  .stereotype-selector__profile__visit-btn {
+    color: var(--color-light-grey-400);
+    background: var(--color-dark-grey-200);
+  }
+
+  .stereotype-selector__profile__visit-btn[disabled] {
+    color: var(--color-dark-grey-400);
+  }
 }

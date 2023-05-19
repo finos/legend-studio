@@ -18,13 +18,13 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   hashRawLambda,
-} from '../../../../../graph/Core_HashUtils.js';
+} from '../../../../Core_HashUtils.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression.js';
-import type { Type } from './Type.js';
-import type { Multiplicity } from './Multiplicity.js';
+import type { Type } from '../domain/Type.js';
+import type { Multiplicity } from '../domain/Multiplicity.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
-import { FunctionDefinition } from './Function.js';
+import { FunctionDefinition } from '../domain/Function.js';
 
 export class ConcreteFunctionDefinition
   extends FunctionDefinition

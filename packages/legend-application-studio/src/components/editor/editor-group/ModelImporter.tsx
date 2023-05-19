@@ -177,7 +177,7 @@ export const ModelImporter = observer(() => {
             <TruckLoadingIcon />
           </div>
           <div className="model-loader__header__configs__edit-mode__label">
-            current entities
+            Load from Graph
           </div>
         </div>
       );

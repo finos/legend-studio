@@ -88,7 +88,7 @@ import {
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import { LambdaEditor } from '@finos/legend-query-builder';
+import { InlineLambdaEditor } from '@finos/legend-query-builder';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -412,14 +412,13 @@ const MappingFilterEditor = observer(
         })}
       >
         <div className="class-mapping-filter-editor__content">
-          <LambdaEditor
+          <InlineLambdaEditor
             className="class-mapping-filter-editor__element__lambda-editor"
             disabled={
               isReadOnly ||
               instanceSetImplementationState.isConvertingTransformLambdaObjects
             }
             forceBackdrop={!!filterState.parserError}
-            forceExpansion={false}
             lambdaEditorState={filterState}
             expectedType={PrimitiveType.BOOLEAN}
           />

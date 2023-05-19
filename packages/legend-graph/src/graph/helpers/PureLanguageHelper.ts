@@ -21,7 +21,7 @@ import {
   MULTIPLICITY_RANGE_OPERATOR,
   PRIMITIVE_TYPE,
 } from '../MetaModelConst.js';
-import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Type } from '../metamodel/pure/packageableElements/domain/Type.js';
 import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { Enumeration } from '../metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -138,12 +138,14 @@ export const generateFunctionCallString = (
 
 export const generateFunctionPrettyName = (
   element: ConcreteFunctionDefinition,
-  fullPath: boolean,
+  options?: {
+    fullPath?: boolean;
+    spacing?: boolean;
+  },
 ): string =>
   `${
-    (fullPath ? element.package?.path + ELEMENT_PATH_DELIMITER : '') +
-    element.functionName
-  }(${element.parameters
+    options?.fullPath ? `${element.package?.path}${ELEMENT_PATH_DELIMITER}` : ''
+  }${element.functionName}(${element.parameters
     .map(
       (p) =>
         `${p.name}: ${p.type.value.name}[${generateMultiplicityString(
@@ -151,8 +153,14 @@ export const generateFunctionPrettyName = (
           p.multiplicity.upperBound,
         )}]`,
     )
-    .join(', ')})` +
-  `: ${element.returnType.value.name}[${generateMultiplicityString(
+    .join(', ')}): ${
+    element.returnType.value.name
+  }[${generateMultiplicityString(
     element.returnMultiplicity.lowerBound,
     element.returnMultiplicity.upperBound,
-  )}]`;
+  )}]`.replaceAll(/\s*/gu, (val) => {
+    if (options?.spacing) {
+      return val;
+    }
+    return '';
+  });

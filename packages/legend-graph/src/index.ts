@@ -60,7 +60,7 @@ export {
   PropertyReference,
   PropertyExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/PropertyReference.js';
-export { ConcreteFunctionDefinition } from './graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+export { ConcreteFunctionDefinition } from './graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 export {
   StereotypeReference,
   StereotypeExplicitReference,
@@ -70,6 +70,8 @@ export {
   TagExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/TagReference.js';
 export * from './graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
+export { FunctionActivator } from './graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
+export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
@@ -129,6 +131,7 @@ export {
 } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
+export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -232,6 +235,7 @@ export { DEPRECATED__ServiceTestResult } from './graph-manager/action/service/DE
 export { SourceInformation } from './graph-manager/action/SourceInformation.js';
 export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
+export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
@@ -279,8 +283,9 @@ export {
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export {
   V1_propertyPointerModelSchema,
-  V1_stereotypePtrModelSchema as V1_stereotypePtrSchema,
-  V1_taggedValueModelSchema as V1_taggedValueSchema,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
+  V1_INTERNAL__UnknownFunctionActivatorModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 export {
   V1_deserializeValueSpecification,

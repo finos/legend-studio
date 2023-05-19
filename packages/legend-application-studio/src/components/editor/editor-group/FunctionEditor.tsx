@@ -18,7 +18,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   FunctionEditorState,
-  FUNCTION_SPEC_TAB,
+  FUNCTION_EDITOR_TAB,
 } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 import {
   CORE_DND_TYPE,
@@ -28,6 +28,7 @@ import {
 import {
   assertErrorThrown,
   prettyCONSTName,
+  returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { useDrag, useDrop } from 'react-dnd';
@@ -45,6 +46,18 @@ import {
   Panel,
   PanelContent,
   PanelDnDEntry,
+  Dialog,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalTitle,
+  CaretDownIcon,
+  DropdownMenu,
+  LaunchIcon,
+  BlankPanelContent,
+  MenuContent,
+  MenuContentItem,
+  Modal,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
@@ -77,6 +90,9 @@ import {
   stub_RawVariableExpression,
   getFunctionNameWithPath,
   getFunctionSignature,
+  generateFunctionPrettyName,
+  extractAnnotatedElementDocumentation,
+  getClassProperty,
 } from '@finos/legend-graph';
 import {
   type ApplicationStore,
@@ -111,6 +127,8 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib
 import { LambdaEditor } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../stores/graph-modifier/GraphModifierHelper.js';
+import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
+import type { ProtocolValueBuilderState } from '../../../stores/editor/editor-state/element-editor-state/ProtocolValueBuilderState.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -118,9 +136,7 @@ enum FUNCTION_PARAMETER_TYPE {
   PRIMITIVE = 'PRIMITIVE',
 }
 
-export const getFunctionParameterType = (
-  type: Type,
-): FUNCTION_PARAMETER_TYPE => {
+const getFunctionParameterType = (type: Type): FUNCTION_PARAMETER_TYPE => {
   if (type instanceof PrimitiveType) {
     return FUNCTION_PARAMETER_TYPE.PRIMITIVE;
   } else if (type instanceof Enumeration) {
@@ -312,7 +328,7 @@ const ParameterBasicEditor = observer(
             </div>
           )}
           <input
-            className="property-basic-editor__name"
+            className="property-basic-editor__name input--dark"
             disabled={isReadOnly}
             value={parameter.name}
             spellCheck={false}
@@ -327,6 +343,7 @@ const ParameterBasicEditor = observer(
               value={selectedType}
               placeholder="Choose a type..."
               filterOption={filterOption}
+              darkMode={true}
             />
           )}
           {!isReadOnly && !isEditingType && (
@@ -419,7 +436,7 @@ const ParameterBasicEditor = observer(
           </div>
           {!isReadOnly && (
             <button
-              className="uml-element-editor__remove-btn"
+              className="uml-element-editor__remove-btn btn--dark btn--caution"
               disabled={isReadOnly}
               onClick={deleteParameter}
               tabIndex={-1}
@@ -521,6 +538,7 @@ const ReturnTypeEditor = observer(
             value={selectedType}
             placeholder="Choose a type..."
             filterOption={filterOption}
+            darkMode={true}
           />
         )}
         {!isReadOnly && !isEditingType && (
@@ -612,7 +630,7 @@ const ReturnTypeEditor = observer(
           />
         </div>
         <button
-          className="uml-element-editor__remove-btn"
+          className="uml-element-editor__remove-btn btn--dark btn--caution"
           disabled={true}
           tabIndex={-1}
         >
@@ -623,16 +641,17 @@ const ReturnTypeEditor = observer(
   },
 );
 
-export const FunctionMainEditor = observer(
+const FunctionDefinitionEditor = observer(
   (props: {
-    functionElement: ConcreteFunctionDefinition;
-    isReadOnly: boolean;
     functionEditorState: FunctionEditorState;
+    isReadOnly: boolean;
   }) => {
+    const { functionEditorState, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const { functionElement, isReadOnly, functionEditorState } = props;
-    const lambdaEditorState = functionEditorState.functionBodyEditorState;
+    const lambdaEditorState = functionEditorState.functionDefinitionEditorState;
+    const functionElement = functionEditorState.functionElement;
+
     // Parameters
     const addParameter = (): void => {
       function_addParameter(
@@ -676,15 +695,16 @@ export const FunctionMainEditor = observer(
       }),
       [handleDropParameter],
     );
+
     return (
-      <div className="panel__content function-editor__element">
-        <div className="function-editor__element__item">
-          <div className="function-editor__element__item__header">
-            <div className="function-editor__element__item__header__title">
+      <div className="function-editor__definition">
+        <div className="function-editor__definition__item">
+          <div className="function-editor__definition__item__header">
+            <div className="function-editor__definition__item__header__title">
               PARAMETERS
             </div>
             <button
-              className="function-editor__element__item__header__add-btn"
+              className="function-editor__definition__item__header__add-btn btn--dark"
               disabled={isReadOnly}
               onClick={addParameter}
               tabIndex={-1}
@@ -701,7 +721,7 @@ export const FunctionMainEditor = observer(
           />
           <div
             ref={dropParameterRef}
-            className={clsx('function-editor__element__item__content', {
+            className={clsx('function-editor__definition__item__content', {
               'panel__content__lists--dnd-over':
                 isParameterDragOver && !isReadOnly,
             })}
@@ -715,11 +735,16 @@ export const FunctionMainEditor = observer(
                 isReadOnly={isReadOnly}
               />
             ))}
+            {functionElement.parameters.length === 0 && (
+              <div className="function-editor__definition__item__content--empty">
+                No parameters
+              </div>
+            )}
           </div>
         </div>
-        <div className="function-editor__element__item">
-          <div className="function-editor__element__item__header">
-            <div className="function-editor__element__item__header__title">
+        <div className="function-editor__definition__item">
+          <div className="function-editor__definition__item__header">
+            <div className="function-editor__definition__item__header__title">
               LAMBDA
             </div>
             <div className="">
@@ -730,25 +755,109 @@ export const FunctionMainEditor = observer(
             </div>
           </div>
           <div
-            className={clsx('function-editor__element__item__content', {
+            className={clsx('function-editor__definition__item__content', {
               backdrop__element: Boolean(
-                functionEditorState.functionBodyEditorState.parserError,
+                functionEditorState.functionDefinitionEditorState.parserError,
               ),
             })}
           >
             <LambdaEditor
-              className="function-editor__element__lambda-editor"
+              className="function-editor__definition__lambda-editor lambda-editor--dark"
               disabled={
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly
               }
               lambdaEditorState={lambdaEditorState}
-              expectedType={functionElement.returnType.value}
               forceBackdrop={false}
-              forceExpansion={true}
+              autoFocus={true}
             />
           </div>
         </div>
       </div>
+    );
+  },
+);
+
+const FunctionActivatorContentBuilder = observer(
+  (props: {
+    functionEditorState: FunctionEditorState;
+    valueBuilderState: ProtocolValueBuilderState;
+  }) => {
+    const { functionEditorState, valueBuilderState } = props;
+    const builderState = functionEditorState.activatorBuilderState;
+
+    // name
+    const nameInputRef = useRef<HTMLInputElement>(null);
+    const nameValidationErrorMessage =
+      builderState.activatorName.length === 0
+        ? 'Element name cannot be empty'
+        : builderState.isDuplicated
+        ? `Element of the same path already existed`
+        : undefined;
+    useEffect(() => {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }, [valueBuilderState]);
+
+    // function
+    const functionFieldProperty = returnUndefOnError(() =>
+      getClassProperty(valueBuilderState.type, 'function'),
+    );
+    const functionFieldDocumentation = functionFieldProperty
+      ? extractAnnotatedElementDocumentation(functionFieldProperty)
+      : undefined;
+
+    return (
+      <>
+        <div className="panel__content__form">
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Name
+            </div>
+            <div className="input-group">
+              <input
+                className="panel__content__form__section__input"
+                spellCheck={false}
+                ref={nameInputRef}
+                value={builderState.activatorName}
+                onChange={(event) =>
+                  builderState.setActivatorName(event.target.value)
+                }
+              />
+              {nameValidationErrorMessage && (
+                <div className="input-group__error-message">
+                  {nameValidationErrorMessage}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Function
+            </div>
+            {functionFieldDocumentation && (
+              <div className="panel__content__form__section__header__prompt">
+                {functionFieldDocumentation}
+              </div>
+            )}
+            <input
+              className="panel__content__form__section__input"
+              spellCheck={false}
+              disabled={true}
+              value={generateFunctionPrettyName(
+                functionEditorState.functionElement,
+                {
+                  fullPath: true,
+                  spacing: false,
+                },
+              )}
+            />
+          </div>
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__divider"></div>
+          </div>
+        </div>
+        <ProtocolValueBuilder builderState={valueBuilderState} />
+      </>
     );
   },
 );
@@ -763,10 +872,10 @@ export const FunctionEditor = observer(() => {
   const selectedTab = functionEditorState.selectedTab;
   let addButtonTitle = '';
   switch (selectedTab) {
-    case FUNCTION_SPEC_TAB.TAGGED_VALUES:
+    case FUNCTION_EDITOR_TAB.TAGGED_VALUES:
       addButtonTitle = 'Add stereotype';
       break;
-    case FUNCTION_SPEC_TAB.STEREOTYPES:
+    case FUNCTION_EDITOR_TAB.STEREOTYPES:
       addButtonTitle = 'Add tagged value';
       break;
     default:
@@ -775,12 +884,12 @@ export const FunctionEditor = observer(() => {
   // Tagged Values and Stereotype
   const add = (): void => {
     if (!isReadOnly) {
-      if (selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES) {
+      if (selectedTab === FUNCTION_EDITOR_TAB.TAGGED_VALUES) {
         annotatedElement_addTaggedValue(
           functionElement,
           stub_TaggedValue(stub_Tag(stub_Profile())),
         );
-      } else if (selectedTab === FUNCTION_SPEC_TAB.STEREOTYPES) {
+      } else if (selectedTab === FUNCTION_EDITOR_TAB.STEREOTYPES) {
         annotatedElement_addStereotype(
           functionElement,
           StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
@@ -849,13 +958,19 @@ export const FunctionEditor = observer(() => {
     (): void =>
       annotatedElement_deleteTaggedValue(functionElement, val);
   const changeTab =
-    (tab: FUNCTION_SPEC_TAB): (() => void) =>
+    (tab: FUNCTION_EDITOR_TAB): (() => void) =>
     (): void =>
       functionEditorState.setSelectedTab(tab);
 
+  const activate = (): void => {
+    flowResult(functionEditorState.activatorBuilderState.activate()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  };
+
   useEffect(() => {
     flowResult(
-      functionEditorState.functionBodyEditorState.convertLambdaObjectToGrammarString(
+      functionEditorState.functionDefinitionEditorState.convertLambdaObjectToGrammarString(
         true,
         true,
       ),
@@ -867,7 +982,7 @@ export const FunctionEditor = observer(() => {
   );
 
   return (
-    <div className="function-editor">
+    <div className="function-editor uml-editor uml-editor--dark">
       <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
@@ -884,7 +999,7 @@ export const FunctionEditor = observer(() => {
         </div>
         <div className="panel__header function-editor__tabs__header">
           <div className="function-editor__tabs">
-            {Object.values(FUNCTION_SPEC_TAB).map((tab) => (
+            {Object.values(FUNCTION_EDITOR_TAB).map((tab) => (
               <div
                 key={tab}
                 onClick={changeTab(tab)}
@@ -897,9 +1012,140 @@ export const FunctionEditor = observer(() => {
             ))}
           </div>
           <div className="panel__header__actions">
+            {editorStore.applicationStore.config.options
+              .TEMPORARY__enableFunctionActivatorSupport && (
+              <>
+                <DropdownMenu
+                  className="function-editor__activate-btn"
+                  content={
+                    <MenuContent>
+                      {editorStore.graphState.functionActivatorConfigurations.map(
+                        (config) => (
+                          <MenuContentItem
+                            key={config.uuid}
+                            className="function-editor__activator__selector__option"
+                            onClick={() =>
+                              functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
+                                config,
+                              )
+                            }
+                            title={config.description}
+                          >
+                            <div className="function-editor__activator__selector__option__name">
+                              {config.name}
+                            </div>
+                            <div className="function-editor__activator__selector__option__description">
+                              {config.description}
+                            </div>
+                          </MenuContentItem>
+                        ),
+                      )}
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  }}
+                >
+                  <div className="function-editor__activate-btn__label">
+                    <div className="function-editor__activate-btn__label__icon">
+                      <LaunchIcon />
+                    </div>
+                    <div className="function-editor__activate-btn__label__title">
+                      Activate
+                    </div>
+                  </div>
+                  <div className="function-editor__activate-btn__dropdown-btn">
+                    <CaretDownIcon />
+                  </div>
+                </DropdownMenu>
+                {functionEditorState.activatorBuilderState
+                  .currentActivatorConfiguration && (
+                  <Dialog
+                    open={Boolean(
+                      functionEditorState.activatorBuilderState
+                        .currentActivatorConfiguration,
+                    )}
+                    onClose={() =>
+                      functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
+                        undefined,
+                      )
+                    }
+                    classes={{
+                      root: 'editor-modal__root-container',
+                      container: 'editor-modal__container',
+                      paper: 'editor-modal__content',
+                    }}
+                    // NOTE: this is a safer way compared to using <form> as it will not trigger click event
+                    // on nested button
+                    // See https://stackoverflow.com/questions/11353105/why-browser-trigger-a-click-event-instead-of-a-submit-in-a-form
+                    // See https://stackoverflow.com/questions/3350247/how-to-prevent-form-from-being-submitted
+                    // See https://gomakethings.com/how-to-prevent-buttons-from-causing-a-form-to-submit-with-html/
+                    onKeyDown={(event) => {
+                      if (event.code === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        activate();
+                      }
+                    }}
+                  >
+                    <Modal darkMode={true} className="editor-modal">
+                      <ModalHeader>
+                        <ModalTitle
+                          title={`Function Activator: ${functionEditorState.activatorBuilderState.currentActivatorConfiguration.name}`}
+                        />
+                      </ModalHeader>
+                      <ModalBody>
+                        <div className="function-editor__activator-builder">
+                          {functionEditorState.activatorBuilderState
+                            .functionActivatorProtocolValueBuilderState && (
+                            <FunctionActivatorContentBuilder
+                              functionEditorState={functionEditorState}
+                              valueBuilderState={
+                                functionEditorState.activatorBuilderState
+                                  .functionActivatorProtocolValueBuilderState
+                              }
+                            />
+                          )}
+                          {!functionEditorState.activatorBuilderState
+                            .functionActivatorProtocolValueBuilderState && (
+                            <BlankPanelContent>
+                              No activator chosen
+                            </BlankPanelContent>
+                          )}
+                        </div>
+                      </ModalBody>
+                      <ModalFooter>
+                        <button
+                          className="btn btn--dark function-editor__activator__btn"
+                          type="submit"
+                          disabled={
+                            !functionEditorState.activatorBuilderState.isValid
+                          }
+                          onClick={activate}
+                        >
+                          Activate
+                        </button>
+                        <button
+                          className="btn btn--dark"
+                          onClick={() =>
+                            functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
+                              undefined,
+                            )
+                          }
+                        >
+                          Close
+                        </button>
+                      </ModalFooter>
+                    </Modal>
+                  </Dialog>
+                )}
+              </>
+            )}
             <button
               className="panel__header__action"
-              disabled={isReadOnly || selectedTab === FUNCTION_SPEC_TAB.GENERAL}
+              disabled={
+                isReadOnly || selectedTab === FUNCTION_EDITOR_TAB.DEFINITION
+              }
               onClick={add}
               tabIndex={-1}
               title={addButtonTitle}
@@ -908,56 +1154,56 @@ export const FunctionEditor = observer(() => {
             </button>
           </div>
         </div>
-        {selectedTab === FUNCTION_SPEC_TAB.GENERAL ? (
-          <FunctionMainEditor
-            functionEditorState={functionEditorState}
-            functionElement={functionElement}
-            isReadOnly={isReadOnly}
-          />
-        ) : (
-          <PanelContent>
-            {selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES && (
-              <div
-                ref={dropTaggedValueRef}
-                className={clsx('panel__content__lists', {
-                  'panel__content__lists--dnd-over':
-                    isTaggedValueDragOver && !isReadOnly,
-                })}
-              >
-                <TaggedValueDragPreviewLayer />
-                {functionElement.taggedValues.map((taggedValue) => (
-                  <TaggedValueEditor
-                    annotatedElement={functionElement}
-                    key={taggedValue._UUID}
-                    taggedValue={taggedValue}
-                    deleteValue={_deleteTaggedValue(taggedValue)}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-              </div>
-            )}
-            {selectedTab === FUNCTION_SPEC_TAB.STEREOTYPES && (
-              <div
-                ref={dropStereotypeRef}
-                className={clsx('panel__content__lists', {
-                  'panel__content__lists--dnd-over':
-                    isStereotypeDragOver && !isReadOnly,
-                })}
-              >
-                <StereotypeDragPreviewLayer />
-                {functionElement.stereotypes.map((stereotype) => (
-                  <StereotypeSelector
-                    key={stereotype.value._UUID}
-                    annotatedElement={functionElement}
-                    stereotype={stereotype}
-                    deleteStereotype={_deleteStereotype(stereotype)}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-              </div>
-            )}
-          </PanelContent>
-        )}
+        <PanelContent>
+          {selectedTab === FUNCTION_EDITOR_TAB.DEFINITION && (
+            <FunctionDefinitionEditor
+              functionEditorState={functionEditorState}
+              isReadOnly={isReadOnly}
+            />
+          )}
+          {selectedTab === FUNCTION_EDITOR_TAB.TAGGED_VALUES && (
+            <div
+              ref={dropTaggedValueRef}
+              className={clsx('panel__content__lists', {
+                'panel__content__lists--dnd-over':
+                  isTaggedValueDragOver && !isReadOnly,
+              })}
+            >
+              <TaggedValueDragPreviewLayer />
+              {functionElement.taggedValues.map((taggedValue) => (
+                <TaggedValueEditor
+                  annotatedElement={functionElement}
+                  key={taggedValue._UUID}
+                  taggedValue={taggedValue}
+                  deleteValue={_deleteTaggedValue(taggedValue)}
+                  isReadOnly={isReadOnly}
+                  darkTheme={true}
+                />
+              ))}
+            </div>
+          )}
+          {selectedTab === FUNCTION_EDITOR_TAB.STEREOTYPES && (
+            <div
+              ref={dropStereotypeRef}
+              className={clsx('panel__content__lists', {
+                'panel__content__lists--dnd-over':
+                  isStereotypeDragOver && !isReadOnly,
+              })}
+            >
+              <StereotypeDragPreviewLayer />
+              {functionElement.stereotypes.map((stereotype) => (
+                <StereotypeSelector
+                  key={stereotype.value._UUID}
+                  annotatedElement={functionElement}
+                  stereotype={stereotype}
+                  deleteStereotype={_deleteStereotype(stereotype)}
+                  isReadOnly={isReadOnly}
+                  darkTheme={true}
+                />
+              ))}
+            </div>
+          )}
+        </PanelContent>
       </Panel>
     </div>
   );

@@ -63,8 +63,10 @@ import type {
   V1_SurveyDatasetsResult,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
 import type { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
-import type { V1_TEMPORARY__SnowflakeServiceDeploymentInput } from './service/V1_TEMPORARY__SnowflakeServiceDeploymentInput.js';
 import type { ClassifierPathMapping } from '../../../../action/protocol/ClassifierPathMapping.js';
+import type { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionActivatorInfo.js';
+import type { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
+import type { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -124,19 +126,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // getting the user from the main engine server, which seems problematic.
   private queryBaseUrl?: string | undefined;
 
-  // NOTE: this is temporary solution to allow us test out the Snowflake service deployment flow
-  private TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
-
   constructor(
     config: ServerClientConfig & {
       queryBaseUrl?: string | undefined;
-      TEMPORARY__snowflakeServiceDeploymentUrl?: string | undefined;
     },
   ) {
     super(config);
     this.queryBaseUrl = config.queryBaseUrl;
-    this.TEMPORARY__snowflakeServiceDeploymentUrl =
-      config.TEMPORARY__snowflakeServiceDeploymentUrl;
   }
 
   setEnv = (value: string | undefined): void => {
@@ -161,7 +157,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Server -------------------------------------------
 
   _server = (): string => `${this.baseUrl}/server/v1`;
-  _executionManager = (): string => `${this._server()}/executionManager`;
   getCurrentUserId = (): Promise<string> =>
     this.get(`${this._server()}/currentUser`);
 
@@ -466,6 +461,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Execute -------------------------------------------
 
   _execution = (): string => `${this._pure()}/execution`;
+  _executionManager = (): string => `${this._server()}/executionManager`;
 
   execute = (
     input: PlainObject<V1_ExecuteInput>,
@@ -528,6 +524,60 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
+  /**
+   * TODO: this is an internal API that should me refactored out using extension mechanism
+   */
+  INTERNAL__cancelUserExecutions = (
+    userID: string,
+    broadcastToCluster: boolean,
+  ): Promise<string> =>
+    this.deleteWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CANCEL_USER_EXECUTIONS),
+      `${this._executionManager()}/cancelUserExecution`,
+      {},
+      {},
+      {},
+      { userID, broadcastToCluster },
+      { enableCompression: true },
+    );
+
+  // ------------------------------------------- Query -------------------------------------------
+
+  _query = (queryId?: string): string =>
+    `${this.queryBaseUrl ?? this.baseUrl}/pure/v1/query${
+      queryId ? `/${encodeURIComponent(queryId)}` : ''
+    }`;
+  searchQueries = (
+    searchSpecification: PlainObject<V1_QuerySearchSpecification>,
+  ): Promise<PlainObject<V1_LightQuery>[]> =>
+    this.post(`${this._query()}/search`, searchSpecification, undefined);
+  getQueries = (queryIds: string[]): Promise<PlainObject<V1_LightQuery>[]> =>
+    this.get(`${this._query()}/batch`, {}, undefined, { queryIds: queryIds });
+  getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
+    this.get(this._query(queryId));
+  createQuery = (
+    query: PlainObject<V1_Query>,
+  ): Promise<PlainObject<V1_Query>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CREATE_QUERY),
+      this._query(),
+      query,
+    );
+  updateQuery = (
+    queryId: string,
+    query: PlainObject<V1_Query>,
+  ): Promise<PlainObject<V1_Query>> =>
+    this.putWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_QUERY),
+      this._query(queryId),
+      query,
+    );
+  deleteQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
+    this.deleteWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_QUERY),
+      this._query(queryId),
+    );
+
   // --------------------------------------- Analysis ---------------------------------------
 
   analyzeMappingModelCoverage = (
@@ -571,11 +621,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  // ------------------------------------------- Utilities -------------------------------------------
-
-  _utilities = (): string => `${this._pure()}/utilities`;
-  _databaseUtilities = (): string => `${this._utilities()}/database`;
-
+  _databaseUtilities = (): string => `${this._pure()}/utilities/database`;
   buildDatabase = (
     input: PlainObject<V1_ExecuteInput>,
   ): Promise<PlainObject<V1_PureModelContextData>> =>
@@ -584,6 +630,28 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._databaseUtilities()}/schemaExploration`,
       input,
     );
+
+  // ------------------------------------------- Function ---------------------------------------
+
+  _functionActivator = (): string => `${this.baseUrl}/functionActivator`;
+
+  getAvailableFunctionActivators(): Promise<
+    PlainObject<V1_FunctionActivatorInfo>[]
+  > {
+    return this.get(`${this._functionActivator()}/list`);
+  }
+
+  validateFunctionActivator(
+    input: PlainObject<V1_FunctionActivatorInput>,
+  ): Promise<PlainObject<V1_FunctionActivatorError>[]> {
+    return this.post(`${this._functionActivator()}/validate`, input);
+  }
+
+  publishFunctionActivatorToSandbox(
+    input: PlainObject<V1_FunctionActivatorInput>,
+  ): Promise<PlainObject<V1_FunctionActivatorError>[]> {
+    return this.post(`${this._functionActivator()}/publishToSandbox`, input);
+  }
 
   // ------------------------------------------- Service -------------------------------------------
 
@@ -653,67 +721,5 @@ export class V1_EngineServerClient extends AbstractServerClient {
       {},
       {},
       { skipProcessing: true },
-    );
-
-  // ------------------------------------------- Query -------------------------------------------
-
-  _query = (queryId?: string): string =>
-    `${this.queryBaseUrl ?? this.baseUrl}/pure/v1/query${
-      queryId ? `/${encodeURIComponent(queryId)}` : ''
-    }`;
-  searchQueries = (
-    searchSpecification: PlainObject<V1_QuerySearchSpecification>,
-  ): Promise<PlainObject<V1_LightQuery>[]> =>
-    this.post(`${this._query()}/search`, searchSpecification, undefined);
-  getQueries = (queryIds: string[]): Promise<PlainObject<V1_LightQuery>[]> =>
-    this.get(`${this._query()}/batch`, {}, undefined, { queryIds: queryIds });
-  getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
-    this.get(this._query(queryId));
-  createQuery = (
-    query: PlainObject<V1_Query>,
-  ): Promise<PlainObject<V1_Query>> =>
-    this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CREATE_QUERY),
-      this._query(),
-      query,
-    );
-  updateQuery = (
-    queryId: string,
-    query: PlainObject<V1_Query>,
-  ): Promise<PlainObject<V1_Query>> =>
-    this.putWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_QUERY),
-      this._query(queryId),
-      query,
-    );
-  deleteQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
-    this.deleteWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_QUERY),
-      this._query(queryId),
-    );
-
-  // ------------------------------------------- Snowflake Service -------------------------------------------
-
-  TEMPORARY__deploySnowflakeService = (
-    input: PlainObject<V1_TEMPORARY__SnowflakeServiceDeploymentInput>,
-  ): Promise<PlainObject> =>
-    this.post(
-      `${this.TEMPORARY__snowflakeServiceDeploymentUrl ?? this.baseUrl}`,
-      input,
-      undefined,
-    );
-
-  cancelUserExecutions = (
-    userID: string,
-    broadcastToCluster: boolean,
-  ): Promise<string> =>
-    this.deleteWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CANCEL_USER_EXECUTIONS),
-      `${this._executionManager()}/cancelUserExecution`,
-      {},
-      {},
-      {},
-      { userID, broadcastToCluster },
-      { enableCompression: true },
     );
 }

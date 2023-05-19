@@ -115,7 +115,7 @@ export const ContextMenu: React.FC<{
         onClick={close}
         {...menuProps}
       >
-        {content}
+        {isOpen && content}
       </BaseMenu>
     </div>
   );

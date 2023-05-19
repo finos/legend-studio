@@ -114,6 +114,9 @@ import { V1_INTERNAL__PackageableElementWithSourceInformation } from '../transfo
 import { ELEMENT_PATH_DELIMITER } from '../../../../../graph/MetaModelConst.js';
 import { V1_serializeExecutionResult } from './execution/V1_ExecutionHelper.js';
 import type { ClassifierPathMapping } from '../../../../action/protocol/ClassifierPathMapping.js';
+import { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionActivatorInfo.js';
+import { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
+import { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -808,7 +811,7 @@ export class V1_Engine {
   }
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
-    return this.engineServerClient.cancelUserExecutions(
+    return this.engineServerClient.INTERNAL__cancelUserExecutions(
       guaranteeNonNullable(this.getCurrentUserId()),
       broadcastToCluster,
     );
@@ -854,8 +857,6 @@ export class V1_Engine {
     ).reports;
   }
 
-  // --------------------------------------------- Utilities ---------------------------------------------
-
   async buildDatabase(
     input: V1_DatabaseBuilderInput,
   ): Promise<V1_PureModelContextData> {
@@ -864,5 +865,54 @@ export class V1_Engine {
         serialize(V1_DatabaseBuilderInput, input),
       ),
     );
+  }
+
+  // ------------------------------------------- Function -------------------------------------------
+
+  async getAvailableFunctionActivators(): Promise<V1_FunctionActivatorInfo[]> {
+    try {
+      return (
+        await this.engineServerClient.getAvailableFunctionActivators()
+      ).map((info) => V1_FunctionActivatorInfo.serialization.fromJson(info));
+    } catch {
+      return [];
+    }
+  }
+
+  async validateFunctionActivator(
+    input: V1_FunctionActivatorInput,
+  ): Promise<void> {
+    const errors = await this.engineServerClient.validateFunctionActivator(
+      V1_FunctionActivatorInput.serialization.toJson(input),
+    );
+    if (errors.length) {
+      throw new Error(
+        `Function activator validation failed:\n${errors
+          .map((error) =>
+            V1_FunctionActivatorError.serialization.fromJson(error),
+          )
+          .map((error) => `- ${error.message}`)
+          .join('\n')}`,
+      );
+    }
+  }
+
+  async publishFunctionActivatorToSandbox(
+    input: V1_FunctionActivatorInput,
+  ): Promise<void> {
+    const errors =
+      await this.engineServerClient.publishFunctionActivatorToSandbox(
+        V1_FunctionActivatorInput.serialization.toJson(input),
+      );
+    if (errors.length) {
+      throw new Error(
+        `Function activator validation failed:\n${errors
+          .map((error) =>
+            V1_FunctionActivatorError.serialization.fromJson(error),
+          )
+          .map((error) => `- ${error.message}`)
+          .join('\n')}`,
+      );
+    }
   }
 }

@@ -67,6 +67,12 @@ export class V1_RelationalDatabaseConnection
   authenticationStrategy!: V1_AuthenticationStrategy;
   postProcessors: V1_PostProcessor[] = [];
 
+  /**
+   * HACKY: this is done to quickly add support for local connection
+   * See https://github.com/finos/legend-engine/pull/1807
+   */
+  localMode?: boolean | undefined;
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_DATABASE_CONNECTION,
@@ -75,6 +81,7 @@ export class V1_RelationalDatabaseConnection
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,
       this.authenticationStrategy,
+      this.localMode?.toString() ?? '',
       hashArray(this.postProcessors),
     ]);
   }

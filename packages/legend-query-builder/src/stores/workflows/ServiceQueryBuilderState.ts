@@ -142,8 +142,8 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
    * Propagation after changing the execution context:
    * - The mapping will be updated to the mapping of the execution context
    * - The runtime will be updated to the default runtime of the execution context
-   * - If no class is selected, try to select a compatible class
-   * - If the chosen class is compatible with the new selected mapping, do nothing, otherwise, try to select a compatible class
+   * - If no class is chosen, try to choose a compatible class
+   * - If the chosen class is compatible with the new chosen mapping, do nothing, otherwise, try to choose a compatible class
    */
   propagateExecutionContextChange(
     executionContext: ServiceExecutionContext,

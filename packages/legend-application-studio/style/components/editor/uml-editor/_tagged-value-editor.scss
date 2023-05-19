@@ -78,7 +78,6 @@
     width: 100%;
     min-width: 0;
     border: 0.1rem solid var(--color-input-border);
-    border-radius: 0.2rem 0 0 0.2rem;
     padding: 0 0.5rem;
     height: 2.8rem;
   }
@@ -88,14 +87,6 @@
     resize: none;
     line-height: 2rem;
     padding: 0.3rem 0.5rem;
-  }
-
-  &__value__input:hover {
-    border: 0.1rem solid var(--color-input-border--hover);
-  }
-
-  &__value__input:focus {
-    border: 0.1rem solid var(--color-input-border--focus);
   }
 
   &__value__expand-btn {
@@ -111,8 +102,28 @@
   }
 }
 
-.tagged-value-editor-dark-theme {
-  color: var(--color-light-grey-50);
-  background: var(--color-dark-grey-100);
-  border: 0.1rem solid var(--color-dark-grey-400);
+.tagged-value-editor--dark {
+  .tagged-value-editor__profile {
+    background: var(--color-dark-grey-200);
+  }
+
+  .tagged-value-editor__profile__visit-btn {
+    color: var(--color-light-grey-400);
+    background: var(--color-dark-grey-200);
+  }
+
+  .tagged-value-editor__profile__visit-btn[disabled] {
+    color: var(--color-dark-grey-400);
+  }
+
+  .tagged-value-editor__value__input {
+    border: 0.1rem solid var(--color-dark-grey-300);
+  }
+
+  .tagged-value-editor__value__expand-btn {
+    background: var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-left: none;
+    color: var(--color-light-grey-400);
+  }
 }

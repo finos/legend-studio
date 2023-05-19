@@ -78,10 +78,11 @@ export type FileGenerationTypeOption = {
 };
 
 export class GraphGenerationState {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+  readonly clearingGenerationEntitiesState = ActionState.create();
+
   isRunningGlobalGenerate = false;
   generatedEntities = new Map<string, Entity[]>();
-  clearingGenerationEntitiesState = ActionState.create();
   externalFormatState: ExternalFormatState;
   // NOTE: this will eventually be removed once we also do model/schema import using external format
   // See https://github.com/finos/legend-studio/issues/866

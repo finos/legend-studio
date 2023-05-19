@@ -54,6 +54,7 @@ import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { MappingTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
+import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 
 export class V1_ElementFourthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -72,6 +73,12 @@ export class V1_ElementFourthPassBuilder
 
   visit_INTERNAL__UnknownPackageableElement(
     element: V1_INTERNAL__UnknownPackageableElement,
+  ): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_INTERNAL__UnknownFunctionActivator(
+    element: V1_INTERNAL__UnknownFunctionActivator,
   ): void {
     throw new UnsupportedOperationError();
   }

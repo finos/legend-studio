@@ -157,7 +157,9 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
       element,
       rootPackageName,
     );
-    const functionPrettyName = generateFunctionPrettyName(element, true);
+    const functionPrettyName = generateFunctionPrettyName(element, {
+      fullPath: true,
+    });
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: QUERY_BUILDER_FUNCTION_DND_TYPE,
@@ -212,7 +214,7 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
     const isPackage = node.packageableElement instanceof Package;
     const name =
       node.packageableElement instanceof ConcreteFunctionDefinition
-        ? generateFunctionPrettyName(node.packageableElement, false)
+        ? generateFunctionPrettyName(node.packageableElement)
         : node.packageableElement.name;
     const isExpandable = Boolean(node.childrenIds.length);
     const nodeExpandIcon = isExpandable ? (
@@ -484,7 +486,7 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
             ): string =>
               generateFunctionPrettyName(
                 item.node.packageableElement as ConcreteFunctionDefinition,
-                true,
+                { fullPath: true },
               )
             }
             types={[QUERY_BUILDER_FUNCTION_DND_TYPE]}

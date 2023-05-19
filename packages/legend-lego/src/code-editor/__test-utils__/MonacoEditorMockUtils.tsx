@@ -53,6 +53,7 @@ export const MockedMonacoEditorModel = {
 };
 
 export const MockedMonacoEditorInstance = {
+  focus: createMock(),
   dispose: createMock(),
   addCommand: createMock(),
   getValue: createMock(),

@@ -76,6 +76,12 @@ export const dBConnection_setQuoteIdentifiers = action(
   },
 );
 
+export const relationDbConnection_setLocalMode = action(
+  (con: RelationalDatabaseConnection, val: boolean | undefined): void => {
+    con.localMode = val;
+  },
+);
+
 export const relationDbConnection_setDatasourceSpecification = action(
   (
     con: RelationalDatabaseConnection,

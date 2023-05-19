@@ -17,7 +17,10 @@
 import { returnUndefOnError } from '@finos/legend-shared';
 import type { EditorStore } from '../stores/editor/EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../stores/LegendStudioApplicationPlugin.js';
-import { type PackageableElement } from '@finos/legend-graph';
+import {
+  FunctionActivator,
+  type PackageableElement,
+} from '@finos/legend-graph';
 import {
   PURE_ClassIcon,
   PURE_PrimitiveTypeIcon,
@@ -38,12 +41,14 @@ import {
   PURE_UnitIcon,
   PURE_PackageIcon,
   PURE_DataIcon,
+  LaunchIcon,
 } from '@finos/legend-art';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../stores/editor/utils/ModelClassifierUtils.js';
 
 export const getElementTypeIcon = (
   editorStore: EditorStore,
   type: string | undefined,
+  element?: PackageableElement | undefined,
 ): React.ReactNode => {
   switch (type) {
     case PACKAGEABLE_ELEMENT_TYPE.PRIMITIVE:
@@ -93,11 +98,17 @@ export const getElementTypeIcon = (
               ).getExtraElementIconGetters?.() ?? [],
           );
         for (const iconGetter of extraElementIconGetters) {
-          const elementIcon = iconGetter(type);
+          const elementIcon = iconGetter(type, element);
           if (elementIcon) {
             return elementIcon;
           }
         }
+      }
+      // NOTE: this is temporary until we properly refactor this function to check element instead of
+      // the type classifier value, but to be fair, this is not a bad way to do it since this acts
+      // as a catch all block, we can check for `abstract` element here
+      if (element instanceof FunctionActivator) {
+        return <LaunchIcon />;
       }
       return <PURE_UnknownElementTypeIcon />;
     }
@@ -115,4 +126,5 @@ export const getElementIcon = (
           editorStore.graphState.getPackageableElementType(element),
         )
       : undefined,
+    element,
   );

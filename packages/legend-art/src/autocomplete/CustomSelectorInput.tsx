@@ -23,7 +23,7 @@ import {
 } from 'react';
 import { CaretDownIcon, TimesIcon, CircleNotchIcon } from '../icon/Icon.js';
 import { FixedSizeList } from 'react-window';
-import type { PlainObject } from '@finos/legend-shared';
+import { type PlainObject } from '@finos/legend-shared';
 
 /**
  * Previously, these exports rely on ES module interop to expose `default` export
@@ -44,6 +44,7 @@ import type {
   Props,
   InputActionMeta,
 } from 'react-select';
+import { clsx } from '../utils/ComponentUtils.js';
 
 export type InputActionData = InputActionMeta;
 
@@ -76,14 +77,15 @@ const CustomMenuList: React.FC<{
   getValue: () => [PlainObject];
   selectProps: CustomSelectorInputProps;
 }> = (props) => {
+  const { options, children, getValue, selectProps } = props;
   // Get row height in pixel since `react-window` does not support `rem`
   // See https://stackoverflow.com/questions/45001097/convert-rem-to-px-without-reflow
-  const ROW_HEIGHT =
+  const rowHeight =
+    selectProps.optionCustomization?.rowHeight ??
     parseInt(getComputedStyle(document.documentElement).fontSize, 10) * 3.5;
   const MAX_OPTIONS_LENGTH = 6;
-  const { options, children, getValue, selectProps } = props;
   const [value] = getValue();
-  const initialOffset = options.indexOf(value) * ROW_HEIGHT;
+  const initialOffset = options.indexOf(value) * rowHeight;
   const scrollToIndex = children.length
     ? children.findIndex((child) => child.props.isFocused)
     : 0;
@@ -107,13 +109,15 @@ const CustomMenuList: React.FC<{
         }
         ref={listRef}
         width="100%"
-        height={Math.min(children.length, MAX_OPTIONS_LENGTH) * ROW_HEIGHT}
+        height={Math.min(children.length, MAX_OPTIONS_LENGTH) * rowHeight}
         itemCount={children.length}
-        itemSize={ROW_HEIGHT}
+        itemSize={rowHeight}
         initialScrollOffset={initialOffset}
       >
         {({ index, style }): React.ReactElement<ListChildComponentProps> => (
-          <div style={style}>{children[index] as React.ReactNode}</div>
+          <div style={style} className="selector-input__option-wrapper">
+            {children[index] as React.ReactNode}
+          </div>
         )}
       </FixedSizeList>
     );
@@ -127,6 +131,44 @@ const CustomMenuList: React.FC<{
     >
       {selectProps.noMatchMessage ?? 'No match found'}
     </div>
+  );
+};
+
+const CustomOption: React.FC<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Select.OptionProps<any, false> & {
+    children: React.ReactNode;
+    innerProps: {
+      ref: React.RefObject<HTMLDivElement>;
+    };
+    selectProps: CustomSelectorInputProps;
+  }
+> = (props) => {
+  const { children, selectProps } = props;
+  return (
+    <ReactSelect.SelectComponents.Option
+      {...props}
+      className={clsx(
+        !selectProps.darkMode
+          ? {
+              'selector-input__option': true,
+              'selector-input__option--is-focused': props.isFocused,
+              'selector-input__option--is-selected': props.isSelected,
+            }
+          : {
+              'selector-input--dark__option': true,
+              'selector-input--dark__option--is-focused': props.isFocused,
+              'selector-input--dark__option--is-selected': props.isSelected,
+            },
+        {
+          'selector-input__option--custom': Boolean(
+            selectProps.optionCustomization,
+          ),
+        },
+      )}
+    >
+      {children}
+    </ReactSelect.SelectComponents.Option>
   );
 };
 
@@ -186,7 +228,7 @@ interface CustomSelectorInputProps extends Props<SelectOption, true> {
   disabled?: boolean;
   darkMode?: boolean;
   hasError?: boolean;
-  option?: React.Component;
+  optionCustomization?: { rowHeight: number };
 }
 
 export type SelectComponent =
@@ -198,7 +240,6 @@ export const CustomSelectorInput = forwardRef<
   CustomSelectorInputProps
 >(function CustomSelectorInput(props, ref) {
   const {
-    option,
     allowCreating,
     noMatchMessage,
     disabled,
@@ -222,7 +263,7 @@ export const CustomSelectorInput = forwardRef<
   const SelectComponent: React.ElementType = allowCreating
     ? ReactSelect.CreatableSelect.default
     : ReactSelect.Select.default;
-  const stylePrefix = darkMode ? STYLE_PREFIX__DARK : STYLE_PREFIX;
+  const stylePrefix: string = darkMode ? STYLE_PREFIX__DARK : STYLE_PREFIX;
   return (
     <SelectComponent
       // Make the menu always on top
@@ -237,11 +278,13 @@ export const CustomSelectorInput = forwardRef<
       // See https://github.com/finos/legend-studio/issues/615
       ref={ref as LegacyRef<any>} // eslint-disable-line @typescript-eslint/no-explicit-any
       isDisabled={Boolean(disabled)}
-      className={`${stylePrefix} ${className} ${
-        hasError ? 'selector-input--has-error' : ''
-      }`}
+      className={clsx(stylePrefix, className, {
+        'selector-input--has-error': hasError,
+        'selector-input--custom': Boolean(props.optionCustomization),
+      })}
       classNamePrefix={stylePrefix}
       components={{
+        Option: CustomOption,
         ClearIndicator,
         DropdownIndicator,
         LoadingIndicator,

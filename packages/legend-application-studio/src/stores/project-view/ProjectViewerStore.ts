@@ -435,13 +435,13 @@ export class ProjectViewerStore {
         graphBuilderReportData,
       );
 
-      // fetch available file generation descriptions
-      yield flowResult(
+      // fetch available editor configurations
+      yield Promise.all([
         this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
-      );
-      yield flowResult(
-        this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
-      );
+        this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
+        this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
+        this.editorStore.graphState.fetchAvailableFunctionActivatorConfigurations(),
+      ]);
 
       return true;
     } catch (error) {

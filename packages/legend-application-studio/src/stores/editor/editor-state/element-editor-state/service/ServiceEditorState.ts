@@ -20,7 +20,6 @@ import {
   type PlainObject,
   assertErrorThrown,
   guaranteeType,
-  ActionState,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -51,52 +50,6 @@ export enum SERVICE_TAB {
   TEST = 'TEST',
   REGISTRATION = 'REGISTRATION',
   POST_VALIDATION = 'POST_VALIDATION',
-  TEMPORARY__SNOWFLAKE_SERVICE_DEPLOYMENT = 'SNOWFLAKE_DEPLOYMENT',
-}
-
-class TEMPORARY__SnowflakeServiceRegistrationState {
-  readonly editorStore: EditorStore;
-  readonly service: Service;
-  readonly deploymentState = ActionState.create();
-
-  result?: PlainObject | undefined;
-
-  constructor(editorStore: EditorStore, service: Service) {
-    makeObservable(this, {
-      result: observable,
-      deploy: flow,
-    });
-
-    this.editorStore = editorStore;
-    this.service = service;
-  }
-
-  *deploy(): GeneratorFn<void> {
-    const deploymentUrl =
-      this.editorStore.applicationStore.config
-        .TEMPORARY__snowflakeServiceDeploymentUrl;
-
-    if (!deploymentUrl) {
-      this.editorStore.applicationStore.notificationService.notifyWarning(
-        `Can't deploy Snowflake service: deployment URL is not configured`,
-      );
-      return;
-    }
-
-    try {
-      this.deploymentState.inProgress();
-      this.result =
-        (yield this.editorStore.graphManagerState.graphManager.TEMPORARY__deploySnowflakeService(
-          (this.service.execution as PureExecution).func,
-          this.editorStore.graphManagerState.graph,
-        )) as PlainObject;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-    } finally {
-      this.deploymentState.reset();
-    }
-  }
 }
 
 export const MINIMUM_SERVICE_OWNERS = 2;
@@ -106,7 +59,6 @@ export class ServiceEditorState extends ElementEditorState {
   testableState: ServiceTestableState;
   selectedTab: SERVICE_TAB;
   postValidationState: ServicePostValidationsState;
-  TEMPORARY__snowflakeServiceRegistrationState: TEMPORARY__SnowflakeServiceRegistrationState;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -140,11 +92,6 @@ export class ServiceEditorState extends ElementEditorState {
         ? SERVICE_TAB.EXECUTION
         : SERVICE_TAB.GENERAL;
     this.postValidationState = new ServicePostValidationsState(this);
-    this.TEMPORARY__snowflakeServiceRegistrationState =
-      new TEMPORARY__SnowflakeServiceRegistrationState(
-        this.editorStore,
-        this.service,
-      );
   }
 
   setSelectedTab(tab: SERVICE_TAB): void {
