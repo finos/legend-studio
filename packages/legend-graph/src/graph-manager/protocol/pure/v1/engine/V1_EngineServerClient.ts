@@ -712,7 +712,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._executionManager()}/cancelUserExecution`,
       {},
       {},
-      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+      {},
       { userID, broadcastToCluster },
       { enableCompression: true },
     );
