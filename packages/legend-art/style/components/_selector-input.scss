@@ -146,6 +146,12 @@
 
 .selector-menu--dark {
   background: var(--color-dark-grey-100);
+
+  .packageable-element-option-label__tag {
+    color: var(--color-light-grey-100);
+    background: var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-dark-grey-300);
+  }
 }
 
 .selector-menu--no-match {

@@ -224,6 +224,18 @@
     background: unset;
   }
 
+  .enumeration-mapping-editor__enum-value__source-value__input,
+  .enumeration-mapping-editor__enum-value__source-value__info,
+  .enumeration-mapping-editor__enum-value__name {
+    background: var(--color-dark-grey-100);
+  }
+
+  .enumeration-mapping-editor__enum-value__source-value__expected-return-type {
+    color: var(--color-light-grey-100);
+    background: var(--color-dark-grey-300);
+    border-color: var(--color-dark-grey-300);
+  }
+
   // ---------------------------- Modal  -------------------------------
 
   .mapping-modal {
@@ -237,13 +249,38 @@
     background: var(--color-dark-grey-50);
   }
 
-  .property-mapping-editor__name {
+  .property-mapping-editor__entry {
+    .selector-input__control {
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-input-border--dark);
+    }
+
+    .selector-input__indicators {
+      border-left: 0.1rem solid var(--color-dark-grey-250);
+    }
+
+    .selector-input__indicator-separator,
+    .selector-input__indicator,
+    .selector-input__dropdown-indicator {
+      background: var(--color-dark-grey-100);
+    }
+  }
+
+  .property-mapping-editor__name,
+  .property-mapping-editor__entry--empty {
     background: var(--color-dark-grey-100);
   }
 
   .lambda-editor .monaco-editor .margin,
-  .lambda-editor .monaco-editor .monaco-editor-background {
+  .lambda-editor .monaco-editor .monaco-editor-background,
+  .lambda-editor__editor__info {
     background: var(--color-dark-grey-100) !important;
+
+    .lambda-editor__editor__expected-return-type {
+      color: var(--color-light-grey-100);
+      background: var(--color-dark-grey-300);
+      border: 0.1rem solid var(--color-dark-grey-300);
+    }
   }
 
   .class-mapping-editor__property-panel {
