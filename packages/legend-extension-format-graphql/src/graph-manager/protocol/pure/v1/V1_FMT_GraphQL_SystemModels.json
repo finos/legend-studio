@@ -1,7 +1,7 @@
 {
   "elements": [
     {
-      "stereotypes": ["Query", "Mutation", "Subscription"],
+      "stereotypes": ["Query", "Mutation", "Subscription", "Input"],
       "package": "meta::external::query::graphQL::binding",
       "_type": "profile",
       "name": "GraphQL"
