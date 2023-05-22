@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2023-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import { V1_MappingInclude } from '@finos/legend-graph';
-import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_DataSpace_HashUtils.js';
+import {
+  hashArray,
+  type PlainObject,
+} from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
+import { V1_MappingInclude } from './V1_MappingInclude.js';
 
-export class V1_MappingIncludeDataSpace extends V1_MappingInclude {
-  includedDataSpace!: string;
+export class V1_INTERNAL__UnknownMappingInclude extends V1_MappingInclude {
+  content!: PlainObject;
 
   override get hashCode(): string {
     return hashArray([
-      DATA_SPACE_HASH_STRUCTURE.MAPPING_INCLUDE_DATASPACE,
-      this.includedDataSpace,
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_MAPPING_INCLUDE,
+      hashObjectWithoutSourceInformation(this.content),
     ]);
   }
 }

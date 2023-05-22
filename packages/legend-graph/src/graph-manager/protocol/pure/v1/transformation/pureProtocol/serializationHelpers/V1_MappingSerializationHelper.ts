@@ -137,6 +137,7 @@ import {
 } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
+import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -1228,7 +1229,9 @@ const V1_serializeMappingInclude = (
   protocol: V1_MappingInclude,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_MappingInclude> => {
-  if (protocol instanceof V1_MappingIncludeMapping) {
+  if (protocol instanceof V1_INTERNAL__UnknownMappingInclude) {
+    return protocol.content;
+  } else if (protocol instanceof V1_MappingIncludeMapping) {
     return serialize(V1_mappingIncludeMappingModelSchema, protocol);
   }
   const extraMappingIncludeSerializers = plugins.flatMap(
@@ -1244,7 +1247,8 @@ const V1_serializeMappingInclude = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize mapping include: no compatible deserializer available from plugins`,
+    `Can't serialize mapping include: no compatible serializer available from plugins`,
+    protocol,
   );
 };
 
@@ -1258,7 +1262,6 @@ const V1_deserializeMappingInclude = (
       /**
        * @backwardCompatibility
        */
-
       includedMapping:
         json.includedMapping ??
         `${json.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${json.includedMappingName}`,
@@ -1276,9 +1279,10 @@ const V1_deserializeMappingInclude = (
       return protocol;
     }
   }
-  throw new UnsupportedOperationError(
-    `Can't deserialize mapping include of type '${json._type}': no compatible deserializer available from plugins`,
-  );
+  // Fall back to create unknown stub if not supported
+  const protocol = new V1_INTERNAL__UnknownMappingInclude();
+  protocol.content = json;
+  return protocol;
 };
 
 export const V1_mappingModelSchema = (

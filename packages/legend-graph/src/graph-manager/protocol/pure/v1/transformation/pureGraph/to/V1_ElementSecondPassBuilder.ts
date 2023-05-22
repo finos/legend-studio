@@ -94,6 +94,9 @@ import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/pack
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import { PackageableElementExplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+import { V1_MappingInclude, V1_MappingIncludeMapping } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -323,23 +326,45 @@ export class V1_ElementSecondPassBuilder
     );
   }
 
+  getMappingIdentifier(protocol: V1_MappingInclude): string | undefined {
+    if (protocol instanceof V1_INTERNAL__UnknownMappingInclude) {
+      return undefined;
+    }
+    if (protocol instanceof V1_MappingIncludeMapping) {
+        return protocol.includedMapping;
+    }
+    const extraIncludeMappingIdentifierBuilders = this.context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraMappingIncludeIdentifierBuilders?.() ?? [],
+    );
+    for (const builder of extraIncludeMappingIdentifierBuilders) {
+      const builtIdentifier = builder(protocol);
+      if (builtIdentifier) {
+        return builtIdentifier;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't build mapping include identifier: no compatible builder available from plugins`,
+      protocol,
+    );
+  }
+
   visit_Mapping(element: V1_Mapping): void {
     const mapping = this.context.currentSubGraph.getOwnMapping(
       V1_buildFullPath(element.package, element.name),
     );
     const mappingIncludesSet = new Set<string>();
     mapping.includes = element.includedMappings.map((mappingInclude) => {
-      // Identifier that is unique within each mapping include provider
-      const includedMappingIdentifier = mappingInclude.identifier;
-      assertNonEmptyString(
-        includedMappingIdentifier,
-        `Mapping identifier is missing or empty`,
-      );
-      assertTrue(
-        !mappingIncludesSet.has(includedMappingIdentifier),
-        `Duplicated mapping include '${includedMappingIdentifier}' in mapping '${mapping.path}'`,
-      );
-      mappingIncludesSet.add(includedMappingIdentifier);
+      const includedMappingIdentifier = this.getMappingIdentifier(mappingInclude);
+      if (includedMappingIdentifier) {
+        assertTrue(
+          !mappingIncludesSet.has(includedMappingIdentifier),
+          `Duplicated mapping include '${includedMappingIdentifier}' in mapping '${mapping.path}'`,
+        );
+        mappingIncludesSet.add(includedMappingIdentifier);
+      }
       return V1_buildMappingInclude(mappingInclude, this.context, mapping);
     });
     mapping.enumerationMappings = element.enumerationMappings.map(

@@ -107,6 +107,10 @@ export type V1_MappingIncludeProtocolDeserializer = (
   json: PlainObject<V1_MappingInclude>,
 ) => V1_MappingInclude | undefined;
 
+export type V1_MappingIncludeIdentifierBuilder = (
+  protocol: V1_MappingInclude,
+) => string | undefined;
+
 export interface DSL_Mapping_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
   /**
@@ -144,4 +148,6 @@ export interface DSL_Mapping_PureProtocolProcessorPlugin_Extension
   V1_getExtraMappingIncludeProtocolSerializers?(): V1_MappingIncludeProtocolSerializer[];
 
   V1_getExtraMappingIncludeProtocolDeserializers?(): V1_MappingIncludeProtocolDeserializer[];
+
+  V1_getExtraMappingIncludeIdentifierBuilders?(): V1_MappingIncludeIdentifierBuilder[];
 }

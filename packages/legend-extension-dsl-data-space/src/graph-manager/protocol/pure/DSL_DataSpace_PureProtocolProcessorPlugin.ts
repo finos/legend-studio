@@ -91,6 +91,7 @@ import {
   type V1_MappingIncludeProtocolSerializer,
   type V1_MappingIncludeProtocolDeserializer,
   type V1_ExecutionInputCollector,
+  type V1_MappingIncludeIdentifierBuilder,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { V1_MappingIncludeDataSpace } from './v1/model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
@@ -464,6 +465,17 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
       (json: PlainObject<V1_MappingInclude>): V1_MappingInclude | undefined => {
         if (json._type === V1_MAPPING_INCLUDE_DATASPACE_TYPE) {
           return V1_deserializeMappingInclude(json);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraMappingIncludeIdentifierBuilders(): V1_MappingIncludeIdentifierBuilder[] {
+    return [
+      (protocol: V1_MappingInclude): string | undefined => {
+        if (protocol instanceof V1_MappingIncludeDataSpace) {
+          return protocol.includedDataSpace;
         }
         return undefined;
       },

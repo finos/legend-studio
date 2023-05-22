@@ -48,6 +48,7 @@ import {
 import { EnumValueImplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/EnumValueReference.js';
 import type { MappingInclude } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
 import { MappingIncludeMapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingIncludeMapping.js';
+import { INTERNAL__UnknownMappingInclude } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownMappingInclude.js';
 import { SubstituteStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
 import type { SetImplementation } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import { InferableMappingElementRootImplicitValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementRoot.js';
@@ -70,6 +71,7 @@ import {
   type V1_MappingInclude,
   V1_MappingIncludeMapping,
 } from '../../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import { V1_INTERNAL__UnknownMappingInclude } from '../../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 import {
   getAllClassMappings,
@@ -217,7 +219,9 @@ export const V1_buildMappingInclude = (
   context: V1_GraphBuilderContext,
   parentMapping: Mapping,
 ): MappingInclude => {
-  if (mappingInclude instanceof V1_MappingIncludeMapping) {
+  if (mappingInclude instanceof V1_INTERNAL__UnknownMappingInclude) {
+    return new INTERNAL__UnknownMappingInclude(parentMapping)
+  } else if (mappingInclude instanceof V1_MappingIncludeMapping) {
     const includedMapping = new MappingIncludeMapping(
       parentMapping,
       context.resolveMapping(mappingInclude.includedMapping),

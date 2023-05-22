@@ -18,8 +18,6 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 
 export abstract class V1_MappingInclude implements Hashable {
-  abstract get identifier(): string;
-
   abstract get hashCode(): string;
 }
 
@@ -28,10 +26,6 @@ export class V1_MappingIncludeMapping extends V1_MappingInclude {
 
   sourceDatabasePath?: string | undefined;
   targetDatabasePath?: string | undefined;
-
-  get identifier(): string {
-    return this.includedMapping;
-  }
 
   override get hashCode(): string {
     return hashArray([

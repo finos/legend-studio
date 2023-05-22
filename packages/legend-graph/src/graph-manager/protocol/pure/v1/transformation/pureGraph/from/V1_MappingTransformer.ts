@@ -50,6 +50,7 @@ import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../..
 import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import type { InferableMappingElementIdValue } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
 import { MappingIncludeMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingIncludeMapping.js';
+import { INTERNAL__UnknownMappingInclude } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownMappingInclude.js';
 import type { MappingInclude } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
 import {
   type DEPRECATED__MappingTest,
@@ -102,6 +103,7 @@ import {
   type V1_MappingInclude,
   V1_MappingIncludeMapping,
 } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import { V1_EnumerationMapping } from '../../../model/packageableElements/mapping/V1_EnumerationMapping.js';
 import { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping.js';
 import { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer.js';
@@ -470,7 +472,11 @@ const transformMappingInclude = (
   element: MappingInclude,
   context: V1_GraphTransformerContext,
 ): V1_MappingInclude => {
-  if (element instanceof MappingIncludeMapping) {
+  if (element instanceof INTERNAL__UnknownMappingInclude) {
+    const protocol = new V1_INTERNAL__UnknownMappingInclude();
+    protocol.content = element.content;
+    return protocol;
+  } else if (element instanceof MappingIncludeMapping) {
     const mappingInclude = new V1_MappingIncludeMapping();
     mappingInclude.includedMapping =
       element.included.valueForSerialization ?? '';
