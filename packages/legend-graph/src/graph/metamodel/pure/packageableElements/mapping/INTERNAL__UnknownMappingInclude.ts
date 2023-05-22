@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  hashArray,
-  type PlainObject,
-} from '@finos/legend-shared';
+import { hashArray, type PlainObject } from '@finos/legend-shared';
 import type { Mapping } from './Mapping.js';
-import {
-  MappingInclude,
-} from './MappingInclude.js';
-import {
-  INTERNAL__PseudoMapping,
-} from './INTERNAL__PseudoMapping.js';
+import { MappingInclude } from './MappingInclude.js';
+import { INTERNAL__PseudoMapping } from './INTERNAL__PseudoMapping.js';
 import { PackageableElementExplicitReference } from './../PackageableElementReference.js';
 import {
   CORE_HASH_STRUCTURE,

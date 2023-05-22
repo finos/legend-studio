@@ -34,7 +34,7 @@ Mapping model::IncludeMapping
 
 Mapping model::M2MMapping
 (
-  include model::IncludeMapping
+  include mapping model::IncludeMapping
 
   *model::Firm: Pure
   {

@@ -83,16 +83,6 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
     ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP,
   ],
-  // TODO: adjust the next three once engine upconverts grammar directly like studio
-  'DSL_Mapping-basic-class-mapping-extends.pure' : [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-  ],
-  'DSL_Mapping-basic-include-mapping.pure' : [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-  ],
-  'DSL_Mapping-mapping-include-enum-mapping.pure' : [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-  ],
 };
 
 type GrammarRoundtripOptions = {
@@ -368,7 +358,10 @@ describe('Grammar roundtrip test', () => {
 describe('Grammar roundtrip test (without extensions)', () => {
   test.each(cases)('%s', async (testName, filePath, isSkipped) => {
     // Mapping include dataspace does not play nicely without extensions as the dependent XStore Associations will fail
-    if (!isSkipped && basename(filePath) !== 'DSL_DataSpace-mapping-include-dataspace.pure') {
+    if (
+      !isSkipped &&
+      basename(filePath) !== 'DSL_DataSpace-mapping-include-dataspace.pure'
+    ) {
       await checkGrammarRoundtrip(testName, filePath, {
         debug: false,
         noExtensions: true,

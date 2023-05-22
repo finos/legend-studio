@@ -95,7 +95,10 @@ import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packa
 import { PackageableElementExplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
-import { V1_MappingInclude, V1_MappingIncludeMapping } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import {
+  type V1_MappingInclude,
+  V1_MappingIncludeMapping,
+} from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 
 export class V1_ElementSecondPassBuilder
@@ -331,14 +334,15 @@ export class V1_ElementSecondPassBuilder
       return undefined;
     }
     if (protocol instanceof V1_MappingIncludeMapping) {
-        return protocol.includedMapping;
+      return protocol.includedMapping;
     }
-    const extraIncludeMappingIdentifierBuilders = this.context.extensions.plugins.flatMap(
-      (plugin) =>
-        (
-          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
-        ).V1_getExtraMappingIncludeIdentifierBuilders?.() ?? [],
-    );
+    const extraIncludeMappingIdentifierBuilders =
+      this.context.extensions.plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraMappingIncludeIdentifierBuilders?.() ?? [],
+      );
     for (const builder of extraIncludeMappingIdentifierBuilders) {
       const builtIdentifier = builder(protocol);
       if (builtIdentifier) {
@@ -357,7 +361,8 @@ export class V1_ElementSecondPassBuilder
     );
     const mappingIncludesSet = new Set<string>();
     mapping.includes = element.includedMappings.map((mappingInclude) => {
-      const includedMappingIdentifier = this.getMappingIdentifier(mappingInclude);
+      const includedMappingIdentifier =
+        this.getMappingIdentifier(mappingInclude);
       if (includedMappingIdentifier) {
         assertTrue(
           !mappingIncludesSet.has(includedMappingIdentifier),

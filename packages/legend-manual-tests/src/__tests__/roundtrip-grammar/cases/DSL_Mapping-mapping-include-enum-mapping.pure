@@ -30,7 +30,7 @@ Mapping demo::TestEnumMapping
 
 Mapping demo::TestMapping
 (
-  include demo::TestEnumMapping
+  include mapping demo::TestEnumMapping
 
   *demo::TestClass: Pure
   {

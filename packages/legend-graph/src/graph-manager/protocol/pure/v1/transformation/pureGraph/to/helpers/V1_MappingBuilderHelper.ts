@@ -220,7 +220,7 @@ export const V1_buildMappingInclude = (
   parentMapping: Mapping,
 ): MappingInclude => {
   if (mappingInclude instanceof V1_INTERNAL__UnknownMappingInclude) {
-    return new INTERNAL__UnknownMappingInclude(parentMapping)
+    return new INTERNAL__UnknownMappingInclude(parentMapping);
   } else if (mappingInclude instanceof V1_MappingIncludeMapping) {
     const includedMapping = new MappingIncludeMapping(
       parentMapping,

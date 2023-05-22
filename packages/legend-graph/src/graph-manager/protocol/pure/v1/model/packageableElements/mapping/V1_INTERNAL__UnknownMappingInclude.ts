@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  hashArray,
-  type PlainObject,
-} from '@finos/legend-shared';
+import { hashArray, type PlainObject } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   hashObjectWithoutSourceInformation,
