@@ -16,16 +16,16 @@
 
 import type { Store } from '../store/Store.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
-import type { MappingInclude } from './MappingInclude.js';
+import type { MappingIncludeMapping } from './MappingIncludeMapping.js';
 
 export class SubstituteStore {
-  readonly _OWNER: MappingInclude;
+  readonly _OWNER: MappingIncludeMapping;
 
   original: PackageableElementReference<Store>;
   substitute: PackageableElementReference<Store>;
 
   constructor(
-    owner: MappingInclude,
+    owner: MappingIncludeMapping,
     original: PackageableElementReference<Store>,
     substitue: PackageableElementReference<Store>,
   ) {

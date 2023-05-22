@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
+import { hashArray, getNullableFirstEntry } from '@finos/legend-shared';
+import type { SubstituteStore } from './SubstituteStore.js';
+import { MappingInclude } from './MappingInclude.js';
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
-
-export abstract class V1_MappingInclude implements Hashable {
-  abstract get hashCode(): string;
-}
-
-export class V1_MappingIncludeMapping extends V1_MappingInclude {
-  includedMapping!: string;
-
-  sourceDatabasePath?: string | undefined;
-  targetDatabasePath?: string | undefined;
+export class MappingIncludeMapping extends MappingInclude {
+  storeSubstitutions: SubstituteStore[] = [];
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_INCLUDE_MAPPING,
-      this.includedMapping,
-      this.sourceDatabasePath ?? '',
-      this.targetDatabasePath ?? '',
+      this.included.valueForSerialization ?? '',
+      getNullableFirstEntry(this.storeSubstitutions)?.original
+        .valueForSerialization ?? '',
+      getNullableFirstEntry(this.storeSubstitutions)?.substitute
+        .valueForSerialization ?? '',
     ]);
   }
 }

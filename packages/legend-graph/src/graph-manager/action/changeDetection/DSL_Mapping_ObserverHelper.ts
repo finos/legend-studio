@@ -37,6 +37,7 @@ import type { LocalMappingPropertyInfo } from '../../../graph/metamodel/pure/pac
 import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { MappingClass } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingClass.js';
 import type { MappingInclude } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
+import { MappingIncludeMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingIncludeMapping.js';
 import {
   type DEPRECATED__MappingTest,
   type DEPRECATED__InputData,
@@ -733,14 +734,18 @@ export const observe_SubstituteStore = skipObserved(
 
 export const observe_MappingInclude = skipObserved(
   (metamodel: MappingInclude): MappingInclude => {
-    makeObservable(metamodel, {
-      included: observable,
-      storeSubstitutions: observable,
-    });
+    // TODO: handle for mapping include dataspace
+    if (metamodel instanceof MappingIncludeMapping) {
+      makeObservable(metamodel, {
+        included: observable,
+        storeSubstitutions: observable,
+      });
 
-    observe_PackageableElementReference(metamodel.included);
-    metamodel.storeSubstitutions.forEach(observe_SubstituteStore);
+      observe_PackageableElementReference(metamodel.included);
+      metamodel.storeSubstitutions.forEach(observe_SubstituteStore);
 
+      return metamodel;
+    }
     return metamodel;
   },
 );

@@ -283,6 +283,7 @@
       "enumerationMappings": [],
       "includedMappings": [
         {
+          "_type": "mappingIncludeMapping",
           "includedMapping": "model::subMapping"
         }
       ],

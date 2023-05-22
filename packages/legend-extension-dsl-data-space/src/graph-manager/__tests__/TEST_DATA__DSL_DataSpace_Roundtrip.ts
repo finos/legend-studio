@@ -105,4 +105,22 @@ export const TEST_DATA__roundtrip = [
     },
     classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
   },
+  {
+    path: 'test::model::TestMappingWithDataSpaceIncludes',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [
+        {
+          _type: 'mappingIncludeDataSpace',
+          includedDataSpace: 'test::model::TestDataSpace',
+        },
+      ],
+      name: 'TestMappingWithDataSpaceIncludes',
+      package: 'test::model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
 ];

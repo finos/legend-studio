@@ -357,7 +357,11 @@ describe('Grammar roundtrip test', () => {
 
 describe('Grammar roundtrip test (without extensions)', () => {
   test.each(cases)('%s', async (testName, filePath, isSkipped) => {
-    if (!isSkipped) {
+    // Mapping include dataspace does not play nicely without extensions as the dependent XStore Associations will fail
+    if (
+      !isSkipped &&
+      basename(filePath) !== 'DSL_DataSpace-mapping-include-dataspace.pure'
+    ) {
       await checkGrammarRoundtrip(testName, filePath, {
         debug: false,
         noExtensions: true,

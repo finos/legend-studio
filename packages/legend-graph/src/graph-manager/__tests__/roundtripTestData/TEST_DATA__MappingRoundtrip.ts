@@ -358,7 +358,12 @@ export const TEST_DATA__MappingRoundtrip = [
           id: 'TargetTradeTypeMapping2',
         },
       ],
-      includedMappings: [],
+      includedMappings: [
+        {
+          _type: 'mappingIncludeMapping',
+          includedMapping: 'test::tMapping1',
+        },
+      ],
       name: 'tMapping2',
       package: 'test',
       tests: [

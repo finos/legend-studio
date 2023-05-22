@@ -49,6 +49,8 @@ import type { EmbeddedRelationalInstanceSetImplementation } from '../../../../..
 import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
 import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import type { InferableMappingElementIdValue } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
+import { MappingIncludeMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingIncludeMapping.js';
+import { INTERNAL__UnknownMappingInclude } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownMappingInclude.js';
 import type { MappingInclude } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
 import {
   type DEPRECATED__MappingTest,
@@ -97,7 +99,11 @@ import {
   V1_DEPRECATED__RelationalInputData,
 } from '../../../model/packageableElements/mapping/V1_DEPRECATED__MappingTest.js';
 import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer.js';
-import { V1_MappingInclude } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import {
+  type V1_MappingInclude,
+  V1_MappingIncludeMapping,
+} from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import { V1_EnumerationMapping } from '../../../model/packageableElements/mapping/V1_EnumerationMapping.js';
 import { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping.js';
 import { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer.js';
@@ -464,18 +470,42 @@ export const V1_transformMappingTestSuite = (
 
 const transformMappingInclude = (
   element: MappingInclude,
+  context: V1_GraphTransformerContext,
 ): V1_MappingInclude => {
-  const mappingInclude = new V1_MappingInclude();
-  mappingInclude.includedMapping = element.included.valueForSerialization ?? '';
-  mappingInclude.sourceDatabasePath = element.storeSubstitutions.length
-    ? (element.storeSubstitutions[0] as SubstituteStore).original
-        .valueForSerialization ?? ''
-    : undefined;
-  mappingInclude.targetDatabasePath = element.storeSubstitutions.length
-    ? (element.storeSubstitutions[0] as SubstituteStore).substitute
-        .valueForSerialization ?? ''
-    : undefined;
-  return mappingInclude;
+  if (element instanceof INTERNAL__UnknownMappingInclude) {
+    const protocol = new V1_INTERNAL__UnknownMappingInclude();
+    protocol.content = element.content;
+    return protocol;
+  } else if (element instanceof MappingIncludeMapping) {
+    const mappingInclude = new V1_MappingIncludeMapping();
+    mappingInclude.includedMapping =
+      element.included.valueForSerialization ?? '';
+    mappingInclude.sourceDatabasePath = element.storeSubstitutions.length
+      ? (element.storeSubstitutions[0] as SubstituteStore).original
+          .valueForSerialization ?? ''
+      : undefined;
+    mappingInclude.targetDatabasePath = element.storeSubstitutions.length
+      ? (element.storeSubstitutions[0] as SubstituteStore).substitute
+          .valueForSerialization ?? ''
+      : undefined;
+    return mappingInclude;
+  }
+  const extraIncludeMappingTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMappingIncludeTransformers?.() ?? [],
+  );
+  for (const transformer of extraIncludeMappingTransformers) {
+    const mappingInclude = transformer(element, context);
+    if (mappingInclude) {
+      return mappingInclude;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform mapping include: no compatible transformer available from plugins`,
+    element,
+  );
 };
 
 // Class Mapping
@@ -1422,7 +1452,9 @@ export const V1_transformMapping = (
 ): V1_Mapping => {
   const mapping = new V1_Mapping();
   V1_initPackageableElement(mapping, element);
-  mapping.includedMappings = element.includes.map(transformMappingInclude);
+  mapping.includedMappings = element.includes.map((include) =>
+    transformMappingInclude(include, context),
+  );
   mapping.enumerationMappings = element.enumerationMappings.map(
     transformEnumerationMapping,
   );

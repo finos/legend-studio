@@ -83,7 +83,7 @@ test(unitTest('Relational database is loaded properly'), () => {
 
 test(unitTest('Relational Mapping is loaded properly'), () => {
   const graph = graphManagerState.graph;
-  expect(graph.ownMappings).toHaveLength(2);
+  expect(graph.ownMappings).toHaveLength(3);
   const simpleRelationalMapping = graph.getMapping(
     'meta::relational::tests::simpleRelationalMapping',
   );
@@ -146,5 +146,20 @@ test(unitTest('JSON relational type roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     TEST_DATA__JsonRelationalTypeRoundtrip as Entity[],
     pluginManager,
+  );
+});
+
+test(unitTest('Mapping include is backwards compatible with protocol'), () => {
+  const graph = graphManagerState.graph;
+  expect(graph.ownMappings).toHaveLength(3);
+  const simpleRelationalMapping = graph.getMapping(
+    'meta::relational::tests::simpleRelationalMappingWithBackwardCompatibleProtocol',
+  );
+  expect(simpleRelationalMapping.includes).toHaveLength(1);
+  const simpleRelationalMappingInc = guaranteeNonNullable(
+    simpleRelationalMapping.includes[0]?.included.value,
+  );
+  expect(simpleRelationalMappingInc.path).toBe(
+    'meta::relational::tests::simpleRelationalMappingInc',
   );
 });

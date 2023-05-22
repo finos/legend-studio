@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import { type Hashable } from '@finos/legend-shared';
-import type { PackageableElementReference } from '../PackageableElementReference.js';
-import type { Mapping } from './Mapping.js';
+import { hashArray, type PlainObject } from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
+import { V1_MappingInclude } from './V1_MappingInclude.js';
 
-export abstract class MappingInclude implements Hashable {
-  readonly _OWNER: Mapping;
+export class V1_INTERNAL__UnknownMappingInclude extends V1_MappingInclude {
+  content!: PlainObject;
 
-  included: PackageableElementReference<Mapping>;
-
-  constructor(_OWNER: Mapping, included: PackageableElementReference<Mapping>) {
-    this._OWNER = _OWNER;
-    this.included = included;
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_MAPPING_INCLUDE,
+      hashObjectWithoutSourceInformation(this.content),
+    ]);
   }
-
-  abstract get hashCode(): string;
 }

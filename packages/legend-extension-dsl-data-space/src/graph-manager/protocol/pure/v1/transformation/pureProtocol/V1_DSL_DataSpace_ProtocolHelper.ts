@@ -51,6 +51,7 @@ import {
   V1_DataSpaceDiagram,
   V1_DataSpaceElementPointer,
 } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
+import { V1_MappingIncludeDataSpace } from '../../model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
 
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
 const V1_DATA_SPACE_SUPPORT_EMAIL_TYPE = 'email';
@@ -208,3 +209,24 @@ export const V1_deserializeDataSpace = (
   }
   return dataSpace;
 };
+
+// Mapping Include
+export const V1_MAPPING_INCLUDE_DATASPACE_TYPE = 'mappingIncludeDataSpace';
+
+const V1_mappingIncludeDataSpaceModelSchema = createModelSchema(
+  V1_MappingIncludeDataSpace,
+  {
+    _type: usingConstantValueSchema(V1_MAPPING_INCLUDE_DATASPACE_TYPE),
+    includedDataSpace: primitive(),
+  },
+);
+
+export const V1_serializeMappingInclude = (
+  protocol: V1_MappingIncludeDataSpace,
+): PlainObject<V1_MappingIncludeDataSpace> =>
+  serialize(V1_mappingIncludeDataSpaceModelSchema, protocol);
+
+export const V1_deserializeMappingInclude = (
+  json: PlainObject<V1_MappingIncludeDataSpace>,
+): V1_MappingIncludeDataSpace =>
+  deserialize(V1_mappingIncludeDataSpaceModelSchema, json);

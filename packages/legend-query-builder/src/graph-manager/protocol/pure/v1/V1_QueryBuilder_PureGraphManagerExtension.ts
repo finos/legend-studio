@@ -17,7 +17,7 @@
 import {
   EngineRuntime,
   GraphBuilderError,
-  MappingInclude,
+  MappingIncludeMapping,
   V1_GraphBuilderContextBuilder,
   V1_Mapping,
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
@@ -33,6 +33,7 @@ import {
   type V1_EngineRuntime,
   CORE_PURE_PATH,
   getAllIncludedMappings,
+  V1_MappingIncludeMapping,
 } from '@finos/legend-graph';
 import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import {
@@ -41,6 +42,7 @@ import {
   guaranteeNonEmptyString,
   guaranteeType,
   type PlainObject,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { MappingRuntimeCompatibilityAnalysisResult } from '../../../action/analytics/MappingRuntimeCompatibilityAnalysis.js';
 import { ServiceExecutionAnalysisResult } from '../../../action/analytics/ServiceExecutionAnalysis.js';
@@ -93,18 +95,23 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
       v1Mappings.forEach((element) => {
         const mapping = mappings.find((e) => e.path === element.path);
         if (mapping) {
-          mapping.includes = element.includedMappings.map(
-            (mappingInclude) =>
-              new MappingInclude(
-                mapping,
-                context.resolveMapping(
-                  guaranteeNonEmptyString(
-                    mappingInclude.includedMapping,
-                    `Mapping include path is missing or empty`,
+          mapping.includes = element.includedMappings
+            .map((mappingInclude) => {
+              // TODO : handle for mapping include dataspace
+              if (mappingInclude instanceof V1_MappingIncludeMapping) {
+                return new MappingIncludeMapping(
+                  mapping,
+                  context.resolveMapping(
+                    guaranteeNonEmptyString(
+                      mappingInclude.includedMapping,
+                      `Mapping include path is missing or empty`,
+                    ),
                   ),
-                ),
-              ),
-          );
+                );
+              }
+              return undefined;
+            })
+            .filter(isNonNullable);
         }
       });
       // handle runtimes
@@ -194,18 +201,23 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
       .forEach((element) => {
         const mapping = graph.getNullableMapping(element.path);
         if (mapping) {
-          mapping.includes = element.includedMappings.map(
-            (include) =>
-              new MappingInclude(
-                mapping,
-                context.resolveMapping(
-                  guaranteeNonEmptyString(
-                    include.includedMapping,
-                    `Mapping include path is missing or empty`,
+          mapping.includes = element.includedMappings
+            .map((mappingInclude) => {
+              // TODO : handle for mapping include dataspace
+              if (mappingInclude instanceof V1_MappingIncludeMapping) {
+                return new MappingIncludeMapping(
+                  mapping,
+                  context.resolveMapping(
+                    guaranteeNonEmptyString(
+                      mappingInclude.includedMapping,
+                      `Mapping include path is missing or empty`,
+                    ),
                   ),
-                ),
-              ),
-          );
+                );
+              }
+              return undefined;
+            })
+            .filter(isNonNullable);
         }
       });
 
