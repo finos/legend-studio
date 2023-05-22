@@ -37,4 +37,5 @@ export class PrimitiveType extends DataType {
   static readonly DATETIME = new PrimitiveType(PRIMITIVE_TYPE.DATETIME);
   static readonly STRICTTIME = new PrimitiveType(PRIMITIVE_TYPE.STRICTTIME);
   static readonly LATESTDATE = new PrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
+  static readonly BYTE = new PrimitiveType(PRIMITIVE_TYPE.BYTE);
 }

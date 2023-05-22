@@ -57,6 +57,7 @@ export enum PRIMITIVE_TYPE {
   // NOTE: `LatestDate` is a special type that is used for milestoning in store so its used in the body of function and lamdba but never should be exposed to users
   // as such, if there is a day we want to have `LatestDate` in the graph but not exposed to the users
   LATESTDATE = 'LatestDate',
+  BYTE = 'Byte',
 }
 
 export enum ATOMIC_TEST_TYPE {

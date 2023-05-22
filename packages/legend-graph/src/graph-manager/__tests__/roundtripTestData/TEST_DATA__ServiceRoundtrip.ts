@@ -579,6 +579,61 @@ export const TEST_DATA__ServiceRoundtrip = [
     classifierPath: 'meta::legend::service::metamodel::Service',
   },
   {
+    path: 'test::pure::serviceWithByteParam',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: 'this is just for context',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'src',
+                },
+              ],
+              property: 'name',
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              class: 'Byte',
+              multiplicity: {
+                lowerBound: 0,
+              },
+              name: 'src',
+            },
+          ],
+        },
+        mapping: 'test::tMapping',
+        runtime: {
+          _type: 'runtimePointer',
+          runtime: 'test::tRuntime',
+        },
+      },
+      name: 'serviceWithByteParam',
+      owners: [],
+      package: 'test::pure',
+      pattern: 'url/myUrl/',
+      taggedValues: [
+        {
+          tag: {
+            profile: 'meta::pure::profiles::doc',
+            value: 'doc',
+          },
+          value: 'something',
+        },
+      ],
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
+  },
+  {
     path: 'test::pure::tService_Multi',
     content: {
       _type: 'service',
