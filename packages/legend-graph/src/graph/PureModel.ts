@@ -105,6 +105,7 @@ export class CoreModel extends BasicModel {
       PrimitiveType.DATETIME,
       PrimitiveType.STRICTTIME,
       PrimitiveType.LATESTDATE,
+      PrimitiveType.BYTE,
     ].forEach((primitiveType) => {
       this.primitiveTypesIndex.set(primitiveType.path, primitiveType);
       this.setOwnType(primitiveType.path, primitiveType);
