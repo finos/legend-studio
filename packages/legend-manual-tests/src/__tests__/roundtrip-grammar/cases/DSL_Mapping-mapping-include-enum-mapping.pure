@@ -1,11 +1,18 @@
-###Relational
-Database demo::TestDatabase
-(
-  Table DUMMY
-  (
-    TEST VARCHAR(100)
-  )
-)
+###Pure
+Enum demo::TestEnum
+{
+  Value1
+}
+
+Class demo::TestClass
+{
+  testEnum: demo::TestEnum[1];
+}
+
+Class demo::S_testClass
+{
+  testEnum: String[1];
+}
 
 
 ###Mapping
@@ -46,20 +53,3 @@ Mapping demo::TestMapping
     Value1: ['value1']
   }
 )
-
-
-###Pure
-Enum demo::TestEnum
-{
-  Value1
-}
-
-Class demo::TestClass
-{
-  testEnum: demo::TestEnum[1];
-}
-
-Class demo::S_testClass
-{
-  testEnum: String[1];
-}
