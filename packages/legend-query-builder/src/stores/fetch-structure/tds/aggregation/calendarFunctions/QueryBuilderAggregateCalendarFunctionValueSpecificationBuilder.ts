@@ -26,6 +26,7 @@ import {
   PrimitiveType,
   PRIMITIVE_TYPE,
   VariableExpression,
+  type INTERNAL__UnknownValueSpecification,
 } from '@finos/legend-graph';
 import {
   guaranteeType,
@@ -41,7 +42,9 @@ export const buildCalendarFunctionExpression = (
   dateColumn: AbstractPropertyExpression | undefined,
   calendarType: QUERY_BUILDER_CALENDAR_TYPE,
   endDate: PrimitiveInstanceValue,
-  targetColumn: AbstractPropertyExpression,
+  targetColumn:
+    | AbstractPropertyExpression
+    | INTERNAL__UnknownValueSpecification,
 ): ValueSpecification => {
   const expression = new SimpleFunctionExpression(
     extractElementNameFromPath(calendarFunctionFullPath),
@@ -50,7 +53,7 @@ export const buildCalendarFunctionExpression = (
     expression.parametersValues.push(dateColumn);
   } else {
     throw new UnsupportedOperationError(
-      `Please specify date column for calendar Function for column ${targetColumn.func.value.name}`,
+      `Please specify date column for calendar function for column`,
     );
   }
   const calendarTypeParameter = new PrimitiveInstanceValue(
@@ -145,16 +148,6 @@ export const updateAggregateColumnState = (
       )}() expression: only support ${extractElementNameFromPath(
         calendarFunctionFullPath,
       )}() with third parameter of type StrictDate`,
-    );
-
-    guaranteeType(
-      expression.parametersValues[3],
-      AbstractPropertyExpression,
-      `Can't process ${extractElementNameFromPath(
-        calendarFunctionFullPath,
-      )}() expression: only support ${extractElementNameFromPath(
-        calendarFunctionFullPath,
-      )}() fourth parameter as property expression`,
     );
 
     calendarFunction.calendarType = calendarTypeParameter

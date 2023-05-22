@@ -279,10 +279,11 @@ export const appendProjection = (
         const aggregateCalendarLambdaState =
           aggregateColumnState.calendarFunction?.buildCalendarFunctionExpressionFromState(
             aggregateColumnState,
+            columnLambda,
           );
         if (
           queryBuilderState.isCalendarEnabled &&
-          aggregateCalendarLambdaState !== undefined
+          aggregateCalendarLambdaState instanceof SimpleFunctionExpression
         ) {
           aggregateCalendarLambda = buildGenericLambdaFunctionInstanceValue(
             guaranteeNonNullable(aggregateColumnState.calendarFunction)

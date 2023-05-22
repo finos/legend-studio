@@ -40,7 +40,7 @@ import {
   PrimitiveInstanceValue,
   SimpleFunctionExpression,
   type VariableExpression,
-  AbstractPropertyExpression,
+  type AbstractPropertyExpression,
   getMilestoneTemporalStereotype,
   type INTERNAL__PropagatedValue,
   type ValueSpecification,
@@ -141,22 +141,6 @@ const processLetExpression = (
   );
   queryBuilderState.constantState.setShowConstantPanel(true);
   queryBuilderState.constantState.addConstant(constantExpression);
-};
-
-const processCalendarFunction = (
-  expression: SimpleFunctionExpression,
-  queryBuilderState: QueryBuilderState,
-  parentLambda: LambdaFunction,
-): void => {
-  queryBuilderState.isCalendarEnabled = true;
-  assertTrue(
-    expression.parametersValues.length === 4,
-    'Calendar function expected to have four parameters',
-  );
-  processTDSProjectionColumnPropertyExpression(
-    guaranteeType(expression.parametersValues[3], AbstractPropertyExpression),
-    queryBuilderState,
-  );
 };
 
 /**
@@ -297,6 +281,9 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
+        ...Object.values(
+          QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
+        ),
       ])
     ) {
       processTDSProjectionDerivationExpression(
@@ -561,10 +548,16 @@ export class QueryBuilderValueSpecificationProcessor
         Object.values(QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS),
       )
     ) {
-      processCalendarFunction(
+      this.queryBuilderState.isCalendarEnabled = true;
+      assertTrue(
+        valueSpecification.parametersValues.length === 4,
+        'Calendar function expected to have four parameters',
+      );
+      QueryBuilderValueSpecificationProcessor.processChild(
+        guaranteeNonNullable(valueSpecification.parametersValues[3]),
         valueSpecification,
-        this.queryBuilderState,
         this.parentLambda,
+        this.queryBuilderState,
       );
       return;
     }
@@ -590,6 +583,9 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
+        ...Object.values(
+          QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
+        ),
       ])
     ) {
       processTDSProjectionColumnPropertyExpression(

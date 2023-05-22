@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
-import { type Hashable, guaranteeType } from '@finos/legend-shared';
-import type {
+import {
+  type Hashable,
+  guaranteeType,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import {
   AbstractPropertyExpression,
-  PrimitiveInstanceValue,
-  SimpleFunctionExpression,
-  ValueSpecification,
+  INTERNAL__UnknownValueSpecification,
+  LambdaFunctionInstanceValue,
+  type PrimitiveInstanceValue,
+  type SimpleFunctionExpression,
+  type ValueSpecification,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
+  QueryBuilderDerivationProjectionColumnState,
 } from '../projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
 import { computed, makeObservable, observable, action } from 'mobx';
@@ -59,18 +66,43 @@ export abstract class QueryBuilderAggregateCalendarFunction
   ): boolean;
 
   abstract buildCalendarFunctionExpression(
-    propertyExpression: AbstractPropertyExpression,
+    propertyExpression:
+      | AbstractPropertyExpression
+      | INTERNAL__UnknownValueSpecification,
   ): ValueSpecification;
 
   buildCalendarFunctionExpressionFromState(
     aggregateColumnState: QueryBuilderAggregateColumnState,
+    columnLambda: ValueSpecification,
   ): ValueSpecification {
-    return this.buildCalendarFunctionExpression(
-      guaranteeType(
-        aggregateColumnState.projectionColumnState,
-        QueryBuilderSimpleProjectionColumnState,
-      ).propertyExpressionState.propertyExpression,
-    );
+    let targetColumn:
+      | AbstractPropertyExpression
+      | INTERNAL__UnknownValueSpecification
+      | undefined;
+    if (
+      aggregateColumnState.projectionColumnState instanceof
+        QueryBuilderSimpleProjectionColumnState &&
+      columnLambda instanceof LambdaFunctionInstanceValue
+    ) {
+      targetColumn = guaranteeType(
+        columnLambda.values[0]?.expressionSequence[0],
+        AbstractPropertyExpression,
+      );
+    } else if (
+      aggregateColumnState.projectionColumnState instanceof
+      QueryBuilderDerivationProjectionColumnState
+    ) {
+      targetColumn = guaranteeType(
+        columnLambda,
+        INTERNAL__UnknownValueSpecification,
+      );
+    }
+    if (!targetColumn) {
+      throw new UnsupportedOperationError(
+        "Can't build calendar aggregation column: target column should be defined",
+      );
+    }
+    return this.buildCalendarFunctionExpression(targetColumn);
   }
 
   abstract updateAggregateColumnState(
