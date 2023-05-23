@@ -109,6 +109,10 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     };
   }
 
+  override get label(): string | undefined {
+    return `Create Query with DataSpace ${this.dataSpacePath}`;
+  }
+
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
     const dataSpace = getDataSpace(
       this.dataSpacePath,
@@ -237,10 +241,10 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getPersistConfiguration(
+  getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
-  ): Promise<QueryPersistConfiguration> {
+  ): QueryPersistConfiguration {
     return {
       defaultName: options?.update
         ? `${extractElementNameFromPath(this.dataSpacePath)}`

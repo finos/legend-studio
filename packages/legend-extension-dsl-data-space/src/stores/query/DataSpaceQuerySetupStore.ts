@@ -155,8 +155,8 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
     return true;
   }
 
-  override get isSaveActionDisabled(): boolean {
-    return true;
+  override get label(): string | undefined {
+    return undefined;
   }
 
   getProjectInfo(): ProjectGAVCoordinates {
@@ -166,7 +166,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
   getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
-  ): Promise<QueryPersistConfiguration> {
+  ): QueryPersistConfiguration {
     throw new UnsupportedOperationError();
   }
 
