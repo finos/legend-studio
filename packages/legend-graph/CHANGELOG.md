@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 29.0.3
+
+### Patch Changes
+
+- [#2242](https://github.com/finos/legend-studio/pull/2242) [`aaa8b3524`](https://github.com/finos/legend-studio/commit/aaa8b35245878684fc8cb0e04fdafc9afe31e21b) ([@horbe](https://github.com/horbe)) - Support additional and unknown mapping includes
+
+- [#2254](https://github.com/finos/legend-studio/pull/2254) [`7f264ade8`](https://github.com/finos/legend-studio/commit/7f264ade89f9ae12ea151ffb9cdcf01f074b18b9) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Add Byte primitive type.
+
 ## 29.0.2
 
 ## 29.0.1

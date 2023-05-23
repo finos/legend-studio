@@ -1,5 +1,19 @@
 # @finos/legend-query-builder
 
+## 4.0.0
+
+### Major Changes
+
+- [#2234](https://github.com/finos/legend-studio/pull/2234) [`2dfd9339f`](https://github.com/finos/legend-studio/commit/2dfd9339fe1d581492d804319ea05a3405a20754) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** The current `LambdaEditor` component has replaced by a non-inline version of lambda editor that is always in expanded mode; the previous behavior is exposed via `InlineLambdaEditor` component. Also added a flag `autoFocus` to the component to gain focus upon first rendering.
+
+### Patch Changes
+
+- [#2242](https://github.com/finos/legend-studio/pull/2242) [`aaa8b3524`](https://github.com/finos/legend-studio/commit/aaa8b35245878684fc8cb0e04fdafc9afe31e21b) ([@horbe](https://github.com/horbe)) - Support additional and unknown mapping includes
+
+- [#2253](https://github.com/finos/legend-studio/pull/2253) [`250117a21`](https://github.com/finos/legend-studio/commit/250117a217961075ef26d3bd4d5f2fe02104432c) ([@gayathrir11](https://github.com/gayathrir11)) - Support calendar aggregations for derivation columns
+
+- [#2218](https://github.com/finos/legend-studio/pull/2218) [`0180db47e`](https://github.com/finos/legend-studio/commit/0180db47ea6f36070c8d4073cb2fbe7076af2f39) ([@gayathrir11](https://github.com/gayathrir11)) - Show only supported parameter or constant types in derived property editor
+
 ## 3.2.11
 
 ## 3.2.10

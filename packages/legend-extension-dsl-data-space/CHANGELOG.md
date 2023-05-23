@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.0.23
+
+### Patch Changes
+
+- [#2242](https://github.com/finos/legend-studio/pull/2242) [`aaa8b3524`](https://github.com/finos/legend-studio/commit/aaa8b35245878684fc8cb0e04fdafc9afe31e21b) ([@horbe](https://github.com/horbe)) - Add support for `MappingIncludeDataSpace`
+
 ## 10.0.22
 
 ## 10.0.21
