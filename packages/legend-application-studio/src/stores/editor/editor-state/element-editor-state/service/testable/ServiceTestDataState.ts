@@ -22,18 +22,20 @@ import {
   type EmbeddedData,
   type RawLambda,
   type DataElement,
+  type Mapping,
   ConnectionTestData,
   PureSingleExecution,
   PureMultiExecution,
   DatabaseConnection,
   buildLambdaVariableExpressions,
   VariableExpression,
-  PrimitiveType,
-  Enumeration,
   DataElementReference,
   PackageableElementExplicitReference,
   ConnectionPointer,
   reportGraphAnalytics,
+  observe_ValueSpecification,
+  Enumeration,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -42,21 +44,17 @@ import {
   deleteEntry,
   filterByType,
   guaranteeNonNullable,
-  isNonNullable,
   returnUndefOnError,
   getNullableFirstEntry,
   uniq,
+  isNonNullable,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
 import {
   service_addConnectionTestData,
   service_setConnectionTestDataEmbeddedData,
 } from '../../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
-import {
-  createMockEnumerationProperty,
-  createMockPrimitiveProperty,
-} from '../../../../utils/MockDataUtils.js';
 import {
   TEMPORARY__createRelationalDataFromCSV,
   EmbeddedDataConnectionTypeVisitor,
@@ -71,6 +69,15 @@ import {
 import { createEmbeddedData } from '../../data/EmbeddedDataState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import { LegendStudioTelemetryHelper } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
+import {
+  LambdaParameterState,
+  LambdaParametersState,
+  PARAMETER_SUBMIT_ACTION,
+  buildExecutionParameterValues,
+  createMockEnumerationProperty,
+  getExecutionQueryFromRawLambda,
+} from '@finos/legend-query-builder';
+import { createMockPrimitiveProperty } from '../../../../utils/MockDataUtils.js';
 
 const buildTestDataParameters = (
   rawLambda: RawLambda,
@@ -91,12 +98,73 @@ const buildTestDataParameters = (
     })
     .filter(isNonNullable);
 
+export class ServiceTestDataParameterState extends LambdaParametersState {
+  connectionTestDataState: ConnectionTestDataState;
+
+  constructor(connectionTestDataState: ConnectionTestDataState) {
+    super();
+    makeObservable(this, {
+      parameterValuesEditorState: observable,
+      parameterStates: observable,
+      openModal: action,
+      build: action,
+    });
+    this.connectionTestDataState = connectionTestDataState;
+  }
+
+  openModal(serviceExecutionParameters: {
+    query: RawLambda;
+    mapping: Mapping;
+    runtime: Runtime;
+  }): void {
+    this.parameterStates = this.build(serviceExecutionParameters.query);
+    this.parameterValuesEditorState.open(
+      (): Promise<void> =>
+        flowResult(
+          this.connectionTestDataState.generateTestDataForDatabaseConnection(
+            serviceExecutionParameters,
+          ),
+        ).catch(
+          this.connectionTestDataState.editorStore.applicationStore
+            .alertUnhandledError,
+        ),
+      PARAMETER_SUBMIT_ACTION.RUN,
+    );
+  }
+
+  build(query: RawLambda): LambdaParameterState[] {
+    const parameters = buildLambdaVariableExpressions(
+      query,
+      this.connectionTestDataState.editorStore.graphManagerState,
+    )
+      .map((p) =>
+        observe_ValueSpecification(
+          p,
+          this.connectionTestDataState.editorStore.changeDetectionState
+            .observerContext,
+        ),
+      )
+      .filter(filterByType(VariableExpression));
+    const states = parameters.map((p) => {
+      const parmeterState = new LambdaParameterState(
+        p,
+        this.connectionTestDataState.editorStore.changeDetectionState.observerContext,
+        this.connectionTestDataState.editorStore.graphManagerState.graph,
+      );
+      parmeterState.mockParameterValue();
+      return parmeterState;
+    });
+    return states;
+  }
+}
+
 export class ConnectionTestDataState {
   readonly editorStore: EditorStore;
   readonly testDataState: ServiceTestDataState;
   connectionData: ConnectionTestData;
+  parameterState: ServiceTestDataParameterState;
   embeddedEditorState: EmbeddedDataEditorState;
-  generatingTestDataSate = ActionState.create();
+  generatingTestDataState = ActionState.create();
   anonymizeGeneratedData = true;
 
   constructor(
@@ -104,11 +172,13 @@ export class ConnectionTestDataState {
     connectionData: ConnectionTestData,
   ) {
     makeObservable(this, {
-      generatingTestDataSate: observable,
+      generatingTestDataState: observable,
+      parameterState: observable,
       embeddedEditorState: observable,
       anonymizeGeneratedData: observable,
       setAnonymizeGeneratedData: action,
       generateTestData: flow,
+      generateTestDataForDatabaseConnection: flow,
     });
     this.testDataState = testDataState;
     this.editorStore = testDataState.editorStore;
@@ -117,6 +187,7 @@ export class ConnectionTestDataState {
       this.testDataState.editorStore,
       connectionData.testData,
     );
+    this.parameterState = new ServiceTestDataParameterState(this);
   }
   get identifiedConnection(): IdentifiedConnection | undefined {
     return this.getAllIdentifiedConnections().find(
@@ -128,32 +199,50 @@ export class ConnectionTestDataState {
     this.anonymizeGeneratedData = val;
   }
 
-  *generateTestData(): GeneratorFn<void> {
+  *generateTestDataForDatabaseConnection(serviceExecutionParameters: {
+    query: RawLambda;
+    mapping: Mapping;
+    runtime: Runtime;
+  }): GeneratorFn<void> {
     try {
-      this.generatingTestDataSate.inProgress();
-      const connection = guaranteeNonNullable(
-        this.resolveConnectionValue(this.connectionData.connectionId),
-        `Unable to resolve connection ID '${this.connectionData.connectionId}`,
+      this.generatingTestDataState.inProgress();
+      // NOTE: since we don't have a generic mechanism for test-data generation
+      // we will only report metrics around API usage, when we genericize, we will
+      // move this out
+      LegendStudioTelemetryHelper.logEvent_TestDataGenerationLaunched(
+        this.testDataState.editorStore.applicationStore.telemetryService,
       );
-
-      let embeddedData: EmbeddedData;
-      if (connection instanceof DatabaseConnection) {
-        const serviceExecutionParameters = guaranteeNonNullable(
-          this.testDataState.testSuiteState.testableState.serviceEditorState
-            .executionState.serviceExecutionParameters,
-        );
-
-        // NOTE: since we don't have a generic mechanism for test-data generation
-        // we will only report metrics around API usage, when we genericize, we will
-        // move this out
-        LegendStudioTelemetryHelper.logEvent_TestDataGenerationLaunched(
-          this.testDataState.editorStore.applicationStore.telemetryService,
-        );
-        const report = reportGraphAnalytics(
-          this.editorStore.graphManagerState.graph,
-        );
-
-        const value =
+      const report = reportGraphAnalytics(
+        this.editorStore.graphManagerState.graph,
+      );
+      let value;
+      if (
+        this.editorStore.applicationStore.config.options
+          .TEMPORARY__enableTestDataGenerationNewFlow
+      ) {
+        value =
+          (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
+            getExecutionQueryFromRawLambda(
+              serviceExecutionParameters.query,
+              this.parameterState.parameterStates,
+              this.editorStore.graphManagerState,
+            ),
+            [],
+            serviceExecutionParameters.mapping,
+            serviceExecutionParameters.runtime,
+            this.editorStore.graphManagerState.graph,
+            {
+              anonymizeGeneratedData: this.anonymizeGeneratedData,
+              parameterValues: buildExecutionParameterValues(
+                this.parameterState.parameterStates,
+                this.editorStore.graphManagerState,
+              ),
+            },
+            report,
+          )) as string;
+      } else {
+        // TODO: delete this once the backend code is in place
+        value =
           (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
             serviceExecutionParameters.query,
             buildTestDataParameters(
@@ -168,37 +257,93 @@ export class ConnectionTestDataState {
             },
             report,
           )) as string;
-
-        // NOTE: since we don't have a generic mechanism for test-data generation
-        // we will only report metrics around API usage, when we genericize, we will
-        // move this out
-        LegendStudioTelemetryHelper.logEvent_TestDataGenerationSucceeded(
-          this.editorStore.applicationStore.telemetryService,
-          report,
-        );
-
-        embeddedData = TEMPORARY__createRelationalDataFromCSV(value);
-      } else {
-        embeddedData = connection.accept_ConnectionVisitor(
-          new TEMPORARY__EmbeddedDataConnectionVisitor(this.editorStore),
-        );
       }
+      // NOTE: since we don't have a generic mechanism for test-data generation
+      // we will only report metrics around API usage, when we genericize, we will
+      // move this out
+      LegendStudioTelemetryHelper.logEvent_TestDataGenerationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        report,
+      );
       service_setConnectionTestDataEmbeddedData(
         this.connectionData,
-        embeddedData,
+        TEMPORARY__createRelationalDataFromCSV(value),
         this.editorStore.changeDetectionState.observerContext,
       );
       this.embeddedEditorState = new EmbeddedDataEditorState(
         this.testDataState.editorStore,
         this.connectionData.testData,
       );
-      this.generatingTestDataSate.pass();
+      this.generatingTestDataState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
         `Unable to generate test data: ${error.message}`,
       );
-      this.generatingTestDataSate.fail();
+      this.generatingTestDataState.fail();
+    } finally {
+      this.generatingTestDataState.complete();
+    }
+  }
+
+  *generateTestData(): GeneratorFn<void> {
+    try {
+      this.generatingTestDataState.inProgress();
+      const connection = guaranteeNonNullable(
+        this.resolveConnectionValue(this.connectionData.connectionId),
+        `Unable to resolve connection ID '${this.connectionData.connectionId}`,
+      );
+      if (connection instanceof DatabaseConnection) {
+        const serviceExecutionParameters = guaranteeNonNullable(
+          this.testDataState.testSuiteState.testableState.serviceEditorState
+            .executionState.serviceExecutionParameters,
+        );
+        if (
+          this.editorStore.applicationStore.config.options
+            .TEMPORARY__enableTestDataGenerationNewFlow
+        ) {
+          const parameters = (serviceExecutionParameters.query.parameters ??
+            []) as object[];
+          if (parameters.length > 0) {
+            this.parameterState.openModal(serviceExecutionParameters);
+            return;
+          } else {
+            yield flowResult(
+              this.generateTestDataForDatabaseConnection(
+                serviceExecutionParameters,
+              ),
+            );
+          }
+        } else {
+          yield flowResult(
+            this.generateTestDataForDatabaseConnection(
+              serviceExecutionParameters,
+            ),
+          );
+        }
+      } else {
+        // TODO: delete this once the backend code is in place
+        service_setConnectionTestDataEmbeddedData(
+          this.connectionData,
+          connection.accept_ConnectionVisitor(
+            new TEMPORARY__EmbeddedDataConnectionVisitor(this.editorStore),
+          ),
+          this.editorStore.changeDetectionState.observerContext,
+        );
+      }
+      this.embeddedEditorState = new EmbeddedDataEditorState(
+        this.testDataState.editorStore,
+        this.connectionData.testData,
+      );
+      this.generatingTestDataState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to generate test data: ${error.message}`,
+      );
+      this.generatingTestDataState.fail();
+    } finally {
+      this.generatingTestDataState.complete();
     }
   }
 

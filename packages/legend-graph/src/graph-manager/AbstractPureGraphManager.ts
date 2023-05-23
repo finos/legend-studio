@@ -472,6 +472,7 @@ export abstract class AbstractPureGraphManager {
     options?: {
       // Anonymizes data by hashing any string values in the generated data
       anonymizeGeneratedData?: boolean;
+      parameterValues?: ParameterValue[];
     },
     report?: GraphManagerOperationReport,
   ): Promise<string>;

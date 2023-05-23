@@ -2637,6 +2637,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     options?: {
       anonymizeGeneratedData?: boolean;
+      parameterValues?: ParameterValue[];
     },
     _report?: GraphManagerOperationReport,
   ): Promise<string> {
@@ -2654,6 +2655,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runtime,
       V1_PureGraphManager.DEV_PROTOCOL_VERSION,
       testDataGenerationExecuteInput,
+      options?.parameterValues,
     );
     testDataGenerationExecuteInput.parameters = parameters;
     testDataGenerationExecuteInput.hashStrings = Boolean(
