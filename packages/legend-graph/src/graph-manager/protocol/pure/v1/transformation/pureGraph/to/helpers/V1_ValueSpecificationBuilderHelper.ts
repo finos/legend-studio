@@ -38,6 +38,7 @@ import {
   type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
+  SubTypeGraphFetchTree,
   GraphFetchTreeInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
 import { ValueSpecification } from '../../../../../../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
@@ -99,6 +100,7 @@ import {
   KeyExpression,
   KeyExpressionInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
+import { V1_SubTypeGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -691,6 +693,13 @@ export function V1_buildGraphFetchTree(
       openVariables,
       processingContext,
     );
+  } else if (graphFetchTree instanceof V1_SubTypeGraphFetchTree) {
+    return buildSubTypeGraphFetchTree(
+      graphFetchTree,
+      context,
+      openVariables,
+      processingContext,
+    );
   }
   throw new UnsupportedOperationError(
     `Can't build graph fetch tree`,
@@ -791,7 +800,7 @@ function buildRootGraphFetchTree(
   processingContext: V1_ProcessingContext,
 ): RootGraphFetchTree {
   const _class = context.resolveClass(rootGraphFetchTree.class);
-  const children = rootGraphFetchTree.subTrees.map((subTree) =>
+  const subTreeChildren = rootGraphFetchTree.subTrees.map((subTree) =>
     V1_buildGraphFetchTree(
       subTree,
       context,
@@ -800,9 +809,42 @@ function buildRootGraphFetchTree(
       processingContext,
     ),
   );
+  const subTypeTreeChildren = rootGraphFetchTree.subTypeTrees.map(
+    (subTypeTree) =>
+      buildSubTypeGraphFetchTree(
+        subTypeTree,
+        context,
+        openVariables,
+        processingContext,
+      ),
+  );
   const _rootGraphFetchTree = new RootGraphFetchTree(
     PackageableElementExplicitReference.create(_class.value),
   );
-  _rootGraphFetchTree.subTrees = children;
+  _rootGraphFetchTree.subTrees = subTreeChildren;
+  _rootGraphFetchTree.subTypeTrees = subTypeTreeChildren;
   return _rootGraphFetchTree;
+}
+
+function buildSubTypeGraphFetchTree(
+  subTypeGraphFetchTree: V1_SubTypeGraphFetchTree,
+  context: V1_GraphBuilderContext,
+  openVariables: string[],
+  processingContext: V1_ProcessingContext,
+): SubTypeGraphFetchTree {
+  const subTypeClass = context.resolveClass(subTypeGraphFetchTree.subTypeClass);
+  const children = subTypeGraphFetchTree.subTrees.map((subTree) =>
+    V1_buildGraphFetchTree(
+      subTree,
+      context,
+      subTypeClass.value,
+      openVariables,
+      processingContext,
+    ),
+  );
+  const _subTypeGraphFetchTree = new SubTypeGraphFetchTree(
+    PackageableElementExplicitReference.create(subTypeClass.value),
+  );
+  _subTypeGraphFetchTree.subTrees = children;
+  return _subTypeGraphFetchTree;
 }

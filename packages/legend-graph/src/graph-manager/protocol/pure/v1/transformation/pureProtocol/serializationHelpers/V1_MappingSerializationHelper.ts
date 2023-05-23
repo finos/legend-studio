@@ -267,8 +267,8 @@ const rootRelationalClassMappingModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.ROOT_RELATIONAL),
     class: primitive(),
-    extendsClassMappingId: optional(primitive()),
     distinct: primitive(),
+    extendsClassMappingId: optional(primitive()),
     filter: usingModelSchema(V1_filterMappingModelSchema),
     groupBy: customList(
       V1_serializeRelationalOperationElement,
