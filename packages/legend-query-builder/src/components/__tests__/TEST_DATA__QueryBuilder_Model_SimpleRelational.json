@@ -1,0 +1,415 @@
+[
+  {
+    "path": "my::Firm",
+    "content": {
+      "_type": "class",
+      "name": "Firm",
+      "package": "my",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "legalName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "employee",
+          "type": "my::employee"
+        }
+      ],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "property",
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "this",
+                  "sourceInformation": {
+                    "endColumn": 41,
+                    "endLine": 26,
+                    "sourceId": "",
+                    "startColumn": 37,
+                    "startLine": 26
+                  }
+                }
+              ],
+              "property": "employee",
+              "sourceInformation": {
+                "endColumn": 50,
+                "endLine": 26,
+                "sourceId": "",
+                "startColumn": 43,
+                "startLine": 26
+              }
+            }
+          ],
+          "name": "derivedProp",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "StrictDate",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "name": "date",
+              "sourceInformation": {
+                "endColumn": 33,
+                "endLine": 26,
+                "sourceId": "",
+                "startColumn": 15,
+                "startLine": 26
+              }
+            }
+          ],
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "returnType": "my::employee"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "meta::pure::profiles::temporal",
+          "value": "businesstemporal"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "my::employee",
+    "content": {
+      "_type": "class",
+      "name": "employee",
+      "package": "my",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Integer"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "meta::pure::profiles::temporal",
+          "value": "businesstemporal"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "my::db",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [
+        {
+          "name": "Firm_Person",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "FIRMID",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              },
+              {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "db",
+      "package": "my",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "NAME",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Char",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "FIRMID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "name": "PersonTable",
+              "primaryKey": []
+            },
+            {
+              "columns": [
+                {
+                  "name": "FIRMNAME",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Char",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "name": "FirmTable",
+              "primaryKey": []
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "my::map",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "my::Firm",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "my::db",
+            "mainTableDb": "my::db",
+            "schema": "default",
+            "table": "FirmTable"
+          },
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::Firm",
+                "property": "legalName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "FIRMNAME",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::Firm",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::Firm",
+                "property": "employee"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "my::db",
+                    "name": "Firm_Person"
+                  }
+                ]
+              },
+              "target": "my_employee"
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "my::employee",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "my::db",
+            "mainTableDb": "my::db",
+            "schema": "default",
+            "table": "PersonTable"
+          },
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::employee",
+                "property": "name"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "NAME",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::employee",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "map",
+      "package": "my",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "my::runtime",
+    "content": {
+      "_type": "runtime",
+      "name": "runtime",
+      "package": "my",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "my::db",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "RelationalDatabaseConnection",
+                  "authenticationStrategy": {
+                    "_type": "h2Default"
+                  },
+                  "databaseType": "H2",
+                  "datasourceSpecification": {
+                    "_type": "h2Local"
+                  },
+                  "element": "my::db",
+                  "type": "H2"
+                },
+                "id": "connection_1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "my::map",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    "classifierPath": "meta::pure::runtime::PackageableRuntime"
+  }
+]

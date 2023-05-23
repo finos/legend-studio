@@ -1159,3 +1159,38 @@ export const TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection = {
     },
   ],
 };
+
+export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalResult = {
+  mappedEntities: [
+    {
+      path: 'my::Firm',
+      properties: [
+        { _type: 'entity', entityPath: 'my::employee', name: 'employee' },
+        { _type: 'MappedProperty', name: 'id' },
+        { _type: 'MappedProperty', name: 'legalName' },
+        { _type: 'entity', entityPath: 'my::employee', name: 'derivedProp' },
+      ],
+    },
+    {
+      path: 'my::employee',
+      properties: [
+        { _type: 'MappedProperty', name: 'id' },
+        { _type: 'MappedProperty', name: 'name' },
+      ],
+    },
+    {
+      path: 'my_Firm_milestoning',
+      properties: [
+        { _type: 'MappedProperty', name: 'from' },
+        { _type: 'MappedProperty', name: 'thru' },
+      ],
+    },
+    {
+      path: 'my_employee_milestoning',
+      properties: [
+        { _type: 'MappedProperty', name: 'from' },
+        { _type: 'MappedProperty', name: 'thru' },
+      ],
+    },
+  ],
+};
