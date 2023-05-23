@@ -52,6 +52,11 @@ import {
   PrimitiveType,
   V1_CStrictDate,
   V1_CString,
+  CORE_PURE_PATH,
+  FunctionType,
+  LambdaFunction,
+  LambdaFunctionInstanceValue,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   QUERY_BUILDER_PURE_PATH,
@@ -91,81 +96,41 @@ const buildProjectionColumnLambda = (
   let currentPropertyExpression: V1_ValueSpecification = valueSpecification
     .body[0] as V1_ValueSpecification;
 
-  // calendar
-  if (
-    currentPropertyExpression instanceof V1_AppliedFunction &&
-    matchFunctionName(
-      currentPropertyExpression.function,
-      Object.values(QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS),
-    )
-  ) {
+  assertType(
+    currentPropertyExpression,
+    V1_AppliedProperty,
+    `Can't build projection column: only support lambda body as property expression`,
+  );
+  while (currentPropertyExpression instanceof V1_AppliedProperty) {
     assertTrue(
-      currentPropertyExpression.parameters.length === 4,
-      `Can't build projection column: only support calendar function with four parameters`,
-    );
-    assertType(
-      currentPropertyExpression.parameters[0],
-      V1_AppliedProperty,
-      `Can't build projection column: only support first parameter of calendar function as property expression`,
-    );
-    const calendarType = guaranteeType(
-      currentPropertyExpression.parameters[1],
-      V1_CString,
-      `Can't build projection column: only support second parameter of calendar function as String`,
-    );
-    assertTrue(
-      Object.values(QUERY_BUILDER_CALENDAR_TYPE).find(
-        (val) => val === calendarType.value,
-      ) !== undefined,
-      `Can't build projection column: ${calendarType.value} is not a supported calendar type`,
-    );
-    guaranteeType(
-      currentPropertyExpression.parameters[2],
-      V1_CStrictDate,
-      `Can't build projection column: only support third parameter of calendar function as StrictDate`,
-    );
-    assertType(
-      currentPropertyExpression.parameters[3],
-      V1_AppliedProperty,
-      `Can't build projection column: only support fourth parameter of calendar function as property expression`,
-    );
-  } else {
-    assertType(
-      currentPropertyExpression,
-      V1_AppliedProperty,
+      currentPropertyExpression.parameters.length >= 1,
       `Can't build projection column: only support lambda body as property expression`,
     );
-    while (currentPropertyExpression instanceof V1_AppliedProperty) {
-      assertTrue(
-        currentPropertyExpression.parameters.length >= 1,
-        `Can't build projection column: only support lambda body as property expression`,
-      );
+    currentPropertyExpression = currentPropertyExpression
+      .parameters[0] as V1_ValueSpecification;
+    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+    // $x.employees->subType(@Person)->subType(@Staff)
+    while (
+      currentPropertyExpression instanceof V1_AppliedFunction &&
+      matchFunctionName(
+        currentPropertyExpression.function,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
       currentPropertyExpression = currentPropertyExpression
         .parameters[0] as V1_ValueSpecification;
-      // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
-      // $x.employees->subType(@Person)->subType(@Staff)
-      while (
-        currentPropertyExpression instanceof V1_AppliedFunction &&
-        matchFunctionName(
-          currentPropertyExpression.function,
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
-        )
-      ) {
-        currentPropertyExpression = currentPropertyExpression
-          .parameters[0] as V1_ValueSpecification;
-      }
     }
-    // check lambda variable and parameter match
-    assertType(
-      currentPropertyExpression,
-      V1_Variable,
-      `Can't build projection column: only support lambda body as property expression`,
-    );
-    assertTrue(
-      columnLambdaParameter.name === currentPropertyExpression.name,
-      `Can't build column lambda: expects variable used in lambda body '${currentPropertyExpression.name}' to match lambda parameter '${columnLambdaParameter.name}'`,
-    );
   }
+  // check lambda variable and parameter match
+  assertType(
+    currentPropertyExpression,
+    V1_Variable,
+    `Can't build projection column: only support lambda body as property expression`,
+  );
+  assertTrue(
+    columnLambdaParameter.name === currentPropertyExpression.name,
+    `Can't build column lambda: expects variable used in lambda body '${currentPropertyExpression.name}' to match lambda parameter '${columnLambdaParameter.name}'`,
+  );
   return valueSpecification.accept_ValueSpecificationVisitor(
     new V1_ValueSpecificationBuilder(
       compileContext,
@@ -173,6 +138,138 @@ const buildProjectionColumnLambda = (
       openVariables,
     ),
   );
+};
+
+const buildCalendarFunctionExpression = (
+  valueSpecification: V1_ValueSpecification,
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): ValueSpecification => {
+  assertType(
+    valueSpecification,
+    V1_Lambda,
+    `Can't build calendar aggregation column: only support lambda`,
+  );
+
+  // lambda parameter
+  assertTrue(
+    valueSpecification.parameters.length === 1,
+    `Can't build calendar aggregation column: only support lambda with 1 parameter`,
+  );
+
+  // lambda body
+  assertTrue(
+    valueSpecification.body.length === 1,
+    `Can't build calendar aggregation column: only support lambda body with 1 expression`,
+  );
+  const columnLambdaParameter = guaranteeType(
+    valueSpecification.parameters[0],
+    V1_Variable,
+    `Can't build calendar aggregation column: only support lambda with 1 parameter`,
+  );
+  const currentPropertyExpression = guaranteeType(
+    valueSpecification.body[0],
+    V1_AppliedFunction,
+    `Can't build calendar aggregation column: only support applied function`,
+  );
+  assertTrue(
+    matchFunctionName(
+      currentPropertyExpression.function,
+      Object.values(QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS),
+    ),
+    `Can't build calendar aggregation columnn: unsupported calenddar function`,
+  );
+
+  assertTrue(
+    currentPropertyExpression.parameters.length === 4,
+    `Can't build calendar aggregation column: only support calendar function with four parameters`,
+  );
+  assertType(
+    currentPropertyExpression.parameters[0],
+    V1_AppliedProperty,
+    `Can't build calendar aggregation column: only support first parameter of calendar function as property expression`,
+  );
+  const calendarType = guaranteeType(
+    currentPropertyExpression.parameters[1],
+    V1_CString,
+    `Can't build calendar aggregation column: only support second parameter of calendar function as String`,
+  );
+  assertTrue(
+    Object.values(QUERY_BUILDER_CALENDAR_TYPE).find(
+      (val) => val === calendarType.value,
+    ) !== undefined,
+    `Can't build calendar aggregation column: ${calendarType.value} is not a supported calendar type`,
+  );
+  guaranteeType(
+    currentPropertyExpression.parameters[2],
+    V1_CStrictDate,
+    `Can't build calendar aggregation column: only support third parameter of calendar function as StrictDate`,
+  );
+  const dateColumn =
+    currentPropertyExpression.parameters[0].accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+  const calendarTypeValueSpec = guaranteeNonNullable(
+    currentPropertyExpression.parameters[1],
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  const endDate = guaranteeNonNullable(
+    currentPropertyExpression.parameters[2],
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  const columnLambda = guaranteeNonNullable(
+    currentPropertyExpression.parameters[3],
+  );
+  const targetColumn =
+    returnUndefOnError(() =>
+      columnLambda.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          compileContext,
+          processingContext,
+          openVariables,
+        ),
+      ),
+    ) ??
+    new INTERNAL__UnknownValueSpecification(
+      V1_serializeValueSpecification(
+        columnLambda,
+        compileContext.extensions.plugins,
+      ),
+    );
+  const calendarFunctionExpression = V1_buildBaseSimpleFunctionExpression(
+    [dateColumn, calendarTypeValueSpec, endDate, targetColumn],
+    currentPropertyExpression.function,
+    compileContext,
+  );
+  const functionInstanceValue = new LambdaFunctionInstanceValue();
+  const functionType = new FunctionType(
+    PackageableElementExplicitReference.create(
+      compileContext.graph.getType(CORE_PURE_PATH.ANY),
+    ),
+    Multiplicity.ONE,
+  );
+  functionType.parameters.push(
+    new VariableExpression(columnLambdaParameter.name, Multiplicity.ONE),
+  );
+  const lambdaFunction = new LambdaFunction(functionType);
+  lambdaFunction.expressionSequence = [calendarFunctionExpression];
+  functionInstanceValue.values.push(lambdaFunction);
+  return functionInstanceValue;
 };
 
 const buildAggregationExpression = (
@@ -205,21 +302,46 @@ const buildAggregationExpression = (
     V1_Lambda,
     `Can't build agg() expression: agg() expects argument #1 as a lambda`,
   );
-  const processedColumnLambda =
-    returnUndefOnError(() =>
-      buildProjectionColumnLambda(
-        columnLambda,
-        openVariables,
-        compileContext,
-        processingContext,
-      ),
-    ) ??
-    new INTERNAL__UnknownValueSpecification(
-      V1_serializeValueSpecification(
-        columnLambda,
-        compileContext.extensions.plugins,
-      ),
-    );
+  let processedColumnLambda;
+  if (
+    columnLambda.body[0] instanceof V1_AppliedFunction &&
+    matchFunctionName(
+      columnLambda.body[0].function,
+      Object.values(QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS),
+    )
+  ) {
+    processedColumnLambda =
+      returnUndefOnError(() =>
+        buildCalendarFunctionExpression(
+          columnLambda,
+          openVariables,
+          compileContext,
+          processingContext,
+        ),
+      ) ??
+      new INTERNAL__UnknownValueSpecification(
+        V1_serializeValueSpecification(
+          columnLambda,
+          compileContext.extensions.plugins,
+        ),
+      );
+  } else {
+    processedColumnLambda =
+      returnUndefOnError(() =>
+        buildProjectionColumnLambda(
+          columnLambda,
+          openVariables,
+          compileContext,
+          processingContext,
+        ),
+      ) ??
+      new INTERNAL__UnknownValueSpecification(
+        V1_serializeValueSpecification(
+          columnLambda,
+          compileContext.extensions.plugins,
+        ),
+      );
+  }
 
   // aggregate lambda
   const aggregateLambda = guaranteeType(

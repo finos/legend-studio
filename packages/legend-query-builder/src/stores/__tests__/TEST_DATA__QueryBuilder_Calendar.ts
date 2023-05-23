@@ -240,6 +240,187 @@ export const TEST_DATA__simpleProjectionWithCalendarAggregation = {
   parameters: [],
 };
 
+export const TEST_DATA__simpleDerivationWithCalendarAggregation = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'groupBy',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'test::Employee',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'p',
+                    },
+                  ],
+                  property: 'hireDate',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'p',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'func',
+              function: 'agg',
+              parameters: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'cme',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'p',
+                            },
+                          ],
+                          property: 'hireDate',
+                        },
+                        {
+                          _type: 'string',
+                          value: 'LDN',
+                        },
+                        {
+                          _type: 'strictDate',
+                          value: '2022-11-16',
+                        },
+                        {
+                          _type: 'lambda',
+                          body: [
+                            {
+                              _type: 'func',
+                              function: 'plus',
+                              parameters: [
+                                {
+                                  _type: 'collection',
+                                  multiplicity: {
+                                    lowerBound: 2,
+                                    upperBound: 2,
+                                  },
+                                  values: [
+                                    {
+                                      _type: 'property',
+                                      parameters: [
+                                        {
+                                          _type: 'var',
+                                          name: 'p',
+                                        },
+                                      ],
+                                      property: 'fteFactor',
+                                    },
+                                    {
+                                      _type: 'integer',
+                                      value: 1,
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'p',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'p',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'sum',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'y',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'y',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'includedDate',
+            },
+            {
+              _type: 'string',
+              value: 'ytd',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__ModelCoverageAnalysisResult_Calendar = {
   mappedEntities: [
     {

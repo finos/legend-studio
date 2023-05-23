@@ -19,6 +19,7 @@ import {
   type ValueSpecification,
   type SimpleFunctionExpression,
   type AbstractPropertyExpression,
+  type INTERNAL__UnknownValueSpecification,
 } from '@finos/legend-graph';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
 import {
@@ -65,7 +66,7 @@ export class QueryBuilderAggregateCalendarFunction_Cw_Fm
   }
 
   buildCalendarFunctionExpression(
-    p: AbstractPropertyExpression,
+    p: AbstractPropertyExpression | INTERNAL__UnknownValueSpecification,
   ): ValueSpecification {
     return buildCalendarFunctionExpression(
       QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS.CALENDAR_CW_FM,

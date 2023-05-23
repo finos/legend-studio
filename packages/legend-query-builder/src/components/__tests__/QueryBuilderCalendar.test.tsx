@@ -18,11 +18,12 @@ import { test, expect } from '@jest/globals';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import TEST_DATA_SimpleCalendarModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Calendar.json';
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
-import { integrationTest } from '@finos/legend-shared/test';
+import { createMock, integrationTest } from '@finos/legend-shared/test';
 import { waitFor, getAllByText } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_Calendar,
+  TEST_DATA__simpleDerivationWithCalendarAggregation,
   TEST_DATA__simpleProjectionWithCalendarAggregation,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Calendar.js';
 import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/explorer/QueryBuilderExplorerState.js';
@@ -31,6 +32,11 @@ import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponent
 import { QUERY_BUILDER_CALENDAR_TYPE } from '../../graph-manager/QueryBuilderConst.js';
 import { QueryBuilderAggregateCalendarFunction_Ytd } from '../../stores/fetch-structure/tds/aggregation/calendarFunctions/QueryBuilderAggregateCalendarFunction_Ytd.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { QueryBuilderAggregateCalendarFunction_Cme } from '../../stores/fetch-structure/tds/aggregation/calendarFunctions/QueryBuilderAggregateCalendarFunction_Cme.js';
+import {
+  MockedMonacoEditorInstance,
+  MockedMonacoEditorAPI,
+} from '@finos/legend-lego/code-editor/test';
 
 test(
   integrationTest(
@@ -172,5 +178,86 @@ test(
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction,
     ).toBeUndefined();
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with calendar aggregation having derivation column',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA_SimpleCalendarModel,
+      stub_RawLambda(),
+      'test::mapping',
+      'test::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_Calendar,
+    );
+    const employeeClass =
+      queryBuilderState.graphManagerState.graph.getClass('test::Employee');
+    await act(async () => {
+      queryBuilderState.changeClass(employeeClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Employee'));
+    await waitFor(() => getAllByText(queryBuilderSetup, 'mapping'));
+    const treeData = guaranteeNonNullable(
+      queryBuilderState.explorerState.treeData,
+    );
+    const rootNode = guaranteeType(
+      treeData.nodes.get(treeData.rootIds[0] as string),
+      QueryBuilderExplorerTreeRootNodeData,
+    );
+
+    expect(rootNode.mappingData.mapped).toBe(true);
+
+    // mock monaco editor
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+    MockedMonacoEditorAPI.removeAllMarkers.mockReturnValue(null);
+    MockedMonacoEditorInstance.onDidFocusEditorWidget.mockReturnValue(null);
+    const MOCK__pureCodeToLambda = createMock();
+    const MOCK__lambdaToPureCode = createMock();
+    queryBuilderState.graphManagerState.graphManager.pureCodeToLambda =
+      MOCK__pureCodeToLambda;
+    queryBuilderState.graphManagerState.graphManager.lambdasToPureCode =
+      MOCK__lambdaToPureCode;
+    const mockValue = new Map<string, string>();
+    mockValue.set('query-builder', 'test');
+    MOCK__lambdaToPureCode.mockResolvedValue(mockValue);
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleDerivationWithCalendarAggregation.parameters,
+          TEST_DATA__simpleDerivationWithCalendarAggregation.body,
+        ),
+      );
+    });
+
+    const tdsStateOne = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    // check calendar aggregation function
+    expect(tdsStateOne.aggregationState.columns.length).toBe(1);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction,
+    ).toBeDefined();
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
+    ).toBe(QUERY_BUILDER_CALENDAR_TYPE.LDN);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
+        QueryBuilderAggregateCalendarFunction_Cme,
+    ).toBe(true);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
+        ?.func.value.name,
+    ).toBe('hireDate');
   },
 );

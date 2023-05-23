@@ -124,6 +124,11 @@ import {
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
 } from '../__test-utils__/QueryBuilderStateTestUtils.js';
+import TEST_DATA_SimpleCalendarModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Calendar.json';
+import {
+  TEST_DATA__simpleDerivationWithCalendarAggregation,
+  TEST_DATA__simpleProjectionWithCalendarAggregation,
+} from './TEST_DATA__QueryBuilder_Calendar.js';
 
 type RoundtripTestCase = [
   string,
@@ -172,6 +177,10 @@ const bindingM2MCtx = {
 
 const identitfyM2MCtx = {
   entities: TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M,
+};
+
+const calendarAggregationCtx = {
+  entities: TEST_DATA_SimpleCalendarModel,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -595,6 +604,18 @@ const cases: RoundtripTestCase[] = [
     'Simple externalize() on graphfetchChecked()',
     bindingM2MCtx,
     TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
+    undefined,
+  ],
+  [
+    'Simple relational projection column with calendar aggregation',
+    calendarAggregationCtx,
+    TEST_DATA__simpleProjectionWithCalendarAggregation,
+    undefined,
+  ],
+  [
+    'Simple relational derivation column with calendar aggregation',
+    calendarAggregationCtx,
+    TEST_DATA__simpleDerivationWithCalendarAggregation,
     undefined,
   ],
 ];
