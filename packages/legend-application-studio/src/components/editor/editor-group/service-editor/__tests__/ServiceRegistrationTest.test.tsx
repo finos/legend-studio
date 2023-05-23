@@ -218,9 +218,9 @@ test(
     const versions = MOCK__editorStore.sdlcState.projectPublishedVersions;
     expect(versions).toHaveLength(4);
     // TODO: rewrite how we test 'dropdown', once the issue of the dropdown options not showing is resolved
-    // since `int` is the first env in the config list, it is expected to be selected by default
+    // Test default service execution server to `dev`
     // we will then change env from `int` to `prod`
-    await waitFor(() => getByText(registrationEditor, 'INT'));
+    await waitFor(() => getByText(registrationEditor, 'DEV'));
 
     await act(async () => {
       registrationState.updateEnv('prod');

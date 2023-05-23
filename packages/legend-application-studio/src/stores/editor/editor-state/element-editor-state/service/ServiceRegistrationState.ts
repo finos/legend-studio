@@ -26,7 +26,6 @@ import {
   assertNonEmptyString,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  getNullableFirstEntry,
   assertTrue,
   URL_SEPARATOR,
   filterByType,
@@ -53,6 +52,11 @@ import { compareSemVerVersions } from '@finos/legend-storage';
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
 const PROD_SERVICE_EXECUTION_SERVER = 'PROD';
+
+enum ServiceExecutionServerMode {
+  PROD = 'PROD',
+  DEV = 'DEV',
+}
 
 export const PROJECT_SEMANTIC_VERSION_PATTERN = /^[0-9]*.[0-9]*.[0-9]*$/;
 
@@ -221,7 +225,9 @@ export class ServiceConfigState {
   }
 
   initialize(): void {
-    this.serviceEnv = getNullableFirstEntry(this.registrationOptions)?.env;
+    this.serviceEnv = this.registrationOptions
+      .filter((op) => op.env.toUpperCase() === ServiceExecutionServerMode.DEV)
+      .at(0)?.env;
     this.serviceExecutionMode = this.executionModes[0];
     this.updateVersion();
   }
