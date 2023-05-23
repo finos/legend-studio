@@ -21,6 +21,7 @@ import {
   flowResult,
   makeObservable,
   observable,
+  override,
 } from 'mobx';
 import {
   type GeneratorFn,
@@ -34,12 +35,12 @@ import {
   StopWatch,
   guaranteeType,
   quantifyList,
+  assertNonNullable,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
   type RawLambda,
   GraphManagerState,
-  toLightQuery,
   Query,
   PureExecution,
   PackageableElementExplicitReference,
@@ -52,6 +53,7 @@ import {
   createGraphBuilderReport,
   LegendSDLC,
   QuerySearchSpecification,
+  toLightQuery,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -149,241 +151,65 @@ export interface QueryPersistConfiguration {
   decorator: ((query: Query) => void) | undefined;
 }
 
-export class QuerySaveAsState {
+export class QueryCreatorState {
   readonly editorStore: QueryEditorStore;
-  readonly queryBuilderState: QueryBuilderState;
   readonly createQueryState = ActionState.create();
-
-  lambda: RawLambda;
   queryName: string;
-  allowUpdate = false;
-  onQueryUpdate?: ((query: Query) => void) | undefined;
-  decorator?: ((query: Query) => void) | undefined;
+  showCreateModal = false;
 
-  constructor(
-    editorStore: QueryEditorStore,
-    queryBuilderState: QueryBuilderState,
-    lambda: RawLambda,
-    config: QueryPersistConfiguration,
-  ) {
+  constructor(editorStore: QueryEditorStore, queryName: string | undefined) {
     makeObservable(this, {
       queryName: observable,
-      allowPersist: computed,
+      showCreateModal: observable,
+      createQueryState: observable,
       setQueryName: action,
+      setShowCreateModal: action,
       createQuery: flow,
     });
-
     this.editorStore = editorStore;
-    this.queryBuilderState = queryBuilderState;
-    this.lambda = lambda;
-    this.allowUpdate = config.allowUpdate ?? false;
-    this.queryName = config.defaultName ?? 'New Query';
-    this.decorator = config.decorator;
-    this.onQueryUpdate = config.onQueryUpdate;
+    this.queryName = queryName ?? 'New Query';
   }
 
   setQueryName(val: string): void {
     this.queryName = val;
   }
 
-  get allowPersist(): boolean {
-    return (
-      !this.createQueryState.isInProgress &&
-      Boolean(this.queryBuilderState.mapping) &&
-      this.queryBuilderState.runtimeValue instanceof RuntimePointer
-    );
+  setShowCreateModal(val: boolean): void {
+    this.showCreateModal = val;
   }
 
-  *createQuery(createNew: boolean): GeneratorFn<void> {
-    if (
-      this.editorStore.isSaveActionDisabled ||
-      !this.queryBuilderState.mapping ||
-      !(this.queryBuilderState.runtimeValue instanceof RuntimePointer)
-    ) {
-      return;
-    }
-    this.createQueryState.inProgress();
-    const query = new Query();
-    query.name = this.queryName;
-    query.mapping = PackageableElementExplicitReference.create(
-      this.queryBuilderState.mapping,
-    );
-    query.runtime = this.queryBuilderState.runtimeValue.packageableRuntime;
-    this.decorator?.(query);
+  *createQuery(): GeneratorFn<void> {
     try {
-      query.content =
-        (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
-          this.lambda,
-        )) as string;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-        error,
+      const queryBuilderState = guaranteeNonNullable(
+        this.editorStore.queryBuilderState,
+        'Query builder state required to build query to edit',
       );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.createQueryState.reset();
-      return;
-    }
-
-    try {
-      if (createNew) {
-        query.id = uuid();
-        const newQuery =
-          (yield this.editorStore.graphManagerState.graphManager.createQuery(
-            query,
-            this.editorStore.graphManagerState.graph,
-          )) as Query;
-        this.editorStore.applicationStore.notificationService.notifySuccess(
-          `Successfully created query!`,
-        );
-
-        LegendQueryEventHelper.notify_QueryCreateSucceeded(
-          this.editorStore.applicationStore.eventService,
-          { queryId: newQuery.id },
-        );
-
-        LegendQueryTelemetryHelper.logEvent_CreateQuerySucceeded(
-          this.editorStore.applicationStore.telemetryService,
-          {
-            query: {
-              id: query.id,
-              name: query.name,
-              groupId: query.groupId,
-              artifactId: query.artifactId,
-              versionId: query.versionId,
-            },
-          },
-        );
-
-        this.queryBuilderState.changeDetectionState.initialize(this.lambda);
-        // turn off change detection at this point
-        // TODO: to make performance better, refrain from refreshing like this
-        this.editorStore.applicationStore.navigationService.navigator.goToLocation(
-          generateExistingQueryEditorRoute(newQuery.id),
-        );
-      } else {
-        const updatedQuery =
-          (yield this.editorStore.graphManagerState.graphManager.updateQuery(
-            query,
-            this.editorStore.graphManagerState.graph,
-          )) as Query;
-        this.editorStore.applicationStore.notificationService.notifySuccess(
-          `Successfully updated query!`,
-        );
-
-        LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
-          this.editorStore.applicationStore.telemetryService,
-          {
-            query: {
-              id: query.id,
-              name: query.name,
-              groupId: query.groupId,
-              artifactId: query.artifactId,
-              versionId: query.versionId,
-            },
-          },
-        );
-
-        this.onQueryUpdate?.(updatedQuery);
-      }
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-    } finally {
-      this.createQueryState.reset();
-      this.editorStore.setSaveAsState(undefined);
-    }
-  }
-}
-
-export class QuerySaveState {
-  readonly editorStore: QueryEditorStore;
-  readonly saveQueryState = ActionState.create();
-
-  queryBuilderState: QueryBuilderState;
-  lambda: RawLambda;
-  queryName: string;
-  allowUpdate = false;
-  onQueryUpdate?: ((query: Query) => void) | undefined;
-  decorator?: ((query: Query) => void) | undefined;
-
-  constructor(
-    editorStore: QueryEditorStore,
-    queryBuilderState: QueryBuilderState,
-    lambda: RawLambda,
-    config: QueryPersistConfiguration,
-  ) {
-    makeObservable(this, {
-      queryName: observable,
-      allowPersist: computed,
-      saveQuery: flow,
-    });
-
-    this.editorStore = editorStore;
-    this.queryBuilderState = queryBuilderState;
-    this.lambda = lambda;
-    this.allowUpdate = config.allowUpdate ?? false;
-    this.queryName = config.defaultName ?? 'New Query';
-    this.decorator = config.decorator;
-    this.onQueryUpdate = config.onQueryUpdate;
-  }
-
-  get allowPersist(): boolean {
-    return (
-      !this.saveQueryState.isInProgress &&
-      Boolean(this.queryBuilderState.mapping) &&
-      this.queryBuilderState.runtimeValue instanceof RuntimePointer
-    );
-  }
-
-  *saveQuery(): GeneratorFn<void> {
-    if (
-      this.editorStore.isSaveActionDisabled ||
-      !this.queryBuilderState.mapping ||
-      !(this.queryBuilderState.runtimeValue instanceof RuntimePointer)
-    ) {
-      return;
-    }
-    this.saveQueryState.inProgress();
-    const query = new Query();
-    query.name = this.queryName;
-    query.mapping = PackageableElementExplicitReference.create(
-      this.queryBuilderState.mapping,
-    );
-    query.runtime = this.queryBuilderState.runtimeValue.packageableRuntime;
-    this.decorator?.(query);
-    try {
-      query.content =
-        (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
-          this.lambda,
-        )) as string;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.saveQueryState.reset();
-      return;
-    }
-
-    try {
-      const updatedQuery =
-        (yield this.editorStore.graphManagerState.graphManager.updateQuery(
+      this.createQueryState.inProgress();
+      const rawLambda = queryBuilderState.buildQuery();
+      const config = this.editorStore.getPersistConfiguration(rawLambda, {
+        update: true,
+      });
+      const query = (yield this.editorStore.buildQueryForPersistence(
+        new Query(),
+        rawLambda,
+        config,
+      )) as Query;
+      query.name = this.queryName;
+      query.id = uuid();
+      const newQuery =
+        (yield this.editorStore.graphManagerState.graphManager.createQuery(
           query,
           this.editorStore.graphManagerState.graph,
         )) as Query;
       this.editorStore.applicationStore.notificationService.notifySuccess(
-        `Successfully updated query!`,
+        `Successfully created query!`,
+      );
+      LegendQueryEventHelper.notify_QueryCreateSucceeded(
+        this.editorStore.applicationStore.eventService,
+        { queryId: newQuery.id },
       );
 
-      LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
+      LegendQueryTelemetryHelper.logEvent_CreateQuerySucceeded(
         this.editorStore.applicationStore.telemetryService,
         {
           query: {
@@ -395,7 +221,13 @@ export class QuerySaveState {
           },
         },
       );
-      this.onQueryUpdate?.(updatedQuery);
+      queryBuilderState.changeDetectionState.initialize(rawLambda);
+      // turn off change detection at this point
+      // TODO: to make performance better, refrain from refreshing like this
+      this.editorStore.applicationStore.navigationService.navigator.goToLocation(
+        generateExistingQueryEditorRoute(newQuery.id),
+      );
+      this.createQueryState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -404,116 +236,7 @@ export class QuerySaveState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.saveQueryState.reset();
-      this.editorStore.setSaveState(undefined);
-    }
-  }
-}
-
-export class QueryRenameState {
-  readonly editorStore: QueryEditorStore;
-  readonly queryBuilderState: QueryBuilderState;
-
-  readonly renameQueryState = ActionState.create();
-
-  lambda: RawLambda;
-  queryName: string;
-  allowUpdate = false;
-  onQueryUpdate?: ((query: Query) => void) | undefined;
-  decorator?: ((query: Query) => void) | undefined;
-
-  constructor(
-    editorStore: QueryEditorStore,
-    queryBuilderState: QueryBuilderState,
-    lambda: RawLambda,
-    config: QueryPersistConfiguration,
-  ) {
-    makeObservable(this, {
-      queryName: observable,
-      setQueryName: action,
-      renameQuery: flow,
-    });
-
-    this.editorStore = editorStore;
-    this.queryBuilderState = queryBuilderState;
-    this.lambda = lambda;
-    this.allowUpdate = config.allowUpdate ?? false;
-    this.queryName = config.defaultName ?? 'New Query';
-    this.decorator = config.decorator;
-    this.onQueryUpdate = config.onQueryUpdate;
-  }
-
-  setQueryName(val: string): void {
-    this.queryName = val;
-  }
-
-  *renameQuery(): GeneratorFn<void> {
-    if (
-      this.editorStore.isSaveActionDisabled ||
-      !this.queryBuilderState.mapping ||
-      !(this.queryBuilderState.runtimeValue instanceof RuntimePointer) ||
-      this.queryName === this.editorStore.title
-    ) {
-      this.renameQueryState.reset();
-      this.editorStore.setRenameState(undefined);
-      return;
-    }
-    this.renameQueryState.inProgress();
-    const query = new Query();
-    query.name = this.queryName;
-    query.mapping = PackageableElementExplicitReference.create(
-      this.queryBuilderState.mapping,
-    );
-    query.runtime = this.queryBuilderState.runtimeValue.packageableRuntime;
-    this.decorator?.(query);
-    try {
-      query.content =
-        (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
-          this.lambda,
-        )) as string;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.renameQueryState.reset();
-      return;
-    }
-
-    try {
-      const updatedQuery =
-        (yield this.editorStore.graphManagerState.graphManager.updateQuery(
-          query,
-          this.editorStore.graphManagerState.graph,
-        )) as Query;
-      this.editorStore.applicationStore.notificationService.notifySuccess(
-        `Renamed query successfully`,
-      );
-      LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
-        this.editorStore.applicationStore.telemetryService,
-        {
-          query: {
-            id: query.id,
-            name: query.name,
-            groupId: query.groupId,
-            artifactId: query.artifactId,
-            versionId: query.versionId,
-          },
-        },
-      );
-      this.onQueryUpdate?.(updatedQuery);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-    } finally {
-      this.renameQueryState.reset();
-      this.editorStore.setRenameState(undefined);
+      this.createQueryState.reset();
     }
   }
 }
@@ -528,10 +251,7 @@ export abstract class QueryEditorStore {
   readonly initState = ActionState.create();
 
   queryBuilderState?: QueryBuilderState | undefined;
-  saveAsState?: QuerySaveAsState | undefined;
-  saveState?: QuerySaveState | undefined;
-  renameState?: QueryRenameState | undefined;
-  title: string | undefined;
+  queryCreatorState: QueryCreatorState;
   existingQueryName: string | undefined;
 
   constructor(
@@ -539,16 +259,12 @@ export abstract class QueryEditorStore {
     depotServerClient: DepotServerClient,
   ) {
     makeObservable(this, {
-      saveAsState: observable,
+      queryCreatorState: observable,
       queryLoaderState: observable,
-      renameState: observable,
-      saveState: observable,
       existingQueryName: observable,
-      title: observable,
-      setRenameState: action,
+      queryBuilderState: observable,
+      isPerformingBlockingAction: computed,
       setExistingQueryName: action,
-      setSaveAsState: action,
-      setSaveState: action,
       initialize: flow,
       buildGraph: flow,
       searchExistingQueryName: flow,
@@ -611,30 +327,23 @@ export abstract class QueryEditorStore {
         },
       },
     );
+    this.queryCreatorState = new QueryCreatorState(this, undefined);
+  }
+
+  get label(): string | undefined {
+    return undefined;
   }
 
   get isViewProjectActionDisabled(): boolean {
     return false;
   }
 
-  get isSaveActionDisabled(): boolean {
-    return false;
-  }
-
-  setSaveAsState(val: QuerySaveAsState | undefined): void {
-    this.saveAsState = val;
-  }
-
-  setSaveState(val: QuerySaveState | undefined): void {
-    this.saveState = val;
-  }
-
-  setRenameState(val: QueryRenameState | undefined): void {
-    this.renameState = val;
-  }
-
   setExistingQueryName(val: string | undefined): void {
     this.existingQueryName = val;
+  }
+
+  get isPerformingBlockingAction(): boolean {
+    return this.queryCreatorState.createQueryState.isInProgress;
   }
 
   abstract getProjectInfo(): ProjectGAVCoordinates;
@@ -646,6 +355,44 @@ export abstract class QueryEditorStore {
     // do nothing
   }
 
+  async buildQueryForPersistence(
+    query: Query,
+    rawLambda: RawLambda,
+    config: QueryPersistConfiguration | undefined,
+  ): Promise<Query> {
+    try {
+      assertNonNullable(
+        this.queryBuilderState,
+        'Query builder state required to build query to edit',
+      );
+      assertNonNullable(
+        this.queryBuilderState.mapping,
+        'Query required mapping to update',
+      );
+      const runtimeValue = guaranteeType(
+        this.queryBuilderState.runtimeValue,
+        RuntimePointer,
+        'Query runtime must be of type runtime pointer',
+      );
+      query.mapping = PackageableElementExplicitReference.create(
+        this.queryBuilderState.mapping,
+      );
+      query.runtime = runtimeValue.packageableRuntime;
+      query.content =
+        await this.graphManagerState.graphManager.lambdaToPureCode(rawLambda);
+      config?.decorator?.(query);
+      return query;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+        error,
+      );
+      this.applicationStore.notificationService.notifyError(error);
+      throw error;
+    }
+  }
+
   /**
    * Set up the query builder state after building the graph
    */
@@ -654,7 +401,7 @@ export abstract class QueryEditorStore {
   abstract getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
-  ): Promise<QueryPersistConfiguration>;
+  ): QueryPersistConfiguration;
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
@@ -895,7 +642,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getPersistConfiguration(): Promise<QueryPersistConfiguration> {
+  getPersistConfiguration(): QueryPersistConfiguration {
     return {
       decorator: (query: Query): void => {
         query.id = uuid();
@@ -983,10 +730,10 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getPersistConfiguration(
+  getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
-  ): Promise<QueryPersistConfiguration> {
+  ): QueryPersistConfiguration {
     return {
       defaultName: options?.update
         ? `${extractElementNameFromPath(this.servicePath)}`
@@ -1003,9 +750,80 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
   }
 }
 
+export class ExistingQueryUpdateState {
+  readonly editorStore: ExistingQueryEditorStore;
+  queryRenamer = false;
+  readonly updateQueryState = ActionState.create();
+
+  constructor(editorState: ExistingQueryEditorStore) {
+    this.editorStore = editorState;
+
+    makeObservable(this, {
+      queryRenamer: observable,
+      setQueryRenamer: action,
+      updateQuery: flow,
+    });
+  }
+
+  setQueryRenamer(val: boolean): void {
+    this.queryRenamer = val;
+  }
+
+  *updateQuery(queryName: string | undefined): GeneratorFn<void> {
+    try {
+      const queryBuilderState = guaranteeNonNullable(
+        this.editorStore.queryBuilderState,
+        'Query builder state required to build query to edit',
+      );
+      const rawLambda = queryBuilderState.buildQuery();
+      const config = this.editorStore.getPersistConfiguration(rawLambda, {
+        update: true,
+      });
+      const query = (yield this.editorStore.buildQueryForPersistence(
+        this.editorStore.query ?? new Query(),
+        rawLambda,
+        config,
+      )) as Query;
+      query.name = queryName ?? query.name;
+      const updatedQuery =
+        (yield this.editorStore.graphManagerState.graphManager.updateQuery(
+          query,
+          this.editorStore.graphManagerState.graph,
+        )) as Query;
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        `Successfully updated query!`,
+      );
+      LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        {
+          query: {
+            id: query.id,
+            name: query.name,
+            groupId: query.groupId,
+            artifactId: query.artifactId,
+            versionId: query.versionId,
+          },
+        },
+      );
+      config.onQueryUpdate?.(updatedQuery);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.updateQueryState.reset();
+    }
+  }
+}
+
 export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
-  private _query?: LightQuery | undefined;
+  private _lightQuery?: LightQuery | undefined;
+  query: Query | undefined;
+  updateState: ExistingQueryUpdateState;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -1016,32 +834,51 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
     makeObservable<ExistingQueryEditorStore, '_query'>(this, {
       _query: observable,
-      query: computed,
+      query: observable,
+      updateState: observable,
+      lightQuery: computed,
+      setLightQuery: action,
       setQuery: action,
+      isPerformingBlockingAction: override,
     });
 
     this.queryId = queryId;
+    this.updateState = new ExistingQueryUpdateState(this);
   }
 
-  get query(): LightQuery {
-    return guaranteeNonNullable(this._query, `Query has not been loaded`);
+  get lightQuery(): LightQuery {
+    return guaranteeNonNullable(this._lightQuery, `Query has not been loaded`);
   }
 
-  setQuery(val: LightQuery): void {
-    this._query = val;
-    this.title = val.name;
+  override get label(): string | undefined {
+    return this.lightQuery.name;
+  }
+
+  override get isPerformingBlockingAction(): boolean {
+    return (
+      super.isPerformingBlockingAction ||
+      this.updateState.updateQueryState.isInProgress
+    );
+  }
+
+  setLightQuery(val: LightQuery): void {
+    this._lightQuery = val;
+  }
+
+  setQuery(val: Query): void {
+    this.query = val;
   }
 
   getProjectInfo(): ProjectGAVCoordinates {
     return {
-      groupId: this.query.groupId,
-      artifactId: this.query.artifactId,
-      versionId: this.query.versionId,
+      groupId: this.lightQuery.groupId,
+      artifactId: this.lightQuery.artifactId,
+      versionId: this.lightQuery.versionId,
     };
   }
 
   override async setUpEditorState(): Promise<void> {
-    this.setQuery(
+    this.setLightQuery(
       await this.graphManagerState.graphManager.getLightQuery(this.queryId),
     );
   }
@@ -1051,6 +888,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       this.queryId,
       this.graphManagerState.graph,
     );
+    this.setQuery(query);
     LegendQueryUserDataHelper.addRecentlyViewedQuery(
       this.applicationStore.userDataService,
       query.id,
@@ -1101,23 +939,24 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     return queryBuilderState;
   }
 
-  async getPersistConfiguration(
+  getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
-  ): Promise<QueryPersistConfiguration> {
+  ): QueryPersistConfiguration {
     return {
       defaultName: options?.update
-        ? `${this.query.name}`
-        : `Copy of ${this.query.name}`,
-      allowUpdate: this.query.isCurrentUserQuery,
+        ? `${this.lightQuery.name}`
+        : `Copy of ${this.lightQuery.name}`,
+      allowUpdate: this.lightQuery.isCurrentUserQuery,
       decorator: (query: Query): void => {
-        query.id = this.query.id;
-        query.groupId = this.query.groupId;
-        query.artifactId = this.query.artifactId;
-        query.versionId = this.query.versionId;
+        query.id = this.lightQuery.id;
+        query.groupId = this.lightQuery.groupId;
+        query.artifactId = this.lightQuery.artifactId;
+        query.versionId = this.lightQuery.versionId;
       },
       onQueryUpdate: (query: Query): void => {
-        this.setQuery(toLightQuery(query));
+        this.setLightQuery(toLightQuery(query));
+        this.setQuery(query);
       },
     };
   }

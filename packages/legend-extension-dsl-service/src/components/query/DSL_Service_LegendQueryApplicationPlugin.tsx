@@ -44,8 +44,8 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
             // fetch project data
             const project = StoreProjectData.serialization.fromJson(
               await editorStore.depotServerClient.getProject(
-                editorStore.query.groupId,
-                editorStore.query.artifactId,
+                editorStore.lightQuery.groupId,
+                editorStore.lightQuery.artifactId,
               ),
             );
 
@@ -61,7 +61,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
               editorStore.applicationStore.navigationService.navigator.goToAddress(
                 buildUrl([
                   editorStore.applicationStore.config.studioApplicationUrl,
-                  generateQueryProductionizerRoute(editorStore.query.id),
+                  generateQueryProductionizerRoute(editorStore.lightQuery.id),
                 ]),
                 { ignoreBlocking: true },
               );
