@@ -87,13 +87,13 @@
     "react-refresh": "0.14.0",
     "resolve": "1.22.2",
     "sass": "1.62.1",
-    "sass-loader": "13.2.2",
+    "sass-loader": "13.3.0",
     "typescript": "5.0.4",
-    "webpack": "5.83.1"
+    "webpack": "5.84.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.40.0",
+    "eslint": "8.41.0",
     "rimraf": "5.0.1"
   },
   "publishConfig": {

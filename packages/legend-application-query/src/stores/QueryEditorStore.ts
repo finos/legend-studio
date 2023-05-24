@@ -330,10 +330,6 @@ export abstract class QueryEditorStore {
     this.queryCreatorState = new QueryCreatorState(this, undefined);
   }
 
-  get label(): string | undefined {
-    return undefined;
-  }
-
   get isViewProjectActionDisabled(): boolean {
     return false;
   }
@@ -832,8 +828,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   ) {
     super(applicationStore, depotServerClient);
 
-    makeObservable<ExistingQueryEditorStore, '_query'>(this, {
-      _query: observable,
+    makeObservable<ExistingQueryEditorStore>(this, {
       query: observable,
       updateState: observable,
       lightQuery: computed,
@@ -848,10 +843,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
   get lightQuery(): LightQuery {
     return guaranteeNonNullable(this._lightQuery, `Query has not been loaded`);
-  }
-
-  override get label(): string | undefined {
-    return this.lightQuery.name;
   }
 
   override get isPerformingBlockingAction(): boolean {

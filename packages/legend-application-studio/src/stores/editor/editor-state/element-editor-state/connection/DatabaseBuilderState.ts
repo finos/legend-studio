@@ -89,6 +89,7 @@ export class SchemaDatabaseBuilderTreeNodeData extends DatabaseBuilderTreeNodeDa
 
 export class TableDatabaseBuilderTreeNodeData extends DatabaseBuilderTreeNodeData {
   table: Table;
+
   constructor(id: string, parentId: string | undefined, table: Table) {
     super(id, table.name, parentId);
     this.table = table;
@@ -97,6 +98,7 @@ export class TableDatabaseBuilderTreeNodeData extends DatabaseBuilderTreeNodeDat
 
 export class ColumnDatabaseBuilderTreeNodeData extends DatabaseBuilderTreeNodeData {
   column: Column;
+
   constructor(id: string, parentId: string | undefined, column: Column) {
     super(id, column.name, parentId);
     this.column = column;

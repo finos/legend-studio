@@ -69,6 +69,7 @@ import { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElemen
 import type { GraphDataOrigin } from './GraphDataOrigin.js';
 import { INTERNAL__UnknownPackageableElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
+import { INTERNAL__UnknownFunctionActivator } from './metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -762,6 +763,14 @@ export abstract class BasicModel {
     if (element instanceof INTERNAL__UnknownPackageableElement) {
       this.INTERNAL__unknownElementsIndex.delete(oldPath);
       this.INTERNAL__unknownElementsIndex.set(newPath, element);
+      element.content = {
+        ...element.content,
+        name: element.name,
+        package: element.package?.path,
+      };
+    } else if (element instanceof INTERNAL__UnknownFunctionActivator) {
+      this.functionActivatorsIndex.delete(oldPath);
+      this.functionActivatorsIndex.set(newPath, element);
       element.content = {
         ...element.content,
         name: element.name,

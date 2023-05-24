@@ -49,7 +49,7 @@ Update Node version used for pipeline workflow
 Currently, we have fairly basic `Dockerfile` configurations, we just need to update the version of the base static web server
 
 ```dockerfile
-FROM finos/legend-shared-server:0.23.3
+FROM finos/legend-shared-server:0.10.0
 ...
 ```
 

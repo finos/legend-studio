@@ -1,4 +1,4 @@
-FROM finos/legend-shared-server:0.23.3
+FROM finos/legend-shared-server:0.23.5
 COPY dist/query /app/bin/webapp-content/web/query/
 
 RUN mkdir -p /config

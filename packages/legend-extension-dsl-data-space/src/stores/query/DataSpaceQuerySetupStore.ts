@@ -155,10 +155,6 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
     return true;
   }
 
-  override get label(): string | undefined {
-    return undefined;
-  }
-
   getProjectInfo(): ProjectGAVCoordinates {
     throw new UnsupportedOperationError();
   }

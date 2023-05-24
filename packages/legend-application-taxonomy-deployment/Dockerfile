@@ -1,4 +1,4 @@
-FROM finos/legend-shared-server:0.23.3
+FROM finos/legend-shared-server:0.23.5
 COPY dist/taxonomy /app/bin/webapp-content/web/taxonomy/
 # TODO: consider supplying a default config file
 # However we have 2 config files: (1) for the static server, (2) for the application

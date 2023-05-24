@@ -366,10 +366,7 @@ const QueryEditorHeaderContent = observer(
         );
       }
       return (
-        <div className="query-editor__header__content__main query-editor__header__content__title">
-          {/* TODO: Fix styling when label not an existing query name */}
-          {editorStore.label ?? ''}
-        </div>
+        <div className="query-editor__header__content__main query-editor__header__content__title" />
       );
     };
 
