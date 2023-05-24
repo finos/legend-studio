@@ -130,15 +130,13 @@ const QueryBuilderGridResultContextMenu = observer(
       new QueryBuilderPostFilterOperator_NotEqual();
     const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
     const postFilterState = tdsState.postFilterState;
-    const projectionColumnState = guaranteeNonNullable(
-      tdsState.projectionColumns
-        .filter((c) => c.columnName === event.current?.column.getColId())
-        .concat(
-          tdsState.aggregationState.columns
-            .filter((c) => c.columnName === event.current?.column.getColId())
-            .map((ag) => ag.projectionColumnState),
-        )[0],
-    );
+    const projectionColumnState = tdsState.tdsColumns
+      .filter((c) => c.columnName === event.current?.column.getColId())
+      .concat(
+        tdsState.aggregationState.columns
+          .filter((c) => c.columnName === event.current?.column.getColId())
+          .map((ag) => ag.projectionColumnState),
+      )[0];
 
     const getExistingPostFilterNode = (
       operators: QueryBuilderPostFilterOperator[],
@@ -153,7 +151,7 @@ const QueryBuilderGridResultContextMenu = observer(
         .filter(
           (n) =>
             (n as QueryBuilderPostFilterTreeConditionNodeData).condition
-              .columnState.columnName === projectionColumnState.columnName &&
+              .columnState.columnName === projectionColumnState?.columnName &&
             operators
               .map((op) => op.getLabel())
               .includes(
@@ -188,42 +186,43 @@ const QueryBuilderGridResultContextMenu = observer(
     const generateNewPostFilterConditionNodeData = async (
       operator: QueryBuilderPostFilterOperator,
     ): Promise<void> => {
-      let postFilterConditionState: PostFilterConditionState;
-      try {
-        postFilterConditionState = new PostFilterConditionState(
-          postFilterState,
-          projectionColumnState,
-          undefined,
-          operator,
-        );
-        if (
-          projectionColumnState instanceof
-          QueryBuilderDerivationProjectionColumnState
-        ) {
-          await flowResult(
-            projectionColumnState.fetchDerivationLambdaReturnType(),
+      if (projectionColumnState) {
+        try {
+          const postFilterConditionState = new PostFilterConditionState(
+            postFilterState,
+            projectionColumnState,
+            undefined,
+            operator,
           );
+          if (
+            projectionColumnState instanceof
+            QueryBuilderDerivationProjectionColumnState
+          ) {
+            await flowResult(
+              projectionColumnState.fetchDerivationLambdaReturnType(),
+            );
+          }
+          const defaultFilterConditionValue =
+            postFilterConditionState.operator.getDefaultFilterConditionValue(
+              postFilterConditionState,
+            );
+          postFilterConditionState.setValue(defaultFilterConditionValue);
+          updateFilterConditionValue(
+            defaultFilterConditionValue as InstanceValue,
+          );
+          postFilterState.addNodeFromNode(
+            new QueryBuilderPostFilterTreeConditionNodeData(
+              undefined,
+              postFilterConditionState,
+            ),
+            undefined,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          applicationStore.notificationService.notifyWarning(error.message);
+          return;
         }
-        const defaultFilterConditionValue =
-          postFilterConditionState.operator.getDefaultFilterConditionValue(
-            postFilterConditionState,
-          );
-        postFilterConditionState.setValue(defaultFilterConditionValue);
-        updateFilterConditionValue(
-          defaultFilterConditionValue as InstanceValue,
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        applicationStore.notificationService.notifyWarning(error.message);
-        return;
       }
-      postFilterState.addNodeFromNode(
-        new QueryBuilderPostFilterTreeConditionNodeData(
-          undefined,
-          postFilterConditionState,
-        ),
-        undefined,
-      );
     };
 
     const updateExistingPostFilterConditionNodeData = (
@@ -323,6 +322,7 @@ const QueryBuilderGridResultContextMenu = observer(
     return (
       <MenuContent ref={ref}>
         <MenuContentItem
+          disabled={!projectionColumnState}
           onClick={(): void => {
             filterByOrOut(true);
           }}
@@ -330,6 +330,7 @@ const QueryBuilderGridResultContextMenu = observer(
           Filter By
         </MenuContentItem>
         <MenuContentItem
+          disabled={!projectionColumnState}
           onClick={(): void => {
             filterByOrOut(false);
           }}
