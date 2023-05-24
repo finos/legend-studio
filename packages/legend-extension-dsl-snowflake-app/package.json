@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-snowflake-app",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Legend extension for Snowflake App DSL",
   "keywords": [
     "legend",

@@ -1,5 +1,7 @@
 # @finos/legend-application-query
 
+## 13.0.14
+
 ## 13.0.13
 
 ## 13.0.12

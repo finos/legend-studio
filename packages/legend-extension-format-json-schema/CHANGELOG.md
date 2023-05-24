@@ -1,5 +1,7 @@
 # @finos/legend-extension-format-json-schema
 
+## 2.0.18
+
 ## 2.0.17
 
 ## 2.0.16

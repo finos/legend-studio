@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 26.1.0
+
+### Minor Changes
+
+- [#2237](https://github.com/finos/legend-studio/pull/2237) [`85c8e5ad3`](https://github.com/finos/legend-studio/commit/85c8e5ad39112e9b87e1c984008b7567061dacae) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support test data generation for services with parameters.
+
 ## 26.0.4
 
 ## 26.0.3
