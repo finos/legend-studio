@@ -100,6 +100,7 @@ import type { SourceInformation } from './action/SourceInformation.js';
 import type { ClassifierPathMapping } from './action/protocol/ClassifierPathMapping.js';
 import type { FunctionActivatorConfiguration } from './action/functionActivator/FunctionActivatorConfiguration.js';
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
+import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -530,14 +531,16 @@ export abstract class AbstractPureGraphManager {
   ): Promise<DatasetEntitlementReport[]>;
 
   /**
-   * TODO: Move this to store relational extension
+   * TODO: Move these to store relational extension
    *
    * @modularize
    * See https://github.com/finos/legend-studio/issues/65
    */
-  abstract buildDatabase(
-    databaseBuilderInput: DatabaseBuilderInput,
-  ): Promise<Entity[]>;
+  abstract buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]>;
+  abstract executeRawSQL(
+    connection: RelationalDatabaseConnection,
+    sql: string,
+  ): Promise<string>;
 
   // ------------------------------------------- Function -------------------------------------------
 

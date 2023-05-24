@@ -67,6 +67,8 @@ import type { ClassifierPathMapping } from '../../../../action/protocol/Classifi
 import type { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionActivatorInfo.js';
 import type { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
 import type { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
+import type { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput.js';
+import type { V1_RawSQLExecuteInput } from './execution/V1_ExecuteSQLInput.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -99,6 +101,9 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   MAPPING_MODEL_COVERAGE_ANALYTICS = 'mapping model coverage analytics',
   SURVEY_DATASET_ANALYTICS = 'survey dataset analytics',
   STORE_ENTITLEMENT_ANALYTICS = 'store entitlement analytics',
+
+  DATABASE_SCHEMA_EXPLORATION = 'database schema exploration',
+  DATABASE_RAW_SQL_EXECUTION = 'database raw SQL execution',
 }
 
 type GrammarParserBatchInputEntry = {
@@ -622,13 +627,27 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
 
   _databaseUtilities = (): string => `${this._pure()}/utilities/database`;
+
   buildDatabase = (
-    input: PlainObject<V1_ExecuteInput>,
+    input: PlainObject<V1_DatabaseBuilderInput>,
   ): Promise<PlainObject<V1_PureModelContextData>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_EXECUTION_PLAN),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DATABASE_SCHEMA_EXPLORATION),
       `${this._databaseUtilities()}/schemaExploration`,
       input,
+    );
+
+  executeRawSQL = (
+    input: PlainObject<V1_RawSQLExecuteInput>,
+  ): Promise<string> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DATABASE_RAW_SQL_EXECUTION),
+      `${this._databaseUtilities()}/executeRawSQL`,
+      input,
+      {},
+      {
+        [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+      },
     );
 
   // ------------------------------------------- Function ---------------------------------------

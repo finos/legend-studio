@@ -16,15 +16,20 @@
 
 import type { RelationalDatabaseConnection } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
 
+const DATABASE_BUILDER_WILDCARD_PATTERN = '%';
+
 export class DatabasePattern {
   schemaPattern = '';
   tablePattern = '';
   escapeSchemaPattern?: boolean | undefined;
   escapeTablePattern?: boolean | undefined;
 
-  constructor(schemaPattern: string, tablePattern: string) {
-    this.schemaPattern = schemaPattern;
-    this.tablePattern = tablePattern;
+  constructor(
+    schemaPattern: string | undefined,
+    tablePattern: string | undefined,
+  ) {
+    this.schemaPattern = schemaPattern ?? DATABASE_BUILDER_WILDCARD_PATTERN;
+    this.tablePattern = tablePattern ?? DATABASE_BUILDER_WILDCARD_PATTERN;
   }
 }
 

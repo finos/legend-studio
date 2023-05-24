@@ -33,6 +33,7 @@ import { isNonNullable } from '@finos/legend-shared';
 import { DevToolPanel } from './DevToolPanel.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { ProblemsPanel } from './ProblemsPanel.js';
+import { SQLPanel } from './SQLPanel.js';
 
 export const PanelGroup = observer(() => {
   const editorStore = useEditorStore();
@@ -72,11 +73,22 @@ export const PanelGroup = observer(() => {
       isVisible: true,
       counter: editorStore.graphState.problems.length,
     },
+    [PANEL_MODE.SQL]: {
+      mode: PANEL_MODE.SQL,
+      name: 'SQL',
+      icon: undefined,
+      isVisible: true,
+    },
   };
 
-  const tabsToShow = Object.values(PANEL_MODE).filter(
-    (tab) => isNonNullable(tabs[tab]) && tabs[tab].isVisible,
-  );
+  const tabsToShow = Object.values(PANEL_MODE)
+    .filter((tab) => isNonNullable(tabs[tab]) && tabs[tab].isVisible)
+    .filter(
+      (tab) =>
+        tab !== PANEL_MODE.SQL ||
+        editorStore.applicationStore.config.options
+          .TEMPORARY__enableRawSQLExecutor,
+    );
   const isTabVisible = (tabType: PANEL_MODE): boolean =>
     editorStore.activePanelMode === tabType && tabsToShow.includes(tabType);
 
@@ -155,6 +167,11 @@ export const PanelGroup = observer(() => {
         {isTabVisible(PANEL_MODE.DEV_TOOL) && (
           <div className="panel-group__content__tab">
             <DevToolPanel />
+          </div>
+        )}
+        {isTabVisible(PANEL_MODE.SQL) && (
+          <div className="panel-group__content__tab">
+            <SQLPanel />
           </div>
         )}
       </PanelContent>

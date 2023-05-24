@@ -75,6 +75,12 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__enableFunctionActivatorSupport = false;
 
   /**
+   * This flag can be removed when the support for raw SQL execution is official
+   * See https://github.com/finos/legend-engine/pull/1841
+   */
+  TEMPORARY__enableRawSQLExecutor = false;
+
+  /**
    * Indicates whether we should render the new mapping testable editor or the deprecated legacy editor.
    * This flag will be removed once the editor for testable editor is agreed on.
    */
@@ -98,6 +104,7 @@ class LegendStudioApplicationCoreOptions {
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
+      TEMPORARY__enableRawSQLExecutor: optional(primitive()),
       TEMPORARY__enableMappingTestableEditor: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),

@@ -110,8 +110,6 @@ export interface DatabaseBuilderTreeData
   database: Database;
 }
 
-const WILDCARD = '%';
-
 export class DatabaseBuilderState {
   editorStore: EditorStore;
   connection: RelationalDatabaseConnection;
@@ -240,7 +238,7 @@ export class DatabaseBuilderState {
     databaseBuilderInput.config.maxTables = undefined;
     databaseBuilderInput.config.enrichTables = Boolean(schema);
     databaseBuilderInput.config.patterns = [
-      new DatabasePattern(schema ?? WILDCARD, WILDCARD),
+      new DatabasePattern(schema, undefined),
     ];
     return databaseBuilderInput;
   }
@@ -470,7 +468,7 @@ export class DatabaseBuilderState {
                 (schemaNode.isChecked && !schemaNode.childrenIds)
               ) {
                 config.patterns.push(
-                  new DatabasePattern(schemaNode.schema.name, WILDCARD),
+                  new DatabasePattern(schemaNode.schema.name, undefined),
                 );
               } else {
                 tableNodes?.forEach((t) => {

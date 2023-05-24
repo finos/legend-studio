@@ -158,7 +158,6 @@ import {
   V1_DatabaseBuilderConfig,
   V1_DatabaseBuilderInput,
   V1_DatabasePattern,
-  V1_setupDatabaseBuilderInputSerialization,
   V1_TargetDatabase,
 } from './engine/generation/V1_DatabaseBuilderInput.js';
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer.js';
@@ -310,6 +309,8 @@ import { FunctionActivatorConfiguration } from '../../../action/functionActivato
 import { V1_FunctionActivatorInput } from './engine/functionActivator/V1_FunctionActivatorInput.js';
 import { V1_FunctionActivator } from './model/packageableElements/function/V1_FunctionActivator.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from './model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+import type { RelationalDatabaseConnection } from '../../../../STO_Relational_Exports.js';
+import { V1_RawSQLExecuteInput } from './engine/execution/V1_ExecuteSQLInput.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -546,9 +547,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     V1_setupLegacyRuntimeSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    V1_setupDatabaseBuilderInputSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
   }
@@ -2942,7 +2940,28 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     dbBuilderInput.config = config;
     return this.pureModelContextDataToEntities(
-      await this.engine.buildDatabase(dbBuilderInput),
+      await this.engine.buildDatabase(
+        dbBuilderInput,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
+    );
+  }
+
+  override async executeRawSQL(
+    connection: RelationalDatabaseConnection,
+    sql: string,
+  ): Promise<string> {
+    const input = new V1_RawSQLExecuteInput();
+    input.connection = V1_transformRelationalDatabaseConnection(
+      connection,
+      new V1_GraphTransformerContextBuilder(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+    input.sql = sql;
+    return this.engine.executeRawSQL(
+      input,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     );
   }
 
