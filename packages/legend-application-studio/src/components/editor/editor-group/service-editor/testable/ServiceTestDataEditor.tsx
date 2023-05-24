@@ -61,6 +61,7 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../../__lib__/LegendStudioDocumentation.js';
+import { LambdaParameterValuesEditor } from '@finos/legend-query-builder';
 
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
@@ -99,6 +100,7 @@ export const ConnectionTestDataEditor = observer(
         ],
       });
     };
+
     const generateTestData = (): void => {
       if (!anonymizeGeneratedData) {
         confirmGenerateUnAnonmyizedData();
@@ -146,7 +148,7 @@ export const ConnectionTestDataEditor = observer(
               onClick={generateTestData}
               title="Generate test data if possible"
               disabled={
-                connectionTestDataState.generatingTestDataSate.isInProgress
+                connectionTestDataState.generatingTestDataState.isInProgress
               }
               tabIndex={-1}
             >
@@ -163,6 +165,17 @@ export const ConnectionTestDataEditor = observer(
           isReadOnly={isReadOnly}
           embeddedDataEditorState={connectionTestDataState.embeddedEditorState}
         />
+        {connectionTestDataState.parameterState.parameterValuesEditorState
+          .showModal && (
+          <LambdaParameterValuesEditor
+            graph={connectionTestDataState.editorStore.graphManagerState.graph}
+            observerContext={
+              connectionTestDataState.editorStore.changeDetectionState
+                .observerContext
+            }
+            lambdaParametersState={connectionTestDataState.parameterState}
+          />
+        )}
       </div>
     );
   },
@@ -494,7 +507,7 @@ export const ServiceTestDataEditor = observer(
             <ResizablePanel minSize={600}>
               <PanelLoadingIndicator
                 isLoading={Boolean(
-                  testDataState.selectedDataState?.generatingTestDataSate
+                  testDataState.selectedDataState?.generatingTestDataState
                     .isInProgress,
                 )}
               />

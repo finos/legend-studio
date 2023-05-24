@@ -92,6 +92,12 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
+  /**
+   * Indicates whether we should use new ParameterValues for service test data generation
+   * This flag will be removed once the backend code is deployed.
+   */
+  TEMPORARY__enableTestDataGenerationNewFlow = false;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
@@ -99,6 +105,7 @@ class LegendStudioApplicationCoreOptions {
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
       TEMPORARY__enableMappingTestableEditor: optional(primitive()),
+      TEMPORARY__enableTestDataGenerationNewFlow: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),
