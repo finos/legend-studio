@@ -55,6 +55,7 @@ import { V1_Pair } from '../../../model/valueSpecification/raw/classInstance/V1_
 import { V1_RuntimeInstance } from '../../../model/valueSpecification/raw/classInstance/V1_RuntimeInstance.js';
 import { V1_ExecutionContextInstance } from '../../../model/valueSpecification/raw/classInstance/V1_ExecutionContextInstance.js';
 import { V1_PropertyGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
+import { V1_SubTypeGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 import { V1_SerializationConfig } from '../../../model/valueSpecification/raw/classInstance/V1_SerializationConfig.js';
 import { V1_KeyExpression } from '../../../model/valueSpecification/raw/V1_KeyExpression.js';
 import { V1_PureList } from '../../../model/valueSpecification/raw/classInstance/V1_PureList.js';
@@ -100,7 +101,7 @@ export enum V1_GraphFetchTreeType {
 
 export enum V1_ClassInstanceType {
   ROOT_GRAPH_FETCH_TREE = 'rootGraphFetchTree',
-
+  SUBTYPE_GRAPH_FETCH_TREE = 'subTypeGraphFetchTree',
   PATH = 'path',
 
   AGGREGATE_VALUE = 'aggregateValue',
@@ -445,6 +446,12 @@ const rootGraphFetchTreeModelSchema = (
         (val) => V1_deserializeGraphFetchTree(val, plugins),
       ),
     ),
+    subTypeTrees: list(
+      custom(
+        (val) => V1_serializeGraphFetchTree(val, plugins),
+        (val) => V1_deserializeGraphFetchTree(val, plugins),
+      ),
+    ),
   });
 
 const propertyGraphFetchTreeModelSchema = (
@@ -471,6 +478,22 @@ const propertyGraphFetchTreeModelSchema = (
     subType: optional(primitive()),
   });
 
+const subTypeGraphFetchTreeModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_SubTypeGraphFetchTree> =>
+  createModelSchema(V1_SubTypeGraphFetchTree, {
+    _type: usingConstantValueSchema(
+      V1_ClassInstanceType.SUBTYPE_GRAPH_FETCH_TREE,
+    ),
+    subTrees: list(
+      custom(
+        (val) => V1_serializeGraphFetchTree(val, plugins),
+        (val) => V1_deserializeGraphFetchTree(val, plugins),
+      ),
+    ),
+    subTypeClass: primitive(),
+  });
+
 function V1_serializeGraphFetchTree(
   protocol: V1_GraphFetchTree,
   plugins: PureProtocolProcessorPlugin[],
@@ -479,6 +502,8 @@ function V1_serializeGraphFetchTree(
     return serialize(propertyGraphFetchTreeModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_RootGraphFetchTree) {
     return serialize(rootGraphFetchTreeModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_SubTypeGraphFetchTree) {
+    return serialize(subTypeGraphFetchTreeModelSchema(plugins), protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize graph fetch tree`,
@@ -495,6 +520,8 @@ function V1_deserializeGraphFetchTree(
       return deserialize(propertyGraphFetchTreeModelSchema(plugins), json);
     case V1_ClassInstanceType.ROOT_GRAPH_FETCH_TREE:
       return deserialize(rootGraphFetchTreeModelSchema(plugins), json);
+    case V1_ClassInstanceType.SUBTYPE_GRAPH_FETCH_TREE:
+      return deserialize(subTypeGraphFetchTreeModelSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize graph fetch tree node of type '${json._type}'`,

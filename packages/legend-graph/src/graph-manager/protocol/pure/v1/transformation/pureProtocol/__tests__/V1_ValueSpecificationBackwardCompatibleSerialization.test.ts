@@ -180,6 +180,7 @@ const cases: TestCase[] = [
           subTrees: [],
         },
       ],
+      subTypeTrees: [],
     },
     {
       _type: 'classInstance',
@@ -199,6 +200,7 @@ const cases: TestCase[] = [
             subTrees: [],
           },
         ],
+        subTypeTrees: [],
       },
     },
   ],

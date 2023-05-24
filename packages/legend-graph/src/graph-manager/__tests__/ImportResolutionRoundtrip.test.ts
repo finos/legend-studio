@@ -73,6 +73,7 @@ import {
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
 import { TEST__checkBuildingElementsRoundtrip } from '../__test-utils__/GraphManagerTestUtils.js';
 import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip.js';
+import { TEST_DATA__SubTypeGraphFetchTreeRoundtrip } from './roundtripTestData/TEST_DATA__SubTypeGraphFetchTreeRoundtrip.js';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([
@@ -248,4 +249,15 @@ describe(unitTest('DSL Data import resolution roundtrip'), () => {
       await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
+});
+
+describe(unitTest('SubTypeGrpahFetchTree roundtrip'), () => {
+  test.each([
+    [
+      'Query having subTypeGraphFetchTree at root level',
+      TEST_DATA__SubTypeGraphFetchTreeRoundtrip,
+    ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
 });
