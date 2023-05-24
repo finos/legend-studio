@@ -355,10 +355,12 @@ const mergePureModelContextData = (
   const mergedData = new V1_PureModelContextData();
   for (const _data of data) {
     mergedData.elements = mergedData.elements.concat(_data.elements);
-    mergedData.INTERNAL__rawDependencyEntities =
-      mergedData.INTERNAL__rawDependencyEntities.concat(
-        _data.INTERNAL__rawDependencyEntities,
-      );
+    const rawDependencyEntities = (
+      mergedData.INTERNAL__rawDependencyEntities ?? []
+    ).concat(_data.INTERNAL__rawDependencyEntities ?? []);
+    mergedData.INTERNAL__rawDependencyEntities = rawDependencyEntities.length
+      ? rawDependencyEntities
+      : undefined;
     mergedData.serializer = _data.serializer ?? mergedData.serializer;
     mergedData.origin = _data.origin ?? mergedData.origin;
   }
@@ -3398,7 +3400,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       elementFilter ? elementFilter(element) : true,
     );
     prunedGraphData.INTERNAL__rawDependencyEntities =
-      data.INTERNAL__rawDependencyEntities.filter((entity) =>
+      data.INTERNAL__rawDependencyEntities?.filter((entity) =>
         entityFilter ? entityFilter(entity) : true,
       );
     return prunedGraphData;
@@ -3547,10 +3549,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...contextData1.elements,
       ...contextData2.elements,
     ];
-    contextData1.INTERNAL__rawDependencyEntities = [
-      ...contextData1.INTERNAL__rawDependencyEntities,
-      ...contextData2.INTERNAL__rawDependencyEntities,
+    const rawDependencyEntities = [
+      ...(contextData1.INTERNAL__rawDependencyEntities ?? []),
+      ...(contextData2.INTERNAL__rawDependencyEntities ?? []),
     ];
+    contextData1.INTERNAL__rawDependencyEntities = rawDependencyEntities.length
+      ? rawDependencyEntities
+      : undefined;
     return contextData1;
   }
 
