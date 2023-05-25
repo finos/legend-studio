@@ -88,7 +88,7 @@ const ServiceExecutionResultViewer = observer(
           </ModalBody>
           <ModalFooter>
             <button
-              className="btn modal__footer__close-btn"
+              className="btn modal__footer__close-btn btn--dark"
               onClick={closeExecutionResultViewer}
             >
               Close
@@ -211,9 +211,7 @@ export const ServiceExecutionQueryEditor = observer(
     );
 
     const executionIsRunning =
-      executionState.isRunningQuery ||
-      executionState.isGeneratingPlan ||
-      executionState.isGeneratingPlan;
+      executionState.isRunningQuery || executionState.isGeneratingPlan;
 
     const cancelQuery = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.cancelQuery()),
@@ -456,24 +454,24 @@ export const ServiceExecutionQueryEditor = observer(
               language={CODE_EDITOR_LANGUAGE.PURE}
             />
           </div>
-          <ExecutionPlanViewer
-            executionPlanState={executionState.executionPlanState}
-          />
-          <ServiceExecutionResultViewer executionState={executionState} />
           {queryState.queryLoaderState.isQueryLoaderDialogOpen && (
             <QueryLoaderDialog
               queryLoaderState={queryState.queryLoaderState}
               title="import query"
             />
           )}
-          {executionState.parameterState.parameterValuesEditorState
+          <ExecutionPlanViewer
+            executionPlanState={executionState.executionPlanState}
+          />
+          <ServiceExecutionResultViewer executionState={executionState} />
+          {executionState.parametersState.parameterValuesEditorState
             .showModal && (
             <LambdaParameterValuesEditor
               graph={executionState.editorStore.graphManagerState.graph}
               observerContext={
                 executionState.editorStore.changeDetectionState.observerContext
               }
-              lambdaParametersState={executionState.parameterState}
+              lambdaParametersState={executionState.parametersState}
             />
           )}
         </div>

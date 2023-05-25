@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, makeObservable } from 'mobx';
+import {
+  computed,
+  observable,
+  action,
+  makeObservable,
+  flow,
+  flowResult,
+} from 'mobx';
 import type { EditorStore } from '../../EditorStore.js';
 import {
   type GeneratorFn,
@@ -22,6 +29,9 @@ import {
   LogEvent,
   guaranteeType,
   assertType,
+  StopWatch,
+  stringifyLosslessJSON,
+  filterByType,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState.js';
 import {
@@ -34,9 +44,26 @@ import {
   RawLambda,
   buildSourceInformationSourceId,
   isStubbed_PackageableElement,
+  type ExecutionResult,
+  type RawExecutionPlan,
+  reportGraphAnalytics,
+  buildLambdaVariableExpressions,
+  VariableExpression,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-query-builder';
+import {
+  ExecutionPlanState,
+  LambdaEditorState,
+  LambdaParameterState,
+  LambdaParametersState,
+  PARAMETER_SUBMIT_ACTION,
+  QUERY_BUILDER_EVENT,
+  QueryBuilderTelemetryHelper,
+  buildExecutionParameterValues,
+  getExecutionQueryFromRawLambda,
+} from '@finos/legend-query-builder';
 import { FunctionActivatorBuilderState } from './FunctionActivatorBuilderState.js';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
@@ -105,7 +132,7 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
         const lambdas = new Map<string, RawLambda>();
         const functionLamba = new RawLambda(
           [],
-          this.functionElement.expressionSequence as object,
+          this.functionElement.expressionSequence,
         );
         lambdas.set(this.lambdaId, functionLamba);
         const isolatedLambdas =
@@ -154,11 +181,73 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
   }
 }
 
+export class FunctionParametersState extends LambdaParametersState {
+  readonly functionEditorState: FunctionEditorState;
+
+  constructor(functionEditorState: FunctionEditorState) {
+    super();
+    makeObservable(this, {
+      parameterValuesEditorState: observable,
+      parameterStates: observable,
+      addParameter: action,
+      removeParameter: action,
+      openModal: action,
+      build: action,
+      setParameters: action,
+    });
+    this.functionEditorState = functionEditorState;
+  }
+
+  openModal(query: RawLambda): void {
+    this.parameterStates = this.build(query);
+    this.parameterValuesEditorState.open(
+      (): Promise<void> =>
+        flowResult(this.functionEditorState.runQuery()).catch(
+          this.functionEditorState.editorStore.applicationStore
+            .alertUnhandledError,
+        ),
+      PARAMETER_SUBMIT_ACTION.RUN,
+    );
+  }
+
+  build(query: RawLambda): LambdaParameterState[] {
+    const parameters = buildLambdaVariableExpressions(
+      query,
+      this.functionEditorState.editorStore.graphManagerState,
+    )
+      .map((parameter) =>
+        observe_ValueSpecification(
+          parameter,
+          this.functionEditorState.editorStore.changeDetectionState
+            .observerContext,
+        ),
+      )
+      .filter(filterByType(VariableExpression));
+    const states = parameters.map((variable) => {
+      const parmeterState = new LambdaParameterState(
+        variable,
+        this.functionEditorState.editorStore.changeDetectionState.observerContext,
+        this.functionEditorState.editorStore.graphManagerState.graph,
+      );
+      parmeterState.mockParameterValue();
+      return parmeterState;
+    });
+    return states;
+  }
+}
+
 export class FunctionEditorState extends ElementEditorState {
   readonly functionDefinitionEditorState: FunctionDefinitionEditorState;
   readonly activatorBuilderState: FunctionActivatorBuilderState;
 
   selectedTab: FUNCTION_EDITOR_TAB;
+
+  isRunningQuery = false;
+  isGeneratingPlan = false;
+  executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
+  executionPlanState: ExecutionPlanState;
+  parametersState: FunctionParametersState;
+  queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -168,6 +257,16 @@ export class FunctionEditorState extends ElementEditorState {
       functionElement: computed,
       setSelectedTab: action,
       reprocess: action,
+      isRunningQuery: observable,
+      isGeneratingPlan: observable,
+      executionResultText: observable,
+      executionPlanState: observable,
+      setExecutionResultText: action,
+      setIsRunningQuery: action,
+      runQuery: flow,
+      generatePlan: flow,
+      handleRunQuery: flow,
+      cancelQuery: flow,
     });
 
     assertType(
@@ -181,6 +280,11 @@ export class FunctionEditorState extends ElementEditorState {
       this.editorStore,
     );
     this.activatorBuilderState = new FunctionActivatorBuilderState(this);
+    this.executionPlanState = new ExecutionPlanState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+    );
+    this.parametersState = new FunctionParametersState(this);
   }
 
   get functionElement(): ConcreteFunctionDefinition {
@@ -230,5 +334,215 @@ export class FunctionEditorState extends ElementEditorState {
     );
     functionEditorState.selectedTab = this.selectedTab;
     return functionEditorState;
+  }
+
+  setIsRunningQuery(val: boolean): void {
+    this.isRunningQuery = val;
+  }
+
+  setExecutionResultText = (executionResult: string | undefined): void => {
+    this.executionResultText = executionResult;
+  };
+
+  setQueryRunPromise = (
+    promise: Promise<ExecutionResult> | undefined,
+  ): void => {
+    this.queryRunPromise = promise;
+  };
+
+  get query(): RawLambda {
+    return new RawLambda(
+      this.functionElement.parameters.map((parameter) =>
+        this.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+          parameter,
+        ),
+      ),
+      this.functionElement.expressionSequence,
+    );
+  }
+
+  *generatePlan(debug: boolean): GeneratorFn<void> {
+    if (this.isGeneratingPlan) {
+      return;
+    }
+    try {
+      const query = this.query;
+      this.isGeneratingPlan = true;
+      let rawPlan: RawExecutionPlan;
+
+      const stopWatch = new StopWatch();
+      const report = reportGraphAnalytics(
+        this.editorStore.graphManagerState.graph,
+      );
+
+      if (debug) {
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugLaunched(
+          this.editorStore.applicationStore.telemetryService,
+        );
+        const debugResult =
+          (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
+            query,
+            undefined,
+            undefined,
+            this.editorStore.graphManagerState.graph,
+            report,
+          )) as { plan: RawExecutionPlan; debug: string };
+        rawPlan = debugResult.plan;
+        this.executionPlanState.setDebugText(debugResult.debug);
+      } else {
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationLaunched(
+          this.editorStore.applicationStore.telemetryService,
+        );
+        rawPlan =
+          (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
+            query,
+            undefined,
+            undefined,
+            this.editorStore.graphManagerState.graph,
+            report,
+          )) as object;
+      }
+
+      stopWatch.record();
+      try {
+        this.executionPlanState.setRawPlan(rawPlan);
+        const plan =
+          this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
+            rawPlan,
+            this.editorStore.graphManagerState.graph,
+          );
+        this.executionPlanState.setPlan(plan);
+      } catch {
+        // do nothing
+      }
+      stopWatch.record(QUERY_BUILDER_EVENT.BUILD_EXECUTION_PLAN__SUCCESS);
+
+      // report
+      report.timings =
+        this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+          stopWatch,
+          report.timings,
+        );
+      if (debug) {
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
+      } else {
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.isGeneratingPlan = false;
+    }
+  }
+
+  *handleRunQuery(): GeneratorFn<void> {
+    if (this.isRunningQuery) {
+      return;
+    }
+    const query = this.query;
+    const parameters = (query.parameters ?? []) as object[];
+    if (parameters.length) {
+      this.parametersState.openModal(query);
+    } else {
+      this.runQuery();
+    }
+  }
+
+  *runQuery(): GeneratorFn<void> {
+    if (this.isRunningQuery) {
+      return;
+    }
+
+    QueryBuilderTelemetryHelper.logEvent_QueryRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+    );
+
+    let promise;
+    try {
+      this.isRunningQuery = true;
+      const stopWatch = new StopWatch();
+      const report = reportGraphAnalytics(
+        this.editorStore.graphManagerState.graph,
+      );
+      promise = this.editorStore.graphManagerState.graphManager.runQuery(
+        getExecutionQueryFromRawLambda(
+          this.query,
+          this.parametersState.parameterStates,
+          this.editorStore.graphManagerState,
+        ),
+        undefined,
+        undefined,
+        this.editorStore.graphManagerState.graph,
+        {
+          useLosslessParse: true,
+          parameterValues: buildExecutionParameterValues(
+            this.parametersState.parameterStates,
+            this.editorStore.graphManagerState,
+          ),
+        },
+        report,
+      );
+      this.setQueryRunPromise(promise);
+      const result = (yield promise) as ExecutionResult;
+      if (this.queryRunPromise === promise) {
+        this.setExecutionResultText(
+          stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
+        );
+        this.parametersState.setParameters([]);
+        // report
+        report.timings =
+          this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
+            report.timings,
+          );
+        QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          report,
+        );
+      }
+    } catch (error) {
+      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
+      // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
+      // When cancelled the query, we set the queryRunPromise as undefined.
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+      if (this.queryRunPromise === promise) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
+      }
+    } finally {
+      this.isRunningQuery = false;
+    }
+  }
+
+  *cancelQuery(): GeneratorFn<void> {
+    this.setIsRunningQuery(false);
+    this.setQueryRunPromise(undefined);
+    try {
+      yield this.editorStore.graphManagerState.graphManager.cancelUserExecutions(
+        true,
+      );
+    } catch (error) {
+      // Don't notify users about success or failure
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+    }
   }
 }
