@@ -34,8 +34,6 @@ import {
   ConnectionPointer,
   reportGraphAnalytics,
   observe_ValueSpecification,
-  Enumeration,
-  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -47,7 +45,6 @@ import {
   returnUndefOnError,
   getNullableFirstEntry,
   uniq,
-  isNonNullable,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -74,29 +71,8 @@ import {
   LambdaParametersState,
   PARAMETER_SUBMIT_ACTION,
   buildExecutionParameterValues,
-  createMockEnumerationProperty,
   getExecutionQueryFromRawLambda,
 } from '@finos/legend-query-builder';
-import { createMockPrimitiveProperty } from '../../../../utils/MockDataUtils.js';
-
-const buildTestDataParameters = (
-  rawLambda: RawLambda,
-  editorStore: EditorStore,
-): (string | number | boolean)[] =>
-  buildLambdaVariableExpressions(rawLambda, editorStore.graphManagerState)
-    .filter(filterByType(VariableExpression))
-    .map((varExpression) => {
-      if (varExpression.multiplicity.lowerBound !== 0) {
-        const type = varExpression.genericType?.value.rawType;
-        if (type instanceof PrimitiveType) {
-          return createMockPrimitiveProperty(type, varExpression.name);
-        } else if (type instanceof Enumeration) {
-          return createMockEnumerationProperty(type);
-        }
-      }
-      return undefined;
-    })
-    .filter(isNonNullable);
 
 export class ServiceTestDataParameterState extends LambdaParametersState {
   connectionTestDataState: ConnectionTestDataState;
@@ -215,49 +191,27 @@ export class ConnectionTestDataState {
       const report = reportGraphAnalytics(
         this.editorStore.graphManagerState.graph,
       );
-      let value;
-      if (
-        this.editorStore.applicationStore.config.options
-          .TEMPORARY__enableTestDataGenerationNewFlow
-      ) {
-        value =
-          (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
-            getExecutionQueryFromRawLambda(
-              serviceExecutionParameters.query,
+      const value =
+        (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
+          getExecutionQueryFromRawLambda(
+            serviceExecutionParameters.query,
+            this.parameterState.parameterStates,
+            this.editorStore.graphManagerState,
+          ),
+          [],
+          serviceExecutionParameters.mapping,
+          serviceExecutionParameters.runtime,
+          this.editorStore.graphManagerState.graph,
+          {
+            anonymizeGeneratedData: this.anonymizeGeneratedData,
+            parameterValues: buildExecutionParameterValues(
               this.parameterState.parameterStates,
               this.editorStore.graphManagerState,
             ),
-            [],
-            serviceExecutionParameters.mapping,
-            serviceExecutionParameters.runtime,
-            this.editorStore.graphManagerState.graph,
-            {
-              anonymizeGeneratedData: this.anonymizeGeneratedData,
-              parameterValues: buildExecutionParameterValues(
-                this.parameterState.parameterStates,
-                this.editorStore.graphManagerState,
-              ),
-            },
-            report,
-          )) as string;
-      } else {
-        // TODO: delete this once the backend code is in place
-        value =
-          (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
-            serviceExecutionParameters.query,
-            buildTestDataParameters(
-              serviceExecutionParameters.query,
-              this.editorStore,
-            ),
-            serviceExecutionParameters.mapping,
-            serviceExecutionParameters.runtime,
-            this.editorStore.graphManagerState.graph,
-            {
-              anonymizeGeneratedData: this.anonymizeGeneratedData,
-            },
-            report,
-          )) as string;
-      }
+          },
+          report,
+        )) as string;
+
       // NOTE: since we don't have a generic mechanism for test-data generation
       // we will only report metrics around API usage, when we genericize, we will
       // move this out
@@ -298,22 +252,11 @@ export class ConnectionTestDataState {
           this.testDataState.testSuiteState.testableState.serviceEditorState
             .executionState.serviceExecutionParameters,
         );
-        if (
-          this.editorStore.applicationStore.config.options
-            .TEMPORARY__enableTestDataGenerationNewFlow
-        ) {
-          const parameters = (serviceExecutionParameters.query.parameters ??
-            []) as object[];
-          if (parameters.length > 0) {
-            this.parameterState.openModal(serviceExecutionParameters);
-            return;
-          } else {
-            yield flowResult(
-              this.generateTestDataForDatabaseConnection(
-                serviceExecutionParameters,
-              ),
-            );
-          }
+        const parameters = (serviceExecutionParameters.query.parameters ??
+          []) as object[];
+        if (parameters.length > 0) {
+          this.parameterState.openModal(serviceExecutionParameters);
+          return;
         } else {
           yield flowResult(
             this.generateTestDataForDatabaseConnection(
