@@ -101,6 +101,7 @@ import {
   PackageableConnection,
   RelationalDatabaseConnection,
   guaranteeRelationalDatabaseConnection,
+  extractDependencyGACoordinateFromRootPackageName,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -895,7 +896,8 @@ const PackageTreeNodeContainer = observer(
             tabIndex={-1}
             title={node.packageableElement.path}
           >
-            {node.label}
+            {extractDependencyGACoordinateFromRootPackageName(node.label) ??
+              node.label}
           </button>
         </div>
       </ContextMenu>

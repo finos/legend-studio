@@ -45,8 +45,9 @@ import { LegendSDLC, type GraphDataOrigin } from './GraphDataOrigin.js';
 import type { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 
 const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
-const generateDependencyRootPackageName = (dependencyKey: string): string =>
-  `${DEPENDENCY_ROOT_PACKAGE_PREFIX}${dependencyKey}`;
+export const generateDependencyRootPackageName = (
+  dependencyKey: string,
+): string => `${DEPENDENCY_ROOT_PACKAGE_PREFIX}${dependencyKey}`;
 export const extractDependencyGACoordinateFromRootPackageName = (
   packageName: string,
 ): string | undefined => {

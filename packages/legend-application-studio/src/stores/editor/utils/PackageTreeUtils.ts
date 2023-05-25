@@ -47,6 +47,7 @@ import {
   generateFunctionPrettyName,
   getElementRootPackage,
   extractDependencyGACoordinateFromRootPackageName,
+  generateDependencyRootPackageName,
 } from '@finos/legend-graph';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 
@@ -229,8 +230,12 @@ export const getDependenciesPackableElementTreeData = (
     const dependencyGACoordinates =
       extractDependencyGACoordinateFromRootPackageName(_package.name) ??
       _package.name;
-    childRootNode.label = dependencyGACoordinates;
-    childRootNode.id = dependencyGACoordinates;
+    childRootNode.label = generateDependencyRootPackageName(
+      dependencyGACoordinates,
+    );
+    childRootNode.id = generateDependencyRootPackageName(
+      dependencyGACoordinates,
+    );
     addUniqueEntry(rootIds, childRootNode.id);
     nodes.set(childRootNode.id, childRootNode);
     root.children.push(_package);
