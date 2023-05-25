@@ -173,8 +173,8 @@ export class SQLPanelState {
         new DatabasePattern(undefined, undefined),
       ];
 
-      const database = (yield flowResult(
-        this.buildIntermediateDatabase(databaseBuilderInput),
+      const database = (yield this.buildIntermediateDatabase(
+        databaseBuilderInput,
       )) as Database;
       const rootIds: string[] = [];
       const nodes = new Map<string, DatabaseSchemaExplorerTreeNodeData>();
@@ -232,8 +232,8 @@ export class SQLPanelState {
         new DatabasePattern(schema.name, undefined),
       ];
 
-      const database = (yield flowResult(
-        this.buildIntermediateDatabase(databaseBuilderInput),
+      const database = (yield this.buildIntermediateDatabase(
+        databaseBuilderInput,
       )) as Database;
       const tables = getSchema(database, schema.name).tables;
       const childrenIds = schemaNode.childrenIds ?? [];
@@ -288,8 +288,8 @@ export class SQLPanelState {
       const table = tableNode.table;
       config.patterns = [new DatabasePattern(table.schema.name, table.name)];
 
-      const database = (yield flowResult(
-        this.buildIntermediateDatabase(databaseBuilderInput),
+      const database = (yield this.buildIntermediateDatabase(
+        databaseBuilderInput,
       )) as Database;
       const enrichedTable = database.schemas
         .find((schema) => table.schema.name === schema.name)
