@@ -41,6 +41,7 @@ import {
   TimesIcon,
   ModalFooterButton,
   BlankPanelContent,
+  KeyIcon,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
 import {
@@ -86,95 +87,105 @@ const getDatabaseSchemaNodeIcon = (
   return null;
 };
 
-const DatabaseBuilderTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<
-    DatabaseBuilderTreeNodeData,
-    {
-      toggleCheckedNode: (node: DatabaseBuilderTreeNodeData) => void;
-      isPartiallySelected: (node: DatabaseBuilderTreeNodeData) => boolean;
-    }
-  >
-> = (props) => {
-  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-  const { toggleCheckedNode, isPartiallySelected } = innerProps;
-  const isExpandable =
-    Boolean(!node.childrenIds || node.childrenIds.length) &&
-    !(node instanceof ColumnDatabaseBuilderTreeNodeData);
-  const nodeExpandIcon = isExpandable ? (
-    node.isOpen ? (
-      <ChevronDownIcon />
+const DatabaseBuilderTreeNodeContainer = observer(
+  (
+    props: TreeNodeContainerProps<
+      DatabaseBuilderTreeNodeData,
+      {
+        toggleCheckedNode: (node: DatabaseBuilderTreeNodeData) => void;
+        isPartiallySelected: (node: DatabaseBuilderTreeNodeData) => boolean;
+      }
+    >,
+  ) => {
+    const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
+    const { toggleCheckedNode, isPartiallySelected } = innerProps;
+    const isExpandable =
+      Boolean(!node.childrenIds || node.childrenIds.length) &&
+      !(node instanceof ColumnDatabaseBuilderTreeNodeData);
+    const nodeExpandIcon = isExpandable ? (
+      node.isOpen ? (
+        <ChevronDownIcon />
+      ) : (
+        <ChevronRightIcon />
+      )
     ) : (
-      <ChevronRightIcon />
-    )
-  ) : (
-    <div />
-  );
-  const nodeTypeIcon = getDatabaseSchemaNodeIcon(node);
-  const toggleCheck = (): void => toggleCheckedNode(node);
-  const toggleExpandNode = (): void => {
-    onNodeSelect?.(node);
-    if (!isExpandable) {
-      toggleCheck();
-    }
-  };
+      <div />
+    );
+    const nodeTypeIcon = getDatabaseSchemaNodeIcon(node);
+    const toggleExpandNode = (): void => {
+      onNodeSelect?.(node);
+      if (!isExpandable) {
+        toggleCheckedNode(node);
+      }
+    };
+    const isPrimaryKeyColumn =
+      node instanceof ColumnDatabaseBuilderTreeNodeData &&
+      node.owner.primaryKey.includes(node.column);
 
-  const renderCheckedIcon = (
-    _node: DatabaseBuilderTreeNodeData,
-  ): React.ReactNode => {
-    if (_node instanceof ColumnDatabaseBuilderTreeNodeData) {
-      return null;
-    } else if (isPartiallySelected(_node)) {
-      return <CircleIcon />;
-    } else if (_node.isChecked) {
-      return <CheckCircleIcon />;
-    }
-    return <EmptyCircleIcon />;
-  };
+    const renderCheckedIcon = (
+      _node: DatabaseBuilderTreeNodeData,
+    ): React.ReactNode => {
+      if (_node instanceof ColumnDatabaseBuilderTreeNodeData) {
+        return null;
+      } else if (isPartiallySelected(_node)) {
+        return <CircleIcon />;
+      } else if (_node.isChecked) {
+        return <CheckCircleIcon />;
+      }
+      return <EmptyCircleIcon />;
+    };
 
-  return (
-    <div
-      className={clsx('tree-view__node__container')}
-      style={{
-        paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
-        display: 'flex',
-      }}
-    >
-      <div className="tree-view__node__icon database-builder-tree__node__icon__group">
-        <div
-          className="database-builder-tree__expand-icon"
-          onClick={toggleExpandNode}
-        >
-          {nodeExpandIcon}
-        </div>
-        <div
-          className={clsx('database-builder-tree__checker-icon')}
-          onClick={toggleCheck}
-        >
-          {renderCheckedIcon(node)}
-        </div>
-        <div
-          className="database-builder-tree__type-icon"
-          onClick={toggleExpandNode}
-        >
-          {nodeTypeIcon}
-        </div>
-      </div>
+    return (
       <div
-        className="tree-view__node__label database-builder-tree__node__label"
+        className={clsx('tree-view__node__container')}
+        style={{
+          paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
+          display: 'flex',
+        }}
         onClick={toggleExpandNode}
       >
-        {node.label}
-        {node instanceof ColumnDatabaseBuilderTreeNodeData && (
-          <div className="database-builder-tree__node__type">
-            <div className="database-builder-tree__node__type__label">
-              {stringifyDataType(node.column.type)}
-            </div>
+        <div className="tree-view__node__icon database-builder-tree__node__icon__group">
+          <div className="database-builder-tree__expand-icon">
+            {nodeExpandIcon}
           </div>
-        )}
+          <div
+            className={clsx('database-builder-tree__checker-icon')}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleCheckedNode(node);
+            }}
+          >
+            {renderCheckedIcon(node)}
+          </div>
+          <div
+            className="database-builder-tree__type-icon"
+            onClick={toggleExpandNode}
+          >
+            {nodeTypeIcon}
+          </div>
+        </div>
+        <div className="tree-view__node__label database-builder-tree__node__label">
+          {node.label}
+          {node instanceof ColumnDatabaseBuilderTreeNodeData && (
+            <div className="database-builder-tree__node__type">
+              <div className="database-builder-tree__node__type__label">
+                {stringifyDataType(node.column.type)}
+              </div>
+            </div>
+          )}
+          {isPrimaryKeyColumn && (
+            <div
+              className="database-builder-tree__node__pk"
+              title="Primary Key"
+            >
+              <KeyIcon />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+);
 
 export const DatabaseBuilderExplorer = observer(
   (props: {
@@ -241,8 +252,8 @@ export const DatabaseBuilder = observer(
   }) => {
     const { databaseBuilderState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
-    const buildDb = applicationStore.guardUnhandledError(() =>
-      flowResult(databaseBuilderState.buildDatabaseWithTreeData()),
+    const preview = applicationStore.guardUnhandledError(() =>
+      flowResult(databaseBuilderState.previewDatabaseModel()),
     );
     const saveOrUpdateDatabase = applicationStore.guardUnhandledError(() =>
       flowResult(databaseBuilderState.createOrUpdateDatabase()),
@@ -365,7 +376,7 @@ export const DatabaseBuilder = observer(
                         )}
                         {!databaseBuilderState.databaseGrammarCode && (
                           <BlankPanelContent>
-                            No database model generated
+                            No database preview
                           </BlankPanelContent>
                         )}
                       </div>
@@ -379,39 +390,21 @@ export const DatabaseBuilder = observer(
             <ModalFooterButton
               className="database-builder__action--btn"
               disabled={isReadOnly || isExecutingAction}
-              onClick={buildDb}
-              title="Generate database model..."
+              onClick={preview}
+              title="Preview database model..."
             >
-              Generate Model
+              Preview
             </ModalFooterButton>
             <ModalFooterButton
               className="database-builder__action--btn"
-              disabled={
-                isReadOnly ||
-                isExecutingAction ||
-                !databaseBuilderState.databaseGrammarCode
-              }
+              disabled={isReadOnly || isExecutingAction}
               onClick={saveOrUpdateDatabase}
-              title={
-                isReadOnly ||
-                isExecutingAction ||
-                !databaseBuilderState.databaseGrammarCode
-                  ? 'Generate database model first before building database'
-                  : databaseBuilderState.currentDatabase
-                  ? 'Update database model...'
-                  : 'Build database...'
-              }
             >
               {databaseBuilderState.currentDatabase
-                ? 'Update Database...'
-                : 'Build Database...'}
+                ? 'Update Database'
+                : 'Build Database'}
             </ModalFooterButton>
           </ModalFooter>
-          {/* <div className="database-builder__heading">
-            <div className="database-builder__heading__label">
-              Build Database
-            </div>
-          </div> */}
         </Modal>
       </Dialog>
     );

@@ -101,6 +101,7 @@ import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
+import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -149,6 +150,7 @@ export class EditorStore implements CommandRegistrar {
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
   globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
   devToolState: DevToolPanelState;
+  sqlPlaygroundState: SQLPlaygroundPanelState;
 
   modelImporterState: ModelImporterState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
@@ -227,6 +229,7 @@ export class EditorStore implements CommandRegistrar {
     this.graphEditorMode = new GraphEditFormModeState(this);
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolPanelState(this);
+    this.sqlPlaygroundState = new SQLPlaygroundPanelState(this);
     this.embeddedQueryBuilderState = new EmbeddedQueryBuilderState(this);
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);

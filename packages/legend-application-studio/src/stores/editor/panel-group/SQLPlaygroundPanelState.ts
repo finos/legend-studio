@@ -23,33 +23,22 @@ import {
   isNonNullable,
   filterByType,
   ActionState,
-  guaranteeType,
   getNonNullableEntry,
 } from '@finos/legend-shared';
 import { observable, makeObservable, flow, flowResult } from 'mobx';
 import {
   type Schema,
-  type PackageableElement,
   type Table,
   type Database,
-  RelationalDatabaseConnection,
+  type RelationalDatabaseConnection,
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
   Column,
   getSchema,
-  PackageableConnection,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
-
-export const guaranteeRelationalDatabaseConnection = (
-  val: PackageableElement | undefined,
-): RelationalDatabaseConnection =>
-  guaranteeType(
-    guaranteeType(val, PackageableConnection).connectionValue,
-    RelationalDatabaseConnection,
-  );
 
 export abstract class DatabaseSchemaExplorerTreeNodeData
   implements TreeNodeData
@@ -70,31 +59,39 @@ export abstract class DatabaseSchemaExplorerTreeNodeData
 export class DatabaseSchemaExplorerTreeSchemaNodeData extends DatabaseSchemaExplorerTreeNodeData {
   schema: Schema;
 
-  constructor(id: string, parentId: string | undefined, schema: Schema) {
-    super(id, schema.name, parentId);
+  constructor(id: string, schema: Schema) {
+    super(id, schema.name, undefined);
     this.schema = schema;
   }
 }
 
 export class DatabaseSchemaExplorerTreeTableNodeData extends DatabaseSchemaExplorerTreeNodeData {
+  override parentId: string;
+  owner: Schema;
   table: Table;
 
-  constructor(id: string, parentId: string | undefined, table: Table) {
+  constructor(id: string, parentId: string, owner: Schema, table: Table) {
     super(id, table.name, parentId);
+    this.parentId = parentId;
+    this.owner = owner;
     this.table = table;
   }
 }
 
 export class DatabaseSchemaExplorerTreeColumnNodeData extends DatabaseSchemaExplorerTreeNodeData {
+  override parentId: string;
+  owner: Table;
   column: Column;
 
-  constructor(id: string, parentId: string | undefined, column: Column) {
+  constructor(id: string, parentId: string, owner: Table, column: Column) {
     super(id, column.name, parentId);
+    this.parentId = parentId;
+    this.owner = owner;
     this.column = column;
   }
 }
 
-export interface DatabaseBuilderTreeData
+export interface DatabaseSchemaExplorerTreeData
   extends TreeData<DatabaseSchemaExplorerTreeNodeData> {
   database: Database;
 }
@@ -102,12 +99,12 @@ export interface DatabaseBuilderTreeData
 const DUMMY_DATABASE_PACKAGE = 'dummy';
 const DUMMY_DATABASE_NAME = 'DummyDB';
 
-export class SQLPanelState {
+export class SQLPlaygroundPanelState {
   readonly editorStore: EditorStore;
 
   isFetchingSchema = false;
   connection?: RelationalDatabaseConnection | undefined;
-  treeData?: DatabaseBuilderTreeData | undefined;
+  treeData?: DatabaseSchemaExplorerTreeData | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -123,13 +120,13 @@ export class SQLPanelState {
     this.editorStore = editorStore;
   }
 
-  setTreeData(builderTreeData?: DatabaseBuilderTreeData): void {
+  setTreeData(builderTreeData?: DatabaseSchemaExplorerTreeData): void {
     this.treeData = builderTreeData;
   }
 
   *onNodeSelect(
     node: DatabaseSchemaExplorerTreeNodeData,
-    treeData: DatabaseBuilderTreeData,
+    treeData: DatabaseSchemaExplorerTreeData,
   ): GeneratorFn<void> {
     if (
       node instanceof DatabaseSchemaExplorerTreeSchemaNodeData &&
@@ -148,7 +145,7 @@ export class SQLPanelState {
 
   getChildNodes(
     node: DatabaseSchemaExplorerTreeNodeData,
-    treeData: DatabaseBuilderTreeData,
+    treeData: DatabaseSchemaExplorerTreeData,
   ): DatabaseSchemaExplorerTreeNodeData[] | undefined {
     return node.childrenIds
       ?.map((n) => treeData.nodes.get(n))
@@ -162,6 +159,7 @@ export class SQLPanelState {
 
     try {
       this.isFetchingSchema = true;
+
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
       databaseBuilderInput.targetDatabase = new TargetDatabase(
         DUMMY_DATABASE_PACKAGE,
@@ -186,14 +184,8 @@ export class SQLPanelState {
           rootIds.push(schemaId);
           const schemaNode = new DatabaseSchemaExplorerTreeSchemaNodeData(
             schemaId,
-            undefined,
             dbSchema,
           );
-          // schemaNode.isChecked = Boolean(
-          //   this.currentDatabase?.schemas.find(
-          //     (cSchema) => cSchema.name === dbSchema.name,
-          //   ),
-          // );
           nodes.set(schemaId, schemaNode);
         });
       const treeData = { rootIds, nodes, database };
@@ -212,7 +204,7 @@ export class SQLPanelState {
 
   *fetchSchemaMetadata(
     schemaNode: DatabaseSchemaExplorerTreeSchemaNodeData,
-    treeData: DatabaseBuilderTreeData,
+    treeData: DatabaseSchemaExplorerTreeData,
   ): GeneratorFn<void> {
     if (!this.connection) {
       return;
@@ -220,6 +212,7 @@ export class SQLPanelState {
 
     try {
       this.isFetchingSchema = true;
+
       const schema = schemaNode.schema;
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
       databaseBuilderInput.targetDatabase = new TargetDatabase(
@@ -247,6 +240,7 @@ export class SQLPanelState {
           const tableNode = new DatabaseSchemaExplorerTreeTableNodeData(
             tableId,
             schemaNode.id,
+            schema,
             table,
           );
           treeData.nodes.set(tableId, tableNode);
@@ -268,13 +262,16 @@ export class SQLPanelState {
 
   *fetchTableMetadata(
     tableNode: DatabaseSchemaExplorerTreeTableNodeData,
-    treeData: DatabaseBuilderTreeData,
+    treeData: DatabaseSchemaExplorerTreeData,
   ): GeneratorFn<void> {
     if (!this.connection) {
       return;
     }
 
     try {
+      this.isFetchingSchema = true;
+
+      const table = tableNode.table;
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
       databaseBuilderInput.targetDatabase = new TargetDatabase(
         DUMMY_DATABASE_PACKAGE,
@@ -285,16 +282,16 @@ export class SQLPanelState {
       config.enrichTables = true;
       config.enrichColumns = true;
       config.enrichPrimaryKeys = true;
-      const table = tableNode.table;
       config.patterns = [new DatabasePattern(table.schema.name, table.name)];
-
       const database = (yield this.buildIntermediateDatabase(
         databaseBuilderInput,
       )) as Database;
+
       const enrichedTable = database.schemas
         .find((schema) => table.schema.name === schema.name)
         ?.tables.find((t) => t.name === table.name);
       if (enrichedTable) {
+        table.primaryKey = enrichedTable.primaryKey;
         const columns = enrichedTable.columns.filter(filterByType(Column));
         tableNode.table.columns = columns;
         tableNode.childrenIds?.forEach((c) => treeData.nodes.delete(c));
@@ -309,6 +306,7 @@ export class SQLPanelState {
             const columnNode = new DatabaseSchemaExplorerTreeColumnNodeData(
               columnId,
               tableId,
+              table,
               col,
             );
             col.owner = tableNode.table;

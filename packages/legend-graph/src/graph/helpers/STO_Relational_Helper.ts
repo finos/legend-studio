@@ -39,6 +39,8 @@ import {
   VarBinary,
   Binary,
   Bit,
+  BigInt,
+  Date,
   Numeric,
   Decimal,
   Double,
@@ -51,7 +53,10 @@ import {
   Other,
   SemiStructured,
   Json,
+  RelationalDatabaseConnection,
 } from '../../STO_Relational_Exports.js';
+import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
+import { PackageableConnection } from '../metamodel/pure/packageableElements/connection/PackageableConnection.js';
 
 const collectIncludedDatabases = (
   results: Set<Database>,
@@ -224,3 +229,11 @@ export const stringifyDataType = (type: RelationalDataType): string => {
   }
   return '(UNKNOWN)';
 };
+
+export const guaranteeRelationalDatabaseConnection = (
+  val: PackageableElement | undefined,
+): RelationalDatabaseConnection =>
+  guaranteeType(
+    guaranteeType(val, PackageableConnection).connectionValue,
+    RelationalDatabaseConnection,
+  );

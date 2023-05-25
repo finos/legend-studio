@@ -100,6 +100,7 @@ import {
   type PackageableElement,
   PackageableConnection,
   RelationalDatabaseConnection,
+  guaranteeRelationalDatabaseConnection,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -122,7 +123,6 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
-import { guaranteeRelationalDatabaseConnection } from '../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
 import { DatabaseBuilder } from '../editor-group/connection-editor/DatabaseBuilder.js';
 
 const ElementRenamer = observer(() => {

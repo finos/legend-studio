@@ -26,6 +26,7 @@ import {
   PanelHeader,
   PanelHeaderActions,
   PanelHeaderActionItem,
+  SparkleIcon,
 } from '@finos/legend-art';
 import { ConsolePanel } from './ConsolePanel.js';
 import { PANEL_MODE } from '../../../stores/editor/EditorConfig.js';
@@ -33,7 +34,16 @@ import { isNonNullable } from '@finos/legend-shared';
 import { DevToolPanel } from './DevToolPanel.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { ProblemsPanel } from './ProblemsPanel.js';
-import { SQLPanel } from './SQLPanel.js';
+import { SQLPlaygroundPanel } from './SQLPlaygroundPanel.js';
+
+export const PanelGroupItemExperimentalBadge: React.FC = () => (
+  <div
+    className="panel-group__header__tab__experimental-badge"
+    title="This is an experimental feature"
+  >
+    <SparkleIcon />
+  </div>
+);
 
 export const PanelGroup = observer(() => {
   const editorStore = useEditorStore();
@@ -52,6 +62,7 @@ export const PanelGroup = observer(() => {
       icon?: React.ReactNode;
       isVisible: boolean;
       counter?: number;
+      experimental?: boolean;
     };
   } = {
     [PANEL_MODE.CONSOLE]: {
@@ -59,6 +70,7 @@ export const PanelGroup = observer(() => {
       name: 'CONSOLE',
       icon: undefined,
       isVisible: true,
+      experimental: true,
     },
     [PANEL_MODE.DEV_TOOL]: {
       mode: PANEL_MODE.DEV_TOOL,
@@ -73,11 +85,12 @@ export const PanelGroup = observer(() => {
       isVisible: true,
       counter: editorStore.graphState.problems.length,
     },
-    [PANEL_MODE.SQL]: {
-      mode: PANEL_MODE.SQL,
-      name: 'SQL',
+    [PANEL_MODE.SQL_PLAYGROUND]: {
+      mode: PANEL_MODE.SQL_PLAYGROUND,
+      name: 'SQL PLAYGROUND',
       icon: undefined,
       isVisible: true,
+      experimental: true,
     },
   };
 
@@ -85,7 +98,7 @@ export const PanelGroup = observer(() => {
     .filter((tab) => isNonNullable(tabs[tab]) && tabs[tab].isVisible)
     .filter(
       (tab) =>
-        tab !== PANEL_MODE.SQL ||
+        tab !== PANEL_MODE.SQL_PLAYGROUND ||
         editorStore.applicationStore.config.options
           .TEMPORARY__enableRawSQLExecutor,
     );
@@ -129,6 +142,7 @@ export const PanelGroup = observer(() => {
                     />
                   )}
                 </div>
+                {tab.experimental && <PanelGroupItemExperimentalBadge />}
               </button>
             ))}
         </div>
@@ -169,9 +183,9 @@ export const PanelGroup = observer(() => {
             <DevToolPanel />
           </div>
         )}
-        {isTabVisible(PANEL_MODE.SQL) && (
+        {isTabVisible(PANEL_MODE.SQL_PLAYGROUND) && (
           <div className="panel-group__content__tab">
-            <SQLPanel />
+            <SQLPlaygroundPanel />
           </div>
         )}
       </PanelContent>
