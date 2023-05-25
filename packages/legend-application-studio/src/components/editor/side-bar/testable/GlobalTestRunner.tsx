@@ -317,10 +317,10 @@ const TestableTreeNodeContainer: React.FC<
     node instanceof TestableTreeNodeData
       ? node.testableMetadata.testable instanceof PackageableElement
         ? getElementTypeIcon(
-            editorStore,
             editorStore.graphState.getPackageableElementType(
               node.testableMetadata.testable,
             ),
+            editorStore,
           )
         : null
       : null;

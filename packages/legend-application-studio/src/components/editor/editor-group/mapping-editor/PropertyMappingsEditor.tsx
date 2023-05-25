@@ -398,7 +398,7 @@ export const PropertyMappingEditor = observer(
             >
               {propertyBasicType !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <div className="property-mapping-editor__type__abbr">
-                  {getElementIcon(editorStore, propertyRawType)}
+                  {getElementIcon(propertyRawType, editorStore)}
                 </div>
               )}
               <div className="property-mapping-editor__type__label">

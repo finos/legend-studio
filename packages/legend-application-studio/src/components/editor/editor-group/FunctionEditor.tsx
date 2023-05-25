@@ -370,7 +370,7 @@ const ParameterBasicEditor = observer(
             >
               {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
                 <div className="property-basic-editor__type__abbr">
-                  {getElementIcon(editorStore, paramType)}
+                  {getElementIcon(paramType, editorStore)}
                 </div>
               )}
               <div className="property-basic-editor__type__label">
@@ -408,7 +408,7 @@ const ParameterBasicEditor = observer(
             >
               {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
                 <div className="property-basic-editor__type__abbr">
-                  {getElementIcon(editorStore, paramType)}
+                  {getElementIcon(paramType, editorStore)}
                 </div>
               )}
               <div className="property-basic-editor__type__label">
@@ -565,7 +565,7 @@ const ReturnTypeEditor = observer(
           >
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <div className="property-basic-editor__type__abbr">
-                {getElementIcon(editorStore, returnType.value)}
+                {getElementIcon(returnType.value, editorStore)}
               </div>
             )}
             <div className="property-basic-editor__type__label">
@@ -603,7 +603,7 @@ const ReturnTypeEditor = observer(
           >
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <div className="property-basic-editor__type__abbr">
-                {getElementIcon(editorStore, returnType.value)}
+                {getElementIcon(returnType.value, editorStore)}
               </div>
             )}
             <div className="property-basic-editor__type__label">

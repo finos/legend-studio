@@ -117,7 +117,7 @@ export const ProjectSearchCommand = observer(() => {
                     className="project-search-command__option"
                     onClick={changeType(type)}
                   >
-                    {getElementTypeIcon(editorStore, type)}
+                    {getElementTypeIcon(type, editorStore)}
                   </MenuContentItem>
                 ))}
               </MenuContent>
@@ -125,7 +125,7 @@ export const ProjectSearchCommand = observer(() => {
           >
             <div className="project-search-command__type__label">
               {elementType ? (
-                getElementTypeIcon(editorStore, elementType)
+                getElementTypeIcon(elementType, editorStore)
               ) : (
                 <MoreHorizontalIcon />
               )}

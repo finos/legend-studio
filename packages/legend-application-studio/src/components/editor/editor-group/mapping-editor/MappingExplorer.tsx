@@ -276,7 +276,7 @@ export const MappingElementExplorer = observer(
             }'`}
           >
             <div className="mapping-explorer__item__label__icon">
-              {getElementIcon(editorStore, mappingElementTarget)}
+              {getElementIcon(mappingElementTarget, editorStore)}
             </div>
             <div className="mapping-explorer__item__label__text">
               {getMappingElementLabel(mappingElement, editorStore).value}
@@ -384,7 +384,7 @@ const MappingElementTreeNodeContainer = observer(
               {nodeExpandIcon}
             </div>
             <div className="mapping-explorer__item__label__icon">
-              {getElementIcon(editorStore, mappingElementTarget)}
+              {getElementIcon(mappingElementTarget, editorStore)}
             </div>
             <div className="mapping-explorer__item__label__text">
               {getMappingElementLabel(mappingElement, editorStore).value}

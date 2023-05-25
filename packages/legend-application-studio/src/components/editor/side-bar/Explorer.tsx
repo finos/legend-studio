@@ -684,7 +684,7 @@ const ExplorerContextMenu = observer(
           {elementTypes.map((type) => (
             <MenuContentItem key={type} onClick={createNewElement(type)}>
               <MenuContentItemIcon>
-                {getElementTypeIcon(editorStore, type)}
+                {getElementTypeIcon(type, editorStore)}
               </MenuContentItemIcon>
               <MenuContentItemLabel>
                 New {toTitleCase(getElementTypeLabel(editorStore, type))}...
@@ -844,7 +844,7 @@ const PackageTreeNodeContainer = observer(
         </div>
       )
     ) : (
-      getElementIcon(editorStore, node.packageableElement)
+      getElementIcon(node.packageableElement, editorStore)
     );
     const selectNode = (): void => onNodeSelect?.(node);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -925,7 +925,7 @@ const ExplorerDropdownMenu = observer(() => {
       {elementTypes.map((type) => (
         <MenuContentItem key={type} onClick={createNewElement(type)}>
           <MenuContentItemIcon>
-            {getElementTypeIcon(editorStore, type)}
+            {getElementTypeIcon(type, editorStore)}
           </MenuContentItemIcon>
           <MenuContentItemLabel>
             New {toTitleCase(getElementTypeLabel(editorStore, type))}...

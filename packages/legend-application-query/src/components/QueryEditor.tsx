@@ -164,7 +164,7 @@ const CreateQueryDialog = observer(() => {
         <ModalFooter>
           <ModalFooterButton
             text="Create Query"
-            title={'Create new query'}
+            title="Create new query"
             disabled={Boolean(
               createQueryState.editorStore.isPerformingBlockingAction ||
                 isExistingQueryName,

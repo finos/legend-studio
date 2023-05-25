@@ -24,6 +24,7 @@ import {
   PlusIcon,
   ArrowsAltHIcon,
   useResizeDetector,
+  GenericTextFileIcon,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
@@ -75,6 +76,7 @@ import { ElementXTGenerationEditor } from './element-generation-editor/ElementXT
 import { TabManager, type TabState } from '@finos/legend-lego/application';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
+import { getElementIcon } from '../../ElementIconUtils.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -317,11 +319,73 @@ export const EditorGroup = observer(() => {
     // TODO: create an editor for unsupported tab
     return null;
   };
+  // const renderTab = (editorState: TabState): React.ReactNode | undefined => {
+  //   if (editorState instanceof FileEditorState) {
+  //     const showMoreInfo =
+  //       ideStore.tabManagerState.tabs.filter(
+  //         (tab) =>
+  //           tab instanceof FileEditorState &&
+  //           tab.fileName === editorState.fileName,
+  //       ).length > 1;
+  //     return (
+  //       <div className="editor-group__header__tab">
+  //         <div className="editor-group__header__tab__icon">
+  //           <FileAltIcon className="editor-group__header__tab__icon--file" />
+  //         </div>
+  //         <div className="editor-group__header__tab__label">
+  //           {editorState.fileName}
+  //         </div>
+  //         {showMoreInfo && (
+  //           <div className="editor-group__header__tab__path">
+  //             {editorState.filePath}
+  //           </div>
+  //         )}
+  //         {editorState.file.RO && (
+  //           <div className="editor-group__header__tab__icon">
+  //             <LockIcon className="editor-group__header__tab__icon--readonly" />
+  //           </div>
+  //         )}
+  //       </div>
+  //     );
+  //   } else if (editorState instanceof DiagramEditorState) {
+  //     const showMoreInfo =
+  //       ideStore.tabManagerState.tabs.filter(
+  //         (tab) =>
+  //           tab instanceof DiagramEditorState &&
+  //           tab.diagramName === editorState.diagramName,
+  //       ).length > 1;
+  //     return (
+  //       <div className="editor-group__header__tab">
+  //         <div className="editor-group__header__tab__icon">
+  //           <PURE_DiagramIcon />
+  //         </div>
+  //         <div className="editor-group__header__tab__label">
+  //           {editorState.diagramName}
+  //         </div>
+  //         {showMoreInfo && (
+  //           <div className="editor-group__header__tab__path">
+  //             {editorState.diagramPath}
+  //           </div>
+  //         )}
+  //       </div>
+  //     );
+  //   }
+  //   return editorState.label;
+  // };
 
   const renderTab = (editorState: TabState): React.ReactNode | undefined => {
     if (editorState instanceof EntityDiffViewState) {
       return (
         <div className="diff-tab">
+          <div className="diff-tab__element-icon">
+            {editorState.element ? (
+              getElementIcon(editorState.element, editorStore, {
+                returnEmptyForUnknown: true,
+              }) ?? <GenericTextFileIcon />
+            ) : (
+              <GenericTextFileIcon />
+            )}
+          </div>
           <div className="diff-tab__element-name">{editorState.label}</div>
           <div className="diff-tab__text">
             ({getPrettyLabelForRevision(editorState.fromRevision)}
@@ -337,6 +401,9 @@ export const EditorGroup = observer(() => {
     } else if (editorState instanceof EntityChangeConflictEditorState) {
       return (
         <div className="diff-tab">
+          <div className="diff-tab__element-icon">
+            <GenericTextFileIcon />
+          </div>
           <div className="diff-tab__element-name">{editorState.label}</div>
           <div className="diff-tab__text">
             {editorState.isReadOnly ? '(Merge Preview)' : '(Merged)'}
@@ -344,7 +411,33 @@ export const EditorGroup = observer(() => {
         </div>
       );
     }
-    return editorState.label;
+
+    return (
+      <div className="editor-group__header__tab">
+        <div className="editor-group__header__tab__icon">
+          {editorState instanceof ElementEditorState ? (
+            getElementIcon(editorState.element, editorStore, {
+              returnEmptyForUnknown: true,
+            }) ?? <GenericTextFileIcon />
+          ) : (
+            <GenericTextFileIcon />
+          )}
+        </div>
+        <div className="editor-group__header__tab__label">
+          {editorState.label}
+        </div>
+        {editorState instanceof ElementEditorState &&
+          editorStore.tabManagerState.tabs.filter(
+            (tab) =>
+              tab instanceof ElementEditorState &&
+              tab.label === editorState.label,
+          ).length > 1 && (
+            <div className="editor-group__header__tab__path">
+              {editorState.element.path}
+            </div>
+          )}
+      </div>
+    );
   };
 
   if (!currentTabState) {

@@ -187,7 +187,7 @@ const ModelGenerationItem = observer(
         showPlaceholder={isBeingDragged}
       >
         <div className="btn--sm generation-spec-model-generation-editor__item__label">
-          {getElementIcon(editorStore, modelGeneration)}
+          {getElementIcon(modelGeneration, editorStore)}
         </div>
         <input
           className={clsx('generation-spec-model-generation-editor__item__id', {

@@ -209,7 +209,7 @@ export const ClassMappingEditor = observer(
               {sourceName && (
                 <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__source">
                   <div className="mapping-element-editor__metadata__source__type icon">
-                    {getElementTypeIcon(editorStore, sourceType)}
+                    {getElementTypeIcon(sourceType, editorStore)}
                   </div>
                   <div className="mapping-element-editor__metadata__source__label">
                     {sourceName}

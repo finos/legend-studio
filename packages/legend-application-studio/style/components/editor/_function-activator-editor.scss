@@ -66,4 +66,14 @@
     height: calc(100% - 5rem);
     overflow: auto;
   }
+
+  &__function-pointer {
+    @include flexVCenter;
+
+    &__visit-btn {
+      height: 2.8rem;
+      width: 2.8rem;
+      margin-left: 0.5rem;
+    }
+  }
 }

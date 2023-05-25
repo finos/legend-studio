@@ -261,7 +261,7 @@ const getRuntimeExplorerTreeNodeIcon = (
   } else if (node.data instanceof Connection) {
     return <PURE_ConnectionIcon />;
   }
-  return getElementIcon(editorStore, node.data);
+  return getElementIcon(node.data, editorStore);
 };
 
 const getRuntimeExplorerTreeNodeTooltipText = (
