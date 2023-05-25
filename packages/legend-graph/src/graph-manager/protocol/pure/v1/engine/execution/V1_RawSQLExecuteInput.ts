@@ -45,7 +45,7 @@ const createRawSQLExecuteInpuModelSchema = (
     sql: primitive(),
   });
 
-export const V1_serializeRawSQLExecuteInpu = (
+export const V1_serializeRawSQLExecuteInput = (
   value: V1_RawSQLExecuteInput,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_RawSQLExecuteInput> =>

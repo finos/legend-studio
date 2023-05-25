@@ -157,12 +157,7 @@ const DatabaseBuilderTreeNodeContainer = observer(
           >
             {renderCheckedIcon(node)}
           </div>
-          <div
-            className="database-builder-tree__type-icon"
-            onClick={toggleExpandNode}
-          >
-            {nodeTypeIcon}
-          </div>
+          <div className="database-builder-tree__type-icon">{nodeTypeIcon}</div>
         </div>
         <div className="tree-view__node__label database-builder-tree__node__label">
           {node.label}
@@ -336,7 +331,7 @@ export const DatabaseBuilder = observer(
               </ResizablePanel>
               <ResizablePanelSplitter />
               <ResizablePanel>
-                <div className="panel database-builder__generated">
+                <div className="panel database-builder__model">
                   <div className="panel__header">
                     <div className="panel__header__title">
                       <div className="panel__header__title__label">

@@ -71,6 +71,7 @@ export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   constructor(id: string, label: string, parentId: string | undefined) {
     makeObservable(this, {
       isChecked: observable,
+      setChecked: action,
     });
 
     this.id = id;

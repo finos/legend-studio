@@ -68,7 +68,7 @@ import type { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionAc
 import type { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
 import type { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
 import type { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput.js';
-import type { V1_RawSQLExecuteInput } from './execution/V1_ExecuteSQLInput.js';
+import type { V1_RawSQLExecuteInput } from './execution/V1_RawSQLExecuteInput.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -645,9 +645,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._databaseUtilities()}/executeRawSQL`,
       input,
       {},
-      {
-        [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
-      },
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
     );
 
   // ------------------------------------------- Function ---------------------------------------

@@ -35,6 +35,7 @@ import { DevToolPanel } from './DevToolPanel.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { ProblemsPanel } from './ProblemsPanel.js';
 import { SQLPlaygroundPanel } from './SQLPlaygroundPanel.js';
+import { GraphEditFormModeState } from '../../../stores/editor/GraphEditFormModeState.js';
 
 export const PanelGroupItemExperimentalBadge: React.FC = () => (
   <div
@@ -89,7 +90,7 @@ export const PanelGroup = observer(() => {
       mode: PANEL_MODE.SQL_PLAYGROUND,
       name: 'SQL PLAYGROUND',
       icon: undefined,
-      isVisible: true,
+      isVisible: editorStore.graphEditorMode instanceof GraphEditFormModeState,
       experimental: true,
     },
   };

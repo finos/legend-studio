@@ -308,7 +308,7 @@ import { V1_FunctionActivatorInput } from './engine/functionActivator/V1_Functio
 import { V1_FunctionActivator } from './model/packageableElements/function/V1_FunctionActivator.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from './model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../../../../STO_Relational_Exports.js';
-import { V1_RawSQLExecuteInput } from './engine/execution/V1_ExecuteSQLInput.js';
+import { V1_RawSQLExecuteInput } from './engine/execution/V1_RawSQLExecuteInput.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];

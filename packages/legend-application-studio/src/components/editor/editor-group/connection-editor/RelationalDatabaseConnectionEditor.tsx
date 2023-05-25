@@ -1645,7 +1645,7 @@ const RelationalConnectionGeneralEditor = observer(
             <PanelContent className="relational-connection-editor__general">
               <PanelFormSection>
                 <div className="panel__content__form__section__header__label">
-                  Database type
+                  Database Type
                 </div>
                 <CustomSelectorInput
                   options={typeOptions}
@@ -1669,7 +1669,7 @@ const RelationalConnectionGeneralEditor = observer(
               <PanelContent className="relational-connection-editor__general">
                 <PanelFormSection>
                   <div className="panel__content__form__section__header__label">
-                    Database type
+                    Database Type
                   </div>
                   <CustomSelectorInput
                     options={typeOptions}

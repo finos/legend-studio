@@ -940,6 +940,7 @@ export class EditorStore implements CommandRegistrar {
       case GRAPH_EDITOR_MODE.GRAMMAR_TEXT: {
         const graphEditorMode = new GraphEditGrammarModeState(this);
         try {
+          yield flowResult(this.graphEditorMode.onLeave(fallbackOptions));
           yield flowResult(
             graphEditorMode.cleanupBeforeEntering(fallbackOptions),
           );

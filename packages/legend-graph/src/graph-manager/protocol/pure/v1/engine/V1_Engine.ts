@@ -121,9 +121,9 @@ import { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionActivat
 import { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
 import { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
 import {
-  V1_serializeRawSQLExecuteInpu,
+  V1_serializeRawSQLExecuteInput,
   type V1_RawSQLExecuteInput,
-} from './execution/V1_ExecuteSQLInput.js';
+} from './execution/V1_RawSQLExecuteInput.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -880,7 +880,7 @@ export class V1_Engine {
     plugins: PureProtocolProcessorPlugin[],
   ): Promise<string> {
     return this.engineServerClient.executeRawSQL(
-      V1_serializeRawSQLExecuteInpu(input, plugins),
+      V1_serializeRawSQLExecuteInput(input, plugins),
     );
   }
 

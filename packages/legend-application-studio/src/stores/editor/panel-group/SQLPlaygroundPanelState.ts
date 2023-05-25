@@ -24,21 +24,29 @@ import {
   filterByType,
   ActionState,
   getNonNullableEntry,
+  getNullableLastEntry,
 } from '@finos/legend-shared';
-import { observable, makeObservable, flow, flowResult } from 'mobx';
+import { observable, makeObservable, flow, flowResult, action } from 'mobx';
+import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
   type Schema,
   type Table,
   type Database,
-  type RelationalDatabaseConnection,
+  type PackageableConnection,
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
   Column,
   getSchema,
+  guaranteeRelationalDatabaseConnection,
+  GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import {
+  CODE_EDITOR_LANGUAGE,
+  moveCursorToPosition,
+} from '@finos/legend-lego/code-editor';
 
 export abstract class DatabaseSchemaExplorerTreeNodeData
   implements TreeNodeData
@@ -98,30 +106,78 @@ export interface DatabaseSchemaExplorerTreeData
 
 const DUMMY_DATABASE_PACKAGE = 'dummy';
 const DUMMY_DATABASE_NAME = 'DummyDB';
+const DEFAULT_SQL_TEXT = `--Start building your SQL. Note that you can also drag-and-drop nodes from schema explorer\n`;
 
 export class SQLPlaygroundPanelState {
   readonly editorStore: EditorStore;
 
   isFetchingSchema = false;
-  connection?: RelationalDatabaseConnection | undefined;
+  isExecutingRawSQL = false;
+
+  connection?: PackageableConnection | undefined;
   treeData?: DatabaseSchemaExplorerTreeData | undefined;
+  readonly sqlEditorTextModel: monacoEditorAPI.ITextModel;
+  sqlEditor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
+  sqlEditorViewState?: monacoEditorAPI.ICodeEditorViewState | undefined;
+  sqlText = DEFAULT_SQL_TEXT;
+  sqlExecutionResult?: string | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
-      connection: observable,
       isFetchingSchema: observable,
+      isExecutingRawSQL: observable,
+      connection: observable,
       treeData: observable,
+      sqlText: observable,
+      sqlExecutionResult: observable,
+      sqlEditor: observable.ref,
+      sqlEditorViewState: observable.ref,
+      setTreeData: action,
+      setConnection: action,
+      setSQLEditor: action,
+      setSQLEditorViewState: action,
       onNodeSelect: flow,
       fetchDatabaseMetadata: flow,
       fetchSchemaMetadata: flow,
       fetchTableMetadata: flow,
+      executeRawSQL: flow,
     });
 
     this.editorStore = editorStore;
+    this.sqlEditorTextModel = monacoEditorAPI.createModel(
+      this.sqlText,
+      CODE_EDITOR_LANGUAGE.SQL,
+    );
   }
 
-  setTreeData(builderTreeData?: DatabaseSchemaExplorerTreeData): void {
-    this.treeData = builderTreeData;
+  setTreeData(val?: DatabaseSchemaExplorerTreeData): void {
+    this.treeData = val;
+  }
+
+  setConnection(val: PackageableConnection | undefined): void {
+    this.connection = val;
+    this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
+  }
+
+  setSQLText(val: string): void {
+    this.sqlText = val;
+  }
+
+  setSQLEditor(val: monacoEditorAPI.IStandaloneCodeEditor | undefined): void {
+    this.sqlEditor = val;
+    if (val) {
+      const lines = this.sqlText.split('\n');
+      moveCursorToPosition(val, {
+        lineNumber: lines.length,
+        column: getNullableLastEntry(lines)?.length ?? 0,
+      });
+    }
+  }
+
+  setSQLEditorViewState(
+    val: monacoEditorAPI.ICodeEditorViewState | undefined,
+  ): void {
+    this.sqlEditorViewState = val;
   }
 
   *onNodeSelect(
@@ -160,7 +216,9 @@ export class SQLPlaygroundPanelState {
     try {
       this.isFetchingSchema = true;
 
-      const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const databaseBuilderInput = new DatabaseBuilderInput(
+        guaranteeRelationalDatabaseConnection(this.connection),
+      );
       databaseBuilderInput.targetDatabase = new TargetDatabase(
         DUMMY_DATABASE_PACKAGE,
         DUMMY_DATABASE_NAME,
@@ -214,7 +272,9 @@ export class SQLPlaygroundPanelState {
       this.isFetchingSchema = true;
 
       const schema = schemaNode.schema;
-      const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const databaseBuilderInput = new DatabaseBuilderInput(
+        guaranteeRelationalDatabaseConnection(this.connection),
+      );
       databaseBuilderInput.targetDatabase = new TargetDatabase(
         DUMMY_DATABASE_PACKAGE,
         DUMMY_DATABASE_NAME,
@@ -272,7 +332,9 @@ export class SQLPlaygroundPanelState {
       this.isFetchingSchema = true;
 
       const table = tableNode.table;
-      const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const databaseBuilderInput = new DatabaseBuilderInput(
+        guaranteeRelationalDatabaseConnection(this.connection),
+      );
       databaseBuilderInput.targetDatabase = new TargetDatabase(
         DUMMY_DATABASE_PACKAGE,
         DUMMY_DATABASE_NAME,
@@ -350,5 +412,40 @@ export class SQLPlaygroundPanelState {
       0,
       'Expected one database to be generated from input',
     );
+  }
+
+  *executeRawSQL(): GeneratorFn<void> {
+    if (!this.connection) {
+      return;
+    }
+
+    try {
+      this.isExecutingRawSQL = true;
+
+      let sql = this.sqlText;
+      const currentSelection = this.sqlEditor?.getSelection();
+      if (currentSelection) {
+        const selectionValue =
+          this.sqlEditorTextModel.getValueInRange(currentSelection);
+        if (selectionValue.trim() !== '') {
+          sql = selectionValue;
+        }
+      }
+
+      this.sqlExecutionResult =
+        (yield this.editorStore.graphManagerState.graphManager.executeRawSQL(
+          guaranteeRelationalDatabaseConnection(this.connection),
+          sql,
+        )) as string;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.isExecutingRawSQL = false;
+    }
   }
 }
