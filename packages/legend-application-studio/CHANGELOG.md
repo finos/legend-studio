@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 26.1.1
+
+### Patch Changes
+
+- [#2268](https://github.com/finos/legend-studio/pull/2268) [`666276d0e`](https://github.com/finos/legend-studio/commit/666276d0e857f61568b6478c5f2b5165fd096ec7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove `TEMPORARY__enableTestDataGenerationNewFlow` to enable new flow (parameterValue) for service test data auto generation.
+
 ## 26.1.0
 
 ### Minor Changes
