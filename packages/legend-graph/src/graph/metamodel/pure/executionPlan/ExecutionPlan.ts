@@ -23,9 +23,10 @@ export class ExecutionPlan {
   processingTemplateFunctions: string[] = [];
   authDependent!: boolean;
   kerberos?: string | undefined;
-  // TODO: Populate fields when required
-  //   func : FunctionDefinition<Any>[1];
-  //   mapping : Mapping[1];
-  //   runtime : Runtime[1];
-  // globalImplementationSupport: PlatformImplementation[0..1];
+  /**
+   * Studio does not process the platform implementation info
+   *
+   * @discrepancy model
+   */
+  globalImplementationSupport!: object;
 }

@@ -22,6 +22,7 @@ import {
   primitive,
   list,
   optional,
+  raw,
 } from 'serializr';
 import {
   type PlainObject,
@@ -50,6 +51,7 @@ import {
 } from '../V1_ConnectionSerializationHelper.js';
 import { V1_INTERNAL__UnknownResultType } from '../../../../model/executionPlan/results/V1_INTERNAL__UnknownResultType.js';
 import { V1_INTERNAL__UnknownExecutionNode } from '../../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
+import type { V1_ExecutionNode } from '../../../../model/executionPlan/nodes/V1_ExecutionNode.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 
@@ -148,6 +150,7 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
     V1_serializeExecutionNode,
     V1_deserializeExecutionNode,
   ),
+  implementation: raw(),
   onConnectionCloseCommitQuery: optional(primitive()),
   onConnectionCloseRollbackQuery: optional(primitive()),
   resultColumns: list(usingModelSchema(SQLResultColumnModelSchema)),
@@ -157,8 +160,8 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
 });
 
 export function V1_serializeExecutionNode(
-  protocol: V1_ResultType,
-): PlainObject<V1_ResultType> {
+  protocol: V1_ExecutionNode,
+): PlainObject<V1_ExecutionNode> {
   if (protocol instanceof V1_INTERNAL__UnknownExecutionNode) {
     return protocol.content;
   } else if (protocol instanceof V1_RelationalTDSInstantiationExecutionNode) {
@@ -182,14 +185,15 @@ const V1_INTERNAL__UnknownExecutionNodeModelSchema = createModelSchema(
       V1_serializeExecutionNode,
       V1_deserializeExecutionNode,
     ),
+    implementation: raw(),
     resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
 
 export function V1_deserializeExecutionNode(
-  json: PlainObject<V1_ResultType>,
-): V1_ResultType {
+  json: PlainObject<V1_ExecutionNode>,
+): V1_ExecutionNode {
   switch (json._type) {
     case V1_ExecutionNodeType.RELATIONAL_TDS_INSTANTIATION:
       return deserialize(
@@ -220,9 +224,9 @@ export enum V1_ExecutionPlanType {
 const SimpleExecutionPlanModelSchema = createModelSchema(
   V1_SimpleExecutionPlan,
   {
-    // TODO: check why Pure returns plan without _type flag
-    // _type: usingConstantValueSchema(V1_ExecutionPlanType.SINGLE),
+    _type: usingConstantValueSchema(V1_ExecutionPlanType.SINGLE),
     authDependent: primitive(),
+    globalImplementationSupport: raw(),
     kerberos: optional(primitive()),
     rootExecutionNode: custom(
       V1_serializeExecutionNode,
@@ -251,7 +255,6 @@ export const V1_deserializeExecutionPlan = (
   switch (json._type) {
     case V1_ExecutionPlanType.SINGLE:
     default:
-      // TODO: check why Pure returns plan without _type flag
       return deserialize(SimpleExecutionPlanModelSchema, json);
   }
 };

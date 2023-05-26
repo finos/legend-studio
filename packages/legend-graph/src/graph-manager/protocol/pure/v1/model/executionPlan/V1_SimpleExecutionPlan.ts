@@ -24,5 +24,10 @@ export class V1_SimpleExecutionPlan extends V1_ExecutionPlan {
   serializer!: V1_Protocol;
   templateFunctions: string[] = [];
   rootExecutionNode!: V1_ExecutionNode;
-  // globalImplementationSupport!: V1_PlatformImplementation; // TODO: this is WIP for M2M case in engine
+  /**
+   * Studio does not process the platform implementation info
+   *
+   * @discrepancy model
+   */
+  globalImplementationSupport!: object;
 }

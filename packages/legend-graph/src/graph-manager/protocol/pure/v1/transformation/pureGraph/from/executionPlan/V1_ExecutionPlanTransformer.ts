@@ -129,6 +129,7 @@ const transformBaseExecutionNode = (
   protocol.executionNodes = metamodel.executionNodes.map((node) =>
     V1_transformExecutionNode(node, context),
   );
+  protocol.implementation = metamodel.implementation;
 };
 
 const transformSQLExecutionNode = (
@@ -200,5 +201,6 @@ export const V1_transformExecutionPlan = (
     metamodel.rootExecutionNode,
     context,
   );
+  protocol.globalImplementationSupport = metamodel.globalImplementationSupport;
   return protocol;
 };
