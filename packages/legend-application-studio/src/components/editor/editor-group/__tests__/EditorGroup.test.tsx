@@ -23,6 +23,7 @@ import {
   getByTestId,
   queryByText,
   getByTitle,
+  getAllByTestId,
 } from '@testing-library/react';
 import TEST_DATA__m2mGraphEntities from '../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json';
 import { integrationTest } from '@finos/legend-shared/test';
@@ -32,6 +33,7 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../__test-utils__/EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
+import { TAB_MANAGER__TAB_TEST_ID } from '@finos/legend-lego/application';
 
 let renderResult: RenderResult;
 
@@ -96,12 +98,14 @@ test(integrationTest('Test navigation between element states'), async () => {
     .forEach((openElement) => getByText(editorGroupHeader, openElement));
 
   // test closing of tabs
+  const tabs = getAllByTestId(editorGroupHeader, TAB_MANAGER__TAB_TEST_ID);
   const closeTabs = ['Firm', 'Degree', 'TestEnumeration'];
-  closeTabs.forEach((tab) => {
-    const text = getByText(editorGroupHeader, tab);
-    const parent = text.parentElement as HTMLElement;
-    const deleteButton = getByTitle(parent, 'Close');
-    fireEvent.click(deleteButton);
+  tabs.forEach((tab) => {
+    if (!closeTabs.some((tabLabel) => tab.textContent?.includes(tabLabel))) {
+      return;
+    }
+    const closeButton = getByTitle(tab, 'Close');
+    fireEvent.click(closeButton);
   });
   closeTabs.forEach((tab) =>
     expect(queryByText(editorGroupHeader, tab)).toBeNull(),

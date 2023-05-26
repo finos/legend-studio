@@ -319,59 +319,6 @@ export const EditorGroup = observer(() => {
     // TODO: create an editor for unsupported tab
     return null;
   };
-  // const renderTab = (editorState: TabState): React.ReactNode | undefined => {
-  //   if (editorState instanceof FileEditorState) {
-  //     const showMoreInfo =
-  //       ideStore.tabManagerState.tabs.filter(
-  //         (tab) =>
-  //           tab instanceof FileEditorState &&
-  //           tab.fileName === editorState.fileName,
-  //       ).length > 1;
-  //     return (
-  //       <div className="editor-group__header__tab">
-  //         <div className="editor-group__header__tab__icon">
-  //           <FileAltIcon className="editor-group__header__tab__icon--file" />
-  //         </div>
-  //         <div className="editor-group__header__tab__label">
-  //           {editorState.fileName}
-  //         </div>
-  //         {showMoreInfo && (
-  //           <div className="editor-group__header__tab__path">
-  //             {editorState.filePath}
-  //           </div>
-  //         )}
-  //         {editorState.file.RO && (
-  //           <div className="editor-group__header__tab__icon">
-  //             <LockIcon className="editor-group__header__tab__icon--readonly" />
-  //           </div>
-  //         )}
-  //       </div>
-  //     );
-  //   } else if (editorState instanceof DiagramEditorState) {
-  //     const showMoreInfo =
-  //       ideStore.tabManagerState.tabs.filter(
-  //         (tab) =>
-  //           tab instanceof DiagramEditorState &&
-  //           tab.diagramName === editorState.diagramName,
-  //       ).length > 1;
-  //     return (
-  //       <div className="editor-group__header__tab">
-  //         <div className="editor-group__header__tab__icon">
-  //           <PURE_DiagramIcon />
-  //         </div>
-  //         <div className="editor-group__header__tab__label">
-  //           {editorState.diagramName}
-  //         </div>
-  //         {showMoreInfo && (
-  //           <div className="editor-group__header__tab__path">
-  //             {editorState.diagramPath}
-  //           </div>
-  //         )}
-  //       </div>
-  //     );
-  //   }
-  //   return editorState.label;
-  // };
 
   const renderTab = (editorState: TabState): React.ReactNode | undefined => {
     if (editorState instanceof EntityDiffViewState) {
