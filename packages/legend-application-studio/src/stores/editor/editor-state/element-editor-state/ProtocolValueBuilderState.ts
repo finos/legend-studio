@@ -25,7 +25,12 @@ import {
   type Property,
   classHasCycle,
 } from '@finos/legend-graph';
-import { isString, uuid, type PlainObject } from '@finos/legend-shared';
+import {
+  isString,
+  uuid,
+  type PlainObject,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 
 export abstract class ProtocolValueFieldNode implements TreeNodeData {
@@ -331,7 +336,11 @@ export class ProtocolValueBuilderState {
               break;
             }
             case PRIMITIVE_TYPE.STRING: {
-              value[property.name] = '';
+              // NOTE: this just provides some default value, and they are not necessarily sensible
+              // perhaps, we can create a mechanism for this class where we can inject value to fields
+              // but that might violate the generic usage principle of this builder as this builder's
+              // user should be relatively agnostic to the extension they are picking
+              value[property.name] = prettyCONSTName(property.name);
               break;
             }
             case PRIMITIVE_TYPE.DATE:

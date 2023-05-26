@@ -39,6 +39,7 @@ import {
   configureCodeEditorComponent,
   setupPureLanguageService,
 } from '@finos/legend-lego/code-editor';
+import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/STO_Relational_LegendStudioCommand.js';
 
 export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   static NAME = packageJson.extensions.applicationStudioPlugin;
@@ -66,9 +67,14 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
   }
 
   override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
-    return collectKeyedCommandConfigEntriesFromConfig(
-      LEGEND_STUDIO_COMMAND_CONFIG,
-    );
+    return [
+      ...collectKeyedCommandConfigEntriesFromConfig(
+        LEGEND_STUDIO_COMMAND_CONFIG,
+      ),
+      ...collectKeyedCommandConfigEntriesFromConfig(
+        STO_RELATIONAL_LEGEND_STUDIO_COMMAND_CONFIG,
+      ),
+    ];
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

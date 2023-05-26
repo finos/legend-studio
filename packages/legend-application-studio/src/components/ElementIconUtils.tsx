@@ -45,10 +45,19 @@ import {
 } from '@finos/legend-art';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../stores/editor/utils/ModelClassifierUtils.js';
 
+/**
+ * NOTE: eventually we would like to remove this function and just a generic mechanism to
+ * get element icon given the metamodel, we can also simplify the plugins a lot.
+ * Technically, the only time we need to check icon for a type classifier is when we create
+ * a new element
+ */
 export const getElementTypeIcon = (
-  editorStore: EditorStore,
   type: string | undefined,
-  element?: PackageableElement | undefined,
+  editorStore: EditorStore,
+  options?: {
+    element?: PackageableElement | undefined;
+    returnEmptyForUnknown?: boolean | undefined;
+  },
 ): React.ReactNode => {
   switch (type) {
     case PACKAGEABLE_ELEMENT_TYPE.PRIMITIVE:
@@ -98,7 +107,7 @@ export const getElementTypeIcon = (
               ).getExtraElementIconGetters?.() ?? [],
           );
         for (const iconGetter of extraElementIconGetters) {
-          const elementIcon = iconGetter(type, element);
+          const elementIcon = iconGetter(type, options?.element);
           if (elementIcon) {
             return elementIcon;
           }
@@ -107,24 +116,30 @@ export const getElementTypeIcon = (
       // NOTE: this is temporary until we properly refactor this function to check element instead of
       // the type classifier value, but to be fair, this is not a bad way to do it since this acts
       // as a catch all block, we can check for `abstract` element here
-      if (element instanceof FunctionActivator) {
+      if (options?.element instanceof FunctionActivator) {
         return <LaunchIcon />;
       }
-      return <PURE_UnknownElementTypeIcon />;
+      return options?.returnEmptyForUnknown ? null : (
+        <PURE_UnknownElementTypeIcon />
+      );
     }
   }
 };
 
 export const getElementIcon = (
-  editorStore: EditorStore,
   element: PackageableElement | undefined,
+  editorStore: EditorStore,
+  options?: { returnEmptyForUnknown?: boolean | undefined },
 ): React.ReactNode =>
   getElementTypeIcon(
-    editorStore,
     element
       ? returnUndefOnError(() =>
           editorStore.graphState.getPackageableElementType(element),
         )
       : undefined,
-    element,
+    editorStore,
+    {
+      element,
+      returnEmptyForUnknown: options?.returnEmptyForUnknown,
+    },
   );

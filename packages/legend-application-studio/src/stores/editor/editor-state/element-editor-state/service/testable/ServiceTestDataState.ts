@@ -74,7 +74,7 @@ import {
   getExecutionQueryFromRawLambda,
 } from '@finos/legend-query-builder';
 
-export class ServiceTestDataParameterState extends LambdaParametersState {
+export class ServiceTestDataParametersState extends LambdaParametersState {
   connectionTestDataState: ConnectionTestDataState;
 
   constructor(connectionTestDataState: ConnectionTestDataState) {
@@ -137,10 +137,11 @@ export class ServiceTestDataParameterState extends LambdaParametersState {
 export class ConnectionTestDataState {
   readonly editorStore: EditorStore;
   readonly testDataState: ServiceTestDataState;
-  connectionData: ConnectionTestData;
-  parameterState: ServiceTestDataParameterState;
+  readonly connectionData: ConnectionTestData;
+  readonly parametersState: ServiceTestDataParametersState;
+  readonly generatingTestDataState = ActionState.create();
+
   embeddedEditorState: EmbeddedDataEditorState;
-  generatingTestDataState = ActionState.create();
   anonymizeGeneratedData = true;
 
   constructor(
@@ -149,7 +150,6 @@ export class ConnectionTestDataState {
   ) {
     makeObservable(this, {
       generatingTestDataState: observable,
-      parameterState: observable,
       embeddedEditorState: observable,
       anonymizeGeneratedData: observable,
       setAnonymizeGeneratedData: action,
@@ -163,7 +163,7 @@ export class ConnectionTestDataState {
       this.testDataState.editorStore,
       connectionData.testData,
     );
-    this.parameterState = new ServiceTestDataParameterState(this);
+    this.parametersState = new ServiceTestDataParametersState(this);
   }
   get identifiedConnection(): IdentifiedConnection | undefined {
     return this.getAllIdentifiedConnections().find(
@@ -195,7 +195,7 @@ export class ConnectionTestDataState {
         (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
           getExecutionQueryFromRawLambda(
             serviceExecutionParameters.query,
-            this.parameterState.parameterStates,
+            this.parametersState.parameterStates,
             this.editorStore.graphManagerState,
           ),
           [],
@@ -205,7 +205,7 @@ export class ConnectionTestDataState {
           {
             anonymizeGeneratedData: this.anonymizeGeneratedData,
             parameterValues: buildExecutionParameterValues(
-              this.parameterState.parameterStates,
+              this.parametersState.parameterStates,
               this.editorStore.graphManagerState,
             ),
           },
@@ -255,7 +255,7 @@ export class ConnectionTestDataState {
         const parameters = (serviceExecutionParameters.query.parameters ??
           []) as object[];
         if (parameters.length > 0) {
-          this.parameterState.openModal(serviceExecutionParameters);
+          this.parametersState.openModal(serviceExecutionParameters);
           return;
         } else {
           yield flowResult(

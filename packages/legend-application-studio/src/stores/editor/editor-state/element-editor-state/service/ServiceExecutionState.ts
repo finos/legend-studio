@@ -110,7 +110,7 @@ const QUERY_ROUTE_PATTERN = Object.freeze({
   UPDATE_PROJECT_SERVICE_QUERY: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH}`,
 });
 
-export class ServiceExecutionParameterState extends LambdaParametersState {
+export class ServiceExecutionParametersState extends LambdaParametersState {
   executionState: ServicePureExecutionState;
 
   constructor(executionState: ServicePureExecutionState) {
@@ -164,9 +164,10 @@ export class ServiceExecutionParameterState extends LambdaParametersState {
 }
 
 export abstract class ServiceExecutionState {
-  editorStore: EditorStore;
-  serviceEditorState: ServiceEditorState;
-  execution: ServiceExecution;
+  readonly editorStore: EditorStore;
+  readonly serviceEditorState: ServiceEditorState;
+  readonly execution: ServiceExecution;
+
   constructor(
     editorStore: EditorStore,
     serviceEditorState: ServiceEditorState,
@@ -180,6 +181,7 @@ export abstract class ServiceExecutionState {
     this.execution = execution;
     this.serviceEditorState = serviceEditorState;
   }
+
   abstract get serviceExecutionParameters():
     | { query: RawLambda; mapping: Mapping; runtime: Runtime }
     | undefined;
@@ -447,17 +449,17 @@ export class KeyedExecutionContextState extends ServiceExecutionContextState {
 }
 
 export abstract class ServicePureExecutionState extends ServiceExecutionState {
-  queryState: ServicePureExecutionQueryState;
   declare execution: PureExecution;
+  queryState: ServicePureExecutionQueryState;
   selectedExecutionContextState: ServiceExecutionContextState | undefined;
   runtimeEditorState?: RuntimeEditorState | undefined;
+  isOpeningQueryEditor = false;
+  showChangeExecModal = false;
   isRunningQuery = false;
   isGeneratingPlan = false;
-  isOpeningQueryEditor = false;
   executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
-  parameterState: ServiceExecutionParameterState;
-  showChangeExecModal = false;
+  readonly parametersState: ServiceExecutionParametersState;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(
@@ -479,7 +481,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,
     );
-    this.parameterState = new ServiceExecutionParameterState(this);
+    this.parametersState = new ServiceExecutionParametersState(this);
   }
 
   abstract changeExecution(): void;
@@ -606,7 +608,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     const query = this.queryState.query;
     const parameters = (query.parameters ?? []) as object[];
     if (parameters.length) {
-      this.parameterState.openModal(query);
+      this.parametersState.openModal(query);
     } else {
       this.runQuery();
     }
@@ -629,14 +631,18 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         this.editorStore.graphManagerState.graph,
       );
       promise = this.editorStore.graphManagerState.graphManager.runQuery(
-        this.getExecutionQuery(),
+        getExecutionQueryFromRawLambda(
+          this.queryState.query,
+          this.parametersState.parameterStates,
+          this.editorStore.graphManagerState,
+        ),
         this.selectedExecutionContextState?.executionContext.mapping.value,
         this.selectedExecutionContextState?.executionContext.runtime,
         this.editorStore.graphManagerState.graph,
         {
           useLosslessParse: true,
           parameterValues: buildExecutionParameterValues(
-            this.parameterState.parameterStates,
+            this.parametersState.parameterStates,
             this.editorStore.graphManagerState,
           ),
         },
@@ -648,7 +654,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         this.setExecutionResultText(
           stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
         );
-        this.parameterState.setParameters([]);
+        this.parametersState.setParameters([]);
         // report
         report.timings =
           this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
@@ -693,14 +699,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         error,
       );
     }
-  }
-
-  getExecutionQuery(): RawLambda {
-    return getExecutionQueryFromRawLambda(
-      this.queryState.query,
-      this.parameterState.parameterStates,
-      this.editorStore.graphManagerState,
-    );
   }
 
   get serviceExecutionParameters():
@@ -832,7 +830,6 @@ export class InlineServicePureExecutionState extends ServicePureExecutionState {
       executionResultText: observable,
       executionPlanState: observable,
       showChangeExecModal: observable,
-      parameterState: observable,
       setExecutionResultText: action,
       setQueryState: action,
       updateExecutionQuery: action,
@@ -879,7 +876,6 @@ export class SingleServicePureExecutionState extends ServicePureExecutionState {
       executionResultText: observable,
       executionPlanState: observable,
       showChangeExecModal: observable,
-      parameterState: observable,
       multiExecutionKey: observable,
       setExecutionResultText: action,
       closeRuntimeEditor: action,

@@ -28,16 +28,22 @@ import {
   isNonNullable,
   filterByType,
   ActionState,
-  guaranteeType,
+  getNonNullableEntry,
 } from '@finos/legend-shared';
-import { observable, action, makeObservable, flow, flowResult } from 'mobx';
+import {
+  observable,
+  action,
+  makeObservable,
+  flow,
+  flowResult,
+  computed,
+} from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   type Schema,
-  type PackageableElement,
   type Table,
-  RelationalDatabaseConnection,
+  type RelationalDatabaseConnection,
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
@@ -50,18 +56,9 @@ import {
   getSchema,
   getNullableSchema,
   getNullableTable,
-  PackageableConnection,
 } from '@finos/legend-graph';
 import { connection_setStore } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { GraphEditFormModeState } from '../../../GraphEditFormModeState.js';
-
-export const guaranteeRelationalDatabaseConnection = (
-  val: PackageableElement | undefined,
-): RelationalDatabaseConnection =>
-  guaranteeType(
-    guaranteeType(val, PackageableConnection).connectionValue,
-    RelationalDatabaseConnection,
-  );
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;
@@ -72,35 +69,52 @@ export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isChecked = false;
 
   constructor(id: string, label: string, parentId: string | undefined) {
+    makeObservable(this, {
+      isChecked: observable,
+      setChecked: action,
+    });
+
     this.id = id;
     this.label = label;
     this.parentId = parentId;
+  }
+
+  setChecked(val: boolean): void {
+    this.isChecked = val;
   }
 }
 
 export class SchemaDatabaseBuilderTreeNodeData extends DatabaseBuilderTreeNodeData {
   schema: Schema;
 
-  constructor(id: string, parentId: string | undefined, schema: Schema) {
-    super(id, schema.name, parentId);
+  constructor(id: string, schema: Schema) {
+    super(id, schema.name, undefined);
     this.schema = schema;
   }
 }
 
 export class TableDatabaseBuilderTreeNodeData extends DatabaseBuilderTreeNodeData {
+  override parentId: string;
+  owner: Schema;
   table: Table;
 
-  constructor(id: string, parentId: string | undefined, table: Table) {
+  constructor(id: string, parentId: string, owner: Schema, table: Table) {
     super(id, table.name, parentId);
+    this.parentId = parentId;
+    this.owner = owner;
     this.table = table;
   }
 }
 
 export class ColumnDatabaseBuilderTreeNodeData extends DatabaseBuilderTreeNodeData {
+  override parentId: string;
+  owner: Table;
   column: Column;
 
-  constructor(id: string, parentId: string | undefined, column: Column) {
+  constructor(id: string, parentId: string, owner: Table, column: Column) {
     super(id, column.name, parentId);
+    this.parentId = parentId;
+    this.owner = owner;
     this.column = column;
   }
 }
@@ -110,52 +124,59 @@ export interface DatabaseBuilderTreeData
   database: Database;
 }
 
-const WILDCARD = '%';
+const DEFAULT_DATABASE_PATH = 'store::MyDatabase';
 
 export class DatabaseBuilderState {
-  editorStore: EditorStore;
-  connection: RelationalDatabaseConnection;
+  readonly editorStore: EditorStore;
+  readonly connection: RelationalDatabaseConnection;
+  readonly isReadOnly: boolean;
+
   showModal = false;
   databaseGrammarCode = '';
   isBuildingDatabase = false;
   isSavingDatabase = false;
   targetDatabasePath: string;
   treeData?: DatabaseBuilderTreeData | undefined;
-  isReadOnly: boolean;
 
   constructor(
     editorStore: EditorStore,
     connection: RelationalDatabaseConnection,
     isReadOnly: boolean,
   ) {
-    makeObservable<
-      DatabaseBuilderState,
-      'buildDatabaseFromInput' | 'buildDatabaseGrammar'
-    >(this, {
+    makeObservable<DatabaseBuilderState>(this, {
       showModal: observable,
       targetDatabasePath: observable,
       isBuildingDatabase: observable,
       databaseGrammarCode: observable,
       isSavingDatabase: observable,
+      currentDatabase: computed,
       setTargetDatabasePath: action,
       setShowModal: action,
       setDatabaseGrammarCode: action,
       setTreeData: action,
       treeData: observable,
       onNodeSelect: flow,
-      buildDatabaseGrammar: flow,
-      buildDatabaseFromInput: flow,
-      buildDatabaseWithTreeData: flow,
+      generateDatabase: flow,
+      previewDatabaseModel: flow,
       createOrUpdateDatabase: flow,
-      fetchSchemaDefinitions: flow,
+      fetchDatabaseMetadata: flow,
       fetchSchemaMetadata: flow,
       fetchTableMetadata: flow,
     });
 
     this.connection = connection;
     this.editorStore = editorStore;
-    this.targetDatabasePath = this.currentDatabase?.path ?? 'store::MyDatabase';
+    this.targetDatabasePath =
+      this.currentDatabase?.path ?? DEFAULT_DATABASE_PATH;
     this.isReadOnly = isReadOnly;
+  }
+
+  get currentDatabase(): Database | undefined {
+    const store = this.connection.store.value;
+    if (store instanceof Database && !isStubbed_PackageableElement(store)) {
+      return store;
+    }
+    return undefined;
   }
 
   setShowModal(val: boolean): void {
@@ -206,10 +227,10 @@ export class DatabaseBuilderState {
     node: DatabaseBuilderTreeNodeData,
     treeData: DatabaseBuilderTreeData,
   ): void {
-    node.isChecked = !node.isChecked;
+    node.setChecked(!node.isChecked);
     if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
-      this.getChildNodes(node, treeData)?.forEach((n) => {
-        n.isChecked = node.isChecked;
+      this.getChildNodes(node, treeData)?.forEach((childNode) => {
+        childNode.setChecked(node.isChecked);
       });
     } else if (node instanceof TableDatabaseBuilderTreeNodeData) {
       if (node.parentId) {
@@ -220,7 +241,7 @@ export class DatabaseBuilderState {
             (e) => e.isChecked === node.isChecked,
           )
         ) {
-          parent.isChecked = node.isChecked;
+          parent.setChecked(node.isChecked);
         }
       }
     }
@@ -228,46 +249,42 @@ export class DatabaseBuilderState {
     this.setTreeData({ ...treeData });
   }
 
-  private buildNonEnrichedDbBuilderInput(
-    schema?: string,
-  ): DatabaseBuilderInput {
-    const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
-    const [packagePath, databaseName] = this.getDatabasePackageAndName();
-    databaseBuilderInput.targetDatabase = new TargetDatabase(
-      packagePath,
-      databaseName,
-    );
-    databaseBuilderInput.config.maxTables = undefined;
-    databaseBuilderInput.config.enrichTables = Boolean(schema);
-    databaseBuilderInput.config.patterns = [
-      new DatabasePattern(schema ?? WILDCARD, WILDCARD),
-    ];
-    return databaseBuilderInput;
-  }
-
-  *fetchSchemaDefinitions(): GeneratorFn<void> {
+  *fetchDatabaseMetadata(): GeneratorFn<void> {
     try {
       this.isBuildingDatabase = true;
-      const databaseBuilderInput = this.buildNonEnrichedDbBuilderInput();
-      const database = (yield flowResult(
-        this.buildDatabaseFromInput(databaseBuilderInput),
+      const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const [packagePath, databaseName] = this.getDatabasePackageAndName();
+      databaseBuilderInput.targetDatabase = new TargetDatabase(
+        packagePath,
+        databaseName,
+      );
+      databaseBuilderInput.config.maxTables = undefined;
+      databaseBuilderInput.config.enrichTables = false;
+      databaseBuilderInput.config.patterns = [
+        new DatabasePattern(undefined, undefined),
+      ];
+      const database = (yield this.buildIntermediateDatabase(
+        databaseBuilderInput,
       )) as Database;
+
       const rootIds: string[] = [];
       const nodes = new Map<string, DatabaseBuilderTreeNodeData>();
       database.schemas
         .slice()
         .sort((schemaA, schemaB) => schemaA.name.localeCompare(schemaB.name))
-        .forEach((dbSchema) => {
-          const schemaId = dbSchema.name;
+        .forEach((schema) => {
+          const schemaId = schema.name;
           rootIds.push(schemaId);
           const schemaNode = new SchemaDatabaseBuilderTreeNodeData(
             schemaId,
-            undefined,
-            dbSchema,
+            schema,
           );
-          schemaNode.isChecked = Boolean(
-            this.currentDatabase?.schemas.find(
-              (cSchema) => cSchema.name === dbSchema.name,
+
+          schemaNode.setChecked(
+            Boolean(
+              this.currentDatabase?.schemas.find(
+                (cSchema) => cSchema.name === schema.name,
+              ),
             ),
           );
           nodes.set(schemaId, schemaNode);
@@ -292,13 +309,23 @@ export class DatabaseBuilderState {
   ): GeneratorFn<void> {
     try {
       this.isBuildingDatabase = true;
+
       const schema = schemaNode.schema;
-      const databaseBuilderInput = this.buildNonEnrichedDbBuilderInput(
-        schema.name,
+      const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const [packagePath, databaseName] = this.getDatabasePackageAndName();
+      databaseBuilderInput.targetDatabase = new TargetDatabase(
+        packagePath,
+        databaseName,
       );
-      const database = (yield flowResult(
-        this.buildDatabaseFromInput(databaseBuilderInput),
+      databaseBuilderInput.config.maxTables = undefined;
+      databaseBuilderInput.config.enrichTables = true;
+      databaseBuilderInput.config.patterns = [
+        new DatabasePattern(schema.name, undefined),
+      ];
+      const database = (yield this.buildIntermediateDatabase(
+        databaseBuilderInput,
       )) as Database;
+
       const tables = getSchema(database, schema.name).tables;
       const childrenIds = schemaNode.childrenIds ?? [];
       schema.tables = tables;
@@ -311,6 +338,7 @@ export class DatabaseBuilderState {
           const tableNode = new TableDatabaseBuilderTreeNodeData(
             tableId,
             schemaNode.id,
+            schema,
             table,
           );
 
@@ -319,13 +347,15 @@ export class DatabaseBuilderState {
               this.currentDatabase,
               schema.name,
             );
-            tableNode.isChecked = Boolean(
-              matchingSchema
-                ? getNullableTable(matchingSchema, table.name)
-                : undefined,
+            tableNode.setChecked(
+              Boolean(
+                matchingSchema
+                  ? getNullableTable(matchingSchema, table.name)
+                  : undefined,
+              ),
             );
           } else {
-            tableNode.isChecked = false;
+            tableNode.setChecked(false);
           }
 
           treeData.nodes.set(tableId, tableNode);
@@ -350,6 +380,8 @@ export class DatabaseBuilderState {
     treeData: DatabaseBuilderTreeData,
   ): GeneratorFn<void> {
     try {
+      this.isBuildingDatabase = true;
+
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
       const [packagePath, databaseName] = resolvePackagePathAndElementName(
         this.targetDatabasePath,
@@ -358,21 +390,46 @@ export class DatabaseBuilderState {
         packagePath,
         databaseName,
       );
+      const table = tableNode.table;
       const config = databaseBuilderInput.config;
       config.maxTables = undefined;
       config.enrichTables = true;
       config.enrichColumns = true;
       config.enrichPrimaryKeys = true;
-      const table = tableNode.table;
       config.patterns = [new DatabasePattern(table.schema.name, table.name)];
-      const database = (yield flowResult(
-        this.buildDatabaseFromInput(databaseBuilderInput),
+      const database = (yield this.buildIntermediateDatabase(
+        databaseBuilderInput,
       )) as Database;
+
       const enrichedTable = database.schemas
         .find((s) => table.schema.name === s.name)
         ?.tables.find((t) => t.name === table.name);
       if (enrichedTable) {
-        this.addColumnsNodeToTableNode(tableNode, enrichedTable, treeData);
+        table.primaryKey = enrichedTable.primaryKey;
+        const columns = enrichedTable.columns.filter(filterByType(Column));
+        tableNode.table.columns = columns;
+        tableNode.childrenIds?.forEach((childId) =>
+          treeData.nodes.delete(childId),
+        );
+        tableNode.childrenIds = undefined;
+        const childrenIds: string[] = [];
+        const tableId = tableNode.id;
+        columns
+          .slice()
+          .sort((colA, colB) => colA.name.localeCompare(colB.name))
+          .forEach((column) => {
+            const columnId = `${tableId}.${column.name}`;
+            const columnNode = new ColumnDatabaseBuilderTreeNodeData(
+              columnId,
+              tableId,
+              table,
+              column,
+            );
+            column.owner = tableNode.table;
+            treeData.nodes.set(columnId, columnNode);
+            addUniqueEntry(childrenIds, columnId);
+          });
+        tableNode.childrenIds = childrenIds;
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -383,44 +440,6 @@ export class DatabaseBuilderState {
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
-    }
-  }
-
-  private addColumnsNodeToTableNode(
-    tableNode: TableDatabaseBuilderTreeNodeData,
-    enrichedTable: Table,
-    treeData: DatabaseBuilderTreeData,
-  ): void {
-    const columns = enrichedTable.columns.filter(filterByType(Column));
-    tableNode.table.columns = columns;
-    this.removeChildren(tableNode, treeData);
-    const childrenIds: string[] = [];
-    const tableId = tableNode.id;
-    columns
-      .slice()
-      .sort((colA, colB) => colA.name.localeCompare(colB.name))
-      .forEach((c) => {
-        const columnId = `${tableId}.${c.name}`;
-        const columnNode = new ColumnDatabaseBuilderTreeNodeData(
-          columnId,
-          tableId,
-          c,
-        );
-        c.owner = tableNode.table;
-        treeData.nodes.set(columnId, columnNode);
-        addUniqueEntry(childrenIds, columnId);
-      });
-    tableNode.childrenIds = childrenIds;
-  }
-
-  private removeChildren(
-    node: DatabaseBuilderTreeNodeData,
-    treeData: DatabaseBuilderTreeData,
-  ): void {
-    const currentChildren = node.childrenIds;
-    if (currentChildren) {
-      currentChildren.forEach((c) => treeData.nodes.delete(c));
-      node.childrenIds = undefined;
     }
   }
 
@@ -442,60 +461,95 @@ export class DatabaseBuilderState {
     );
   }
 
-  *buildDatabaseWithTreeData(): GeneratorFn<void> {
+  async buildIntermediateDatabase(
+    databaseBuilderInput: DatabaseBuilderInput,
+  ): Promise<Database> {
+    const entities =
+      await this.editorStore.graphManagerState.graphManager.buildDatabase(
+        databaseBuilderInput,
+      );
+    const graph = this.editorStore.graphManagerState.createNewGraph();
+    await this.editorStore.graphManagerState.graphManager.buildGraph(
+      graph,
+      entities,
+      ActionState.create(),
+    );
+    return getNonNullableEntry(
+      graph.ownDatabases,
+      0,
+      'Expected one database to be generated from input',
+    );
+  }
+
+  *generateDatabase(): GeneratorFn<Entity> {
     try {
-      if (this.treeData) {
-        const dbTreeData = this.treeData;
-        this.isBuildingDatabase = true;
-        const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
-        const [packagePath, databaseName] = this.getDatabasePackageAndName();
-        databaseBuilderInput.targetDatabase = new TargetDatabase(
-          packagePath,
-          databaseName,
-        );
-        const config = databaseBuilderInput.config;
-        config.maxTables = undefined;
-        config.enrichTables = true;
-        config.enrichColumns = true;
-        config.enrichPrimaryKeys = true;
-        dbTreeData.rootIds
-          .map((e) => dbTreeData.nodes.get(e))
-          .filter(isNonNullable)
-          .forEach((schemaNode) => {
-            if (schemaNode instanceof SchemaDatabaseBuilderTreeNodeData) {
-              const tableNodes = this.getChildNodes(schemaNode, dbTreeData);
-              const allChecked = tableNodes?.every((t) => t.isChecked === true);
-              if (
-                allChecked ||
-                (schemaNode.isChecked && !schemaNode.childrenIds)
-              ) {
-                config.patterns.push(
-                  new DatabasePattern(schemaNode.schema.name, WILDCARD),
-                );
-              } else {
-                tableNodes?.forEach((t) => {
-                  if (
-                    t instanceof TableDatabaseBuilderTreeNodeData &&
-                    t.isChecked
-                  ) {
-                    config.patterns.push(
-                      new DatabasePattern(schemaNode.schema.name, t.table.name),
-                    );
-                  }
-                });
-              }
+      this.isBuildingDatabase = true;
+
+      const treeData = guaranteeNonNullable(this.treeData);
+      const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const [packagePath, databaseName] = this.getDatabasePackageAndName();
+      databaseBuilderInput.targetDatabase = new TargetDatabase(
+        packagePath,
+        databaseName,
+      );
+      const config = databaseBuilderInput.config;
+      config.maxTables = undefined;
+      config.enrichTables = true;
+      config.enrichColumns = true;
+      config.enrichPrimaryKeys = true;
+      treeData.rootIds
+        .map((e) => treeData.nodes.get(e))
+        .filter(isNonNullable)
+        .forEach((schemaNode) => {
+          if (schemaNode instanceof SchemaDatabaseBuilderTreeNodeData) {
+            const tableNodes = this.getChildNodes(schemaNode, treeData);
+            const allChecked = tableNodes?.every((t) => t.isChecked === true);
+            if (
+              allChecked ||
+              (schemaNode.isChecked && !schemaNode.childrenIds)
+            ) {
+              config.patterns.push(
+                new DatabasePattern(schemaNode.schema.name, undefined),
+              );
+            } else {
+              tableNodes?.forEach((t) => {
+                if (
+                  t instanceof TableDatabaseBuilderTreeNodeData &&
+                  t.isChecked
+                ) {
+                  config.patterns.push(
+                    new DatabasePattern(schemaNode.schema.name, t.table.name),
+                  );
+                }
+              });
             }
-          });
-        const entities =
-          (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
-            databaseBuilderInput,
-          )) as Entity[];
-        const dbGrammar =
-          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
-            entities,
-          )) as string;
-        this.setDatabaseGrammarCode(dbGrammar);
-      }
+          }
+        });
+      const entities =
+        (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
+          databaseBuilderInput,
+        )) as Entity[];
+      return getNonNullableEntry(
+        entities,
+        0,
+        'Expected a database to be generated',
+      );
+    } finally {
+      this.isBuildingDatabase = false;
+    }
+  }
+
+  *previewDatabaseModel(): GeneratorFn<void> {
+    if (!this.treeData) {
+      return;
+    }
+
+    try {
+      this.setDatabaseGrammarCode(
+        (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+          [(yield flowResult(this.generateDatabase())) as Entity],
+        )) as string,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -508,65 +562,26 @@ export class DatabaseBuilderState {
     }
   }
 
-  private getSchemasFromTreeNode(tree: DatabaseBuilderTreeData): Schema[] {
-    return Array.from(tree.nodes.values())
-      .map((e) => {
-        if (e instanceof SchemaDatabaseBuilderTreeNodeData) {
-          return e.schema;
-        }
-        return undefined;
-      })
-      .filter(isNonNullable);
-  }
-
-  private *buildDatabaseGrammar(grammar: string): GeneratorFn<Database> {
-    const entities =
-      (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
-        grammar,
-      )) as Entity[];
-    const dbGraph = this.editorStore.graphManagerState.createNewGraph();
-    (yield this.editorStore.graphManagerState.graphManager.buildGraph(
-      dbGraph,
-      entities,
-      ActionState.create(),
-    )) as Entity[];
-    assertTrue(
-      dbGraph.ownDatabases.length === 1,
-      'Expected one database to be generated from grammar',
-    );
-    return dbGraph.ownDatabases[0] as Database;
-  }
-
-  private *buildDatabaseFromInput(
-    databaseBuilderInput: DatabaseBuilderInput,
-  ): GeneratorFn<Database> {
-    const entities =
-      (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
-        databaseBuilderInput,
-      )) as Entity[];
-    const dbGraph = this.editorStore.graphManagerState.createNewGraph();
-    (yield this.editorStore.graphManagerState.graphManager.buildGraph(
-      dbGraph,
-      entities,
-      ActionState.create(),
-    )) as Entity[];
-    assertTrue(
-      dbGraph.ownDatabases.length === 1,
-      'Expected one database to be generated from input',
-    );
-    return dbGraph.ownDatabases[0] as Database;
-  }
-
   *createOrUpdateDatabase(): GeneratorFn<void> {
+    if (!this.treeData) {
+      return;
+    }
+
     try {
       this.isSavingDatabase = true;
-      assertNonEmptyString(
-        this.databaseGrammarCode,
-        'Database grammar is empty',
+
+      const graph = this.editorStore.graphManagerState.createNewGraph();
+      (yield this.editorStore.graphManagerState.graphManager.buildGraph(
+        graph,
+        [(yield flowResult(this.generateDatabase())) as Entity],
+        ActionState.create(),
+      )) as Entity[];
+      const database = getNonNullableEntry(
+        graph.ownDatabases,
+        0,
+        'Expected one database to be generated from input',
       );
-      const database = (yield flowResult(
-        this.buildDatabaseGrammar(this.databaseGrammarCode),
-      )) as Database;
+
       let currentDatabase: Database;
       const isUpdating = Boolean(this.currentDatabase);
       if (!this.currentDatabase) {
@@ -590,22 +605,27 @@ export class DatabaseBuilderState {
       } else {
         currentDatabase = this.currentDatabase;
       }
-      if (this.treeData) {
-        const schemas = this.getSchemasFromTreeNode(this.treeData);
-        this.updateDatabase(currentDatabase, database, schemas);
-        this.editorStore.applicationStore.notificationService.notifySuccess(
-          `Database successfully '${isUpdating ? 'updated' : 'created'}.`,
+      const schemas = Array.from(this.treeData.nodes.values())
+        .map((schemaNode) => {
+          if (schemaNode instanceof SchemaDatabaseBuilderTreeNodeData) {
+            return schemaNode.schema;
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      this.updateDatabase(currentDatabase, database, schemas);
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        `Database successfully '${isUpdating ? 'updated' : 'created'}.`,
+      );
+      this.fetchDatabaseMetadata();
+      if (isUpdating) {
+        yield flowResult(
+          this.editorStore
+            .getGraphEditorMode(GraphEditFormModeState)
+            .globalCompile({
+              message: `Can't compile graph after editing database. Redirecting you to text mode`,
+            }),
         );
-        this.fetchSchemaDefinitions();
-        if (isUpdating) {
-          yield flowResult(
-            this.editorStore
-              .getGraphEditorMode(GraphEditFormModeState)
-              .globalCompile({
-                message: `Can't compile graph after editing database. Redirecting you to text mode`,
-              }),
-          );
-        }
       }
       this.setShowModal(false);
     } catch (error) {
@@ -622,24 +642,25 @@ export class DatabaseBuilderState {
 
   updateDatabase(
     current: Database,
-    generatedDb: Database,
+    generatedDatabase: Database,
     allSchemas: Schema[],
   ): void {
-    // remove shemas not defined
+    // remove undefined schemas
     current.schemas = current.schemas.filter((schema) => {
       if (
-        allSchemas.find((c) => c.name === schema.name) &&
-        !generatedDb.schemas.find((c) => c.name === schema.name)
+        allSchemas.find((item) => item.name === schema.name) &&
+        !generatedDatabase.schemas.find((c) => c.name === schema.name)
       ) {
         return false;
       }
       return true;
     });
+
     // update existing schemas
-    generatedDb.schemas.forEach((schema) => {
+    generatedDatabase.schemas.forEach((schema) => {
       (schema as Writable<Schema>)._OWNER = current;
       const currentSchemaIndex = current.schemas.findIndex(
-        (c) => c.name === schema.name,
+        (item) => item.name === schema.name,
       );
       if (currentSchemaIndex !== -1) {
         current.schemas[currentSchemaIndex] = schema;
@@ -647,13 +668,5 @@ export class DatabaseBuilderState {
         current.schemas.push(schema);
       }
     });
-  }
-
-  get currentDatabase(): Database | undefined {
-    const store = this.connection.store.value;
-    if (store instanceof Database && !isStubbed_PackageableElement(store)) {
-      return store;
-    }
-    return undefined;
   }
 }

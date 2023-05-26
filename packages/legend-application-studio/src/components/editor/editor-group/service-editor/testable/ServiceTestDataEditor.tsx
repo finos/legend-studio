@@ -165,7 +165,7 @@ export const ConnectionTestDataEditor = observer(
           isReadOnly={isReadOnly}
           embeddedDataEditorState={connectionTestDataState.embeddedEditorState}
         />
-        {connectionTestDataState.parameterState.parameterValuesEditorState
+        {connectionTestDataState.parametersState.parameterValuesEditorState
           .showModal && (
           <LambdaParameterValuesEditor
             graph={connectionTestDataState.editorStore.graphManagerState.graph}
@@ -173,7 +173,7 @@ export const ConnectionTestDataEditor = observer(
               connectionTestDataState.editorStore.changeDetectionState
                 .observerContext
             }
-            lambdaParametersState={connectionTestDataState.parameterState}
+            lambdaParametersState={connectionTestDataState.parametersState}
           />
         )}
       </div>

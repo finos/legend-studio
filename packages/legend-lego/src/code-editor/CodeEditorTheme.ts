@@ -65,7 +65,14 @@ export const DEFAULT_DARK_THEME: monacoEditorAPI.IStandaloneThemeData = {
   base: 'vs-dark',
   inherit: true,
   colors: {},
-  rules: BASE_PURE_LANGUAGE_COLOR_TOKENS,
+  rules: [
+    ...BASE_PURE_LANGUAGE_COLOR_TOKENS,
+    // NOTE: correct a problem with syntax highlighting of string in SQL
+    { token: 'string.sql', foreground: 'ce9178' },
+    { token: 'white.sql', foreground: 'd4d4d4' },
+    { token: 'identifier.sql', foreground: 'd4d4d4' },
+    { token: 'operator.sql', foreground: 'd4d4d4' },
+  ],
 };
 
 export const SOLARIZED_DARK_THEME = buildCodeEditorTheme(

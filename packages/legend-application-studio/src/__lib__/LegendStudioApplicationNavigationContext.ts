@@ -57,4 +57,6 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   SERVICE_EDITOR_TEST = 'studio.editor.service-editor.test',
 
   DATA_ELEMENT_EDITOR = 'studio.editor.data-element-editor',
+
+  SQL_PLAYGROUND = 'studio.editor.panel-group.sql-playground',
 }

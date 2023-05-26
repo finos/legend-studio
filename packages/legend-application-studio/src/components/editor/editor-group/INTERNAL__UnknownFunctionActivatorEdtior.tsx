@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
-import { BlankPanelContent, Panel } from '@finos/legend-art';
+import { ArrowRightIcon, BlankPanelContent, Panel } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
@@ -80,18 +80,31 @@ export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
                         {functionFieldDocumentation}
                       </div>
                     )}
-                    <input
-                      className="panel__content__form__section__input"
-                      spellCheck={false}
-                      disabled={true}
-                      value={generateFunctionPrettyName(
-                        editorState.activator.function.value,
-                        {
-                          fullPath: true,
-                          spacing: false,
-                        },
-                      )}
-                    />
+                    <div className="function-activator-editor__function-pointer">
+                      <input
+                        className="panel__content__form__section__input"
+                        spellCheck={false}
+                        disabled={true}
+                        value={generateFunctionPrettyName(
+                          editorState.activator.function.value,
+                          {
+                            fullPath: true,
+                            spacing: false,
+                          },
+                        )}
+                      />
+                      <button
+                        className="function-activator-editor__function-pointer__visit-btn btn--dark"
+                        title="Go to Function"
+                        onClick={() =>
+                          editorStore.graphEditorMode.openElement(
+                            editorState.activator.function.value,
+                          )
+                        }
+                      >
+                        <ArrowRightIcon />
+                      </button>
+                    </div>
                   </div>
                   <div className="panel__content__form__section">
                     <div className="panel__content__form__section__divider"></div>

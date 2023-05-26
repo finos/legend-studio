@@ -79,7 +79,7 @@ const ModelUnitPackagableElementEntryEditor = observer(
           <div className="panel__content__form__section__list__item__value model-unit-entry-editor__element">
             {
               <div className="model-unit-entry-editor__element__icon">
-                {getElementIcon(editorStore, elementRef.value)}
+                {getElementIcon(elementRef.value, editorStore)}
               </div>
             }
             <div className="model-unit-entry-editor__element__path">

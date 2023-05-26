@@ -33,6 +33,15 @@ import {
   EmptyCircleIcon,
   PanelContent,
   Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalTitle,
+  ModalHeaderActions,
+  TimesIcon,
+  ModalFooterButton,
+  BlankPanelContent,
+  KeyIcon,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
 import {
@@ -43,7 +52,7 @@ import {
   SchemaDatabaseBuilderTreeNodeData,
   TableDatabaseBuilderTreeNodeData,
 } from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
-import { capitalize } from '@finos/legend-shared';
+import { noop } from '@finos/legend-shared';
 import {
   useApplicationStore,
   useConditionedApplicationNavigationContext,
@@ -57,106 +66,121 @@ import {
 } from '@finos/legend-lego/code-editor';
 import { stringifyDataType } from '@finos/legend-graph';
 
-const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
+const getDatabaseSchemaNodeIcon = (
+  node: DatabaseBuilderTreeNodeData,
+): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
-    return <PURE_DatabaseSchemaIcon />;
+    return (
+      <div className="database-builder-tree__icon--schema">
+        <PURE_DatabaseSchemaIcon />
+      </div>
+    );
   } else if (node instanceof TableDatabaseBuilderTreeNodeData) {
-    return <PURE_DatabaseTableIcon />;
+    return (
+      <div className="database-builder-tree__icon--table">
+        <PURE_DatabaseTableIcon />
+      </div>
+    );
   } else if (node instanceof ColumnDatabaseBuilderTreeNodeData) {
     return renderColumnTypeIcon(node.column.type);
   }
   return null;
 };
 
-const DatabaseBuilderTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<
-    DatabaseBuilderTreeNodeData,
-    {
-      toggleCheckedNode: (node: DatabaseBuilderTreeNodeData) => void;
-      isPartiallySelected: (node: DatabaseBuilderTreeNodeData) => boolean;
-    }
-  >
-> = (props) => {
-  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-  const { toggleCheckedNode, isPartiallySelected } = innerProps;
-  const isExpandable =
-    Boolean(!node.childrenIds || node.childrenIds.length) &&
-    !(node instanceof ColumnDatabaseBuilderTreeNodeData);
-  const nodeExpandIcon = isExpandable ? (
-    node.isOpen ? (
-      <ChevronDownIcon />
+const DatabaseBuilderTreeNodeContainer = observer(
+  (
+    props: TreeNodeContainerProps<
+      DatabaseBuilderTreeNodeData,
+      {
+        toggleCheckedNode: (node: DatabaseBuilderTreeNodeData) => void;
+        isPartiallySelected: (node: DatabaseBuilderTreeNodeData) => boolean;
+      }
+    >,
+  ) => {
+    const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
+    const { toggleCheckedNode, isPartiallySelected } = innerProps;
+    const isExpandable =
+      Boolean(!node.childrenIds || node.childrenIds.length) &&
+      !(node instanceof ColumnDatabaseBuilderTreeNodeData);
+    const nodeExpandIcon = isExpandable ? (
+      node.isOpen ? (
+        <ChevronDownIcon />
+      ) : (
+        <ChevronRightIcon />
+      )
     ) : (
-      <ChevronRightIcon />
-    )
-  ) : (
-    <div />
-  );
-  const nodeTypeIcon = getNodeIcon(node);
-  const toggleCheck = (): void => toggleCheckedNode(node);
-  const toggleExpandNode = (): void => {
-    onNodeSelect?.(node);
-    if (!isExpandable) {
-      toggleCheck();
-    }
-  };
+      <div />
+    );
+    const nodeTypeIcon = getDatabaseSchemaNodeIcon(node);
+    const toggleExpandNode = (): void => {
+      onNodeSelect?.(node);
+      if (!isExpandable) {
+        toggleCheckedNode(node);
+      }
+    };
+    const isPrimaryKeyColumn =
+      node instanceof ColumnDatabaseBuilderTreeNodeData &&
+      node.owner.primaryKey.includes(node.column);
 
-  const renderCheckedIcon = (
-    _node: DatabaseBuilderTreeNodeData,
-  ): React.ReactNode => {
-    if (_node instanceof ColumnDatabaseBuilderTreeNodeData) {
-      return null;
-    } else if (isPartiallySelected(_node)) {
-      return <CircleIcon />;
-    } else if (_node.isChecked) {
-      return <CheckCircleIcon />;
-    }
-    return <EmptyCircleIcon />;
-  };
+    const renderCheckedIcon = (
+      _node: DatabaseBuilderTreeNodeData,
+    ): React.ReactNode => {
+      if (_node instanceof ColumnDatabaseBuilderTreeNodeData) {
+        return null;
+      } else if (isPartiallySelected(_node)) {
+        return <CircleIcon />;
+      } else if (_node.isChecked) {
+        return <CheckCircleIcon />;
+      }
+      return <EmptyCircleIcon />;
+    };
 
-  return (
-    <div
-      className={clsx('tree-view__node__container')}
-      style={{
-        paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
-        display: 'flex',
-      }}
-    >
-      <div className="tree-view__node__icon database-builder-tree__node__icon">
-        <div
-          className="database-builder-tree__expand-icon"
-          onClick={toggleExpandNode}
-        >
-          {nodeExpandIcon}
-        </div>
-        <div
-          className={clsx('database-builder-tree__checker-icon')}
-          onClick={toggleCheck}
-        >
-          {renderCheckedIcon(node)}
-        </div>
-        <div
-          className="database-builder-tree__type-icon"
-          onClick={toggleExpandNode}
-        >
-          {nodeTypeIcon}
-        </div>
-      </div>
+    return (
       <div
-        className="tree-view__node__label database-builder-tree__node__label"
+        className={clsx('tree-view__node__container')}
+        style={{
+          paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
+          display: 'flex',
+        }}
         onClick={toggleExpandNode}
       >
-        {node.label}
-        {node instanceof ColumnDatabaseBuilderTreeNodeData && (
-          <div className="database-builder-tree__node__type">
-            <div className="database-builder-tree__node__type__label">
-              {stringifyDataType(node.column.type)}
-            </div>
+        <div className="tree-view__node__icon database-builder-tree__node__icon__group">
+          <div className="database-builder-tree__expand-icon">
+            {nodeExpandIcon}
           </div>
-        )}
+          <div
+            className={clsx('database-builder-tree__checker-icon')}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleCheckedNode(node);
+            }}
+          >
+            {renderCheckedIcon(node)}
+          </div>
+          <div className="database-builder-tree__type-icon">{nodeTypeIcon}</div>
+        </div>
+        <div className="tree-view__node__label database-builder-tree__node__label">
+          {node.label}
+          {node instanceof ColumnDatabaseBuilderTreeNodeData && (
+            <div className="database-builder-tree__node__type">
+              <div className="database-builder-tree__node__type__label">
+                {stringifyDataType(node.column.type)}
+              </div>
+            </div>
+          )}
+          {isPrimaryKeyColumn && (
+            <div
+              className="database-builder-tree__node__pk"
+              title="Primary Key"
+            >
+              <KeyIcon />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+);
 
 export const DatabaseBuilderExplorer = observer(
   (props: {
@@ -200,6 +224,7 @@ export const DatabaseBuilderExplorer = observer(
     };
     return (
       <TreeView
+        className="database-builder-tree"
         components={{
           TreeNodeContainer: DatabaseBuilderTreeNodeContainer,
         }}
@@ -222,8 +247,8 @@ export const DatabaseBuilder = observer(
   }) => {
     const { databaseBuilderState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
-    const buildDb = applicationStore.guardUnhandledError(() =>
-      flowResult(databaseBuilderState.buildDatabaseWithTreeData()),
+    const preview = applicationStore.guardUnhandledError(() =>
+      flowResult(databaseBuilderState.previewDatabaseModel()),
     );
     const saveOrUpdateDatabase = applicationStore.guardUnhandledError(() =>
       flowResult(databaseBuilderState.createOrUpdateDatabase()),
@@ -247,7 +272,7 @@ export const DatabaseBuilder = observer(
     };
 
     useEffect(() => {
-      flowResult(databaseBuilderState.fetchSchemaDefinitions()).catch(
+      flowResult(databaseBuilderState.fetchDatabaseMetadata()).catch(
         applicationStore.alertUnhandledError,
       );
     }, [databaseBuilderState, applicationStore]);
@@ -260,17 +285,28 @@ export const DatabaseBuilder = observer(
     return (
       <Dialog
         open={databaseBuilderState.showModal}
-        onClose={closeModal}
+        onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
         classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        PaperProps={{
+          classes: {
+            root: 'search-modal__inner-container database-builder__container',
+          },
+        }}
       >
         <Modal darkMode={true} className="database-builder">
-          <div className="database-builder__heading">
-            <div className="database-builder__heading__label">
-              Build Database
-            </div>
-          </div>
-          <div className="database-builder__content">
+          <ModalHeader>
+            <ModalTitle title="Database Builder" />
+            <ModalHeaderActions>
+              <button
+                className="modal__header__action"
+                tabIndex={-1}
+                onClick={closeModal}
+              >
+                <TimesIcon />
+              </button>
+            </ModalHeaderActions>
+          </ModalHeader>
+          <ModalBody className="database-builder__content">
             <PanelLoadingIndicator isLoading={isExecutingAction} />
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel size={450}>
@@ -278,32 +314,11 @@ export const DatabaseBuilder = observer(
                   <div className="panel__header">
                     <div className="panel__header__title">
                       <div className="panel__header__title__label">
-                        database explorer
+                        schema explorer
                       </div>
                     </div>
                   </div>
                   <div className="panel__content database-builder__config__content">
-                    <div className="panel__content__form__section">
-                      <div className="panel__content__form__section__header__label">
-                        {capitalize('target database path')}
-                      </div>
-                      <div className="panel__content__form__section__header__prompt">
-                        {'path of target database'}
-                      </div>
-                      <input
-                        className="panel__content__form__section__input"
-                        spellCheck={false}
-                        disabled={
-                          isReadOnly ||
-                          Boolean(databaseBuilderState.currentDatabase)
-                        }
-                        value={
-                          databaseBuilderState.currentDatabase?.path ??
-                          databaseBuilderState.targetDatabasePath
-                        }
-                        onChange={changeValue}
-                      />
-                    </div>
                     {databaseBuilderState.treeData && (
                       <DatabaseBuilderExplorer
                         treeData={databaseBuilderState.treeData}
@@ -316,47 +331,75 @@ export const DatabaseBuilder = observer(
               </ResizablePanel>
               <ResizablePanelSplitter />
               <ResizablePanel>
-                <div className="panel database-builder__generated">
+                <div className="panel database-builder__model">
                   <div className="panel__header">
                     <div className="panel__header__title">
-                      <div className="panel__header__title__label">builder</div>
-                    </div>
-                    <div className="panel__header__actions">
-                      <button
-                        className="database-builder__action--btn database-builder__generate--btn"
-                        disabled={isReadOnly || isExecutingAction}
-                        tabIndex={-1}
-                        onClick={buildDb}
-                        title="Build database..."
-                      >
-                        Generate
-                      </button>
-                      <button
-                        className="database-builder__action--btn"
-                        disabled={isReadOnly || isExecutingAction}
-                        tabIndex={-1}
-                        onClick={saveOrUpdateDatabase}
-                        title={
-                          databaseBuilderState.currentDatabase
-                            ? 'Update database...'
-                            : 'Import database...'
-                        }
-                      >
-                        Save
-                      </button>
+                      <div className="panel__header__title__label">
+                        database model
+                      </div>
                     </div>
                   </div>
                   <PanelContent>
-                    <CodeEditor
-                      language={CODE_EDITOR_LANGUAGE.PURE}
-                      inputValue={databaseBuilderState.databaseGrammarCode}
-                      isReadOnly={true}
-                    />
+                    <div className="database-builder__modeller">
+                      <div className="panel__content__form__section database-builder__modeller__path">
+                        <div className="panel__content__form__section__header__label">
+                          Target Database Path
+                        </div>
+                        <input
+                          className="panel__content__form__section__input"
+                          spellCheck={false}
+                          disabled={
+                            isReadOnly ||
+                            Boolean(databaseBuilderState.currentDatabase)
+                          }
+                          value={
+                            databaseBuilderState.currentDatabase?.path ??
+                            databaseBuilderState.targetDatabasePath
+                          }
+                          onChange={changeValue}
+                        />
+                      </div>
+                      <div className="database-builder__modeller__preview">
+                        {databaseBuilderState.databaseGrammarCode && (
+                          <CodeEditor
+                            language={CODE_EDITOR_LANGUAGE.PURE}
+                            inputValue={
+                              databaseBuilderState.databaseGrammarCode
+                            }
+                            isReadOnly={true}
+                          />
+                        )}
+                        {!databaseBuilderState.databaseGrammarCode && (
+                          <BlankPanelContent>
+                            No database preview
+                          </BlankPanelContent>
+                        )}
+                      </div>
+                    </div>
                   </PanelContent>
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
-          </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              className="database-builder__action--btn"
+              disabled={isReadOnly || isExecutingAction}
+              onClick={preview}
+              title="Preview database model..."
+            >
+              Preview
+            </ModalFooterButton>
+            <ModalFooterButton
+              className="database-builder__action--btn"
+              disabled={isReadOnly || isExecutingAction}
+              onClick={saveOrUpdateDatabase}
+            >
+              {databaseBuilderState.currentDatabase
+                ? 'Update Database'
+                : 'Build Database'}
+            </ModalFooterButton>
+          </ModalFooter>
         </Modal>
       </Dialog>
     );

@@ -83,6 +83,7 @@ export const setup = (outputDir) => {
         core: {
           TEMPORARY__enableMappingTestableEditor: false,
           TEMPORARY__enableFunctionActivatorSupport: false,
+          TEMPORARY__enableRawSQLExecutor: false,
         },
       },
       undefined,

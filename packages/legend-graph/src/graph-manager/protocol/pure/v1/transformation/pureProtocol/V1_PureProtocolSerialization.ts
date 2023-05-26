@@ -196,7 +196,7 @@ export const V1_serializePureModelContext = (
     return serialize(V1_pureModelContextPointerModelSchema, pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextData) {
     const rawPMCD = V1_serializePureModelContextData(pureModelContext);
-    if (pureModelContext.INTERNAL__rawDependencyEntities.length) {
+    if (pureModelContext.INTERNAL__rawDependencyEntities?.length) {
       rawPMCD.elements = [
         ...(rawPMCD as { elements: PlainObject[] }).elements,
         ...pureModelContext.INTERNAL__rawDependencyEntities.map(

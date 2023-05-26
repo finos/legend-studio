@@ -227,10 +227,10 @@ const FileGenerationScopeEditor = observer(
                       {
                         <div className="file-generation-editor__configuration__content__scope__icon">
                           {getElementIcon(
-                            editorStore,
                             value instanceof PackageableElementReference
                               ? value.value
                               : undefined,
+                            editorStore,
                           )}
                         </div>
                       }

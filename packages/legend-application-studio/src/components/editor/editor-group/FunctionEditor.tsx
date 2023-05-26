@@ -58,6 +58,8 @@ import {
   MenuContent,
   MenuContentItem,
   Modal,
+  PauseCircleIcon,
+  PlayIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
@@ -124,11 +126,19 @@ import {
   rawVariableExpression_setType,
 } from '../../../stores/graph-modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
-import { LambdaEditor } from '@finos/legend-query-builder';
+import {
+  ExecutionPlanViewer,
+  LambdaEditor,
+  LambdaParameterValuesEditor,
+} from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../stores/graph-modifier/GraphModifierHelper.js';
 import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
 import type { ProtocolValueBuilderState } from '../../../stores/editor/editor-state/element-editor-state/ProtocolValueBuilderState.js';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -360,7 +370,7 @@ const ParameterBasicEditor = observer(
             >
               {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
                 <div className="property-basic-editor__type__abbr">
-                  {getElementIcon(editorStore, paramType)}
+                  {getElementIcon(paramType, editorStore)}
                 </div>
               )}
               <div className="property-basic-editor__type__label">
@@ -398,7 +408,7 @@ const ParameterBasicEditor = observer(
             >
               {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
                 <div className="property-basic-editor__type__abbr">
-                  {getElementIcon(editorStore, paramType)}
+                  {getElementIcon(paramType, editorStore)}
                 </div>
               )}
               <div className="property-basic-editor__type__label">
@@ -555,7 +565,7 @@ const ReturnTypeEditor = observer(
           >
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <div className="property-basic-editor__type__abbr">
-                {getElementIcon(editorStore, returnType.value)}
+                {getElementIcon(returnType.value, editorStore)}
               </div>
             )}
             <div className="property-basic-editor__type__label">
@@ -593,7 +603,7 @@ const ReturnTypeEditor = observer(
           >
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <div className="property-basic-editor__type__abbr">
-                {getElementIcon(editorStore, returnType.value)}
+                {getElementIcon(returnType.value, editorStore)}
               </div>
             )}
             <div className="property-basic-editor__type__label">
@@ -862,6 +872,47 @@ const FunctionActivatorContentBuilder = observer(
   },
 );
 
+const ExecutionResultViewer = observer(
+  (props: { functionEditorState: FunctionEditorState }) => {
+    const { functionEditorState } = props;
+    // execution
+    const executionResultText = functionEditorState.executionResultText;
+    const closeExecutionResultViewer = (): void =>
+      functionEditorState.setExecutionResultText(undefined);
+
+    return (
+      <Dialog
+        open={Boolean(executionResultText)}
+        onClose={closeExecutionResultViewer}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal darkMode={true} className="editor-modal">
+          <ModalHeader title="Execution Result" />
+          <ModalBody>
+            <CodeEditor
+              inputValue={executionResultText ?? ''}
+              isReadOnly={true}
+              language={CODE_EDITOR_LANGUAGE.JSON}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <button
+              className="btn modal__footer__close-btn btn--dark"
+              onClick={closeExecutionResultViewer}
+            >
+              Close
+            </button>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const FunctionEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
@@ -968,6 +1019,25 @@ export const FunctionEditor = observer(() => {
     );
   };
 
+  const runQuery = applicationStore.guardUnhandledError(() =>
+    flowResult(functionEditorState.handleRunQuery()),
+  );
+
+  const executionIsRunning =
+    functionEditorState.isRunningQuery || functionEditorState.isGeneratingPlan;
+
+  const cancelQuery = applicationStore.guardUnhandledError(() =>
+    flowResult(functionEditorState.cancelQuery()),
+  );
+
+  const generatePlan = applicationStore.guardUnhandledError(() =>
+    flowResult(functionEditorState.generatePlan(false)),
+  );
+
+  const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
+    flowResult(functionEditorState.generatePlan(true)),
+  );
+
   useEffect(() => {
     flowResult(
       functionEditorState.functionDefinitionEditorState.convertLambdaObjectToGrammarString(
@@ -1012,6 +1082,61 @@ export const FunctionEditor = observer(() => {
             ))}
           </div>
           <div className="panel__header__actions">
+            {functionEditorState.isRunningQuery ? (
+              <button
+                className="function-editor__execution__stop-btn"
+                onClick={cancelQuery}
+                tabIndex={-1}
+              >
+                <div className="btn--dark btn--caution function-editor__execution__stop-btn__label">
+                  <PauseCircleIcon className="function-editor__execution__stop-btn__label__icon" />
+                  <div className="function-editor__execution__stop-btn__label__title">
+                    Stop
+                  </div>
+                </div>
+              </button>
+            ) : (
+              <div className="function-editor__execution__action-btn">
+                <button
+                  className="function-editor__execution__action-btn__label"
+                  onClick={runQuery}
+                  title="Run Query"
+                  disabled={executionIsRunning}
+                  tabIndex={-1}
+                >
+                  <PlayIcon className="function-editor__execution__action-btn__label__icon" />
+                  <div className="function-editor__execution__action-btn__label__title">
+                    Run Query
+                  </div>
+                </button>
+                <DropdownMenu
+                  className="function-editor__execution__action-btn__dropdown-btn"
+                  disabled={executionIsRunning}
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        className="function-editor__execution__action-btn__option"
+                        onClick={generatePlan}
+                      >
+                        Generate Plan
+                      </MenuContentItem>
+                      <MenuContentItem
+                        className="function-editor__execution__action-btn__option"
+                        onClick={debugPlanGeneration}
+                      >
+                        Debug
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  }}
+                >
+                  <CaretDownIcon />
+                </DropdownMenu>
+              </div>
+            )}
             {editorStore.applicationStore.config.options
               .TEMPORARY__enableFunctionActivatorSupport && (
               <>
@@ -1202,6 +1327,21 @@ export const FunctionEditor = observer(() => {
                 />
               ))}
             </div>
+          )}
+          <ExecutionPlanViewer
+            executionPlanState={functionEditorState.executionPlanState}
+          />
+          <ExecutionResultViewer functionEditorState={functionEditorState} />
+          {functionEditorState.parametersState.parameterValuesEditorState
+            .showModal && (
+            <LambdaParameterValuesEditor
+              graph={functionEditorState.editorStore.graphManagerState.graph}
+              observerContext={
+                functionEditorState.editorStore.changeDetectionState
+                  .observerContext
+              }
+              lambdaParametersState={functionEditorState.parametersState}
+            />
           )}
         </PanelContent>
       </Panel>

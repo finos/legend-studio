@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
+import type { CommandConfigData } from '@finos/legend-application';
 
-.console-panel {
-  height: 100%;
-  width: 100%;
-  padding: 1.5rem 1rem;
-
-  &__content {
-    @include flexHSpaceBetween;
-
-    padding: 0 1rem;
-  }
+export enum STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY {
+  SQL_PLAYGROUND_EXECUTE = 'editor.panel-group.sql-playground.execute',
 }
+
+export const STO_RELATIONAL_LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
+  [STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY.SQL_PLAYGROUND_EXECUTE]: {
+    title: 'Execute SQL (SQL Playground)',
+    defaultKeyboardShortcut: 'Control+Enter',
+    additionalKeyboardShortcuts: ['Meta+Enter'],
+    when: 'When SQL playground is active',
+  },
+};

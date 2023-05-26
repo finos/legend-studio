@@ -20,8 +20,14 @@ import {
   custom,
   list,
   optional,
+  serialize,
+  type ModelSchema,
 } from 'serializr';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import {
+  SerializationFactory,
+  usingModelSchema,
+  type PlainObject,
+} from '@finos/legend-shared';
 import {
   V1_serializeConnectionValue,
   V1_deserializeConnectionValue,
@@ -81,9 +87,9 @@ export class V1_DatabaseBuilderInput {
   targetDatabase!: V1_TargetDatabase;
 }
 
-export const V1_setupDatabaseBuilderInputSerialization = (
+const createDatabaseBuilderInputModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): void => {
+): ModelSchema<V1_DatabaseBuilderInput> =>
   createModelSchema(V1_DatabaseBuilderInput, {
     config: usingModelSchema(V1_DatabaseBuilderConfig.serialization.schema),
     connection: custom(
@@ -92,4 +98,9 @@ export const V1_setupDatabaseBuilderInputSerialization = (
     ),
     targetDatabase: usingModelSchema(V1_TargetDatabase.serialization.schema),
   });
-};
+
+export const V1_serializeDatabaseBuilderInput = (
+  value: V1_DatabaseBuilderInput,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_DatabaseBuilderInput> =>
+  serialize(createDatabaseBuilderInputModelSchema(plugins), value);

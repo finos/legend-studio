@@ -17,11 +17,20 @@
 @use 'mixins' as *;
 
 .database-builder {
-  width: 100rem;
-  border: 0.1rem solid var(--color-blue-200);
-  padding: 2rem;
-  height: 80rem;
-  overflow: auto;
+  height: 100%;
+  width: 100%;
+
+  &__container {
+    height: 80vh;
+    width: 80vw;
+  }
+
+  &__content {
+    height: calc(100% - 8.6rem);
+    width: 100%;
+    position: relative;
+    padding: 0;
+  }
 
   .panel {
     height: 100%;
@@ -65,46 +74,7 @@
   }
 
   &__action--btn {
-    @include flexCenter;
-
-    border-radius: 0.1rem;
-    padding: 0.5rem;
-    background: var(--color-blue-200);
-    color: var(--color-light-grey-50);
-
-    &:hover {
-      background: var(--color-blue-180);
-    }
-
-    &[disabled] {
-      background: var(--color-dark-grey-200);
-      color: var(--color-dark-grey-500);
-    }
-
-    &:focus {
-      outline: 0.1rem solid var(--color-blue-200);
-      outline-offset: 0.1rem;
-    }
-  }
-
-  &__generate--btn {
-    margin-right: 0.3rem;
-  }
-
-  &__heading {
-    display: flex;
-    margin-bottom: 1rem;
-
-    &__label {
-      font-size: 2rem;
-      font-weight: bold;
-    }
-  }
-
-  &__content {
-    position: relative;
-    height: 100%;
-    width: 100%;
+    width: 15rem;
   }
 
   &__node--selected {
@@ -112,20 +82,35 @@
   }
 
   &__config {
-    &__content {
-      padding: 1rem;
-    }
-
     height: 100%;
-    width: 100%;
     border-right: 0.1rem solid var(--color-dark-grey-100);
 
-    &__properties {
-      padding: 0 0 0 1rem;
+    &__content {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
     }
   }
 
-  &__generated {
+  &__modeller {
+    height: 100%;
+    width: 100%;
+
+    &__path {
+      height: 8rem;
+      padding: 1rem;
+    }
+
+    &__preview {
+      border-top: 0.1rem solid var(--color-dark-grey-100);
+      height: calc(100% - 8rem);
+      width: 100%;
+      position: relative;
+    }
+  }
+
+  &__model {
     .panel {
       &__header__actions {
         @include flexVCenter;
@@ -170,52 +155,13 @@
   &__type-icon {
     @include flexHCenter;
 
-    width: 1.5rem;
-    min-width: 1.5rem;
+    width: 1.8rem;
+    min-width: 1.8rem;
   }
 
-  &__node__content {
-    @include flexVCenter;
-
-    height: 100%;
-    width: calc(100% - 3.3rem);
-  }
-
-  &__node__actions {
-    @include flexVCenter;
-
-    height: 100%;
-    padding-right: 0.5rem;
-  }
-
-  &__node__action {
-    @include flexCenter;
-
-    width: 2.8rem;
-    height: 2.8rem;
-
-    svg {
-      color: var(--color-light-grey-400);
-    }
-
-    &:hover {
-      svg {
-        color: var(--color-light-grey-200);
-      }
-    }
-  }
-
-  &__node__icon {
-    width: 4.5rem;
-    min-width: 4.5rem;
-  }
-
-  &__expand-icon,
-  &__type-icon {
-    @include flexHCenter;
-
-    width: 1.5rem;
-    min-width: 1.5rem;
+  &__node__icon__group {
+    width: 5.4rem;
+    min-width: 5.4rem;
   }
 
   &__expand-icon svg {
@@ -224,14 +170,26 @@
 
   &__node__label {
     display: flex;
+    user-select: none;
+    color: var(--color-light-grey-200);
+    font-size: 1.3rem;
   }
 
-  &__node__sub-type,
   &__node__type {
     @include flexVCenter;
   }
 
-  &__node__sub-type__label,
+  &__node__pk {
+    @include flexVCenter;
+
+    margin-left: 0.5rem;
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-light-grey-200);
+    }
+  }
+
   &__node__type__label {
     @include flexVCenter;
 
@@ -241,17 +199,19 @@
     padding: 0 0.5rem;
     height: 1.6rem;
     font-weight: 500;
-  }
-
-  &__node__type__label {
     background: var(--color-dark-grey-250);
     color: var(--color-light-grey-200);
+    user-select: none;
   }
 
-  &__node__sub-type__label {
-    background: var(--color-light-grey-400);
-    color: var(--color-dark-grey-250);
-    border-radius: 0.2rem 1.4rem 1.4rem 0.2rem;
-    padding-right: 0.7rem;
+  &__icon {
+    &--schema svg {
+      color: var(--color-lime-75);
+    }
+
+    &--table svg {
+      font-size: 1.6rem;
+      color: var(--color-magenta-100);
+    }
   }
 }

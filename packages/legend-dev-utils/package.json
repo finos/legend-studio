@@ -49,7 +49,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@babel/core": "7.21.8",
+    "@babel/core": "7.22.1",
     "@changesets/assemble-release-plan": "5.2.3",
     "@changesets/changelog-github": "0.4.8",
     "@changesets/config": "2.3.0",
@@ -83,13 +83,13 @@
     "monaco-editor": "0.38.0",
     "monaco-editor-webpack-plugin": "7.0.1",
     "postcss": "8.4.23",
-    "postcss-loader": "7.3.0",
+    "postcss-loader": "7.3.1",
     "react-refresh": "0.14.0",
     "resolve": "1.22.2",
     "sass": "1.62.1",
     "sass-loader": "13.3.0",
     "typescript": "5.0.4",
-    "webpack": "5.84.0"
+    "webpack": "5.84.1"
   },
   "devDependencies": {
     "cross-env": "7.0.3",

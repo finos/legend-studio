@@ -25,9 +25,9 @@ export class V1_PureModelContextData extends V1_PureModelContext {
   serializer?: V1_Protocol | undefined;
   elements: V1_PackageableElement[] = [];
   /**
-   * we use this to hold serialized elements as entities to save on transforming/serializing immutable entities
+   * We use this to hold serialized elements as entities to save on transforming/serializing immutable entities
    *
    * @discrepancy model
    */
-  INTERNAL__rawDependencyEntities: Entity[] = [];
+  INTERNAL__rawDependencyEntities?: Entity[] | undefined;
 }

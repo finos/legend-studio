@@ -151,7 +151,6 @@ export const FaceSadTearIcon = FA.FaRegSadTear;
 export const BusinessTimeIcon = FA.FaBusinessTime; // to be reviewed/combined
 export const DatabaseIcon = FA.FaDatabase;
 export const ServerIcon = FA.FaServer;
-export const TableIcon = FA.FaTable;
 export const ArchiveIcon = FA.FaArchive;
 export const BrainIcon = FA.FaBrain;
 export const DocumentationIcon = FA.FaBookOpen;
@@ -215,6 +214,7 @@ export const WandIcon = VSC.VscWand;
 export const CollapseTreeIcon = VSC.VscCollapseAll;
 export const ExpandTreeIcon = VSC.VscExpandAll;
 export const SerializeIcon = VSC.VscJson;
+export const TableIcon = VSC.VscTable;
 
 const GO = ReactIcons.GO;
 export const ChevronDownIcon = GO.GoChevronDown;
@@ -265,6 +265,7 @@ export const ThinChevronDownIcon = BS.BsChevronDown;
 export const ThinChevronRightIcon = BS.BsChevronRight;
 export const ThinChevronLeftIcon = BS.BsChevronLeft;
 export const QuestionSquareIcon = BS.BsQuestionSquare;
+export const GenericTextFileIcon = BS.BsTextLeft;
 
 const BI = ReactIcons.BI;
 export const ShapeTriangleIcon = BI.BiShapeTriangle;

@@ -65,7 +65,10 @@ import {
   V1_buildParserError,
 } from './V1_EngineHelper.js';
 import { V1_LightQuery, V1_Query } from './query/V1_Query.js';
-import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput.js';
+import {
+  type V1_DatabaseBuilderInput,
+  V1_serializeDatabaseBuilderInput,
+} from './generation/V1_DatabaseBuilderInput.js';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
 import {
   V1_ExecuteInput,
@@ -117,6 +120,10 @@ import type { ClassifierPathMapping } from '../../../../action/protocol/Classifi
 import { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionActivatorInfo.js';
 import { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
 import { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
+import {
+  V1_serializeRawSQLExecuteInput,
+  type V1_RawSQLExecuteInput,
+} from './execution/V1_RawSQLExecuteInput.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -859,11 +866,21 @@ export class V1_Engine {
 
   async buildDatabase(
     input: V1_DatabaseBuilderInput,
+    plugins: PureProtocolProcessorPlugin[],
   ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
       await this.engineServerClient.buildDatabase(
-        serialize(V1_DatabaseBuilderInput, input),
+        V1_serializeDatabaseBuilderInput(input, plugins),
       ),
+    );
+  }
+
+  async executeRawSQL(
+    input: V1_RawSQLExecuteInput,
+    plugins: PureProtocolProcessorPlugin[],
+  ): Promise<string> {
+    return this.engineServerClient.executeRawSQL(
+      V1_serializeRawSQLExecuteInput(input, plugins),
     );
   }
 

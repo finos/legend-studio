@@ -354,7 +354,7 @@ const PropertyBasicEditor = observer(
               >
                 {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                   <div className="property-basic-editor__type__abbr">
-                    {getElementIcon(editorStore, propertyType)}
+                    {getElementIcon(propertyType, editorStore)}
                   </div>
                 )}
                 <div className="property-basic-editor__type__label">
@@ -395,7 +395,7 @@ const PropertyBasicEditor = observer(
               >
                 {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                   <div className="property-basic-editor__type__abbr">
-                    {getElementIcon(editorStore, propertyType)}
+                    {getElementIcon(propertyType, editorStore)}
                   </div>
                 )}
                 <div className="property-basic-editor__type__label">
@@ -723,7 +723,7 @@ const DerivedPropertyBasicEditor = observer(
                 >
                   {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                     <div className="property-basic-editor__type__abbr">
-                      {getElementIcon(editorStore, propertyType)}
+                      {getElementIcon(propertyType, editorStore)}
                     </div>
                   )}
                   <div className="property-basic-editor__type__label">
@@ -764,7 +764,7 @@ const DerivedPropertyBasicEditor = observer(
                 >
                   {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                     <div className="property-basic-editor__type__abbr">
-                      {getElementIcon(editorStore, propertyType)}
+                      {getElementIcon(propertyType, editorStore)}
                     </div>
                   )}
                   <div className="property-basic-editor__type__label">

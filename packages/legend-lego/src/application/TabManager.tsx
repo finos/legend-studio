@@ -35,6 +35,8 @@ type TabDragSource = {
   tab: TabState;
 };
 
+export const TAB_MANAGER__TAB_TEST_ID = 'tab-manager__tab';
+
 const horizontalToVerticalScroll: React.WheelEventHandler = (event) => {
   // if scrolling is more horizontal than vertical, there's nothing much to do, the OS should handle it just fine
   // else, intercept
@@ -164,6 +166,7 @@ const Tab = observer(
     return (
       <div
         ref={ref}
+        data-testid={TAB_MANAGER__TAB_TEST_ID}
         className={clsx('tab-manager__tab', {
           'tab-manager__tab--active': tabState === tabManagerState.currentTab,
           'tab-manager__tab--dragged': isBeingDragged,

@@ -1,0 +1,261 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.sql-playground {
+  height: 100%;
+  width: 100%;
+
+  &__config {
+    height: 100%;
+    border-right: 0.1rem solid var(--color-dark-grey-100);
+  }
+
+  &__config__connection-selector {
+    display: flex;
+    height: 5rem;
+    padding: 1rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-100);
+
+    &__icon {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 2.8rem;
+      width: 2.8rem;
+      margin-right: 0.5rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0.2rem;
+    }
+
+    &__input {
+      width: 100%;
+    }
+
+    &__option {
+      display: flex;
+
+      &__label {
+        @include flexVCenter;
+
+        height: 1.8rem;
+      }
+
+      &__type {
+        @include flexVCenter;
+
+        color: var(--color-dark-grey-250);
+        background: var(--color-dark-grey-400);
+        margin-left: 0.5rem;
+        border-radius: 0.2rem;
+        font-size: 1rem;
+        padding: 0 0.5rem;
+        height: 1.6rem;
+        font-weight: 500;
+      }
+    }
+  }
+
+  &__config__schema-explorer {
+    height: calc(100% - 5rem);
+    padding: 1rem 0;
+    overflow: overlay;
+  }
+
+  &__code-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-100);
+      justify-content: flex-end;
+
+      &__actions {
+        display: flex;
+      }
+
+      &__action {
+        @include flexCenter;
+
+        height: 2.8rem;
+        width: 2.8rem;
+
+        svg {
+          color: var(--color-dark-grey-400);
+        }
+
+        &:hover svg {
+          color: var(--color-light-grey-400);
+        }
+      }
+    }
+
+    &__content {
+      height: calc(100% - 2.8rem);
+    }
+  }
+}
+
+.sql-playground__database-schema-explorer-tree {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__container {
+    height: calc(100% - 3.4rem);
+    width: 100%;
+    padding: 0.5rem 0;
+  }
+
+  &__node__container {
+    display: flex;
+    width: 100%;
+    height: 2.8rem;
+
+    &:hover {
+      background: var(--color-dark-blue-shade-100);
+    }
+  }
+
+  &__expand-icon,
+  &__type-icon {
+    @include flexHCenter;
+
+    width: 1.8rem;
+    min-width: 1.8rem;
+  }
+
+  &__node__icon__group {
+    width: 3.6rem;
+    min-width: 3.6rem;
+  }
+
+  &__expand-icon svg {
+    font-size: 1.2rem;
+  }
+
+  &__node__label {
+    display: flex;
+    user-select: none;
+    color: var(--color-light-grey-200);
+    font-size: 1.3rem;
+  }
+
+  &__node__type {
+    @include flexVCenter;
+  }
+
+  &__node__pk {
+    @include flexVCenter;
+
+    margin-left: 0.5rem;
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-light-grey-200);
+    }
+  }
+
+  &__node__type__label {
+    @include flexVCenter;
+
+    margin-left: 0.5rem;
+    border-radius: 0.2rem;
+    font-size: 1rem;
+    padding: 0 0.5rem;
+    height: 1.6rem;
+    font-weight: 500;
+    background: var(--color-dark-grey-250);
+    color: var(--color-light-grey-200);
+    user-select: none;
+  }
+
+  &__icon {
+    &--schema svg {
+      color: var(--color-lime-75);
+    }
+
+    &--table svg {
+      font-size: 1.6rem;
+      color: var(--color-magenta-100);
+    }
+  }
+}
+
+.sql-playground__result__grid {
+  height: 100%;
+  width: 100%;
+
+  &--empty {
+    @include flexCenter;
+
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    background: var(--color-dark-grey-50);
+    color: var(--color-dark-grey-300);
+  }
+
+  // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
+  // might override our theme customization here
+  &.ag-theme-balham-dark {
+    --ag-font-family: 'Roboto';
+
+    // Customize ag-grid theme
+    // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+    --ag-border-color: var(--color-dark-grey-200);
+    --ag-background-color: var(--color-dark-grey-50);
+    --ag-foreground-color: var(--color-light-grey-200);
+    --ag-header-background-color: var(--color-dark-grey-100);
+    --ag-header-foreground-color: var(--color-light-grey-50);
+    --ag-balham-active-color: var(--color-blue-200);
+    --ag-odd-row-background-color: var(--color-dark-grey-50);
+    --ag-even-row-background-color: var(--color-dark-grey-50);
+    --ag-row-hover-color: var(--color-dark-blue-shade-100);
+    --ag-row-border-color: var(--color-dark-grey-200);
+  }
+
+  .ag-header-cell-text {
+    font-weight: 500;
+  }
+
+  .ag-cell-value {
+    word-break: break-word;
+  }
+
+  .ag-center-cols-viewport {
+    // stripped background for remaining height of the grid when there are not enough rows
+    // See https://css-tricks.com/stripes-css/
+    background: repeating-linear-gradient(
+      135deg,
+      var(--color-dark-grey-50),
+      var(--color-dark-grey-50) 0.5rem,
+      var(--color-dark-grey-80) 0.5rem,
+      var(--color-dark-grey-80) 1rem
+    );
+  }
+
+  ::-webkit-scrollbar-track-piece {
+    background: transparent;
+  }
+}
