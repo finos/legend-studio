@@ -545,13 +545,11 @@ export class DatabaseBuilderState {
     }
 
     try {
-      if (this.treeData) {
-        this.setDatabaseGrammarCode(
-          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
-            [(yield flowResult(this.generateDatabase())) as Entity],
-          )) as string,
-        );
-      }
+      this.setDatabaseGrammarCode(
+        (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+          [(yield flowResult(this.generateDatabase())) as Entity],
+        )) as string,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -607,29 +605,27 @@ export class DatabaseBuilderState {
       } else {
         currentDatabase = this.currentDatabase;
       }
-      if (this.treeData) {
-        const schemas = Array.from(this.treeData.nodes.values())
-          .map((schemaNode) => {
-            if (schemaNode instanceof SchemaDatabaseBuilderTreeNodeData) {
-              return schemaNode.schema;
-            }
-            return undefined;
-          })
-          .filter(isNonNullable);
-        this.updateDatabase(currentDatabase, database, schemas);
-        this.editorStore.applicationStore.notificationService.notifySuccess(
-          `Database successfully '${isUpdating ? 'updated' : 'created'}.`,
+      const schemas = Array.from(this.treeData.nodes.values())
+        .map((schemaNode) => {
+          if (schemaNode instanceof SchemaDatabaseBuilderTreeNodeData) {
+            return schemaNode.schema;
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      this.updateDatabase(currentDatabase, database, schemas);
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        `Database successfully '${isUpdating ? 'updated' : 'created'}.`,
+      );
+      this.fetchDatabaseMetadata();
+      if (isUpdating) {
+        yield flowResult(
+          this.editorStore
+            .getGraphEditorMode(GraphEditFormModeState)
+            .globalCompile({
+              message: `Can't compile graph after editing database. Redirecting you to text mode`,
+            }),
         );
-        this.fetchDatabaseMetadata();
-        if (isUpdating) {
-          yield flowResult(
-            this.editorStore
-              .getGraphEditorMode(GraphEditFormModeState)
-              .globalCompile({
-                message: `Can't compile graph after editing database. Redirecting you to text mode`,
-              }),
-          );
-        }
       }
       this.setShowModal(false);
     } catch (error) {
