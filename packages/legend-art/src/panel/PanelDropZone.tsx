@@ -30,10 +30,11 @@ export const PanelDropZone: React.FC<{
   children: React.ReactNode;
   isDragOver: boolean;
   dropTargetConnector: ConnectDropTarget;
+  className?: string;
 }> = (props) => {
-  const { children, isDragOver, dropTargetConnector } = props;
+  const { children, isDragOver, dropTargetConnector, className } = props;
   return (
-    <div className="dnd__dropzone" ref={dropTargetConnector}>
+    <div className={clsx('dnd__dropzone', className)} ref={dropTargetConnector}>
       {isDragOver && <div className="panel__dnd__dropzone__overlay" />}
       <div className="panel__dnd__dropzone__content">{children}</div>
     </div>

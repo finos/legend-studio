@@ -37,10 +37,12 @@ import {
   PlayIcon,
   PanelLoadingIndicator,
   BlankPanelContent,
+  TrashIcon,
 } from '@finos/legend-art';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   useApplicationStore,
+  useCommands,
   useConditionedApplicationNavigationContext,
 } from '@finos/legend-application';
 import { flowResult } from 'mobx';
@@ -68,7 +70,7 @@ import {
 import { renderColumnTypeIcon } from '../editor-group/connection-editor/DatabaseEditorHelper.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PANEL_MODE } from '../../../stores/editor/EditorConfig.js';
-import { useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
@@ -77,7 +79,9 @@ import { DataGrid } from '@finos/legend-lego/data-grid';
 import {
   getNonNullableEntry,
   getNullableEntry,
+  getNullableLastEntry,
   isNonNullable,
+  isString,
   parseCSVString,
 } from '@finos/legend-shared';
 
@@ -102,6 +106,9 @@ const getDatabaseSchemaNodeIcon = (
   return null;
 };
 
+const DATABASE_NODE_DND_TYPE = 'DATABASE_NODE_DND_TYPE';
+type DatabaseNodeDragType = { text: string };
+
 const DatabaseSchemaExplorerTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     DatabaseSchemaExplorerTreeNodeData,
@@ -123,6 +130,18 @@ const DatabaseSchemaExplorerTreeNodeContainer: React.FC<
   ) : (
     <div />
   );
+  const [, nodeDragRef] = useDrag<DatabaseNodeDragType>(
+    () => ({
+      type: DATABASE_NODE_DND_TYPE,
+      item: {
+        text:
+          node instanceof DatabaseSchemaExplorerTreeTableNodeData
+            ? `${node.owner.name}.${node.label}`
+            : node.label,
+      },
+    }),
+    [node],
+  );
   const nodeTypeIcon = getDatabaseSchemaNodeIcon(node);
   const toggleExpandNode = (): void => onNodeSelect?.(node);
   const isPrimaryKeyColumn =
@@ -136,6 +155,7 @@ const DatabaseSchemaExplorerTreeNodeContainer: React.FC<
         paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
         display: 'flex',
       }}
+      ref={nodeDragRef}
       onClick={toggleExpandNode}
     >
       <div className="tree-view__node__icon sql-playground__database-schema-explorer-tree__node__icon__group">
@@ -240,6 +260,9 @@ const PlaygroundSQLCodeEditor = observer(() => {
       applicationStore.alertUnhandledError,
     );
   };
+  const reset = (): void => {
+    playgroundState.resetSQL();
+  };
 
   useEffect(() => {
     if (!editor && codeEditorRef.current) {
@@ -270,7 +293,7 @@ const PlaygroundSQLCodeEditor = observer(() => {
     }
   }, [playgroundState, applicationStore, editor]);
 
-  // useCommands(editorState);
+  useCommands(playgroundState);
 
   // clean up
   useEffect(
@@ -287,6 +310,51 @@ const PlaygroundSQLCodeEditor = observer(() => {
     [playgroundState, editor],
   );
 
+  const handleDatabaseNodeDrop = useCallback(
+    (item: DatabaseNodeDragType): void => {
+      if (isString(item?.text)) {
+        if (playgroundState.sqlEditor) {
+          const currentValue = playgroundState.sqlEditorTextModel.getValue();
+          const lines = currentValue.split('\n');
+          const position = playgroundState.sqlEditor.getPosition() ?? {
+            lineNumber: lines.length,
+            column: getNullableLastEntry(lines)?.length ?? 0,
+          };
+          playgroundState.sqlEditor.executeEdits('', [
+            {
+              range: {
+                startLineNumber: position.lineNumber,
+                startColumn: position.column,
+                endLineNumber: position.lineNumber,
+                endColumn: position.column,
+              },
+              text: item.text,
+              forceMoveMarkers: true,
+            },
+          ]);
+          playgroundState.setSQLText(
+            playgroundState.sqlEditorTextModel.getValue(),
+          );
+        }
+      }
+    },
+    [playgroundState],
+  );
+  const [{ isDatabaseNodeDragOver }, dropConnector] = useDrop<
+    DatabaseNodeDragType,
+    void,
+    { isDatabaseNodeDragOver: boolean }
+  >(
+    () => ({
+      accept: DATABASE_NODE_DND_TYPE,
+      drop: (item): void => handleDatabaseNodeDrop(item),
+      collect: (monitor) => ({
+        isDatabaseNodeDragOver: monitor.isOver({ shallow: true }),
+      }),
+    }),
+    [handleDatabaseNodeDrop],
+  );
+
   return (
     <div className="sql-playground__code-editor">
       <PanelLoadingIndicator isLoading={playgroundState.isExecutingRawSQL} />
@@ -296,17 +364,30 @@ const PlaygroundSQLCodeEditor = observer(() => {
             className="sql-playground__code-editor__header__action"
             tabIndex={-1}
             onClick={executeRawSQL}
+            disabled={playgroundState.isExecutingRawSQL}
             title="Execute (Ctrl + Enter)"
           >
             <PlayIcon />
           </button>
+          <button
+            className="sql-playground__code-editor__header__action"
+            tabIndex={-1}
+            onClick={reset}
+            title="Reset"
+          >
+            <TrashIcon />
+          </button>
         </div>
       </div>
-      <div className="sql-playground__code-editor__content">
+      <PanelDropZone
+        className="sql-playground__code-editor__content"
+        isDragOver={isDatabaseNodeDragOver}
+        dropTargetConnector={dropConnector}
+      >
         <div className="code-editor__container">
           <div className="code-editor__body" ref={codeEditorRef} />
         </div>
-      </div>
+      </PanelDropZone>
     </div>
   );
 });
@@ -314,7 +395,7 @@ const PlaygroundSQLCodeEditor = observer(() => {
 const parseExecutionResultData = (
   data: string,
 ): { rowData: Record<string, string>[]; columns: string[] } | undefined => {
-  const lines = data.split('\n');
+  const lines = data.split('\n').filter((line) => line.trim().length);
   if (lines.length) {
     const columns = parseCSVString(getNonNullableEntry(lines, 0)) ?? [];
     const rowData = lines
@@ -350,7 +431,7 @@ const PlayGroundSQLExecutionResultGrid = observer(
       <div className="sql-playground__result__grid ag-theme-balham-dark">
         <DataGrid
           rowData={data?.rowData}
-          overlayNoRowsTemplate={`<div class="sql-playground__result__grid--empty">No documentation found</div>`}
+          overlayNoRowsTemplate={`<div class="sql-playground__result__grid--empty">No results</div>`}
           alwaysShowVerticalScroll={true}
           suppressFieldDotNotation={true}
           columnDefs={data.columns.map((column) => ({

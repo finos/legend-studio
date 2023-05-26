@@ -47,6 +47,9 @@ import {
   CODE_EDITOR_LANGUAGE,
   moveCursorToPosition,
 } from '@finos/legend-lego/code-editor';
+import type { CommandRegistrar } from '@finos/legend-application';
+import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY } from '../../../__lib__/STO_Relational_LegendStudioCommand.js';
+import { PANEL_MODE } from '../EditorConfig.js';
 
 export abstract class DatabaseSchemaExplorerTreeNodeData
   implements TreeNodeData
@@ -108,7 +111,7 @@ const DUMMY_DATABASE_PACKAGE = 'dummy';
 const DUMMY_DATABASE_NAME = 'DummyDB';
 const DEFAULT_SQL_TEXT = `--Start building your SQL. Note that you can also drag-and-drop nodes from schema explorer\n`;
 
-export class SQLPlaygroundPanelState {
+export class SQLPlaygroundPanelState implements CommandRegistrar {
   readonly editorStore: EditorStore;
 
   isFetchingSchema = false;
@@ -129,6 +132,7 @@ export class SQLPlaygroundPanelState {
       connection: observable,
       treeData: observable,
       sqlText: observable,
+      resetSQL: action,
       sqlExecutionResult: observable,
       sqlEditor: observable.ref,
       sqlEditorViewState: observable.ref,
@@ -136,6 +140,7 @@ export class SQLPlaygroundPanelState {
       setConnection: action,
       setSQLEditor: action,
       setSQLEditorViewState: action,
+      setSQLText: action,
       onNodeSelect: flow,
       fetchDatabaseMetadata: flow,
       fetchSchemaMetadata: flow,
@@ -174,10 +179,39 @@ export class SQLPlaygroundPanelState {
     }
   }
 
+  resetSQL(): void {
+    this.setSQLText(DEFAULT_SQL_TEXT);
+    this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
+    this.sqlExecutionResult = undefined;
+  }
+
   setSQLEditorViewState(
     val: monacoEditorAPI.ICodeEditorViewState | undefined,
   ): void {
     this.sqlEditorViewState = val;
+  }
+
+  registerCommands(): void {
+    this.editorStore.applicationStore.commandService.registerCommand({
+      key: STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY.SQL_PLAYGROUND_EXECUTE,
+      trigger: () =>
+        this.editorStore.isInitialized &&
+        this.editorStore.activePanelMode === PANEL_MODE.SQL_PLAYGROUND &&
+        Boolean(this.connection) &&
+        Boolean(this.sqlText.length),
+      action: () => {
+        flowResult(this.executeRawSQL()).catch(
+          this.editorStore.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+  }
+
+  deregisterCommands(): void {
+    [STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY.SQL_PLAYGROUND_EXECUTE].forEach(
+      (key) =>
+        this.editorStore.applicationStore.commandService.deregisterCommand(key),
+    );
   }
 
   *onNodeSelect(
@@ -415,7 +449,7 @@ export class SQLPlaygroundPanelState {
   }
 
   *executeRawSQL(): GeneratorFn<void> {
-    if (!this.connection) {
+    if (!this.connection || this.isExecutingRawSQL) {
       return;
     }
 

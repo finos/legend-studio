@@ -98,6 +98,14 @@
 
         height: 2.8rem;
         width: 2.8rem;
+
+        svg {
+          color: var(--color-dark-grey-400);
+        }
+
+        &:hover svg {
+          color: var(--color-light-grey-400);
+        }
       }
     }
 
