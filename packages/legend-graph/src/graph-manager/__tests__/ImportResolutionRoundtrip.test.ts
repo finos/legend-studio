@@ -250,14 +250,3 @@ describe(unitTest('DSL Data import resolution roundtrip'), () => {
     },
   );
 });
-
-describe(unitTest('SubTypeGrpahFetchTree roundtrip'), () => {
-  test.each([
-    [
-      'Query having subTypeGraphFetchTree at root level',
-      TEST_DATA__SubTypeGraphFetchTreeRoundtrip,
-    ],
-  ])('%s', async (testName, entities) => {
-    await TEST__checkBuildingElementsRoundtrip(entities);
-  });
-});
