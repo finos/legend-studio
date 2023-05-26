@@ -27,5 +27,10 @@ export class ExecutionNode {
   executionNodes: ExecutionNode[] = [];
   authDependent?: boolean | undefined;
   supportFunctions: string[] = [];
-  // implementation : PlatformImplementation[0..1];
+  /**
+   * Studio does not process the platform implementation info
+   *
+   * @discrepancy model
+   */
+  implementation!: object;
 }

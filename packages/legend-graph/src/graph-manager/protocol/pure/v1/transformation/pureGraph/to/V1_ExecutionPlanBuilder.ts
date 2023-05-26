@@ -240,6 +240,7 @@ const buildBaseExecutionNode = (
   metamodel.executionNodes = protocol.executionNodes.map((node) =>
     buildExecutionNode(node, context),
   );
+  metamodel.implementation = protocol.implementation;
 };
 
 const buildSQLExecutionNode = (
@@ -309,6 +310,8 @@ export const V1_buildExecutionPlan = (
       protocol.rootExecutionNode,
       context,
     );
+    metamodel.globalImplementationSupport =
+      protocol.globalImplementationSupport;
     return metamodel;
   }
   throw new UnsupportedOperationError(`Can't build execution plan`, protocol);

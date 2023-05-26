@@ -21,7 +21,8 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '../__test-utils__/GraphManagerTestUtils.js';
-import { TEST_DATA__simpleRelationalPlan } from './roundtripTestData/executionPlan/TEST_DATA__SimpleRelationalPlan.js';
+import { TEST_DATA__simpleRelationalExecutionPlan } from './roundtripTestData/TEST_DATA__SimpleRelationalExecutionPlan.js';
+import { TEST_DATA__simpleM2MExecutionPlan } from './roundtripTestData/TEST_DATA__SimpleM2MExecutionPlan.js';
 
 type RoundtripTestCase = [
   string,
@@ -31,15 +32,20 @@ type RoundtripTestCase = [
   object,
 ];
 
-const ctx = {
-  entities: TEST_DATA__simpleRelationalPlan.entities,
-};
-
 const cases: RoundtripTestCase[] = [
   [
+    'Simple M2M execution plan',
+    {
+      entities: TEST_DATA__simpleM2MExecutionPlan.entities,
+    },
+    TEST_DATA__simpleM2MExecutionPlan.plan,
+  ],
+  [
     'Simple relational execution plan',
-    ctx,
-    TEST_DATA__simpleRelationalPlan.plan,
+    {
+      entities: TEST_DATA__simpleRelationalExecutionPlan.entities,
+    },
+    TEST_DATA__simpleRelationalExecutionPlan.plan,
   ],
 ];
 
