@@ -488,9 +488,11 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
         graph: PureModel,
         protocolGraph: V1_PureModelContextData,
       ): V1_PackageableElement[] =>
-        protocolGraph.elements.filter(
-          (element) => element instanceof V1_DataSpace,
-        ),
+        // TODO: bring back when issue with not including services as part of the execution collections is resolved
+        // protocolGraph.elements.filter(
+        //   (element) => element instanceof V1_DataSpace,
+        // ),
+        [],
     ];
   }
 }

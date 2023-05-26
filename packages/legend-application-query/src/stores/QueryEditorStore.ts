@@ -828,9 +828,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   ) {
     super(applicationStore, depotServerClient);
 
-    makeObservable<ExistingQueryEditorStore>(this, {
+    makeObservable<ExistingQueryEditorStore, '_lightQuery'>(this, {
       query: observable,
       updateState: observable,
+      _lightQuery: observable,
       lightQuery: computed,
       setLightQuery: action,
       setQuery: action,
