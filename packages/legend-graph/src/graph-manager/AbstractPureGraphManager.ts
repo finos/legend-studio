@@ -97,7 +97,10 @@ import { InstanceSetImplementation } from '../graph/metamodel/pure/packageableEl
 import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import type { SourceInformation } from './action/SourceInformation.js';
-import type { ClassifierPathMapping } from './action/protocol/ClassifierPathMapping.js';
+import type {
+  ClassifierPathMapping,
+  SubtypeInfo,
+} from './action/protocol/ProtocolInfo.js';
 import type { FunctionActivatorConfiguration } from './action/functionActivator/FunctionActivatorConfiguration.js';
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
@@ -109,12 +112,13 @@ export interface TEMPORARY__EngineSetupConfig {
     queryBaseUrl?: string | undefined;
   };
   /**
-   * This is a workaround we need to manually supply the classifier path mapping
+   * Theses are workarounds we need to manually supply the configuration data
    * for roundtrip grammar test, as the network call to engine is blocked in test
    * environment, till we figure out the best way to do this, we can remove this
    * config
    */
   TEMPORARY__classifierPathMapping?: ClassifierPathMapping[] | undefined;
+  TEMPORARY__subtypeInfo?: SubtypeInfo | undefined;
 }
 
 export interface GraphBuilderOptions {
@@ -187,12 +191,7 @@ export abstract class AbstractPureGraphManager {
       );
   }
 
-  abstract getSupportedProtocolVersion(): string;
-
-  /**
-   * Removes the SectionIndex from the list of enitites
-   */
-  abstract getElementEntities(entities: Entity[]): Entity[];
+  // --------------------------------------------- Setup ---------------------------------------------
 
   /**
    * TODO: we should not expose a fixed config like this, we probably
@@ -210,6 +209,15 @@ export abstract class AbstractPureGraphManager {
       tracerService?: TracerService | undefined;
     },
   ): Promise<void>;
+
+  // --------------------------------------------- Generic ---------------------------------------------
+
+  abstract getSupportedProtocolVersion(): string;
+
+  /**
+   * Removes the SectionIndex from the list of enitites
+   */
+  abstract getElementEntities(entities: Entity[]): Entity[];
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 

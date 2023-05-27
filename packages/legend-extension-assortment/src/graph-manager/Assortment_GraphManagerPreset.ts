@@ -16,7 +16,6 @@
 
 import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSL_SnowflakeApp_PureProtocolProcessorPlugin } from './protocol/pure/DSL_SnowflakeApp_PureProtocolProcessorPlugin.js';
 import { FMT_GraphQL_PureGraphManagerPlugin } from './FMT_GraphQL_PureGraphManagerPlugin.js';
 import { FMT_GraphQL_PureProtocolProcessorPlugin } from './protocol/pure/FMT_GraphQL_PureProtocolProcessorPlugin.js';
 import { FMT_JSONSchema_PureGraphManagerPlugin } from './FMT_JSONSchema_PureGraphManagerPlugin.js';
@@ -25,8 +24,6 @@ import { FMT_JSONSchema_PureProtocolProcessorPlugin } from './protocol/pure/FMT_
 export class Assortment_GraphManagerPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      // Snowflake App
-      new DSL_SnowflakeApp_PureProtocolProcessorPlugin(),
       // Graph QL
       new FMT_GraphQL_PureGraphManagerPlugin(),
       new FMT_GraphQL_PureProtocolProcessorPlugin(),

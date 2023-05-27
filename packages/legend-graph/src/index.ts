@@ -220,7 +220,7 @@ export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
 
-export * from './graph-manager/action/protocol/ClassifierPathMapping.js';
+export * from './graph-manager/action/protocol/ProtocolInfo.js';
 export * from './graph-manager/action/SourceInformationHelper.js';
 export * from './graph-manager/action/generation/DatabaseBuilderInput.js';
 export * from './graph-manager/action/generation/GenerationConfigurationDescription.js';
@@ -277,7 +277,6 @@ export {
   V1_PureModelContextType,
   V1_pureModelContextPropSchema,
   V1_pureModelContextDataPropSchema,
-  V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
   V1_serializePureModelContextData,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';

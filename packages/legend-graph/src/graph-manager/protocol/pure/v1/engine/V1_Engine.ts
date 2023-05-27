@@ -116,7 +116,10 @@ import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
 import { V1_INTERNAL__PackageableElementWithSourceInformation } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../graph/MetaModelConst.js';
 import { V1_serializeExecutionResult } from './execution/V1_ExecutionHelper.js';
-import type { ClassifierPathMapping } from '../../../../action/protocol/ClassifierPathMapping.js';
+import type {
+  ClassifierPathMapping,
+  SubtypeInfo,
+} from '../../../../action/protocol/ProtocolInfo.js';
 import { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionActivatorInfo.js';
 import { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
 import { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
@@ -232,6 +235,24 @@ export class V1_Engine {
       return await this.engineServerClient.getClassifierPathMap();
     } catch {
       return [];
+    }
+  }
+
+  async getSubtypeInfo(): Promise<SubtypeInfo> {
+    try {
+      return await this.engineServerClient.getSubtypeInfo();
+    } catch {
+      // NOTE: this is temporary until we have this API functional and released
+      // See https://github.com/finos/legend-engine/pull/1858
+      return {
+        functionActivatorSubtypes: ['snowflakeApp'],
+        storeSubtypes: [
+          'MongoDatabase',
+          'serviceStore',
+          'relational',
+          'binding',
+        ],
+      };
     }
   }
 
