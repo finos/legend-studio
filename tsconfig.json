@@ -57,9 +57,6 @@
       "path": "packages/legend-extension-dsl-persistence"
     },
     {
-      "path": "packages/legend-extension-dsl-snowflake-app"
-    },
-    {
       "path": "packages/legend-extension-dsl-mastery"
     },
     {
@@ -70,12 +67,6 @@
     },
     {
       "path": "packages/legend-extension-store-relational"
-    },
-    {
-      "path": "packages/legend-extension-format-json-schema"
-    },
-    {
-      "path": "packages/legend-extension-format-graphql"
     },
     // fixtures
     {

@@ -35,10 +35,10 @@ export class LegendTaxonomyWebApplication {
 
   static getPluginCollection(): AbstractPlugin[] {
     return [
+      new DSL_DataSpace_LegendApplicationPlugin(),
+
       // loggers
       new WebConsole(),
-      // generic dataspace plugin
-      new DSL_DataSpace_LegendApplicationPlugin(),
     ];
   }
 

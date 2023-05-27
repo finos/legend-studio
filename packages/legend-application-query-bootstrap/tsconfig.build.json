@@ -12,6 +12,7 @@
     { "path": "../legend-lego/tsconfig.build.json" },
     { "path": "../legend-graph/tsconfig.build.json" },
     { "path": "../legend-application-query/tsconfig.build.json" },
+    { "path": "../legend-extension-assortment/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-persistence/tsconfig.build.json" },
@@ -20,12 +21,6 @@
     {
       "path": "../legend-extension-store-service-store/tsconfig.build.json"
     },
-    { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
-    {
-      "path": "../legend-extension-format-json-schema/tsconfig.build.json"
-    },
-    {
-      "path": "../legend-extension-format-graphql/tsconfig.build.json"
-    }
+    { "path": "../legend-extension-dsl-text/tsconfig.build.json" }
   ]
 }

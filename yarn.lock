@@ -2418,14 +2418,13 @@ __metadata:
     "@finos/legend-application-query": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-assortment": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-mastery": "workspace:*"
     "@finos/legend-extension-dsl-persistence": "workspace:*"
     "@finos/legend-extension-dsl-service": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-format-graphql": "workspace:*"
-    "@finos/legend-extension-format-json-schema": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
@@ -2502,15 +2501,13 @@ __metadata:
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-assortment": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-mastery": "workspace:*"
     "@finos/legend-extension-dsl-persistence": "workspace:*"
     "@finos/legend-extension-dsl-service": "workspace:*"
-    "@finos/legend-extension-dsl-snowflake-app": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-format-graphql": "workspace:*"
-    "@finos/legend-extension-format-json-schema": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
@@ -2798,6 +2795,35 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-extension-assortment@workspace:*, @finos/legend-extension-assortment@workspace:packages/legend-extension-assortment":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-assortment@workspace:packages/legend-extension-assortment"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-application-studio": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 29.5.0
+    "@types/react": 18.2.7
+    cross-env: 7.0.3
+    eslint: 8.41.0
+    jest: 29.5.0
+    mobx: 6.9.0
+    mobx-react-lite: 3.4.3
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    rimraf: 5.0.1
+    sass: 1.62.1
+    serializr: 3.0.2
+    typescript: 5.0.4
+  peerDependencies:
+    react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-extension-dsl-data-space@workspace:*, @finos/legend-extension-dsl-data-space@workspace:packages/legend-extension-dsl-data-space":
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-data-space@workspace:packages/legend-extension-dsl-data-space"
@@ -2959,36 +2985,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-extension-dsl-snowflake-app@workspace:*, @finos/legend-extension-dsl-snowflake-app@workspace:packages/legend-extension-dsl-snowflake-app":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-extension-dsl-snowflake-app@workspace:packages/legend-extension-dsl-snowflake-app"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-application-studio": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-lego": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-storage": "workspace:*"
-    "@jest/globals": 29.5.0
-    "@types/react": 18.2.7
-    cross-env: 7.0.3
-    eslint: 8.41.0
-    jest: 29.5.0
-    mobx: 6.9.0
-    mobx-react-lite: 3.4.3
-    npm-run-all: 4.1.5
-    react: 18.2.0
-    rimraf: 5.0.1
-    sass: 1.62.1
-    serializr: 3.0.2
-    typescript: 5.0.4
-  peerDependencies:
-    react: ^18.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-extension-dsl-text@workspace:*, @finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text":
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text"
@@ -3016,41 +3012,6 @@ __metadata:
     typescript: 5.0.4
   peerDependencies:
     react: ^18.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-extension-format-graphql@workspace:*, @finos/legend-extension-format-graphql@workspace:packages/legend-extension-format-graphql":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-extension-format-graphql@workspace:packages/legend-extension-format-graphql"
-  dependencies:
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@jest/globals": 29.5.0
-    cross-env: 7.0.3
-    eslint: 8.41.0
-    jest: 29.5.0
-    npm-run-all: 4.1.5
-    rimraf: 5.0.1
-    sass: 1.62.1
-    typescript: 5.0.4
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-extension-format-json-schema@workspace:*, @finos/legend-extension-format-json-schema@workspace:packages/legend-extension-format-json-schema":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-extension-format-json-schema@workspace:packages/legend-extension-format-json-schema"
-  dependencies:
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@jest/globals": 29.5.0
-    cross-env: 7.0.3
-    eslint: 8.41.0
-    jest: 29.5.0
-    npm-run-all: 4.1.5
-    rimraf: 5.0.1
-    typescript: 5.0.4
   languageName: unknown
   linkType: soft
 

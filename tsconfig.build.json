@@ -47,9 +47,6 @@
       "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-dsl-snowflake-app/tsconfig.build.json"
-    },
-    {
       "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
     },
     {
@@ -60,12 +57,6 @@
     },
     {
       "path": "packages/legend-extension-store-relational/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-format-json-schema/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-format-graphql/tsconfig.build.json"
     },
     // fixtures
     {
