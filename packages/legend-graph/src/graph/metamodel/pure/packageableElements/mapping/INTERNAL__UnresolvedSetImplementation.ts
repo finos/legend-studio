@@ -26,16 +26,26 @@ import {
 
 /**
  * When set implementation cannot be resolved by ID, we try to avoid failing graph building
- * for now instead, we will leave this loose end unresolved.
+ * for now instead, we will leave this loose end unresolved. There are a few different cases
+ * where this could happen:
  *
- * NOTE: this is just a temporary solutions until we make this a hard-fail post migration.
+ * 1. In Pure, we used to let users define property mappings with source/target set implementation
+ *    pointing at another class mapping from a different mapping, which might not be available in
+ *    the included mapping hierarchy and it would still work, see the following issues for more details:
+ *    See https://github.com/finos/legend-studio/issues/880
+ *    See https://github.com/finos/legend-studio/issues/941
+ * 2. When we handle unknown mapping include, since the mapping include is unknown, we might not be
+ *    able to resolve the underlying mapping and its children class mappings, so like case (1), some
+ *    source/target set implementation might not be resolvable.
+ *    See https://github.com/finos/legend-studio/pull/2242
  *
- * See https://github.com/finos/legend-studio/issues/880
- * See https://github.com/finos/legend-studio/issues/941
+ * While (1) is definitely an anti-pattern, (2) is a fairly valid use case in order for us to properly
+ * support unsupported
+ * See https://github.com/finos/legend-studio/issues/315
  *
  * @discrepancy graph-building
  */
-export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
+export class INTERNAL__UnresolvedSetImplementation extends SetImplementation {
   constructor(id: string, parent: Mapping) {
     super(
       InferableMappingElementIdExplicitValue.create(id, ''),
@@ -48,6 +58,6 @@ export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
   }
 
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
-    return visitor.visit_TEMPORARY__UnresolvedSetImplementation(this);
+    return visitor.visit_INTERNAL__UnresolvedSetImplementation(this);
   }
 }

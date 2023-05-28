@@ -25,6 +25,7 @@ import {
   LogEvent,
   ContentType,
   HttpHeader,
+  LOG_LEVEL,
 } from '@finos/legend-shared';
 import { type TEMPORARY__JestMatcher } from '@finos/legend-shared/test';
 import {
@@ -122,6 +123,9 @@ const checkGrammarRoundtrip = async (
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
   const pluginManager = new TEST__GraphManagerPluginManager();
+  const logger = new WebConsole();
+  logger.setLevel(LOG_LEVEL.ERROR);
+
   // NOTE: This is temporary, when we split the test here and move them to their respective
   // extensions, this will be updated accordingly
   // See https://github.com/finos/legend-studio/issues/820
@@ -139,7 +143,7 @@ const checkGrammarRoundtrip = async (
             new STO_ServiceStore_GraphManagerPreset(),
           ],
     )
-    .usePlugins([new WebConsole()]);
+    .usePlugins([logger]);
   pluginManager.install();
   const log = new LogService();
   log.registerPlugins(pluginManager.getLoggerPlugins());
@@ -359,10 +363,7 @@ describe('Grammar roundtrip test', () => {
 describe('Grammar roundtrip test (without extensions)', () => {
   test.each(cases)('%s', async (testName, filePath, isSkipped) => {
     // Mapping include dataspace does not play nicely without extensions as the dependent XStore Associations will fail
-    if (
-      !isSkipped &&
-      basename(filePath) !== 'DSL_DataSpace-mapping-include-dataspace.pure'
-    ) {
+    if (!isSkipped) {
       await checkGrammarRoundtrip(testName, filePath, {
         debug: false,
         noExtensions: true,

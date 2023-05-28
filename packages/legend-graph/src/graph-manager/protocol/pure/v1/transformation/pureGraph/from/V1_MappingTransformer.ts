@@ -149,7 +149,7 @@ import type { SubstituteStore } from '../../../../../../../graph/metamodel/pure/
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { MergeOperationSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
-import type { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
+import type { INTERNAL__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnresolvedSetImplementation.js';
 import { isStubbed_EnumValueMapping } from '../../../../../../../graph/helpers/creator/DSL_Mapping_ModelCreatorHelper.js';
 import { isStubbed_RawLambda } from '../../../../../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
 import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graph/helpers/creator/STO_Relational_ModelCreatorHelper.js';
@@ -1353,8 +1353,8 @@ export class V1_SetImplementationTransformer
    *
    * @discrepancy graph-building
    */
-  visit_TEMPORARY__UnresolvedSetImplementation(
-    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  visit_INTERNAL__UnresolvedSetImplementation(
+    setImplementation: INTERNAL__UnresolvedSetImplementation,
   ): V1_ClassMapping | undefined {
     throw new IllegalStateError(
       `Can't transform unresolved set implementation. This type of set implementation should only show up in references.`,

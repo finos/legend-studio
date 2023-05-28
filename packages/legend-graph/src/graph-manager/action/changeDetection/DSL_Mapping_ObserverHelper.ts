@@ -60,7 +60,7 @@ import type {
 import type { SetImplementationContainer } from '../../../graph/metamodel/pure/packageableElements/mapping/SetImplementationContainer.js';
 import type { SetImplementationReference } from '../../../graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
 import type { SubstituteStore } from '../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
-import type { TEMPORARY__UnresolvedSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
+import type { INTERNAL__UnresolvedSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnresolvedSetImplementation.js';
 import type { XStorePropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/xStore/XStorePropertyMapping.js';
 import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import {
@@ -714,8 +714,8 @@ class SetImplementationObserver implements SetImplementationVisitor<void> {
     // TODO
   }
 
-  visit_TEMPORARY__UnresolvedSetImplementation(
-    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  visit_INTERNAL__UnresolvedSetImplementation(
+    setImplementation: INTERNAL__UnresolvedSetImplementation,
   ): void {
     return;
   }
@@ -920,6 +920,7 @@ export const observe_Mapping = skipObservedWithContext(
       _elementHashCode: override,
     });
 
+    // TODO: create extension mechanism to observe mapping includes when we build editor for this
     metamodel.includes.forEach(observe_MappingInclude);
     metamodel.classMappings.forEach((classMapping) =>
       observe_SetImplementation(classMapping, context),

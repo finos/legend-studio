@@ -30,7 +30,7 @@ import type { InferableMappingElementRoot } from './InferableMappingElementRoot.
 import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation.js';
 import type { InstanceSetImplementation } from './InstanceSetImplementation.js';
 import type { MergeOperationSetImplementation } from './MergeOperationSetImplementation.js';
-import type { TEMPORARY__UnresolvedSetImplementation } from './TEMPORARY__UnresolvedSetImplementation.js';
+import type { INTERNAL__UnresolvedSetImplementation } from './INTERNAL__UnresolvedSetImplementation.js';
 import type { Class } from '../domain/Class.js';
 import type { INTERNAL__UnknownSetImplementation } from './INTERNAL__UnknownSetImplementation.js';
 
@@ -38,6 +38,9 @@ export interface SetImplementationVisitor<T> {
   visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
   visit_INTERNAL__UnknownSetImplementation(
     setImplementation: INTERNAL__UnknownSetImplementation,
+  ): T;
+  visit_INTERNAL__UnresolvedSetImplementation(
+    setImplementation: INTERNAL__UnresolvedSetImplementation,
   ): T;
 
   visit_MergeOperationSetImplementation(
@@ -64,9 +67,6 @@ export interface SetImplementationVisitor<T> {
   ): T;
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
-  ): T;
-  visit_TEMPORARY__UnresolvedSetImplementation(
-    setImplementation: TEMPORARY__UnresolvedSetImplementation,
   ): T;
 }
 

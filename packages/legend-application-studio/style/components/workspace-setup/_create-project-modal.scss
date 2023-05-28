@@ -35,25 +35,6 @@
     &__workspace {
       flex-direction: column;
     }
-
-    &__project-name__input {
-      flex: 1 0 auto;
-      background: var(--color-dark-grey-280);
-      color: var(--color-light-grey-200);
-      border-radius: 0 0.2rem 0.2rem 0;
-      height: 3rem;
-      padding: 1rem;
-    }
-
-    &__workspace-name__input {
-      flex: 1 0 auto;
-      background: var(--color-dark-grey-280);
-      color: var(--color-light-grey-200);
-      border-radius: 0 0.2rem 0.2rem 0;
-      height: 3rem;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
   }
 }
 
