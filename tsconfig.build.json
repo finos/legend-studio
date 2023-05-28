@@ -30,37 +30,24 @@
     // pure ide
     { "path": "packages/legend-application-pure-ide/tsconfig.build.json" },
     // extensions
+    { "path": "packages/legend-extension-assortment/tsconfig.build.json" },
     { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
-    {
-      "path": "packages/legend-extension-dsl-text/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-dsl-diagram/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-dsl-data-space/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-dsl-service/tsconfig.build.json"
-    },
+    { "path": "packages/legend-extension-dsl-text/tsconfig.build.json" },
+    { "path": "packages/legend-extension-dsl-diagram/tsconfig.build.json" },
+    { "path": "packages/legend-extension-dsl-data-space/tsconfig.build.json" },
+    { "path": "packages/legend-extension-dsl-service/tsconfig.build.json" },
     {
       "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
     },
-    {
-      "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
-    },
+    { "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json" },
     {
       "path": "packages/legend-extension-store-service-store/tsconfig.build.json"
     },
-    {
-      "path": "packages/legend-extension-store-flat-data/tsconfig.build.json"
-    },
+    { "path": "packages/legend-extension-store-flat-data/tsconfig.build.json" },
     {
       "path": "packages/legend-extension-store-relational/tsconfig.build.json"
     },
     // fixtures
-    {
-      "path": "fixtures/legend-mock-server/tsconfig.build.json"
-    }
+    { "path": "fixtures/legend-mock-server/tsconfig.build.json" }
   ]
 }
