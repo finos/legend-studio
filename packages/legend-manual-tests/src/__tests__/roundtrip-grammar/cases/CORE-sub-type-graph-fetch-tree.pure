@@ -14,6 +14,10 @@ Service test::testservice
     mapping: test::testMapping;
     runtime: test::testRuntime;
   }
+  testSuites:
+  [
+
+  ]
 }
 
 
