@@ -54,6 +54,10 @@ export * from './components/QueryBuilderTextEditor.js';
 export { QueryBuilderTextEditorMode } from './stores/QueryBuilderTextEditorState.js';
 export { buildSerialzieFunctionWithGraphFetch } from './stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeValueSpecificationBuilder.js';
 export { buildGetAllFunction } from './stores/QueryBuilderValueSpecificationBuilder.js';
+export {
+  QueryBuilderDiffViewState,
+  QueryBuilderChangeDetectionState,
+} from './stores/QueryBuilderChangeDetectionState.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 
@@ -72,6 +76,7 @@ export * from './components/execution-plan/ExecutionPlanViewer.js';
 export * from './stores/execution-plan/ExecutionPlanState.js';
 
 export * from './components/QueryLoader.js';
+export * from './components/QueryBuilderDiffPanel.js';
 export * from './stores/QueryLoaderState.js';
 export * from './stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 

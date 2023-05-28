@@ -114,11 +114,15 @@ export class QueryBuilderChangeDetectionState {
   }
 
   showDiffViewPanel(): void {
+    this.diffViewState = this.buildQueryBuilderDiffViewState();
+  }
+
+  buildQueryBuilderDiffViewState(): QueryBuilderDiffViewState {
     assertNonNullable(
       this.querySnapshot,
       `Can't show changes: change detection is not properly initialized`,
     );
-    this.diffViewState = new QueryBuilderDiffViewState(
+    return new QueryBuilderDiffViewState(
       this,
       this.querySnapshot,
       this.querybuilderState.buildQuery(),

@@ -36,6 +36,7 @@ import {
   guaranteeType,
   quantifyList,
   assertNonNullable,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -84,6 +85,7 @@ import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import {
   type QueryBuilderState,
   type ServiceExecutionContext,
+  type QueryBuilderDiffViewState,
   ClassQueryBuilderState,
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
@@ -748,14 +750,22 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
 
 export class ExistingQueryUpdateState {
   readonly editorStore: ExistingQueryEditorStore;
-  queryRenamer = false;
   readonly updateQueryState = ActionState.create();
+
+  queryRenamer = false;
+  saveModal = false;
+  updateDiffState: QueryBuilderDiffViewState | undefined;
 
   constructor(editorState: ExistingQueryEditorStore) {
     this.editorStore = editorState;
 
     makeObservable(this, {
       queryRenamer: observable,
+      saveModal: observable,
+      updateDiffState: observable,
+      updateQueryState: observable,
+      showSaveModal: action,
+      closeSaveModal: action,
       setQueryRenamer: action,
       updateQuery: flow,
     });
@@ -765,8 +775,24 @@ export class ExistingQueryUpdateState {
     this.queryRenamer = val;
   }
 
+  showSaveModal(): void {
+    this.saveModal = true;
+    const queryBuilderState = this.editorStore.queryBuilderState;
+    if (queryBuilderState) {
+      this.updateDiffState = returnUndefOnError(() =>
+        queryBuilderState.changeDetectionState.buildQueryBuilderDiffViewState(),
+      );
+    }
+  }
+
+  closeSaveModal(): void {
+    this.saveModal = false;
+    this.updateDiffState = undefined;
+  }
+
   *updateQuery(queryName: string | undefined): GeneratorFn<void> {
     try {
+      this.updateQueryState.inProgress();
       const queryBuilderState = guaranteeNonNullable(
         this.editorStore.queryBuilderState,
         'Query builder state required to build query to edit',
@@ -802,6 +828,8 @@ export class ExistingQueryUpdateState {
         },
       );
       config.onQueryUpdate?.(updatedQuery);
+      queryBuilderState.changeDetectionState.initialize(rawLambda);
+      this.closeSaveModal();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -810,7 +838,7 @@ export class ExistingQueryUpdateState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.updateQueryState.reset();
+      this.updateQueryState.complete();
     }
   }
 }

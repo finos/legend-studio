@@ -63,7 +63,7 @@ import {
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
-import { QueryBuilderDiffViewPanel } from './QueryBuilderDiffPanel.js';
+import { QueryBuilderDiffViewPanelDiaglog } from './QueryBuilderDiffPanel.js';
 import { guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
@@ -109,7 +109,7 @@ const QueryBuilderStatusBar = observer(
                 <DiffIcon />
               </button>
               {queryBuilderState.changeDetectionState.diffViewState && (
-                <QueryBuilderDiffViewPanel
+                <QueryBuilderDiffViewPanelDiaglog
                   diffViewState={
                     queryBuilderState.changeDetectionState.diffViewState
                   }
