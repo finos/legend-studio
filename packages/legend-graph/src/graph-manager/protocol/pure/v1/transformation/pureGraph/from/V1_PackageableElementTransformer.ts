@@ -73,6 +73,8 @@ import { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageab
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import type { INTERNAL__UnknownFunctionActivator } from '../../../../../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+import type { INTERNAL__UnknownStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
+import { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -118,6 +120,15 @@ class V1_PackageableElementTransformer
     const protocol = new V1_INTERNAL__UnknownFunctionActivator();
     V1_initPackageableElement(protocol, element);
     protocol.function = element.function.valueForSerialization ?? '';
+    protocol.content = element.content;
+    return protocol;
+  }
+
+  visit_INTERNAL__UnknownStore(
+    element: INTERNAL__UnknownStore,
+  ): V1_PackageableElement {
+    const protocol = new V1_INTERNAL__UnknownStore();
+    V1_initPackageableElement(protocol, element);
     protocol.content = element.content;
     return protocol;
   }

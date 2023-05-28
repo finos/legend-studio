@@ -52,7 +52,7 @@ Service service::SimpleRelationalPassFailing
             shouldPass:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
@@ -62,7 +62,7 @@ Service service::SimpleRelationalPassFailing
             shouldFail:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
@@ -72,7 +72,7 @@ Service service::SimpleRelationalPassFailing
             assertEqualTo:
               EqualTo
               #{
-                expected : 
+                expected:
                   'expected result content';
               }#
           ]

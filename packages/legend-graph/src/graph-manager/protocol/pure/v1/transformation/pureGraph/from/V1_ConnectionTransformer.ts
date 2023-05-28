@@ -447,7 +447,7 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
     connection: INTERNAL__UnknownConnection,
   ): V1_Connection {
     const protocol = new V1_INTERNAL__UnknownConnection();
-    protocol.store = undefined;
+    protocol.store = connection.store.valueForSerialization ?? '';
     protocol.content = connection.content;
     return protocol;
   }

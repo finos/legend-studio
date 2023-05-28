@@ -56,6 +56,7 @@ import {
   observe_GenerationSpecification,
 } from './DSL_Generation_ObserverHelper.js';
 import {
+  observe_INTERNAL__UnknownStore,
   observe_Mapping,
   observe_PackageableConnection,
   observe_PackageableRuntime,
@@ -69,6 +70,7 @@ import type { ExecutionEnvironmentInstance } from '../../../graph/metamodel/pure
 import { observe_ExecutionEnvironmentInstance } from './DSL_ExecutionEnvironment_ObseverHelper.js';
 import type { INTERNAL__UnknownPackageableElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
+import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -99,6 +101,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
     element: INTERNAL__UnknownFunctionActivator,
   ): void {
     observe_INTERNAL__UnknownFunctionActivator(element);
+  }
+
+  visit_INTERNAL__UnknownStore(element: INTERNAL__UnknownStore): void {
+    observe_INTERNAL__UnknownStore(element);
   }
 
   visit_Package(element: Package): void {

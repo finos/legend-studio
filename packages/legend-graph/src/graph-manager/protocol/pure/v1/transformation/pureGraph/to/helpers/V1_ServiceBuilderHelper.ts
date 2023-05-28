@@ -166,7 +166,9 @@ export const V1_buildServiceTestSuite = (
 ): ServiceTestSuite => {
   const serviceTestSuite = new ServiceTestSuite();
   serviceTestSuite.id = element.id;
-  serviceTestSuite.testData = buildTestData(element.testData, context);
+  serviceTestSuite.testData = element.testData
+    ? buildTestData(element.testData, context)
+    : undefined;
   serviceTestSuite.tests = element.tests.map((test) =>
     V1_buildServiceTest(
       guaranteeType(test, V1_ServiceTest),

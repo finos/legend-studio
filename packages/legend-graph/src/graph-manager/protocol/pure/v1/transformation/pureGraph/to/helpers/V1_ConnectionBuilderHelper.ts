@@ -32,14 +32,13 @@ import {
 import { JsonModelConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
 import { XmlModelConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
 import { FlatDataConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
-import type { Store } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/Store.js';
+import { Store } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/Store.js';
 import { FlatData } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import { Database } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { ModelStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 import {
   type PackageableElementReference,
   PackageableElementImplicitReference,
-  PackageableElementExplicitReference,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { ModelChainConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
@@ -60,7 +59,6 @@ import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../..
 import type { V1_ModelChainConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
 import { V1_buildPostProcessor } from './V1_PostProcessorBuilderHelper.js';
 import type { V1_INTERNAL__UnknownConnection } from '../../../../model/packageableElements/connection/V1_INTERNAL__UnknownConnection.js';
-import { INTERNAL__PseudoStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__PseudoStore.js';
 import { INTERNAL__UnknownConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 
 class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
@@ -99,9 +97,21 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
     connection: V1_INTERNAL__UnknownConnection,
   ): Connection {
     const metamodel = new INTERNAL__UnknownConnection(
-      PackageableElementExplicitReference.create(
-        INTERNAL__PseudoStore.INSTANCE,
-      ),
+      !this.embeddedConnectionStore
+        ? this.context.resolveStore(
+            guaranteeNonNullable(
+              connection.store,
+              `Connection 'store' field is missing`,
+            ),
+          )
+        : connection.store
+        ? this.context.resolveStore(connection.store)
+        : ((): PackageableElementReference<Store> => {
+            if (this.embeddedConnectionStore.value instanceof Store) {
+              return this.embeddedConnectionStore;
+            }
+            throw new Error(`Connection store must be a store`);
+          })(),
     );
     metamodel.content = connection.content;
     return metamodel;

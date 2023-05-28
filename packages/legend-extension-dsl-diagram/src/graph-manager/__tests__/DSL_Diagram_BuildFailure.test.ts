@@ -81,6 +81,11 @@ test(unitTest('Missing class in diagram class view'), async () => {
   const pluginManager = new TEST__GraphManagerPluginManager();
   pluginManager.usePresets([new DSL_Diagram_GraphManagerPreset()]).install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
   await graphManagerState.graphManager.buildSystem(
     graphManagerState.coreModel,
     graphManagerState.systemModel,

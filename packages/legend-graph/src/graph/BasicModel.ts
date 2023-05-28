@@ -70,6 +70,7 @@ import type { GraphDataOrigin } from './GraphDataOrigin.js';
 import { INTERNAL__UnknownPackageableElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 import { INTERNAL__UnknownFunctionActivator } from './metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
+import { INTERNAL__UnknownStore } from './metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -99,6 +100,7 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
 
   SectionIndex,
   INTERNAL__UnknownPackageableElement,
+  INTERNAL__UnknownStore,
 ]);
 
 /**
@@ -771,6 +773,14 @@ export abstract class BasicModel {
     } else if (element instanceof INTERNAL__UnknownFunctionActivator) {
       this.functionActivatorsIndex.delete(oldPath);
       this.functionActivatorsIndex.set(newPath, element);
+      element.content = {
+        ...element.content,
+        name: element.name,
+        package: element.package?.path,
+      };
+    } else if (element instanceof INTERNAL__UnknownStore) {
+      this.storesIndex.delete(oldPath);
+      this.storesIndex.set(newPath, element);
       element.content = {
         ...element.content,
         name: element.name,

@@ -36,6 +36,7 @@ import { ELEMENT_PATH_DELIMITER } from '../../../../../../graph/MetaModelConst.j
 import type { V1_ExecutionEnvironmentInstance } from './service/V1_ExecutionEnvironmentInstance.js';
 import type { V1_INTERNAL__UnknownPackageableElement } from './V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from './function/V1_INTERNAL__UnknownFunctionActivator.js';
+import type { V1_INTERNAL__UnknownStore } from './store/V1_INTERNAL__UnknownStore.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -45,6 +46,7 @@ export interface V1_PackageableElementVisitor<T> {
   visit_INTERNAL__UnknownFunctionActivator(
     element: V1_INTERNAL__UnknownFunctionActivator,
   ): T;
+  visit_INTERNAL__UnknownStore(element: V1_INTERNAL__UnknownStore): T;
 
   visit_SectionIndex(element: V1_SectionIndex): T;
   visit_Profile(element: V1_Profile): T;

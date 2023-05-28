@@ -157,7 +157,9 @@ export const V1_transformServiceTestSuite = (
 ): V1_ServiceTestSuite => {
   const serviceTestSuite = new V1_ServiceTestSuite();
   serviceTestSuite.id = element.id;
-  serviceTestSuite.testData = transformTestData(element.testData, context);
+  serviceTestSuite.testData = element.testData
+    ? transformTestData(element.testData, context)
+    : undefined;
   serviceTestSuite.tests = element.tests.map((test) =>
     V1_transformAtomicTest(test, context),
   );

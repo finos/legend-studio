@@ -310,6 +310,7 @@ import { V1_INTERNAL__UnknownFunctionActivator } from './model/packageableElemen
 import type { RelationalDatabaseConnection } from '../../../../STO_Relational_Exports.js';
 import { V1_RawSQLExecuteInput } from './engine/execution/V1_RawSQLExecuteInput.js';
 import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
+import { V1_INTERNAL__UnknownStore } from './model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3601,7 +3602,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): string => {
     if (
       protocol instanceof V1_INTERNAL__UnknownPackageableElement ||
-      protocol instanceof V1_INTERNAL__UnknownFunctionActivator
+      protocol instanceof V1_INTERNAL__UnknownFunctionActivator ||
+      protocol instanceof V1_INTERNAL__UnknownStore
     ) {
       const _type = protocol.content._type;
       const classifierPath = isString(_type)

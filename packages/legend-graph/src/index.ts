@@ -284,7 +284,6 @@ export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
-  V1_INTERNAL__UnknownFunctionActivatorModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 export {
   V1_deserializeValueSpecification,

@@ -270,6 +270,11 @@ describe(integrationTest('Build property mapping data'), () => {
         .usePresets([new QueryBuilder_GraphManagerPreset()])
         .install();
       const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+      await graphManagerState.graphManager.initialize({
+        env: 'test',
+        tabSize: 2,
+        clientConfig: {},
+      });
       await graphManagerState.initializeSystem();
       await graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,

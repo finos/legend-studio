@@ -100,6 +100,7 @@ import {
   V1_MappingIncludeMapping,
 } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
+import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -128,21 +129,6 @@ export class V1_ElementSecondPassBuilder
     const metamodel = this.context.currentSubGraph.getOwnFunctionActivator(
       V1_buildFullPath(element.package, element.name),
     );
-    // this.context.graph.functions.find((fn) => {
-    //   console.log(
-    //     generateFunctionPrettyName(fn, {
-    //       fullPath: true,
-    //       spacing: false,
-    //     }),
-    //     element.function.replaceAll(/\s*/gu, ''),
-    //   );
-    //   return (
-    //     generateFunctionPrettyName(fn, {
-    //       fullPath: true,
-    //       spacing: false,
-    //     }) === element.function.replaceAll(/\s*/gu, '')
-    //   );
-    // });
     metamodel.function = PackageableElementExplicitReference.create(
       guaranteeNonNullable(
         this.context.graph.functions.find(
@@ -154,6 +140,10 @@ export class V1_ElementSecondPassBuilder
         ),
       ),
     );
+  }
+
+  visit_INTERNAL__UnknownStore(element: V1_INTERNAL__UnknownStore): void {
+    return;
   }
 
   visit_Profile(element: V1_Profile): void {

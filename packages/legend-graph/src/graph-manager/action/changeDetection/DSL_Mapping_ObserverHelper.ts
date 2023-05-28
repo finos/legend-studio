@@ -140,6 +140,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { INTERNAL__UnknownConnection } from '../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 import type { INTERNAL__UnknownPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 import type { INTERNAL__UnknownSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
+import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -152,6 +153,18 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 
   metamodel.includes.forEach(observe_PackageableElementReference);
 };
+
+export const observe_INTERNAL__UnknownStore = skipObserved(
+  (metamodel: INTERNAL__UnknownStore): INTERNAL__UnknownStore => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable(metamodel, {
+      content: observable.ref,
+    });
+
+    return metamodel;
+  },
+);
 
 // ------------------------------------- TestSuite -----------------------------------
 

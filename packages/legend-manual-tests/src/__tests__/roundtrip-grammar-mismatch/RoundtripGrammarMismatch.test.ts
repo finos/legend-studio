@@ -19,7 +19,9 @@ import { resolve, basename } from 'path';
 import fs from 'fs';
 import {
   Core_GraphManagerPreset,
+  type ClassifierPathMapping,
   type V1_PureModelContextData,
+  type SubtypeInfo,
 } from '@finos/legend-graph';
 import {
   TEST__buildGraphWithEntities,
@@ -92,6 +94,23 @@ const checkGrammarRoundtripMismatch = async (
   const pluginManager = new TEST__GraphManagerPluginManager();
   pluginManager.usePresets([new Core_GraphManagerPreset()]).install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {
+      baseUrl: ENGINE_SERVER_URL,
+    },
+    TEMPORARY__classifierPathMapping: (
+      await axios.get<unknown, AxiosResponse<ClassifierPathMapping[]>>(
+        `${ENGINE_SERVER_URL}/pure/v1/protocol/pure/getClassifierPathMap`,
+      )
+    ).data,
+    TEMPORARY__subtypeInfo: (
+      await axios.get<unknown, AxiosResponse<SubtypeInfo>>(
+        `${ENGINE_SERVER_URL}/pure/v1/protocol/pure/getSubtypeInfo`,
+      )
+    ).data,
+  });
 
   if (options?.debug) {
     // eslint-disable-next-line no-console

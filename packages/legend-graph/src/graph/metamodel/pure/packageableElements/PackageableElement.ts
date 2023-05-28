@@ -44,6 +44,7 @@ import { AnnotatedElement } from './domain/AnnotatedElement.js';
 import type { ExecutionEnvironmentInstance } from './service/ExecutionEnvironmentInstance.js';
 import type { INTERNAL__UnknownPackageableElement } from './INTERNAL__UnknownPackageableElement.js';
 import type { INTERNAL__UnknownFunctionActivator } from './function/INTERNAL__UnknownFunctionActivator.js';
+import type { INTERNAL__UnknownStore } from './store/INTERNAL__UnknownStore.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -53,6 +54,7 @@ export interface PackageableElementVisitor<T> {
   visit_INTERNAL__UnknownFunctionActivator(
     element: INTERNAL__UnknownFunctionActivator,
   ): T;
+  visit_INTERNAL__UnknownStore(element: INTERNAL__UnknownStore): T;
 
   visit_SectionIndex(element: SectionIndex): T;
   visit_Package(element: Package): T;

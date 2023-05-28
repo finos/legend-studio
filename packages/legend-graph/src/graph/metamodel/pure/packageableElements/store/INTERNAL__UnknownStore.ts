@@ -14,21 +14,32 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { Store } from './Store.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../Core_HashUtils.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 
-export class INTERNAL__PseudoStore extends Store {
-  static readonly NAME = 'INTERNAL__PseudoStore';
-  static readonly INSTANCE = new INTERNAL__PseudoStore();
+export class INTERNAL__UnknownStore extends Store implements Hashable {
+  content!: PlainObject;
 
-  private constructor() {
-    super(INTERNAL__PseudoStore.NAME);
+  protected override get _elementHashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_STORE,
+      this.path,
+      hashObjectWithoutSourceInformation(this.content),
+    ]);
   }
 
   accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {
-    throw new UnsupportedOperationError();
+    return visitor.visit_INTERNAL__UnknownStore(this);
   }
 }

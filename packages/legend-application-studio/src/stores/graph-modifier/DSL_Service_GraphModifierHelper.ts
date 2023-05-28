@@ -45,6 +45,8 @@ import {
   observe_EmbeddedData,
   observe_PostValidation,
   observe_PostValidationAssertion,
+  TestData,
+  observe_TestData,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -55,6 +57,9 @@ export const service_addConnectionTestData = action(
     val: ConnectionTestData,
     observerContext: ObserverContext,
   ): void => {
+    if (!suite.testData) {
+      suite.testData = observe_TestData(new TestData(), observerContext);
+    }
     addUniqueEntry(
       suite.testData.connectionsTestData,
       observe_ConnectionTestData(val, observerContext),
@@ -63,7 +68,14 @@ export const service_addConnectionTestData = action(
 );
 
 export const service_setConnectionTestData = action(
-  (suite: ServiceTestSuite, val: ConnectionTestData[]): void => {
+  (
+    suite: ServiceTestSuite,
+    val: ConnectionTestData[],
+    observerContext: ObserverContext,
+  ): void => {
+    if (!suite.testData) {
+      suite.testData = observe_TestData(new TestData(), observerContext);
+    }
     suite.testData.connectionsTestData = val;
   },
 );

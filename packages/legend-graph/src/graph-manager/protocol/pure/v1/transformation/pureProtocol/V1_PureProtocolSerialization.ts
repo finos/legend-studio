@@ -89,6 +89,7 @@ export const V1_entitiesToPureModelContextData = async (
         const element = V1_deserializePackageableElement(
           entity.content as PlainObject<V1_PackageableElement>,
           plugins,
+          subtypeInfo,
         );
         TEMPORARY__entityPathIndex?.set(element.path, entity.path);
         return element;

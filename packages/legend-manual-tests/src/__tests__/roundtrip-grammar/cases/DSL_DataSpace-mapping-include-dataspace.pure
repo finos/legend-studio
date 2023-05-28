@@ -63,7 +63,7 @@ Service trade::service::TradeService
             assertion_1:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';

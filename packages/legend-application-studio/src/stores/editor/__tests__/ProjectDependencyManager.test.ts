@@ -228,6 +228,11 @@ const testDependencyElements = async (
       'analyzeDependencyTree',
     ).mockResolvedValue(dependencyInfo);
   }
+  await editorStore.graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
   await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
   const dependencyEntitiesIndex =

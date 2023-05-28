@@ -110,6 +110,7 @@ import type { V1_ExecutionEnvironmentInstance } from '../../model/packageableEle
 import { V1_INTERNAL__UnknownPackageableElement } from '../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { SubtypeInfo } from '../../../../../action/protocol/ProtocolInfo.js';
+import { V1_INTERNAL__UnknownStore } from '../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -146,6 +147,12 @@ class V1_PackageableElementSerializer
 
   visit_INTERNAL__UnknownFunctionActivator(
     element: V1_INTERNAL__UnknownFunctionActivator,
+  ): PlainObject<V1_PackageableElement> {
+    return element.content;
+  }
+
+  visit_INTERNAL__UnknownStore(
+    element: V1_INTERNAL__UnknownStore,
   ): PlainObject<V1_PackageableElement> {
     return element.content;
   }
@@ -325,6 +332,13 @@ export const V1_deserializePackageableElement = (
               V1_INTERNAL__UnknownFunctionActivatorModelSchema,
               json,
             );
+            protocol.content = json;
+            return protocol;
+          }
+          if (subtypeInfo.storeSubtypes.includes(json._type)) {
+            const protocol = new V1_INTERNAL__UnknownStore();
+            protocol.name = name;
+            protocol.package = packagePath;
             protocol.content = json;
             return protocol;
           }
