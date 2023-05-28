@@ -16,16 +16,19 @@
 
 import type { V1_PropertyGraphFetchTree } from './V1_PropertyGraphFetchTree.js';
 import type { V1_RootGraphFetchTree } from './V1_RootGraphFetchTree.js';
+import type { V1_SubTypeGraphFetchTree } from './V1_SubTypeGraphFetchTree.js';
 
 export interface V1_GraphFetchTreeVisitor<T> {
   visit_RootGraphFetchTree(valueSpecification: V1_RootGraphFetchTree): T;
   visit_PropertyGraphFetchTree(
     valueSpecification: V1_PropertyGraphFetchTree,
   ): T;
+  visit_SubTypeGraphFetchTree(valueSpecification: V1_SubTypeGraphFetchTree): T;
 }
 
 export abstract class V1_GraphFetchTree {
   subTrees: V1_GraphFetchTree[] = [];
+  subTypeTrees: V1_SubTypeGraphFetchTree[] = [];
 
   abstract accept_GraphFetchTreeVisitor<T>(
     visitor: V1_GraphFetchTreeVisitor<T>,

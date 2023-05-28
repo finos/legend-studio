@@ -29,6 +29,7 @@ import {
   type GraphFetchTreeInstanceValue,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
+  SubTypeGraphFetchTree,
 } from '../../../../../../../graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
 import type {
   PrimitiveInstanceValue,
@@ -69,6 +70,7 @@ import { V1_EnumValue } from '../../../model/valueSpecification/raw/V1_EnumValue
 import { V1_PropertyGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
 import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
 import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
+import { V1_SubTypeGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 import { V1_Collection } from '../../../model/valueSpecification/raw/V1_Collection.js';
 import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
 import { V1_KeyExpression } from '../../../model/valueSpecification/raw/V1_KeyExpression.js';
@@ -386,6 +388,18 @@ export function V1_transformGraphFetchTree(
         useAppliedFunction,
       ),
     );
+    _root.subTypeTrees = value.subTypeTrees.map((e) =>
+      guaranteeType(
+        V1_transformGraphFetchTree(
+          e,
+          inScope,
+          open,
+          isParameter,
+          useAppliedFunction,
+        ),
+        V1_SubTypeGraphFetchTree,
+      ),
+    );
     return _root;
   } else if (value instanceof PropertyGraphFetchTree) {
     const _propertyGraphTree = new V1_PropertyGraphFetchTree();
@@ -412,6 +426,19 @@ export function V1_transformGraphFetchTree(
       ),
     );
     return _propertyGraphTree;
+  } else if (value instanceof SubTypeGraphFetchTree) {
+    const _subTypeGraphFetchTree = new V1_SubTypeGraphFetchTree();
+    _subTypeGraphFetchTree.subTypeClass = value.subTypeClass.value.path;
+    _subTypeGraphFetchTree.subTrees = value.subTrees.map((subTree) =>
+      V1_transformGraphFetchTree(
+        subTree,
+        inScope,
+        open,
+        isParameter,
+        useAppliedFunction,
+      ),
+    );
+    return _subTypeGraphFetchTree;
   }
   throw new UnsupportedOperationError(
     `Can't build graph fetch tree node of type '${value.toString()}'`,

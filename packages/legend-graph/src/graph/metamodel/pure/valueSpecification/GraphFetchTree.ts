@@ -28,7 +28,7 @@ import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 
 export abstract class GraphFetchTree implements Hashable {
   subTrees: GraphFetchTree[] = [];
-
+  subTypeTrees: SubTypeGraphFetchTree[] = [];
   abstract get hashCode(): string;
 
   get isEmpty(): boolean {
@@ -43,6 +43,7 @@ export class RootGraphFetchTree extends GraphFetchTree implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.ROOT_GRAPH_FETCH_TREE,
       hashArray(this.subTrees),
+      hashArray(this.subTypeTrees),
       this.class.valueForSerialization ?? '',
     ]);
   }
@@ -76,6 +77,23 @@ export class PropertyGraphFetchTree extends GraphFetchTree implements Hashable {
       this.alias ?? '',
       hashArray(this.parameters),
       this.subType?.valueForSerialization ?? '',
+    ]);
+  }
+}
+
+export class SubTypeGraphFetchTree extends GraphFetchTree implements Hashable {
+  subTypeClass: PackageableElementReference<Class>;
+
+  constructor(subTypeClass: PackageableElementReference<Class>) {
+    super();
+    this.subTypeClass = subTypeClass;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SUBTYPE_GRAPH_FETCH_TREE,
+      hashArray(this.subTrees),
+      this.subTypeClass.valueForSerialization ?? '',
     ]);
   }
 }

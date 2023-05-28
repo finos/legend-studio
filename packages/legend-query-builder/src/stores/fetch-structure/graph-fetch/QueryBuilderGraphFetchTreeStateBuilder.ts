@@ -219,6 +219,12 @@ export const processGraphFetchSerializeExpression = (
       RootGraphFetchTree,
       `Can't process serialize() expression: serialize() graph-fetch tree root is missing`,
     );
+
+    assertTrue(
+      graphFetchTreeRoot.subTypeTrees.length === 0,
+      `Can't process serialize() expression: subTypeTree is not supported.`,
+    );
+
     graphFetchTreeState.setGraphFetchTree(
       buildGraphFetchTreeData(graphFetchTreeRoot),
     );
