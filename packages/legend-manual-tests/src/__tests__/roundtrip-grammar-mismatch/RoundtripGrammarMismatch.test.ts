@@ -92,6 +92,11 @@ const checkGrammarRoundtripMismatch = async (
   const pluginManager = new TEST__GraphManagerPluginManager();
   pluginManager.usePresets([new Core_GraphManagerPreset()]).install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
 
   if (options?.debug) {
     // eslint-disable-next-line no-console

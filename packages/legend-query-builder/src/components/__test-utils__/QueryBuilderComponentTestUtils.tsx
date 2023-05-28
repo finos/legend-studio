@@ -62,6 +62,11 @@ export const TEST__setUpQueryBuilder = async (
     new LogService(),
   );
 
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
   await graphManagerState.initializeSystem();
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,

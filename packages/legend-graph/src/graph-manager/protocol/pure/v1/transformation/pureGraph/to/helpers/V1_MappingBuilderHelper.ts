@@ -215,26 +215,25 @@ export const V1_buildEnumerationMapping = (
 };
 
 export const V1_buildMappingInclude = (
-  mappingInclude: V1_MappingInclude,
+  protocol: V1_MappingInclude,
   context: V1_GraphBuilderContext,
   parentMapping: Mapping,
 ): MappingInclude => {
-  if (mappingInclude instanceof V1_INTERNAL__UnknownMappingInclude) {
-    return new INTERNAL__UnknownMappingInclude(parentMapping);
-  } else if (mappingInclude instanceof V1_MappingIncludeMapping) {
+  if (protocol instanceof V1_INTERNAL__UnknownMappingInclude) {
+    const metamodel = new INTERNAL__UnknownMappingInclude(parentMapping);
+    metamodel.content = protocol.content;
+    return metamodel;
+  } else if (protocol instanceof V1_MappingIncludeMapping) {
     const includedMapping = new MappingIncludeMapping(
       parentMapping,
-      context.resolveMapping(mappingInclude.includedMapping),
+      context.resolveMapping(protocol.includedMapping),
     );
-    if (
-      mappingInclude.sourceDatabasePath &&
-      mappingInclude.targetDatabasePath
-    ) {
+    if (protocol.sourceDatabasePath && protocol.targetDatabasePath) {
       includedMapping.storeSubstitutions.push(
         new SubstituteStore(
           includedMapping,
-          context.resolveStore(mappingInclude.sourceDatabasePath),
-          context.resolveStore(mappingInclude.targetDatabasePath),
+          context.resolveStore(protocol.sourceDatabasePath),
+          context.resolveStore(protocol.targetDatabasePath),
         ),
       );
     }
@@ -247,14 +246,14 @@ export const V1_buildMappingInclude = (
       ).V1_getExtraMappingIncludeBuilders?.() ?? [],
   );
   for (const builder of extraIncludeMappingBuilders) {
-    const builtInclude = builder(mappingInclude, parentMapping, context);
+    const builtInclude = builder(protocol, parentMapping, context);
     if (builtInclude) {
       return builtInclude;
     }
   }
   throw new UnsupportedOperationError(
     `Can't transform mapping include: no compatible transformer available from plugins`,
-    mappingInclude,
+    protocol,
   );
 };
 

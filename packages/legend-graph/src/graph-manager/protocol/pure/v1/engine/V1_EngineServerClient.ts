@@ -63,7 +63,10 @@ import type {
   V1_SurveyDatasetsResult,
 } from './analytics/V1_StoreEntitlementAnalysis.js';
 import type { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
-import type { ClassifierPathMapping } from '../../../../action/protocol/ClassifierPathMapping.js';
+import type {
+  ClassifierPathMapping,
+  SubtypeInfo,
+} from '../../../../action/protocol/ProtocolInfo.js';
 import type { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionActivatorInfo.js';
 import type { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
 import type { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
@@ -169,6 +172,9 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   getClassifierPathMap = (): Promise<ClassifierPathMapping[]> =>
     this.get(`${this._pure()}/protocol/pure/getClassifierPathMap`);
+
+  getSubtypeInfo = (): Promise<SubtypeInfo> =>
+    this.get(`${this._pure()}/protocol/pure/getSubtypeInfo`);
 
   // ------------------------------------------- Grammar -------------------------------------------
 

@@ -630,6 +630,13 @@ export const V1_deserializeAuthenticationStrategy = (
   }
 };
 
+const V1_INTERNAL__UnknownConnectionModelSchema = createModelSchema(
+  V1_INTERNAL__UnknownConnection,
+  {
+    store: alias('element', optional(primitive())),
+  },
+);
+
 export const V1_serializeConnectionValue = (
   protocol: V1_Connection,
   allowPointer: boolean,
@@ -711,8 +718,10 @@ export const V1_deserializeConnectionValue = (
       }
 
       // Fall back to create unknown stub if not supported
-      const protocol = new V1_INTERNAL__UnknownConnection();
-      protocol.store = undefined;
+      const protocol = deserialize(
+        V1_INTERNAL__UnknownConnectionModelSchema,
+        json,
+      );
       protocol.content = json;
       return protocol;
     }

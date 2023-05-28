@@ -76,7 +76,7 @@ export class ServiceTestSuiteState {
   readonly editorStore: EditorStore;
   readonly testableState: ServiceTestableState;
   suite: ServiceTestSuite;
-  testDataState: ServiceTestDataState;
+  testDataState: ServiceTestDataState | undefined;
   selectedTestState: ServiceTestState | undefined;
   testStates: ServiceTestState[] = [];
   testToRename: ServiceTest | undefined;
@@ -102,7 +102,9 @@ export class ServiceTestSuiteState {
       .filter(filterByType(ServiceTest))
       .map((test) => new ServiceTestState(this, test));
     this.selectedTestState = this.testStates[0];
-    this.testDataState = new ServiceTestDataState(this.suite.testData, this);
+    this.testDataState = this.suite.testData
+      ? new ServiceTestDataState(this.suite.testData, this)
+      : undefined;
   }
 
   setTestToRename(test: ServiceTest | undefined): void {

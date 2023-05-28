@@ -640,7 +640,6 @@ export class EditorStore implements CommandRegistrar {
         projectId,
         this.sdlcState.activeWorkspace,
       ),
-      this.graphManagerState.initializeSystem(), // this can be moved inside of `setupEngine`
       this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
@@ -656,6 +655,7 @@ export class EditorStore implements CommandRegistrar {
         },
       ),
     ]);
+    yield this.graphManagerState.initializeSystem();
     yield flowResult(this.initMode());
 
     onLeave(true);

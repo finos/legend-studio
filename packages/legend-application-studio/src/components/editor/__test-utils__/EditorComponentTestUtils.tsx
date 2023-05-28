@@ -312,7 +312,11 @@ export const TEST__setUpEditor = async (
   // we don't need to but we probably should mock the call to get other configurations,
   // e.g. external format, function activator, etc.
   const graphManagerState = MOCK__editorStore.graphManagerState;
-  graphManagerState.graphManager.initialize = createMock();
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
   createSpy(
     graphManagerState.graphManager,
     'getAvailableGenerationConfigurationDescriptions',

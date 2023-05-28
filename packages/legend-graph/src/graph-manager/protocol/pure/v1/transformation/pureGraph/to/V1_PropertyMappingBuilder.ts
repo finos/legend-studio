@@ -82,6 +82,7 @@ import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTrans
 import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext.js';
 import {
   getAllEnumerationMappings,
+  getAllIncludedMappings,
   getClassMappingById,
   getClassMappingsByClass,
 } from '../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
@@ -90,7 +91,7 @@ import type { AbstractProperty } from '../../../../../../../graph/metamodel/pure
 import { BindingTransformer } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
 import type { Mapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import { V1_resolveBinding } from './V1_DSL_ExternalFormat_GraphBuilderHelper.js';
-import { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
+import { INTERNAL__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnresolvedSetImplementation.js';
 import {
   getAssociatedPropertyClass,
   getOwnProperty,
@@ -103,8 +104,9 @@ import type { V1_FlatDataAssociationPropertyMapping } from '../../../model/packa
 import { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 import type { V1_INTERNAL__UnknownPropertyMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownPropertyMapping.js';
 import { INTERNAL__UnknownPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
+import { INTERNAL__PseudoMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__PseudoMapping.js';
 
-const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
+const TEMPORARY__resolveSetImplementationByID = (
   mapping: Mapping,
   id: string,
   context: V1_GraphBuilderContext,
@@ -112,27 +114,34 @@ const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
   const classMapping = returnUndefOnError(() =>
     getClassMappingById(mapping, id),
   );
+  const isMappingWithUnknownMappingIncludes = getAllIncludedMappings(
+    mapping,
+  ).includes(INTERNAL__PseudoMapping.INSTANCE);
 
   if (!classMapping) {
     const message = `Can't find class mapping with ID '${id}' in mapping '${mapping.path}'`;
     /**
-     * In strict-mode, graph builder will consider this as an error
+     * If the mapping has unknown mapping includes, this kind of problems
+     * might be due to the fact that the class mapping is not reachable due to the system
+     * not knowing how to analyze the unknown mapping include, as such, we will not throw
+     * errors, otherwise, we should in strict-mode
+     *
      * See https://github.com/finos/legend-studio/issues/880
      * See https://github.com/finos/legend-studio/issues/941
      *
      * @discrepancy graph-building
      */
-    if (context.options?.strict) {
+    if (context.options?.strict && !isMappingWithUnknownMappingIncludes) {
       throw new GraphBuilderError(message);
     }
     context.logService.warn(LogEvent.create(message));
-    return new TEMPORARY__UnresolvedSetImplementation(id, mapping);
+    return new INTERNAL__UnresolvedSetImplementation(id, mapping);
   }
 
   return classMapping;
 };
 
-const resolvePropertyMappingSource = (
+const resolvePropertyMappingSourceImplementation = (
   immediateParent: PropertyMappingsImplementation,
   value: V1_PropertyMapping,
   topParent: InstanceSetImplementation | undefined,
@@ -140,7 +149,7 @@ const resolvePropertyMappingSource = (
 ): SetImplementation | undefined => {
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
-      return TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+      return TEMPORARY__resolveSetImplementationByID(
         immediateParent._PARENT,
         value.source,
         context,
@@ -278,12 +287,11 @@ export class V1_PropertyMappingBuilder
     const topParent = guaranteeNonNullable(this.topParent);
     if (propertyType instanceof Class) {
       if (protocol.target) {
-        targetSetImplementation =
-          TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-            topParent._PARENT,
-            protocol.target,
-            this.context,
-          );
+        targetSetImplementation = TEMPORARY__resolveSetImplementationByID(
+          topParent._PARENT,
+          protocol.target,
+          this.context,
+        );
       } else {
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
         targetSetImplementation = getClassMappingsByClass(
@@ -293,7 +301,7 @@ export class V1_PropertyMappingBuilder
       }
     }
     const sourceSetImplementation = protocol.source
-      ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+      ? TEMPORARY__resolveSetImplementationByID(
           topParent._PARENT,
           protocol.source,
           this.context,
@@ -385,7 +393,7 @@ export class V1_PropertyMappingBuilder
     const propertyType = property.genericType.value.rawType;
     if (propertyType instanceof Class && protocol.target) {
       targetSetImplementation = this.topParent
-        ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+        ? TEMPORARY__resolveSetImplementationByID(
             this.topParent._PARENT,
             protocol.target,
             this.context,
@@ -615,7 +623,7 @@ export class V1_PropertyMappingBuilder
       }
       if (protocol.target) {
         targetSetImplementation = parentMapping
-          ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+          ? TEMPORARY__resolveSetImplementationByID(
               parentMapping,
               protocol.target,
               this.context,
@@ -631,7 +639,7 @@ export class V1_PropertyMappingBuilder
       }
     }
     const sourceSetImplementation = guaranteeNonNullable(
-      resolvePropertyMappingSource(
+      resolvePropertyMappingSourceImplementation(
         this.immediateParent,
         protocol,
         this.topParent,
@@ -757,12 +765,11 @@ export class V1_PropertyMappingBuilder
       const parentMapping = this.immediateParent._PARENT;
 
       if (protocol.target) {
-        targetSetImplementation =
-          TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-            parentMapping,
-            protocol.target,
-            this.context,
-          );
+        targetSetImplementation = TEMPORARY__resolveSetImplementationByID(
+          parentMapping,
+          protocol.target,
+          this.context,
+        );
       } else {
         targetSetImplementation = getClassMappingsByClass(
           parentMapping,
@@ -771,7 +778,7 @@ export class V1_PropertyMappingBuilder
       }
     }
     const sourceSetImplementation = guaranteeNonNullable(
-      resolvePropertyMappingSource(
+      resolvePropertyMappingSourceImplementation(
         this.immediateParent,
         protocol,
         this.topParent,
@@ -869,12 +876,11 @@ export class V1_PropertyMappingBuilder
       InferableMappingElementIdExplicitValue.create(id, ''),
       undefined,
     );
-    inline.inlineSetImplementation =
-      TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-        topParent._PARENT,
-        protocol.setImplementationId,
-        this.context,
-      );
+    inline.inlineSetImplementation = TEMPORARY__resolveSetImplementationByID(
+      topParent._PARENT,
+      protocol.setImplementationId,
+      this.context,
+    );
     return inline;
   }
 
@@ -1043,12 +1049,30 @@ export class V1_PropertyMappingBuilder
     const _association = xStoreParent.association.value;
     const property = getOwnProperty(_association, protocol.property.property);
     const sourceSetImplementation = guaranteeNonNullable(
-      this.allClassMappings.find((c) => c.id.value === protocol.source),
-      `Can't find XStore property mapping source implementation with ID '${protocol.source}'`,
+      resolvePropertyMappingSourceImplementation(
+        this.immediateParent,
+        protocol,
+        this.topParent,
+        this.context,
+      ),
     );
-    const targetSetImplementation = this.allClassMappings.find(
-      (c) => c.id.value === protocol.target,
-    );
+    let targetSetImplementation: SetImplementation | undefined;
+    const propertyType = property.genericType.value.rawType;
+    if (propertyType instanceof Class) {
+      const parentMapping = this.immediateParent._PARENT;
+      if (protocol.target) {
+        targetSetImplementation = TEMPORARY__resolveSetImplementationByID(
+          parentMapping,
+          protocol.target,
+          this.context,
+        );
+      } else {
+        targetSetImplementation = getClassMappingsByClass(
+          parentMapping,
+          guaranteeType(propertyType, Class),
+        )[0];
+      }
+    }
     const xStorePropertyMapping = new XStorePropertyMapping(
       xStoreParent,
       PropertyImplicitReference.create(
@@ -1106,12 +1130,32 @@ export class V1_PropertyMappingBuilder
       propertyMapping?.property ??
       this.context.resolveProperty(protocol.property);
 
-    const sourceSetImplementation = this.allClassMappings.find(
-      (c) => c.id.value === protocol.source,
+    const sourceSetImplementation = guaranteeNonNullable(
+      resolvePropertyMappingSourceImplementation(
+        this.immediateParent,
+        protocol,
+        this.topParent,
+        this.context,
+      ),
     );
-    const targetSetImplementation = this.allClassMappings.find(
-      (c) => c.id.value === protocol.target,
-    );
+    let targetSetImplementation: SetImplementation | undefined;
+    const propertyType = property.value.genericType.value.rawType;
+    if (propertyType instanceof Class) {
+      const parentMapping = this.immediateParent._PARENT;
+
+      if (protocol.target) {
+        targetSetImplementation = TEMPORARY__resolveSetImplementationByID(
+          parentMapping,
+          protocol.target,
+          this.context,
+        );
+      } else {
+        targetSetImplementation = getClassMappingsByClass(
+          parentMapping,
+          guaranteeType(propertyType, Class),
+        )[0];
+      }
+    }
 
     const aggregationAwarePropertyMapping = new AggregationAwarePropertyMapping(
       this.topParent ?? this.immediateParent,

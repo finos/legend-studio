@@ -309,6 +309,8 @@ import { V1_FunctionActivator } from './model/packageableElements/function/V1_Fu
 import { V1_INTERNAL__UnknownFunctionActivator } from './model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../../../../STO_Relational_Exports.js';
 import { V1_RawSQLExecuteInput } from './engine/execution/V1_RawSQLExecuteInput.js';
+import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
+import { V1_INTERNAL__UnknownStore } from './model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -510,6 +512,10 @@ interface ServiceRegistrationInput {
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
   private readonly elementClassifierPathMap = new Map<string, string>();
+  private readonly subtypeInfo: SubtypeInfo = {
+    storeSubtypes: [],
+    functionActivatorSubtypes: [],
+  };
 
   // Pure Client Version represent the version of the pure protocol.
   // Most Engine APIs will interrupt an undefined pure client version to mean
@@ -533,20 +539,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this.graphBuilderExtensions = new V1_GraphBuilderExtensions(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
-
-    // setup serialization plugins
-    V1_setupPureModelContextDataSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    V1_setupDatabaseSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    V1_setupEngineRuntimeSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    V1_setupLegacyRuntimeSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
   }
 
   TEMPORARY__getEngineConfig(): TEMPORARY__AbstractEngineConfig {
@@ -563,8 +555,32 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this.engine
       .getEngineServerClient()
       .setTracerService(options?.tracerService ?? new TracerService());
-    await this.engine.setup(config);
 
+    await Promise.all([
+      this.engine.setup(config),
+      this.configureElementClassifierPathMap(config),
+      this.configureSubtypeInfoMap(config),
+    ]);
+
+    // setup serialization plugins
+    V1_setupPureModelContextDataSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+      this.subtypeInfo,
+    );
+    V1_setupDatabaseSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupEngineRuntimeSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupLegacyRuntimeSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+  }
+
+  private async configureElementClassifierPathMap(
+    config: TEMPORARY__EngineSetupConfig,
+  ): Promise<void> {
     const classifierPathMapEntries =
       config.TEMPORARY__classifierPathMapping ??
       (await this.engine.getClassifierPathMapping());
@@ -572,6 +588,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.elementClassifierPathMap.set(entry.type, entry.classifierPath);
     });
   }
+
+  private async configureSubtypeInfoMap(
+    config: TEMPORARY__EngineSetupConfig,
+  ): Promise<void> {
+    const subtypeInfo =
+      config.TEMPORARY__subtypeInfo ?? (await this.engine.getSubtypeInfo());
+    this.subtypeInfo.storeSubtypes = subtypeInfo.storeSubtypes;
+    this.subtypeInfo.functionActivatorSubtypes =
+      subtypeInfo.functionActivatorSubtypes;
+  }
+
+  // --------------------------------------------- Generic ---------------------------------------------
 
   getSupportedProtocolVersion(): string {
     return PureClientVersion.V1_0_0;
@@ -701,6 +729,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               entitiesWithOrigin.entities,
               projectModelData,
               this.pluginManager.getPureProtocolProcessorPlugins(),
+              this.subtypeInfo,
             );
           },
         ),
@@ -779,6 +808,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         entities,
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
+        this.subtypeInfo,
       );
       stopWatch.record(
         GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
@@ -864,6 +894,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         entities,
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
+        this.subtypeInfo,
       );
       stopWatch.record(
         GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
@@ -955,6 +986,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               entities,
               generatedData,
               this.pluginManager.getPureProtocolProcessorPlugins(),
+              this.subtypeInfo,
             );
           },
         ),
@@ -3325,6 +3357,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       entities,
       pureModelContextData,
       this.pluginManager.getPureProtocolProcessorPlugins(),
+      this.subtypeInfo,
       TEMPORARY__entityPathIndex,
     );
     await Promise.all(
@@ -3418,6 +3451,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       data,
       this.pluginManager.getPureProtocolProcessorPlugins(),
+      this.subtypeInfo,
     );
     const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
       {
@@ -3455,6 +3489,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               ),
             projectModelData,
             this.pluginManager.getPureProtocolProcessorPlugins(),
+            this.subtypeInfo,
           );
         },
       ),
@@ -3540,6 +3575,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       entities,
       graphData,
       this.pluginManager.getPureProtocolProcessorPlugins(),
+      this.subtypeInfo,
     );
     return graphData;
   }
@@ -3566,7 +3602,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): string => {
     if (
       protocol instanceof V1_INTERNAL__UnknownPackageableElement ||
-      protocol instanceof V1_INTERNAL__UnknownFunctionActivator
+      protocol instanceof V1_INTERNAL__UnknownFunctionActivator ||
+      protocol instanceof V1_INTERNAL__UnknownStore
     ) {
       const _type = protocol.content._type;
       const classifierPath = isString(_type)

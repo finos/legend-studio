@@ -41,45 +41,17 @@
     { "path": "packages/legend-application-pure-ide-deployment" },
     // extensions
     { "path": "packages/legend-extension-tracer-zipkin" },
-    {
-      "path": "packages/legend-extension-dsl-text"
-    },
-    {
-      "path": "packages/legend-extension-dsl-diagram"
-    },
-    {
-      "path": "packages/legend-extension-dsl-data-space"
-    },
-    {
-      "path": "packages/legend-extension-dsl-service"
-    },
-    {
-      "path": "packages/legend-extension-dsl-persistence"
-    },
-    {
-      "path": "packages/legend-extension-dsl-snowflake-app"
-    },
-    {
-      "path": "packages/legend-extension-dsl-mastery"
-    },
-    {
-      "path": "packages/legend-extension-store-service-store"
-    },
-    {
-      "path": "packages/legend-extension-store-flat-data"
-    },
-    {
-      "path": "packages/legend-extension-store-relational"
-    },
-    {
-      "path": "packages/legend-extension-format-json-schema"
-    },
-    {
-      "path": "packages/legend-extension-format-graphql"
-    },
+    { "path": "packages/legend-extension-assortment" },
+    { "path": "packages/legend-extension-dsl-text" },
+    { "path": "packages/legend-extension-dsl-diagram" },
+    { "path": "packages/legend-extension-dsl-data-space" },
+    { "path": "packages/legend-extension-dsl-service" },
+    { "path": "packages/legend-extension-dsl-persistence" },
+    { "path": "packages/legend-extension-dsl-mastery" },
+    { "path": "packages/legend-extension-store-service-store" },
+    { "path": "packages/legend-extension-store-flat-data" },
+    { "path": "packages/legend-extension-store-relational" },
     // fixtures
-    {
-      "path": "fixtures/legend-mock-server"
-    }
+    { "path": "fixtures/legend-mock-server" }
   ]
 }

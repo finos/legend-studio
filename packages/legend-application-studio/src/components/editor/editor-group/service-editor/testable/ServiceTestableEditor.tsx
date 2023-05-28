@@ -25,6 +25,7 @@ import {
   BlankPanelPlaceholder,
   MenuContent,
   MenuContentItem,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { ServiceTestSuite } from '@finos/legend-graph';
@@ -48,9 +49,14 @@ export const ServiceTestSuiteEditor = observer(
       <div className="service-test-suite-editor">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel size={300} minSize={28}>
-            <ServiceTestDataEditor
-              testDataState={serviceTestSuiteState.testDataState}
-            />
+            {serviceTestSuiteState.testDataState && (
+              <ServiceTestDataEditor
+                testDataState={serviceTestSuiteState.testDataState}
+              />
+            )}
+            {!serviceTestSuiteState.testDataState && (
+              <BlankPanelContent>No test data specified</BlankPanelContent>
+            )}
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />

@@ -20,14 +20,14 @@ import { V1_TestSuite } from '../../test/V1_TestSuite.js';
 import type { V1_TestData } from './V1_TestData.js';
 
 export class V1_ServiceTestSuite extends V1_TestSuite implements Hashable {
-  testData!: V1_TestData;
+  testData?: V1_TestData | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_TEST_SUITE,
       this.id,
       hashArray(this.tests),
-      this.testData,
+      this.testData ?? '',
     ]);
   }
 }

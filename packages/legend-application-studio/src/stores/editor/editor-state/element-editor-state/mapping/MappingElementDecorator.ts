@@ -35,7 +35,7 @@ import {
   type AggregationAwareSetImplementation,
   type PropertyMapping,
   type InstanceSetImplementation,
-  type TEMPORARY__UnresolvedSetImplementation,
+  type INTERNAL__UnresolvedSetImplementation,
   type Mapping,
   getAllClassMappings,
   PurePropertyMapping,
@@ -652,8 +652,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     }
   }
 
-  visit_TEMPORARY__UnresolvedSetImplementation(
-    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  visit_INTERNAL__UnresolvedSetImplementation(
+    setImplementation: INTERNAL__UnresolvedSetImplementation,
   ): void {
     return;
   }
@@ -799,8 +799,8 @@ export class MappingElementDecorationCleaner
     }
   }
 
-  visit_TEMPORARY__UnresolvedSetImplementation(
-    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  visit_INTERNAL__UnresolvedSetImplementation(
+    setImplementation: INTERNAL__UnresolvedSetImplementation,
   ): void {
     return;
   }

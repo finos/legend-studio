@@ -60,7 +60,7 @@ import type {
 import type { SetImplementationContainer } from '../../../graph/metamodel/pure/packageableElements/mapping/SetImplementationContainer.js';
 import type { SetImplementationReference } from '../../../graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
 import type { SubstituteStore } from '../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
-import type { TEMPORARY__UnresolvedSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
+import type { INTERNAL__UnresolvedSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnresolvedSetImplementation.js';
 import type { XStorePropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/xStore/XStorePropertyMapping.js';
 import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import {
@@ -140,6 +140,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { INTERNAL__UnknownConnection } from '../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 import type { INTERNAL__UnknownPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 import type { INTERNAL__UnknownSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
+import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -152,6 +153,18 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 
   metamodel.includes.forEach(observe_PackageableElementReference);
 };
+
+export const observe_INTERNAL__UnknownStore = skipObserved(
+  (metamodel: INTERNAL__UnknownStore): INTERNAL__UnknownStore => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable(metamodel, {
+      content: observable.ref,
+    });
+
+    return metamodel;
+  },
+);
 
 // ------------------------------------- TestSuite -----------------------------------
 
@@ -701,8 +714,8 @@ class SetImplementationObserver implements SetImplementationVisitor<void> {
     // TODO
   }
 
-  visit_TEMPORARY__UnresolvedSetImplementation(
-    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  visit_INTERNAL__UnresolvedSetImplementation(
+    setImplementation: INTERNAL__UnresolvedSetImplementation,
   ): void {
     return;
   }
@@ -907,6 +920,7 @@ export const observe_Mapping = skipObservedWithContext(
       _elementHashCode: override,
     });
 
+    // TODO: create extension mechanism to observe mapping includes when we build editor for this
     metamodel.includes.forEach(observe_MappingInclude);
     metamodel.classMappings.forEach((classMapping) =>
       observe_SetImplementation(classMapping, context),

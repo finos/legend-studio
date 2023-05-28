@@ -148,6 +148,11 @@ export const TEST__buildGraphWithEntities = async (
   entities: Entity[],
   options?: GraphBuilderOptions,
 ): Promise<void> => {
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
   await graphManagerState.initializeSystem(options);
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,
@@ -212,6 +217,11 @@ export const TEST__checkBuildingResolvedElements = async (
   resolvedEntities: Entity[],
 ): Promise<void> => {
   const graphManagerState = TEST__getTestGraphManagerState();
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
   await graphManagerState.initializeSystem();
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,

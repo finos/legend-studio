@@ -34,6 +34,7 @@ import {
   customListWithSchema,
   customEquivalentList,
   customList,
+  optionalCustomUsingModelSchema,
 } from '@finos/legend-shared';
 import {
   type V1_ServiceExecution,
@@ -164,7 +165,7 @@ export const V1_serviceTestSuiteModelSchema = (
   createModelSchema(V1_ServiceTestSuite, {
     _type: usingConstantValueSchema(V1_TestSuiteType.SERVICE_TEST_SUITE),
     id: primitive(),
-    testData: usingModelSchema(V1_testDataModelSchema(plugins)),
+    testData: optionalCustomUsingModelSchema(V1_testDataModelSchema(plugins)),
     tests: list(
       custom(
         (val) => V1_serializeAtomicTest(val, plugins),

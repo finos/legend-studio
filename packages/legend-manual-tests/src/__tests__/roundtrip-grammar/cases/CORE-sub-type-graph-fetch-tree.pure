@@ -1,0 +1,177 @@
+###Service
+Service test::testservice
+{
+  pattern: '/64325176-20cd-4051-b594-84061fceacc6';
+  owners:
+  [
+    'siaka'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::Address.all()->graphFetch(#{test::Address{Id,->subType(@test::Street){street}}}#)->serialize(#{test::Address{Id,->subType(@test::Street){street}}}#);
+    mapping: test::testMapping;
+    runtime: test::testRuntime;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+
+###Relational
+Database test::db
+(
+  Table addressTable
+  (
+    Id INTEGER PRIMARY KEY,
+    type VARCHAR(200)
+  )
+  Table streetTable
+  (
+    Id INTEGER PRIMARY KEY,
+    street VARCHAR(200)
+  )
+  Table cityTable
+  (
+    Id INTEGER PRIMARY KEY,
+    name VARCHAR(200)
+  )
+  Table landmarkTable
+  (
+    addId INTEGER PRIMARY KEY,
+    lmName VARCHAR(200)
+  )
+  Table coordinateTable
+  (
+    streetId INTEGER PRIMARY KEY,
+    latitude VARCHAR(200),
+    longitude VARCHAR(200)
+  )
+
+  Join st_l(streetTable.Id = landmarkTable.addId)
+  Join st_co(streetTable.Id = coordinateTable.streetId)
+  Join c_l(cityTable.Id = landmarkTable.addId)
+  Join ad_l(addressTable.Id = landmarkTable.addId)
+  Join ad_st(addressTable.Id = streetTable.Id)
+  Join ad_city(addressTable.Id = cityTable.Id)
+  Join ad_co(addressTable.Id = coordinateTable.streetId)
+
+  Filter street_filter(addressTable.type = 'street')
+  Filter address_filter(addressTable.type = 'address')
+  Filter city_filter(addressTable.type = 'city')
+)
+
+
+###Pure
+Class test::City extends test::Address
+{
+  name: String[1];
+}
+
+Class test::Address
+{
+  Id: Integer[1];
+  landmark: test::LandMark[1];
+}
+
+Class test::Coordinate
+{
+  streetId: Integer[1];
+  latitude: String[1];
+  longitude: String[1];
+}
+
+Class test::Street extends test::Address
+{
+  street: String[1];
+  coordinate: test::Coordinate[1];
+}
+
+Class test::LandMark
+{
+  addId: String[1];
+  lmName: String[1];
+}
+
+
+###Mapping
+Mapping test::testMapping
+(
+  test::Address[a]: Relational
+  {
+    ~filter [test::db]address_filter
+    ~primaryKey
+    (
+      [test::db]addressTable.Id
+    )
+    ~mainTable [test::db]addressTable
+    Id: [test::db]addressTable.Id,
+    landmark: [test::db]@ad_l
+  }
+  test::Street extends [a]: Relational
+  {
+    ~filter [test::db]street_filter
+    street: [test::db]@ad_st | [test::db]streetTable.street,
+    coordinate: [test::db]@ad_co
+  }
+  test::City extends [a]: Relational
+  {
+    ~filter [test::db]city_filter
+    name: [test::db]@ad_city | [test::db]cityTable.name
+  }
+  test::Coordinate: Relational
+  {
+    ~primaryKey
+    (
+      [test::db]coordinateTable.streetId
+    )
+    ~mainTable [test::db]coordinateTable
+    streetId: [test::db]coordinateTable.streetId,
+    latitude: [test::db]coordinateTable.latitude,
+    longitude: [test::db]coordinateTable.longitude
+  }
+  test::LandMark: Relational
+  {
+    ~primaryKey
+    (
+      [test::db]landmarkTable.addId
+    )
+    ~mainTable [test::db]landmarkTable
+    addId: [test::db]landmarkTable.addId,
+    lmName: [test::db]landmarkTable.lmName
+  }
+)
+
+
+###Runtime
+Runtime test::testRuntime
+{
+  mappings:
+  [
+    test::testMapping
+  ];
+  connections:
+  [
+    test::db:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::db;
+          type: H2;
+          specification: LocalH2
+          {
+            testDataSetupSqls: [
+              'Drop table if exists addressTable;\n                                                                                                                                  Drop table if exists landmarkTable;\n                                                                                                                                  Drop table if exists landmarkTable2;\n                                                                                                                                  Drop table if exists streetTable; \n                                                                                                                                Drop table if exists coordinateTable;\n                                                                                                                                  Drop table if exists cityTable;\n                                                                                                                                  Create Table addressTable(Id INT PRIMARY KEY, type VARCHAR(200));\n                                                                                                                                  insert into addressTable(Id, type) values (1, \'street\');\n                                                                                                                                  insert into addressTable(Id, type) values (2, \'street\');\n                                                                                                                                  insert into addressTable(Id, type) values (3, \'street\');\n                                                                                                                                   insert into addressTable(Id, type) values (4, \'city\');\n                                                                                                                                  insert into addressTable(Id, type) values (5, \'city\');\n                                                                                                                                   insert into addressTable(Id, type) values (6, \'city\');\n                                                                                                                                  insert into addressTable(Id, type) values (7, \'address\');\n                                                                                                                                  Create Table streetTable(Id INT PRIMARY KEY, street VARCHAR(200));\n                                                                                                                                  insert into streetTable(ID, street) values(1, \'str1\');\n                                                                                                                                  insert into streetTable(ID, street) values(2, \'str2\');\n                                                                                                                                  insert into streetTable(ID, street) values(3, \'str3\') ;\n                                                                                                                                  Create Table landmarkTable(addId INT PRIMARY KEY, lmName VARCHAR(200));\n                                                                                                                                  insert into landmarkTable(addId, lmName) values(1, \'lm1\');\n                                                                                                                                  insert into landmarkTable(addId, lmName) values(2, \'lm2\');\n                                                                                                                                  insert into landmarkTable(addId, lmName) values(3, \'lm3\');\n                                                                                                                                   Create Table landmarkTable2(addId INT PRIMARY KEY, lmName VARCHAR(200));\n                                                                                                                                  insert into landmarkTable2(addId, lmName) values(4, \'lm4\');\n                                                                                                                                  insert into landmarkTable2(addId, lmName) values(5, \'l5\');\n                                                                                                                                  insert into landmarkTable2(addId, lmName) values(6, \'lm6\');\n                                                                                                                                   insert into landmarkTable(addId, lmName) values(4, \'lm4\');\n                                                                                                                                   insert into landmarkTable(addId, lmName) values(5, \'lm5\');\n                                                                                                                                  insert into landmarkTable(addId, lmName) values(6, \'lm6\') ;    \n                                                                                                                                  insert into landmarkTable(addId,lmName)values(7,\'lm7\');                                                                                                                             \n                                                                                                                                  Create Table coordinateTable(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200));\n                                                                                                                                 insert into coordinateTable(streetId, latitude, longitude) values(1, \'38.8951\', \' -77.0364\');\n                                                                                                                                  insert into coordinateTable(streetId, latitude, longitude) values(2, \'32.8951\', \' -75.0364\');\n                                                                                                                                  insert into coordinateTable(streetId, latitude, longitude) values(3, \'37.8951\', \' -72.0364\');\n                                                                                                                                  Create Table cityTable(Id INT PRIMARY KEY, name VARCHAR(200));\n                                                                                                                                  insert into cityTable(Id, name) values(4, \'City1\');\n                                                                                                                                  insert into cityTable(Id, name) values(5, \'City2\');\n                                                                                                                                  insert into cityTable(Id, name) values(6, \'City3\');'
+              ];
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}

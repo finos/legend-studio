@@ -107,6 +107,11 @@ test(
     const b_DependencyKey = 'group-2:artifact-2:1.0.0';
     const graphManagerState = TEST__getTestGraphManagerState();
 
+    await graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
     const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();

@@ -156,7 +156,9 @@ export const observe_ServiceTestSuite = skipObservedWithContext(
     });
 
     metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
-    observe_TestData(metamodel.testData, context);
+    if (metamodel.testData) {
+      observe_TestData(metamodel.testData, context);
+    }
 
     return metamodel;
   },

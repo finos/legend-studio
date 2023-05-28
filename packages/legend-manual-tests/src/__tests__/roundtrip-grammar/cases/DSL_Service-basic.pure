@@ -72,7 +72,7 @@ Service my::serviceWithMultipleConnectionsData
             assert1:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
@@ -128,7 +128,7 @@ Service my::serviceWithTestSuite
             assert1:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
@@ -184,7 +184,7 @@ Service my::serviceWithTestSuiteWithMultipleTests
             assert1:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
@@ -200,7 +200,7 @@ Service my::serviceWithTestSuiteWithMultipleTests
             assert1:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
@@ -261,7 +261,7 @@ Service my::serviceWithTestSuiteWithParams
             assert1:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';

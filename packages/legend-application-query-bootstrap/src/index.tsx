@@ -26,8 +26,7 @@ import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diag
 import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery/graph';
-import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema/graph';
-import { FMT_GraphQL_GraphManagerPreset } from '@finos/legend-extension-format-graphql/graph';
+import { Assortment_GraphManagerPreset } from '@finos/legend-extension-assortment/graph';
 import { DSL_Service_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-service/application-query';
 import { DSL_DataSpace_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application-query';
 import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
@@ -36,14 +35,13 @@ export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
       // graph managers
+      new Assortment_GraphManagerPreset(),
       new DSL_Text_GraphManagerPreset(),
       new DSL_Diagram_GraphManagerPreset(),
       new DSL_DataSpace_GraphManagerPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
       new STO_ServiceStore_GraphManagerPreset(),
-      new FMT_JSONSchema_GraphManagerPreset(),
-      new FMT_GraphQL_GraphManagerPreset(),
     ];
   }
 
@@ -51,12 +49,11 @@ export class LegendQueryWebApplication {
     return [
       // application
       new DSL_Service_LegendQueryApplicationPlugin(),
+      new DSL_DataSpace_LegendApplicationPlugin(),
       new DSL_DataSpace_LegendQueryApplicationPlugin(),
 
       // loggers
       new WebConsole(),
-      // generic dataspace plugin
-      new DSL_DataSpace_LegendApplicationPlugin(),
     ];
   }
 

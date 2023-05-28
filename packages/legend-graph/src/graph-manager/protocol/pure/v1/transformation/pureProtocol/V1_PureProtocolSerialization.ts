@@ -48,6 +48,7 @@ import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessor
 import type { Entity } from '@finos/legend-storage';
 import { GraphDataDeserializationError } from '../../../../../../graph-manager/GraphManagerUtils.js';
 import { V1_PureModelContextText } from '../../model/context/V1_PureModelContextText.js';
+import type { SubtypeInfo } from '../../../../../action/protocol/ProtocolInfo.js';
 
 enum V1_SDLCType {
   ALLOY = 'alloy',
@@ -64,6 +65,7 @@ export const V1_entitiesToPureModelContextData = async (
   entities: Entity[] | undefined,
   graph: V1_PureModelContextData,
   plugins: PureProtocolProcessorPlugin[],
+  subtypeInfo?: SubtypeInfo | undefined,
   /**
    * FIXME: to be deleted when most users have migrated to using full function signature as function name
    * Currently, SDLC store many functions in legacy form (entity path does
@@ -87,6 +89,7 @@ export const V1_entitiesToPureModelContextData = async (
         const element = V1_deserializePackageableElement(
           entity.content as PlainObject<V1_PackageableElement>,
           plugins,
+          subtypeInfo,
         );
         TEMPORARY__entityPathIndex?.set(element.path, entity.path);
         return element;
@@ -164,6 +167,7 @@ const V1_pureModelContextCompositeModelSchema = createModelSchema(
 
 export const V1_setupPureModelContextDataSerialization = (
   plugins: PureProtocolProcessorPlugin[],
+  subtypeInfo?: SubtypeInfo | undefined,
 ): void => {
   createModelSchema(V1_PureModelContextData, {
     _type: usingConstantValueSchema(V1_PureModelContextType.DATA),
@@ -173,7 +177,7 @@ export const V1_setupPureModelContextDataSerialization = (
         (element: V1_PackageableElement) =>
           V1_serializePackageableElement(element, plugins),
         (element: PlainObject<V1_PackageableElement>) =>
-          V1_deserializePackageableElement(element, plugins),
+          V1_deserializePackageableElement(element, plugins, subtypeInfo),
       ),
     ),
     serializer: usingModelSchema(V1_Protocol.serialization.schema),

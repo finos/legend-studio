@@ -20,6 +20,7 @@ import {
   UnsupportedOperationError,
   assertErrorThrown,
   guaranteeIsString,
+  isString,
 } from '@finos/legend-shared';
 import type { V1_PackageableConnection } from '../../model/packageableElements/connection/V1_PackageableConnection.js';
 import type { V1_Association } from '../../model/packageableElements/domain/V1_Association.js';
@@ -89,6 +90,7 @@ import {
   V1_MEASURE_ELEMENT_PROTOCOL_TYPE,
   V1_profileModelSchema,
   V1_PROFILE_ELEMENT_PROTOCOL_TYPE,
+  V1_INTERNAL__UnknownFunctionActivatorModelSchema,
 } from './serializationHelpers/V1_DomainSerializationHelper.js';
 import type {
   PureProtocolProcessorPlugin,
@@ -107,6 +109,8 @@ import {
 import type { V1_ExecutionEnvironmentInstance } from '../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+import type { SubtypeInfo } from '../../../../../action/protocol/ProtocolInfo.js';
+import { V1_INTERNAL__UnknownStore } from '../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -143,6 +147,12 @@ class V1_PackageableElementSerializer
 
   visit_INTERNAL__UnknownFunctionActivator(
     element: V1_INTERNAL__UnknownFunctionActivator,
+  ): PlainObject<V1_PackageableElement> {
+    return element.content;
+  }
+
+  visit_INTERNAL__UnknownStore(
+    element: V1_INTERNAL__UnknownStore,
   ): PlainObject<V1_PackageableElement> {
     return element.content;
   }
@@ -257,6 +267,7 @@ export const V1_serializePackageableElement = (
 export const V1_deserializePackageableElement = (
   json: PlainObject<V1_PackageableElement>,
   plugins: PureProtocolProcessorPlugin[],
+  subtypeInfo?: SubtypeInfo | undefined,
 ): V1_PackageableElement => {
   const packagePath = guaranteeIsString(
     json.package,
@@ -311,6 +322,24 @@ export const V1_deserializePackageableElement = (
         for (const deserializer of extraElementProtocolDeserializers) {
           const protocol = deserializer(json, plugins);
           if (protocol) {
+            return protocol;
+          }
+        }
+
+        if (subtypeInfo && isString(json._type)) {
+          if (subtypeInfo.functionActivatorSubtypes.includes(json._type)) {
+            const protocol = deserialize(
+              V1_INTERNAL__UnknownFunctionActivatorModelSchema,
+              json,
+            );
+            protocol.content = json;
+            return protocol;
+          }
+          if (subtypeInfo.storeSubtypes.includes(json._type)) {
+            const protocol = new V1_INTERNAL__UnknownStore();
+            protocol.name = name;
+            protocol.package = packagePath;
+            protocol.content = json;
             return protocol;
           }
         }

@@ -26,6 +26,11 @@ export const TEST__getTestGraph = async (
   entities: Entity[],
 ): Promise<PureModel> => {
   const graphManagerState = TEST__getTestGraphManagerState();
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
   await graphManagerState.initializeSystem({});
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,

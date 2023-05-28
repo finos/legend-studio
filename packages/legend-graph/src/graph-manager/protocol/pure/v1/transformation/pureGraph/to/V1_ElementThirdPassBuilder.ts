@@ -62,6 +62,7 @@ import { V1_TEMPORARY__buildMilestoningClass } from './helpers/V1_MilestoneBuild
 import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 
 export class V1_ElementThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -88,6 +89,10 @@ export class V1_ElementThirdPassBuilder
     element: V1_INTERNAL__UnknownFunctionActivator,
   ): void {
     throw new UnsupportedOperationError();
+  }
+
+  visit_INTERNAL__UnknownStore(element: V1_INTERNAL__UnknownStore): void {
+    return;
   }
 
   visit_Profile(element: V1_Profile): void {

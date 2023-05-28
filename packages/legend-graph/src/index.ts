@@ -220,7 +220,7 @@ export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
 
-export * from './graph-manager/action/protocol/ClassifierPathMapping.js';
+export * from './graph-manager/action/protocol/ProtocolInfo.js';
 export * from './graph-manager/action/SourceInformationHelper.js';
 export * from './graph-manager/action/generation/DatabaseBuilderInput.js';
 export * from './graph-manager/action/generation/GenerationConfigurationDescription.js';
@@ -277,7 +277,6 @@ export {
   V1_PureModelContextType,
   V1_pureModelContextPropSchema,
   V1_pureModelContextDataPropSchema,
-  V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
   V1_serializePureModelContextData,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
@@ -285,7 +284,6 @@ export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
-  V1_INTERNAL__UnknownFunctionActivatorModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 export {
   V1_deserializeValueSpecification,
@@ -449,7 +447,7 @@ export { JsonModelConnection } from './graph/metamodel/pure/packageableElements/
 export { ModelChainConnection } from './graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 export { XmlModelConnection } from './graph/metamodel/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
-export * from './graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
+export * from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnresolvedSetImplementation.js';
 export { PurePropertyMapping } from './graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping.js';
 export { InstanceSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 export { EnumerationMapping } from './graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
