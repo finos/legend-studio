@@ -826,150 +826,153 @@ export const GrammarTextEditor = observer(() => {
     }
     // Disable editing if user is in viewer mode
     editor.updateOptions({ readOnly: editorStore.isInViewerMode });
-  }
 
-  // hover
-  hoverProviderDisposer.current?.dispose();
-  hoverProviderDisposer.current = monacoLanguagesAPI.registerHoverProvider(
-    CODE_EDITOR_LANGUAGE.PURE,
-    {
-      provideHover: (model, position) => {
-        const currentWord = model.getWordAtPosition(position);
-        if (!currentWord) {
-          return { contents: [] };
-        }
-
-        // show documention for parser section
-        const lineTextIncludingWordRange = {
-          startLineNumber: position.lineNumber,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: currentWord.endColumn,
-        };
-        const lineTextIncludingWord = model.getValueInRange(
-          lineTextIncludingWordRange,
-        );
-        // NOTE: we don't need to trim here since the leading whitespace in front of
-        // the section header is considered invalid syntax in the grammar
-        if (
-          !hasWhiteSpace(lineTextIncludingWord) &&
-          lineTextIncludingWord.startsWith(PARSER_SECTION_MARKER)
-        ) {
-          const parserKeyword = lineTextIncludingWord.substring(
-            PARSER_SECTION_MARKER.length,
-          );
-          const doc = getParserDocumetation(editorStore, parserKeyword);
-          if (doc) {
-            return {
-              range: lineTextIncludingWordRange,
-              contents: [
-                doc.markdownText
-                  ? {
-                      value: doc.markdownText.value,
-                    }
-                  : undefined,
-                doc.url
-                  ? {
-                      value: `[See documentation](${doc.url})`,
-                    }
-                  : undefined,
-              ].filter(isNonNullable),
-            };
-          }
-        }
-
-        // show documentation for parser element
-        const textUntilPosition = model.getValueInRange({
-          startLineNumber: 1,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column,
-        });
-        const allParserSectionHeaders =
-          // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
-          `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
-            .split('\n')
-            .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
-        const currentSectionParserKeyword = getSectionParserNameFromLineText(
-          allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
-        );
-        if (currentSectionParserKeyword) {
-          const doc = getParserElementDocumentation(
-            editorStore,
-            currentSectionParserKeyword,
-            currentWord.word,
-          );
-          if (doc) {
-            return {
-              range: {
-                startLineNumber: position.lineNumber,
-                startColumn: currentWord.startColumn,
-                endLineNumber: position.lineNumber,
-                endColumn: currentWord.endColumn,
-              },
-              contents: [
-                doc.markdownText
-                  ? {
-                      value: doc.markdownText.value,
-                    }
-                  : undefined,
-                doc.url
-                  ? {
-                      value: `[See documentation](${doc.url})`,
-                    }
-                  : undefined,
-              ].filter(isNonNullable),
-            };
-          }
-        }
-
-        return { contents: [] };
-      },
-    },
-  );
-
-  // suggestion
-  suggestionProviderDisposer.current?.dispose();
-  suggestionProviderDisposer.current =
-    monacoLanguagesAPI.registerCompletionItemProvider(
+    // hover
+    hoverProviderDisposer.current?.dispose();
+    hoverProviderDisposer.current = monacoLanguagesAPI.registerHoverProvider(
       CODE_EDITOR_LANGUAGE.PURE,
       {
-        // NOTE: we need to specify this to show suggestions for section
-        // because by default, only alphanumeric characters trigger completion item provider
-        // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
-        // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
-        triggerCharacters: ['#'],
-        provideCompletionItems: (model, position) => {
-          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+        provideHover: (model, position) => {
+          const currentWord = model.getWordAtPosition(position);
+          if (!currentWord) {
+            return { contents: [] };
+          }
 
-          // suggestions for parser keyword
-          suggestions = suggestions.concat(
-            getParserKeywordSuggestions(
-              position,
-              model,
-              collectParserKeywordSuggestions(editorStore),
-            ),
+          // show documention for parser section
+          const lineTextIncludingWordRange = {
+            startLineNumber: position.lineNumber,
+            startColumn: 1,
+            endLineNumber: position.lineNumber,
+            endColumn: currentWord.endColumn,
+          };
+          const lineTextIncludingWord = model.getValueInRange(
+            lineTextIncludingWordRange,
           );
+          // NOTE: we don't need to trim here since the leading whitespace in front of
+          // the section header is considered invalid syntax in the grammar
+          if (
+            !hasWhiteSpace(lineTextIncludingWord) &&
+            lineTextIncludingWord.startsWith(PARSER_SECTION_MARKER)
+          ) {
+            const parserKeyword = lineTextIncludingWord.substring(
+              PARSER_SECTION_MARKER.length,
+            );
+            const doc = getParserDocumetation(editorStore, parserKeyword);
+            if (doc) {
+              return {
+                range: lineTextIncludingWordRange,
+                contents: [
+                  doc.markdownText
+                    ? {
+                        value: doc.markdownText.value,
+                      }
+                    : undefined,
+                  doc.url
+                    ? {
+                        value: `[See documentation](${doc.url})`,
+                      }
+                    : undefined,
+                ].filter(isNonNullable),
+              };
+            }
+          }
 
-          // suggestions for parser element snippets
-          suggestions = suggestions.concat(
-            getParserElementSnippetSuggestions(
-              position,
-              model,
-              (parserName: string) =>
-                collectParserElementSnippetSuggestions(editorStore, parserName),
-            ),
+          // show documentation for parser element
+          const textUntilPosition = model.getValueInRange({
+            startLineNumber: 1,
+            startColumn: 1,
+            endLineNumber: position.lineNumber,
+            endColumn: position.column,
+          });
+          const allParserSectionHeaders =
+            // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
+            `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
+              .split('\n')
+              .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
+          const currentSectionParserKeyword = getSectionParserNameFromLineText(
+            allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
           );
+          if (currentSectionParserKeyword) {
+            const doc = getParserElementDocumentation(
+              editorStore,
+              currentSectionParserKeyword,
+              currentWord.word,
+            );
+            if (doc) {
+              return {
+                range: {
+                  startLineNumber: position.lineNumber,
+                  startColumn: currentWord.startColumn,
+                  endLineNumber: position.lineNumber,
+                  endColumn: currentWord.endColumn,
+                },
+                contents: [
+                  doc.markdownText
+                    ? {
+                        value: doc.markdownText.value,
+                      }
+                    : undefined,
+                  doc.url
+                    ? {
+                        value: `[See documentation](${doc.url})`,
+                      }
+                    : undefined,
+                ].filter(isNonNullable),
+              };
+            }
+          }
 
-          // inline code snippet suggestions
-          suggestions = suggestions.concat(
-            getInlineSnippetSuggestions(position, model),
-          );
-
-          return { suggestions };
+          return { contents: [] };
         },
       },
     );
+
+    // suggestion
+    suggestionProviderDisposer.current?.dispose();
+    suggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(
+        CODE_EDITOR_LANGUAGE.PURE,
+        {
+          // NOTE: we need to specify this to show suggestions for section
+          // because by default, only alphanumeric characters trigger completion item provider
+          // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
+          // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
+          triggerCharacters: ['#'],
+          provideCompletionItems: (model, position) => {
+            let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+
+            // suggestions for parser keyword
+            suggestions = suggestions.concat(
+              getParserKeywordSuggestions(
+                position,
+                model,
+                collectParserKeywordSuggestions(editorStore),
+              ),
+            );
+
+            // suggestions for parser element snippets
+            suggestions = suggestions.concat(
+              getParserElementSnippetSuggestions(
+                position,
+                model,
+                (parserName: string) =>
+                  collectParserElementSnippetSuggestions(
+                    editorStore,
+                    parserName,
+                  ),
+              ),
+            );
+
+            // inline code snippet suggestions
+            suggestions = suggestions.concat(
+              getInlineSnippetSuggestions(position, model),
+            );
+
+            return { suggestions };
+          },
+        },
+      );
+  }
 
   useEffect(() => {
     if (editor && forcedCursorPosition) {
@@ -983,8 +986,8 @@ export const GrammarTextEditor = observer(() => {
       if (editor) {
         disposeCodeEditor(editor);
       }
-      // NOTE: make sure the call the disposer again after leaving this editor
-      // else we would end up with duplicated suggestions and hover infos
+
+      // Dispose the providers properly to avoid ending up with duplicated suggestions
       hoverProviderDisposer.current?.dispose();
       suggestionProviderDisposer.current?.dispose();
     },

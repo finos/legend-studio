@@ -363,60 +363,62 @@ const TestResultConsole: React.FC<{
     }
   }, [applicationStore, editor]);
 
-  locationLinkProviderDisposer.current?.dispose();
-  locationLinkProviderDisposer.current =
-    monacoLanguagesAPI.registerLinkProvider(CODE_EDITOR_LANGUAGE.TEXT, {
-      provideLinks: (model) => {
-        const links: TestErrorLocationLink[] = [];
+  if (editor) {
+    locationLinkProviderDisposer.current?.dispose();
+    locationLinkProviderDisposer.current =
+      monacoLanguagesAPI.registerLinkProvider(CODE_EDITOR_LANGUAGE.TEXT, {
+        provideLinks: (model) => {
+          const links: TestErrorLocationLink[] = [];
 
-        for (let i = 1; i <= model.getLineCount(); ++i) {
-          Array.from(
-            model.getLineContent(i).matchAll(TEST_ERROR_LOCATION_PATTERN),
-          ).forEach((match) => {
-            if (
-              match.index !== undefined &&
-              match.groups?.path &&
-              match.groups.path_sourceId &&
-              match.groups.path_column &&
-              match.groups.path_line
-            ) {
-              links.push({
-                range: {
-                  startLineNumber: i,
-                  startColumn: match.index + 1,
-                  endLineNumber: i,
-                  endColumn: match.index + 1 + match.groups.path.length,
-                },
-                tooltip: 'Click to go to location',
-                sourceId: match.groups.path_sourceId,
-                line: match.groups.path_line,
-                column: match.groups.path_column,
-              });
-            }
-          });
-        }
-        return {
-          links,
-        };
-      },
-      // NOTE: this is a hacky way to customize the behavior of clicking on a link
-      // there is no good solution right now to intercept this cleanly and prevent the default behavior
-      // this will produce a warning in the console since link resolved is not navigatable by monaco-editor
-      resolveLink: (link) => {
-        const locationLink = link as TestErrorLocationLink;
-        flowResult(
-          ideStore.loadFile(
-            locationLink.sourceId,
-            new FileCoordinate(
+          for (let i = 1; i <= model.getLineCount(); ++i) {
+            Array.from(
+              model.getLineContent(i).matchAll(TEST_ERROR_LOCATION_PATTERN),
+            ).forEach((match) => {
+              if (
+                match.index !== undefined &&
+                match.groups?.path &&
+                match.groups.path_sourceId &&
+                match.groups.path_column &&
+                match.groups.path_line
+              ) {
+                links.push({
+                  range: {
+                    startLineNumber: i,
+                    startColumn: match.index + 1,
+                    endLineNumber: i,
+                    endColumn: match.index + 1 + match.groups.path.length,
+                  },
+                  tooltip: 'Click to go to location',
+                  sourceId: match.groups.path_sourceId,
+                  line: match.groups.path_line,
+                  column: match.groups.path_column,
+                });
+              }
+            });
+          }
+          return {
+            links,
+          };
+        },
+        // NOTE: this is a hacky way to customize the behavior of clicking on a link
+        // there is no good solution right now to intercept this cleanly and prevent the default behavior
+        // this will produce a warning in the console since link resolved is not navigatable by monaco-editor
+        resolveLink: (link) => {
+          const locationLink = link as TestErrorLocationLink;
+          flowResult(
+            ideStore.loadFile(
               locationLink.sourceId,
-              Number.parseInt(locationLink.line, 10),
-              Number.parseInt(locationLink.column, 10),
+              new FileCoordinate(
+                locationLink.sourceId,
+                Number.parseInt(locationLink.line, 10),
+                Number.parseInt(locationLink.column, 10),
+              ),
             ),
-          ),
-        ).catch(ideStore.applicationStore.alertUnhandledError);
-        return undefined;
-      },
-    });
+          ).catch(ideStore.applicationStore.alertUnhandledError);
+          return undefined;
+        },
+      });
+  }
 
   useEffect(() => {
     if (editor) {
@@ -465,9 +467,9 @@ const TestResultConsole: React.FC<{
     () => (): void => {
       if (editor) {
         disposeCodeEditor(editor);
-      }
 
-      locationLinkProviderDisposer.current?.dispose();
+        locationLinkProviderDisposer.current?.dispose();
+      }
     },
     [editor],
   );

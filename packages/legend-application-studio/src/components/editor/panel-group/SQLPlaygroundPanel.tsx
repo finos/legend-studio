@@ -292,54 +292,18 @@ const SQL_KEYWORDS = [
   'WHERE',
 ];
 
-const getKeySuggestions = async (
+const getKeywordSuggestions = async (
   position: IPosition,
   model: monacoEditorAPI.ITextModel,
-  // ideStore: PureIDEStore,
 ): Promise<monacoLanguagesAPI.CompletionItem[]> =>
-  // const importPaths = getCurrentSectionImportPaths(position, model);
-  // const isUsingArrowFunction = Boolean(
-  //   model
-  //     .getLineContent(position.lineNumber)
-  //     .substring(0, position.column - 1)
-  //     .match(ARROW_FUNCTION_USAGE_PATTERN),
-  // );
-  // const isUsingConstructor = Boolean(
-  //   model
-  //     .getLineContent(position.lineNumber)
-  //     .substring(0, position.column - 1)
-  //     .match(CONSTRUCTOR_USAGE_PATTERN),
-  // );
-
-  // let suggestions: ElementSuggestion[] = [];
-  // try {
-  //   suggestions = (
-  //     await ideStore.client.getSuggestionsForIdentifier(
-  //       importPaths,
-  //       isUsingConstructor
-  //         ? [ConceptType.CLASS]
-  //         : isUsingArrowFunction
-  //         ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
-  //         : [],
-  //     )
-  //   ).map((child) => deserialize(ElementSuggestion, child));
-  // } catch {
-  //   // do nothing: provide no suggestions when error ocurred
-  // }
   SQL_KEYWORDS.map(
     (keyword) =>
       ({
         label: keyword,
         kind: monacoLanguagesAPI.CompletionItemKind.Keyword,
-        // filterText: keyword.pureName,
         insertTextRules:
           monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-        insertText: keyword,
-        // attempt to push package suggestions to the bottom of the list
-        // sortText:
-        //   type === ConceptType.PACKAGE
-        //     ? `zzzz_${keyword.text}`
-        //     : keyword.text,
+        insertText: `${keyword} `,
       } as monacoLanguagesAPI.CompletionItem),
   );
 
@@ -373,21 +337,10 @@ const PlaygroundSQLCodeEditor = observer(() => {
       const newEditor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         theme: CODE_EDITOR_THEME.DEFAULT_DARK,
-        language: CODE_EDITOR_LANGUAGE.PURE,
-        wordSeparators: '`~!@#%^&*()-=+[{]}\\|;:\'",.<>/?', // omit $ from default word separators
+        language: CODE_EDITOR_LANGUAGE.SQL,
         padding: {
           top: 10,
         },
-        automaticLayout: true,
-        // quickSuggestions: true,
-
-        quickSuggestions: {
-          comments: 'on',
-          other: 'on',
-          strings: 'on', // <===
-        },
-        // suggest
-        wordBasedSuggestions: false,
       });
 
       newEditor.onDidChangeModelContent(() => {
@@ -408,59 +361,60 @@ const PlaygroundSQLCodeEditor = observer(() => {
 
   useCommands(playgroundState);
 
-  // suggestions
-  sqlConstructSuggestionProviderDisposer.current?.dispose();
-  sqlConstructSuggestionProviderDisposer.current =
-    monacoLanguagesAPI.registerCompletionItemProvider(
-      CODE_EDITOR_LANGUAGE.SQL,
-      {
-        triggerCharacters: ['.'],
-        provideCompletionItems: async (model, position, context) => {
-          const suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-          // console.log('comodo');
-          // if (
-          //   context.triggerKind ===
-          //   monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
-          // ) {
-          //   switch (context.triggerCharacter) {
-          //     case '.': {
-          //       suggestions = suggestions.concat(
-          //         await getAttributeSuggestions(position, model, ideStore),
-          //       );
-          //       break;
-          //     }
-          //     default:
-          //       break;
-          //   }
-          // }
+  if (editor) {
+    // suggestions
+    sqlConstructSuggestionProviderDisposer.current?.dispose();
+    sqlConstructSuggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(
+        CODE_EDITOR_LANGUAGE.SQL,
+        {
+          triggerCharacters: ['.'],
+          provideCompletionItems: async (model, position, context) => {
+            const suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+            // if (
+            //   context.triggerKind ===
+            //   monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
+            // ) {
+            //   switch (context.triggerCharacter) {
+            //     case '.': {
+            //       suggestions = suggestions.concat(
+            //         await getAttributeSuggestions(position, model, ideStore),
+            //       );
+            //       break;
+            //     }
+            //     default:
+            //       break;
+            //   }
+            // }
 
-          return { suggestions };
+            return { suggestions };
+          },
         },
-      },
-    );
+      );
 
-  sqlIdentifierSuggestionProviderDisposer.current?.dispose();
-  sqlIdentifierSuggestionProviderDisposer.current =
-    monacoLanguagesAPI.registerCompletionItemProvider(
-      CODE_EDITOR_LANGUAGE.PURE,
-      {
-        triggerCharacters: [],
-        provideCompletionItems: async (model, position, context) => {
-          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-          if (
-            context.triggerKind ===
-            monacoLanguagesAPI.CompletionTriggerKind.Invoke
-          ) {
-            // suggestions
-            suggestions = suggestions.concat(
-              await getKeySuggestions(position, model),
-            );
-          }
+    sqlIdentifierSuggestionProviderDisposer.current?.dispose();
+    sqlIdentifierSuggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(
+        CODE_EDITOR_LANGUAGE.SQL,
+        {
+          triggerCharacters: [],
+          provideCompletionItems: async (model, position, context) => {
+            let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+            if (
+              context.triggerKind ===
+              monacoLanguagesAPI.CompletionTriggerKind.Invoke
+            ) {
+              // suggestions
+              suggestions = suggestions.concat(
+                await getKeywordSuggestions(position, model),
+              );
+            }
 
-          return { suggestions };
+            return { suggestions };
+          },
         },
-      },
-    );
+      );
+  }
 
   // clean up
   useEffect(
@@ -470,12 +424,12 @@ const PlaygroundSQLCodeEditor = observer(() => {
         playgroundState.setSQLEditorViewState(
           editor.saveViewState() ?? undefined,
         );
-        // NOTE: dispose the editor to prevent potential memory-leak
         editor.dispose();
-      }
 
-      sqlConstructSuggestionProviderDisposer.current?.dispose();
-      sqlIdentifierSuggestionProviderDisposer.current?.dispose();
+        // Dispose the providers properly to avoid ending up with duplicated suggestions
+        sqlConstructSuggestionProviderDisposer.current?.dispose();
+        sqlIdentifierSuggestionProviderDisposer.current?.dispose();
+      }
     },
     [playgroundState, editor],
   );

@@ -315,223 +315,234 @@ export const PureFileEditor = observer(
       }
     }, [ideStore, applicationStore, editorState, editor]);
 
-    definitionProviderDisposer.current?.dispose();
-    definitionProviderDisposer.current =
-      monacoLanguagesAPI.registerDefinitionProvider(CODE_EDITOR_LANGUAGE.PURE, {
-        provideDefinition: (model, position) => {
-          // NOTE: there is a quirky problem with monaco-editor or our integration with it
-          // where sometimes, hovering the mouse on the right half of the last character of a definition token
-          // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
-          // to do with that for the time being.
-          const lineContent = model.getLineContent(position.lineNumber);
-          const lineTokens = monacoEditorAPI.tokenize(
-            lineContent,
-            CODE_EDITOR_LANGUAGE.PURE,
-          )[0];
-          if (!lineTokens) {
-            return [];
-          }
-          let currentToken: Token | undefined = undefined;
-          let currentTokenRange: IRange | undefined = undefined;
-          for (let i = 1; i <= lineTokens.length; ++i) {
-            // NOTE: here we have to account for the fact that the last token
-            // extends to the end of the line, and it could be a meaninful token
-            const tokenOffset =
-              i === lineTokens.length
-                ? lineContent.length
-                : guaranteeNonNullable(lineTokens[i]).offset;
-            if (tokenOffset + 1 > position.column) {
-              currentToken = guaranteeNonNullable(lineTokens[i - 1]);
-              // this is the selection of text from another file for peeking/preview the definition
-              // We can't really do much here since we do goto-definition asynchronously, we will
-              // show the token itself
-              currentTokenRange = {
-                startLineNumber: position.lineNumber,
-                startColumn: currentToken.offset + 1,
-                endLineNumber: position.lineNumber,
-                endColumn: tokenOffset + 1, // NOTE: seems like this needs to be exclusive
-              };
-              break;
-            }
-          }
-          if (
-            currentToken &&
-            currentTokenRange &&
-            // NOTE: only allow goto definition for these tokens
-            isTokenOneOf(currentToken.type, [
-              PURE_GRAMMAR_TOKEN.TYPE,
-              PURE_GRAMMAR_TOKEN.VARIABLE,
-              PURE_GRAMMAR_TOKEN.PROPERTY,
-              PURE_GRAMMAR_TOKEN.PARAMETER,
-              PURE_GRAMMAR_TOKEN.IDENTIFIER,
-            ])
-          ) {
-            return [
-              {
-                uri: editorState.textEditorState.model.uri,
-                range: currentTokenRange,
-              },
-            ];
-          }
-          return [];
-        },
-      });
-
-    // suggestions
-    pureConstructSuggestionProviderDisposer.current?.dispose();
-    pureConstructSuggestionProviderDisposer.current =
-      monacoLanguagesAPI.registerCompletionItemProvider(
-        CODE_EDITOR_LANGUAGE.PURE,
-        {
-          triggerCharacters: ['/', '#', ':', '>', '.', '@', '^', '$'],
-          provideCompletionItems: async (model, position, context) => {
-            let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-
-            if (
-              context.triggerKind ===
-              monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
-            ) {
-              switch (context.triggerCharacter) {
-                // special commands: copyright header, etc.
-                case '/': {
-                  suggestions = suggestions.concat(
-                    getCopyrightHeaderSuggestions(),
-                  );
-                  break;
-                }
-                // parser section header
-                case '#': {
-                  suggestions = suggestions.concat(
-                    getParserKeywordSuggestions(
-                      position,
-                      model,
-                      collectParserKeywordSuggestions(),
-                    ),
-                  );
-                  break;
-                }
-                // incomplete path (::)
-                case ':': {
-                  suggestions = suggestions.concat(
-                    await getIncompletePathSuggestions(
-                      position,
-                      model,
-                      ideStore,
-                    ),
-                  );
-                  break;
-                }
-                // arrow function (->)
-                // NOTE: we can't really do type matching on document being edited
-                // since in order to get the semantics of these token, we need the
-                // currently typed text to compile, but that's not always possible
-                // especially mid typing an expression sequence
-                case '>': {
-                  suggestions = suggestions.concat(
-                    await getArrowFunctionSuggestions(
-                      position,
-                      model,
-                      ideStore,
-                    ),
-                  );
-                  break;
-                }
-                // calling property, attribute, enum value, tag, stereotype, etc.
-                // NOTE: we can't really do type matching on document being edited
-                // since in order to get the semantics of these token, we need the
-                // currently typed text to compile, but that's not always possible
-                // especially mid typing an expression sequence
-                case '.': {
-                  suggestions = suggestions.concat(
-                    await getAttributeSuggestions(position, model, ideStore),
-                  );
-                  break;
-                }
-                // constructing a new class instance
-                case '^': {
-                  suggestions = suggestions.concat(
-                    await getConstructorClassSuggestions(
-                      position,
-                      model,
-                      ideStore,
-                    ),
-                  );
-                  break;
-                }
-                // casting to a class
-                case '@': {
-                  suggestions = suggestions.concat(
-                    await getCastingClassSuggestions(position, model, ideStore),
-                  );
-                  break;
-                }
-                // variables
-                case '$': {
-                  suggestions = suggestions.concat(
-                    await getVariableSuggestions(
-                      position,
-                      model,
-                      editorState.filePath,
-                      ideStore,
-                    ),
-                  );
-                  break;
-                }
-                default:
-                  break;
+    if (editor) {
+      definitionProviderDisposer.current?.dispose();
+      definitionProviderDisposer.current =
+        monacoLanguagesAPI.registerDefinitionProvider(
+          CODE_EDITOR_LANGUAGE.PURE,
+          {
+            provideDefinition: (model, position) => {
+              // NOTE: there is a quirky problem with monaco-editor or our integration with it
+              // where sometimes, hovering the mouse on the right half of the last character of a definition token
+              // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
+              // to do with that for the time being.
+              const lineContent = model.getLineContent(position.lineNumber);
+              const lineTokens = monacoEditorAPI.tokenize(
+                lineContent,
+                CODE_EDITOR_LANGUAGE.PURE,
+              )[0];
+              if (!lineTokens) {
+                return [];
               }
-            }
-
-            return { suggestions };
+              let currentToken: Token | undefined = undefined;
+              let currentTokenRange: IRange | undefined = undefined;
+              for (let i = 1; i <= lineTokens.length; ++i) {
+                // NOTE: here we have to account for the fact that the last token
+                // extends to the end of the line, and it could be a meaninful token
+                const tokenOffset =
+                  i === lineTokens.length
+                    ? lineContent.length
+                    : guaranteeNonNullable(lineTokens[i]).offset;
+                if (tokenOffset + 1 > position.column) {
+                  currentToken = guaranteeNonNullable(lineTokens[i - 1]);
+                  // this is the selection of text from another file for peeking/preview the definition
+                  // We can't really do much here since we do goto-definition asynchronously, we will
+                  // show the token itself
+                  currentTokenRange = {
+                    startLineNumber: position.lineNumber,
+                    startColumn: currentToken.offset + 1,
+                    endLineNumber: position.lineNumber,
+                    endColumn: tokenOffset + 1, // NOTE: seems like this needs to be exclusive
+                  };
+                  break;
+                }
+              }
+              if (
+                currentToken &&
+                currentTokenRange &&
+                // NOTE: only allow goto definition for these tokens
+                isTokenOneOf(currentToken.type, [
+                  PURE_GRAMMAR_TOKEN.TYPE,
+                  PURE_GRAMMAR_TOKEN.VARIABLE,
+                  PURE_GRAMMAR_TOKEN.PROPERTY,
+                  PURE_GRAMMAR_TOKEN.PARAMETER,
+                  PURE_GRAMMAR_TOKEN.IDENTIFIER,
+                ])
+              ) {
+                return [
+                  {
+                    uri: editorState.textEditorState.model.uri,
+                    range: currentTokenRange,
+                  },
+                ];
+              }
+              return [];
+            },
           },
-        },
-      );
+        );
 
-    pureIdentifierSuggestionProviderDisposer.current?.dispose();
-    pureIdentifierSuggestionProviderDisposer.current =
-      monacoLanguagesAPI.registerCompletionItemProvider(
-        CODE_EDITOR_LANGUAGE.PURE,
-        {
-          triggerCharacters: [],
-          provideCompletionItems: async (model, position, context) => {
-            let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+      // suggestions
+      pureConstructSuggestionProviderDisposer.current?.dispose();
+      pureConstructSuggestionProviderDisposer.current =
+        monacoLanguagesAPI.registerCompletionItemProvider(
+          CODE_EDITOR_LANGUAGE.PURE,
+          {
+            triggerCharacters: ['/', '#', ':', '>', '.', '@', '^', '$'],
+            provideCompletionItems: async (model, position, context) => {
+              let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
 
-            if (
-              context.triggerKind ===
-              monacoLanguagesAPI.CompletionTriggerKind.Invoke
-            ) {
-              // copyright header
-              suggestions = suggestions.concat(getCopyrightHeaderSuggestions());
+              if (
+                context.triggerKind ===
+                monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
+              ) {
+                switch (context.triggerCharacter) {
+                  // special commands: copyright header, etc.
+                  case '/': {
+                    suggestions = suggestions.concat(
+                      getCopyrightHeaderSuggestions(),
+                    );
+                    break;
+                  }
+                  // parser section header
+                  case '#': {
+                    suggestions = suggestions.concat(
+                      getParserKeywordSuggestions(
+                        position,
+                        model,
+                        collectParserKeywordSuggestions(),
+                      ),
+                    );
+                    break;
+                  }
+                  // incomplete path (::)
+                  case ':': {
+                    suggestions = suggestions.concat(
+                      await getIncompletePathSuggestions(
+                        position,
+                        model,
+                        ideStore,
+                      ),
+                    );
+                    break;
+                  }
+                  // arrow function (->)
+                  // NOTE: we can't really do type matching on document being edited
+                  // since in order to get the semantics of these token, we need the
+                  // currently typed text to compile, but that's not always possible
+                  // especially mid typing an expression sequence
+                  case '>': {
+                    suggestions = suggestions.concat(
+                      await getArrowFunctionSuggestions(
+                        position,
+                        model,
+                        ideStore,
+                      ),
+                    );
+                    break;
+                  }
+                  // calling property, attribute, enum value, tag, stereotype, etc.
+                  // NOTE: we can't really do type matching on document being edited
+                  // since in order to get the semantics of these token, we need the
+                  // currently typed text to compile, but that's not always possible
+                  // especially mid typing an expression sequence
+                  case '.': {
+                    suggestions = suggestions.concat(
+                      await getAttributeSuggestions(position, model, ideStore),
+                    );
+                    break;
+                  }
+                  // constructing a new class instance
+                  case '^': {
+                    suggestions = suggestions.concat(
+                      await getConstructorClassSuggestions(
+                        position,
+                        model,
+                        ideStore,
+                      ),
+                    );
+                    break;
+                  }
+                  // casting to a class
+                  case '@': {
+                    suggestions = suggestions.concat(
+                      await getCastingClassSuggestions(
+                        position,
+                        model,
+                        ideStore,
+                      ),
+                    );
+                    break;
+                  }
+                  // variables
+                  case '$': {
+                    suggestions = suggestions.concat(
+                      await getVariableSuggestions(
+                        position,
+                        model,
+                        editorState.filePath,
+                        ideStore,
+                      ),
+                    );
+                    break;
+                  }
+                  default:
+                    break;
+                }
+              }
 
-              // suggestions for parser element snippets
-              suggestions = suggestions.concat(
-                getParserElementSnippetSuggestions(
-                  position,
-                  model,
-                  (parserName: string) =>
-                    collectParserElementSnippetSuggestions(parserName),
-                ),
-              );
-
-              // code snippet suggestions
-              suggestions = suggestions.concat(
-                getInlineSnippetSuggestions(
-                  position,
-                  model,
-                  collectExtraInlineSnippetSuggestions(),
-                ),
-              );
-
-              // identifier suggestions (fetched asynchronously)
-              suggestions = suggestions.concat(
-                await getIdentifierSuggestions(position, model, ideStore),
-              );
-            }
-
-            return { suggestions };
+              return { suggestions };
+            },
           },
-        },
-      );
+        );
+
+      pureIdentifierSuggestionProviderDisposer.current?.dispose();
+      pureIdentifierSuggestionProviderDisposer.current =
+        monacoLanguagesAPI.registerCompletionItemProvider(
+          CODE_EDITOR_LANGUAGE.PURE,
+          {
+            triggerCharacters: [],
+            provideCompletionItems: async (model, position, context) => {
+              let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+
+              if (
+                context.triggerKind ===
+                monacoLanguagesAPI.CompletionTriggerKind.Invoke
+              ) {
+                // copyright header
+                suggestions = suggestions.concat(
+                  getCopyrightHeaderSuggestions(),
+                );
+
+                // suggestions for parser element snippets
+                suggestions = suggestions.concat(
+                  getParserElementSnippetSuggestions(
+                    position,
+                    model,
+                    (parserName: string) =>
+                      collectParserElementSnippetSuggestions(parserName),
+                  ),
+                );
+
+                // code snippet suggestions
+                suggestions = suggestions.concat(
+                  getInlineSnippetSuggestions(
+                    position,
+                    model,
+                    collectExtraInlineSnippetSuggestions(),
+                  ),
+                );
+
+                // identifier suggestions (fetched asynchronously)
+                suggestions = suggestions.concat(
+                  await getIdentifierSuggestions(position, model, ideStore),
+                );
+              }
+
+              return { suggestions };
+            },
+          },
+        );
+    }
 
     useCommands(editorState);
 
@@ -590,14 +601,13 @@ export const PureFileEditor = observer(
           editorState.textEditorState.setViewState(
             editor.saveViewState() ?? undefined,
           );
-          // NOTE: dispose the editor to prevent potential memory-leak
           editor.dispose();
+
+          definitionProviderDisposer.current?.dispose();
+
+          pureConstructSuggestionProviderDisposer.current?.dispose();
+          pureIdentifierSuggestionProviderDisposer.current?.dispose();
         }
-
-        definitionProviderDisposer.current?.dispose();
-
-        pureConstructSuggestionProviderDisposer.current?.dispose();
-        pureIdentifierSuggestionProviderDisposer.current?.dispose();
       },
       [editorState, editor],
     );

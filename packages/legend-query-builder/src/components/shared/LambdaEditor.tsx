@@ -329,9 +329,10 @@ const LambdaEditor_Inner = observer(
       () => (): void => {
         if (editor) {
           disposeCodeEditor(editor);
+
+          onDidChangeModelContentEventDisposer.current?.dispose();
+          onDidFocusEditorWidgetDisposer.current?.dispose();
         }
-        onDidChangeModelContentEventDisposer.current?.dispose();
-        onDidFocusEditorWidgetDisposer.current?.dispose();
       },
       [editor],
     );
@@ -562,8 +563,9 @@ const LambdaEditor_PopUp = observer(
       () => (): void => {
         if (editor) {
           disposeCodeEditor(editor);
+
+          onDidChangeModelContentEventDisposer.current?.dispose();
         }
-        onDidChangeModelContentEventDisposer.current?.dispose();
       },
       [editor],
     );

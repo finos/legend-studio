@@ -571,12 +571,13 @@ const MergeConflictEditor = observer(
       () => (): void => {
         if (editor) {
           disposeCodeEditor(editor);
+
+          onDidChangeModelContentEventDisposer.current?.dispose();
+          onDidChangeCursorPositionEventDisposer.current?.dispose();
+          onDidBlurEditorTextEventDisposer.current?.dispose();
+          onDidFocusEditorTextEventDisposer.current?.dispose();
+          mergeConflictResolutionCodeLensDisposer.current?.dispose();
         }
-        onDidChangeModelContentEventDisposer.current?.dispose();
-        onDidChangeCursorPositionEventDisposer.current?.dispose();
-        onDidBlurEditorTextEventDisposer.current?.dispose();
-        onDidFocusEditorTextEventDisposer.current?.dispose();
-        mergeConflictResolutionCodeLensDisposer.current?.dispose();
       },
       [editor],
     );
