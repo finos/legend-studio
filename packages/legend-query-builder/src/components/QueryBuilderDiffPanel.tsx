@@ -15,7 +15,18 @@
  */
 
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { clsx, Dialog, Button } from '@finos/legend-art';
+import {
+  clsx,
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
+  ModalFooterButton,
+  ModalHeaderActions,
+  TimesIcon,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import {
@@ -41,13 +52,77 @@ export const QueryBuilderDiffViewPanel = observer(
       (): void => {
         diffViewState.setMode(mode);
       };
-    const close = (): void =>
-      diffViewState.changeDetectionState.hideDiffViewPanel();
-
     useEffect(() => {
       diffViewState.generateGrammarDiff();
     }, [diffViewState]);
 
+    return (
+      <>
+        <div className="query-builder__diff-panel__header">
+          {Object.values(QueryBuilderDiffViewMode).map((mode) => (
+            <button
+              onClick={onChangeMode(mode)}
+              className={clsx('query-builder__diff-panel__mode', {
+                'query-builder__diff-panel__mode--selected':
+                  mode === diffViewState.mode,
+              })}
+              key={mode}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+        <div className="query-builder__diff-panel__content">
+          {diffViewState.mode === QueryBuilderDiffViewMode.GRAMMAR && (
+            <CodeDiffView
+              language={CODE_EDITOR_LANGUAGE.PURE}
+              from={fromGrammarText}
+              to={toGrammarText}
+            />
+          )}
+          {diffViewState.mode === QueryBuilderDiffViewMode.JSON && (
+            <JSONDiffView
+              from={JSON.stringify(
+                {
+                  parameters: diffViewState.initialQuery.parameters
+                    ? pruneSourceInformation(
+                        diffViewState.initialQuery.parameters,
+                      )
+                    : undefined,
+                  body: diffViewState.initialQuery.body
+                    ? pruneSourceInformation(diffViewState.initialQuery.body)
+                    : undefined,
+                },
+                null,
+                DEFAULT_TAB_SIZE,
+              )}
+              to={JSON.stringify(
+                {
+                  parameters: diffViewState.currentQuery.parameters
+                    ? pruneSourceInformation(
+                        diffViewState.currentQuery.parameters,
+                      )
+                    : undefined,
+                  body: diffViewState.currentQuery.body
+                    ? pruneSourceInformation(diffViewState.currentQuery.body)
+                    : undefined,
+                },
+                null,
+                DEFAULT_TAB_SIZE,
+              )}
+            />
+          )}
+        </div>
+      </>
+    );
+  },
+);
+
+export const QueryBuilderDiffViewPanelDiaglog = observer(
+  (props: { diffViewState: QueryBuilderDiffViewState }) => {
+    const { diffViewState } = props;
+    const close = (): void =>
+      diffViewState.changeDetectionState.hideDiffViewPanel();
     return (
       <Dialog
         open={Boolean(diffViewState)}
@@ -58,76 +133,31 @@ export const QueryBuilderDiffViewPanel = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div
-          className={clsx(
-            'modal modal--dark editor-modal query-builder-text-mode__modal',
-          )}
+        <Modal
+          darkMode={true}
+          className={clsx('editor-modal query-builder-text-mode__modal')}
         >
-          <div className="query-builder__diff-panel">
-            <div className="query-builder__diff-panel__header">
-              {Object.values(QueryBuilderDiffViewMode).map((mode) => (
-                <button
-                  onClick={onChangeMode(mode)}
-                  className={clsx('query-builder__diff-panel__mode', {
-                    'query-builder__diff-panel__mode--selected':
-                      mode === diffViewState.mode,
-                  })}
-                  key={mode}
-                >
-                  {mode}
-                </button>
-              ))}
-            </div>
-            <div className="query-builder__diff-panel__content">
-              {diffViewState.mode === QueryBuilderDiffViewMode.GRAMMAR && (
-                <CodeDiffView
-                  language={CODE_EDITOR_LANGUAGE.PURE}
-                  from={fromGrammarText}
-                  to={toGrammarText}
-                />
-              )}
-              {diffViewState.mode === QueryBuilderDiffViewMode.JSON && (
-                <JSONDiffView
-                  from={JSON.stringify(
-                    {
-                      parameters: diffViewState.initialQuery.parameters
-                        ? pruneSourceInformation(
-                            diffViewState.initialQuery.parameters,
-                          )
-                        : undefined,
-                      body: diffViewState.initialQuery.body
-                        ? pruneSourceInformation(
-                            diffViewState.initialQuery.body,
-                          )
-                        : undefined,
-                    },
-                    null,
-                    DEFAULT_TAB_SIZE,
-                  )}
-                  to={JSON.stringify(
-                    {
-                      parameters: diffViewState.currentQuery.parameters
-                        ? pruneSourceInformation(
-                            diffViewState.currentQuery.parameters,
-                          )
-                        : undefined,
-                      body: diffViewState.currentQuery.body
-                        ? pruneSourceInformation(
-                            diffViewState.currentQuery.body,
-                          )
-                        : undefined,
-                    },
-                    null,
-                    DEFAULT_TAB_SIZE,
-                  )}
-                />
-              )}
-            </div>
-            <div className="query-builder__diff-panel__actions">
-              <Button text="close" onClick={close} />
-            </div>
-          </div>
-        </div>
+          <ModalHeader>
+            <ModalTitle title="Query Diff" />
+            <ModalHeaderActions>
+              <button
+                className="modal__header__action"
+                tabIndex={-1}
+                onClick={close}
+              >
+                <TimesIcon />
+              </button>
+            </ModalHeaderActions>
+          </ModalHeader>
+          <ModalBody className="query-builder__diff-panel">
+            <QueryBuilderDiffViewPanel diffViewState={diffViewState} />
+          </ModalBody>
+          <ModalFooter className="query-builder__diff-panel__actions">
+            <ModalFooterButton title="Close Modal" onClick={close}>
+              Close
+            </ModalFooterButton>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

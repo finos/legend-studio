@@ -31,6 +31,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  ModalTitle,
   ModalFooterButton,
   ManageSearchIcon,
   LightBulbIcon,
@@ -41,6 +42,8 @@ import {
   PanelListItem,
   Button,
   clsx,
+  ModalHeaderActions,
+  TimesIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -74,6 +77,7 @@ import {
   QueryBuilder,
   QueryBuilderNavigationBlocker,
   QueryLoaderDialog,
+  QueryBuilderDiffViewPanel,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
@@ -177,6 +181,72 @@ const CreateQueryDialog = observer(() => {
   );
 });
 
+const SaveQueryDialog = observer(
+  (props: { existingEditorStore: ExistingQueryEditorStore }) => {
+    const { existingEditorStore } = props;
+    const updateState = existingEditorStore.updateState;
+    const applicationStore = existingEditorStore.applicationStore;
+
+    const saveQuery = applicationStore.guardUnhandledError(
+      async (): Promise<void> => {
+        flowResult(
+          existingEditorStore.updateState.updateQuery(undefined),
+        ).catch(applicationStore.alertUnhandledError);
+      },
+    );
+    const close = (): void => updateState.closeSaveModal();
+
+    return (
+      <Dialog
+        open={updateState.saveModal}
+        onClose={close}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal
+          darkMode={true}
+          className={clsx('editor-modal query-builder-text-mode__modal')}
+        >
+          <ModalHeader>
+            <ModalTitle title="Save Existing Query" />
+            <ModalHeaderActions>
+              <button
+                className="modal__header__action"
+                tabIndex={-1}
+                onClick={close}
+              >
+                <TimesIcon />
+              </button>
+            </ModalHeaderActions>
+          </ModalHeader>
+          <ModalBody>
+            <PanelLoadingIndicator
+              isLoading={updateState.updateQueryState.isInProgress}
+            />
+            {updateState.updateDiffState && (
+              <QueryBuilderDiffViewPanel
+                diffViewState={updateState.updateDiffState}
+              />
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              text="Save"
+              title="Save (Will Overwrite Existing Query)"
+              disabled={Boolean(existingEditorStore.isPerformingBlockingAction)}
+              onClick={saveQuery}
+            />
+            <ModalFooterButton text="Close" onClick={close} />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 const QueryEditorExistingQueryHeader = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
@@ -273,6 +343,9 @@ const QueryEditorExistingQueryHeader = observer(
             {existingEditorStore.lightQuery.name}
           </div>
         )}
+        {existingEditorStore.updateState.saveModal && (
+          <SaveQueryDialog existingEditorStore={existingEditorStore} />
+        )}
       </>
     );
   },
@@ -327,15 +400,11 @@ const QueryEditorHeaderContent = observer(
       );
     };
 
-    const saveQuery = applicationStore.guardUnhandledError(
-      async (): Promise<void> => {
-        if (editorStore instanceof ExistingQueryEditorStore) {
-          flowResult(editorStore.updateState.updateQuery(undefined)).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      },
-    );
+    const openSaveQueryModal = (): void => {
+      if (editorStore instanceof ExistingQueryEditorStore) {
+        editorStore.updateState.showSaveModal();
+      }
+    };
 
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
@@ -422,7 +491,7 @@ const QueryEditorHeaderContent = observer(
             disabled={
               !isExistingQuery || editorStore.isPerformingBlockingAction
             }
-            onClick={saveQuery}
+            onClick={openSaveQueryModal}
             title="Save query"
           >
             <SaveCurrIcon />
