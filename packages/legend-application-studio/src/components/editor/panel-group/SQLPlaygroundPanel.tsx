@@ -88,6 +88,7 @@ import {
   isNonNullable,
   isString,
   parseCSVString,
+  uniqBy,
 } from '@finos/legend-shared';
 
 const getDatabaseSchemaNodeIcon = (
@@ -307,6 +308,29 @@ const getKeywordSuggestions = async (
       } as monacoLanguagesAPI.CompletionItem),
   );
 
+const getDatabaseSchemaEntities = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  playgroundState: SQLPlaygroundPanelState,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  if (playgroundState.treeData) {
+    return uniqBy(
+      Array.from(playgroundState.treeData.nodes.values()).map(
+        (value) =>
+          ({
+            label: value.label,
+            kind: monacoLanguagesAPI.CompletionItemKind.Field,
+            insertTextRules:
+              monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+            insertText: `${value.label} `,
+          } as monacoLanguagesAPI.CompletionItem),
+      ),
+      (val) => val.label,
+    );
+  }
+  return [];
+};
+
 const PlaygroundSQLCodeEditor = observer(() => {
   const editorStore = useEditorStore();
   const playgroundState = editorStore.sqlPlaygroundState;
@@ -315,9 +339,6 @@ const PlaygroundSQLCodeEditor = observer(() => {
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
-  const sqlConstructSuggestionProviderDisposer = useRef<
-    IDisposable | undefined
-  >(undefined);
   const sqlIdentifierSuggestionProviderDisposer = useRef<
     IDisposable | undefined
   >(undefined);
@@ -362,36 +383,6 @@ const PlaygroundSQLCodeEditor = observer(() => {
   useCommands(playgroundState);
 
   if (editor) {
-    // suggestions
-    sqlConstructSuggestionProviderDisposer.current?.dispose();
-    sqlConstructSuggestionProviderDisposer.current =
-      monacoLanguagesAPI.registerCompletionItemProvider(
-        CODE_EDITOR_LANGUAGE.SQL,
-        {
-          triggerCharacters: ['.'],
-          provideCompletionItems: async (model, position, context) => {
-            const suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-            // if (
-            //   context.triggerKind ===
-            //   monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
-            // ) {
-            //   switch (context.triggerCharacter) {
-            //     case '.': {
-            //       suggestions = suggestions.concat(
-            //         await getAttributeSuggestions(position, model, ideStore),
-            //       );
-            //       break;
-            //     }
-            //     default:
-            //       break;
-            //   }
-            // }
-
-            return { suggestions };
-          },
-        },
-      );
-
     sqlIdentifierSuggestionProviderDisposer.current?.dispose();
     sqlIdentifierSuggestionProviderDisposer.current =
       monacoLanguagesAPI.registerCompletionItemProvider(
@@ -404,9 +395,18 @@ const PlaygroundSQLCodeEditor = observer(() => {
               context.triggerKind ===
               monacoLanguagesAPI.CompletionTriggerKind.Invoke
             ) {
-              // suggestions
+              // keywords
               suggestions = suggestions.concat(
                 await getKeywordSuggestions(position, model),
+              );
+
+              // database schema entities
+              suggestions = suggestions.concat(
+                await getDatabaseSchemaEntities(
+                  position,
+                  model,
+                  playgroundState,
+                ),
               );
             }
 
@@ -427,7 +427,6 @@ const PlaygroundSQLCodeEditor = observer(() => {
         editor.dispose();
 
         // Dispose the providers properly to avoid ending up with duplicated suggestions
-        sqlConstructSuggestionProviderDisposer.current?.dispose();
         sqlIdentifierSuggestionProviderDisposer.current?.dispose();
       }
     },
