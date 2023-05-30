@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 30.0.0
+
+### Major Changes
+
+- [#2270](https://github.com/finos/legend-studio/pull/2270) [`965e54537`](https://github.com/finos/legend-studio/commit/965e54537dd89549a752a1c218e2ace900e6fa46) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `PureProtocolProcessorPlugin.V1_getExtraExecutionInputCollectors()` and simplified the mechanism where we collect graph data for execution input: now we just send the full graph and do no filtering.
+
+### Minor Changes
+
+- [#2259](https://github.com/finos/legend-studio/pull/2259) [`004bfc084`](https://github.com/finos/legend-studio/commit/004bfc08407def463639550e236396e59182a35f) ([@siaka-Akash](https://github.com/siaka-Akash)) - Added support for `subTypeGraphFetchTree`
+
+### Patch Changes
+
+- [#2274](https://github.com/finos/legend-studio/pull/2274) [`56b1845bb`](https://github.com/finos/legend-studio/commit/56b1845bb7c6116af1642153dffb75e7500bac40) ([@akphi](https://github.com/akphi)) - Add basic support for `implementation` node in execution plan.
+
 ## 29.0.5
 
 ## 29.0.4
