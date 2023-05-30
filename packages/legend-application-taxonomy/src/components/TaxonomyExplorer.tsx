@@ -96,8 +96,9 @@ const TaxonomyExplorerSideBar = observer(() => {
   const [openTaxonomyTreeDropdown, setOpenTaxonomyTreeDropdown] =
     useState(false);
 
-  const showSearchModal = (): void =>
-    explorerStore.searchTaxonomyNodeCommandState.open();
+  const showSearchModal = (): void => {
+    // do nothing
+  };
   const collapseTree = (): void => {
     if (explorerStore.treeData) {
       explorerStore.treeData.nodes.forEach((node) => {
@@ -324,8 +325,9 @@ const TaxonomyExplorerMainPanel = observer(
 export const TaxonomySearchCommand = observer(() => {
   const explorerStore = useTaxonomyExplorerStore();
   const selectorRef = useRef<SelectComponent>(null);
-  const closeModal = (): void =>
-    explorerStore.searchTaxonomyNodeCommandState.close();
+  const closeModal = (): void => {
+    // do nothing
+  };
   const options = Array.from(explorerStore.treeData?.nodes.values() ?? [])
     .map((node) => ({
       label: node.taxonomyPath,
@@ -352,7 +354,7 @@ export const TaxonomySearchCommand = observer(() => {
 
   return (
     <NonBlockingDialog
-      nonModalDialogState={explorerStore.searchTaxonomyNodeCommandState}
+      open={false}
       onClose={closeModal}
       TransitionProps={{
         onEnter: handleEnter,

@@ -21,51 +21,7 @@ import {
   type DialogClassKey as MuiDialogClassKey,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { action, makeObservable, observable } from 'mobx';
 import { clsx } from 'clsx';
-
-export class NonBlockingDialogState {
-  private _suppressClickawayEventListener = false;
-
-  isOpen = false;
-
-  constructor() {
-    makeObservable<NonBlockingDialogState, '_suppressClickawayEventListener'>(
-      this,
-      {
-        _suppressClickawayEventListener: observable,
-        isOpen: observable,
-        open: action,
-        close: action,
-        suppressClickawayEventListener: action,
-        handleClickaway: action,
-      },
-    );
-  }
-
-  open(): void {
-    this.suppressClickawayEventListener();
-    this.isOpen = true;
-  }
-
-  close(): void {
-    this.isOpen = false;
-  }
-
-  suppressClickawayEventListener(): void {
-    this._suppressClickawayEventListener = true;
-  }
-
-  handleClickaway(onClickAway: () => void): void {
-    if (this._suppressClickawayEventListener) {
-      this._suppressClickawayEventListener = false;
-      return;
-    }
-    if (this.isOpen) {
-      onClickAway();
-    }
-  }
-}
 
 /**
  * Non-blocking Dialog
@@ -78,27 +34,20 @@ export class NonBlockingDialogState {
  */
 export const NonBlockingDialog = observer(
   (
-    props: Omit<MuiDialogProps, 'open'> & {
+    props: MuiDialogProps & {
       classes?: Partial<Record<MuiDialogClassKey, string>>;
-      nonModalDialogState: NonBlockingDialogState;
       onClickAway: (event: MouseEvent | TouchEvent) => void;
     },
   ) => {
-    const { nonModalDialogState, onClickAway, classes, ...dialogProps } = props;
-    const onClickAwayWhenModalIsOpen = (
-      event: MouseEvent | TouchEvent,
-    ): void => {
-      nonModalDialogState.handleClickaway(() => onClickAway(event));
-    };
-    if (!nonModalDialogState.isOpen) {
+    const { onClickAway, classes, ...dialogProps } = props;
+    if (!dialogProps.open) {
       return null;
     }
     return (
-      <MuiClickAwayListener onClickAway={onClickAwayWhenModalIsOpen}>
+      <MuiClickAwayListener onClickAway={(event) => onClickAway(event)}>
         <MuiDialog
           hideBackdrop={true}
           disableEscapeKeyDown={false}
-          open={nonModalDialogState.isOpen}
           classes={{
             ...classes,
             root: clsx(['mui-non-blocking-dialog__root', classes?.root ?? '']),

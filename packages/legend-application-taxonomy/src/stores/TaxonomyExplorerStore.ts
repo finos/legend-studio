@@ -21,7 +21,6 @@ import {
 import {
   type TreeData,
   type TreeNodeData,
-  NonBlockingDialogState,
   PanelDisplayState,
 } from '@finos/legend-art';
 import {
@@ -125,7 +124,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
     default: 300,
     snap: 150,
   });
-  readonly searchTaxonomyNodeCommandState = new NonBlockingDialogState();
+  readonly showSearchTaxonomyNodeCommand = false;
 
   readonly initState = ActionState.create();
   readonly dataSpaceIndex = new Map<string, DataSpaceTaxonomyContext>();
@@ -144,6 +143,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
     makeObservable(this, {
       treeData: observable.ref,
       currentTaxonomyNodeViewerState: observable,
+      showSearchTaxonomyNodeCommand: observable,
       setTreeData: action,
       setCurrentTaxonomyNodeViewerState: action,
       internalizeDataSpacePath: action,
@@ -181,7 +181,9 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
   registerCommands(): void {
     this.applicationStore.commandService.registerCommand({
       key: LEGEND_TAXONOMY_COMMAND_KEY.SEARCH_TAXONOMY,
-      action: () => this.searchTaxonomyNodeCommandState.open(),
+      action: () => {
+        // do nothing
+      },
     });
   }
 

@@ -380,7 +380,6 @@ export class QueryBuilderFilterState
   selectedNode?: QueryBuilderFilterTreeNodeData | undefined;
   isRearrangingConditions = false;
   operators: QueryBuilderFilterOperator[] = [];
-  private _suppressClickawayEventListener = false;
   showPanel = true;
 
   constructor(
@@ -396,8 +395,6 @@ export class QueryBuilderFilterState
       showPanel: observable,
       setLambdaParameterName: action,
       setRearrangingConditions: action,
-      suppressClickawayEventListener: action,
-      handleClickaway: action,
       setSelectedNode: action,
       addNodeFromNode: action,
       replaceBlankNodeWithNode: action,
@@ -430,16 +427,6 @@ export class QueryBuilderFilterState
 
   setRearrangingConditions(val: boolean): void {
     this.isRearrangingConditions = val;
-  }
-  suppressClickawayEventListener(): void {
-    this._suppressClickawayEventListener = true;
-  }
-  handleClickaway(): void {
-    if (this._suppressClickawayEventListener) {
-      this._suppressClickawayEventListener = false;
-      return;
-    }
-    this.setSelectedNode(undefined);
   }
   setSelectedNode(val: QueryBuilderFilterTreeNodeData | undefined): void {
     this.selectedNode = val;
