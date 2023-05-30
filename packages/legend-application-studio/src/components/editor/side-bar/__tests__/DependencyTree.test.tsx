@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, beforeEach } from '@jest/globals';
+import { expect, test, beforeEach } from '@jest/globals';
 import {
   type RenderResult,
   waitFor,
@@ -30,6 +30,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { TEST_DATA__ProjectDependencyReport } from '../../editor-group/__tests__/TEST_DATA__ProjectDependencyReport.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 let renderResult: RenderResult;
 
@@ -184,4 +185,16 @@ test(integrationTest('Test navigation of dependency tree'), async () => {
   await waitFor(() => findByText(explorerTree, 'test'));
   fireEvent.click(getByText(explorerTree, 'test'));
   await waitFor(() => findByText(explorerTree, 'ClassC'));
+
+  const dependencyTreeData = guaranteeNonNullable(
+    MOCK__editorStore.explorerTreeState.dependencyTreeData?.nodes,
+  );
+
+  const dependencyTreeDataKeys = [...dependencyTreeData.keys()];
+  expect(
+    dependencyTreeDataKeys.includes('@dependency__org.finos.legend:prod-1'),
+  ).toBe(true);
+  expect(
+    dependencyTreeDataKeys.includes('@dependency__org.finos.legend:prod-2'),
+  ).toBe(true);
 });
