@@ -23,6 +23,21 @@ import {
   V1_taggedValueModelSchema,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 
+export class V1_QueryParameterValue {
+  name!: string;
+  content!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_QueryParameterValue, {
+      name: primitive(),
+      content: primitive(),
+    }),
+    {
+      deserializeNullAsUndefined: true,
+    },
+  );
+}
+
 export class V1_Query {
   name!: string;
   id!: string;
@@ -35,6 +50,7 @@ export class V1_Query {
   owner?: string | undefined;
   taggedValues?: V1_TaggedValue[] | undefined;
   stereotypes?: V1_StereotypePtr[] | undefined;
+  defaultParameterValues?: V1_QueryParameterValue[] | undefined;
   lastUpdatedAt?: number | undefined;
 
   static readonly serialization = new SerializationFactory(
@@ -42,6 +58,9 @@ export class V1_Query {
       artifactId: primitive(),
       content: primitive(),
       id: primitive(),
+      defaultParameterValues: optional(
+        list(usingModelSchema(V1_QueryParameterValue.serialization.schema)),
+      ),
       groupId: primitive(),
       lastUpdatedAt: optional(primitive()),
       mapping: primitive(),

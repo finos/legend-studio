@@ -22,6 +22,15 @@ import {
   type LambdaParameterState,
   LambdaParametersState,
 } from './shared/LambdaParameterState.js';
+import type {
+  ValueSpecification,
+  VariableExpression,
+} from '@finos/legend-graph';
+
+export interface QueryBuilderParameterValue {
+  variable: string | VariableExpression;
+  value: ValueSpecification | undefined;
+}
 
 export class QueryBuilderParametersState
   extends LambdaParametersState

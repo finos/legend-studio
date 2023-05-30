@@ -51,10 +51,12 @@ import {
   Mapping,
   type Runtime,
   type Service,
+  type ValueSpecification,
   createGraphBuilderReport,
   LegendSDLC,
   QuerySearchSpecification,
   toLightQuery,
+  QueryParameterValue,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -194,6 +196,7 @@ export class QueryCreatorState {
       const query = (yield this.editorStore.buildQueryForPersistence(
         new Query(),
         rawLambda,
+        queryBuilderState.getCurrentParameterValues(),
         config,
       )) as Query;
       query.name = this.queryName;
@@ -356,6 +359,7 @@ export abstract class QueryEditorStore {
   async buildQueryForPersistence(
     query: Query,
     rawLambda: RawLambda,
+    parameters: Map<string, ValueSpecification> | undefined,
     config: QueryPersistConfiguration | undefined,
   ): Promise<Query> {
     try {
@@ -379,6 +383,30 @@ export abstract class QueryEditorStore {
       query.content =
         await this.graphManagerState.graphManager.lambdaToPureCode(rawLambda);
       config?.decorator?.(query);
+      // any error in default parameters we will ignore and only log
+      query.defaultParameterValues = undefined;
+      try {
+        if (parameters?.size) {
+          const defaultParameterValues =
+            await this.graphManagerState.graphManager.valueSpecificationsToPureCode(
+              parameters,
+            );
+          query.defaultParameterValues = Array.from(
+            defaultParameterValues.entries(),
+          ).map(([key, val]) => {
+            const queryParam = new QueryParameterValue();
+            queryParam.name = key;
+            queryParam.content = val;
+            return queryParam;
+          });
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.error(
+          LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+          error,
+        );
+      }
       return query;
     } catch (error) {
       assertErrorThrown(error);
@@ -751,7 +779,6 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
 export class ExistingQueryUpdateState {
   readonly editorStore: ExistingQueryEditorStore;
   readonly updateQueryState = ActionState.create();
-
   queryRenamer = false;
   saveModal = false;
   updateDiffState: QueryBuilderDiffViewState | undefined;
@@ -804,6 +831,7 @@ export class ExistingQueryUpdateState {
       const query = (yield this.editorStore.buildQueryForPersistence(
         this.editorStore.query ?? new Query(),
         rawLambda,
+        queryBuilderState.getCurrentParameterValues(),
         config,
       )) as Query;
       query.name = queryName ?? query.name;
@@ -939,8 +967,23 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
+    let defaultParameters: Map<string, ValueSpecification> | undefined =
+      undefined;
+    if (query.defaultParameterValues?.length) {
+      const params = new Map<string, string>();
+      query.defaultParameterValues.forEach((e) => {
+        params.set(e.name, e.content);
+      });
+      defaultParameters =
+        await this.graphManagerState.graphManager.pureCodeToValueSpecifications(
+          params,
+          this.graphManagerState.graph,
+        );
+    }
+
     queryBuilderState.initializeWithQuery(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
+      defaultParameters,
     );
 
     // send analytics

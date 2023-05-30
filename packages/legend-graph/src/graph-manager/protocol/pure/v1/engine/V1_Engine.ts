@@ -35,7 +35,10 @@ import {
   type GenerationConfigurationDescription,
 } from '../../../../../graph-manager/action/generation/GenerationConfigurationDescription.js';
 import { TEMPORARY__AbstractEngineConfig } from '../../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
-import { V1_EngineServerClient } from './V1_EngineServerClient.js';
+import {
+  V1_EngineServerClient,
+  type V1_GrammarParserBatchInputEntry,
+} from './V1_EngineServerClient.js';
 import { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import {
   type V1_LambdaReturnTypeResult,
@@ -127,6 +130,7 @@ import {
   V1_serializeRawSQLExecuteInput,
   type V1_RawSQLExecuteInput,
 } from './execution/V1_RawSQLExecuteInput.js';
+import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -364,6 +368,36 @@ export class V1_Engine {
       ),
       (v) => v,
     );
+  }
+
+  async transformValueSpecsToCode(
+    input: Record<string, PlainObject<V1_ValueSpecification>>,
+    pretty: boolean,
+  ): Promise<Map<string, string>> {
+    return deserializeMap(
+      await this.engineServerClient.JSONToGrammar_valueSpecification_batch(
+        input,
+        pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
+      ),
+      (v) => v,
+    );
+  }
+
+  async transformCodeToValueSpeces(
+    input: Record<string, V1_GrammarParserBatchInputEntry>,
+  ): Promise<Map<string, PlainObject>> {
+    const batchResults =
+      await this.engineServerClient.grammarToJSON_valueSpecification_batch(
+        input,
+      );
+    const finalResults = new Map<string, PlainObject>();
+    const results = batchResults.result;
+    if (results) {
+      Object.entries(results).forEach(([k, v]) => {
+        finalResults.set(k, v);
+      });
+    }
+    return finalResults;
   }
 
   async transformLambdaToCode(

@@ -317,6 +317,16 @@ export abstract class AbstractPureGraphManager {
     pretty?: boolean,
   ): Promise<Map<string, string>>;
 
+  abstract valueSpecificationsToPureCode(
+    lambdas: Map<string, ValueSpecification>,
+    pretty?: boolean,
+  ): Promise<Map<string, string>>;
+
+  abstract pureCodeToValueSpecifications(
+    lambdas: Map<string, string>,
+    graph: PureModel,
+  ): Promise<Map<string, ValueSpecification>>;
+
   // TODO: consider moving these to relational plugin when we complete modularization
   abstract pureCodeToRelationalOperationElement(
     operation: string,
