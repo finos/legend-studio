@@ -143,8 +143,8 @@ export const TEST_DATA__graphFetchWithSerializationConfig = {
             {
               _type: 'collection',
               multiplicity: {
-                lowerBound: 7,
-                upperBound: 7,
+                lowerBound: 8,
+                upperBound: 8,
               },
               values: [
                 {
@@ -181,6 +181,18 @@ export const TEST_DATA__graphFetchWithSerializationConfig = {
                   key: {
                     _type: 'string',
                     value: 'includeEnumType',
+                  },
+                },
+                {
+                  _type: 'keyExpression',
+                  add: false,
+                  expression: {
+                    _type: 'string',
+                    value: 'yyyy-mmdd',
+                  },
+                  key: {
+                    _type: 'string',
+                    value: 'dateTimeFormat',
                   },
                 },
                 {

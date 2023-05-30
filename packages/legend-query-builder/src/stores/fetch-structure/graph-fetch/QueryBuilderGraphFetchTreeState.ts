@@ -72,6 +72,7 @@ const DEFAULT_PURE_CONFIG_TYPE_NAME = '@type';
 
 export class PureSerializationConfig {
   typeKeyName: string;
+  dateTimeFormat: string | undefined;
   includeType: boolean | undefined;
   includeEnumType: boolean | undefined;
   removePropertiesWithNullValues: boolean | undefined;
@@ -85,12 +86,14 @@ export class PureSerializationConfig {
       typeKeyName: observable,
       includeType: observable,
       includeEnumType: observable,
+      dateTimeFormat: observable,
       removePropertiesWithNullValues: observable,
       removePropertiesWithEmptySets: observable,
       fullyQualifiedTypePath: observable,
       includeObjectReference: observable,
       setTypeName: action,
       setIncludeObjectReference: action,
+      setDateTimeFormat: action,
       setIncludeType: action,
       setFullyQualifiedTypePath: action,
       setRemovePropertiesWithEmptySets: action,
@@ -108,6 +111,10 @@ export class PureSerializationConfig {
     config.removePropertiesWithEmptySets = false;
     config.fullyQualifiedTypePath = true;
     return config;
+  }
+
+  setDateTimeFormat(val: string | undefined): void {
+    this.dateTimeFormat = val;
   }
 
   setTypeName(val: string): void {

@@ -264,6 +264,14 @@ const PureSerializationConfigModal = observer(
                       : undefined
                   }
                 />
+                <PanelFormTextField
+                  name="Date Time Format"
+                  value={config.dateTimeFormat}
+                  isReadOnly={false}
+                  update={(value: string | undefined): void =>
+                    config.setDateTimeFormat(value === '' ? undefined : value)
+                  }
+                />
                 <PanelFormBooleanField
                   name="Include Type"
                   value={config.includeType}
