@@ -88,6 +88,7 @@ import {
   isNonNullable,
   isString,
   parseCSVString,
+  uniqBy,
 } from '@finos/legend-shared';
 
 const getDatabaseSchemaNodeIcon = (
@@ -292,56 +293,43 @@ const SQL_KEYWORDS = [
   'WHERE',
 ];
 
-const getKeySuggestions = async (
+const getKeywordSuggestions = async (
   position: IPosition,
   model: monacoEditorAPI.ITextModel,
-  // ideStore: PureIDEStore,
 ): Promise<monacoLanguagesAPI.CompletionItem[]> =>
-  // const importPaths = getCurrentSectionImportPaths(position, model);
-  // const isUsingArrowFunction = Boolean(
-  //   model
-  //     .getLineContent(position.lineNumber)
-  //     .substring(0, position.column - 1)
-  //     .match(ARROW_FUNCTION_USAGE_PATTERN),
-  // );
-  // const isUsingConstructor = Boolean(
-  //   model
-  //     .getLineContent(position.lineNumber)
-  //     .substring(0, position.column - 1)
-  //     .match(CONSTRUCTOR_USAGE_PATTERN),
-  // );
-
-  // let suggestions: ElementSuggestion[] = [];
-  // try {
-  //   suggestions = (
-  //     await ideStore.client.getSuggestionsForIdentifier(
-  //       importPaths,
-  //       isUsingConstructor
-  //         ? [ConceptType.CLASS]
-  //         : isUsingArrowFunction
-  //         ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
-  //         : [],
-  //     )
-  //   ).map((child) => deserialize(ElementSuggestion, child));
-  // } catch {
-  //   // do nothing: provide no suggestions when error ocurred
-  // }
   SQL_KEYWORDS.map(
     (keyword) =>
       ({
         label: keyword,
         kind: monacoLanguagesAPI.CompletionItemKind.Keyword,
-        // filterText: keyword.pureName,
         insertTextRules:
           monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
-        insertText: keyword,
-        // attempt to push package suggestions to the bottom of the list
-        // sortText:
-        //   type === ConceptType.PACKAGE
-        //     ? `zzzz_${keyword.text}`
-        //     : keyword.text,
+        insertText: `${keyword} `,
       } as monacoLanguagesAPI.CompletionItem),
   );
+
+const getDatabaseSchemaEntities = async (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+  playgroundState: SQLPlaygroundPanelState,
+): Promise<monacoLanguagesAPI.CompletionItem[]> => {
+  if (playgroundState.treeData) {
+    return uniqBy(
+      Array.from(playgroundState.treeData.nodes.values()).map(
+        (value) =>
+          ({
+            label: value.label,
+            kind: monacoLanguagesAPI.CompletionItemKind.Field,
+            insertTextRules:
+              monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+            insertText: `${value.label} `,
+          } as monacoLanguagesAPI.CompletionItem),
+      ),
+      (val) => val.label,
+    );
+  }
+  return [];
+};
 
 const PlaygroundSQLCodeEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -351,9 +339,6 @@ const PlaygroundSQLCodeEditor = observer(() => {
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
-  const sqlConstructSuggestionProviderDisposer = useRef<
-    IDisposable | undefined
-  >(undefined);
   const sqlIdentifierSuggestionProviderDisposer = useRef<
     IDisposable | undefined
   >(undefined);
@@ -373,21 +358,10 @@ const PlaygroundSQLCodeEditor = observer(() => {
       const newEditor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         theme: CODE_EDITOR_THEME.DEFAULT_DARK,
-        language: CODE_EDITOR_LANGUAGE.PURE,
-        wordSeparators: '`~!@#%^&*()-=+[{]}\\|;:\'",.<>/?', // omit $ from default word separators
+        language: CODE_EDITOR_LANGUAGE.SQL,
         padding: {
           top: 10,
         },
-        automaticLayout: true,
-        // quickSuggestions: true,
-
-        quickSuggestions: {
-          comments: 'on',
-          other: 'on',
-          strings: 'on', // <===
-        },
-        // suggest
-        wordBasedSuggestions: false,
       });
 
       newEditor.onDidChangeModelContent(() => {
@@ -408,59 +382,39 @@ const PlaygroundSQLCodeEditor = observer(() => {
 
   useCommands(playgroundState);
 
-  // suggestions
-  sqlConstructSuggestionProviderDisposer.current?.dispose();
-  sqlConstructSuggestionProviderDisposer.current =
-    monacoLanguagesAPI.registerCompletionItemProvider(
-      CODE_EDITOR_LANGUAGE.SQL,
-      {
-        triggerCharacters: ['.'],
-        provideCompletionItems: async (model, position, context) => {
-          const suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-          // console.log('comodo');
-          // if (
-          //   context.triggerKind ===
-          //   monacoLanguagesAPI.CompletionTriggerKind.TriggerCharacter
-          // ) {
-          //   switch (context.triggerCharacter) {
-          //     case '.': {
-          //       suggestions = suggestions.concat(
-          //         await getAttributeSuggestions(position, model, ideStore),
-          //       );
-          //       break;
-          //     }
-          //     default:
-          //       break;
-          //   }
-          // }
+  if (editor) {
+    sqlIdentifierSuggestionProviderDisposer.current?.dispose();
+    sqlIdentifierSuggestionProviderDisposer.current =
+      monacoLanguagesAPI.registerCompletionItemProvider(
+        CODE_EDITOR_LANGUAGE.SQL,
+        {
+          triggerCharacters: [],
+          provideCompletionItems: async (model, position, context) => {
+            let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+            if (
+              context.triggerKind ===
+              monacoLanguagesAPI.CompletionTriggerKind.Invoke
+            ) {
+              // keywords
+              suggestions = suggestions.concat(
+                await getKeywordSuggestions(position, model),
+              );
 
-          return { suggestions };
+              // database schema entities
+              suggestions = suggestions.concat(
+                await getDatabaseSchemaEntities(
+                  position,
+                  model,
+                  playgroundState,
+                ),
+              );
+            }
+
+            return { suggestions };
+          },
         },
-      },
-    );
-
-  sqlIdentifierSuggestionProviderDisposer.current?.dispose();
-  sqlIdentifierSuggestionProviderDisposer.current =
-    monacoLanguagesAPI.registerCompletionItemProvider(
-      CODE_EDITOR_LANGUAGE.PURE,
-      {
-        triggerCharacters: [],
-        provideCompletionItems: async (model, position, context) => {
-          let suggestions: monacoLanguagesAPI.CompletionItem[] = [];
-          if (
-            context.triggerKind ===
-            monacoLanguagesAPI.CompletionTriggerKind.Invoke
-          ) {
-            // suggestions
-            suggestions = suggestions.concat(
-              await getKeySuggestions(position, model),
-            );
-          }
-
-          return { suggestions };
-        },
-      },
-    );
+      );
+  }
 
   // clean up
   useEffect(
@@ -470,12 +424,11 @@ const PlaygroundSQLCodeEditor = observer(() => {
         playgroundState.setSQLEditorViewState(
           editor.saveViewState() ?? undefined,
         );
-        // NOTE: dispose the editor to prevent potential memory-leak
         editor.dispose();
-      }
 
-      sqlConstructSuggestionProviderDisposer.current?.dispose();
-      sqlIdentifierSuggestionProviderDisposer.current?.dispose();
+        // Dispose the providers properly to avoid ending up with duplicated suggestions
+        sqlIdentifierSuggestionProviderDisposer.current?.dispose();
+      }
     },
     [playgroundState, editor],
   );
@@ -648,6 +601,16 @@ export const SQLPlaygroundPanel = observer(() => {
     }
     playgroundState.setConnection(val.value);
   };
+  const onPickConnection = (): void => {
+    editorStore.setQuickInputState({
+      title: 'Connection picker',
+      placeholder: 'Select a connection...',
+      options: connectionOptions,
+      getSearchValue: (option: RelationalDatabaseConnectionOption): string =>
+        option.value.path,
+      onSelect: changeConnection,
+    });
+  };
 
   const handleConnectionDrop = useCallback(
     (item: SQLPlaygroundPanelDropTarget): void => {
@@ -754,8 +717,9 @@ export const SQLPlaygroundPanel = observer(() => {
         )}
         {!playgroundState.connection && (
           <BlankPanelPlaceholder
-            text="Pick a connection to start"
+            onClick={onPickConnection}
             clickActionType="add"
+            text="Pick a connection to start"
             tooltipText="Drop a connection to start..."
             isDropZoneActive={isConnectionDragOver}
           />

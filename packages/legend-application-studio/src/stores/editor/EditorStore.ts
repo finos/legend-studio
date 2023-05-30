@@ -68,7 +68,7 @@ import {
   generateViewProjectRoute,
   type WorkspaceEditorPathParams,
 } from '../../__lib__/LegendStudioNavigation.js';
-import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
+import { PanelDisplayState } from '@finos/legend-art';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -102,6 +102,7 @@ import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
+import type { QuickInputState } from './QuickInputState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -161,7 +162,8 @@ export class EditorStore implements CommandRegistrar {
    * per file generation configuration type.
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
-  searchElementCommandState = new NonBlockingDialogState();
+  showSearchElementCommand = false;
+  quickInputState?: QuickInputState<unknown> | undefined;
 
   activePanelMode: PANEL_MODE = PANEL_MODE.CONSOLE;
   readonly panelGroupDisplayState = new PanelDisplayState({
@@ -191,6 +193,8 @@ export class EditorStore implements CommandRegistrar {
       activePanelMode: observable,
       activeActivity: observable,
       graphEditorMode: observable,
+      showSearchElementCommand: observable,
+      quickInputState: observable,
 
       isInViewerMode: computed,
       isInConflictResolutionMode: computed,
@@ -203,6 +207,8 @@ export class EditorStore implements CommandRegistrar {
       cleanUp: action,
       reset: action,
       setActiveActivity: action,
+      setShowSearchElementCommand: action,
+      setQuickInputState: action,
 
       initialize: flow,
       initMode: flow,
@@ -311,6 +317,14 @@ export class EditorStore implements CommandRegistrar {
     this.mode = val;
   }
 
+  setShowSearchElementCommand(val: boolean): void {
+    this.showSearchElementCommand = val;
+  }
+
+  setQuickInputState<T>(val: QuickInputState<T> | undefined): void {
+    this.quickInputState = val as QuickInputState<unknown> | undefined;
+  }
+
   cleanUp(): void {
     // dismiss all the alerts as these are parts of application, if we don't do this, we might
     // end up blocking other parts of the app
@@ -373,7 +387,8 @@ export class EditorStore implements CommandRegistrar {
     this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT,
       trigger: this.createEditorCommandTrigger(),
-      action: () => this.searchElementCommandState.open(),
+      action: () =>
+        this.setShowSearchElementCommand(!this.showSearchElementCommand),
     });
     this.applicationStore.commandService.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,

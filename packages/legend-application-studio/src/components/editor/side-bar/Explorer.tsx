@@ -1146,7 +1146,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
   const isInGrammarMode =
     editorStore.graphEditorMode.mode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
   const showSearchModal = (): void =>
-    editorStore.searchElementCommandState.open();
+    editorStore.setShowSearchElementCommand(true);
   // Explorer tree
   const selectedTreeNode = editorStore.explorerTreeState.selectedNode;
   const collapseTree = (): void => {

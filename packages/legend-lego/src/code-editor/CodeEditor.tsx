@@ -146,6 +146,8 @@ export const CodeEditor: React.FC<{
     () => (): void => {
       if (editor) {
         disposeCodeEditor(editor);
+
+        onDidChangeModelContentEventDisposer.current?.dispose();
       }
     },
     [editor],

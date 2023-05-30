@@ -20,7 +20,6 @@ import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
   clsx,
-  ClickAwayListener,
   ContextMenu,
   DropdownMenu,
   MenuContent,
@@ -328,14 +327,12 @@ const QueryBuilderFilterConditionContextMenu = observer(
     const filterState = queryBuilderState.filterState;
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
     const createCondition = (): void => {
-      filterState.suppressClickawayEventListener();
       filterState.addNodeFromNode(
         new QueryBuilderFilterTreeBlankConditionNodeData(undefined),
         node,
       );
     };
     const createGroupCondition = (): void => {
-      filterState.suppressClickawayEventListener();
       filterState.addGroupConditionNodeFromNode(node);
     };
     const newGroupWithCondition = (): void => {
@@ -343,7 +340,6 @@ const QueryBuilderFilterConditionContextMenu = observer(
         queryBuilderState.applicationStore.telemetryService,
       );
 
-      filterState.suppressClickawayEventListener();
       filterState.newGroupWithConditionFromNode(undefined, node);
     };
 
@@ -652,32 +648,32 @@ const QueryBuilderFilterTree = observer(
     const rootNodes = filterState.rootIds.map((rootId) =>
       filterState.getNode(rootId),
     );
-    const onNodeSelect = (node: QueryBuilderFilterTreeNodeData): void =>
-      filterState.setSelectedNode(node);
+    const onNodeSelect = (node: QueryBuilderFilterTreeNodeData): void => {
+      filterState.setSelectedNode(
+        filterState.selectedNode !== node ? node : undefined,
+      );
+    };
     const getChildNodes = (
       node: QueryBuilderFilterTreeNodeData,
     ): QueryBuilderFilterTreeNodeData[] =>
       node instanceof QueryBuilderFilterTreeGroupNodeData
         ? node.childrenIds.map((id) => filterState.getNode(id))
         : [];
-    const onClickAway = (): void => filterState.handleClickaway();
     return (
-      <ClickAwayListener onClickAway={onClickAway}>
-        <div className="tree-view__node__root query-builder-filter-tree__root">
-          {rootNodes.map((node) => (
-            <QueryBuilderFilterTreeNodeView
-              key={node.id}
-              level={0}
-              node={node}
-              getChildNodes={getChildNodes}
-              onNodeSelect={onNodeSelect}
-              innerProps={{
-                queryBuilderState,
-              }}
-            />
-          ))}
-        </div>
-      </ClickAwayListener>
+      <div className="tree-view__node__root query-builder-filter-tree__root">
+        {rootNodes.map((node) => (
+          <QueryBuilderFilterTreeNodeView
+            key={node.id}
+            level={0}
+            node={node}
+            getChildNodes={getChildNodes}
+            onNodeSelect={onNodeSelect}
+            innerProps={{
+              queryBuilderState,
+            }}
+          />
+        ))}
+      </div>
     );
   },
 );
@@ -707,21 +703,18 @@ export const QueryBuilderFilterPanel = observer(
       QueryBuilderTelemetryHelper.logEvent_FilterCleanupTreeLaunched(
         queryBuilderState.applicationStore.telemetryService,
       );
-      filterState.suppressClickawayEventListener();
       filterState.pruneTree();
     };
     const simplifyTree = (): void => {
       QueryBuilderTelemetryHelper.logEvent_FilterSimplifyTreeLaunched(
         queryBuilderState.applicationStore.telemetryService,
       );
-      filterState.suppressClickawayEventListener();
       filterState.simplifyTree();
     };
     const createCondition = (): void => {
       QueryBuilderTelemetryHelper.logEvent_FilterCreateConditionLaunched(
         queryBuilderState.applicationStore.telemetryService,
       );
-      filterState.suppressClickawayEventListener();
       filterState.addNodeFromNode(
         new QueryBuilderFilterTreeBlankConditionNodeData(undefined),
         filterState.selectedNode,
@@ -736,7 +729,6 @@ export const QueryBuilderFilterPanel = observer(
       QueryBuilderTelemetryHelper.logEvent_FilterCreateLogicalGroupLaunched(
         queryBuilderState.applicationStore.telemetryService,
       );
-      filterState.suppressClickawayEventListener();
       if (allowGroupCreation) {
         filterState.addGroupConditionNodeFromNode(filterState.selectedNode);
       }
@@ -745,7 +737,6 @@ export const QueryBuilderFilterPanel = observer(
       QueryBuilderTelemetryHelper.logEvent_FilterCreateLogicalGroupLaunched(
         applicationStore.telemetryService,
       );
-      filterState.suppressClickawayEventListener();
       if (
         filterState.selectedNode instanceof
         QueryBuilderFilterTreeConditionNodeData

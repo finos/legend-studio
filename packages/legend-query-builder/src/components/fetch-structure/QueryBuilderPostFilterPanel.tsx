@@ -22,7 +22,6 @@ import {
   CaretDownIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  ClickAwayListener,
   clsx,
   ContextMenu,
   DropdownMenu,
@@ -115,18 +114,15 @@ const QueryBuilderPostFilterConditionContextMenu = observer(
     const removeNode = (): void =>
       postFilterState.removeNodeAndPruneBranch(node);
     const createCondition = (): void => {
-      postFilterState.suppressClickawayEventListener();
       postFilterState.addNodeFromNode(
         new QueryBuilderPostFilterTreeBlankConditionNodeData(undefined),
         node,
       );
     };
     const createGroupCondition = (): void => {
-      postFilterState.suppressClickawayEventListener();
       postFilterState.addGroupConditionNodeFromNode(node);
     };
     const newGroupWithCondition = (): void => {
-      postFilterState.suppressClickawayEventListener();
       postFilterState.newGroupWithConditionFromNode(undefined, node);
     };
 
@@ -730,33 +726,30 @@ const QueryBuilderPostFilterTree = observer(
       postFilterState.getNode(rootId),
     );
     const onNodeSelect = (node: QueryBuilderPostFilterTreeNodeData): void =>
-      postFilterState.setSelectedNode(node);
+      postFilterState.setSelectedNode(
+        postFilterState.selectedNode !== node ? node : undefined,
+      );
     const getChildNodes = (
       node: QueryBuilderPostFilterTreeNodeData,
     ): QueryBuilderPostFilterTreeNodeData[] =>
       node instanceof QueryBuilderPostFilterTreeGroupNodeData
         ? node.childrenIds.map((id) => postFilterState.getNode(id))
         : [];
-    const onClickAway = (): void => {
-      postFilterState.handleClickaway();
-    };
     return (
-      <ClickAwayListener onClickAway={onClickAway}>
-        <div className="tree-view__node__root query-builder-post-filter-tree__root">
-          {rootNodes.map((node) => (
-            <QueryBuilderPostFilterTreeNodeView
-              key={node.id}
-              level={0}
-              node={node}
-              getChildNodes={getChildNodes}
-              onNodeSelect={onNodeSelect}
-              innerProps={{
-                tdsState: tdsState,
-              }}
-            />
-          ))}
-        </div>
-      </ClickAwayListener>
+      <div className="tree-view__node__root query-builder-post-filter-tree__root">
+        {rootNodes.map((node) => (
+          <QueryBuilderPostFilterTreeNodeView
+            key={node.id}
+            level={0}
+            node={node}
+            getChildNodes={getChildNodes}
+            onNodeSelect={onNodeSelect}
+            innerProps={{
+              tdsState: tdsState,
+            }}
+          />
+        ))}
+      </div>
     );
   },
 );
@@ -786,21 +779,18 @@ const QueryBuilderPostFilterPanelContent = observer(
       QueryBuilderTelemetryHelper.logEvent_PostFilterCleanupTreeLaunched(
         applicationStore.telemetryService,
       );
-      postFilterState.suppressClickawayEventListener();
       postFilterState.pruneTree();
     };
     const simplifyTree = (): void => {
       QueryBuilderTelemetryHelper.logEvent_PostFilterSimplifyTreeLaunched(
         applicationStore.telemetryService,
       );
-      postFilterState.suppressClickawayEventListener();
       postFilterState.simplifyTree();
     };
     const createCondition = (): void => {
       QueryBuilderTelemetryHelper.logEvent_PostFilterCreateConditionLaunched(
         applicationStore.telemetryService,
       );
-      postFilterState.suppressClickawayEventListener();
       postFilterState.addNodeFromNode(
         new QueryBuilderPostFilterTreeBlankConditionNodeData(undefined),
         postFilterState.selectedNode,
@@ -816,7 +806,6 @@ const QueryBuilderPostFilterPanelContent = observer(
       QueryBuilderTelemetryHelper.logEvent_PostFilterCreateLogicalGroupLaunched(
         applicationStore.telemetryService,
       );
-      postFilterState.suppressClickawayEventListener();
       if (allowGroupCreation) {
         postFilterState.addGroupConditionNodeFromNode(
           postFilterState.selectedNode,
@@ -827,7 +816,6 @@ const QueryBuilderPostFilterPanelContent = observer(
       QueryBuilderTelemetryHelper.logEvent_PostFilterCreateGroupFromConditionLaunched(
         applicationStore.telemetryService,
       );
-      postFilterState.suppressClickawayEventListener();
       if (
         postFilterState.selectedNode instanceof
         QueryBuilderPostFilterTreeConditionNodeData

@@ -41,7 +41,7 @@ import {
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();
   const selectorRef = useRef<SelectComponent>(null);
-  const closeModal = (): void => editorStore.searchElementCommandState.close();
+  const closeModal = (): void => editorStore.setShowSearchElementCommand(false);
   const types = editorStore.getSupportedElementTypes();
   const [elementType, setElementType] = useState<string | undefined>();
   const changeType =
@@ -89,7 +89,7 @@ export const ProjectSearchCommand = observer(() => {
 
   return (
     <NonBlockingDialog
-      nonModalDialogState={editorStore.searchElementCommandState}
+      open={editorStore.showSearchElementCommand}
       onClose={closeModal}
       TransitionProps={{
         onEnter: handleEnter,

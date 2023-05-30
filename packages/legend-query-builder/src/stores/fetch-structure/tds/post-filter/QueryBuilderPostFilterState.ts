@@ -478,7 +478,6 @@ export class QueryBuilderPostFilterState
   operators: QueryBuilderPostFilterOperator[] = [];
   rootIds: string[] = [];
   nodes = new Map<string, QueryBuilderPostFilterTreeNodeData>();
-  _suppressClickawayEventListener = false;
 
   constructor(
     tdsState: QueryBuilderTDSState,
@@ -502,7 +501,6 @@ export class QueryBuilderPostFilterState
       collapseTree: action,
       expandTree: action,
       replaceBlankNodeWithNode: action,
-      suppressClickawayEventListener: action,
       setRearrangingConditions: action,
       hashCode: computed,
     });
@@ -513,10 +511,6 @@ export class QueryBuilderPostFilterState
 
   setRearrangingConditions(val: boolean): void {
     this.isRearrangingConditions = val;
-  }
-
-  suppressClickawayEventListener(): void {
-    this._suppressClickawayEventListener = true;
   }
 
   setSelectedNode(val: QueryBuilderPostFilterTreeNodeData | undefined): void {
@@ -650,14 +644,6 @@ export class QueryBuilderPostFilterState
         this.addRootNode(newNode);
       }
     }
-  }
-
-  handleClickaway(): void {
-    if (this._suppressClickawayEventListener) {
-      this._suppressClickawayEventListener = false;
-      return;
-    }
-    this.setSelectedNode(undefined);
   }
 
   addNodeFromNode(
