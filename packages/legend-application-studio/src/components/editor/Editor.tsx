@@ -52,6 +52,7 @@ import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictR
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 import { GRAPH_EDITOR_MODE } from '../../stores/editor/EditorConfig.js';
+import { QuickInput } from './QuickInput.js';
 
 export const Editor = withEditorStore(
   observer(() => {
@@ -240,6 +241,7 @@ export const Editor = withEditorStore(
               </div>
             </div>
           </div>
+          <QuickInput />
           <StatusBar actionsDisabled={!editable} />
           {editable && <ProjectSearchCommand />}
           {editorStore.localChangesState.workspaceSyncState

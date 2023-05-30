@@ -601,6 +601,16 @@ export const SQLPlaygroundPanel = observer(() => {
     }
     playgroundState.setConnection(val.value);
   };
+  const onPickConnection = (): void => {
+    editorStore.setQuickInputState({
+      title: 'Connection picker',
+      placeholder: 'Select a connection...',
+      options: connectionOptions,
+      getSearchValue: (option: RelationalDatabaseConnectionOption): string =>
+        option.value.path,
+      onSelect: changeConnection,
+    });
+  };
 
   const handleConnectionDrop = useCallback(
     (item: SQLPlaygroundPanelDropTarget): void => {
@@ -707,8 +717,9 @@ export const SQLPlaygroundPanel = observer(() => {
         )}
         {!playgroundState.connection && (
           <BlankPanelPlaceholder
-            text="Pick a connection to start"
+            onClick={onPickConnection}
             clickActionType="add"
+            text="Pick a connection to start"
             tooltipText="Drop a connection to start..."
             isDropZoneActive={isConnectionDragOver}
           />

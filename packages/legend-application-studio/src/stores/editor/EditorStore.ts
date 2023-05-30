@@ -102,6 +102,7 @@ import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
+import type { QuickInputState } from './QuickInputState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -162,6 +163,7 @@ export class EditorStore implements CommandRegistrar {
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   showSearchElementCommand = false;
+  quickInputState?: QuickInputState<unknown> | undefined;
 
   activePanelMode: PANEL_MODE = PANEL_MODE.CONSOLE;
   readonly panelGroupDisplayState = new PanelDisplayState({
@@ -192,6 +194,7 @@ export class EditorStore implements CommandRegistrar {
       activeActivity: observable,
       graphEditorMode: observable,
       showSearchElementCommand: observable,
+      quickInputState: observable,
 
       isInViewerMode: computed,
       isInConflictResolutionMode: computed,
@@ -205,6 +208,7 @@ export class EditorStore implements CommandRegistrar {
       reset: action,
       setActiveActivity: action,
       setShowSearchElementCommand: action,
+      setQuickInputState: action,
 
       initialize: flow,
       initMode: flow,
@@ -315,6 +319,10 @@ export class EditorStore implements CommandRegistrar {
 
   setShowSearchElementCommand(val: boolean): void {
     this.showSearchElementCommand = val;
+  }
+
+  setQuickInputState<T>(val: QuickInputState<T> | undefined): void {
+    this.quickInputState = val as QuickInputState<unknown> | undefined;
   }
 
   cleanUp(): void {
