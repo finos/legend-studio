@@ -94,7 +94,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   RUN_SERVICE_TESTS = 'run service tests',
   GENERATE_TEST_DATA_WITH_DEFAULT_SEED = 'generate test data with default seed',
 
-  RUN_TESTS = 'run testable tests',
+  RUN_TESTS = 'run tests',
 
   CREATE_QUERY = 'create query',
   UPDATE_QUERY = 'update query',
@@ -108,6 +108,9 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
 
   DATABASE_SCHEMA_EXPLORATION = 'database schema exploration',
   DATABASE_RAW_SQL_EXECUTION = 'database raw SQL execution',
+
+  VALIDATE_FUNCTION_ACTIVATOR = 'validate function activator',
+  PUBLISH_FUNCTION_ACTIVATOR_TO_SANDBOX = 'publish function activator to sandbox',
 }
 
 export type V1_GrammarParserBatchInputEntry = {
@@ -395,7 +398,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.RUN_TESTS),
       `${this._pure()}/testable/runTests`,
-      input,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.RUN_TESTS),
       {},
       undefined,
       undefined,
@@ -416,7 +419,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       `${this._externalFormats()}/generateModel`,
-      input,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       {},
       undefined,
       undefined,
@@ -429,7 +432,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       `${this._externalFormats()}/generateSchema`,
-      input,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       {},
       undefined,
       undefined,
@@ -459,7 +462,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       `${this._pure()}/${mode}/${type}`,
-      input,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       {},
       undefined,
       undefined,
@@ -475,12 +478,12 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Compile -------------------------------------------
 
   compile = (
-    model: PlainObject<V1_PureModelContext>,
+    input: PlainObject<V1_PureModelContext>,
   ): Promise<PlainObject<V1_CompileResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.COMPILE),
       `${this._pure()}/compilation/compile`,
-      model,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.COMPILE),
       {},
       undefined,
       undefined,
@@ -515,7 +518,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
       `${this._execution()}/execute`,
-      input,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
       {},
       undefined,
       {
@@ -531,7 +534,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_EXECUTION_PLAN),
       `${this._execution()}/generatePlan`,
-      input,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.GENERATE_EXECUTION_PLAN,
+      ),
       {},
       undefined,
       undefined,
@@ -544,7 +550,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_EXECUTION_PLAN),
       `${this._execution()}/generatePlan/debug`,
-      input,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.GENERATE_EXECUTION_PLAN,
+      ),
       {},
       undefined,
       undefined,
@@ -559,7 +568,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
         CORE_ENGINE_ACTIVITY_TRACE.GENERATE_TEST_DATA_WITH_DEFAULT_SEED,
       ),
       `${this._execution()}/testDataGeneration/generateTestData_WithDefaultSeed`,
-      input,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.GENERATE_TEST_DATA_WITH_DEFAULT_SEED,
+      ),
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
       undefined,
@@ -630,7 +642,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
         CORE_ENGINE_ACTIVITY_TRACE.MAPPING_MODEL_COVERAGE_ANALYTICS,
       ),
       `${this._pure()}/analytics/mapping/modelCoverage`,
-      input,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.MAPPING_MODEL_COVERAGE_ANALYTICS,
+      ),
       {},
       undefined,
       undefined,
@@ -643,7 +658,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.SURVEY_DATASET_ANALYTICS),
       `${this._pure()}/analytics/store-entitlement/surveyDatasets`,
-      input,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.SURVEY_DATASET_ANALYTICS,
+      ),
       {},
       undefined,
       undefined,
@@ -656,7 +674,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.STORE_ENTITLEMENT_ANALYTICS),
       `${this._pure()}/analytics/store-entitlement/checkDatasetEntitlements`,
-      input,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.STORE_ENTITLEMENT_ANALYTICS,
+      ),
       {},
       undefined,
       undefined,
@@ -671,7 +692,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DATABASE_SCHEMA_EXPLORATION),
       `${this._databaseUtilities()}/schemaExploration`,
-      input,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.DATABASE_SCHEMA_EXPLORATION,
+      ),
     );
 
   executeRawSQL = (
@@ -680,7 +704,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DATABASE_RAW_SQL_EXECUTION),
       `${this._databaseUtilities()}/executeRawSQL`,
-      input,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.DATABASE_RAW_SQL_EXECUTION,
+      ),
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
     );
@@ -698,23 +725,41 @@ export class V1_EngineServerClient extends AbstractServerClient {
   validateFunctionActivator(
     input: PlainObject<V1_FunctionActivatorInput>,
   ): Promise<PlainObject<V1_FunctionActivatorError>[]> {
-    return this.post(`${this._functionActivator()}/validate`, input);
+    return this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.VALIDATE_FUNCTION_ACTIVATOR),
+      `${this._functionActivator()}/validate`,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.VALIDATE_FUNCTION_ACTIVATOR,
+      ),
+    );
   }
 
   publishFunctionActivatorToSandbox(
     input: PlainObject<V1_FunctionActivatorInput>,
   ): Promise<PlainObject<V1_FunctionActivatorError>[]> {
-    return this.post(`${this._functionActivator()}/publishToSandbox`, input);
+    return this.postWithTracing(
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.PUBLISH_FUNCTION_ACTIVATOR_TO_SANDBOX,
+      ),
+      `${this._functionActivator()}/publishToSandbox`,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.PUBLISH_FUNCTION_ACTIVATOR_TO_SANDBOX,
+      ),
+    );
   }
 
   // ------------------------------------------- Service -------------------------------------------
 
   _service = (serviceServerUrl?: string): string =>
     `${serviceServerUrl ?? this.baseUrl}/service/v1`;
+
   getServerServiceInfo = (): Promise<
     PlainObject<V1_ServiceConfigurationInfo>
   > => this.get(`${this._server()}/info/services`);
-  getRegisterServiceUrlFromExecMode = (
+
+  private getRegisterServiceUrlFromExecMode = (
     serviceExecutionMode: ServiceExecutionMode,
   ): string => {
     const REGISTER_ENDPOINT_PREFIX = 'register';
@@ -727,8 +772,11 @@ export class V1_EngineServerClient extends AbstractServerClient {
         return REGISTER_ENDPOINT_PREFIX;
     }
   };
-  registerService = (
-    graphModelData: PlainObject<V1_PureModelContext>,
+  /**
+   * TODO: this is an internal API that should me refactored out using extension mechanism
+   */
+  INTERNAL__registerService = (
+    input: PlainObject<V1_PureModelContext>,
     serviceServerUrl: string,
     serviceExecutionMode: ServiceExecutionMode,
     TEMPORARY__useStoreModel: boolean,
@@ -739,7 +787,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._service(
         serviceServerUrl,
       )}/${this.getRegisterServiceUrlFromExecMode(serviceExecutionMode)}`,
-      graphModelData,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.REGISTER_SERVICE),
       {},
       undefined,
       serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE

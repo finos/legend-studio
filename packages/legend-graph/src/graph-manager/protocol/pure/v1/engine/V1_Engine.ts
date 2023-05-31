@@ -155,6 +155,11 @@ class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
     this.engine.getEngineServerClient().setCompression(val);
   }
 
+  override setEnableDebuggingPayload(val: boolean): void {
+    super.setEnableDebuggingPayload(val);
+    this.engine.getEngineServerClient().setDebugPayload(val);
+  }
+
   constructor(engine: V1_Engine) {
     super();
     this.engine = engine;
@@ -793,7 +798,7 @@ export class V1_Engine {
     TEMPORARY__useGenerateLineage: boolean,
   ): Promise<V1_ServiceRegistrationResult> {
     return V1_ServiceRegistrationResult.serialization.fromJson(
-      await this.engineServerClient.registerService(
+      await this.engineServerClient.INTERNAL__registerService(
         V1_serializePureModelContext(input),
         server,
         executionMode,
