@@ -32,6 +32,16 @@ export interface ServerClientConfig {
   baseUrl?: string;
   networkClientOptions?: PlainObject;
   enableCompression?: boolean;
+  /**
+   * Allowing debugging payload so we can see the payload being sent to the server
+   * This is needed due to a limitation with certain browsers (e.g. Chrome) where
+   * when then payload gets huge, the developer tools can no longer display them
+   * which makes it hard to debug.
+   */
+  enableDebuggingPayload?: boolean;
+  payloadDebugger?:
+    | ((payload: unknown, identifier: string) => void)
+    | undefined;
   baseHeaders?: RequestHeaders | undefined;
   /**
    * This supports a basic re-authenticate mechanism using <iframe>.
@@ -52,6 +62,10 @@ export abstract class AbstractServerClient {
   private networkClient: NetworkClient;
   private _tracerService?: TracerService;
   enableCompression: boolean;
+  enableDebuggingPayload: boolean;
+  payloadDebugger?:
+    | ((payload: unknown, identifier: string) => void)
+    | undefined;
   baseUrl?: string | undefined;
   baseHeaders?: RequestHeaders | undefined;
   autoReAuthenticateUrl?: string | undefined;
@@ -64,6 +78,8 @@ export abstract class AbstractServerClient {
 
     this.baseUrl = config.baseUrl;
     this.enableCompression = Boolean(config.enableCompression);
+    this.enableDebuggingPayload = Boolean(config.enableDebuggingPayload);
+    this.payloadDebugger = config.payloadDebugger;
     this.baseHeaders = config.baseHeaders;
     this.autoReAuthenticateUrl = config.autoReAuthenticateUrl;
   }
@@ -75,6 +91,21 @@ export abstract class AbstractServerClient {
 
   setCompression(val: boolean): void {
     this.enableCompression = val;
+  }
+
+  setDebugPayload(val: boolean): void {
+    this.enableDebuggingPayload = val;
+  }
+
+  debugPayload<T>(payload: T, identifier: string): T {
+    if (this.enableDebuggingPayload && this.payloadDebugger) {
+      this.payloadDebugger(
+        payload,
+        // convert the identifier to kebab case ot be more machine friendly
+        identifier.replace(/[\s_]+/g, '-').toLowerCase(),
+      );
+    }
+    return payload;
   }
 
   setTracerService(val: TracerService): void {

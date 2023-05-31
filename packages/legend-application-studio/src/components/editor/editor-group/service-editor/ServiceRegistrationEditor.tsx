@@ -29,6 +29,8 @@ import { ServiceExecutionMode } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { MASTER_SNAPSHOT_ALIAS } from '@finos/legend-server-depot';
+import { LATEST_PROJECT_REVISION } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 
 export const ServiceRegistrationEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -74,7 +76,10 @@ export const ServiceRegistrationEditor = observer(() => {
   // version
   const selectedVersion = registrationState.projectVersion
     ? {
-        label: registrationState.projectVersion,
+        label:
+          registrationState.projectVersion === MASTER_SNAPSHOT_ALIAS
+            ? LATEST_PROJECT_REVISION
+            : registrationState.projectVersion,
         value: registrationState.projectVersion,
       }
     : null;
@@ -151,145 +156,153 @@ export const ServiceRegistrationEditor = observer(() => {
       <PanelLoadingIndicator
         isLoading={registrationState.registrationState.isInProgress}
       />
-      <div className="panel__content__form">
-        {registrationState.registrationState.message && (
-          <div className="service-registration-editor__progress-msg">
-            {`${registrationState.registrationState.message}...`}
-          </div>
-        )}
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Activate Service
-          </div>
-          <div
-            className="panel__content__form__section__toggler"
-            onClick={toggleActivatePostRegistration}
-          >
-            <button
-              className={clsx('panel__content__form__section__toggler__btn', {
-                'panel__content__form__section__toggler__btn--toggled':
-                  registrationState.activatePostRegistration,
-              })}
-              tabIndex={-1}
-            >
-              {registrationState.activatePostRegistration ? (
-                <CheckSquareIcon />
-              ) : (
-                <SquareIcon />
-              )}
-            </button>
-            <div className="panel__content__form__section__toggler__prompt">
-              Activates service after registration
+      <div className="panel__content">
+        <div className="panel__content__form">
+          {registrationState.registrationState.message && (
+            <div className="service-registration-editor__progress-msg">
+              {`${registrationState.registrationState.message}...`}
             </div>
-          </div>
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Execution Server
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The execution server where your service will be registered
-          </div>
-          <CustomSelectorInput
-            options={envOptions}
-            onChange={onServerEnvChange}
-            value={selectedEnvOption}
-            darkMode={true}
-          />
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Service Type
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The kind of service you want to register. Used to determine how the
-            metadata will be fetched
-          </div>
-          <CustomSelectorInput
-            options={serviceTypesOptions}
-            onChange={onServiceTypeSelectionChange}
-            value={selectedServiceType}
-            darkMode={true}
-          />
-        </div>
-        {registrationState.serviceExecutionMode ===
-          ServiceExecutionMode.FULL_INTERACTIVE && (
+          )}
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
-              Store Model
+              Activate Service
             </div>
             <div
               className="panel__content__form__section__toggler"
-              onClick={toggleUseStoreModel}
+              onClick={toggleActivatePostRegistration}
             >
               <button
                 className={clsx('panel__content__form__section__toggler__btn', {
                   'panel__content__form__section__toggler__btn--toggled':
-                    registrationState.TEMPORARY__useStoreModel,
+                    registrationState.activatePostRegistration,
                 })}
                 tabIndex={-1}
               >
-                {registrationState.TEMPORARY__useStoreModel ? (
+                {registrationState.activatePostRegistration ? (
                   <CheckSquareIcon />
                 ) : (
                   <SquareIcon />
                 )}
               </button>
               <div className="panel__content__form__section__toggler__prompt">
-                Use Store Model (slower)
+                Activates service after registration
               </div>
             </div>
           </div>
-        )}
-        {
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
-              Generate Lineage
+              Execution Server
             </div>
-            <div
-              className="panel__content__form__section__toggler"
-              onClick={toggleUseGenerateLineage}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    registrationState.TEMPORARY__useGenerateLineage,
-                })}
-                tabIndex={-1}
+            <div className="panel__content__form__section__header__prompt">
+              The execution server where your service will be registered
+            </div>
+            <CustomSelectorInput
+              options={envOptions}
+              onChange={onServerEnvChange}
+              value={selectedEnvOption}
+              darkMode={true}
+            />
+          </div>
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Service Type
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              The kind of service you want to register. Used to determine how
+              the metadata will be fetched
+            </div>
+            <CustomSelectorInput
+              options={serviceTypesOptions}
+              onChange={onServiceTypeSelectionChange}
+              value={selectedServiceType}
+              darkMode={true}
+            />
+          </div>
+          {registrationState.serviceExecutionMode ===
+            ServiceExecutionMode.FULL_INTERACTIVE && (
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Store Model
+              </div>
+              <div
+                className="panel__content__form__section__toggler"
+                onClick={toggleUseStoreModel}
               >
-                {registrationState.TEMPORARY__useGenerateLineage ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Generate Lineage (slower)
+                <button
+                  className={clsx(
+                    'panel__content__form__section__toggler__btn',
+                    {
+                      'panel__content__form__section__toggler__btn--toggled':
+                        registrationState.TEMPORARY__useStoreModel,
+                    },
+                  )}
+                  tabIndex={-1}
+                >
+                  {registrationState.TEMPORARY__useStoreModel ? (
+                    <CheckSquareIcon />
+                  ) : (
+                    <SquareIcon />
+                  )}
+                </button>
+                <div className="panel__content__form__section__toggler__prompt">
+                  Use Store Model (slower)
+                </div>
               </div>
             </div>
-          </div>
-        }
+          )}
+          {
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Generate Lineage
+              </div>
+              <div
+                className="panel__content__form__section__toggler"
+                onClick={toggleUseGenerateLineage}
+              >
+                <button
+                  className={clsx(
+                    'panel__content__form__section__toggler__btn',
+                    {
+                      'panel__content__form__section__toggler__btn--toggled':
+                        registrationState.TEMPORARY__useGenerateLineage,
+                    },
+                  )}
+                  tabIndex={-1}
+                >
+                  {registrationState.TEMPORARY__useGenerateLineage ? (
+                    <CheckSquareIcon />
+                  ) : (
+                    <SquareIcon />
+                  )}
+                </button>
+                <div className="panel__content__form__section__toggler__prompt">
+                  Generate Lineage (slower)
+                </div>
+              </div>
+            </div>
+          }
 
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Project Version
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Project Version
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              The version of your project you want to use for registration. Only
+              relevant for semi-interactive and production services.
+            </div>
+            <CustomSelectorInput
+              options={registrationState.versionOptions ?? []}
+              onChange={onVersionSelectionChange}
+              value={selectedVersion}
+              darkMode={true}
+              disabled={registrationState.versionOptions === undefined}
+              placeholder={versionPlaceholder}
+              isLoading={
+                editorStore.sdlcState.fetchPublishedProjectVersionsState
+                  .isInProgress
+              }
+            />
           </div>
-          <div className="panel__content__form__section__header__prompt">
-            The version of your project you want to use for registration. Only
-            relevant for semi-interactive and production services.
-          </div>
-          <CustomSelectorInput
-            options={registrationState.versionOptions ?? []}
-            onChange={onVersionSelectionChange}
-            value={selectedVersion}
-            darkMode={true}
-            disabled={registrationState.versionOptions === undefined}
-            placeholder={versionPlaceholder}
-            isLoading={
-              editorStore.sdlcState.fetchPublishedProjectVersionsState
-                .isInProgress
-            }
-          />
         </div>
       </div>
     </div>

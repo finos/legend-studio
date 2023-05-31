@@ -150,9 +150,19 @@ class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
     this.engine.getEngineServerClient().setBaseUrl(val);
   }
 
+  override setBaseUrlForServiceRegistration(val: string | undefined): void {
+    super.setBaseUrlForServiceRegistration(val);
+    this.engine.getEngineServerClient().setBaseUrlForServiceRegistration(val);
+  }
+
   override setUseClientRequestPayloadCompression(val: boolean): void {
     super.setUseClientRequestPayloadCompression(val);
     this.engine.getEngineServerClient().setCompression(val);
+  }
+
+  override setEnableDebuggingPayload(val: boolean): void {
+    super.setEnableDebuggingPayload(val);
+    this.engine.getEngineServerClient().setDebugPayload(val);
   }
 
   constructor(engine: V1_Engine) {
@@ -782,7 +792,7 @@ export class V1_Engine {
   // ------------------------------------------- Service -------------------------------------------
 
   async getServerServiceInfo(): Promise<V1_ServiceConfigurationInfo> {
-    return (await this.engineServerClient.getServerServiceInfo()) as unknown as V1_ServiceConfigurationInfo;
+    return (await this.engineServerClient.TEMPORARY__getServerServiceInfo()) as unknown as V1_ServiceConfigurationInfo;
   }
 
   async registerService(
@@ -793,7 +803,7 @@ export class V1_Engine {
     TEMPORARY__useGenerateLineage: boolean,
   ): Promise<V1_ServiceRegistrationResult> {
     return V1_ServiceRegistrationResult.serialization.fromJson(
-      await this.engineServerClient.registerService(
+      await this.engineServerClient.INTERNAL__registerService(
         V1_serializePureModelContext(input),
         server,
         executionMode,
@@ -808,7 +818,7 @@ export class V1_Engine {
     serviceId: string,
   ): Promise<V1_ServiceStorage> {
     return V1_ServiceStorage.serialization.fromJson(
-      await this.engineServerClient.getServiceVersionInfo(
+      await this.engineServerClient.TEMPORARY__getServiceVersionInfo(
         serviceUrl,
         serviceId,
       ),
@@ -819,7 +829,7 @@ export class V1_Engine {
     serviceUrl: string,
     generationId: string,
   ): Promise<void> {
-    await this.engineServerClient.activateGenerationId(
+    await this.engineServerClient.TEMPORARY__activateGenerationId(
       serviceUrl,
       generationId,
     );

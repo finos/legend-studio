@@ -33,7 +33,7 @@ import {
   ModalHeader,
   MoreVerticalIcon,
 } from '@finos/legend-art';
-import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
+import { assertErrorThrown } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -51,13 +51,13 @@ import {
 } from '@finos/legend-query-builder';
 import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
 import { useLegendStudioApplicationStore } from '../../../LegendStudioFrameworkProvider.js';
-import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from '../../../../__lib__/LegendStudioNavigation.js';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -226,6 +226,9 @@ export const ServiceExecutionQueryEditor = observer(
     );
 
     const openQueryInLegendQuery = (): void => {
+      if (!applicationStore.config.queryApplicationUrl) {
+        return;
+      }
       let projectGAV: ProjectGAVCoordinates;
       if (editorStore.editorMode instanceof ProjectViewerEditorMode) {
         const viewerEditorMode = editorStore.editorMode;
@@ -258,27 +261,12 @@ export const ServiceExecutionQueryEditor = observer(
         };
       }
       applicationStore.navigationService.navigator.visitAddress(
-        executionState.generateServiceQueryCreatorRoute(
-          guaranteeNonNullable(applicationStore.config.queryApplicationUrl),
+        EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl(
+          applicationStore.config.queryApplicationUrl,
           projectGAV.groupId,
           projectGAV.artifactId,
           projectGAV.versionId,
           service.path,
-        ),
-      );
-    };
-
-    const openQueryInServiceExtension = (): void => {
-      applicationStore.navigationService.navigator.visitAddress(
-        applicationStore.navigationService.navigator.generateAddress(
-          executionState.generateProjectServiceQueryUpdaterRoute(
-            editorStore.projectConfigurationEditorState
-              .currentProjectConfiguration.projectId,
-
-            editorStore.sdlcState.activeWorkspace.workspaceId,
-
-            service.path,
-          ),
         ),
       );
     };
@@ -403,17 +391,7 @@ export const ServiceExecutionQueryEditor = observer(
                       onClick={openQueryInLegendQuery}
                       disabled={!applicationStore.config.queryApplicationUrl}
                     >
-                      Open in Legend Query
-                    </MenuContentItem>
-                    <MenuContentItem
-                      className="service-editor__execution__advanced-btn__option"
-                      onClick={openQueryInServiceExtension}
-                      disabled={
-                        editorStore.sdlcState.currentWorkspace
-                          ?.workspaceType !== WorkspaceType.GROUP
-                      }
-                    >
-                      Open in Service Extension
+                      Create an Ad-hoc Query
                     </MenuContentItem>
                   </MenuContent>
                 }

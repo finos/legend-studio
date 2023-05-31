@@ -56,6 +56,10 @@ import {
   AssertionError,
   guaranteeType,
   type Clazz,
+  returnUndefOnError,
+  downloadFileUsingDataURI,
+  formatDate,
+  ContentType,
 } from '@finos/legend-shared';
 import { EditorSDLCState } from './EditorSDLCState.js';
 import { ModelImporterState } from './editor-state/ModelImporterState.js';
@@ -85,6 +89,7 @@ import {
   ActionAlertType,
   APPLICATION_EVENT,
   DEFAULT_TAB_SIZE,
+  DEFAULT_DATE_TIME_FORMAT,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import type { EditorMode } from './EditorMode.js';
@@ -663,6 +668,23 @@ export class EditorStore implements CommandRegistrar {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
             enableCompression: true,
+            payloadDebugger: (payload: unknown, identifier: string) => {
+              const content =
+                returnUndefOnError(() =>
+                  JSON.stringify(payload, undefined, 2),
+                ) ??
+                returnUndefOnError(() => `${payload}`) ??
+                '';
+              // TODO: we can also copy the debug content to clipboard
+              downloadFileUsingDataURI(
+                `PAYLOAD_DEBUG__${identifier}__${formatDate(
+                  new Date(Date.now()),
+                  DEFAULT_DATE_TIME_FORMAT,
+                )}.json`,
+                content,
+                ContentType.TEXT_PLAIN,
+              );
+            },
           },
         },
         {

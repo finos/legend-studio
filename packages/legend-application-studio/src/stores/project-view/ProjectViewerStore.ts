@@ -24,6 +24,10 @@ import {
   LogEvent,
   IllegalStateError,
   StopWatch,
+  returnUndefOnError,
+  downloadFileUsingDataURI,
+  formatDate,
+  ContentType,
 } from '@finos/legend-shared';
 import {
   type ProjectViewerPathParams,
@@ -46,7 +50,10 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import {
+  DEFAULT_DATE_TIME_FORMAT,
+  DEFAULT_TAB_SIZE,
+} from '@finos/legend-application';
 import { resolveVersion, StoreProjectData } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
@@ -365,6 +372,23 @@ export class ProjectViewerStore {
             queryBaseUrl:
               this.editorStore.applicationStore.config.engineQueryServerUrl,
             enableCompression: true,
+            payloadDebugger: (payload: unknown, identifier: string) => {
+              const content =
+                returnUndefOnError(() =>
+                  JSON.stringify(payload, undefined, 2),
+                ) ??
+                returnUndefOnError(() => `${payload}`) ??
+                '';
+              // TODO: we can also copy the debug content to clipboard
+              downloadFileUsingDataURI(
+                `PAYLOAD_DEBUG__${identifier}__${formatDate(
+                  new Date(Date.now()),
+                  DEFAULT_DATE_TIME_FORMAT,
+                )}.json`,
+                content,
+                ContentType.TEXT_PLAIN,
+              );
+            },
           },
         },
         {

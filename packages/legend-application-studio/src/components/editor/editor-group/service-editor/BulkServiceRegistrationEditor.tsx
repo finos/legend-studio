@@ -29,6 +29,8 @@ import { ServiceExecutionMode } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { MASTER_SNAPSHOT_ALIAS } from '@finos/legend-server-depot';
+import { LATEST_PROJECT_REVISION } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 
 export const BulkServiceRegistrationEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -90,7 +92,11 @@ export const BulkServiceRegistrationEditor = observer(() => {
     .projectVersion
     ? {
         label:
-          globalBulkServiceRegistrationState.serviceConfigState.projectVersion,
+          globalBulkServiceRegistrationState.serviceConfigState
+            .projectVersion === MASTER_SNAPSHOT_ALIAS
+            ? LATEST_PROJECT_REVISION
+            : globalBulkServiceRegistrationState.serviceConfigState
+                .projectVersion,
         value:
           globalBulkServiceRegistrationState.serviceConfigState.projectVersion,
       }
@@ -178,121 +184,126 @@ export const BulkServiceRegistrationEditor = observer(() => {
             .registrationState.isInProgress
         }
       />
-      <div className="panel__content__form">
-        {globalBulkServiceRegistrationState.serviceConfigState.registrationState
-          .message && (
-          <div className="service-registration-editor__progress-msg">
-            {`${globalBulkServiceRegistrationState.serviceConfigState.registrationState.message}...`}
-          </div>
-        )}
-
-        <PanelFormBooleanField
-          isReadOnly={false}
-          value={globalBulkServiceRegistrationState.activatePostRegistration}
-          name="Activate Service"
-          prompt="Activates service after registration"
-          update={(value: boolean | undefined): void =>
-            toggleActivatePostRegistration()
-          }
-        />
-
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Execution Server
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The execution server where your service will be registered
-          </div>
-          <CustomSelectorInput
-            options={envOptions}
-            onChange={onServerEnvChange}
-            value={selectedEnvOption}
-            darkMode={true}
-          />
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Service Type
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The kind of service you want to register. Used to determine how the
-            metadata will be fetched
-          </div>
-          <CustomSelectorInput
-            options={serviceTypesOptions}
-            onChange={onServiceTypeSelectionChange}
-            value={selectedServiceType}
-            darkMode={true}
-          />
-        </div>
-        {globalBulkServiceRegistrationState.serviceConfigState
-          .serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE && (
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Store Model
+      <div className="panel__content">
+        <div className="panel__content__form">
+          {globalBulkServiceRegistrationState.serviceConfigState
+            .registrationState.message && (
+            <div className="service-registration-editor__progress-msg">
+              {`${globalBulkServiceRegistrationState.serviceConfigState.registrationState.message}...`}
             </div>
-            <div
-              className="panel__content__form__section__toggler"
-              onClick={toggleUseStoreModel}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    globalBulkServiceRegistrationState.serviceConfigState
-                      .TEMPORARY__useStoreModel,
-                })}
-                tabIndex={-1}
-              >
-                {globalBulkServiceRegistrationState.serviceConfigState
-                  .TEMPORARY__useStoreModel ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Use Store Model (slower)
-              </div>
-            </div>
-          </div>
-        )}
-        {
+          )}
+
           <PanelFormBooleanField
             isReadOnly={false}
-            value={
-              globalBulkServiceRegistrationState.serviceConfigState
-                .TEMPORARY__useGenerateLineage
-            }
-            name="Generate Lineage"
-            prompt="Use Generate (slower)"
+            value={globalBulkServiceRegistrationState.activatePostRegistration}
+            name="Activate Service"
+            prompt="Activates service after registration"
             update={(value: boolean | undefined): void =>
-              toggleUseGenerateLineage()
+              toggleActivatePostRegistration()
             }
           />
-        }
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Project Version
+
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Execution Server
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              The execution server where your service will be registered
+            </div>
+            <CustomSelectorInput
+              options={envOptions}
+              onChange={onServerEnvChange}
+              value={selectedEnvOption}
+              darkMode={true}
+            />
           </div>
-          <div className="panel__content__form__section__header__prompt">
-            The version of your project you want to use for registration. Only
-            relevant for semi-interactive and production services.
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Service Type
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              The kind of service you want to register. Used to determine how
+              the metadata will be fetched
+            </div>
+            <CustomSelectorInput
+              options={serviceTypesOptions}
+              onChange={onServiceTypeSelectionChange}
+              value={selectedServiceType}
+              darkMode={true}
+            />
           </div>
-          <CustomSelectorInput
-            options={
-              globalBulkServiceRegistrationState.serviceConfigState
-                .versionOptions ?? []
-            }
-            onChange={onVersionSelectionChange}
-            value={selectedVersion}
-            darkMode={true}
-            disabled={
-              globalBulkServiceRegistrationState.serviceConfigState
-                .versionOptions === undefined
-            }
-            placeholder={versionPlaceholder}
-            isLoading={editorStore.sdlcState.isFetchingProjectVersions}
-          />
+          {globalBulkServiceRegistrationState.serviceConfigState
+            .serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE && (
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Store Model
+              </div>
+              <div
+                className="panel__content__form__section__toggler"
+                onClick={toggleUseStoreModel}
+              >
+                <button
+                  className={clsx(
+                    'panel__content__form__section__toggler__btn',
+                    {
+                      'panel__content__form__section__toggler__btn--toggled':
+                        globalBulkServiceRegistrationState.serviceConfigState
+                          .TEMPORARY__useStoreModel,
+                    },
+                  )}
+                  tabIndex={-1}
+                >
+                  {globalBulkServiceRegistrationState.serviceConfigState
+                    .TEMPORARY__useStoreModel ? (
+                    <CheckSquareIcon />
+                  ) : (
+                    <SquareIcon />
+                  )}
+                </button>
+                <div className="panel__content__form__section__toggler__prompt">
+                  Use Store Model (slower)
+                </div>
+              </div>
+            </div>
+          )}
+          {
+            <PanelFormBooleanField
+              isReadOnly={false}
+              value={
+                globalBulkServiceRegistrationState.serviceConfigState
+                  .TEMPORARY__useGenerateLineage
+              }
+              name="Generate Lineage"
+              prompt="Use Generate (slower)"
+              update={(value: boolean | undefined): void =>
+                toggleUseGenerateLineage()
+              }
+            />
+          }
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Project Version
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              The version of your project you want to use for registration. Only
+              relevant for semi-interactive and production services.
+            </div>
+            <CustomSelectorInput
+              options={
+                globalBulkServiceRegistrationState.serviceConfigState
+                  .versionOptions ?? []
+              }
+              onChange={onVersionSelectionChange}
+              value={selectedVersion}
+              darkMode={true}
+              disabled={
+                globalBulkServiceRegistrationState.serviceConfigState
+                  .versionOptions === undefined
+              }
+              placeholder={versionPlaceholder}
+              isLoading={editorStore.sdlcState.isFetchingProjectVersions}
+            />
+          </div>
         </div>
       </div>
     </div>

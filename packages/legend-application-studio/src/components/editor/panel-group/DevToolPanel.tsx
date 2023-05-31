@@ -34,7 +34,11 @@ export const DevToolPanel = observer(() => {
     engineConfig.setUseClientRequestPayloadCompression(
       !engineConfig.useClientRequestPayloadCompression,
     );
-  const toggleDataUrlEncoding = (): void =>
+  const toggleEngineClientRequestPayloadDebugging = (): void =>
+    engineConfig.setEnableDebuggingPayload(
+      !engineConfig.enableDebuggingPayload,
+    );
+  const toggleEngineClientDataURLEncoding = (): void =>
     engineConfig.setUseBase64ForAdhocConnectionDataUrls(
       !engineConfig.useBase64ForAdhocConnectionDataUrls,
     );
@@ -59,6 +63,13 @@ export const DevToolPanel = observer(() => {
           isReadOnly={false}
           update={toggleEngineClientRequestPayloadCompression}
         />
+        <PanelFormBooleanField
+          name="Engine client request payload debug"
+          prompt="Specifies if request payload should be downloaded for debugging purpose"
+          value={engineConfig.enableDebuggingPayload}
+          isReadOnly={false}
+          update={toggleEngineClientRequestPayloadDebugging}
+        />
         <PanelFormTextField
           name="Engine client base URL"
           value={engineConfig.baseUrl ?? ''}
@@ -70,12 +81,33 @@ export const DevToolPanel = observer(() => {
             !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
           }
         />
+        {Boolean(
+          editorStore.applicationStore.config.options
+            .TEMPORARY__serviceRegistrationConfig.length,
+        ) && (
+          <PanelFormTextField
+            name="Engine client service registration base URL"
+            value={engineConfig.baseUrlForServiceRegistration ?? ''}
+            isReadOnly={false}
+            update={(value: string | undefined): void =>
+              engineConfig.setBaseUrlForServiceRegistration(
+                value === '' ? undefined : value,
+              )
+            }
+            errorMessage={
+              Boolean(engineConfig.baseUrlForServiceRegistration) &&
+              !isValidUrl(engineConfig.baseUrlForServiceRegistration ?? '')
+                ? 'Invalid URL'
+                : ''
+            }
+          />
+        )}
         <PanelFormBooleanField
           name="Engine execution runner"
           prompt="Use Base64 encoding for adhoc connection data URLs"
           value={engineConfig.useBase64ForAdhocConnectionDataUrls}
           isReadOnly={false}
-          update={toggleDataUrlEncoding}
+          update={toggleEngineClientDataURLEncoding}
         />
         <PanelFormBooleanField
           name="Graph builder strict mode"

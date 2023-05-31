@@ -49,10 +49,9 @@ import {
   ActionAlertType,
 } from '@finos/legend-application';
 import { compareSemVerVersions } from '@finos/legend-storage';
+import { MASTER_SNAPSHOT_ALIAS } from '@finos/legend-server-depot';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
-
-const PROD_SERVICE_EXECUTION_SERVER = 'PROD';
 
 export const PROJECT_SEMANTIC_VERSION_PATTERN = /^[0-9]*.[0-9]*.[0-9]*$/;
 
@@ -163,24 +162,23 @@ export class ServiceConfigState {
       this.enableModesWithVersioning &&
       this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
     ) {
-      const semVerVersions = this.editorStore.sdlcState.projectPublishedVersions
-        .filter((v) => v.match(PROJECT_SEMANTIC_VERSION_PATTERN))
-        .sort((v1, v2) => compareSemVerVersions(v2, v1));
+      const semanticVersions =
+        this.editorStore.sdlcState.projectPublishedVersions
+          .filter((version) => version.match(PROJECT_SEMANTIC_VERSION_PATTERN))
+          .sort((v1, v2) => compareSemVerVersions(v2, v1));
       const snapshotVersions =
         this.editorStore.sdlcState.projectPublishedVersions
-          .filter((v) => !v.match(PROJECT_SEMANTIC_VERSION_PATTERN))
+          .filter((version) => !version.match(PROJECT_SEMANTIC_VERSION_PATTERN))
           .sort((v1, v2) => v1.localeCompare(v2));
       const options: ServiceVersionOption[] = snapshotVersions
-        .concat(semVerVersions)
+        .concat(semanticVersions)
         .map((version) => ({
           label: version,
           value: version,
         }));
-      if (
-        this.serviceEnv &&
-        this.serviceEnv.toUpperCase() === PROD_SERVICE_EXECUTION_SERVER
-      ) {
-        return semVerVersions.map((version) => ({
+      if (this.serviceEnv && this.serviceEnv.toUpperCase() === 'PROD') {
+        // NOTE: we disallow registering against snapshot versions in PROD
+        return semanticVersions.map((version) => ({
           label: version,
           value: version,
         }));
@@ -188,10 +186,12 @@ export class ServiceConfigState {
         if (this.serviceExecutionMode !== ServiceExecutionMode.PROD) {
           return [
             {
-              label: prettyCONSTName(LATEST_PROJECT_REVISION),
-              value: LATEST_PROJECT_REVISION,
+              label: LATEST_PROJECT_REVISION,
+              value: MASTER_SNAPSHOT_ALIAS,
             },
-            ...options,
+            ...options.filter(
+              (option) => option.value !== MASTER_SNAPSHOT_ALIAS,
+            ),
           ];
         }
       }
@@ -228,7 +228,7 @@ export class ServiceConfigState {
 
   updateVersion(): void {
     if (this.serviceExecutionMode === ServiceExecutionMode.SEMI_INTERACTIVE) {
-      this.projectVersion = LATEST_PROJECT_REVISION;
+      this.projectVersion = MASTER_SNAPSHOT_ALIAS;
     } else if (this.serviceExecutionMode === ServiceExecutionMode.PROD) {
       this.projectVersion =
         this.editorStore.sdlcState.projectPublishedVersions[0];
@@ -259,6 +259,7 @@ export class ServiceRegistrationState extends ServiceConfigState {
     enableModesWithVersioning: boolean,
   ) {
     super(editorStore, registrationOptions, enableModesWithVersioning);
+
     makeObservable(this, {
       activatePostRegistration: observable,
       setActivatePostRegistration: action,

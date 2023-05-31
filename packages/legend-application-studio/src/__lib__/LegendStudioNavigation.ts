@@ -250,3 +250,19 @@ export const generateElementPreviewRoute = (
       entityPath,
     },
   );
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl = (
+  queryApplicationUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  servicePath: string,
+): string =>
+  `${queryApplicationUrl}/create-from-service/${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    versionId,
+  )}/${servicePath}`;
