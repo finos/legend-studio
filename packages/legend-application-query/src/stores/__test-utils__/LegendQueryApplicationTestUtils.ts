@@ -30,9 +30,6 @@ const TEST_DATA__appConfig = {
     url: 'http://testStudioUrl',
     instances: [],
   },
-  taxonomy: {
-    url: 'http://testTaxonomyUrl',
-  },
 };
 
 export const TEST__getTestLegendQueryApplicationConfig = (

@@ -35,8 +35,6 @@ jobs:
             os: windows-latest
           - application: '@finos/legend-application-query-deployment'
             os: ubuntu-latest
-          - application: '@finos/legend-application-taxonomy-deployment'
-            os: ubuntu-latest
           - application: '@finos/legend-application-pure-ide-deployment'
             os: ubuntu-latest
     steps:

@@ -22,11 +22,6 @@
     {
       "path": "packages/legend-application-query-bootstrap/tsconfig.build.json"
     },
-    // taxonomy
-    { "path": "packages/legend-application-taxonomy/tsconfig.build.json" },
-    {
-      "path": "packages/legend-application-taxonomy-bootstrap/tsconfig.build.json"
-    },
     // pure ide
     { "path": "packages/legend-application-pure-ide/tsconfig.build.json" },
     // extensions
