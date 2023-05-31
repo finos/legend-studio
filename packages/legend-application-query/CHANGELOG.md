@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.0.18
+
+### Patch Changes
+
+- [#2213](https://github.com/finos/legend-studio/pull/2213) [`be6268234`](https://github.com/finos/legend-studio/commit/be62682340e48aa1420e75f743ff6f5471d95c34) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for default parameter values to saved query.
+
 ## 13.0.17
 
 ## 13.0.16
