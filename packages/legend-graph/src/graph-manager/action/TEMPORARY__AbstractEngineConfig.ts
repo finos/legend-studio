@@ -27,6 +27,7 @@ export class TEMPORARY__AbstractEngineConfig {
   tabSize = DEFAULT_TAB_SIZE;
   currentUserId?: string | undefined;
   baseUrl?: string | undefined;
+  baseUrlForServiceRegistration?: string | undefined;
   useClientRequestPayloadCompression = false;
   useBase64ForAdhocConnectionDataUrls = false;
   enableDebuggingPayload = false;
@@ -36,12 +37,14 @@ export class TEMPORARY__AbstractEngineConfig {
       env: observable,
       currentUserId: observable,
       baseUrl: observable,
+      baseUrlForServiceRegistration: observable,
       useClientRequestPayloadCompression: observable,
       useBase64ForAdhocConnectionDataUrls: observable,
       enableDebuggingPayload: observable,
       setEnv: action,
       setCurrentUserId: action,
       setBaseUrl: action,
+      setBaseUrlForServiceRegistration: action,
       setUseClientRequestPayloadCompression: action,
       setUseBase64ForAdhocConnectionDataUrls: action,
       setEnableDebuggingPayload: action,
@@ -62,6 +65,10 @@ export class TEMPORARY__AbstractEngineConfig {
 
   setBaseUrl(val: string | undefined): void {
     this.baseUrl = val;
+  }
+
+  setBaseUrlForServiceRegistration(val: string | undefined): void {
+    this.baseUrlForServiceRegistration = val;
   }
 
   setUseClientRequestPayloadCompression(val: boolean): void {

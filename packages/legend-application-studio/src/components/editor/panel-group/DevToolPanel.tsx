@@ -81,6 +81,27 @@ export const DevToolPanel = observer(() => {
             !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
           }
         />
+        {Boolean(
+          editorStore.applicationStore.config.options
+            .TEMPORARY__serviceRegistrationConfig.length,
+        ) && (
+          <PanelFormTextField
+            name="Engine client service registration base URL"
+            value={engineConfig.baseUrlForServiceRegistration ?? ''}
+            isReadOnly={false}
+            update={(value: string | undefined): void =>
+              engineConfig.setBaseUrlForServiceRegistration(
+                value === '' ? undefined : value,
+              )
+            }
+            errorMessage={
+              Boolean(engineConfig.baseUrlForServiceRegistration) &&
+              !isValidUrl(engineConfig.baseUrlForServiceRegistration ?? '')
+                ? 'Invalid URL'
+                : ''
+            }
+          />
+        )}
         <PanelFormBooleanField
           name="Engine execution runner"
           prompt="Use Base64 encoding for adhoc connection data URLs"

@@ -137,6 +137,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // user, right now we assume to make some call on the query servers, for example, but
   // getting the user from the main engine server, which seems problematic.
   private queryBaseUrl?: string | undefined;
+  private baseUrlForServiceRegistration?: string | undefined;
 
   constructor(
     config: ServerClientConfig & {
@@ -145,6 +146,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
   ) {
     super(config);
     this.queryBaseUrl = config.queryBaseUrl;
+  }
+
+  setBaseUrlForServiceRegistration(val: string | undefined): void {
+    this.baseUrlForServiceRegistration = val;
   }
 
   setEnv = (value: string | undefined): void => {
@@ -755,9 +760,48 @@ export class V1_EngineServerClient extends AbstractServerClient {
   _service = (serviceServerUrl?: string): string =>
     `${serviceServerUrl ?? this.baseUrl}/service/v1`;
 
-  getServerServiceInfo = (): Promise<
+  /**
+   * TODO: this is an internal API that should me refactored out using extension mechanism
+   */
+  TEMPORARY__getServerServiceInfo = (): Promise<
     PlainObject<V1_ServiceConfigurationInfo>
   > => this.get(`${this._server()}/info/services`);
+
+  /**
+   * TODO: this is an internal API that should me refactored out using extension mechanism
+   */
+  TEMPORARY__getServiceVersionInfo = (
+    serviceServerUrl: string,
+    serviceId: string,
+  ): Promise<PlainObject<V1_ServiceStorage>> =>
+    this.getWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_VERSION),
+      `${this._service(
+        this.baseUrlForServiceRegistration ?? serviceServerUrl,
+      )}/id/${serviceId}`,
+    );
+
+  /**
+   * TODO: this is an internal API that should me refactored out using extension mechanism
+   */
+  TEMPORARY__activateGenerationId = (
+    serviceServerUrl: string,
+    generationId: string,
+  ): Promise<Response> =>
+    this.putWithTracing(
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.ACTIVATE_SERVICE_GENERATION_ID,
+      ),
+      `${this._service(
+        this.baseUrlForServiceRegistration ?? serviceServerUrl,
+      )}/generation/setActive/id/${generationId}`,
+      {},
+      {},
+      {},
+      {},
+      {},
+      { skipProcessing: true },
+    );
 
   private getRegisterServiceUrlFromExecMode = (
     serviceExecutionMode: ServiceExecutionMode,
@@ -772,6 +816,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
         return REGISTER_ENDPOINT_PREFIX;
     }
   };
+
   /**
    * TODO: this is an internal API that should me refactored out using extension mechanism
    */
@@ -785,7 +830,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.REGISTER_SERVICE),
       `${this._service(
-        serviceServerUrl,
+        this.baseUrlForServiceRegistration ?? serviceServerUrl,
       )}/${this.getRegisterServiceUrlFromExecMode(serviceExecutionMode)}`,
       this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.REGISTER_SERVICE),
       {},
@@ -797,31 +842,5 @@ export class V1_EngineServerClient extends AbstractServerClient {
           }
         : { generateLineage: TEMPORARY__useGenerateLineage },
       { enableCompression: true },
-    );
-  getServiceVersionInfo = (
-    serviceServerUrl: string,
-    serviceId: string,
-  ): Promise<PlainObject<V1_ServiceStorage>> =>
-    this.getWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_VERSION),
-      `${this._service(serviceServerUrl)}/id/${serviceId}`,
-    );
-  activateGenerationId = (
-    serviceServerUrl: string,
-    generationId: string,
-  ): Promise<Response> =>
-    this.putWithTracing(
-      this.getTraceData(
-        CORE_ENGINE_ACTIVITY_TRACE.ACTIVATE_SERVICE_GENERATION_ID,
-      ),
-      `${this._service(
-        serviceServerUrl,
-      )}/generation/setActive/id/${generationId}`,
-      {},
-      {},
-      {},
-      {},
-      {},
-      { skipProcessing: true },
     );
 }
