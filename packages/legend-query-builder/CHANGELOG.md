@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.0.4
+
+### Patch Changes
+
+- [#2281](https://github.com/finos/legend-studio/pull/2281) [`348d02a7a`](https://github.com/finos/legend-studio/commit/348d02a7abb6f56a0e1184d1eaa8abceb69320f9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `dateTimeFormat` to Serialization Config.
+
 ## 4.0.3
 
 ## 4.0.2
