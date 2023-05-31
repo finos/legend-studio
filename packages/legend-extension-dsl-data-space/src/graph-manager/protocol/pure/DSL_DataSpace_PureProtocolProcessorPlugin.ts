@@ -55,7 +55,6 @@ import {
   DataSpaceElementPointer,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
-  type PureModel,
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
@@ -90,7 +89,6 @@ import {
   type V1_MappingIncludeTransformer,
   type V1_MappingIncludeProtocolSerializer,
   type V1_MappingIncludeProtocolDeserializer,
-  type V1_ExecutionInputCollector,
   type V1_MappingIncludeIdentifierBuilder,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
@@ -479,20 +477,6 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
         }
         return undefined;
       },
-    ];
-  }
-
-  override V1_getExtraExecutionInputCollectors(): V1_ExecutionInputCollector[] {
-    return [
-      (
-        graph: PureModel,
-        protocolGraph: V1_PureModelContextData,
-      ): V1_PackageableElement[] =>
-        // TODO: bring back when issue with not including services as part of the execution collections is resolved
-        // protocolGraph.elements.filter(
-        //   (element) => element instanceof V1_DataSpace,
-        // ),
-        [],
     ];
   }
 }
