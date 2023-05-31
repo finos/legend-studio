@@ -31,10 +31,6 @@ import {
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
 import {
-  generatePath,
-  generateExtensionUrlPattern,
-} from '@finos/legend-application/browser';
-import {
   type ServiceExecution,
   type PureExecution,
   type Mapping,
@@ -63,10 +59,7 @@ import {
   type LightQuery,
   QuerySearchSpecification,
 } from '@finos/legend-graph';
-import {
-  parseGACoordinates,
-  generateGAVCoordinates,
-} from '@finos/legend-storage';
+import { parseGACoordinates } from '@finos/legend-storage';
 import { runtime_addMapping } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -93,22 +86,6 @@ import {
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
 } from '@finos/legend-query-builder';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-
-enum DSL_SERVICE_PATH_PARAM_TOKEN {
-  PROJECT_ID = 'projectId',
-  GROUP_WORKSPACE_ID = 'groupWorkspaceId',
-  SERVICE_PATH = 'servicePath',
-}
-
-enum LEGEND_QUERY_PATH_PARAM_TOKEN {
-  GAV = 'gav',
-  SERVICE_PATH = 'servicePath',
-}
-
-const QUERY_ROUTE_PATTERN = Object.freeze({
-  CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
-  UPDATE_PROJECT_SERVICE_QUERY: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH}`,
-});
 
 export class ServiceExecutionParametersState extends LambdaParametersState {
   executionState: ServicePureExecutionState;
@@ -777,39 +754,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   updateExecutionQuery(): void {
     pureExecution_setFunction(this.execution, this.queryState.query);
   }
-
-  generateServiceQueryCreatorRoute = (
-    baseUrl: string,
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    servicePath: string,
-  ): string =>
-    baseUrl +
-    generatePath(QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
-      [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
-        groupId,
-        artifactId,
-        versionId,
-      ),
-      [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
-    });
-
-  generateProjectServiceQueryUpdaterRoute = (
-    projectId: string,
-    groupWorkspaceId: string,
-    servicePath: string,
-  ): string =>
-    generatePath(
-      generateExtensionUrlPattern(
-        QUERY_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY,
-      ),
-      {
-        [DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID]: projectId,
-        [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: groupWorkspaceId,
-        [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
-      },
-    );
 }
 
 export class InlineServicePureExecutionState extends ServicePureExecutionState {
