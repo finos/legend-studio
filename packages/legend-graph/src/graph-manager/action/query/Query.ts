@@ -29,6 +29,11 @@ export class QueryStereotype {
   stereotype!: string;
 }
 
+export class QueryParameterValue {
+  name!: string;
+  content!: string;
+}
+
 export class Query {
   name!: string;
   id!: string;
@@ -45,6 +50,8 @@ export class Query {
   // because we don't process them
   taggedValues?: QueryTaggedValue[] | undefined;
   stereotypes?: QueryStereotype[] | undefined;
+  defaultParameterValues?: QueryParameterValue[] | undefined;
+
   // Store query in text to be more compact and stable
   content!: string;
 

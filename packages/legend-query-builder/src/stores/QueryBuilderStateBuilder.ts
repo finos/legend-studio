@@ -21,6 +21,7 @@ import {
   guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
+  isString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -39,12 +40,13 @@ import {
   type LambdaFunctionInstanceValue,
   PrimitiveInstanceValue,
   SimpleFunctionExpression,
-  type VariableExpression,
+  VariableExpression,
   type AbstractPropertyExpression,
   getMilestoneTemporalStereotype,
   type INTERNAL__PropagatedValue,
   type ValueSpecification,
   SUPPORTED_FUNCTIONS,
+  isSuperType,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
@@ -75,6 +77,7 @@ import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/Q
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 import { checkIfEquivalent } from './milestoning/QueryBuilderMilestoningHelper.js';
+import type { QueryBuilderParameterValue } from './QueryBuilderParametersState.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -654,15 +657,32 @@ export class QueryBuilderValueSpecificationProcessor
 export const processParameters = (
   parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
-  parameterValues?: Map<VariableExpression, ValueSpecification | undefined>,
+  options?: {
+    parameterValues?: Map<string, QueryBuilderParameterValue> | undefined;
+  },
 ): void => {
   const queryParameterState = queryBuilderState.parametersState;
   parameters.forEach((parameter) => {
     let matchingParameterValue: ValueSpecification | undefined;
-    if (parameterValues) {
-      Array.from(parameterValues.entries()).forEach(([key, value]) => {
-        if (checkIfEquivalent(key, parameter)) {
-          matchingParameterValue = value;
+    if (options?.parameterValues) {
+      Array.from(options.parameterValues.entries()).forEach(([key, value]) => {
+        const variable = value.variable;
+        if (
+          variable instanceof VariableExpression &&
+          checkIfEquivalent(variable, parameter)
+        ) {
+          matchingParameterValue = value.value;
+        } else if (isString(variable) && variable === parameter.name) {
+          // TODO: we may want to do further checks here like multiplicity checks
+          const instanceType = value.value?.genericType?.value.rawType;
+          const paramType = parameter.genericType?.value.rawType;
+          if (
+            instanceType &&
+            paramType &&
+            isSuperType(paramType, instanceType)
+          ) {
+            matchingParameterValue = value.value;
+          }
         }
       });
     }
@@ -684,13 +704,15 @@ export const processParameters = (
 export const processQueryLambdaFunction = (
   lambdaFunction: LambdaFunction,
   queryBuilderState: QueryBuilderState,
-  parameterValues?: Map<VariableExpression, ValueSpecification | undefined>,
+  parameterOptions?: {
+    parameterValues?: Map<string, QueryBuilderParameterValue> | undefined;
+  },
 ): void => {
   if (lambdaFunction.functionType.parameters.length) {
     processParameters(
       lambdaFunction.functionType.parameters,
       queryBuilderState,
-      parameterValues,
+      parameterOptions,
     );
   }
   lambdaFunction.expressionSequence.map((expression) =>

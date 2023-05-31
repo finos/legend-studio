@@ -79,7 +79,10 @@ import type {
   GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
-import { QueryBuilderParametersState } from './QueryBuilderParametersState.js';
+import {
+  QueryBuilderParametersState,
+  type QueryBuilderParameterValue,
+} from './QueryBuilderParametersState.js';
 import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
@@ -371,6 +374,20 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.setRuntimeValue(val);
   }
 
+  getCurrentParameterValues(): Map<string, ValueSpecification> | undefined {
+    if (this.parametersState.parameterStates.length) {
+      const result = new Map<string, ValueSpecification>();
+      this.parametersState.parameterStates.forEach((paramState) => {
+        const val = paramState.value;
+        if (val) {
+          result.set(paramState.variableName, val);
+        }
+      });
+      return result;
+    }
+    return undefined;
+  }
+
   buildQuery(options?: { keepSourceInformation: boolean }): RawLambda {
     if (!this.isQuerySupported) {
       const parameters = this.parametersState.parameterStates.map((e) =>
@@ -444,8 +461,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     return PrimitiveType.STRING;
   }
 
-  initializeWithQuery(query: RawLambda): void {
-    this.rebuildWithQuery(query);
+  initializeWithQuery(
+    query: RawLambda,
+    defaultParameterValues?: Map<string, ValueSpecification>,
+  ): void {
+    this.rebuildWithQuery(query, {
+      defaultParameterValues,
+    });
     this.resetQueryResult();
     this.changeDetectionState.initialize(query);
   }
@@ -458,18 +480,32 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     options?: {
       preserveParameterValues?: boolean | undefined;
       preserveResult?: boolean | undefined;
+      defaultParameterValues?: Map<string, ValueSpecification> | undefined;
     },
   ): void {
-    const previousStateParameterValues = new Map<
-      VariableExpression,
-      ValueSpecification | undefined
-    >();
+    let previousStateParameterValues:
+      | Map<string, QueryBuilderParameterValue>
+      | undefined = undefined;
     try {
+      const paramValues = new Map<string, QueryBuilderParameterValue>();
       if (options?.preserveParameterValues) {
-        // Preserving parameter values
         this.parametersState.parameterStates.forEach((ps) => {
-          previousStateParameterValues.set(ps.parameter, ps.value);
+          paramValues.set(ps.parameter.name, {
+            variable: ps.parameter,
+            value: ps.value,
+          });
         });
+        previousStateParameterValues = paramValues;
+      } else if (options?.defaultParameterValues?.size) {
+        Array.from(options.defaultParameterValues.entries()).forEach(
+          ([k, v]) => {
+            paramValues.set(k, {
+              variable: k,
+              value: v,
+            });
+          },
+        );
+        previousStateParameterValues = paramValues;
       }
       this.resetQueryResult({ preserveResult: options?.preserveResult });
       this.resetQueryContent();
@@ -492,7 +528,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         processQueryLambdaFunction(
           guaranteeNonNullable(compiledValueSpecification.values[0]),
           this,
-          previousStateParameterValues,
+          {
+            parameterValues: previousStateParameterValues,
+          },
         );
       }
       if (this.parametersState.parameterStates.length > 0) {
@@ -511,7 +549,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       )
         .map((param) => observe_ValueSpecification(param, this.observerContext))
         .filter(filterByType(VariableExpression));
-      processParameters(parameters, this, previousStateParameterValues);
+      processParameters(parameters, this, {
+        parameterValues: previousStateParameterValues,
+      });
     }
   }
 

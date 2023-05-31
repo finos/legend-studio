@@ -72,6 +72,7 @@ import type { V1_FunctionActivatorError } from './functionActivator/V1_FunctionA
 import type { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
 import type { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput.js';
 import type { V1_RawSQLExecuteInput } from './execution/V1_RawSQLExecuteInput.js';
+import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -109,7 +110,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   DATABASE_RAW_SQL_EXECUTION = 'database raw SQL execution',
 }
 
-type GrammarParserBatchInputEntry = {
+export type V1_GrammarParserBatchInputEntry = {
   value: string;
   returnSourceInformation?: boolean | undefined;
   sourceInformationOffset?:
@@ -227,7 +228,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
 
   grammarToJSON_lambda_batch = (
-    input: Record<string, GrammarParserBatchInputEntry>,
+    input: Record<string, V1_GrammarParserBatchInputEntry>,
   ): Promise<{
     errors?: Record<string, PlainObject<V1_ParserError>> | undefined;
     result?: Record<string, PlainObject<V1_RawLambda>> | undefined;
@@ -235,6 +236,22 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
       `${this._grammarToJSON()}/lambda/batch`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  grammarToJSON_valueSpecification_batch = (
+    input: Record<string, V1_GrammarParserBatchInputEntry>,
+  ): Promise<{
+    errors?: Record<string, PlainObject<V1_ParserError>> | undefined;
+    result?: Record<string, PlainObject<V1_ValueSpecification>> | undefined;
+  }> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
+      `${this._grammarToJSON()}/valueSpecification/batch`,
       input,
       {},
       undefined,
@@ -267,7 +284,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
 
   grammarToJSON_relationalOperationElement_batch = (
-    input: Record<string, GrammarParserBatchInputEntry>,
+    input: Record<string, V1_GrammarParserBatchInputEntry>,
   ): Promise<{
     errors?: Record<string, PlainObject<V1_ParserError>> | undefined;
     result?:
@@ -321,6 +338,20 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
       `${this._JSONToGrammar()}/lambda/batch`,
+      input,
+      {},
+      undefined,
+      { renderStyle },
+      { enableCompression: true },
+    );
+
+  JSONToGrammar_valueSpecification_batch = (
+    input: Record<string, PlainObject<V1_ValueSpecification>>,
+    renderStyle?: V1_RenderStyle | undefined,
+  ): Promise<Record<string, string>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
+      `${this._JSONToGrammar()}/valueSpecification/batch`,
       input,
       {},
       undefined,

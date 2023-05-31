@@ -313,6 +313,8 @@ import type { RelationalDatabaseConnection } from '../../../../STO_Relational_Ex
 import { V1_RawSQLExecuteInput } from './engine/execution/V1_RawSQLExecuteInput.js';
 import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
 import { V1_INTERNAL__UnknownStore } from './model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
+import type { V1_ValueSpecification } from './model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_GrammarParserBatchInputEntry } from './engine/V1_EngineServerClient.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1813,6 +1815,41 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       Boolean(pretty),
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
+  }
+
+  override valueSpecificationsToPureCode(
+    lambdas: Map<string, ValueSpecification>,
+    pretty?: boolean | undefined,
+  ): Promise<Map<string, string>> {
+    const input: Record<string, PlainObject<V1_ValueSpecification>> = {};
+    lambdas.forEach((val, key) => {
+      input[key] = this.serializeValueSpecification(val);
+    });
+    return this.engine.transformValueSpecsToCode(input, Boolean(pretty));
+  }
+
+  async pureCodeToValueSpecifications(
+    lambdas: Map<string, string>,
+    graph: PureModel,
+  ): Promise<Map<string, ValueSpecification>> {
+    const pureCodeToValueSpecInput: Record<
+      string,
+      V1_GrammarParserBatchInputEntry
+    > = {};
+    Array.from(lambdas.entries()).forEach(([k, content]) => {
+      pureCodeToValueSpecInput[k] = {
+        value: content,
+        returnSourceInformation: false,
+      };
+    });
+    const specs = await this.engine.transformCodeToValueSpeces(
+      pureCodeToValueSpecInput,
+    );
+    const result = new Map<string, ValueSpecification>();
+    Array.from(specs.entries()).forEach(([k, v]) => {
+      result.set(k, this.buildValueSpecification(v, graph));
+    });
+    return result;
   }
 
   pureCodeToRelationalOperationElement(

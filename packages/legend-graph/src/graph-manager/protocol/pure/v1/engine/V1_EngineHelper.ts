@@ -22,10 +22,15 @@ import {
 import {
   LightQuery,
   Query,
+  QueryParameterValue,
   QueryStereotype,
   QueryTaggedValue,
 } from '../../../../../graph-manager/action/query/Query.js';
-import { type V1_LightQuery, V1_Query } from './query/V1_Query.js';
+import {
+  type V1_LightQuery,
+  V1_Query,
+  V1_QueryParameterValue,
+} from './query/V1_Query.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
 import { PackageableElementExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { DEPRECATED__ServiceTestResult } from '../../../../../graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
@@ -179,6 +184,20 @@ export const V1_buildQuery = (
     );
     return stereotype;
   });
+  metamodel.defaultParameterValues = protocol.defaultParameterValues?.map(
+    (v) => {
+      const paramValue = new QueryParameterValue();
+      paramValue.name = guaranteeNonEmptyString(
+        v.name,
+        `Query Parameter 'name' field is missing or empty`,
+      );
+      paramValue.content = guaranteeNonEmptyString(
+        v.content,
+        `Query Parameter ${v.name} 'content' field is missing or empty`,
+      );
+      return paramValue;
+    },
+  );
 
   return metamodel;
 };
@@ -203,6 +222,14 @@ export const V1_transformQuery = (metamodel: Query): V1_Query => {
     taggedValue.value = _taggedValue.value;
     return taggedValue;
   });
+  protocol.defaultParameterValues = metamodel.defaultParameterValues?.map(
+    (_defaultParams) => {
+      const vDefault = new V1_QueryParameterValue();
+      vDefault.name = _defaultParams.name;
+      vDefault.content = _defaultParams.content;
+      return vDefault;
+    },
+  );
   protocol.stereotypes = metamodel.stereotypes?.map((_stereotype) => {
     const stereotype = new V1_StereotypePtr();
     stereotype.profile = _stereotype.profile;
