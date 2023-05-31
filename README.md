@@ -7,7 +7,6 @@
 [![npm](https://img.shields.io/npm/v/@finos/legend-application-studio-bootstrap)](https://www.npmjs.com/package/@finos/legend-application-studio-bootstrap)
 [![docker](https://img.shields.io/docker/v/finos/legend-studio?label=finos%2Flegend-studio&logo=docker&logoColor=docker&sort=semver)](https://hub.docker.com/r/finos/legend-studio)
 [![docker](https://img.shields.io/docker/v/finos/legend-query?label=finos%2Flegend-query&logo=docker&logoColor=docker&sort=semver)](https://hub.docker.com/r/finos/legend-query)
-[![docker](https://img.shields.io/docker/v/finos/legend-taxonomy?label=finos%2Flegend-taxonomy&logo=docker&logoColor=docker&sort=semver)](https://hub.docker.com/r/finos/legend-taxonomy)
 
 # legend-studio
 

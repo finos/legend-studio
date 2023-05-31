@@ -52,7 +52,7 @@ import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
-    super(packageJson.extensions.queryApplicationPlugin, packageJson.version);
+    super(packageJson.extensions.applicationQueryPlugin, packageJson.version);
   }
 
   override getExtraApplicationPageEntries(): ApplicationPageEntry[] {

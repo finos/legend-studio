@@ -16,9 +16,6 @@
       }
     ]
   },
-  "taxonomy": {
-    "url": "${PROTOCOL}://${TAXONOMY_HOST}:${TAXONOMY_PORT}/taxonomy"
-  },
   "documentation": {
     "url": "https://legend.finos.org"
   }

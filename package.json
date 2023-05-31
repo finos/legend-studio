@@ -32,7 +32,6 @@
     "dev:query": "yarn workspace @finos/legend-application-query-deployment dev",
     "dev:sass": "node ./scripts/workflow/buildSassAll.js --watch",
     "dev:studio": "yarn workspace @finos/legend-application-studio-deployment dev",
-    "dev:taxonomy": "yarn workspace @finos/legend-application-taxonomy-deployment dev",
     "dev:ts": "tsc --build --watch",
     "dev:website": "npx http-server ./build/docs -p 3000 -a localhost -g --cors -o",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",

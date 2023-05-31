@@ -43,8 +43,6 @@ jobs:
             package: '@finos/legend-application-studio-deployment'
           - image: local/legend-query
             package: '@finos/legend-application-query-deployment'
-          - image: local/legend-taxonomy
-            package: '@finos/legend-application-taxonomy-deployment'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.5.2

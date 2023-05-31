@@ -86,7 +86,6 @@ jobs:
         run: |
           yarn workspace @finos/legend-application-studio-deployment publish:docker
           yarn workspace @finos/legend-application-query-deployment publish:docker
-          yarn workspace @finos/legend-application-taxonomy-deployment publish:docker
         env:
           # TODO: After https://github.com/finos/legend-studio/pull/227 it seems like due to either
           # the upgrade of Webpack/Typescript that we start seeing some OOM when building Webpack

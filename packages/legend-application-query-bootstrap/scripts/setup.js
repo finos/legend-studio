@@ -91,9 +91,6 @@ export const setup = (outputDir) => {
             },
           ],
         },
-        taxonomy: {
-          url: 'http://localhost:9092/taxonomy',
-        },
       },
       undefined,
       2,

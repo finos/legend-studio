@@ -86,6 +86,6 @@
     "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-data-space",
     "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-data-space",
     "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-data-space",
-    "queryApplicationPlugin": "@finos/legend-application-query-plugin-dsl-data-space"
+    "applicationQueryPlugin": "@finos/legend-application-query-plugin-dsl-data-space"
   }
 }
