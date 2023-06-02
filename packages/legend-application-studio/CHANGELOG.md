@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 26.1.5
+
+### Patch Changes
+
+- [#2289](https://github.com/finos/legend-studio/pull/2289) [`f8e54ebdb`](https://github.com/finos/legend-studio/commit/f8e54ebdb206b743fd576dea5267ce24a340e0cd) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `showcaseUrl` to documentation config.
+
+- [#2293](https://github.com/finos/legend-studio/pull/2293) [`96220509d`](https://github.com/finos/legend-studio/commit/96220509d1c90a99ac6d4919ab547d5e2c377693) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add documentation link entries to support linking to application info links.
+
 ## 26.1.4
 
 ## 26.1.3
