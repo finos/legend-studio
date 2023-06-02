@@ -21,6 +21,7 @@ import {
   SerializationFactory,
   LogEvent,
   uniq,
+  guaranteeNonEmptyString,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -31,6 +32,7 @@ import {
 } from 'serializr';
 import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
+import type { LegendApplicationLink } from '../application/LegendApplicationConfig.js';
 
 export type DocumentationRegistryEntry = {
   url: string;
@@ -104,12 +106,36 @@ export type KeyedDocumentationEntry = {
   content: DocumentationEntry;
 };
 
+export type DocumentationLinkEntry = {
+  key: string;
+  label: string;
+  url: string;
+};
+
 export const collectKeyedDocumentationEntriesFromConfig = (
   rawEntries: Record<string, DocumentationEntryData>,
 ): KeyedDocumentationEntry[] =>
   Object.entries(rawEntries).map((entry) => ({
     key: entry[0],
     content: DocumentationEntry.create(entry[1], entry[0]),
+  }));
+
+export const collectDocumentationLinkEntryFromConfig = (
+  rawEntries: Record<string, LegendApplicationLink>,
+): DocumentationLinkEntry[] =>
+  Object.entries(rawEntries).map((entry) => ({
+    key: guaranteeNonEmptyString(
+      entry[0],
+      "Documentation link 'key' is missing",
+    ),
+    label: guaranteeNonEmptyString(
+      entry[1].label,
+      "Documentation link 'label' is missing",
+    ),
+    url: guaranteeNonEmptyString(
+      entry[1].url,
+      "Documentation link 'url' is missing",
+    ),
   }));
 
 export type ContextualDocumentationConfig = Record<string, string>;
@@ -127,7 +153,7 @@ export const collectContextualDocumentationEntries = (
 
 export class DocumentationService {
   readonly url?: string | undefined;
-  readonly showcaseUrl?: string | undefined;
+  readonly links?: DocumentationLinkEntry[] | undefined;
 
   private readonly docRegistry = new Map<string, DocumentationEntry>();
   private readonly contextualDocIndex = new Map<string, DocumentationEntry>();
@@ -135,7 +161,7 @@ export class DocumentationService {
   constructor(applicationStore: GenericLegendApplicationStore) {
     // set the main documenation site url
     this.url = applicationStore.config.documentationUrl;
-    this.showcaseUrl = applicationStore.config.showcaseUrl;
+    this.links = applicationStore.config.documentationLinkEntries;
 
     /**
      * NOTE: the order of documentation entry overidding is (the later override the former):

@@ -29,6 +29,8 @@ import {
   type ContextualDocumentationConfig,
   type ContextualDocumentationEntry,
   type DocumentationRegistryEntry,
+  type DocumentationLinkEntry,
+  collectDocumentationLinkEntryFromConfig,
 } from '../stores/DocumentationService.js';
 import type { SettingOverrideConfigData } from '../stores/SettingService.js';
 
@@ -38,12 +40,17 @@ export interface LegendApplicationVersionData {
   commitSHA: string;
 }
 
+export interface LegendApplicationLink {
+  url: string;
+  label: string;
+}
+
 export interface LegendApplicationConfigurationData {
   appName: string;
   env: string;
   documentation?: {
     url: string;
-    showcaseUrl?: string;
+    links?: Record<string, LegendApplicationLink>;
     registry?: DocumentationRegistryEntry[];
     entries?: Record<string, DocumentationEntryData>;
     contextualEntries?: ContextualDocumentationConfig;
@@ -66,7 +73,7 @@ export abstract class LegendApplicationConfig {
 
   // documentation
   readonly documentationUrl?: string | undefined;
-  readonly showcaseUrl?: string | undefined;
+  readonly documentationLinkEntries?: DocumentationLinkEntry[] = [];
   readonly documentationRegistryEntries: DocumentationRegistryEntry[] = [];
   readonly keyedDocumentationEntries: KeyedDocumentationEntry[] = [];
   readonly contextualDocEntries: ContextualDocumentationEntry[] = [];
@@ -94,7 +101,9 @@ export abstract class LegendApplicationConfig {
 
     // Documentation
     this.documentationUrl = input.configData.documentation?.url;
-    this.showcaseUrl = input.configData.documentation?.showcaseUrl;
+    this.documentationLinkEntries = collectDocumentationLinkEntryFromConfig(
+      input.configData.documentation?.links ?? {},
+    );
     this.documentationRegistryEntries =
       input.configData.documentation?.registry ?? [];
     this.keyedDocumentationEntries = collectKeyedDocumentationEntriesFromConfig(

@@ -69,8 +69,7 @@ const SettingsMenu = observer(
 export const ActivityBarMenu: React.FC = () => {
   const applicationStore = useLegendStudioApplicationStore();
   const appDocUrl = applicationStore.documentationService.url;
-  const showcaseUrl = applicationStore.documentationService.showcaseUrl;
-
+  const docLinks = applicationStore.documentationService.links;
   // about modal
   const [openAppInfo, setOpenAppInfo] = useState(false);
   const showAppInfo = (): void => setOpenAppInfo(true);
@@ -81,10 +80,8 @@ export const ActivityBarMenu: React.FC = () => {
       applicationStore.navigationService.navigator.visitAddress(appDocUrl);
     }
   };
-  const goToShowcaseUrl = (): void => {
-    if (showcaseUrl) {
-      applicationStore.navigationService.navigator.visitAddress(showcaseUrl);
-    }
+  const goToDocLink = (url: string): void => {
+    applicationStore.navigationService.navigator.visitAddress(url);
   };
   // go to setup page
   const goToWorkspaceSetup = (): void =>
@@ -116,20 +113,20 @@ export const ActivityBarMenu: React.FC = () => {
             <MenuContent>
               <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
               <MenuContentItem onClick={openHelp}>Help...</MenuContentItem>
-              {showcaseUrl && (
-                <MenuContentItem
-                  disabled={!showcaseUrl}
-                  onClick={goToShowcaseUrl}
-                >
-                  See Showcase Projects
-                </MenuContentItem>
-              )}
               <MenuContentItem
                 disabled={!appDocUrl}
                 onClick={goToDocumentation}
               >
                 See Documentation
               </MenuContentItem>
+              {docLinks?.map((entry) => (
+                <MenuContentItem
+                  key={entry.key}
+                  onClick={(): void => goToDocLink(entry.url)}
+                >
+                  {entry.label}
+                </MenuContentItem>
+              ))}
               <MenuContentDivider />
               <MenuContentItem onClick={goToWorkspaceSetup}>
                 Back to workspace setup
