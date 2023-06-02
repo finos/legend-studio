@@ -127,6 +127,7 @@ export const collectContextualDocumentationEntries = (
 
 export class DocumentationService {
   readonly url?: string | undefined;
+  readonly showcaseUrl?: string | undefined;
 
   private readonly docRegistry = new Map<string, DocumentationEntry>();
   private readonly contextualDocIndex = new Map<string, DocumentationEntry>();
@@ -134,6 +135,7 @@ export class DocumentationService {
   constructor(applicationStore: GenericLegendApplicationStore) {
     // set the main documenation site url
     this.url = applicationStore.config.documentationUrl;
+    this.showcaseUrl = applicationStore.config.showcaseUrl;
 
     /**
      * NOTE: the order of documentation entry overidding is (the later override the former):

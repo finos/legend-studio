@@ -43,6 +43,7 @@ export interface LegendApplicationConfigurationData {
   env: string;
   documentation?: {
     url: string;
+    showcaseUrl?: string;
     registry?: DocumentationRegistryEntry[];
     entries?: Record<string, DocumentationEntryData>;
     contextualEntries?: ContextualDocumentationConfig;
@@ -65,6 +66,7 @@ export abstract class LegendApplicationConfig {
 
   // documentation
   readonly documentationUrl?: string | undefined;
+  readonly showcaseUrl?: string | undefined;
   readonly documentationRegistryEntries: DocumentationRegistryEntry[] = [];
   readonly keyedDocumentationEntries: KeyedDocumentationEntry[] = [];
   readonly contextualDocEntries: ContextualDocumentationEntry[] = [];
@@ -92,6 +94,7 @@ export abstract class LegendApplicationConfig {
 
     // Documentation
     this.documentationUrl = input.configData.documentation?.url;
+    this.showcaseUrl = input.configData.documentation?.showcaseUrl;
     this.documentationRegistryEntries =
       input.configData.documentation?.registry ?? [];
     this.keyedDocumentationEntries = collectKeyedDocumentationEntriesFromConfig(

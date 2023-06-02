@@ -69,6 +69,7 @@ const SettingsMenu = observer(
 export const ActivityBarMenu: React.FC = () => {
   const applicationStore = useLegendStudioApplicationStore();
   const appDocUrl = applicationStore.documentationService.url;
+  const showcaseUrl = applicationStore.documentationService.showcaseUrl;
 
   // about modal
   const [openAppInfo, setOpenAppInfo] = useState(false);
@@ -78,6 +79,11 @@ export const ActivityBarMenu: React.FC = () => {
   const goToDocumentation = (): void => {
     if (appDocUrl) {
       applicationStore.navigationService.navigator.visitAddress(appDocUrl);
+    }
+  };
+  const goToShowcaseUrl = (): void => {
+    if (showcaseUrl) {
+      applicationStore.navigationService.navigator.visitAddress(showcaseUrl);
     }
   };
   // go to setup page
@@ -110,6 +116,14 @@ export const ActivityBarMenu: React.FC = () => {
             <MenuContent>
               <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
               <MenuContentItem onClick={openHelp}>Help...</MenuContentItem>
+              {showcaseUrl && (
+                <MenuContentItem
+                  disabled={!showcaseUrl}
+                  onClick={goToShowcaseUrl}
+                >
+                  See Showcase Projects
+                </MenuContentItem>
+              )}
               <MenuContentItem
                 disabled={!appDocUrl}
                 onClick={goToDocumentation}
