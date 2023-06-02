@@ -23,6 +23,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
+import type { PureModel } from '../../../../graph/PureModel.js';
 import {
   getOwnBinding,
   getOwnSchemaSet,
@@ -49,8 +50,10 @@ import {
   type V1_ElementProtocolDeserializer,
   type V1_ElementProtocolSerializer,
   type V1_ElementTransformer,
+  type V1_ExecutionInputCollector,
   PureProtocolProcessorPlugin,
 } from '../PureProtocolProcessorPlugin.js';
+import type { V1_PureModelContextData } from '../v1/model/context/V1_PureModelContextData.js';
 import type { V1_Connection } from '../v1/model/packageableElements/connection/V1_Connection.js';
 import { V1_ExternalFormatConnection } from '../v1/model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_ExternalFormatConnection.js';
 import { V1_UrlStream } from '../v1/model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_UrlStream.js';
@@ -286,6 +289,18 @@ export class DSL_ExternalFormat_PureProtocolProcessorPlugin
         }
         return undefined;
       },
+    ];
+  }
+
+  override V1_getExtraExecutionInputCollectors(): V1_ExecutionInputCollector[] {
+    return [
+      (
+        graph: PureModel,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter(
+          (element) => element instanceof V1_SchemaSet,
+        ),
     ];
   }
 
