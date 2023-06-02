@@ -15,6 +15,7 @@
  */
 
 import {
+  type Binding,
   type ServiceTest,
   type Service,
   type ValueSpecification,
@@ -23,6 +24,12 @@ import {
   buildLambdaVariableExpressions,
   VariableExpression,
   PureMultiExecution,
+  PackageableElementImplicitReference,
+  isStubbed_RawLambda,
+  InstanceValue,
+  LambdaFunctionInstanceValue,
+  SimpleFunctionExpression,
+  CollectionInstanceValue,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { TestableTestEditorState } from '../../testable/TestableEditorState.js';
@@ -37,6 +44,7 @@ import {
   service_setSerializationFormat,
 } from '../../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
 import {
+  type PlainObject,
   assertErrorThrown,
   deleteEntry,
   filterByType,
@@ -44,10 +52,15 @@ import {
   isNonNullable,
   returnUndefOnError,
   uuid,
-  type PlainObject,
+  getNullableFirstEntry,
+  LogEvent,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore.js';
-import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
+import {
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  generateVariableExpressionMockValue,
+} from '@finos/legend-query-builder';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
 
 export enum SERIALIZATION_FORMAT {
   PURE = 'PURE',
@@ -180,6 +193,7 @@ export class ServiceTestSetupState {
       addServiceTestAssertKeys: action,
       syncWithQuery: action,
       removeParamValueState: action,
+      getBindingWithParamFromQuery: action,
     });
     this.parameterValueStates = this.buildParameterStates();
   }
@@ -219,6 +233,94 @@ export class ServiceTestSetupState {
       value: k,
       label: k,
     }));
+  }
+
+  getBindingWithParamFromQuery(): {
+    binding: Binding;
+    param: string;
+  }[] {
+    const query =
+      this.testState.suiteState.testableState.serviceEditorState.serviceQuery;
+    if (query && !isStubbed_RawLambda(query)) {
+      // safely pass unsupported funtions when building ValueSpecification from Rawlambda
+      try {
+        const valueSpec =
+          this.editorStore.graphManagerState.graphManager.buildValueSpecification(
+            this.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+              query,
+            ),
+            this.editorStore.graphManagerState.graph,
+          );
+
+        if (valueSpec instanceof LambdaFunctionInstanceValue) {
+          return this.getBindingWithParamRecursively(
+            valueSpec.values[0]?.expressionSequence[0],
+          );
+        }
+      } catch (error) {
+        this.editorStore.applicationStore.logService.error(
+          LogEvent.create(
+            LEGEND_STUDIO_APP_EVENT.TEST_DATA_GENERATION__FAILURE,
+          ),
+          error,
+        );
+      }
+    }
+    return [];
+  }
+
+  getBindingWithParamRecursively(expression: ValueSpecification | undefined): {
+    binding: Binding;
+    param: string;
+  }[] {
+    let currentExpression = expression;
+    const res: {
+      binding: Binding;
+      param: string;
+    }[] = [];
+    // use if statement to safely scan service query without breaking the app
+    while (currentExpression instanceof SimpleFunctionExpression) {
+      switch (currentExpression.functionName) {
+        case QUERY_BUILDER_SUPPORTED_FUNCTIONS.INTERNALIZE:
+        case QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_RUNTIME_WITH_MODEL_QUERY_CONNECTION: {
+          if (currentExpression.parametersValues[1] instanceof InstanceValue) {
+            if (
+              currentExpression.parametersValues[1].values[0] instanceof
+                PackageableElementImplicitReference<Binding> &&
+              currentExpression.parametersValues[2] instanceof
+                VariableExpression
+            ) {
+              res.push({
+                binding: currentExpression.parametersValues[1].values[0]
+                  .value as Binding,
+                param: currentExpression.parametersValues[2].name,
+              });
+            }
+          }
+          currentExpression = currentExpression.parametersValues[1];
+          break;
+        }
+        case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FROM:
+          currentExpression = currentExpression.parametersValues[2];
+          break;
+        case QUERY_BUILDER_SUPPORTED_FUNCTIONS.MERGERUNTIMES: {
+          const collection = currentExpression.parametersValues[0];
+          if (collection instanceof CollectionInstanceValue) {
+            collection.values
+              .map((v) => this.getBindingWithParamRecursively(v))
+              .flat()
+              .map((p) => res.push(p));
+          }
+          currentExpression = collection;
+          break;
+        }
+        default:
+          currentExpression = getNullableFirstEntry(
+            currentExpression.parametersValues,
+          );
+      }
+    }
+    return res;
   }
 
   addServiceTestAssertKeys(val: string[]): void {

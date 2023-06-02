@@ -34,14 +34,22 @@ import {
   Dialog,
   RefreshIcon,
   TimesIcon,
+  LongArrowAltDownIcon,
+  LongArrowAltUpIcon,
 } from '@finos/legend-art';
 import {
+  type Binding,
   type ValueSpecification,
+  PrimitiveInstanceValue,
   PrimitiveType,
   PureMultiExecution,
 } from '@finos/legend-graph';
-import { BasicValueSpecificationEditor } from '@finos/legend-query-builder';
 import {
+  BasicValueSpecificationEditor,
+  instanceValue_setValue,
+} from '@finos/legend-query-builder';
+import {
+  ContentType,
   filterByType,
   guaranteeNonNullable,
   prettyCONSTName,
@@ -71,6 +79,10 @@ import {
   TestAssertionEditor,
   TestAssertionItem,
 } from '../../testable/TestableSharedComponents.js';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 export const NewParameterModal = observer(
   (props: { setupState: ServiceTestSetupState; isReadOnly: boolean }) => {
@@ -128,11 +140,36 @@ const ServiceTestParameterEditor = observer(
     isReadOnly: boolean;
     paramState: ServiceValueSpecificationTestParameterState;
     serviceTestState: ServiceTestState;
+    bindingParamPair:
+      | {
+          binding: Binding;
+          param: string;
+        }
+      | undefined;
   }) => {
-    const { serviceTestState, paramState, isReadOnly } = props;
+    const { serviceTestState, paramState, isReadOnly, bindingParamPair } =
+      props;
+    const [isExpanded, setExpanded] = useState(false);
     const setupState = serviceTestState.setupState;
     const paramIsRequired =
       paramState.varExpression.multiplicity.lowerBound > 0;
+    const type = bindingParamPair
+      ? bindingParamPair.binding.contentType
+      : paramState.varExpression.genericType?.value.rawType.name ?? 'unknown';
+
+    const toggleExpandedMode = (): void => setExpanded(!isExpanded);
+    const updateParamValue = (val: string): void => {
+      if (paramState.valueSpec instanceof PrimitiveInstanceValue) {
+        instanceValue_setValue(
+          paramState.valueSpec,
+          val,
+          0,
+          setupState.editorStore.changeDetectionState.observerContext,
+        );
+        paramState.updateValueSpecification(paramState.valueSpec);
+      }
+    };
+
     return (
       <div
         key={paramState.parameterValue.name}
@@ -143,48 +180,132 @@ const ServiceTestParameterEditor = observer(
           <button
             className={clsx('type-tree__node__type__label', {})}
             tabIndex={-1}
-            title={
-              paramState.varExpression.genericType?.value.rawType.name ?? ''
-            }
+            title={type}
           >
-            {paramState.varExpression.genericType?.value.rawType.name ??
-              'unknown'}
+            {type}
           </button>
         </div>
-        <div className="service-test-editor__setup__parameter__value">
-          <BasicValueSpecificationEditor
-            valueSpecification={paramState.valueSpec}
-            setValueSpecification={(val: ValueSpecification): void => {
-              paramState.updateValueSpecification(val);
-            }}
-            graph={setupState.editorStore.graphManagerState.graph}
-            obseverContext={
-              setupState.editorStore.changeDetectionState.observerContext
-            }
-            typeCheckOption={{
-              expectedType:
-                paramState.varExpression.genericType?.value.rawType ??
-                PrimitiveType.STRING,
-            }}
-            className="query-builder__parameters__value__editor"
-            resetValue={(): void => {
-              paramState.resetValueSpec();
-            }}
-          />
-          <div className="service-test-editor__setup__parameter__value__actions">
-            <button
-              className="btn--icon btn--dark btn--sm"
-              disabled={isReadOnly || paramIsRequired}
-              onClick={(): void => setupState.removeParamValueState(paramState)}
-              tabIndex={-1}
-              title={
-                paramIsRequired ? 'Parameter Required' : 'Remove Parameter'
-              }
-            >
-              <TimesIcon />
-            </button>
-          </div>
-        </div>
+        <>
+          {bindingParamPair ? (
+            <div className="service-test-editor__setup__parameter__code-editor">
+              {isExpanded ? (
+                <div className="service-test-editor__setup__parameter__code-editor__container">
+                  <div className="service-test-editor__setup__parameter__code-editor__container__content">
+                    <CodeEditor
+                      key={paramState.uuid}
+                      inputValue={
+                        (paramState.valueSpec as PrimitiveInstanceValue)
+                          .values[0] as string
+                      }
+                      updateInput={updateParamValue}
+                      isReadOnly={isReadOnly}
+                      language={
+                        bindingParamPair.binding.contentType ===
+                        ContentType.APPLICATION_JSON.toString()
+                          ? CODE_EDITOR_LANGUAGE.JSON
+                          : CODE_EDITOR_LANGUAGE.TEXT
+                      }
+                    />
+                  </div>
+                </div>
+              ) : (
+                <textarea
+                  className="panel__content__form__section__textarea value-spec-editor__input"
+                  spellCheck={false}
+                  value={
+                    (paramState.valueSpec as PrimitiveInstanceValue)
+                      .values[0] as string
+                  }
+                  placeholder={
+                    ((paramState.valueSpec as PrimitiveInstanceValue)
+                      .values[0] as string) === ''
+                      ? '(empty)'
+                      : undefined
+                  }
+                  onChange={(event) => {
+                    updateParamValue(event.target.value);
+                  }}
+                />
+              )}
+              <div className="service-test-editor__setup__parameter__value__actions">
+                <button
+                  className={clsx(
+                    'service-test-editor__setup__parameter__code-editor__expand-btn',
+                    {
+                      'service-test-editor__setup__parameter__code-editor__expand-btn--expanded':
+                        isExpanded,
+                    },
+                  )}
+                  onClick={toggleExpandedMode}
+                  tabIndex={-1}
+                  title="Toggle Expand"
+                >
+                  {isExpanded ? (
+                    <LongArrowAltUpIcon />
+                  ) : (
+                    <LongArrowAltDownIcon />
+                  )}
+                </button>
+                <button
+                  className={clsx(
+                    'btn--icon btn--dark btn--sm service-test-editor__setup__parameter__code-editor__expand-btn',
+                    {
+                      'service-test-editor__setup__parameter__code-editor__expand-btn--expanded':
+                        isExpanded,
+                    },
+                  )}
+                  disabled={isReadOnly || paramIsRequired}
+                  onClick={(): void =>
+                    setupState.removeParamValueState(paramState)
+                  }
+                  tabIndex={-1}
+                  title={
+                    paramIsRequired ? 'Parameter Required' : 'Remove Parameter'
+                  }
+                >
+                  <TimesIcon />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="service-test-editor__setup__parameter__value">
+              <BasicValueSpecificationEditor
+                valueSpecification={paramState.valueSpec}
+                setValueSpecification={(val: ValueSpecification): void => {
+                  paramState.updateValueSpecification(val);
+                }}
+                graph={setupState.editorStore.graphManagerState.graph}
+                obseverContext={
+                  setupState.editorStore.changeDetectionState.observerContext
+                }
+                typeCheckOption={{
+                  expectedType:
+                    paramState.varExpression.genericType?.value.rawType ??
+                    PrimitiveType.STRING,
+                }}
+                className="query-builder__parameters__value__editor"
+                resetValue={(): void => {
+                  paramState.resetValueSpec();
+                }}
+              />
+              <div className="service-test-editor__setup__parameter__value__actions">
+                <button
+                  className="btn--icon btn--dark btn--sm"
+                  disabled={isReadOnly || paramIsRequired}
+                  onClick={(): void =>
+                    setupState.removeParamValueState(paramState)
+                  }
+                  tabIndex={-1}
+                  title={
+                    paramIsRequired ? 'Parameter Required' : 'Remove Parameter'
+                  }
+                >
+                  <TimesIcon />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       </div>
     );
   },
@@ -338,6 +459,14 @@ const ServiceTestSetupEditor = observer(
                         isReadOnly={isReadOnly}
                         paramState={paramState}
                         serviceTestState={serviceTestState}
+                        bindingParamPair={
+                          setupState
+                            .getBindingWithParamFromQuery()
+                            .filter(
+                              (pair) =>
+                                pair.param === paramState.parameterValue.name,
+                            )[0]
+                        }
                       />
                     ))}
                 </div>
