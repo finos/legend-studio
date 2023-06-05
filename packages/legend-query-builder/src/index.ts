@@ -42,7 +42,7 @@ export {
   type ServiceExecutionContext,
   ServiceQueryBuilderState,
 } from './stores/workflows/ServiceQueryBuilderState.js';
-
+export { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from './graph/QueryBuilderMetaModelConst.js';
 export { getQueryBuilderGraphManagerExtension } from './graph-manager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 export type { ServiceExecutionAnalysisResult } from './graph-manager/action/analytics/ServiceExecutionAnalysis.js';
 export type { MappingRuntimeCompatibilityAnalysisResult } from './graph-manager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';

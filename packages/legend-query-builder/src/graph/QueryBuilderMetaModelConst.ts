@@ -142,4 +142,11 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   OLAP_AVERAGE_RANK = 'meta::pure::functions::math::olap::averageRank',
   OLAP_DENSE_RANK = 'meta::pure::functions::math::olap::denseRank',
   OLAP_ROW_NUMBER = 'meta::pure::functions::math::olap::rowNumber',
+
+  // External Format
+  INTERNALIZE = 'meta::external::shared::format::functions::internalize',
+  GET_RUNTIME_WITH_MODEL_QUERY_CONNECTION = 'meta::pure::runtime::getRuntimeWithModelQueryConnection',
+  FROM = 'meta::pure::mapping::from',
+  CHECKED = 'meta::pure::dataQuality::checked',
+  MERGERUNTIMES = 'meta::pure::runtime::mergeRuntimes',
 }

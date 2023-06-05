@@ -1100,6 +1100,7 @@
   flex-direction: column;
   height: 100%;
   border-bottom: 0.1rem solid var(--color-dark-grey-200) !important;
+  overflow-y: auto !important;
 
   &__connection {
     width: 100%;
@@ -1202,14 +1203,48 @@
     }
 
     &__parameters {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       padding: 1rem;
     }
 
     &__parameter {
+      &__code-editor {
+        @include flexVCenter;
+
+        &__container {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          padding-right: 1rem;
+
+          &__content {
+            width: 100%;
+            height: 100%;
+          }
+        }
+
+        &__expand-btn {
+          @include flexCenter;
+
+          height: 8rem;
+          width: 2.8rem;
+          background: var(--color-dark-grey-280);
+          border-left: 0.1rem solid var(--color-dark-grey-280);
+          border-right: 0.1rem solid var(--color-dark-grey-280);
+          color: var(--color-light-grey-100);
+          border-radius: 0;
+          cursor: pointer;
+        }
+      }
+
       &__value {
         display: flex;
 
         &__actions {
+          @include flexCenter;
+
           padding-left: 0.5rem;
         }
       }
