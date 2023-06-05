@@ -260,9 +260,7 @@ export class ServiceTestSetupState {
         }
       } catch (error) {
         this.editorStore.applicationStore.logService.error(
-          LogEvent.create(
-            LEGEND_STUDIO_APP_EVENT.TEST_DATA_GENERATION__SETUP__FAILURE,
-          ),
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_SETUP_FAILURE),
           error,
         );
       }

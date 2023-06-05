@@ -87,6 +87,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
 
 export const NewParameterModal = observer(
   (props: { setupState: ServiceTestSetupState; isReadOnly: boolean }) => {
@@ -391,7 +392,10 @@ const ServiceTestSetupEditor = observer(
     }, [setupState]);
 
     return (
-      <div className="panel service-test-editor">
+      <div
+        data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR__SETUP}
+        className="panel service-test-editor"
+      >
         <div className="panel__header">
           <div className="service-test-suite-editor__header__title">
             <div className="service-test-suite-editor__header__title__label">
@@ -460,7 +464,12 @@ const ServiceTestSetupEditor = observer(
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={56}>
-              <div className="service-test-data-editor panel">
+              <div
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR__SETUP__PARAMETERS
+                }
+                className="service-test-data-editor panel"
+              >
                 <div className="service-test-suite-editor__header">
                   <div className="service-test-suite-editor__header__title">
                     <div className="service-test-suite-editor__header__title__label">
@@ -783,7 +792,10 @@ export const ServiceTestsEditor = observer(
     const renameTest = (val: string): void =>
       atomicTest_setId(guaranteeNonNullable(suiteState.testToRename), val);
     return (
-      <div className="panel service-test-editor">
+      <div
+        data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR}
+        className="panel service-test-editor"
+      >
         <div className="service-test-suite-editor__header">
           <div className="service-test-suite-editor__header__title">
             <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--tests">

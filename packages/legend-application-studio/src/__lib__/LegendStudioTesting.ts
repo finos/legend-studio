@@ -52,6 +52,9 @@ export enum LEGEND_STUDIO_TEST_ID {
   NEW_ELEMENT_MODAL = 'new-element-modal', // TODO: revise
 
   SERVICE_REGISTRATION_EDITOR = 'service_registration_editor', // TODO: revise
+  SERVICE_TEST_EDITOR = 'service_test_editor', // TODO: revise
+  SERVICE_TEST_EDITOR__SETUP = 'service_test_editor__setup',
+  SERVICE_TEST_EDITOR__SETUP__PARAMETERS = 'service_test_editor__setup__parameters',
 
   ENUMERATION_MAPPING_EDITOR = 'enumeration-mapping-editor', // TODO: revise
   MAPPING_EXPLORER = 'mapping-explorer', // TODO: revise

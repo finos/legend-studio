@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { test, beforeEach, expect } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import {
-  type RenderResult,
   waitFor,
   fireEvent,
   getByText,
   getByTitle,
   queryByText,
+  getAllByTitle,
 } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -30,19 +30,22 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
 import { TEST_DATA__multiEXecutionService } from './TEST_DATA__ServiceEditor.js';
-import type { EditorStore } from '../../../../../stores/editor/EditorStore.js';
+import TEST_DATA__ExternalFormatServiceEntities from './TEST_DATA__ExternalFormatServiceEntities.json';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
+import { ServiceEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
+import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
+import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
-let renderResult: RenderResult;
-let MOCK__editorStore: EditorStore;
-beforeEach(async () => {
-  MOCK__editorStore = TEST__provideMockedEditorStore();
-  renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
-    entities: TEST_DATA__multiEXecutionService,
-  });
-});
 test(integrationTest('Service Multi Execution Editor'), async () => {
+  const MOCK__editorStore = TEST__provideMockedEditorStore();
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    {
+      entities: TEST_DATA__multiEXecutionService,
+    },
+  );
   MockedMonacoEditorInstance.getValue.mockReturnValue(
     '|testModelStoreTestSuites::model::Doc.all()',
   );
@@ -90,3 +93,59 @@ test(integrationTest('Service Multi Execution Editor'), async () => {
   await waitFor(() => getByText(changeDialog, 'QA'));
   await waitFor(() => getByText(changeDialog, 'Change'));
 });
+
+const pluginManager = LegendStudioPluginManager.create();
+pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
+
+test(
+  integrationTest('Test Enternal Format Service Test Parameter Setup'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      {
+        entities: TEST_DATA__ExternalFormatServiceEntities,
+      },
+    );
+
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+    await TEST__openElementFromExplorerTree(
+      'demo::externalFormat::flatdata::simple::service::FlatdataWithM2MChainingMerged',
+      renderResult,
+    );
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    await waitFor(() => getByText(editorGroup, 'Test'));
+    fireEvent.click(getByText(editorGroup, 'Test'));
+    const serviceTestEditor = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR),
+    );
+    await waitFor(() => getByText(serviceTestEditor, 'Setup'));
+    fireEvent.click(getByText(serviceTestEditor, 'Setup'));
+    const serviceTestSetupEditor = await waitFor(() =>
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR__SETUP__PARAMETERS,
+      ),
+    );
+
+    const bindingParmPairs = MOCK__editorStore.tabManagerState
+      .getCurrentEditorState(ServiceEditorState)
+      .testableState.selectedSuiteState?.testStates[0]?.setupState.getBindingWithParamFromQuery();
+    expect(bindingParmPairs).toHaveLength(2);
+    const firstPair = guaranteeNonNullable(
+      guaranteeNonNullable(bindingParmPairs)[0],
+    );
+    const secondPair = guaranteeNonNullable(
+      guaranteeNonNullable(bindingParmPairs)[1],
+    );
+    expect(firstPair.binding.name).toBe('PersonBinding');
+    expect(firstPair.param).toBe('data');
+    expect(secondPair.binding.name).toBe('PersonBinding');
+    expect(secondPair.param).toBe('data1');
+    fireEvent.click(getByText(serviceTestEditor, 'Setup'));
+    await waitFor(() =>
+      getAllByTitle(serviceTestSetupEditor, 'Open in a popup...'),
+    );
+  },
+);
