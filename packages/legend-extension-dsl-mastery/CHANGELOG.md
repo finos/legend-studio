@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.31
+
 ## 3.0.30
 
 ## 3.0.29

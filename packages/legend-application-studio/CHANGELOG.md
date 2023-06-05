@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 26.1.6
+
+### Patch Changes
+
+- [#2288](https://github.com/finos/legend-studio/pull/2288) [`b70aac127`](https://github.com/finos/legend-studio/commit/b70aac127471cbf250f870e9bdee745f13dc9d67) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Uplift editor for specifying parameter data in service tests ([#2255](https://github.com/finos/legend-studio/issues/2255)).
+
 ## 26.1.5
 
 ### Patch Changes
