@@ -131,6 +131,7 @@ import {
   type V1_RawSQLExecuteInput,
 } from './execution/V1_RawSQLExecuteInput.js';
 import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_RelationalModelGenerationInput } from './generation/V1_RelationalModelGenerationInput.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -936,6 +937,16 @@ export class V1_Engine {
     return V1_deserializePureModelContextData(
       await this.engineServerClient.buildDatabase(
         V1_serializeDatabaseBuilderInput(input, plugins),
+      ),
+    );
+  }
+
+  async buildRelationalMapping(
+    input: V1_RelationalModelGenerationInput,
+  ): Promise<V1_PureModelContextData> {
+    return V1_deserializePureModelContextData(
+      await this.engineServerClient.buildRelationalMapping(
+        V1_RelationalModelGenerationInput.serialization.toJson(input),
       ),
     );
   }

@@ -223,6 +223,7 @@ export * from './graph-manager/action/compilation/CompilationResult.js';
 export * from './graph-manager/action/protocol/ProtocolInfo.js';
 export * from './graph-manager/action/SourceInformationHelper.js';
 export * from './graph-manager/action/generation/DatabaseBuilderInput.js';
+export * from './graph-manager/action/generation/RelationalModelGenerationInput.js';
 export * from './graph-manager/action/generation/GenerationConfigurationDescription.js';
 export { GenerationOutput } from './graph-manager/action/generation/GenerationOutput.js';
 export { ServiceExecutionMode } from './graph-manager/action/service/ServiceExecutionMode.js';

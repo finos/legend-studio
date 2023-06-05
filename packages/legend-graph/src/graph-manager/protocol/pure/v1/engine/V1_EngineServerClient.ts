@@ -71,6 +71,7 @@ import type { V1_FunctionActivatorInfo } from './functionActivator/V1_FunctionAc
 import type { V1_FunctionActivatorError } from './functionActivator/V1_FunctionActivatorError.js';
 import type { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionActivatorInput.js';
 import type { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput.js';
+import type { V1_RelationalModelGenerationInput } from './generation/V1_RelationalModelGenerationInput.js';
 import type { V1_RawSQLExecuteInput } from './execution/V1_RawSQLExecuteInput.js';
 import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
 
@@ -697,6 +698,18 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DATABASE_SCHEMA_EXPLORATION),
       `${this._databaseUtilities()}/schemaExploration`,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.DATABASE_SCHEMA_EXPLORATION,
+      ),
+    );
+
+  buildRelationalMapping = (
+    input: PlainObject<V1_RelationalModelGenerationInput>,
+  ): Promise<PlainObject<V1_PureModelContextData>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DATABASE_SCHEMA_EXPLORATION),
+      `${this._databaseUtilities()}/generateMapping`,
       this.debugPayload(
         input,
         CORE_ENGINE_ACTIVITY_TRACE.DATABASE_SCHEMA_EXPLORATION,

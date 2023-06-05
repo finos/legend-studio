@@ -77,6 +77,8 @@ import { TabManager, type TabState } from '@finos/legend-lego/application';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
 import { getElementIcon } from '../../ElementIconUtils.js';
+import { DatabaseEditorState } from '../../../stores/editor/editor-state/element-editor-state/relationalStore/DatabaseEditorState.js';
+import { DatabaseEditor } from './relationalStore/DatabaseEditor.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -248,6 +250,8 @@ export const EditorGroup = observer(() => {
             currentTabState instanceof PackageableConnectionEditorState
           ) {
             return <PackageableConnectionEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof DatabaseEditorState) {
+            return <DatabaseEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof FileGenerationEditorState) {
             return <FileGenerationEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof PackageableDataEditorState) {

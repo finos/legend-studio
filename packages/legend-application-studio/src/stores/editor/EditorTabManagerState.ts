@@ -59,6 +59,7 @@ import type { EditorStore } from './EditorStore.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import { TabManagerState } from '@finos/legend-lego/application';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
+import { DatabaseEditorState } from './editor-state/element-editor-state/relationalStore/DatabaseEditorState.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
@@ -106,11 +107,9 @@ export class EditorTabManagerState extends TabManagerState {
       return new UMLEditorState(this.editorStore, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
       return new FunctionEditorState(this.editorStore, element);
-    } else if (
-      element instanceof Measure ||
-      element instanceof Database ||
-      element instanceof FlatData
-    ) {
+    } else if (element instanceof Database) {
+      return new DatabaseEditorState(this.editorStore, element);
+    } else if (element instanceof Measure || element instanceof FlatData) {
       return new UnsupportedElementEditorState(this.editorStore, element);
     } else if (element instanceof PackageableRuntime) {
       return new PackageableRuntimeEditorState(this.editorStore, element);

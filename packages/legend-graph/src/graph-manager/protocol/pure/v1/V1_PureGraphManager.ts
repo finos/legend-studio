@@ -154,12 +154,15 @@ import type {
   DatabaseBuilderInput,
   DatabasePattern,
 } from '../../../../graph-manager/action/generation/DatabaseBuilderInput.js';
+import type { RelationalModelGenerationInput } from '../../../../graph-manager/action/generation/RelationalModelGenerationInput.js';
+
 import {
   V1_DatabaseBuilderConfig,
   V1_DatabaseBuilderInput,
   V1_DatabasePattern,
   V1_TargetDatabase,
 } from './engine/generation/V1_DatabaseBuilderInput.js';
+import { V1_RelationalModelGenerationInput } from './engine/generation/V1_RelationalModelGenerationInput.js';
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer.js';
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData.js';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database.js';
@@ -3013,6 +3016,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         dbBuilderInput,
         this.pluginManager.getPureProtocolProcessorPlugins(),
       ),
+    );
+  }
+
+  async buildRelationalMapping(
+    input: RelationalModelGenerationInput,
+    graph: PureModel,
+  ): Promise<Entity[]> {
+    const relationalGenInput = new V1_RelationalModelGenerationInput();
+    relationalGenInput.mappingPackage = input.mappingPackage;
+    relationalGenInput.modelPackage = input.modelPackage;
+    relationalGenInput.model = this.getFullGraphModelContext(
+      graph,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    relationalGenInput.schema = input.schema.name;
+    relationalGenInput.databasePath = input.schema._OWNER.path;
+
+    return this.pureModelContextDataToEntities(
+      await this.engine.buildRelationalMapping(relationalGenInput),
     );
   }
 

@@ -104,6 +104,7 @@ import type {
 import type { FunctionActivatorConfiguration } from './action/functionActivator/FunctionActivatorConfiguration.js';
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
+import type { RelationalModelGenerationInput } from './action/generation/RelationalModelGenerationInput.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -555,6 +556,11 @@ export abstract class AbstractPureGraphManager {
    * See https://github.com/finos/legend-studio/issues/65
    */
   abstract buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]>;
+  abstract buildRelationalMapping(
+    input: RelationalModelGenerationInput,
+    graph: PureModel,
+  ): Promise<Entity[]>;
+
   abstract executeRawSQL(
     connection: RelationalDatabaseConnection,
     sql: string,
