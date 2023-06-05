@@ -34,8 +34,12 @@ import {
   Dialog,
   RefreshIcon,
   TimesIcon,
-  LongArrowAltDownIcon,
-  LongArrowAltUpIcon,
+  FilledWindowMaximizeIcon,
+  Modal,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalTitle,
 } from '@finos/legend-art';
 import {
   type Binding,
@@ -135,6 +139,70 @@ export const NewParameterModal = observer(
   },
 );
 
+export const ExternalFormatParameterEditorModal = observer(
+  (props: {
+    paramState: ServiceValueSpecificationTestParameterState;
+    isReadOnly: boolean;
+    onClose: () => void;
+    updateParamValue: (val: string) => void;
+    bindingParamPair: {
+      binding: Binding;
+      param: string;
+    };
+  }) => {
+    const {
+      paramState,
+      isReadOnly,
+      onClose,
+      updateParamValue,
+      bindingParamPair,
+    } = props;
+    return (
+      <Dialog
+        open={true}
+        onClose={onClose}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal
+          darkMode={true}
+          className={clsx('editor-modal lambda-editor__popup__modal')}
+        >
+          <ModalHeader>
+            <ModalTitle title="Edit Parameter Value" />
+          </ModalHeader>
+          <ModalBody>
+            <div className="service-test-editor__setup__parameter__code-editor__container">
+              <div className="service-test-editor__setup__parameter__code-editor__container__content">
+                <CodeEditor
+                  key={paramState.uuid}
+                  inputValue={
+                    (paramState.valueSpec as PrimitiveInstanceValue)
+                      .values[0] as string
+                  }
+                  updateInput={updateParamValue}
+                  isReadOnly={isReadOnly}
+                  language={
+                    bindingParamPair.binding.contentType ===
+                    ContentType.APPLICATION_JSON.toString()
+                      ? CODE_EDITOR_LANGUAGE.JSON
+                      : CODE_EDITOR_LANGUAGE.TEXT
+                  }
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <button className="btn btn--dark" onClick={onClose}>
+              Close
+            </button>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 const ServiceTestParameterEditor = observer(
   (props: {
     isReadOnly: boolean;
@@ -149,7 +217,7 @@ const ServiceTestParameterEditor = observer(
   }) => {
     const { serviceTestState, paramState, isReadOnly, bindingParamPair } =
       props;
-    const [isExpanded, setExpanded] = useState(false);
+    const [showPopUp, setShowPopUp] = useState(false);
     const setupState = serviceTestState.setupState;
     const paramIsRequired =
       paramState.varExpression.multiplicity.lowerBound > 0;
@@ -157,7 +225,8 @@ const ServiceTestParameterEditor = observer(
       ? bindingParamPair.binding.contentType
       : paramState.varExpression.genericType?.value.rawType.name ?? 'unknown';
 
-    const toggleExpandedMode = (): void => setExpanded(!isExpanded);
+    const openInPopUp = (): void => setShowPopUp(!showPopUp);
+    const closePopUp = (): void => setShowPopUp(false);
     const updateParamValue = (val: string): void => {
       if (paramState.valueSpec instanceof PrimitiveInstanceValue) {
         instanceValue_setValue(
@@ -188,71 +257,46 @@ const ServiceTestParameterEditor = observer(
         <>
           {bindingParamPair ? (
             <div className="service-test-editor__setup__parameter__code-editor">
-              {isExpanded ? (
-                <div className="service-test-editor__setup__parameter__code-editor__container">
-                  <div className="service-test-editor__setup__parameter__code-editor__container__content">
-                    <CodeEditor
-                      key={paramState.uuid}
-                      inputValue={
-                        (paramState.valueSpec as PrimitiveInstanceValue)
-                          .values[0] as string
-                      }
-                      updateInput={updateParamValue}
-                      isReadOnly={isReadOnly}
-                      language={
-                        bindingParamPair.binding.contentType ===
-                        ContentType.APPLICATION_JSON.toString()
-                          ? CODE_EDITOR_LANGUAGE.JSON
-                          : CODE_EDITOR_LANGUAGE.TEXT
-                      }
-                    />
-                  </div>
-                </div>
-              ) : (
-                <textarea
-                  className="panel__content__form__section__textarea value-spec-editor__input"
-                  spellCheck={false}
-                  value={
-                    (paramState.valueSpec as PrimitiveInstanceValue)
-                      .values[0] as string
-                  }
-                  placeholder={
-                    ((paramState.valueSpec as PrimitiveInstanceValue)
-                      .values[0] as string) === ''
-                      ? '(empty)'
-                      : undefined
-                  }
-                  onChange={(event) => {
-                    updateParamValue(event.target.value);
-                  }}
+              <textarea
+                className="panel__content__form__section__textarea value-spec-editor__input"
+                spellCheck={false}
+                value={
+                  (paramState.valueSpec as PrimitiveInstanceValue)
+                    .values[0] as string
+                }
+                placeholder={
+                  ((paramState.valueSpec as PrimitiveInstanceValue)
+                    .values[0] as string) === ''
+                    ? '(empty)'
+                    : undefined
+                }
+                onChange={(event) => {
+                  updateParamValue(event.target.value);
+                }}
+              />
+              {showPopUp && (
+                <ExternalFormatParameterEditorModal
+                  paramState={paramState}
+                  isReadOnly={isReadOnly}
+                  onClose={closePopUp}
+                  updateParamValue={updateParamValue}
+                  bindingParamPair={bindingParamPair}
                 />
               )}
               <div className="service-test-editor__setup__parameter__value__actions">
                 <button
                   className={clsx(
                     'service-test-editor__setup__parameter__code-editor__expand-btn',
-                    {
-                      'service-test-editor__setup__parameter__code-editor__expand-btn--expanded':
-                        isExpanded,
-                    },
                   )}
-                  onClick={toggleExpandedMode}
+                  onClick={openInPopUp}
                   tabIndex={-1}
-                  title="Toggle Expand"
+                  title="Open in a popup..."
                 >
-                  {isExpanded ? (
-                    <LongArrowAltUpIcon />
-                  ) : (
-                    <LongArrowAltDownIcon />
-                  )}
+                  <FilledWindowMaximizeIcon />
                 </button>
                 <button
                   className={clsx(
                     'btn--icon btn--dark btn--sm service-test-editor__setup__parameter__code-editor__expand-btn',
-                    {
-                      'service-test-editor__setup__parameter__code-editor__expand-btn--expanded':
-                        isExpanded,
-                    },
                   )}
                   disabled={isReadOnly || paramIsRequired}
                   onClick={(): void =>
@@ -459,14 +503,12 @@ const ServiceTestSetupEditor = observer(
                         isReadOnly={isReadOnly}
                         paramState={paramState}
                         serviceTestState={serviceTestState}
-                        bindingParamPair={
-                          setupState
-                            .getBindingWithParamFromQuery()
-                            .filter(
-                              (pair) =>
-                                pair.param === paramState.parameterValue.name,
-                            )[0]
-                        }
+                        bindingParamPair={setupState
+                          .getBindingWithParamFromQuery()
+                          .find(
+                            (pair) =>
+                              pair.param === paramState.parameterValue.name,
+                          )}
                       />
                     ))}
                 </div>

@@ -25,6 +25,7 @@ import {
   VariableExpression,
   PureMultiExecution,
   PackageableElementImplicitReference,
+  matchFunctionName,
   isStubbed_RawLambda,
   InstanceValue,
   LambdaFunctionInstanceValue,
@@ -280,44 +281,55 @@ export class ServiceTestSetupState {
     }[] = [];
     // use if statement to safely scan service query without breaking the app
     while (currentExpression instanceof SimpleFunctionExpression) {
-      switch (currentExpression.functionName) {
-        case QUERY_BUILDER_SUPPORTED_FUNCTIONS.INTERNALIZE:
-        case QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_RUNTIME_WITH_MODEL_QUERY_CONNECTION: {
-          if (currentExpression.parametersValues[1] instanceof InstanceValue) {
-            if (
-              currentExpression.parametersValues[1].values[0] instanceof
-                PackageableElementImplicitReference<Binding> &&
-              currentExpression.parametersValues[2] instanceof
-                VariableExpression
-            ) {
-              res.push({
-                binding: currentExpression.parametersValues[1].values[0]
-                  .value as Binding,
-                param: currentExpression.parametersValues[2].name,
-              });
-            }
+      if (
+        matchFunctionName(
+          currentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.INTERNALIZE,
+        ) ||
+        matchFunctionName(
+          currentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_RUNTIME_WITH_MODEL_QUERY_CONNECTION,
+        )
+      ) {
+        if (currentExpression.parametersValues[1] instanceof InstanceValue) {
+          if (
+            currentExpression.parametersValues[1].values[0] instanceof
+              PackageableElementImplicitReference<Binding> &&
+            currentExpression.parametersValues[2] instanceof VariableExpression
+          ) {
+            res.push({
+              binding: currentExpression.parametersValues[1].values[0]
+                .value as Binding,
+              param: currentExpression.parametersValues[2].name,
+            });
           }
-          currentExpression = currentExpression.parametersValues[1];
-          break;
         }
-        case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FROM:
-          currentExpression = currentExpression.parametersValues[2];
-          break;
-        case QUERY_BUILDER_SUPPORTED_FUNCTIONS.MERGERUNTIMES: {
-          const collection = currentExpression.parametersValues[0];
-          if (collection instanceof CollectionInstanceValue) {
-            collection.values
-              .map((v) => this.getBindingWithParamRecursively(v))
-              .flat()
-              .map((p) => res.push(p));
-          }
-          currentExpression = collection;
-          break;
+        currentExpression = currentExpression.parametersValues[1];
+      } else if (
+        matchFunctionName(
+          currentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FROM,
+        )
+      ) {
+        currentExpression = currentExpression.parametersValues[2];
+      } else if (
+        matchFunctionName(
+          currentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.MERGERUNTIMES,
+        )
+      ) {
+        const collection = currentExpression.parametersValues[0];
+        if (collection instanceof CollectionInstanceValue) {
+          collection.values
+            .map((v) => this.getBindingWithParamRecursively(v))
+            .flat()
+            .map((p) => res.push(p));
         }
-        default:
-          currentExpression = getNullableFirstEntry(
-            currentExpression.parametersValues,
-          );
+        currentExpression = collection;
+      } else {
+        currentExpression = getNullableFirstEntry(
+          currentExpression.parametersValues,
+        );
       }
     }
     return res;
