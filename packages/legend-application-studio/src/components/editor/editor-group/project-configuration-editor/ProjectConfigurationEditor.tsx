@@ -33,6 +33,9 @@ import {
   ExclamationTriangleIcon,
   PanelFormSection,
   PanelListItem,
+  Button,
+  PencilEditIcon,
+  PanelDivider,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -246,10 +249,37 @@ const PlatformDependencyViewer = observer(
   },
 );
 
+const PlatformDependencyEditor = observer(
+  (props: { platform: PlatformConfiguration }) => {
+    const { platform } = props;
+
+    return (
+      <div className="platform-configurations-editor__dependency">
+        <div className="platform-configurations-editor__dependency__label">
+          <div className="platform-configurations-editor__dependency__label__status"></div>
+          <div className="platform-configurations-editor__dependency__label__text">
+            {platform.name}
+          </div>
+          <input
+            className="input input--dark"
+            onChange={(event) => {
+              platform.setVersion(event.target.value);
+              // projectConfig.setPlatformConfigurations([platform]);
+            }}
+            value={platform.version}
+            spellCheck={false}
+          />
+        </div>
+      </div>
+    );
+  },
+);
+
 const ProjectPlatformVersionEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
     const { projectConfig, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
 
     const convertPlatformtoPlatformConfiguration = (
       platforms: Platform[] | undefined,
@@ -297,6 +327,34 @@ const ProjectPlatformVersionEditor = observer(
       }
     };
 
+    const toggleManualOverwrite = (): void => {
+      if (!editorStore.projectConfigurationEditorState.manualOverwrite) {
+        applicationStore.alertService.setActionAlertInfo({
+          message:
+            'Clicking this will allow you to not just override and freeze platform versions but to input custom platform versions you would like manually and is not usually recommended except to temporarily unblock your project',
+          prompt: 'Do you want to proceed?',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Continue',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void =>
+                editorStore.projectConfigurationEditorState.setManualOverwrite(
+                  true,
+                ),
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      } else {
+        editorStore.projectConfigurationEditorState.setManualOverwrite(false);
+      }
+    };
+
     return (
       <Panel>
         <PanelForm>
@@ -339,35 +397,108 @@ const ProjectPlatformVersionEditor = observer(
                   </div>
                 </div>
               </div>
-              {platformConfigurations && !isUpToDate && (
-                <div className="platform-configurations-editor__dependencies__header__right">
-                  <button
-                    className="btn btn--dark"
-                    tabIndex={-1}
-                    onClick={updateLatestToLatestVersion}
+
+              <div className="platform-configurations-editor__dependencies__header__right">
+                <PanelListItem>
+                  {platformConfigurations &&
+                    !isUpToDate &&
+                    !editorStore.projectConfigurationEditorState
+                      .manualOverwrite && (
+                      <div>
+                        <button
+                          className="btn btn--dark"
+                          tabIndex={-1}
+                          onClick={updateLatestToLatestVersion}
+                        >
+                          Update to the current latest platform version
+                        </button>
+                      </div>
+                    )}
+                  <Button
+                    className={clsx(
+                      'project-configuration-editor__manual-btn',
+                      {
+                        'project-configuration-editor__manual-btn--active':
+                          editorStore.projectConfigurationEditorState
+                            .manualOverwrite,
+                      },
+                    )}
+                    title="Manually overwrite platform configurations"
+                    disabled={isReadOnly}
+                    onClick={toggleManualOverwrite}
                   >
-                    Update to the current latest platform version
-                  </button>
-                </div>
-              )}
+                    <PencilEditIcon />
+                  </Button>
+                </PanelListItem>
+              </div>
             </div>
             <div className="platform-configurations-editor__dependencies__content">
-              {!platformConfigurations &&
-                defaultPlatforms?.map((p) => (
-                  <PlatformDependencyViewer
-                    key={p.name}
-                    isDefault={true}
-                    platform={p}
-                  />
-                ))}
-              {platformConfigurations?.map((p) => (
-                <PlatformDependencyViewer
-                  key={p.name}
-                  platform={p}
-                  isDefault={false}
-                  isLatestVersion={isUpToDate}
-                />
-              ))}
+              {editorStore.projectConfigurationEditorState.manualOverwrite ? (
+                <>
+                  {!platformConfigurations &&
+                    defaultPlatforms?.map((p) => (
+                      <PlatformDependencyEditor key={p.name} platform={p} />
+                    ))}
+                  {platformConfigurations?.map((p) => (
+                    <PlatformDependencyEditor key={p.name} platform={p} />
+                  ))}
+
+                  <PanelDivider />
+                  <PanelListItem>
+                    <Button
+                      className="project-configuration-editor__manual-overwrite-btn"
+                      disabled={isReadOnly}
+                      onClick={() => {
+                        editorStore.projectConfigurationEditorState.setManualOverwrite(
+                          false,
+                        );
+                      }}
+                      title="Cancel manual override"
+                      text="Cancel"
+                    />
+
+                    <Button
+                      className="project-configuration-editor__manual-overwrite-btn"
+                      disabled={isReadOnly}
+                      onClick={() => {
+                        if (!platformConfigurations) {
+                          projectConfig.setPlatformConfigurations(
+                            defaultPlatforms,
+                          );
+                        } else {
+                          projectConfig.setPlatformConfigurations(
+                            platformConfigurations,
+                          );
+                        }
+
+                        editorStore.projectConfigurationEditorState.setManualOverwrite(
+                          false,
+                        );
+                      }}
+                      text="Manual override"
+                    />
+                  </PanelListItem>
+                </>
+              ) : (
+                <>
+                  {!platformConfigurations &&
+                    defaultPlatforms?.map((p) => (
+                      <PlatformDependencyViewer
+                        key={p.name}
+                        isDefault={true}
+                        platform={p}
+                      />
+                    ))}
+                  {platformConfigurations?.map((p) => (
+                    <PlatformDependencyViewer
+                      key={p.name}
+                      platform={p}
+                      isDefault={false}
+                      isLatestVersion={isUpToDate}
+                    />
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </PanelForm>
