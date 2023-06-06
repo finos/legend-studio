@@ -45,7 +45,6 @@ import {
   MoreVerticalIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
-  PanelFormSection,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -1099,16 +1098,17 @@ export const QueryBuilderFilterPanel = observer(
             )}
 
             {isPotentiallyDragging && !filterState.isEmpty && (
-              <PanelFormSection>
-                <div
-                  className={clsx('dnd__entry-potential__dropzone__indicator', {
+              <div
+                className={clsx(
+                  'dnd__entry-potential__dropzone__indicator dnd__entry-potential__dropzone__indicator--tall',
+                  {
                     'dnd__entry-potential__dropzone__indicator--dragover':
                       isDragOver,
-                  })}
-                >
-                  Add filter to main group
-                </div>
-              </PanelFormSection>
+                  },
+                )}
+              >
+                Add filter to main group
+              </div>
             )}
           </PanelDropZone>
         </PanelContent>

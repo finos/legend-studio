@@ -176,7 +176,7 @@ export const BlankPanelPlaceholder: React.FC<{
         className={clsx('blank-panel-placeholder', {
           'blank-panel-placeholder--no-click': !onClick || disabled,
           'blank-panel-placeholder--invisible': !showPlaceholder,
-          'blank-panel-placeholder--draggable--active': draggableActive,
+          'draggable--active': draggableActive,
         })}
         title={tooltipText}
         onClick={handleClick}
