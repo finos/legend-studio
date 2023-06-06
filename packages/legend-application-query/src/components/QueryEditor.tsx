@@ -83,6 +83,7 @@ import {
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
 import { debounce } from '@finos/legend-shared';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
+import { QUERY_EDITOR_TEST_ID } from '../__lib__/LegendQueryTesting.js';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -288,10 +289,18 @@ const QueryEditorExistingQueryHeader = observer(
     );
 
     useEffect(() => {
+      if (isRenaming) {
+        existingEditorStore.setExistingQueryName(undefined);
+      }
       const searchText = queryRenameName;
       debouncedLoadQueries.cancel();
       debouncedLoadQueries(searchText);
-    }, [queryRenameName, debouncedLoadQueries]);
+    }, [
+      queryRenameName,
+      debouncedLoadQueries,
+      isRenaming,
+      existingEditorStore,
+    ]);
 
     const isExistingQueryName =
       existingEditorStore.existingQueryName &&
@@ -326,7 +335,7 @@ const QueryEditorExistingQueryHeader = observer(
                 {isExistingQueryName && (
                   <div
                     className="input--with-validation__caution"
-                    title={`Query with name '${isExistingQueryName}' already exists`}
+                    title={`Query with name '${queryRenameName}' already exists`}
                   >
                     <ExclamationTriangleIcon className="input--with-validation__caution__indicator" />
                   </div>
@@ -457,7 +466,10 @@ const QueryEditorHeaderContent = observer(
       ));
 
     return (
-      <div className="query-editor__header__content">
+      <div
+        className="query-editor__header__content"
+        data-testid={QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS}
+      >
         {renderQueryTitle()}
 
         <div className="query-editor__header__actions">

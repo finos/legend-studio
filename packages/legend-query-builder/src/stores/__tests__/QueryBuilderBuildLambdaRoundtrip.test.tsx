@@ -32,6 +32,8 @@ import {
   TEST_DATA__filterQueryWithSubtypeWithoutExists,
   TEST_DATA__filterQueryWithSubtypeWithExists,
   TEST_DATA__filterQueryWithSubtypeWithExistsChain,
+  TEST_DATA__simpleProjectionWithOutPreviewLimit,
+  TEST_DATA__simpleProjectionWithPreviewLimit,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
@@ -129,6 +131,7 @@ import {
   TEST_DATA__simpleDerivationWithCalendarAggregation,
   TEST_DATA__simpleProjectionWithCalendarAggregation,
 } from './TEST_DATA__QueryBuilder_Calendar.js';
+import { DEFAULT_LIMIT } from '../QueryBuilderResultState.js';
 
 type RoundtripTestCase = [
   string,
@@ -661,6 +664,63 @@ describe(
           );
         expect(lambda).toEqual(jsonQuery);
       },
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder lambda processing roundtrip test with exporting result',
+  ),
+
+  async () => {
+    const context = projectionCtx;
+    const { entities } = context;
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(graphManagerState, entities);
+    const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
+      applicationStore,
+
+      graphManagerState,
+    );
+    queryBuilderState.resultState.setPreviewLimit(DEFAULT_LIMIT);
+    const rawLambda = TEST_DATA__simpleProjectionWithOutPreviewLimit;
+
+    // do the check using input and output lambda
+    queryBuilderState.initializeWithQuery(
+      new RawLambda(rawLambda.parameters, rawLambda.body),
+    );
+
+    expect(queryBuilderState.isQuerySupported).toBe(true);
+    const exportedQuery = queryBuilderState.resultState.buildExecutionRawLambda(
+      {
+        isExportingResult: true,
+      },
+    );
+    const unexportedQuery =
+      queryBuilderState.resultState.buildExecutionRawLambda({
+        isExportingResult: false,
+      });
+    const queryTwo = queryBuilderState.buildQuery();
+    expect(exportedQuery).toEqual(queryTwo);
+    expect(TEST_DATA__simpleProjectionWithOutPreviewLimit).toEqual(
+      exportedQuery,
+    );
+    expect(TEST_DATA__simpleProjectionWithPreviewLimit).toEqual(
+      unexportedQuery,
     );
   },
 );

@@ -14,8 +14,214 @@
  * limitations under the License.
  */
 
+import { DEFAULT_LIMIT } from '../QueryBuilderResultState.js';
+
 export const TEST_DATA__simpleProjection = {
   _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  property: 'firstName',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  property: 'lastName',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'string',
+              value: 'Edited First Name',
+            },
+            {
+              _type: 'string',
+              value: 'Last Name',
+            },
+          ],
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'String',
+      multiplicity: { lowerBound: 0, upperBound: 1 },
+      name: 'var_1',
+    },
+  ],
+};
+
+export const TEST_DATA__simpleProjectionWithPreviewLimit = {
+  body: [
+    {
+      _type: 'func',
+      function: 'take',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::pure::tests::model::simple::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      property: 'firstName',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      property: 'lastName',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+            },
+            {
+              _type: 'collection',
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Edited First Name',
+                },
+                {
+                  _type: 'string',
+                  value: 'Last Name',
+                },
+              ],
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+            },
+          ],
+        },
+        {
+          _type: 'integer',
+          value: DEFAULT_LIMIT,
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'String',
+      multiplicity: { lowerBound: 0, upperBound: 1 },
+      name: 'var_1',
+    },
+  ],
+};
+
+export const TEST_DATA__simpleProjectionWithOutPreviewLimit = {
   body: [
     {
       _type: 'func',

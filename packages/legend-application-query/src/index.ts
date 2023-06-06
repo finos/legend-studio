@@ -42,7 +42,7 @@ export {
   ExistingQueryEditorStore,
   type QueryPersistConfiguration,
 } from './stores/QueryEditorStore.js';
-
+export { QUERY_EDITOR_TEST_ID } from './__lib__/LegendQueryTesting.js';
 // components
 export {
   QueryEditorStoreContext,
