@@ -264,7 +264,6 @@ const PlatformDependencyEditor = observer(
             className="input input--dark"
             onChange={(event) => {
               platform.setVersion(event.target.value);
-              // projectConfig.setPlatformConfigurations([platform]);
             }}
             value={platform.version}
             spellCheck={false}
