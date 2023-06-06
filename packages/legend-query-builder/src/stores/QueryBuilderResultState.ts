@@ -49,7 +49,7 @@ import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHel
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 
-const DEFAULT_LIMIT = 1000;
+export const DEFAULT_LIMIT = 1000;
 
 export interface ExportDataInfo {
   contentType: ContentType;

@@ -44,6 +44,7 @@ import { LegendQueryFrameworkProvider } from '../LegendQueryFrameworkProvider.js
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 
 const TEST_QUERY_ID = 'test-query-id';
+export const TEST_QUERY_NAME = 'MyTestQuery';
 
 export const TEST__provideMockedQueryEditorStore = (customization?: {
   mock?: ExistingQueryEditorStore;
@@ -95,7 +96,7 @@ export const TEST__setUpQueryEditor = async (
   };
 
   const lightQuery = new LightQuery();
-  lightQuery.name = 'MyTestQuery';
+  lightQuery.name = TEST_QUERY_NAME;
   lightQuery.id = TEST_QUERY_ID;
   lightQuery.versionId = '0.0.0';
   lightQuery.groupId = 'test.group';
@@ -104,6 +105,13 @@ export const TEST__setUpQueryEditor = async (
   lightQuery.isCurrentUserQuery = true;
 
   const graphManagerState = MOCK__editorStore.graphManagerState;
+
+  await graphManagerState.graphManager.initialize({
+    env: 'test',
+    tabSize: 2,
+    clientConfig: {},
+  });
+
   await graphManagerState.initializeSystem();
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,
@@ -151,6 +159,7 @@ export const TEST__setUpQueryEditor = async (
       ),
     );
   }
+
   MOCK__editorStore.buildGraph = createMock();
   graphManagerState.graphManager.initialize = createMock();
 
