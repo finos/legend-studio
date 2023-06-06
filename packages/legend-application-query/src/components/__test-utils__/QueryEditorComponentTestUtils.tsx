@@ -82,7 +82,6 @@ export const TEST__setUpQueryEditor = async (
   mappingPath: string,
   runtimePath: string,
   rawMappingModelCoverageAnalysisResult?: RawMappingModelCoverageAnalysisResult,
-  options?: { existingQueryName?: boolean },
 ): Promise<{
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
@@ -160,9 +159,7 @@ export const TEST__setUpQueryEditor = async (
       ),
     );
   }
-  if (options?.existingQueryName) {
-    MOCK__editorStore.setExistingQueryName(TEST_QUERY_NAME);
-  }
+
   MOCK__editorStore.buildGraph = createMock();
   graphManagerState.graphManager.initialize = createMock();
 

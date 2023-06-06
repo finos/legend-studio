@@ -50,15 +50,17 @@ test(
     'Query state has normal header actions for existing query name',
   ),
   async () => {
+    const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore();
+    mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
     const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
-      TEST__provideMockedQueryEditorStore(),
+      mockedQueryEditorStore,
       TEST_DATA__ResultState_entities,
       stub_RawLambda(),
       'execution::RelationalMapping',
       'execution::Runtime',
       TEST_DATA__modelCoverageAnalysisResult,
-      { existingQueryName: true },
     );
+
     const _class = 'model::Firm';
     const mapping = 'execution::RelationalMapping';
     const runtime = 'execution::Runtime';
