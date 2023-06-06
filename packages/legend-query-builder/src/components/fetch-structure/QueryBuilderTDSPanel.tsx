@@ -937,8 +937,8 @@ export const QueryBuilderTDSPanel = observer(
       [handleDrop],
     );
 
-    const { isPotentiallyDragging } = useDragLayer((monitor) => ({
-      isPotentiallyDragging:
+    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+      showDroppableSuggestion:
         monitor.isDragging() &&
         [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -989,13 +989,13 @@ export const QueryBuilderTDSPanel = observer(
         <div className="query-builder__projection__content">
           <PanelDropZone
             isDragOver={isDragOver}
-            draggableActive={isPotentiallyDragging}
+            showDroppableSuggestion={showDroppableSuggestion}
             dropTargetConnector={dropTargetConnector}
           >
             {!projectionColumns.length && (
               <BlankPanelPlaceholder
                 text="Add a projection column"
-                draggableActive={isPotentiallyDragging}
+                showDroppableSuggestion={showDroppableSuggestion}
                 tooltipText="Drag and drop properties here"
               />
             )}

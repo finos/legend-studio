@@ -154,6 +154,10 @@
     }
   }
 
+  &__droppable--full {
+    width: 100%;
+  }
+
   &__blank-node {
     @include flexCenter;
 
@@ -165,9 +169,17 @@
     color: var(--color-dark-grey-300);
     height: 2.8rem;
 
-    &--potential__dropzone {
+    &--droppable {
       border: 0.2rem dashed var(--color-dark-grey-400);
       color: var(--color-dark-grey-300);
+
+      &--tall {
+        margin: 1rem;
+        padding: 1rem;
+        text-align: center;
+        border: 0.2rem dashed var(--color-dark-grey-400);
+        color: var(--color-dark-grey-400);
+      }
     }
   }
 

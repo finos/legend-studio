@@ -537,13 +537,13 @@
     }
   }
 
-  .dnd__entry-potential__dropzone__indicator {
+  .dnd__entry--droppable__indicator {
     border-color: var(--color-light-grey-250);
     color: var(--color-light-grey-400);
     background: var(--color-white);
   }
 
-  .dnd__entry-potential__dropzone__indicator--dragover {
+  .dnd__entry--droppable__indicator--dragover {
     background: var(--color-dark-blue-shade-100);
   }
 

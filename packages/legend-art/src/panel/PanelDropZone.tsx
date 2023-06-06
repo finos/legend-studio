@@ -29,31 +29,30 @@ import { VerticalDragHandleIcon } from '../icon/Icon.js';
 export const PanelDropZone: React.FC<{
   children: React.ReactNode;
   isDragOver: boolean;
+  className?: string | undefined;
   dropTargetConnector: ConnectDropTarget;
-  className?: string;
-  draggableActive?: boolean | undefined;
+  showDroppableSuggestion?: boolean | undefined;
 }> = (props) => {
   const {
     children,
-    isDragOver,
-    draggableActive,
-    dropTargetConnector,
     className,
+    isDragOver,
+    showDroppableSuggestion,
+    dropTargetConnector,
   } = props;
   return (
-    <div
-      className={clsx(
-        'dnd__dropzone',
-        {
-          'draggable--active': draggableActive,
-        },
-        className,
+    <>
+      {showDroppableSuggestion && (
+        <div
+          className={clsx('dnd__dropzone--droppable', className)}
+          ref={dropTargetConnector}
+        ></div>
       )}
-      ref={dropTargetConnector}
-    >
-      {isDragOver && <div className="panel__dnd__dropzone__overlay" />}
-      <div className="panel__dnd__dropzone__content">{children}</div>
-    </div>
+      <div className="dnd__dropzone">
+        {isDragOver && <div className="panel__dnd__dropzone__overlay" />}
+        <div className="panel__dnd__dropzone__content">{children}</div>
+      </div>
+    </>
   );
 };
 

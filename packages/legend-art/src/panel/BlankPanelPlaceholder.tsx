@@ -68,7 +68,12 @@ export const BlankPanelPlaceholder: React.FC<{
    * corresponding to the drag-over entry, signaling dropability.
    */
   isDropZoneActive?: boolean | undefined;
-  draggableActive?: boolean | undefined;
+  /**
+   * This flag is used to show users as soon as they click and hold an item
+   * where they can drop that item on, and indicates to them that the place
+   * is droppable
+   */
+  showDroppableSuggestion?: boolean | undefined;
   disabled?: boolean | undefined;
 }> = (props) => {
   const {
@@ -79,7 +84,7 @@ export const BlankPanelPlaceholder: React.FC<{
     disabled,
     onClick,
     isDropZoneActive,
-    draggableActive,
+    showDroppableSuggestion,
   } = props;
   // if no action is provided, it means the panel support DnD
   const clickActionIcon = !onClick ? (
@@ -176,7 +181,7 @@ export const BlankPanelPlaceholder: React.FC<{
         className={clsx('blank-panel-placeholder', {
           'blank-panel-placeholder--no-click': !onClick || disabled,
           'blank-panel-placeholder--invisible': !showPlaceholder,
-          'draggable--active': draggableActive,
+          'dnd__dropzone--droppable': showDroppableSuggestion,
         })}
         title={tooltipText}
         onClick={handleClick}
