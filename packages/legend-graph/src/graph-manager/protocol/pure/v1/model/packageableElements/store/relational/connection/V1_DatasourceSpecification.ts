@@ -87,6 +87,7 @@ export class V1_SnowflakeDatasourceSpecification
   databaseName!: string;
   cloudType?: string | undefined;
   quotedIdentifiersIgnoreCase?: boolean | undefined;
+  enableQueryTags?: boolean | undefined;
   proxyHost?: string | undefined;
   proxyPort?: string | undefined;
   nonProxyHosts?: string | undefined;
@@ -109,6 +110,7 @@ export class V1_SnowflakeDatasourceSpecification
       this.accountType ?? '',
       this.role ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
+      this.enableQueryTags?.toString() ?? '',
     ]);
   }
 }

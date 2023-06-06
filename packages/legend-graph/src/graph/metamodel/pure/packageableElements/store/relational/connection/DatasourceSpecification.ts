@@ -140,6 +140,7 @@ export class SnowflakeDatasourceSpecification
   organization?: string | undefined;
   accountType?: string | undefined;
   role?: string | undefined;
+  enableQueryTags: any;
 
   constructor(
     accountName: string,
@@ -169,6 +170,7 @@ export class SnowflakeDatasourceSpecification
       this.accountType ?? '',
       this.role ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
+      this.enableQueryTags?.toString() ?? '',
     ]);
   }
 }

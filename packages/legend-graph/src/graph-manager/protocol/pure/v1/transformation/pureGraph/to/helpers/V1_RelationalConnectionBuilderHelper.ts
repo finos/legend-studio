@@ -173,6 +173,7 @@ export const V1_buildDatasourceSpecification = (
     snowflakeSpec.cloudType = protocol.cloudType;
     snowflakeSpec.quotedIdentifiersIgnoreCase =
       protocol.quotedIdentifiersIgnoreCase;
+    snowflakeSpec.enableQueryTags = protocol.enableQueryTags;
     snowflakeSpec.proxyHost = protocol.proxyHost;
     snowflakeSpec.proxyPort = protocol.proxyPort;
     snowflakeSpec.nonProxyHosts = protocol.nonProxyHosts;
