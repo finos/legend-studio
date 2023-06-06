@@ -2334,7 +2334,7 @@ __metadata:
     "@types/react-dom": 18.2.4
     cross-env: 7.0.3
     eslint: 8.41.0
-    fast-xml-parser: 4.2.2
+    fast-xml-parser: 4.2.4
     jest: 29.5.0
     mobx: 6.9.0
     mobx-react-lite: 3.4.3
@@ -7938,14 +7938,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:4.2.2":
-  version: 4.2.2
-  resolution: "fast-xml-parser@npm:4.2.2"
+"fast-xml-parser@npm:4.2.4":
+  version: 4.2.4
+  resolution: "fast-xml-parser@npm:4.2.4"
   dependencies:
     strnum: ^1.0.5
   bin:
     fxparser: src/cli/cli.js
-  checksum: f0e687927ddc11b2ba9e434d8bf77ef759b6692639dd2dd731e2f30201319e7c70dec08a103dd67a1af7a27f176246502d9d0f5325b5b5b99ab49665fa876857
+  checksum: d3b4d0c0152c09f98def792769fca6bb3fa1d597f9745d9564451c239089bd86bdf573c9263b4944860028cb7edb81752d64399c1aff8b87c9225ecef96905f7
   languageName: node
   linkType: hard
 
