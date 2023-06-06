@@ -31,6 +31,8 @@ export const capitalize = (value: string): string =>
 export const toSentenceCase = (value: string | undefined): string =>
   (value ?? '').trim().replace(/^(?:\w+)\b/u, (val) => capitalize(val));
 
+export const EXCEPTION_ACRONYMS = ['CSV'];
+
 export const TITLE_CASE_EXCEPTION_WORDS = [
   // We roughly follow AP style for simplicity
   // See https://en.wikipedia.org/wiki/Title_case
@@ -73,6 +75,9 @@ export const toTitleCase = (value: string | undefined): string =>
 export const prettyCONSTName = (value: string | undefined): string => {
   if (!value) {
     return '';
+  }
+  if (EXCEPTION_ACRONYMS.includes(value)) {
+    return value;
   }
   // This handles our constant naming convention, e.g. SOME_VALUE, __PRIVATE_VALUE__, etc.
   if (value.trim().match(/^[A-Z_]+$/)) {
