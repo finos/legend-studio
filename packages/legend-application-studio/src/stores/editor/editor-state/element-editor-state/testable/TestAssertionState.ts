@@ -302,7 +302,7 @@ export class TestAssertionEditorState {
       this.generatingExpectedAction.inProgress();
       const bare = this.assertionState.generateBare();
       bare.parentTest = this.assertion.parentTest;
-      const status =
+      const assertFail =
         (yield this.editorStore.graphManagerState.graphManager.generateExpectedResult(
           this.testState.testable,
           this.testState.test,
@@ -310,13 +310,17 @@ export class TestAssertionEditorState {
           bare,
           this.editorStore.graphManagerState.graph,
         )) as AssertFail;
-      this.assertionState.generateExpected(status);
+      this.assertionState.generateExpected(assertFail);
       this.generatingExpectedAction.complete();
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        `Expected results generated!`,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
-        `Error generating expected result: ${error.message}`,
+        `Error generating expected result, please check data input: ${error.message}.`,
       );
+      this.setSelectedTab(TEST_ASSERTION_TAB.ASSERTION_SETUP);
       this.generatingExpectedAction.fail();
     }
   }

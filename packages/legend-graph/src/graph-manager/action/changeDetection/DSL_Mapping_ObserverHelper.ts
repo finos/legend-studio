@@ -187,7 +187,7 @@ const observe_MappingQueryTest = skipObserved(
     makeObservable(metamodel, {
       id: observable,
       doc: observable,
-      query: observable,
+      func: observable,
       assertions: observable,
       hashCode: computed,
     });
@@ -256,12 +256,12 @@ export const observe_MappingQueryTestSuite = skipObservedWithContext(
     makeObservable(metamodel, {
       id: observable,
       tests: observable,
-      query: observable,
+      func: observable,
       hashCode: computed,
     });
 
     metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
-    observe_RawLambda(metamodel.query);
+    observe_RawLambda(metamodel.func);
     return metamodel;
   },
 );

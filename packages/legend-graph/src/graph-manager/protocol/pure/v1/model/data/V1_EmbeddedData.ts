@@ -74,14 +74,49 @@ export class V1_ExternalFormatData extends V1_EmbeddedData implements Hashable {
   }
 }
 
+export abstract class V1_ModelData {
+  model!: string;
+
+  abstract get hashCode(): string;
+}
+
+export class V1_ModelEmbeddedData extends V1_ModelData implements Hashable {
+  data!: V1_EmbeddedData;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.MODEL_EMBEDDED_DATA,
+      this.model,
+      this.data,
+    ]);
+  }
+}
+
+export class V1_ModelInstanceData extends V1_ModelData {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   * TODO: we may want to build out the instance `objects` once we build out the form
+   *
+   * @discrepancy model
+   */
+  instances!: object;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.MODEL_INSTANCE_DATA,
+      this.model,
+      hashObjectWithoutSourceInformation(this.instances),
+    ]);
+  }
+}
+
 export class V1_ModelStoreData extends V1_EmbeddedData implements Hashable {
-  instances!: Map<string, object>;
+  modelData: V1_ModelData[] | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MODEL_STORE_DATA,
-      hashArray(Array.from(this.instances.keys())),
-      hashObjectWithoutSourceInformation(Array.from(this.instances.values())),
+      this.modelData ? hashArray(this.modelData) : '',
     ]);
   }
 

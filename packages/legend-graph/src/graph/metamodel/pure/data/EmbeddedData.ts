@@ -71,20 +71,49 @@ export class ExternalFormatData extends EmbeddedData implements Hashable {
   }
 }
 
-export class ModelStoreData extends EmbeddedData implements Hashable {
+export abstract class ModelData implements Hashable {
+  model!: PackageableElementReference<Class>;
+
+  abstract get hashCode(): string;
+}
+
+export class ModelEmbeddedData extends ModelData implements Hashable {
+  data!: EmbeddedData;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.MODEL_EMBEDDED_DATA,
+      this.model.valueForSerialization ?? '',
+      this.data,
+    ]);
+  }
+}
+
+export class ModelInstanceData extends ModelData {
   /**
    * Studio does not process value specification, they are left in raw JSON form
    * TODO: we may want to build out the instance `objects` once we build out the form
    *
    * @discrepancy model
    */
-  instances!: Map<Class, object>;
+  instances!: object;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.MODEL_INSTANCE_DATA,
+      this.model.valueForSerialization ?? '',
+      hashObjectWithoutSourceInformation(this.instances),
+    ]);
+  }
+}
+
+export class ModelStoreData extends EmbeddedData implements Hashable {
+  modelData: ModelData[] | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MODEL_STORE_DATA,
-      hashArray(Array.from(this.instances.keys()).map((e) => e.path)),
-      hashObjectWithoutSourceInformation(Array.from(this.instances.values())),
+      this.modelData ? hashArray(this.modelData) : '',
     ]);
   }
 

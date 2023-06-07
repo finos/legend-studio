@@ -388,7 +388,7 @@ export const V1_transformMappingQueryTest = (
   mappingTest.assertions = element.assertions.map((assertion) =>
     V1_transformTestAssertion(assertion),
   );
-  mappingTest.query = element.query.accept_RawValueSpecificationVisitor(
+  mappingTest.func = element.func.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   return mappingTest;
@@ -445,7 +445,7 @@ export const V1_transformMappingQueryTestSuite = (
   const mappingTestSuite = new V1_MappingQueryTestSuite();
   mappingTestSuite.id = element.id;
   mappingTestSuite.doc = element.doc;
-  mappingTestSuite.query = element.query.accept_RawValueSpecificationVisitor(
+  mappingTestSuite.func = element.func.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
   mappingTestSuite.tests = element.tests.map((test) =>

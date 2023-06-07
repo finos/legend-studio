@@ -15,19 +15,21 @@
  */
 import {
   type EmbeddedData,
-  type Class,
+  type ModelData,
   type DataElement,
   DataElementReference,
   ExternalFormatData,
   ModelStoreData,
   RelationalCSVData,
   RelationalCSVDataTable,
+  ModelEmbeddedData,
 } from '@finos/legend-graph';
 import {
   ContentType,
   guaranteeNonEmptyString,
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
+  uuid,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
@@ -36,7 +38,6 @@ import {
   dataElementReference_setDataElement,
   externalFormatData_setContentType,
   externalFormatData_setData,
-  modelStoreData_setInstance,
   relationalData_addTable,
   relationalData_deleteData,
   relationalData_setTableName,
@@ -65,7 +66,6 @@ export const createEmbeddedData = (
     return relational;
   } else if (type === EmbeddedDataType.MODEL_STORE_DATA) {
     const modelStoreData = new ModelStoreData();
-    modelStoreData_setInstance(modelStoreData, new Map<Class, object>());
     return modelStoreData;
   } else {
     const extraEmbeddedDataCreator = editorStore.pluginManager
@@ -103,17 +103,23 @@ export abstract class EmbeddedDataState {
 
 export class ExternalFormatDataState extends EmbeddedDataState {
   override embeddedData: ExternalFormatData;
+  canEditContentType = true;
 
   constructor(editorStore: EditorStore, embeddedData: ExternalFormatData) {
     super(editorStore, embeddedData);
     makeObservable(this, {
       format: action,
+      canEditContentType: observable,
     });
     this.embeddedData = embeddedData;
   }
 
   label(): string {
     return 'ExternalFormat Data';
+  }
+
+  setCanEditoContentType(val: boolean): void {
+    this.canEditContentType = val;
   }
 
   get supportsFormatting(): boolean {
@@ -128,16 +134,59 @@ export class ExternalFormatDataState extends EmbeddedDataState {
   }
 }
 
+export abstract class ModelDataState {
+  readonly uuid = uuid();
+  readonly modelStoreDataState: ModelStoreDataState;
+  modelData: ModelData;
+
+  constructor(modelData: ModelData, modelStoreDataState: ModelStoreDataState) {
+    this.modelStoreDataState = modelStoreDataState;
+    this.modelData = modelData;
+  }
+}
+
+export class ModelEmbeddedDataState extends ModelDataState {
+  override modelData: ModelEmbeddedData;
+  embeddedDataState: EmbeddedDataState;
+
+  constructor(
+    modelData: ModelEmbeddedData,
+    modelStoreDataState: ModelStoreDataState,
+  ) {
+    super(modelData, modelStoreDataState);
+    this.modelData = modelData;
+    this.embeddedDataState = buildEmbeddedDataEditorState(
+      this.modelData.data,
+      this.modelStoreDataState.editorStore,
+    );
+  }
+}
+
+export class UnsupportedModelDataState extends ModelDataState {}
+
 export class ModelStoreDataState extends EmbeddedDataState {
   override embeddedData: ModelStoreData;
+  modelDataStates: ModelDataState[] = [];
 
   constructor(editorStore: EditorStore, embeddedData: ModelStoreData) {
     super(editorStore, embeddedData);
     this.embeddedData = embeddedData;
+    this.modelDataStates = this.buildStates();
   }
 
   label(): string {
     return 'ModelStore Data';
+  }
+
+  buildStates(): ModelDataState[] {
+    return (
+      this.embeddedData.modelData?.map((modelData) => {
+        if (modelData instanceof ModelEmbeddedData) {
+          return new ModelEmbeddedDataState(modelData, this);
+        }
+        return new UnsupportedModelDataState(modelData, this);
+      }) ?? []
+    );
   }
 }
 

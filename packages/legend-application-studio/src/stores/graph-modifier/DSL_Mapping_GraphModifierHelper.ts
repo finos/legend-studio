@@ -204,7 +204,7 @@ export const mapping_deleteTestSuite = action(
 
 export const mappingTestable_setQuery = action(
   (test: MappingQueryTest | MappingQueryTestSuite, value: RawLambda): void => {
-    test.query = observe_RawLambda(value);
+    test.func = observe_RawLambda(value);
   },
 );
 

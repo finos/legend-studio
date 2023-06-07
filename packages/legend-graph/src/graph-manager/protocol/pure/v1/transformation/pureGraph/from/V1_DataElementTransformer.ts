@@ -17,9 +17,12 @@
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type EmbeddedData,
+  type ModelData,
   DataElementReference,
   ExternalFormatData,
   ModelStoreData,
+  ModelEmbeddedData,
+  ModelInstanceData,
 } from '../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import {
   type RelationalCSVDataTable,
@@ -29,9 +32,12 @@ import type { DataElement } from '../../../../../../../graph/metamodel/pure/pack
 import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_EmbeddedData,
+  type V1_ModelData,
   V1_DataElementReference,
   V1_ExternalFormatData,
   V1_ModelStoreData,
+  V1_ModelEmbeddedData,
+  V1_ModelInstanceData,
 } from '../../../model/data/V1_EmbeddedData.js';
 import {
   V1_RelationalCSVData,
@@ -49,15 +55,47 @@ import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNA
 
 // ----------------------------------------------- DATA ----------------------------------------
 
+const V1_transformModelInstanceData = (
+  element: ModelInstanceData,
+): V1_ModelInstanceData => {
+  const val = new V1_ModelInstanceData();
+  val.model = element.model.valueForSerialization ?? '';
+  val.instances = element.instances;
+  return val;
+};
+
+const V1_transformModelEmbeddedData = (
+  element: ModelEmbeddedData,
+  context: V1_GraphTransformerContext,
+): V1_ModelEmbeddedData => {
+  const val = new V1_ModelEmbeddedData();
+  val.data = V1_transformEmbeddedData(element.data, context);
+  val.model = element.model.valueForSerialization ?? '';
+  return val;
+};
+
+const V1_transformModelData = (
+  element: ModelData,
+  context: V1_GraphTransformerContext,
+): V1_ModelData => {
+  if (element instanceof ModelInstanceData) {
+    return V1_transformModelInstanceData(element);
+  } else if (element instanceof ModelEmbeddedData) {
+    return V1_transformModelEmbeddedData(element, context);
+  }
+  throw new UnsupportedOperationError('Model Data type not supported');
+};
+
 const V1_transformModelStoreData = (
   element: ModelStoreData,
+  context: V1_GraphTransformerContext,
 ): V1_ModelStoreData => {
   const modelStoreDataElement = new V1_ModelStoreData();
-  const v1Instances = new Map<string, object>();
-  Array.from(element.instances.entries()).forEach((e) =>
-    v1Instances.set(e[0].path, e[1]),
-  );
-  modelStoreDataElement.instances = v1Instances;
+  if (element.modelData?.length) {
+    modelStoreDataElement.modelData = element.modelData.map((m) =>
+      V1_transformModelData(m, context),
+    );
+  }
   return modelStoreDataElement;
 };
 
@@ -97,16 +135,16 @@ const V1_transformRelationalCSVData = (
   return data;
 };
 
-export const V1_transformEmbeddedData = (
+export function V1_transformEmbeddedData(
   metamodel: EmbeddedData,
   context: V1_GraphTransformerContext,
-): V1_EmbeddedData => {
+): V1_EmbeddedData {
   if (metamodel instanceof INTERNAL__UnknownEmbeddedData) {
     const protocol = new V1_INTERNAL__UnknownEmbeddedData();
     protocol.content = metamodel.content;
     return protocol;
   } else if (metamodel instanceof ModelStoreData) {
-    return V1_transformModelStoreData(metamodel);
+    return V1_transformModelStoreData(metamodel, context);
   } else if (metamodel instanceof ExternalFormatData) {
     return V1_transformExternalFormatData(metamodel);
   } else if (metamodel instanceof DataElementReference) {
@@ -131,7 +169,7 @@ export const V1_transformEmbeddedData = (
     `Can't transform embedded data: no compatible transformer available from plugins`,
     metamodel,
   );
-};
+}
 
 export const V1_transformDataElement = (
   element: DataElement,

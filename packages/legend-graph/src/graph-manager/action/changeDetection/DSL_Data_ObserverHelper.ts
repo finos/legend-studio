@@ -17,6 +17,9 @@
 import { computed, makeObservable, observable, override } from 'mobx';
 import {
   type EmbeddedData,
+  type ModelData,
+  ModelEmbeddedData,
+  ModelInstanceData,
   ExternalFormatData,
   DataElementReference,
   ModelStoreData,
@@ -62,13 +65,55 @@ export const observe_DataElementReference = skipObserved(
   },
 );
 
-export const observe_ModelStoreData = skipObserved(
-  (metamodel: ModelStoreData): ModelStoreData => {
+const observe_ModelEmbeddedData = skipObservedWithContext(
+  (
+    metamodel: ModelEmbeddedData,
+    context: ObserverContext,
+  ): ModelEmbeddedData => {
     makeObservable(metamodel, {
+      model: observable,
+      data: observable,
+      hashCode: computed,
+    });
+    observe_EmbeddedData(metamodel.data, context);
+    return metamodel;
+  },
+);
+
+export const observe_ModelInstanceData = skipObservedWithContext(
+  (
+    metamodel: ModelInstanceData,
+    context: ObserverContext,
+  ): ModelInstanceData => {
+    makeObservable(metamodel, {
+      model: observable,
       instances: observable,
       hashCode: computed,
     });
+    return metamodel;
+  },
+);
 
+export const observe_ModelData = skipObservedWithContext(
+  (metamodel: ModelData, context: ObserverContext): ModelData => {
+    if (metamodel instanceof ModelEmbeddedData) {
+      observe_ModelEmbeddedData(metamodel, context);
+    } else if (metamodel instanceof ModelInstanceData) {
+      observe_ModelInstanceData(metamodel, context);
+    }
+    return metamodel;
+  },
+);
+
+export const observe_ModelStoreData = skipObservedWithContext(
+  (metamodel: ModelStoreData, context: ObserverContext): ModelStoreData => {
+    makeObservable(metamodel, {
+      modelData: observable,
+      hashCode: computed,
+    });
+    metamodel.modelData?.forEach((e) => {
+      observe_ModelData(e, context);
+    });
     return metamodel;
   },
 );
@@ -117,7 +162,7 @@ export function observe_EmbeddedData(
   } else if (metamodel instanceof ExternalFormatData) {
     return observe_ExternalFormatData(metamodel);
   } else if (metamodel instanceof ModelStoreData) {
-    return observe_ModelStoreData(metamodel);
+    return observe_ModelStoreData(metamodel, context);
   } else if (metamodel instanceof RelationalCSVData) {
     return observe_RelationalCSVData(metamodel);
   }

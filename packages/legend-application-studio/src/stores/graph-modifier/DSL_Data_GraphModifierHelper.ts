@@ -24,10 +24,14 @@ import {
   type DataElementReference,
   type RelationalCSVDataTable,
   type RelationalCSVData,
+  type ModelData,
+  type PackageableElementReference,
+  type ModelEmbeddedData,
   observe_EmbeddedData,
   observe_DataElement,
   observe_RelationalDataTable,
   PackageableElementExplicitReference,
+  observe_ModelData,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -51,12 +55,6 @@ export const externalFormatData_setContentType = action(
 export const externalFormatData_setData = action(
   (externalFormatData: ExternalFormatData, value: string): void => {
     externalFormatData.data = value;
-  },
-);
-
-export const modelStoreData_setInstance = action(
-  (modelStoreData: ModelStoreData, value: Map<Class, object>): void => {
-    modelStoreData.instances = value;
   },
 );
 
@@ -100,5 +98,46 @@ export const dataElementReference_setDataElement = action(
       PackageableElementExplicitReference.create(
         observe_DataElement(value, context),
       );
+  },
+);
+
+// Model Store
+export const modelStoreData_addModelData = action(
+  (
+    modelStoreData: ModelStoreData,
+    value: ModelData,
+    context: ObserverContext,
+  ): void => {
+    const entries = modelStoreData.modelData ?? [];
+    if (!modelStoreData.modelData) {
+      modelStoreData.modelData = entries;
+    }
+    addUniqueEntry(entries, observe_ModelData(value, context));
+  },
+);
+
+export const modelStoreData_setDataModelModel = action(
+  (modelData: ModelData, val: PackageableElementReference<Class>): void => {
+    modelData.model = val;
+  },
+);
+
+export const modelStoreData_deleteModelData = action(
+  (modelStoreData: ModelStoreData, value: ModelData): void => {
+    if (modelStoreData.modelData) {
+      deleteEntry(modelStoreData.modelData, value);
+    }
+  },
+);
+
+export const modelStoreData_setModelDataClass = action(
+  (modelData: ModelData, val: PackageableElementReference<Class>): void => {
+    modelData.model = val;
+  },
+);
+
+export const modelStoreData_setModelDataData = action(
+  (modelData: ModelEmbeddedData, val: EmbeddedData): void => {
+    modelData.data = val;
   },
 );

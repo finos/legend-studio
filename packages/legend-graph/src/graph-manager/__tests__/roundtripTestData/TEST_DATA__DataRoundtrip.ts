@@ -83,81 +83,85 @@ export const TEST_DATA__DataRoundtrip = [
       name: 'dataWithModelStore',
       data: {
         _type: 'modelStore',
-        instances: {
-          'my::Person': {
-            _type: 'collection',
-            multiplicity: {
-              lowerBound: 1,
-              upperBound: 1,
-            },
-            values: [
-              {
-                _type: 'func',
-                function: 'new',
-                parameters: [
-                  {
-                    _type: 'packageableElementPtr',
-                    fullPath: 'my::Person',
-                  },
-                  {
-                    _type: 'string',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: ['dummy'],
-                  },
-                  {
-                    _type: 'collection',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: [
-                      {
-                        _type: 'keyExpression',
-                        add: false,
-                        expression: {
-                          _type: 'collection',
-                          multiplicity: {
-                            lowerBound: 2,
-                            upperBound: 2,
-                          },
-                          values: [
-                            {
-                              _type: 'string',
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                              values: ['Fred'],
-                            },
-                            {
-                              _type: 'string',
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                              values: ['William'],
-                            },
-                          ],
-                        },
-                        key: {
-                          _type: 'string',
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
-                          values: ['givenNames'],
-                        },
-                      },
-                    ],
-                  },
-                ],
+        modelData: [
+          {
+            _type: 'modelInstanceData',
+            model: 'my::Person',
+            instances: {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
               },
-            ],
+              values: [
+                {
+                  _type: 'func',
+                  function: 'new',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'my::Person',
+                    },
+                    {
+                      _type: 'string',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: ['dummy'],
+                    },
+                    {
+                      _type: 'collection',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: [
+                        {
+                          _type: 'keyExpression',
+                          add: false,
+                          expression: {
+                            _type: 'collection',
+                            multiplicity: {
+                              lowerBound: 2,
+                              upperBound: 2,
+                            },
+                            values: [
+                              {
+                                _type: 'string',
+                                multiplicity: {
+                                  lowerBound: 1,
+                                  upperBound: 1,
+                                },
+                                values: ['Fred'],
+                              },
+                              {
+                                _type: 'string',
+                                multiplicity: {
+                                  lowerBound: 1,
+                                  upperBound: 1,
+                                },
+                                values: ['William'],
+                              },
+                            ],
+                          },
+                          key: {
+                            _type: 'string',
+                            multiplicity: {
+                              lowerBound: 1,
+                              upperBound: 1,
+                            },
+                            values: ['givenNames'],
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
           },
-        },
+        ],
       },
       package: 'my',
     },

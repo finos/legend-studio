@@ -285,9 +285,9 @@ export const V1_buildMappingQueryTest = (
   mappingTest.assertions = element.assertions.map((assertion) =>
     V1_buildTestAssertion(assertion, mappingTest, context),
   );
-  mappingTest.query = V1_buildRawLambdaWithResolvedPaths(
-    element.query.parameters,
-    element.query.body,
+  mappingTest.func = V1_buildRawLambdaWithResolvedPaths(
+    element.func.parameters,
+    element.func.body,
     context,
   );
   return mappingTest;
@@ -347,9 +347,9 @@ const V1_buildMappingQueryTestSuite = (
 ): MappingQueryTestSuite => {
   const mappingTestSuite = new MappingQueryTestSuite();
   mappingTestSuite.id = element.id;
-  mappingTestSuite.query = V1_buildRawLambdaWithResolvedPaths(
-    element.query.parameters,
-    element.query.body,
+  mappingTestSuite.func = V1_buildRawLambdaWithResolvedPaths(
+    element.func.parameters,
+    element.func.body,
     context,
   );
   mappingTestSuite.tests = element.tests.map((test) =>

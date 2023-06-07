@@ -357,6 +357,9 @@ export { V1_DataElement } from './graph-manager/protocol/pure/v1/model/packageab
 export {
   EmbeddedData,
   ModelStoreData,
+  ModelData,
+  ModelEmbeddedData,
+  ModelInstanceData,
   DataElementReference,
   ExternalFormatData,
   type EmbeddedDataVisitor,
@@ -373,6 +376,8 @@ export {
   observe_ExternalFormatData,
   observe_EmbeddedData,
   observe_RelationalDataTable,
+  observe_ModelData,
+  observe_ModelStoreData,
   observe_DataElement,
 } from './graph-manager/action/changeDetection/DSL_Data_ObserverHelper.js';
 export { V1_transformExternalFormatData } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';

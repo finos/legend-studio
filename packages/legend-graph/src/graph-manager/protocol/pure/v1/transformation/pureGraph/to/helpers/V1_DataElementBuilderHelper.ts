@@ -20,19 +20,22 @@ import {
   DataElementReference,
   ExternalFormatData,
   ModelStoreData,
+  ModelEmbeddedData,
+  ModelInstanceData,
 } from '../../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import {
   RelationalCSVData,
   RelationalCSVDataTable,
 } from '../../../../../../../../graph/metamodel/pure/data/RelationalCSVData.js';
-import type { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/DSL_Data_PureProtocolProcessorPlugin_Extension.js';
-import type {
-  V1_DataElementReference,
-  V1_EmbeddedData,
-  V1_EmbeddedDataVisitor,
-  V1_ExternalFormatData,
-  V1_ModelStoreData,
+import {
+  V1_ModelInstanceData,
+  type V1_DataElementReference,
+  type V1_EmbeddedData,
+  type V1_EmbeddedDataVisitor,
+  type V1_ExternalFormatData,
+  type V1_ModelStoreData,
+  V1_ModelEmbeddedData,
 } from '../../../../model/data/V1_EmbeddedData.js';
 import type { V1_RelationalCSVData } from '../../../../model/data/V1_RelationalCSVData.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
@@ -85,11 +88,22 @@ class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
 
   visit_ModelStoreData(modelStoreData: V1_ModelStoreData): EmbeddedData {
     const metamodel = new ModelStoreData();
-    const instances = new Map<Class, object>();
-    Array.from(modelStoreData.instances.entries()).forEach((e) =>
-      instances.set(this.context.graph.getClass(e[0]), e[1]),
-    );
-    metamodel.instances = instances;
+    if (modelStoreData.modelData?.length) {
+      metamodel.modelData = modelStoreData.modelData.map((modelData) => {
+        if (modelData instanceof V1_ModelInstanceData) {
+          const val = new ModelInstanceData();
+          val.model = this.context.resolveClass(modelData.model);
+          val.instances = modelData.instances;
+          return val;
+        } else if (modelData instanceof V1_ModelEmbeddedData) {
+          const val = new ModelEmbeddedData();
+          val.data = V1_buildEmbeddedData(modelData.data, this.context);
+          val.model = this.context.resolveClass(modelData.model);
+          return val;
+        }
+        throw new UnsupportedOperationError('Model Data Type not supported');
+      });
+    }
     return metamodel;
   }
 
@@ -116,8 +130,11 @@ class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
   }
 }
 
-export const V1_buildEmbeddedData = (
+export function V1_buildEmbeddedData(
   protocol: V1_EmbeddedData,
   context: V1_GraphBuilderContext,
-): EmbeddedData =>
-  protocol.accept_EmbeddedDataVisitor(new V1_EmbeddedDataBuilder(context));
+): EmbeddedData {
+  return protocol.accept_EmbeddedDataVisitor(
+    new V1_EmbeddedDataBuilder(context),
+  );
+}
