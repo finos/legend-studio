@@ -263,6 +263,12 @@
   }
 }
 
+.query-builder__panel {
+  &--droppable {
+    width: calc(100% - 0.5rem);
+  }
+}
+
 .query-builder__diff-panel {
   height: 100%;
   width: 100%;

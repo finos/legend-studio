@@ -48,7 +48,12 @@ import {
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
-import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import {
+  type DropTargetMonitor,
+  useDrag,
+  useDrop,
+  useDragLayer,
+} from 'react-dnd';
 import {
   type QueryBuilderProjectionColumnDragSource,
   type QueryBuilderProjectionColumnState,
@@ -932,6 +937,16 @@ export const QueryBuilderTDSPanel = observer(
       [handleDrop],
     );
 
+    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+      showDroppableSuggestion:
+        monitor.isDragging() &&
+        [
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+          QUERY_BUILDER_FUNCTION_DND_TYPE,
+        ].includes(monitor.getItemType()?.toString() ?? ''),
+    }));
+
     useEffect(() => {
       flowResult(tdsState.convertDerivationProjectionObjects()).catch(
         applicationStore.alertUnhandledError,
@@ -974,6 +989,8 @@ export const QueryBuilderTDSPanel = observer(
         <div className="query-builder__projection__content">
           <PanelDropZone
             isDragOver={isDragOver}
+            showDroppableSuggestion={showDroppableSuggestion}
+            className="query-builder__panel--droppable"
             dropTargetConnector={dropTargetConnector}
           >
             {!projectionColumns.length && (

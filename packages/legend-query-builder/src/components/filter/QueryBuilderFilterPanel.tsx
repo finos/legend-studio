@@ -56,7 +56,7 @@ import {
   QueryBuilderFilterTreeBlankConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
 } from '../../stores/filter/QueryBuilderFilterState.js';
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDragLayer, useDrop } from 'react-dnd';
 import {
   type QueryBuilderExplorerTreeDragSource,
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -88,12 +88,26 @@ import {
 } from '../shared/BasicValueSpecificationEditor.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
+export const IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED = [
+  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+];
+
+export const IS_DRAGGABLE_FILTER_DND_TYPES = [
+  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+];
+
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
     node: QueryBuilderFilterTreeGroupNodeData;
     isDragOver: boolean;
+    showDroppableSuggestion: boolean;
   }) => {
-    const { node, isDragOver } = props;
+    const { node, isDragOver, showDroppableSuggestion } = props;
     const switchOperation: React.MouseEventHandler<HTMLDivElement> = (
       event,
     ): void => {
@@ -105,30 +119,31 @@ const QueryBuilderFilterGroupConditionEditor = observer(
       );
     };
     return (
-      <div className="query-builder-filter-tree__node__label__content">
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isDragOver}
-          label="Add to Logical Group"
-          className="query-builder__dnd__placeholder"
-        >
+      <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
+        {showDroppableSuggestion && (
           <div
-            className={clsx('query-builder-filter-tree__group-node', {
-              'query-builder-filter-tree__group-node--and':
-                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
-              'query-builder-filter-tree__group-node--or':
-                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
+            className={clsx('dnd__entry--droppable__indicator ', {
+              'dnd__entry--droppable__indicator--dragover': isDragOver,
             })}
-            title="Switch Operation"
-            onClick={switchOperation}
-          >
-            <div className="query-builder-filter-tree__group-node__label">
-              {node.groupOperation}
-            </div>
-            <button className="query-builder-filter-tree__group-node__action">
-              <FilledTriangleIcon />
-            </button>
+          ></div>
+        )}
+        <div
+          className={clsx('query-builder-filter-tree__group-node', {
+            'query-builder-filter-tree__group-node--and':
+              node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
+            'query-builder-filter-tree__group-node--or':
+              node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
+          })}
+          title="Switch Operation"
+          onClick={switchOperation}
+        >
+          <div className="query-builder-filter-tree__group-node__label">
+            {node.groupOperation}
           </div>
-        </PanelEntryDropZonePlaceholder>
+          <button className="query-builder-filter-tree__group-node__action">
+            <FilledTriangleIcon />
+          </button>
+        </div>
       </div>
     );
   },
@@ -190,6 +205,7 @@ const QueryBuilderFilterConditionEditor = observer(
       }),
       [handleDrop],
     );
+
     const resetNode = (): void => {
       node.condition.setValue(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
@@ -215,8 +231,29 @@ const QueryBuilderFilterConditionEditor = observer(
       reloadValues: debouncedTypeaheadSearch,
       cleanUpReloadValues,
     };
+
+    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+      showDroppableSuggestion:
+        monitor.isDragging() &&
+        (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
+          : IS_DRAGGABLE_FILTER_DND_TYPES
+        ).includes(monitor.getItemType()?.toString() ?? ''),
+    }));
+
     return (
-      <div className="query-builder-filter-tree__node__label__content">
+      <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
+        {showDroppableSuggestion && (
+          <div
+            className={clsx(
+              'dnd__entry--droppable__indicator dnd__entry-potential__oiodropzone__indicator--full',
+              {
+                'dnd__entry--droppable__indicator--dragover': isDragOver,
+              },
+            )}
+          ></div>
+        )}
+
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
           label="Add New Logical Group"
@@ -299,8 +336,9 @@ const QueryBuilderFilterBlankConditionEditor = observer(
   (props: {
     node: QueryBuilderFilterTreeBlankConditionNodeData;
     isDragOver: boolean;
+    showDroppableSuggestion: boolean;
   }) => {
-    const { isDragOver } = props;
+    const { isDragOver, showDroppableSuggestion } = props;
     return (
       <div className="query-builder-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
@@ -308,6 +346,9 @@ const QueryBuilderFilterBlankConditionEditor = observer(
           label="Create Condition"
           className="query-builder__dnd__placeholder"
         >
+          {showDroppableSuggestion && (
+            <div className="query-builder-filter-tree__blank-node--droppable"></div>
+          )}
           <div className="query-builder-filter-tree__blank-node">blank</div>
         </PanelEntryDropZonePlaceholder>
       </div>
@@ -390,11 +431,31 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     // Drag and Drop
     const handleDrop = useCallback(
       (item: QueryBuilderFilterDropTarget, type: string): void => {
-        if (
-          Object.values<string>(QUERY_BUILDER_FILTER_DND_TYPE).includes(type)
-        ) {
-          // const dropNode = (item as QueryBuilderFilterConditionDragSource).node;
-          // TODO: re-arrange
+        if (QUERY_BUILDER_FILTER_DND_TYPE.CONDITION === type) {
+          const nodeBeingDragged = (
+            item as QueryBuilderFilterConditionDragSource
+          ).node;
+
+          const newCreatedNode = new QueryBuilderFilterTreeConditionNodeData(
+            undefined,
+            (
+              filterState.nodes.get(
+                nodeBeingDragged.id,
+              ) as QueryBuilderFilterTreeConditionNodeData
+            ).condition,
+          );
+
+          if (node instanceof QueryBuilderFilterTreeBlankConditionNodeData) {
+            filterState.replaceBlankNodeWithNode(newCreatedNode, node);
+            filterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          } else if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+            filterState.newGroupWithConditionFromNode(newCreatedNode, node);
+
+            filterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
+            filterState.addNodeFromNode(newCreatedNode, node);
+            filterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          }
         } else {
           let filterConditionState: FilterConditionState;
           try {
@@ -469,17 +530,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       () => ({
         accept:
           queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-            ? [
-                ...Object.values(QUERY_BUILDER_FILTER_DND_TYPE),
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-                QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-              ]
-            : [
-                ...Object.values(QUERY_BUILDER_FILTER_DND_TYPE),
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              ],
+            ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
+            : IS_DRAGGABLE_FILTER_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
@@ -507,6 +559,15 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
+
+    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+      showDroppableSuggestion:
+        monitor.isDragging() &&
+        (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
+          : IS_DRAGGABLE_FILTER_DND_TYPES
+        ).includes(monitor.getItemType()?.toString() ?? ''),
+    }));
 
     // context menu
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -566,6 +627,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               {node instanceof QueryBuilderFilterTreeGroupNodeData && (
                 <QueryBuilderFilterGroupConditionEditor
                   node={node}
+                  showDroppableSuggestion={showDroppableSuggestion}
                   isDragOver={isDragOver}
                 />
               )}
@@ -579,6 +641,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 <QueryBuilderFilterBlankConditionEditor
                   node={node}
                   isDragOver={isDragOver}
+                  showDroppableSuggestion={showDroppableSuggestion}
                 />
               )}
             </div>
@@ -747,6 +810,16 @@ export const QueryBuilderFilterPanel = observer(
         );
       }
     };
+
+    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+      showDroppableSuggestion:
+        monitor.isDragging() &&
+        (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
+          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
+          : IS_DRAGGABLE_FILTER_DND_TYPES
+        ).includes(monitor.getItemType()?.toString() ?? ''),
+    }));
+
     // Drag and Drop
     const handleDrop = useCallback(
       (item: QueryBuilderFilterDropTarget, type: string): void => {
@@ -795,6 +868,7 @@ export const QueryBuilderFilterPanel = observer(
       },
       [applicationStore, filterState],
     );
+
     const [{ isDragOver }, dropTargetConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
       void,
@@ -913,7 +987,11 @@ export const QueryBuilderFilterPanel = observer(
         </div>
         <PanelContent>
           <PanelDropZone
-            isDragOver={isDragOver}
+            isDragOver={isDragOver && filterState.isEmpty}
+            showDroppableSuggestion={
+              showDroppableSuggestion && filterState.isEmpty
+            }
+            className="query-builder__panel--droppable"
             dropTargetConnector={dropTargetConnector}
           >
             {filterState.isEmpty && (
@@ -932,6 +1010,20 @@ export const QueryBuilderFilterPanel = observer(
                 />
                 <QueryBuilderFilterTree queryBuilderState={queryBuilderState} />
               </>
+            )}
+
+            {showDroppableSuggestion && !filterState.isEmpty && (
+              <div
+                ref={dropTargetConnector}
+                className={clsx(
+                  'query-builder-post-filter-tree__blank-node--droppable--tall',
+                  {
+                    'dnd__entry--droppable__indicator--dragover': isDragOver,
+                  },
+                )}
+              >
+                Add filter to main group
+              </div>
             )}
           </PanelDropZone>
         </PanelContent>

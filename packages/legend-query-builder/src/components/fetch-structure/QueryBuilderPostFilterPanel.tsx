@@ -61,7 +61,7 @@ import {
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
-import { useDrop, useDrag } from 'react-dnd';
+import { useDrop, useDrag, useDragLayer } from 'react-dnd';
 import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import type { QueryBuilderPostFilterOperator } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterOperator.js';
 import {
@@ -71,8 +71,8 @@ import {
   type QueryBuilderPostFilterConditionDragSource,
   QueryBuilderPostFilterTreeConditionNodeData,
   QueryBuilderPostFilterTreeGroupNodeData,
-  QUERY_BUILDER_POST_FILTER_DND_TYPE,
   QueryBuilderPostFilterTreeBlankConditionNodeData,
+  QUERY_BUILDER_POST_FILTER_DND_TYPE,
 } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   type QueryBuilderProjectionColumnState,
@@ -153,8 +153,9 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
   (props: {
     node: QueryBuilderPostFilterTreeGroupNodeData;
     isDragOver: boolean;
+    showDroppableSuggestion: boolean;
   }) => {
-    const { node, isDragOver } = props;
+    const { node, isDragOver, showDroppableSuggestion } = props;
     const switchOperation: React.MouseEventHandler<HTMLDivElement> = (
       event,
     ): void => {
@@ -166,7 +167,14 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
       );
     };
     return (
-      <div className="query-builder-post-filter-tree__node__label__content">
+      <div className="query-builder-post-filter-tree__node__label__content dnd__entry__container">
+        {showDroppableSuggestion && (
+          <div
+            className={clsx('dnd__entry--droppable__indicator ', {
+              'dnd__entry--droppable__indicator--dragover': isDragOver,
+            })}
+          ></div>
+        )}
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
           label="Add to Logical Group"
@@ -359,8 +367,25 @@ const QueryBuilderPostFilterConditionEditor = observer(
       cleanUpReloadValues,
     };
 
+    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+      showDroppableSuggestion:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+    }));
+
     return (
-      <div className="query-builder-post-filter-tree__node__label__content">
+      <div className="query-builder-post-filter-tree__node__label__content dnd__entry__container">
+        {showDroppableSuggestion && (
+          <div
+            className={clsx(
+              'dnd__entry--droppable__indicator query-builder-post-filter-tree__droppable--full',
+              {
+                'dnd__entry--droppable__indicator--dragover': isDragOver,
+              },
+            )}
+          ></div>
+        )}
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
           label="Add New Logical Group"
@@ -442,8 +467,9 @@ const QueryBuilderPostFilterBlankConditionEditor = observer(
   (props: {
     node: QueryBuilderPostFilterTreeBlankConditionNodeData;
     isDragOver: boolean;
+    showDroppableSuggestion: boolean;
   }) => {
-    const { isDragOver } = props;
+    const { isDragOver, showDroppableSuggestion } = props;
     return (
       <div className="query-builder-post-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
@@ -451,7 +477,12 @@ const QueryBuilderPostFilterBlankConditionEditor = observer(
           label="Create Condition"
           className="query-builder__dnd__placeholder"
         >
-          <div className="query-builder-post-filter-tree__blank-node">
+          <div
+            className={clsx('query-builder-post-filter-tree__blank-node', {
+              'query-builder-post-filter-tree__blank-node--droppable':
+                showDroppableSuggestion,
+            })}
+          >
             blank
           </div>
         </PanelEntryDropZonePlaceholder>
@@ -484,7 +515,34 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       postFilterState.removeNodeAndPruneBranch(node);
     const handleDrop = useCallback(
       (item: QueryBuilderPostFilterDropTarget, type: string): void => {
-        if (
+        if (QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION === type) {
+          const nodeBeingDragged = (
+            item as QueryBuilderPostFilterConditionDragSource
+          ).node;
+
+          const newCreatedNode =
+            new QueryBuilderPostFilterTreeConditionNodeData(
+              undefined,
+              (
+                postFilterState.nodes.get(
+                  nodeBeingDragged.id,
+                ) as QueryBuilderPostFilterTreeConditionNodeData
+              ).condition,
+            );
+
+          if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
+            postFilterState.newGroupWithConditionFromNode(newCreatedNode, node);
+            postFilterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          } else if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
+            postFilterState.addNodeFromNode(newCreatedNode, node);
+            postFilterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          } else if (
+            node instanceof QueryBuilderPostFilterTreeBlankConditionNodeData
+          ) {
+            postFilterState.replaceBlankNodeWithNode(newCreatedNode, node);
+            postFilterState.removeNodeAndPruneBranch(nodeBeingDragged);
+          }
+        } else if (
           type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
           type === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE
         ) {
@@ -588,6 +646,13 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
+    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+      showDroppableSuggestion:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+    }));
+
     return (
       <ContextMenu
         content={
@@ -642,6 +707,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
               {node instanceof QueryBuilderPostFilterTreeGroupNodeData && (
                 <QueryBuilderPostFilterGroupConditionEditor
                   node={node}
+                  showDroppableSuggestion={showDroppableSuggestion}
                   isDragOver={isDragOver}
                 />
               )}
@@ -656,6 +722,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
                 <QueryBuilderPostFilterBlankConditionEditor
                   node={node}
                   isDragOver={isDragOver}
+                  showDroppableSuggestion={showDroppableSuggestion}
                 />
               )}
             </div>
@@ -892,11 +959,15 @@ const QueryBuilderPostFilterPanelContent = observer(
       [applicationStore, handleDrop],
     );
 
+    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+      showDroppableSuggestion:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+    }));
+
     return (
-      <div
-        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER}
-        className="panel"
-      >
+      <>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">post-filter</div>
@@ -980,7 +1051,11 @@ const QueryBuilderPostFilterPanelContent = observer(
         </div>
         <PanelContent>
           <PanelDropZone
-            isDragOver={isDragOver}
+            isDragOver={isDragOver && postFilterState.isEmpty}
+            showDroppableSuggestion={
+              showDroppableSuggestion && postFilterState.isEmpty
+            }
+            className="query-builder__panel--droppable"
             dropTargetConnector={dropTargetConnector}
           >
             {postFilterState.isEmpty && (
@@ -1000,9 +1075,23 @@ const QueryBuilderPostFilterPanelContent = observer(
                 <QueryBuilderPostFilterTree tdsState={tdsState} />
               </>
             )}
+
+            {showDroppableSuggestion && (
+              <div
+                ref={dropTargetConnector}
+                className={clsx(
+                  'query-builder-post-filter-tree__blank-node--droppable--tall',
+                  {
+                    'dnd__entry--droppable__indicator--dragover': isDragOver,
+                  },
+                )}
+              >
+                Add post-filter to main group
+              </div>
+            )}
           </PanelDropZone>
         </PanelContent>
-      </div>
+      </>
     );
   },
 );
