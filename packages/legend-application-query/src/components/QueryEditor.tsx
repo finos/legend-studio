@@ -458,7 +458,7 @@ const QueryEditorHeaderContent = observer(
         <MenuContentItem
           key={item.key}
           title={item.title ?? ''}
-          onClick={item.onClick}
+          onClick={() => item.onClick(editorStore)}
         >
           {item.icon && <MenuContentItemIcon>{item.icon}</MenuContentItemIcon>}
           <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
