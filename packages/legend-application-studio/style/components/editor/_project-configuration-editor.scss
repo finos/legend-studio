@@ -115,6 +115,31 @@
     background: var(--color-yellow-200);
   }
 
+  &__manual-btn,
+  &__manual-btn:focus {
+    background: none;
+    outline: none;
+
+    svg {
+      color: var(--color-light-grey-250);
+    }
+  }
+
+  &__manual-btn:hover {
+    background: none;
+
+    svg {
+      color: var(--color-light-grey-0);
+    }
+  }
+
+  &__manual-btn--active,
+  &__manual-btn--active:hover {
+    svg {
+      color: var(--color-yellow-200) !important;
+    }
+  }
+
   &__update-btn {
     background: var(--color-blue-200);
     color: var(--color-light-grey-0);

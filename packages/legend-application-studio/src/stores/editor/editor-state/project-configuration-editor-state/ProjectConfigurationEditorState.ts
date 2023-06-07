@@ -63,7 +63,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   projects = new Map<string, StoreProjectData>();
   versions = new Map<string, string[]>();
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
-
+  manualOverwrite = false;
   associatedProjectsAndVersionsFetched = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
@@ -75,6 +75,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       projectConfiguration: observable,
       selectedTab: observable,
       isReadOnly: observable,
+      manualOverwrite: observable,
       projects: observable,
       versions: observable,
       associatedProjectsAndVersionsFetched: observable,
@@ -88,6 +89,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       setOriginalProjectConfiguration: action,
       setProjectConfiguration: action,
       setSelectedTab: action,
+      setManualOverwrite: action,
       fectchAssociatedProjectsAndVersions: flow,
       updateProjectConfiguration: flow,
       updateToLatestStructure: flow,
@@ -116,6 +118,10 @@ export class ProjectConfigurationEditorState extends EditorState {
 
   setSelectedTab(tab: CONFIGURATION_EDITOR_TAB): void {
     this.selectedTab = tab;
+  }
+
+  setManualOverwrite(value: boolean): void {
+    this.manualOverwrite = value;
   }
 
   get label(): string {
