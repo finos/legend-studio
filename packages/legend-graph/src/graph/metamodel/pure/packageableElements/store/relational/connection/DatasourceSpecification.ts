@@ -140,7 +140,7 @@ export class SnowflakeDatasourceSpecification
   organization?: string | undefined;
   accountType?: string | undefined;
   role?: string | undefined;
-  enableQueryTags: any;
+  enableQueryTags?: boolean | undefined;
 
   constructor(
     accountName: string,
