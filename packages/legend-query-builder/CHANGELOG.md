@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.0.9
+
+### Patch Changes
+
+- [#2079](https://github.com/finos/legend-studio/pull/2079) [`dfc1ceb9c`](https://github.com/finos/legend-studio/commit/dfc1ceb9c7b38f877fe0b57cf7507df0407a458b) ([@xannem](https://github.com/xannem)) - Make filter and post-filter behavior clearer in query builder
+
 ## 4.0.8
 
 ## 4.0.7
