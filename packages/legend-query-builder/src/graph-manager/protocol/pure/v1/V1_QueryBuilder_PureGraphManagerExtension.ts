@@ -25,7 +25,6 @@ import {
   V1_PureMultiExecution,
   V1_Service,
   V1_PackageableRuntime,
-  type V1_PackageableElement,
   type PureModel,
   V1_PureGraphManager,
   PureClientVersion,
@@ -72,10 +71,10 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
         entities,
         dependencyEntitiesIndex,
         (entity: Entity): boolean =>
-          ((entity.content as PlainObject<V1_PackageableElement>)
-            ._type as string) === V1_MAPPING_ELEMENT_PROTOCOL_TYPE ||
-          ((entity.content as PlainObject<V1_PackageableElement>)
-            ._type as string) === V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
+          (entity.content._type as string) ===
+            V1_MAPPING_ELEMENT_PROTOCOL_TYPE ||
+          (entity.content._type as string) ===
+            V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
       );
       // handle mapping includes
       const mappings = [

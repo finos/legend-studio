@@ -2213,7 +2213,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_serializeValueSpecification(
       V1_transformRootValueSpecification(valueSpecification),
       this.pluginManager.getPureProtocolProcessorPlugins(),
-    ) as PlainObject;
+    );
   }
 
   buildRawValueSpecification(

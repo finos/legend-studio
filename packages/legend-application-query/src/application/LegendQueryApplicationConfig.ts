@@ -151,8 +151,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
 
     // options
     this.options = LegendQueryApplicationCoreOptions.create(
-      (input.configData.extensions?.core ??
-        {}) as PlainObject<LegendQueryApplicationCoreOptions>,
+      input.configData.extensions?.core ?? {},
     );
   }
 
