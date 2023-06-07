@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 26.1.7
+
+### Patch Changes
+
+- [#2269](https://github.com/finos/legend-studio/pull/2269) [`95d55d317`](https://github.com/finos/legend-studio/commit/95d55d317d8f55f6337ffb7730aba63fc27c8dbb) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where fail to open tree node in the explorer tree for elements from dependencies when seaching using shortcuts(ctr + p)
+
 ## 26.1.6
 
 ### Patch Changes
