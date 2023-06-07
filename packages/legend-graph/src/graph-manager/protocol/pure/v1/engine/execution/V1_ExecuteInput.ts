@@ -38,10 +38,7 @@ import {
 import type { V1_ParameterValue } from '../../model/packageableElements/service/V1_ParameterValue.js';
 import { V1_parameterValueModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
-import {
-  V1_pureModelContextDataPropSchema,
-  V1_pureModelContextPropSchema,
-} from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 
 export class V1_ExecuteInput {
   clientVersion: string | undefined;
@@ -82,7 +79,7 @@ export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
       clientVersion: optional(primitive()),
       function: usingModelSchema(V1_rawLambdaModelSchema),
       mapping: primitive(),
-      model: V1_pureModelContextDataPropSchema,
+      model: V1_pureModelContextPropSchema,
       runtime: custom(
         (val) => V1_serializeRuntime(val),
         () => SKIP,
