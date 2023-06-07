@@ -117,7 +117,7 @@ export const ActivityBarMenu: React.FC = () => {
                 disabled={!appDocUrl}
                 onClick={goToDocumentation}
               >
-                See Documentation
+                Documentation
               </MenuContentItem>
               {docLinks?.map((entry) => (
                 <MenuContentItem

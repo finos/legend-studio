@@ -635,10 +635,14 @@ export const QueryEditor = observer(() => {
 
   // documentation
   const appDocUrl = applicationStore.documentationService.url;
+  const docLinks = applicationStore.documentationService.links;
   const goToDocumentation = (): void => {
     if (appDocUrl) {
       applicationStore.navigationService.navigator.visitAddress(appDocUrl);
     }
+  };
+  const goToDocLink = (url: string): void => {
+    applicationStore.navigationService.navigator.visitAddress(url);
   };
   // go to setup page
   const goToQuerySetup = (): void =>
@@ -682,8 +686,16 @@ export const QueryEditor = observer(() => {
                   disabled={!appDocUrl}
                   onClick={goToDocumentation}
                 >
-                  See Documentation
+                  Documentation
                 </MenuContentItem>
+                {docLinks?.map((entry) => (
+                  <MenuContentItem
+                    key={entry.key}
+                    onClick={(): void => goToDocLink(entry.url)}
+                  >
+                    {entry.label}
+                  </MenuContentItem>
+                ))}
                 <MenuContentDivider />
                 <MenuContentItem disabled={true}>Settings</MenuContentItem>
                 <MenuContentItem
