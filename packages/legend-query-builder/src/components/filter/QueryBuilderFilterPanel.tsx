@@ -898,7 +898,6 @@ export const QueryBuilderFilterPanel = observer(
       [handleDrop],
     );
 
-    console.log("isdragover', isDragOver)", isDragOver);
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER}
