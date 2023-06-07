@@ -48,6 +48,13 @@ export const useNavigationZone = (): NavigationZone => {
   const location = useLocation() as { hash: string }; // TODO: this is a temporary hack until we upgrade react-router
   return location.hash.substring(NAVIGATION_ZONE_PREFIX.length);
 };
+/**
+ * This clashes between react-router (older version) and React typings, so this is the workaround
+ * We will remove this when we move forward with our react-router upgrade
+ * See https://github.com/finos/legend-studio/issues/688
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TEMPORARY__ReactRouterComponentType = any;
 
 /**
  * Prefix URL patterns coming from extensions with `/extensions/`

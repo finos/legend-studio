@@ -37,6 +37,7 @@ import {
   generateExtensionUrlPattern,
   Route,
   Switch,
+  type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/LegendStudioDocumentation.js';
 
@@ -127,7 +128,10 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                     LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
                     LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
                   ]}
-                  component={ProjectViewer}
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    ProjectViewer as TEMPORARY__ReactRouterComponentType
+                  }
                 />
                 <Route>
                   <NotFoundPage />
@@ -148,12 +152,18 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                     LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
                     LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
                   ]}
-                  component={ProjectViewer}
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    ProjectViewer as TEMPORARY__ReactRouterComponentType
+                  }
                 />
                 <Route
                   exact={true}
                   path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
-                  component={WorkspaceReview}
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    WorkspaceReview as TEMPORARY__ReactRouterComponentType
+                  }
                 />
                 <Route
                   exact={true}
@@ -164,7 +174,10 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                     LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE,
                     LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY,
                   ]}
-                  component={Editor}
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    Editor as TEMPORARY__ReactRouterComponentType
+                  }
                 />
                 <Route
                   exact={true}
@@ -174,7 +187,10 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                     LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE,
                     LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
                   ]}
-                  component={WorkspaceSetup}
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    WorkspaceSetup as TEMPORARY__ReactRouterComponentType
+                  }
                 />
                 {extraApplicationPageEntries.map((entry) => (
                   <Route
@@ -183,7 +199,10 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                     path={entry.addressPatterns.map(
                       generateExtensionUrlPattern,
                     )}
-                    component={entry.renderer as React.ComponentType<unknown>}
+                    component={
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                      entry.renderer as TEMPORARY__ReactRouterComponentType
+                    }
                   />
                 ))}
                 <Route>

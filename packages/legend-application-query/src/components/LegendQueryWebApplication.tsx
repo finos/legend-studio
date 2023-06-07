@@ -28,6 +28,7 @@ import {
   Route,
   Switch,
   generateExtensionUrlPattern,
+  type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
 import {
   LegendQueryFrameworkProvider,
@@ -60,39 +61,60 @@ const LegendQueryWebApplicationRouter = observer(() => {
           <Route
             exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-            component={QuerySetupLandingPage}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              QuerySetupLandingPage as TEMPORARY__ReactRouterComponentType
+            }
           />
           <Route
             exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP}
-            component={EditExistingQuerySetup}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              EditExistingQuerySetup as TEMPORARY__ReactRouterComponentType
+            }
           />
           <Route
             exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY_SETUP}
-            component={CreateMappingQuerySetup}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              CreateMappingQuerySetup as TEMPORARY__ReactRouterComponentType
+            }
           />
           <Route
             exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
-            component={ExistingQueryEditor}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              ExistingQueryEditor as TEMPORARY__ReactRouterComponentType
+            }
           />
           <Route
             exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY}
-            component={ServiceQueryCreator}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              ServiceQueryCreator as TEMPORARY__ReactRouterComponentType
+            }
           />
           <Route
             exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY}
-            component={MappingQueryCreator}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              MappingQueryCreator as TEMPORARY__ReactRouterComponentType
+            }
           />
           {extraApplicationPageEntries.map((entry) => (
             <Route
               key={entry.key}
               exact={true}
               path={entry.addressPatterns.map(generateExtensionUrlPattern)}
-              component={entry.renderer as React.ComponentType<unknown>}
+              component={
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                entry.renderer as TEMPORARY__ReactRouterComponentType
+              }
             />
           ))}
           <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />

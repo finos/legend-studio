@@ -198,8 +198,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
 
     // options
     this.options = LegendStudioApplicationCoreOptions.create(
-      (input.configData.extensions?.core ??
-        {}) as PlainObject<LegendStudioApplicationCoreOptions>,
+      input.configData.extensions?.core ?? {},
     );
   }
 

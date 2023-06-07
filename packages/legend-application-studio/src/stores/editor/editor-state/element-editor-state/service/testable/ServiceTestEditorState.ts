@@ -292,7 +292,7 @@ export class ServiceTestSetupState {
         if (currentExpression.parametersValues[1] instanceof InstanceValue) {
           if (
             currentExpression.parametersValues[1].values[0] instanceof
-              PackageableElementImplicitReference<Binding> &&
+              PackageableElementImplicitReference &&
             currentExpression.parametersValues[2] instanceof VariableExpression
           ) {
             res.push({

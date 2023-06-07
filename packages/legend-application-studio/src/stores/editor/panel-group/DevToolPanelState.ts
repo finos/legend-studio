@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
+import {
+  ContentType,
+  downloadFileUsingDataURI,
+  formatDate,
+  returnUndefOnError,
+} from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
+import { DEFAULT_DATE_TIME_FORMAT } from '@finos/legend-application';
 
 // TODO: We might potentially make this persisting data to local storage
 // as such the logic in this state might get a little more complicated, so we just leave it like this for now
@@ -25,3 +32,21 @@ export class DevToolPanelState {
     this.editorStore = editorStore;
   }
 }
+
+export const payloadDebugger = (payload: unknown, identifier: string): void => {
+  let isJSON = false;
+  let content = returnUndefOnError(() => JSON.stringify(payload, undefined, 2));
+  if (content) {
+    isJSON = true;
+  }
+  content = content ?? returnUndefOnError(() => `${payload}`) ?? '';
+  // TODO: we can also copy the debug content to clipboard
+  downloadFileUsingDataURI(
+    `PAYLOAD_DEBUG__${identifier}__${formatDate(
+      new Date(Date.now()),
+      DEFAULT_DATE_TIME_FORMAT,
+    )}${isJSON ? '.json' : '.txt'}`,
+    content,
+    isJSON ? ContentType.APPLICATION_JSON : ContentType.TEXT_PLAIN,
+  );
+};

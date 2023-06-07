@@ -87,7 +87,7 @@ export const V1_entitiesToPureModelContextData = async (
     if (entities?.length) {
       const entityToElement = (entity: Entity): V1_PackageableElement => {
         const element = V1_deserializePackageableElement(
-          entity.content as PlainObject<V1_PackageableElement>,
+          entity.content,
           plugins,
           subtypeInfo,
         );

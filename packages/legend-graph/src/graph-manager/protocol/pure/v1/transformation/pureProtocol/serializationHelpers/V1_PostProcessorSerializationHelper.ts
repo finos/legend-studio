@@ -105,7 +105,7 @@ export const V1_serializePostProcessor = (
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_PostProcessor> => {
   if (value instanceof V1_INTERNAL__UnknownPostProcessor) {
-    return value.content as PlainObject<V1_PostProcessor>;
+    return value.content;
   } else if (value instanceof V1_MapperPostProcessor) {
     return serialize(V1_mapperPostProcessorModelSchema, value);
   }
