@@ -3098,7 +3098,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.getFullGraphModelData(graph),
           this.elementToProtocol<V1_Service>(service),
         );
-        data.origin = new V1_PureModelContextPointer(protocol);
+        const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
+        sdlcInfo.packageableElementPointers = [
+          new V1_PackageableElementPointer(
+            PackageableElementPointerType.SERVICE,
+            service.path,
+          ),
+        ];
+        data.origin = new V1_PureModelContextPointer(protocol, sdlcInfo);
         input = data;
         break;
       }
