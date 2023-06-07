@@ -49,6 +49,10 @@ import {
   Panel,
   PanelContent,
   PanelDnDEntry,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PanelContentLists,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
@@ -307,7 +311,7 @@ const EnumEditor = observer(
     return (
       <div className="uml-element-editor enum-editor">
         <div data-testid={LEGEND_STUDIO_TEST_ID.PANEL} className="panel">
-          <div className="panel__header">
+          <PanelHeader>
             <div className="panel__header__title">
               {isReadOnly && (
                 <div className="uml-element-editor__header__lock">
@@ -317,17 +321,12 @@ const EnumEditor = observer(
               <div className="panel__header__title__label">enum</div>
               <div className="panel__header__title__content">{_enum.name}</div>
             </div>
-            <div className="panel__header__actions">
-              <button
-                className="panel__header__action"
-                onClick={deselectValue}
-                tabIndex={-1}
-                title="Close"
-              >
+            <PanelHeaderActions>
+              <PanelHeaderActionItem onClick={deselectValue} title="Close">
                 <TimesIcon />
-              </button>
-            </div>
-          </div>
+              </PanelHeaderActionItem>
+            </PanelHeaderActions>
+          </PanelHeader>
           <div
             data-testid={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
             className="panel__header uml-element-editor__tabs__header"
@@ -345,17 +344,15 @@ const EnumEditor = observer(
                 </div>
               ))}
             </div>
-            <div className="panel__header__actions">
-              <button
-                className="panel__header__action"
+            <PanelHeaderActions>
+              <PanelHeaderActionItem
                 disabled={isReadOnly}
                 onClick={addValue}
-                tabIndex={-1}
                 title={addButtonTitle}
               >
                 <PlusIcon />
-              </button>
-            </div>
+              </PanelHeaderActionItem>
+            </PanelHeaderActions>
           </div>
           <PanelContent>
             {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
@@ -363,7 +360,7 @@ const EnumEditor = observer(
                 isDragOver={isTaggedValueDragOver && !isReadOnly}
                 dropTargetConnector={dropTaggedValueRef}
               >
-                <div className="panel__content__lists">
+                <PanelContentLists>
                   <TaggedValueDragPreviewLayer />
                   {_enum.taggedValues.map((taggedValue) => (
                     <TaggedValueEditor
@@ -374,7 +371,7 @@ const EnumEditor = observer(
                       isReadOnly={isReadOnly}
                     />
                   ))}
-                </div>
+                </PanelContentLists>
               </PanelDropZone>
             )}
             {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
@@ -382,7 +379,7 @@ const EnumEditor = observer(
                 isDragOver={isStereotypeDragOver && !isReadOnly}
                 dropTargetConnector={dropStereotypeRef}
               >
-                <div className="panel__content__lists">
+                <PanelContentLists>
                   <StereotypeDragPreviewLayer />
                   {_enum.stereotypes.map((stereotype) => (
                     <StereotypeSelector
@@ -393,7 +390,7 @@ const EnumEditor = observer(
                       isReadOnly={isReadOnly}
                     />
                   ))}
-                </div>
+                </PanelContentLists>
               </PanelDropZone>
             )}
           </PanelContent>
@@ -631,7 +628,7 @@ export const EnumerationEditor = observer(
               </div>
               <PanelContent>
                 {selectedTab === UML_EDITOR_TAB.ENUM_VALUES && (
-                  <div className="panel__content__lists">
+                  <PanelContentLists>
                     <DragPreviewLayer
                       labelGetter={(item: EnumValueDragSource): string =>
                         item.enumValue.name === ''
@@ -649,14 +646,14 @@ export const EnumerationEditor = observer(
                         isReadOnly={isReadOnly}
                       />
                     ))}
-                  </div>
+                  </PanelContentLists>
                 )}
                 {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
                   <PanelDropZone
                     isDragOver={isTaggedValueDragOver && !isReadOnly}
                     dropTargetConnector={dropTaggedValueRef}
                   >
-                    <div className="panel__content__lists">
+                    <PanelContentLists>
                       <TaggedValueDragPreviewLayer />
                       {enumeration.taggedValues.map((taggedValue) => (
                         <TaggedValueEditor
@@ -667,7 +664,7 @@ export const EnumerationEditor = observer(
                           isReadOnly={isReadOnly}
                         />
                       ))}
-                    </div>
+                    </PanelContentLists>
                   </PanelDropZone>
                 )}
                 {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
@@ -675,7 +672,7 @@ export const EnumerationEditor = observer(
                     isDragOver={isStereotypeDragOver && !isReadOnly}
                     dropTargetConnector={dropStereotypeRef}
                   >
-                    <div className="panel__content__lists">
+                    <PanelContentLists>
                       <StereotypeDragPreviewLayer />
                       {enumeration.stereotypes.map((stereotype) => (
                         <StereotypeSelector
@@ -686,7 +683,7 @@ export const EnumerationEditor = observer(
                           isReadOnly={isReadOnly}
                         />
                       ))}
-                    </div>
+                    </PanelContentLists>
                   </PanelDropZone>
                 )}
               </PanelContent>

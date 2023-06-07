@@ -163,6 +163,11 @@ export const PanelContent: React.FC<{
   );
 };
 
+export const PanelContentLists = generateSimpleDIVComponent(
+  'PanelContentLists',
+  'panel__content__lists',
+);
+
 export const PanelList = generateSimpleDIVComponent(
   'PanelList',
   'panel__content__form__list',

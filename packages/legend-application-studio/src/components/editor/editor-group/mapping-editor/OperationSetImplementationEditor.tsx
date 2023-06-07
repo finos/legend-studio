@@ -26,6 +26,9 @@ import {
   PanelDropZone,
   Panel,
   PanelContent,
+  PanelHeaderActions,
+  PanelHeader,
+  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -198,25 +201,23 @@ export const OperationSetImplementationEditor = observer(
     return (
       <div className="mapping-element-editor__content">
         <Panel>
-          <div className="panel__header">
+          <PanelHeader>
             <div className="panel__header__title">
               <div className="panel__header__title__content">PARAMETERS</div>
             </div>
-            <div className="panel__header__actions">
-              <button
-                className="panel__header__action"
+            <PanelHeaderActions>
+              <PanelHeaderActionItem
                 disabled={
                   isReadOnly ||
                   setImplementation.operation === OperationType.INHERITANCE
                 }
                 onClick={addParameter}
-                tabIndex={-1}
                 title="Add parameter"
               >
                 <PlusIcon />
-              </button>
-            </div>
-          </div>
+              </PanelHeaderActionItem>
+            </PanelHeaderActions>
+          </PanelHeader>
           <PanelDropZone
             isDragOver={isDragOver && !isReadOnly}
             dropTargetConnector={dropRef}

@@ -45,6 +45,7 @@ import {
   Panel,
   InfoCircleIcon,
   PanelHeader,
+  PanelContentLists,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
@@ -562,7 +563,7 @@ export const AssociationEditor = observer(
                 })}
               >
                 {selectedTab === UML_EDITOR_TAB.PROPERTIES && (
-                  <div className="panel__content__lists">
+                  <PanelContentLists>
                     <AssociationPropertyBasicEditor
                       association={association}
                       property={getFirstAssociatedProperty(association)}
@@ -579,14 +580,14 @@ export const AssociationEditor = observer(
                       )}
                       isReadOnly={isReadOnly}
                     />
-                  </div>
+                  </PanelContentLists>
                 )}
                 {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
                   <PanelDropZone
                     isDragOver={isTaggedValueDragOver && !isReadOnly}
                     dropTargetConnector={dropTaggedValueRef}
                   >
-                    <div className="panel__content__lists">
+                    <PanelContentLists>
                       <TaggedValueDragPreviewLayer />
                       {association.taggedValues.map((taggedValue) => (
                         <TaggedValueEditor
@@ -597,7 +598,7 @@ export const AssociationEditor = observer(
                           isReadOnly={isReadOnly}
                         />
                       ))}
-                    </div>
+                    </PanelContentLists>
                   </PanelDropZone>
                 )}
                 {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
@@ -605,7 +606,7 @@ export const AssociationEditor = observer(
                     isDragOver={isStereotypeDragOver && !isReadOnly}
                     dropTargetConnector={dropStereotypeRef}
                   >
-                    <div className="panel__content__lists">
+                    <PanelContentLists>
                       <StereotypeDragPreviewLayer />
                       {association.stereotypes.map((stereotype) => (
                         <StereotypeSelector
@@ -616,7 +617,7 @@ export const AssociationEditor = observer(
                           isReadOnly={isReadOnly}
                         />
                       ))}
-                    </div>
+                    </PanelContentLists>
                   </PanelDropZone>
                 )}
               </div>

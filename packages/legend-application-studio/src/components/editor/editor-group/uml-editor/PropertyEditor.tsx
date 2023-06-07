@@ -27,6 +27,7 @@ import {
   CustomSelectorInput,
   LockIcon,
   PanelContent,
+  PanelContentLists,
   PanelDropZone,
   PanelForm,
   PanelFormSection,
@@ -280,7 +281,7 @@ export const PropertyEditor = observer(
                 isDragOver={isTaggedValueDragOver && !isReadOnly}
                 dropTargetConnector={dropTaggedValueRef}
               >
-                <div className="panel__content__lists">
+                <PanelContentLists>
                   <TaggedValueDragPreviewLayer />
                   {property.taggedValues.map((taggedValue) => (
                     <TaggedValueEditor
@@ -291,7 +292,7 @@ export const PropertyEditor = observer(
                       isReadOnly={isReadOnly}
                     />
                   ))}
-                </div>
+                </PanelContentLists>
               </PanelDropZone>
             )}
             {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
@@ -299,7 +300,7 @@ export const PropertyEditor = observer(
                 isDragOver={isStereotypeDragOver && !isReadOnly}
                 dropTargetConnector={dropStereotypeRef}
               >
-                <div className="panel__content__lists">
+                <PanelContentLists>
                   <StereotypeDragPreviewLayer />
                   {property.stereotypes.map((stereotype) => (
                     <StereotypeSelector
@@ -310,7 +311,7 @@ export const PropertyEditor = observer(
                       isReadOnly={isReadOnly}
                     />
                   ))}
-                </div>
+                </PanelContentLists>
               </PanelDropZone>
             )}
           </PanelContent>

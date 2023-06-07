@@ -44,6 +44,10 @@ import {
   ModalFooterButton,
   PanelDnDEntryDragHandle,
   PanelDnDEntry,
+  PanelHeaderActionItem,
+  PanelHeader,
+  PanelHeaderActions,
+  Panel,
 } from '@finos/legend-art';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -1175,12 +1179,12 @@ export const QueryBuilderTDSWindowPanel = observer(
       [applicationStore, handleDrop],
     );
     return (
-      <div className="panel">
+      <Panel>
         <div
           data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY}
           className="panel"
         >
-          <div className="panel__header">
+          <PanelHeader>
             <div className="panel__header__title">
               <div className="panel__header__title__label">Window Function</div>
               {tdsWindowState.windowValidationIssues.length && (
@@ -1189,18 +1193,16 @@ export const QueryBuilderTDSWindowPanel = observer(
                 />
               )}
             </div>
-            <div className="panel__header__actions">
-              <button
-                className="panel__header__action"
+            <PanelHeaderActions>
+              <PanelHeaderActionItem
                 onClick={createTDSWindow}
                 disabled={!tdsWindowState.tdsState.tdsColumns.length}
-                tabIndex={-1}
                 title="Create Window Function Column"
               >
                 <PlusIcon />
-              </button>
-            </div>
-          </div>
+              </PanelHeaderActionItem>
+            </PanelHeaderActions>
+          </PanelHeader>
           <PanelContent>
             <PanelDropZone
               isDragOver={isDragOver}
@@ -1234,7 +1236,7 @@ export const QueryBuilderTDSWindowPanel = observer(
             />
           )}
         </div>
-      </div>
+      </Panel>
     );
   },
 );

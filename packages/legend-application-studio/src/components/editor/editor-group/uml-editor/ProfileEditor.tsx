@@ -32,6 +32,7 @@ import {
   Panel,
   PanelContent,
   PanelDnDEntry,
+  PanelContentLists,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -355,7 +356,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
         </div>
         <PanelContent>
           {selectedTab === UML_EDITOR_TAB.TAGS && (
-            <div className="panel__content__lists">
+            <PanelContentLists>
               <DragPreviewLayer
                 labelGetter={(item: TagDragSource): string =>
                   item.tag.value === '' ? '(unknown)' : item.tag.value
@@ -371,10 +372,10 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   isReadOnly={isReadOnly}
                 />
               ))}
-            </div>
+            </PanelContentLists>
           )}
           {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-            <div className="panel__content__lists">
+            <PanelContentLists>
               <DragPreviewLayer
                 labelGetter={(item: StereotypeDragSource): string =>
                   item.stereotype.value === ''
@@ -392,7 +393,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   isReadOnly={isReadOnly}
                 />
               ))}
-            </div>
+            </PanelContentLists>
           )}
         </PanelContent>
       </Panel>

@@ -35,6 +35,9 @@ import {
   PanelContent,
   ModalTitle,
   Modal,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PanelHeader,
 } from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from './TypeTree.js';
@@ -497,25 +500,23 @@ export const EnumerationMappingEditor = observer(
                 data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
                 className="panel source-panel"
               >
-                <div className="panel__header">
+                <PanelHeader>
                   <div className="panel__header__title">
                     <div className="panel__header__title__label">source</div>
                     <div className="panel__header__title__content">
                       {sourceType?.name ?? '(none)'}
                     </div>
                   </div>
-                  <div className="panel__header__actions">
-                    <button
-                      className="panel__header__action"
+                  <PanelHeaderActions>
+                    <PanelHeaderActionItem
                       onClick={showSourceSelectorModal}
                       disabled={isReadOnly}
-                      tabIndex={-1}
                       title="Choose a source..."
                     >
                       <PencilIcon />
-                    </button>
-                  </div>
-                </div>
+                    </PanelHeaderActionItem>
+                  </PanelHeaderActions>
+                </PanelHeader>
                 <PanelContent>
                   <PanelDropZone
                     dropTargetConnector={dropRef}

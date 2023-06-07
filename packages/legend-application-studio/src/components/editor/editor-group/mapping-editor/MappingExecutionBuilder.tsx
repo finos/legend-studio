@@ -43,6 +43,10 @@ import {
   Modal,
   ModalTitle,
   clsx,
+  PanelHeaderActionItem,
+  PanelHeader,
+  PanelHeaderActions,
+  Panel,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -371,30 +375,20 @@ const MappingExecutionQueryEditor = observer(
     );
 
     return (
-      <div className="panel mapping-execution-builder__query-panel">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">query</div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
+      <Panel className="mapping-execution-builder__query-panel">
+        <PanelHeader title="query">
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
               onClick={editWithQueryBuilder}
               title="Edit query..."
             >
               <PencilIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={clearQuery}
-              title="Clear query"
-            >
+            </PanelHeaderActionItem>
+            <PanelHeaderActionItem onClick={clearQuery} title="Clear query">
               <TimesIcon />
-            </button>
-          </div>
-        </div>
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
         {!isStubbed_RawLambda(queryState.query) && (
           <PanelContent>
             <div className="mapping-execution-builder__query-panel__query">
@@ -430,7 +424,7 @@ const MappingExecutionQueryEditor = observer(
             changeClassMapping={changeClassMapping}
           />
         )}
-      </div>
+      </Panel>
     );
   },
 );
@@ -446,13 +440,13 @@ export const MappingExecutionObjectInputDataBuilder = observer(
       objectInputData_setData(inputDataState.inputData, val);
 
     return (
-      <div className="panel__content mapping-execution-builder__input-data-panel__content">
+      <PanelContent className="mapping-execution-builder__input-data-panel__content">
         <CodeEditor
           language={CODE_EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
         />
-      </div>
+      </PanelContent>
     );
   },
 );
@@ -466,13 +460,13 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
       flatData_setData(inputDataState.inputData, val);
 
     return (
-      <div className="panel__content mapping-execution-builder__input-data-panel__content">
+      <PanelContent className="mapping-execution-builder__input-data-panel__content">
         <CodeEditor
           language={CODE_EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
         />
-      </div>
+      </PanelContent>
     );
   },
 );
@@ -489,7 +483,7 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
       relationalInputData_setData(inputDataState.inputData, val);
 
     return (
-      <div className="panel__content mapping-execution-builder__input-data-panel__content">
+      <PanelContent className="mapping-execution-builder__input-data-panel__content">
         <CodeEditor
           language={getRelationalInputTestDataEditorLanguage(
             inputDataState.inputData.inputType,
@@ -497,7 +491,7 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
         />
-      </div>
+      </PanelContent>
     );
   },
 );
@@ -536,7 +530,7 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
     );
 
     return (
-      <div className="panel__content">
+      <PanelContent>
         <PanelDropZone dropTargetConnector={dropRef} isDragOver={isDragOver}>
           <BlankPanelPlaceholder
             text="Choose a class mapping"
@@ -546,7 +540,7 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
             isDropZoneActive={canDrop}
           />
         </PanelDropZone>
-      </div>
+      </PanelContent>
     );
   },
 );
@@ -859,20 +853,16 @@ export const MappingExecutionBuilder = observer(
               <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={28}>
-              <div className="panel mapping-execution-builder__result-panel">
-                <div className="panel__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__label">result</div>
-                  </div>
-                </div>
-                <div className="panel__content mapping-execution-builder__result-panel__content">
+              <Panel className="mapping-execution-builder__result-panel">
+                <PanelHeader title="result" />
+                <PanelContent className="mapping-execution-builder__result-panel__content">
                   <CodeEditor
                     inputValue={executionResultText ?? ''}
                     isReadOnly={true}
                     language={CODE_EDITOR_LANGUAGE.JSON}
                   />
-                </div>
-              </div>
+                </PanelContent>
+              </Panel>
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

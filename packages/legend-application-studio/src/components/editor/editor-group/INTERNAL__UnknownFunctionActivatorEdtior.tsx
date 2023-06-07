@@ -17,7 +17,13 @@
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
-import { ArrowRightIcon, BlankPanelContent, Panel } from '@finos/legend-art';
+import {
+  ArrowRightIcon,
+  BlankPanelContent,
+  Panel,
+  PanelContent,
+  PanelHeader,
+} from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
@@ -59,14 +65,8 @@ export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
   return (
     <div className="function-activator-editor">
       <Panel>
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">
-              function activator
-            </div>
-          </div>
-        </div>
-        <div className="panel__content">
+        <PanelHeader title="function activator" />
+        <PanelContent>
           <div className="function-activator-editor__content">
             {valueBuilderState && (
               <>
@@ -135,7 +135,7 @@ export const INTERNAL__UnknownFunctionActivatorEdtior = observer(() => {
               Publish to Sandbox
             </button>
           </div>
-        </div>
+        </PanelContent>
       </Panel>
     </div>
   );

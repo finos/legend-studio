@@ -27,6 +27,9 @@ import {
   PencilEditIcon,
   PanelDropZone,
   PanelContent,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PanelHeader,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -301,25 +304,23 @@ export const InstanceSetImplementationSourceExplorer = observer(
             hasParseError,
         })}
       >
-        <div className="panel__header">
+        <PanelHeader>
           <div className="panel__header__title source-panel__header__title">
             <div className="panel__header__title__label">source</div>
             <div className="panel__header__title__content">{sourceLabel}</div>
           </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
               onClick={showSourceSelectorModal}
               disabled={
                 isReadOnly || setImplementation._isEmbedded || isUnsupported
               }
-              tabIndex={-1}
               title="Select Source..."
             >
               <PencilEditIcon />
-            </button>
-          </div>
-        </div>
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
         <PanelContent>
           <PanelDropZone
             dropTargetConnector={dropRef}
@@ -517,13 +518,13 @@ export const InstanceSetImplementationEditor = observer(
             <ResizablePanelGroup orientation="horizontal">
               <ResizablePanel minSize={300}>
                 <div className="panel class-mapping-editor__property-panel">
-                  <div className="panel__header">
+                  <PanelHeader>
                     <div className="panel__header__title">
                       <div className="panel__header__title__content">
                         PROPERTIES
                       </div>
                     </div>
-                    <div className="panel__header__actions">
+                    <PanelHeaderActions>
                       <div className="panel__header__action">
                         <div
                           className={`class-mapping-editor__sort-by-required-btn ${
@@ -537,8 +538,8 @@ export const InstanceSetImplementationEditor = observer(
                           <AsteriskIcon />
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </PanelHeaderActions>
+                  </PanelHeader>
                   <PanelContent>
                     {!isReadOnly &&
                       !isUnsupported &&

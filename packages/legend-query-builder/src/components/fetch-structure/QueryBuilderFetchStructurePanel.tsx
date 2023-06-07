@@ -20,6 +20,8 @@ import {
   BlankPanelContent,
   Panel,
   PanelContent,
+  PanelHeader,
+  PanelHeaderActions,
 } from '@finos/legend-art';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
@@ -80,7 +82,7 @@ export const QueryBuilderFetchStructurePanel = observer(
 
     return (
       <Panel>
-        <div className="panel__header">
+        <PanelHeader>
           <div className="panel__header__title">
             <div className="panel__header__title__label">fetch structure</div>
             {fetchStructureState.implementation.fetchStructureValidationIssues
@@ -93,7 +95,7 @@ export const QueryBuilderFetchStructurePanel = observer(
               />
             )}
           </div>
-          <div className="panel__header__actions">
+          <PanelHeaderActions>
             <div className="query-builder__fetch__structure__modes">
               {Object.values(FETCH_STRUCTURE_IMPLEMENTATION).map((type) => (
                 <button
@@ -108,8 +110,8 @@ export const QueryBuilderFetchStructurePanel = observer(
                 </button>
               ))}
             </div>
-          </div>
-        </div>
+          </PanelHeaderActions>
+        </PanelHeader>
         <QueryBuilderFetchStructureEditor
           queryBuilderState={queryBuilderState}
         />

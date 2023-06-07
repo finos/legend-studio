@@ -22,7 +22,11 @@ import type { SchemaSetModelGenerationState } from '../../../../stores/editor/ed
 import { debounce } from '@finos/legend-shared';
 import {
   InputWithInlineValidation,
+  Panel,
   PanelContent,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
   PanelLoadingIndicator,
   RefreshIcon,
   ResizablePanel,
@@ -97,29 +101,22 @@ export const SchemaSetModelGenerationEditor = observer(
     };
 
     return (
-      <div className="panel__content file-generation-editor__content">
+      <PanelContent className="file-generation-editor__content">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel size={250} minSize={50}>
-            <div className="panel file-generation-editor__configuration">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">{`${format} configuration`}</div>
-                </div>
-                <div className="panel__header__actions">
-                  <div className="panel__header__actions">
-                    <div className="panel__header__actions"></div>
-                    <button
-                      className="panel__header__action file-generation-editor__configuration__reset-btn"
-                      tabIndex={-1}
-                      disabled={isReadOnly || !properties.length}
-                      onClick={resetProperties}
-                      title="Reset to default configuration"
-                    >
-                      <RefreshIcon />
-                    </button>
-                  </div>
-                </div>
-              </div>
+            <Panel className="file-generation-editor__configuration">
+              <PanelHeader title={`${format} configuration`}>
+                <PanelHeaderActions>
+                  <PanelHeaderActionItem
+                    className="file-generation-editor__configuration__reset-btn"
+                    disabled={isReadOnly || !properties.length}
+                    onClick={resetProperties}
+                    title="Reset to default configuration"
+                  >
+                    <RefreshIcon />
+                  </PanelHeaderActionItem>
+                </PanelHeaderActions>
+              </PanelHeader>
               <PanelContent>
                 <div className="file-generation-editor__configuration__content">
                   <div className="panel__content__form__section">
@@ -161,20 +158,17 @@ export const SchemaSetModelGenerationEditor = observer(
                     ))}
                 </div>
               </PanelContent>
-            </div>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel>
-            <div className="panel generation-result-viewer__file">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">result</div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action generation-result-viewer__generate-btn"
+            <Panel className="generation-result-viewer__file">
+              <PanelHeader title="result">
+                <PanelHeaderActions>
+                  <PanelHeaderActionItem
+                    className=" generation-result-viewer__generate-btn"
                     onClick={regenerate}
                     disabled={
                       modelGenerationState.generatingModelsState.isInProgress ||
@@ -182,7 +176,6 @@ export const SchemaSetModelGenerationEditor = observer(
                         .isInProgress
                     }
                     title="Regenerate"
-                    tabIndex={-1}
                   >
                     <div className="generation-result-viewer__generate-btn__label">
                       <RefreshIcon className="generation-result-viewer__generate-btn__label__icon" />
@@ -190,7 +183,7 @@ export const SchemaSetModelGenerationEditor = observer(
                         Generate
                       </div>
                     </div>
-                  </button>
+                  </PanelHeaderActionItem>
 
                   {!modelGenerationState.isolatedGraph && (
                     <button
@@ -203,8 +196,8 @@ export const SchemaSetModelGenerationEditor = observer(
                       Import
                     </button>
                   )}
-                </div>
-              </div>
+                </PanelHeaderActions>
+              </PanelHeader>
               <PanelContent>
                 <PanelLoadingIndicator
                   isLoading={
@@ -219,10 +212,10 @@ export const SchemaSetModelGenerationEditor = observer(
                   language={CODE_EDITOR_LANGUAGE.PURE}
                 />
               </PanelContent>
-            </div>
+            </Panel>
           </ResizablePanel>
         </ResizablePanelGroup>
-      </div>
+      </PanelContent>
     );
   },
 );

@@ -36,6 +36,11 @@ import {
   Button,
   PencilEditIcon,
   PanelDivider,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PanelContent,
+  PanelHeader,
+  PanelContentLists,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -99,7 +104,7 @@ const ProjectStructureEditor = observer(
     };
 
     return (
-      <div className="panel__content__lists">
+      <PanelContentLists>
         <div className="project-configuration-editor__project__structure__version">
           <div className="project-configuration-editor__project__structure__version__label">
             <div className="project-configuration-editor__project__structure__version__label__status">
@@ -197,7 +202,7 @@ const ProjectStructureEditor = observer(
             </PanelListItem>
           </PanelFormSection>
         </PanelForm>
-      </div>
+      </PanelContentLists>
     );
   },
 );
@@ -662,7 +667,7 @@ export const ProjectConfigurationEditor = observer(() => {
   return (
     <div className="project-configuration-editor">
       <Panel>
-        <div className="panel__header">
+        <PanelHeader>
           <div className="panel__header__title">
             <div className="panel__header__title__label">
               project configuration
@@ -685,8 +690,8 @@ export const ProjectConfigurationEditor = observer(() => {
           >
             Update
           </button>
-        </div>
-        <div className="panel__header project-configuration-editor__tabs__header">
+        </PanelHeader>
+        <PanelHeader className="project-configuration-editor__tabs__header">
           <div className="project-configuration-editor__tabs">
             {tabs.map((tab) => (
               <button
@@ -701,19 +706,17 @@ export const ProjectConfigurationEditor = observer(() => {
               </button>
             ))}
           </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
               disabled={disableAddButton}
-              tabIndex={-1}
               onClick={addValue}
               title={addButtonTitle}
             >
               <PlusIcon />
-            </button>
-          </div>
-        </div>
-        <div className="panel__content project-configuration-editor__content">
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        <PanelContent className="project-configuration-editor__content">
           {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE && (
             <ProjectStructureEditor
               projectConfig={currentProjectConfiguration}
@@ -729,7 +732,7 @@ export const ProjectConfigurationEditor = observer(() => {
               isReadOnly={isReadOnly}
             />
           )}
-        </div>
+        </PanelContent>
       </Panel>
     </div>
   );

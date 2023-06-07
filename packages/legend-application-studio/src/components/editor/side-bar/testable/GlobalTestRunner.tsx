@@ -58,7 +58,7 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useState } from 'react';
-import { GLOBAL_TEST_RUNNER_TABS } from '../../../../stores/editor/EditorConfig.js';
+import { TEST_RUNNER_TABS } from '../../../../stores/editor/EditorConfig.js';
 import {
   type TestableExplorerTreeNodeData,
   type GlobalTestRunnerState,
@@ -429,7 +429,7 @@ export const GlobalTestRunner = observer(
     const editorStore = useEditorStore();
     const globalTestRunnerState = props.globalTestRunnerState;
     const isDispatchingAction = globalTestRunnerState.isDispatchingAction;
-    const testRunnerTabs = (Object.values(GLOBAL_TEST_RUNNER_TABS) as string[])
+    const testRunnerTabs = (Object.values(TEST_RUNNER_TABS) as string[])
       .concat(
         editorStore.pluginManager
           .getApplicationPlugins()
@@ -443,7 +443,7 @@ export const GlobalTestRunner = observer(
       }));
 
     const [selectedTab, setSelectedTab] = useState(
-      GLOBAL_TEST_RUNNER_TABS.GLOBAL_TEST_RUNNER.valueOf(),
+      TEST_RUNNER_TABS.TEST_RUNNER.valueOf(),
     );
 
     const changeTab = (tab: string): void => {
@@ -496,10 +496,10 @@ export const GlobalTestRunner = observer(
     const reset = (): void => globalTestRunnerState.init(true);
 
     const renderTestRunnerTab = (): React.ReactNode => {
-      if (selectedTab === GLOBAL_TEST_RUNNER_TABS.GLOBAL_TEST_RUNNER) {
+      if (selectedTab === TEST_RUNNER_TABS.TEST_RUNNER) {
         return (
           <div
-            data-testid={LEGEND_STUDIO_TEST_ID.GLOBAL_TEST_RUNNER}
+            data-testid={LEGEND_STUDIO_TEST_ID.TEST_RUNNER}
             className="panel global-test-runner"
           >
             <PanelHeader className="panel__header side-bar__header">
@@ -535,6 +535,19 @@ export const GlobalTestRunner = observer(
                 </button>
               </div>
             </PanelHeader>
+            <div className="panel__header__tabs panel__header__test__runner__tabs">
+              {testRunnerTabs.map((tab) => (
+                <div
+                  key={tab.value}
+                  onClick={() => changeTab(tab.value)}
+                  className={clsx('panel__header__tab', {
+                    ['panel__header__tab--active']: tab.value === selectedTab,
+                  })}
+                >
+                  {toTitleCase(prettyCONSTName(tab.value))}
+                </div>
+              ))}
+            </div>
             <PanelContent className="side-bar__content">
               <PanelLoadingIndicator isLoading={isDispatchingAction} />
               <Panel className="side-bar__panel">
@@ -587,21 +600,6 @@ export const GlobalTestRunner = observer(
 
     return (
       <Panel>
-        <div className="panel__header panel__header--dark">
-          <div className="panel__header__tabs">
-            {testRunnerTabs.map((tab) => (
-              <div
-                key={tab.value}
-                onClick={() => changeTab(tab.value)}
-                className={clsx('panel__header__tab', {
-                  ['panel__header__tab--active']: tab.value === selectedTab,
-                })}
-              >
-                {toTitleCase(prettyCONSTName(tab.value))}
-              </div>
-            ))}
-          </div>
-        </div>
         <PanelContent>{renderTestRunnerTab()}</PanelContent>
       </Panel>
     );

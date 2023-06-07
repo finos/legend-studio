@@ -41,6 +41,10 @@ import {
   FolderIcon,
   FileCodeIcon,
   PanelContent,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  Panel,
 } from '@finos/legend-art';
 import type { GeneratedFileStructureState } from '../../../../stores/editor/editor-state/FileGenerationState.js';
 import {
@@ -213,29 +217,25 @@ export const FileSystemViewer = observer(
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={250} minSize={250}>
           <div className="generation-result-viewer__side-bar">
-            <div className="panel generation-result-viewer__explorer">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">result</div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
+            <Panel className="generation-result-viewer__explorer">
+              <PanelHeader title="result">
+                <PanelHeaderActions>
+                  <PanelHeaderActionItem
                     className={clsx(
-                      'panel__header__action  generation-result-viewer__regenerate-btn',
+                      'generation-result-viewer__regenerate-btn',
                       {
                         ' generation-result-viewer__regenerate-btn--loading':
                           generatedFileState.generatingAction.isInProgress,
                       },
                     )}
-                    tabIndex={-1}
                     disabled={generatedFileState.generatingAction.isInProgress}
                     onClick={regenerate}
                     title="Regenerate"
                   >
                     <RefreshIcon />
-                  </button>
-                </div>
-              </div>
+                  </PanelHeaderActionItem>
+                </PanelHeaderActions>
+              </PanelHeader>
               <PanelContent>
                 <PanelLoadingIndicator
                   isLoading={generatedFileState.generatingAction.isInProgress}
@@ -253,7 +253,7 @@ export const FileSystemViewer = observer(
                   </BlankPanelContent>
                 )}
               </PanelContent>
-            </div>
+            </Panel>
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>

@@ -58,6 +58,9 @@ import {
   Panel,
   PanelContent,
   ModalTitle,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PanelHeader,
 } from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from './ServiceExecutionQueryEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -680,24 +683,22 @@ const MultiPureExecutionEditor = observer(
               </div>
             </div>
             <div className="service-multi-execution-editor__panel">
-              <div className="panel__header">
+              <PanelHeader>
                 <div className="panel__header__title">
                   <div className="panel__header__title__content">
                     Execution Contexts
                   </div>
                 </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action"
+                <PanelHeaderActions>
+                  <PanelHeaderActionItem
                     disabled={multiExecutionState.serviceEditorState.isReadOnly}
                     onClick={addExecutionKey}
-                    tabIndex={-1}
                     title="Add an execution context"
                   >
                     <PlusIcon />
-                  </button>
-                </div>
-              </div>
+                  </PanelHeaderActionItem>
+                </PanelHeaderActions>
+              </PanelHeader>
 
               {multiExecution.executionParameters.map((executionParameter) => (
                 <KeyExecutionItem

@@ -36,6 +36,9 @@ import {
   PanelLoadingIndicator,
   clsx,
   Button,
+  Panel,
+  PanelHeader,
+  PanelContent,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -98,10 +101,10 @@ const ExternalFormatModelImporterEditor = observer(
       );
     };
     return (
-      <div className="panel schema-set-panel">
-        <div className="panel__content model-loader">
+      <Panel className="schema-set-panel">
+        <PanelContent className="model-loader">
           <PanelLoadingIndicator isLoading={isFetchingDescriptions} />
-          <div className="panel__header">
+          <PanelHeader>
             <div className="uml-element-editor__tabs">
               {Object.values(SCHEMA_SET_TAB_TYPE).map((tab) => (
                 <div
@@ -116,9 +119,8 @@ const ExternalFormatModelImporterEditor = observer(
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="panel__content file-generation-editor__content">
+          </PanelHeader>
+          <PanelContent className="file-generation-editor__content">
             {currentTab === SCHEMA_SET_TAB_TYPE.SCHEMAS && (
               <SchemaSetGeneralEditor
                 schemaSetEditorState={schemaSetEditorState}
@@ -128,9 +130,9 @@ const ExternalFormatModelImporterEditor = observer(
 
             {currentTab === SCHEMA_SET_TAB_TYPE.GENERATE_MODEL &&
               renderMainEditPanel()}
-          </div>
-        </div>
-      </div>
+          </PanelContent>
+        </PanelContent>
+      </Panel>
     );
   },
 );
@@ -195,7 +197,7 @@ export const ModelImporter = observer(() => {
       const updateModel = (val: string): void =>
         modelImportEditorState.setModelText(val);
       return (
-        <div className="panel__content model-loader__editor">
+        <PanelContent className="model-loader__editor">
           <CodeEditor
             language={
               modelImportEditorState.nativeType ===
@@ -206,7 +208,7 @@ export const ModelImporter = observer(() => {
             inputValue={modelImportEditorState.modelText}
             updateInput={updateModel}
           />
-        </div>
+        </PanelContent>
       );
     } else if (
       modelImportEditorState instanceof ExternalFormatModelImporterState
@@ -221,8 +223,8 @@ export const ModelImporter = observer(() => {
   };
 
   return (
-    <div className="panel model-loader">
-      <div className="panel__header model-loader__header">
+    <Panel className="model-loader">
+      <PanelHeader className="model-loader__header">
         <div className="model-loader__header__configs">
           <DropdownMenu
             className="model-loader__header__configs__type"
@@ -339,9 +341,9 @@ export const ModelImporter = observer(() => {
             text="Load"
           />
         </div>
-      </div>
+      </PanelHeader>
 
       {renderModelImporterEditor()}
-    </div>
+    </Panel>
   );
 });
