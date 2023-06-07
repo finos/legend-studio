@@ -26,6 +26,10 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelContent,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  Panel,
+  PanelHeader,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { ServiceTestSuite } from '@finos/legend-graph';
@@ -113,10 +117,10 @@ export const ServiceTestableEditor = observer(
     );
 
     return (
-      <div className="service-test-suite-editor panel">
-        <div className="panel__header">
+      <Panel className="service-test-suite-editor">
+        <PanelHeader>
           {service.tests.length ? (
-            <div className="panel__header service-test-suite-editor__header service-test-suite-editor__header--with-tabs">
+            <PanelHeader className="service-test-suite-editor__header service-test-suite-editor__header--with-tabs">
               <div className="uml-element-editor__tabs">
                 {service.tests.map((suite) => (
                   <div
@@ -141,22 +145,17 @@ export const ServiceTestableEditor = observer(
                   </div>
                 ))}
               </div>
-            </div>
+            </PanelHeader>
           ) : (
             <div></div>
           )}
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={addSuite}
-              title="Add Service Suite"
-            >
+          <PanelHeaderActions>
+            <PanelHeaderActionItem onClick={addSuite} title="Add Service Suite">
               <PlusIcon />
-            </button>
-          </div>
-        </div>
-        <div className="service-test-suite-editor panel">
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        <Panel className="service-test-suite-editor">
           {serviceTestableState.selectedSuiteState && (
             <ServiceTestSuiteEditor
               serviceTestSuiteState={serviceTestableState.selectedSuiteState}
@@ -181,8 +180,8 @@ export const ServiceTestableEditor = observer(
               setValue={renameSuite}
             />
           )}
-        </div>
-      </div>
+        </Panel>
+      </Panel>
     );
   },
 );

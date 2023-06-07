@@ -31,6 +31,7 @@ import {
   PanelForm,
   CustomSelectorInput,
   PanelFormValidatedTextField,
+  PanelContentLists,
 } from '@finos/legend-art';
 import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
@@ -197,7 +198,7 @@ const ServiceGeneralEditor = observer(() => {
   }, [serviceState]);
 
   return (
-    <div className="panel__content__lists service-editor__general">
+    <PanelContentLists className="service-editor__general">
       <PanelForm>
         <PanelFormValidatedTextField
           ref={patternRef}
@@ -436,7 +437,7 @@ const ServiceGeneralEditor = observer(() => {
           </div>
         </div>
       </PanelForm>
-    </div>
+    </PanelContentLists>
   );
 });
 

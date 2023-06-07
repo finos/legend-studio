@@ -22,6 +22,10 @@ import {
   SquareIcon,
   PanelLoadingIndicator,
   PanelFormBooleanField,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PanelHeader,
+  PanelContent,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
@@ -161,30 +165,25 @@ export const BulkServiceRegistrationEditor = observer(() => {
       data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR}
       className="service-registration-editor"
     >
-      <div className="panel__header">
-        <div className="panel__header__title">
-          <div className="panel__header__title__label">Register Service</div>
-        </div>
-        <div className="panel__header__actions">
-          <div className="panel__header__action">
-            <button
-              className="btn--dark model-loader__header__load-btn"
-              onClick={registerService}
-              disabled={disableRegistration}
-              title="Register Service"
-            >
-              Register
-            </button>
-          </div>
-        </div>
-      </div>
+      <PanelHeader title="Register Service">
+        <PanelHeaderActions>
+          <PanelHeaderActionItem
+            className="btn--dark model-loader__header__load-btn"
+            onClick={registerService}
+            disabled={disableRegistration}
+            title="Register Service"
+          >
+            Register
+          </PanelHeaderActionItem>
+        </PanelHeaderActions>
+      </PanelHeader>
       <PanelLoadingIndicator
         isLoading={
           globalBulkServiceRegistrationState.serviceConfigState
             .registrationState.isInProgress
         }
       />
-      <div className="panel__content">
+      <PanelContent>
         <div className="panel__content__form">
           {globalBulkServiceRegistrationState.serviceConfigState
             .registrationState.message && (
@@ -305,7 +304,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
             />
           </div>
         </div>
-      </div>
+      </PanelContent>
     </div>
   );
 });

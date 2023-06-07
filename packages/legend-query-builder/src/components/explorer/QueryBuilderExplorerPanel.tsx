@@ -53,6 +53,9 @@ import {
   ModalFooter,
   ModalHeader,
   ModalFooterButton,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PanelHeader,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -854,11 +857,8 @@ export const QueryBuilderExplorerPanel = observer(
           backdrop__element: applicationStore.layoutService.showBackdrop,
         })}
       >
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">explorer</div>
-          </div>
-          <div className="panel__header__actions">
+        <PanelHeader title="explorer">
+          <PanelHeaderActions>
             <button
               ref={searchButtonRef}
               className={clsx('panel__header__action', {
@@ -871,14 +871,9 @@ export const QueryBuilderExplorerPanel = observer(
             >
               <SearchIcon />
             </button>
-            <button
-              className="panel__header__action"
-              onClick={collapseTree}
-              tabIndex={-1}
-              title="Collapse Tree"
-            >
+            <PanelHeaderActionItem onClick={collapseTree} title="Collapse Tree">
               <CompressIcon />
-            </button>
+            </PanelHeaderActionItem>
             <DropdownMenu
               className="panel__header__action"
               title="Show Options Menu..."
@@ -924,14 +919,15 @@ export const QueryBuilderExplorerPanel = observer(
             >
               <MoreVerticalIcon className="query-builder__icon__more-options" />
             </DropdownMenu>
-          </div>
+          </PanelHeaderActions>
           {propertySearchPanelState.isSearchPanelOpen && (
             <QueryBuilderPropertySearchPanel
               queryBuilderState={queryBuilderState}
               triggerElement={searchButtonRef.current}
             />
           )}
-        </div>
+        </PanelHeader>
+
         <div className="panel__content query-builder-explorer-tree__content">
           <PanelLoadingIndicator
             isLoading={

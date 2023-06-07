@@ -53,7 +53,7 @@ export const SideBar = observer(() => {
             workflowManagerState={editorStore.workspaceWorkflowManagerState}
           />
         );
-      case ACTIVITY_MODE.GLOBAL_TEST_RUNNER:
+      case ACTIVITY_MODE.TEST_RUNNER:
         return (
           <GlobalTestRunner
             globalTestRunnerState={editorStore.globalTestRunnerState}

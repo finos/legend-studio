@@ -26,7 +26,13 @@ import {
 } from '../../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { Class } from '@finos/legend-graph';
-import { CustomSelectorInput, LockIcon, PanelContent } from '@finos/legend-art';
+import {
+  CustomSelectorInput,
+  LockIcon,
+  Panel,
+  PanelContent,
+  PanelHeader,
+} from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -168,16 +174,10 @@ export const ConnectionEditor = observer(
       }
     };
     return (
-      <div className="panel connection-editor">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">
-              {connectionValueState.label()}
-            </div>
-          </div>
-        </div>
+      <Panel className="connection-editor">
+        <PanelHeader title={connectionValueState.label()} />
         <PanelContent>{renderConnectionValueEditor()}</PanelContent>
-      </div>
+      </Panel>
     );
   },
 );

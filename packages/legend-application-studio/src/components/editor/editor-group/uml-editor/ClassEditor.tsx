@@ -46,6 +46,7 @@ import {
   PanelDropZone,
   Panel,
   PanelDnDEntry,
+  PanelContentLists,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -1216,7 +1217,7 @@ const PropertiesEditor = observer(
         isDragOver={isPropertyDragOver && !isReadOnly}
         dropTargetConnector={dropPropertyRef}
       >
-        <div className="panel__content__lists">
+        <PanelContentLists>
           <DragPreviewLayer
             labelGetter={(item: ClassPropertyDragSource): string =>
               item.property.name === '' ? '(unknown)' : item.property.name
@@ -1233,7 +1234,7 @@ const PropertiesEditor = observer(
               isReadOnly={isReadOnly}
             />
           ))}
-        </div>
+        </PanelContentLists>
       </PanelDropZone>
     );
   },
@@ -1299,7 +1300,7 @@ const DerviedPropertiesEditor = observer(
         isDragOver={isDerivedPropertyDragOver && !isReadOnly}
         dropTargetConnector={dropDerivedPropertyRef}
       >
-        <div className="panel__content__lists">
+        <PanelContentLists>
           <DragPreviewLayer
             labelGetter={(item: ClassDerivedPropertyDragSource): string =>
               item.derivedProperty.name === ''
@@ -1323,7 +1324,7 @@ const DerviedPropertiesEditor = observer(
                 isReadOnly={isReadOnly}
               />
             ))}
-        </div>
+        </PanelContentLists>
       </PanelDropZone>
     );
   },
@@ -1350,7 +1351,7 @@ const ConstraintsEditor = observer(
     );
 
     return (
-      <div className="panel__content__lists">
+      <PanelContentLists>
         <DragPreviewLayer
           labelGetter={(item: ClassConstraintDragSource): string =>
             item.constraint.name === '' ? '(unknown)' : item.constraint.name
@@ -1372,7 +1373,7 @@ const ConstraintsEditor = observer(
               isReadOnly={isReadOnly}
             />
           ))}
-      </div>
+      </PanelContentLists>
     );
   },
 );
@@ -1441,7 +1442,7 @@ const SupertypesEditor = observer(
         isDragOver={isSuperTypeDragOver && !isReadOnly}
         dropTargetConnector={dropSuperTypeRef}
       >
-        <div className="panel__content__lists">
+        <PanelContentLists>
           <DragPreviewLayer
             labelGetter={(item: ClassSuperTypeDragSource): string =>
               item.superType.value.rawType.name
@@ -1457,7 +1458,7 @@ const SupertypesEditor = observer(
               isReadOnly={isReadOnly}
             />
           ))}
-        </div>
+        </PanelContentLists>
       </PanelDropZone>
     );
   },
@@ -1504,7 +1505,7 @@ const TaggedValuesEditor = observer(
         isDragOver={isTaggedValueDragOver && !isReadOnly}
         dropTargetConnector={dropTaggedValueRef}
       >
-        <div className="panel__content__lists">
+        <PanelContentLists>
           <TaggedValueDragPreviewLayer />
           {_class.taggedValues.map((taggedValue) => (
             <TaggedValueEditor
@@ -1515,7 +1516,7 @@ const TaggedValuesEditor = observer(
               isReadOnly={isReadOnly}
             />
           ))}
-        </div>
+        </PanelContentLists>
       </PanelDropZone>
     );
   },
@@ -1564,7 +1565,7 @@ const StereotypesEditor = observer(
         isDragOver={isStereotypeDragOver && !isReadOnly}
         dropTargetConnector={dropStereotypeRef}
       >
-        <div className="panel__content__lists">
+        <PanelContentLists>
           <StereotypeDragPreviewLayer />
           {_class.stereotypes.map((stereotype) => (
             <StereotypeSelector
@@ -1575,7 +1576,7 @@ const StereotypesEditor = observer(
               isReadOnly={isReadOnly}
             />
           ))}
-        </div>
+        </PanelContentLists>
       </PanelDropZone>
     );
   },

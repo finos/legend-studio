@@ -47,6 +47,7 @@
   --color-legacylight-light-blue-600: #2d3d51;
   --color-legacylight-green-100: #5cb65c;
   --color-legacylight-orange-100: #f68f1e;
+  --color-legacylight-orange-150: #ea8212;
 }
 
 .theme__legacy-light {
@@ -61,6 +62,11 @@
     &:focus {
       border-color: var(--color-light-grey-250);
     }
+  }
+
+  .input--caution {
+    border: 0.1rem solid var(--color-yellow-100);
+    background: var(--color-yellow-0);
   }
 
   // ---------------------------- Menu -------------------------------
@@ -89,16 +95,22 @@
 
   // ---------------------------- Button -------------------------------
 
-  .btn--dark,
-  .btn--dark:hover {
+  .btn--dark {
     background: var(--color-legacylight-light-blue-100);
     color: var(--color-white);
   }
 
-  .btn--dark.btn--caution,
-  .btn--dark.btn--caution:hover {
+  .btn--dark:hover {
+    background: var(--color-legacylight-light-blue-200);
+  }
+
+  .btn--dark.btn--caution {
     background: var(--color-legacylight-orange-100);
     color: var(--color-white);
+  }
+
+  .btn--dark.btn--caution:hover {
+    background: var(--color-legacylight-orange-150);
   }
 
   .btn--dark.btn--caution[disabled],
@@ -254,13 +266,19 @@
     background: var(--color-dark-grey-400);
   }
 
-  .query-builder__olap__column__operation__operator__badge {
+  .query-builder__olap__column__operation__operator__badge,
+  .query-builder__olap__column__sortby__operator__badge {
     background: var(--color-dark-grey-400);
     color: var(--color-light-grey-100);
 
     svg {
       color: var(--color-legacylight-light-grey-100);
     }
+  }
+
+  .query-builder__olap__column__sortby__operator__label,
+  .query-builder__olap__column__operation__operator__label {
+    background: var(--color-dark-grey-400);
   }
 
   // ---------------------------- Basic Value Specification Editor  -------------------------------
@@ -530,6 +548,15 @@
     color: var(--color-light-grey-400);
   }
 
+  .execution-plan-viewer__panel__view-mode__option {
+    background: var(--color-light-grey-200);
+    border-color: var(--color-light-grey-400);
+  }
+
+  .execution-plan-viewer__panel__view-mode__option__group--native {
+    border: none;
+  }
+
   .execution-plan-viewer__content {
     .reflex-container.vertical > .reflex-splitter:hover,
     .reflex-container.vertical > .reflex-splitter.active {
@@ -701,7 +728,9 @@
     }
 
     .query-builder__projection__column__drag-handle,
-    .query-builder__olap__column__drag-handle {
+    .query-builder__olap__column__drag-handle,
+    .query-builder__projection__column__drag-handle__container
+      .dnd__entry-drag-handle {
       background: var(--color-light-grey-180);
 
       svg {
@@ -848,10 +877,6 @@
     }
 
     .query-builder__variables__variable__type__label {
-      background: var(--color-dark-grey-400);
-    }
-
-    .query-builder__parameters__parameter__type__label {
       background: var(--color-light-grey-50);
       color: var(--color-dark-grey-500);
       border: 0.1rem solid var(--color-light-grey-180);
@@ -1084,6 +1109,16 @@
     }
 
     // ------------------------------------ OLAP Panel ---------------------------------------
+
+    .query-builder__olap__column__drag-handle__container
+      .dnd__entry-drag-handle {
+      background: var(--color-light-grey-180);
+
+      svg {
+        color: var(--color-light-grey-400);
+      }
+    }
+
     .query-builder__olap__column__sortby__none,
     .query-builder__olap__column__window__content__label {
       background: var(--color-dark-grey-300);
@@ -1133,7 +1168,7 @@
       &__title,
       &:hover svg,
       svg {
-        color: var(--color-white);
+        color: var(--color-light-grey-0);
       }
     }
 
@@ -1200,6 +1235,10 @@
     .query-builder__result__export__dropdown__label {
       background: var(--color-legacylight-light-blue-100);
       color: var(--color-white);
+    }
+
+    .query-builder__result__export__dropdown__label:hover {
+      color: var(--color-light-grey-0);
     }
 
     .query-builder__result__export__dropdown__trigger {

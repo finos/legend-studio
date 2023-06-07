@@ -314,9 +314,12 @@ const QueryEditorExistingQueryHeader = observer(
               <div className="input--with-validation">
                 <input
                   ref={renameRef}
-                  className={clsx('input input--dark', {
-                    'input--caution': isExistingQueryName,
-                  })}
+                  className={clsx(
+                    'input input--dark query-editor__rename__input',
+                    {
+                      'input--caution': isExistingQueryName,
+                    },
+                  )}
                   onChange={changeQueryName}
                   onKeyDown={(event) => {
                     if (event.code === 'Enter') {
@@ -346,7 +349,7 @@ const QueryEditorExistingQueryHeader = observer(
         ) : (
           <div
             onDoubleClick={enableRename}
-            className="query-editor__header__content__main query-editor__header__content__title"
+            className="query-editor__header__content__main query-editor__header__content__title query-editor__header__content__title__text"
             title="Double-click to rename query"
           >
             {existingEditorStore.lightQuery.name}

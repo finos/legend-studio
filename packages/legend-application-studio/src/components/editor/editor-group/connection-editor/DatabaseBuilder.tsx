@@ -42,6 +42,8 @@ import {
   ModalFooterButton,
   BlankPanelContent,
   KeyIcon,
+  PanelHeader,
+  Panel,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
 import {
@@ -311,14 +313,8 @@ export const DatabaseBuilder = observer(
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel size={450}>
                 <div className="database-builder__config">
-                  <div className="panel__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__label">
-                        schema explorer
-                      </div>
-                    </div>
-                  </div>
-                  <div className="panel__content database-builder__config__content">
+                  <PanelHeader title="schema explorer" />
+                  <PanelContent className="database-builder__config__content">
                     {databaseBuilderState.treeData && (
                       <DatabaseBuilderExplorer
                         treeData={databaseBuilderState.treeData}
@@ -326,19 +322,14 @@ export const DatabaseBuilder = observer(
                         databaseBuilderState={databaseBuilderState}
                       />
                     )}
-                  </div>
+                  </PanelContent>
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter />
               <ResizablePanel>
-                <div className="panel database-builder__model">
-                  <div className="panel__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__label">
-                        database model
-                      </div>
-                    </div>
-                  </div>
+                <Panel className="database-builder__model">
+                  <PanelHeader title="database model" />
+
                   <PanelContent>
                     <div className="database-builder__modeller">
                       <div className="panel__content__form__section database-builder__modeller__path">
@@ -377,7 +368,7 @@ export const DatabaseBuilder = observer(
                       </div>
                     </div>
                   </PanelContent>
-                </div>
+                </Panel>
               </ResizablePanel>
             </ResizablePanelGroup>
           </ModalBody>

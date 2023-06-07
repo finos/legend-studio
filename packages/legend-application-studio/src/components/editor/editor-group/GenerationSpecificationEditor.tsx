@@ -294,22 +294,17 @@ const ModelGenerationSpecifications = observer(
     );
     return (
       <Panel>
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">Model Generations</div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
+        <PanelHeader title="Model Generations">
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
               onClick={addModelGeneration}
               disabled={!modelGenerationElementsInGraph.length}
-              tabIndex={-1}
               title="Add File Generation"
             >
               <PlusIcon />
-            </button>
-          </div>
-        </div>
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
         <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}

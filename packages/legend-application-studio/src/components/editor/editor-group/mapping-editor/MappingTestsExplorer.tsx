@@ -39,6 +39,7 @@ import {
   BlankPanelPlaceholder,
   MenuContent,
   MenuContentItem,
+  Panel,
 } from '@finos/legend-art';
 import {
   type MappingElementDragSource,
@@ -382,7 +383,7 @@ export const MappingTestsExplorer = observer(
     );
 
     return (
-      <div className="panel mapping-test-explorer">
+      <Panel className="mapping-test-explorer">
         <div className="panel__header" title={testReportSummary}>
           <div className="mapping-test-explorer__header__info">
             <div className="panel__header__title">
@@ -496,7 +497,7 @@ export const MappingTestsExplorer = observer(
             changeClassMapping={changeClassMapping}
           />
         )}
-      </div>
+      </Panel>
     );
   },
 );

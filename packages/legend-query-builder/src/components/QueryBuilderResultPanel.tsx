@@ -66,7 +66,6 @@ import {
   isBoolean,
   type PlainObject,
   prettyDuration,
-  prettyCONSTName,
   filterByType,
 } from '@finos/legend-shared';
 import { type MutableRefObject, forwardRef, useRef, useState } from 'react';
@@ -773,7 +772,7 @@ export const QueryBuilderResultPanel = observer(
                       className="query-builder__result__export__dropdown__menu__item"
                       onClick={(): void => confirmExport(format)}
                     >
-                      {prettyCONSTName(format)}
+                      {format}
                     </MenuContentItem>
                   ))}
                 </MenuContent>

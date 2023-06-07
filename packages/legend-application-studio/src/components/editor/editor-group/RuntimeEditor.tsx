@@ -62,6 +62,8 @@ import {
   ModalHeaderActions,
   ModalBody,
   Modal,
+  PanelHeaderActions,
+  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../ElementIconUtils.js';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/editor/utils/TreeUtils.js';
@@ -435,14 +437,11 @@ const RuntimeExplorer = observer(
     }, [runtimeEditorState]);
 
     return (
-      <div className="panel runtime-explorer">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">runtime</div>
-            <div className="panel__header__title__content">{runtimeName}</div>
-          </div>
-        </div>
-        <div className="panel__content">
+      <Panel className="runtime-explorer">
+        <PanelHeader title="runtime">
+          <div className="panel__header__title__content">{runtimeName}</div>
+        </PanelHeader>
+        <PanelContent>
           <PanelDropZone
             dropTargetConnector={dropRuntimeSubElementRef}
             isDragOver={isRuntimeSubElementDragOver}
@@ -463,8 +462,8 @@ const RuntimeExplorer = observer(
               />
             </div>
           </PanelDropZone>
-        </div>
-      </div>
+        </PanelContent>
+      </Panel>
     );
   },
 );
@@ -686,8 +685,8 @@ const IdentifiedConnectionsPerStoreEditor = observer(
       <div className="runtime-store-connections-editor">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel size={300} minSize={300}>
-            <div className="panel runtime-explorer">
-              <div className="panel__header">
+            <Panel className="runtime-explorer">
+              <PanelHeader>
                 {currentRuntimeEditorTabState instanceof
                   IdentifiedConnectionsPerStoreEditorTabState && (
                   <div className="panel__header__title">
@@ -715,18 +714,16 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                     </div>
                   </div>
                 )}
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action"
+                <PanelHeaderActions>
+                  <PanelHeaderActionItem
                     disabled={isReadOnly}
-                    tabIndex={-1}
                     onClick={addNewConnection}
                     title="Add Connection..."
                   >
                     <PlusIcon />
-                  </button>
-                </div>
-              </div>
+                  </PanelHeaderActionItem>
+                </PanelHeaderActions>
+              </PanelHeader>
               <ContextMenu
                 className="panel__content"
                 disabled={isReadOnly}
@@ -776,7 +773,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                   )}
                 </PanelDropZone>
               </ContextMenu>
-            </div>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
@@ -793,13 +790,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
             )}
             {(!connectionEditorState || !identifiedConnection) && (
               <Panel>
-                <div className="panel__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__label">
-                      runtime connection
-                    </div>
-                  </div>
-                </div>
+                <PanelHeader title="runtime connection" />
                 <PanelContent>
                   <BlankPanelContent>No connection selected</BlankPanelContent>
                 </PanelContent>
@@ -930,7 +921,7 @@ const RuntimeGeneralEditor = observer(
 
     return (
       <div className="panel runtime-explorer">
-        <div className="panel__header"></div>
+        <PanelHeader />
         <PanelContent>
           <PanelDropZone
             dropTargetConnector={dropMappingRef}

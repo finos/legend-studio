@@ -337,6 +337,10 @@
   &__mode {
     @include flexVCenter;
 
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
     background: var(--color-dark-grey-250);
     color: var(--color-light-grey-200);
     height: 2.2rem;

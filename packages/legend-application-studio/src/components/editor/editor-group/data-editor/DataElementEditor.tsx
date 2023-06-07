@@ -29,6 +29,7 @@ import {
   LockIcon,
   MenuContent,
   MenuContentItem,
+  PanelContentLists,
   PanelDropZone,
   PlusIcon,
 } from '@finos/legend-art';
@@ -353,7 +354,7 @@ export const DataElementEditor = observer(() => {
                   isDragOver={isStereotypeDragOver && !isReadOnly}
                   dropTargetConnector={dropStereotypeRef}
                 >
-                  <div className="panel__content__lists">
+                  <PanelContentLists>
                     <StereotypeDragPreviewLayer />
                     {dataElement.stereotypes.map((stereotype) => (
                       <StereotypeSelector
@@ -365,7 +366,7 @@ export const DataElementEditor = observer(() => {
                         darkTheme={true}
                       />
                     ))}
-                  </div>
+                  </PanelContentLists>
                 </PanelDropZone>
               </div>
             </div>
@@ -402,7 +403,7 @@ export const DataElementEditor = observer(() => {
                   isDragOver={isTaggedValueDragOver && !isReadOnly}
                   dropTargetConnector={dropTaggedValueRef}
                 >
-                  <div className="panel__content__lists">
+                  <PanelContentLists>
                     <TaggedValueDragPreviewLayer />
                     {dataElement.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
@@ -414,7 +415,7 @@ export const DataElementEditor = observer(() => {
                         darkTheme={true}
                       />
                     ))}
-                  </div>
+                  </PanelContentLists>
                 </PanelDropZone>
               </div>
             </div>

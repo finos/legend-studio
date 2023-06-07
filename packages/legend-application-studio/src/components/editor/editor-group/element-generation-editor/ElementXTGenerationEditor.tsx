@@ -18,6 +18,9 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   ArrowCircleLeftIcon,
   PanelContent,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
   RefreshIcon,
   ResizablePanel,
   ResizablePanelGroup,
@@ -83,14 +86,10 @@ export const ExternalFormatGeneratioConfigEditor = observer(
 
     return (
       <div className="panel file-generation-editor__configuration">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">{`${xtState.description.name} configuration`}</div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action file-generation-editor__configuration__reset-btn"
-              tabIndex={-1}
+        <PanelHeader title={`${xtState.description.name} configuration`}>
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
+              className="file-generation-editor__configuration__reset-btn"
               disabled={
                 isReadOnly ||
                 !configSpecification.configurationProperties.length
@@ -99,9 +98,9 @@ export const ExternalFormatGeneratioConfigEditor = observer(
               title="Reset to default configuration"
             >
               <RefreshIcon />
-            </button>
-          </div>
-        </div>
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
         <PanelContent>
           <div className="file-generation-editor__configuration__content">
             <ModelUnitEditor

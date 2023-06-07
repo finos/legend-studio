@@ -57,6 +57,11 @@ import {
   ViewHeadlineIcon,
   TimesIcon,
   WordWrapIcon,
+  Panel,
+  PanelContent,
+  PanelHeader,
+  PanelHeaderActions,
+  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -510,36 +515,27 @@ const TestResultViewer = observer(
     };
 
     return (
-      <div className="panel">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">{testInfo.text}</div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className={clsx('panel__header__action', {
+      <Panel>
+        <PanelHeader title={testInfo.text}>
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
+              className={clsx({
                 'panel__header__action--active': wrapText,
               })}
-              tabIndex={-1}
               onClick={(): void => setWrapText(!wrapText)}
               title="Toggle Text Wrap"
             >
               <WordWrapIcon className="test-runner-panel__result__header__icon--text-wrap" />
-            </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              title="Open File"
-              onClick={goToFile}
-            >
+            </PanelHeaderActionItem>
+            <PanelHeaderActionItem title="Open File" onClick={goToFile}>
               <GoToFileIcon />
-            </button>
-          </div>
-        </div>
-        <div className="panel__content test-runner-panel__result">
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        <PanelContent className="test-runner-panel__result">
           <TestResultConsole result={result} wrapText={wrapText} />
-        </div>
-      </div>
+        </PanelContent>
+      </Panel>
     );
   },
 );

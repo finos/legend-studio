@@ -53,6 +53,7 @@ import {
   PanelHeader,
   PanelHeaderActions,
   PanelHeaderActionItem,
+  PanelContentLists,
 } from '@finos/legend-art';
 import {
   MASTER_SNAPSHOT_ALIAS,
@@ -552,30 +553,25 @@ const ProjectDependencyConflictViewer = observer(
     }, [dependencyEditorState, hasConflict]);
 
     return (
-      <div className="panel project-dependency-explorer">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">conflicts</div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
+      <Panel className="project-dependency-explorer">
+        <PanelHeader title="conflicts">
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
+              title="Collapse Tree"
               disabled={!hasConflict || !dependencyEditorState.conflictStates}
               onClick={collapseTree}
-              tabIndex={-1}
             >
-              <CompressIcon title="Collapse Tree" />
-            </button>
-            <button
-              className="panel__header__action"
+              <CompressIcon />
+            </PanelHeaderActionItem>
+            <PanelHeaderActionItem
+              title="Expand All Conflict Paths"
               disabled={!hasConflict || !dependencyEditorState.conflictStates}
               onClick={expandAllNodes}
-              tabIndex={-1}
             >
-              <ExpandAllIcon title="Expand All Conflict Paths" />
-            </button>
-          </div>
-        </div>
+              <ExpandAllIcon />
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
         <div className="project-dependency-explorer__content">
           {hasConflict && dependencyEditorState.conflictStates && (
             <div>
@@ -592,7 +588,7 @@ const ProjectDependencyConflictViewer = observer(
           )}
           {!hasConflict && <BlankPanelContent>No Conflicts</BlankPanelContent>}
         </div>
-      </div>
+      </Panel>
     );
   },
 );
@@ -1002,7 +998,7 @@ export const ProjectDependencyEditor = observer(() => {
     dependencyEditorState.fetchingDependencyInfoState.isInProgress;
 
   return (
-    <div className="panel__content__lists">
+    <PanelContentLists>
       <PanelLoadingIndicator isLoading={isLoading} />
       {isLoading && (
         <div className="project-dependency-editor__progress-msg">
@@ -1031,6 +1027,6 @@ export const ProjectDependencyEditor = observer(() => {
           dependencyEditorState={dependencyEditorState}
         />
       )}
-    </div>
+    </PanelContentLists>
   );
 });

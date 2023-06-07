@@ -29,6 +29,7 @@ import {
   PanelContent,
   PanelFormTextField,
   PanelHeader,
+  PanelHeaderActions,
   PanelLoadingIndicator,
   RefreshIcon,
   WrenchIcon,
@@ -306,12 +307,9 @@ const TestAssertionResultViewer = observer(
 
     return (
       <>
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">result</div>
-          </div>
-          <div className="panel__header__actions"></div>
-        </div>
+        <PanelHeader title="result">
+          <PanelHeaderActions />
+        </PanelHeader>
         <PanelContent className="testable-test-assertion-result__content">
           <div
             className={clsx('testable-test-assertion-result__summary', {

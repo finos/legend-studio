@@ -256,7 +256,7 @@ export const ActivityBar = observer(() => {
         icon: <FileTrayIcon className="activity-bar__explorer-icon" />,
       },
       !editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
+        mode: ACTIVITY_MODE.TEST_RUNNER,
         title: 'Test Runner',
         icon: <FlaskIcon />,
       },

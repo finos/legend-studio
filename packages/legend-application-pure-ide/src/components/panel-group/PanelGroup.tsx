@@ -26,6 +26,9 @@ import {
   ChevronUpIcon,
   clsx,
   FlaskIcon,
+  Panel,
+  PanelContent,
+  PanelHeader,
   ReferencesIcon,
   SearchIcon,
   TerminalIcon,
@@ -96,8 +99,8 @@ export const PanelGroup = observer(() => {
   }, [ideStore, tabsToShow, ideStore.activePanelMode]);
 
   return (
-    <div className="panel panel-group">
-      <div className="panel__header">
+    <Panel className="panel-group">
+      <PanelHeader>
         <div className="panel-group__header__tabs">
           {tabsToShow
             .map((tab) => tabs[tab])
@@ -141,8 +144,8 @@ export const PanelGroup = observer(() => {
             <XIcon />
           </button>
         </div>
-      </div>
-      <div className="panel__content">
+      </PanelHeader>
+      <PanelContent>
         {isTabVisible(PANEL_MODE.TERMINAL) && (
           <div className="panel-group__content__tab">
             <Console />
@@ -168,7 +171,7 @@ export const PanelGroup = observer(() => {
             <ReferenceUsagePanel />
           </div>
         )}
-      </div>
-    </div>
+      </PanelContent>
+    </Panel>
   );
 });
