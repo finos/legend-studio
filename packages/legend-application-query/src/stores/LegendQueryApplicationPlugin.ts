@@ -68,7 +68,7 @@ export type QueryEditorHelpMenuActionConfiguration = {
   key: string;
   title?: string;
   label: string;
-  onClick: () => void;
+  onClick: (editorStore: QueryEditorStore) => void;
   icon?: React.ReactNode;
 };
 
