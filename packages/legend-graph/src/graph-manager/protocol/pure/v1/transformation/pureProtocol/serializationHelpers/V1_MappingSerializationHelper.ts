@@ -896,7 +896,7 @@ export const V1_mappingQueryTestModelSchema = createModelSchema(
     ),
     id: primitive(),
     doc: optional(primitive()),
-    query: usingModelSchema(V1_rawLambdaModelSchema),
+    func: usingModelSchema(V1_rawLambdaModelSchema),
   },
 );
 
@@ -940,7 +940,7 @@ export const V1_mappingQueryTestSuiteModelSchema = (
     _type: usingConstantValueSchema(V1_TestSuiteType.MAPPING_QUERY_TEST_SUITE),
     doc: optional(primitive()),
     id: primitive(),
-    query: usingModelSchema(V1_rawLambdaModelSchema),
+    func: usingModelSchema(V1_rawLambdaModelSchema),
     tests: list(
       custom(
         (val) => V1_serializeAtomicTest(val, plugins),

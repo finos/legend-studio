@@ -57,7 +57,12 @@ import {
   getAllClassDerivedProperties,
   RelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
-  Database,
+  TableAlias,
+  Table,
+  RelationalCSVDataTable,
+  ModelStoreData,
+  ModelEmbeddedData,
+  getMappingCompatibleClasses,
 } from '@finos/legend-graph';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
@@ -70,15 +75,14 @@ import {
   UnsupportedOperationError,
   LogEvent,
   uuid,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   LambdaEditorState,
   buildGetAllFunction,
   buildSerialzieFunctionWithGraphFetch,
 } from '@finos/legend-query-builder';
-import type { EditorStore } from '../../../../EditorStore.js';
 import {
-  resolveMappingSourceToStore,
   type MappingEditorState,
   getMappingElementSource,
 } from '../MappingEditorState.js';
@@ -98,6 +102,7 @@ import {
 import {
   TESTABLE_TEST_TAB,
   TestableTestEditorState,
+  TestableTestSuiteEditorState,
 } from '../../testable/TestableEditorState.js';
 import { EmbeddedDataEditorState } from '../../data/DataEditorState.js';
 import {
@@ -106,6 +111,8 @@ import {
   testable_setId,
 } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
 import { EmbeddedDataType } from '../../../ExternalFormatState.js';
+import type { EditorStore } from '../../../../EditorStore.js';
+import { createMockDataForTable } from '../../../../utils/MockDataUtils.js';
 
 export enum MAPPING_TEST_SUITE_TYPE {
   DATA = 'DATA',
@@ -136,9 +143,28 @@ const createGraphFetchLambda = (
   return buildRawLambdaFromLambdaFunction(lambdaFunction, graphManagerState);
 };
 
+const createBareModelStoreData = (
+  _class: Class,
+  editorStore: EditorStore,
+): StoreTestData => {
+  const embeddedData = createEmbeddedDataFromClass(_class, editorStore);
+  const testData = new StoreTestData();
+  const modelStoreData = new ModelStoreData();
+  const modelData = new ModelEmbeddedData();
+  modelData.data = embeddedData;
+  modelData.model = PackageableElementExplicitReference.create(_class);
+  modelStoreData.modelData = [modelData];
+  testData.data = modelStoreData;
+  testData.store = PackageableElementExplicitReference.create(
+    ModelStore.INSTANCE,
+  );
+  return testData;
+};
+
 const createBareMappingDataTest = (
   id: string,
   storeTestData: StoreTestData | undefined,
+  suite?: MappingTestSuite | undefined,
 ): MappingDataTest => {
   const dataTest = new MappingDataTest();
   dataTest.id = id;
@@ -146,19 +172,28 @@ const createBareMappingDataTest = (
   dataTest.assertions = [
     createDefaultEqualToJSONTestAssertion(DEFAULT_TEST_ASSERTION_ID),
   ];
+  if (suite) {
+    dataTest.__parent = suite;
+    suite.tests.push(dataTest);
+  }
   return dataTest;
 };
 
 const createBareMappingQueryTest = (
   id: string,
   query: RawLambda,
+  suite?: MappingTestSuite | undefined,
 ): MappingQueryTest => {
   const dataTest = new MappingQueryTest();
   dataTest.id = id;
-  dataTest.query = query;
+  dataTest.func = query;
   dataTest.assertions = [
     createDefaultEqualToJSONTestAssertion(DEFAULT_TEST_ASSERTION_ID),
   ];
+  if (suite) {
+    dataTest.__parent = suite;
+    suite.tests.push(dataTest);
+  }
   return dataTest;
 };
 
@@ -400,9 +435,9 @@ export class MappingQueryTestState extends MappingTestState {
     const queryState = new MappingTestableQueryState(
       this.editorStore,
       this.test,
-      this.test.query,
+      this.test.func,
     );
-    flowResult(queryState.updateLamba(this.test.query)).catch(
+    flowResult(queryState.updateLamba(this.test.func)).catch(
       this.editorStore.applicationStore.alertUnhandledError,
     );
     return queryState;
@@ -450,13 +485,11 @@ export class MappingDataTestState extends MappingTestState {
   }
 }
 
-export abstract class MappingTestSuiteState {
-  readonly editorStore: EditorStore;
+export abstract class MappingTestSuiteState extends TestableTestSuiteEditorState {
   readonly mappingTestableState: MappingTestableState;
-  readonly uuid = uuid();
-  suite: MappingTestSuite;
-  testsStates: MappingTestState[] = [];
-  selectTestState: MappingTestState | undefined;
+  override suite: MappingTestSuite;
+  override testStates: MappingTestState[] = [];
+  override selectTestState: MappingTestState | undefined;
   showCreateModal = false;
 
   constructor(
@@ -464,11 +497,16 @@ export abstract class MappingTestSuiteState {
     mappingTestableState: MappingTestableState,
     suite: MappingTestSuite,
   ) {
-    this.editorStore = editorStore;
+    super(
+      mappingTestableState.mapping,
+      suite,
+      mappingTestableState.mappingEditorState.isReadOnly,
+      editorStore,
+    );
     this.mappingTestableState = mappingTestableState;
     this.suite = suite;
-    this.testsStates = this.buildTestStates();
-    this.selectTestState = this.testsStates[0];
+    this.testStates = this.buildTestStates();
+    this.selectTestState = this.testStates[0];
   }
 
   buildTestStates(): MappingTestState[] {
@@ -476,6 +514,8 @@ export abstract class MappingTestSuiteState {
       .map((t) => this.buildTestState(t))
       .filter(isNonNullable);
   }
+
+  abstract getDefaultClass(): Class | undefined;
 
   abstract buildTestState(val: MappingTest): MappingTestState | undefined;
 
@@ -489,7 +529,7 @@ export abstract class MappingTestSuiteState {
     );
     const testState = this.buildTestState(test);
     if (testState) {
-      this.testsStates.push(testState);
+      this.testStates.push(testState);
     }
     this.selectTestState = testState;
   }
@@ -500,17 +540,9 @@ export abstract class MappingTestSuiteState {
     this.showCreateModal = val;
   }
 
-  runTests(): void {
-    // TODO
-  }
-
-  runFailingTests(): void {
-    // console
-  }
-
   changeTest(val: MappingTest): void {
     if (this.selectTestState?.test !== val) {
-      this.selectTestState = this.testsStates.find(
+      this.selectTestState = this.testStates.find(
         (testState) => testState.test === val,
       );
     }
@@ -520,19 +552,19 @@ export abstract class MappingTestSuiteState {
     testSuite_deleteTest(this.suite, val);
     this.removeTestState(val);
     if (this.selectTestState?.test === val) {
-      this.selectTestState = this.testsStates[0];
+      this.selectTestState = this.testStates[0];
     }
   }
 
   removeTestState(val: MappingTest): void {
-    this.testsStates = this.testsStates.filter((e) => e.test !== val);
+    this.testStates = this.testStates.filter((e) => e.test !== val);
   }
 }
 
 export class MappingDataTestSuiteState extends MappingTestSuiteState {
   override suite: MappingDataTestSuite;
   dataState: MappingTestableDataState;
-  declare testsStates: MappingQueryTestState[];
+  declare testStates: MappingQueryTestState[];
   declare selectTestState: MappingQueryTestState | undefined;
 
   constructor(
@@ -542,7 +574,7 @@ export class MappingDataTestSuiteState extends MappingTestSuiteState {
   ) {
     super(editorStore, mappingTestableState, suite);
     makeObservable(this, {
-      testsStates: observable,
+      testStates: observable,
       selectTestState: observable,
       showCreateModal: observable,
       buildTestStates: action,
@@ -551,6 +583,8 @@ export class MappingDataTestSuiteState extends MappingTestSuiteState {
       removeTestState: action,
       addNewTest: action,
       setShowModal: action,
+      runFailingTests: flow,
+      runSuite: flow,
     });
     this.suite = suite;
     this.dataState = new MappingTestableDataState(
@@ -574,13 +608,21 @@ export class MappingDataTestSuiteState extends MappingTestSuiteState {
     const query = _class
       ? this.mappingTestableState.createSuiteState.createDefaultQuery(_class)
       : stub_RawLambda();
-    return createBareMappingQueryTest(id, query);
+    return createBareMappingQueryTest(id, query, this.suite);
+  }
+
+  getDefaultClass(): Class | undefined {
+    return getMappingCompatibleClasses(
+      this.dataState.mappingTestableState.mapping,
+      this.dataState.mappingTestableState.editorStore.graphManagerState
+        .usableClasses,
+    )[0];
   }
 }
 
 export class MappingQueryTestSuiteState extends MappingTestSuiteState {
   override suite: MappingQueryTestSuite;
-  declare testsStates: MappingDataTestState[];
+  declare testStates: MappingDataTestState[];
   declare selectTestState: MappingDataTestState | undefined;
   queryState: MappingTestableQueryState;
 
@@ -592,7 +634,7 @@ export class MappingQueryTestSuiteState extends MappingTestSuiteState {
     super(editorStore, mappingTestableState, suite);
     makeObservable(this, {
       queryState: observable,
-      testsStates: observable,
+      testStates: observable,
       selectTestState: observable,
       showCreateModal: observable,
       deleteTest: action,
@@ -601,6 +643,8 @@ export class MappingQueryTestSuiteState extends MappingTestSuiteState {
       addNewTest: action,
       changeTest: action,
       setShowModal: action,
+      runFailingTests: flow,
+      runSuite: flow,
     });
     this.suite = suite;
     this.queryState = this.buildQueryState();
@@ -618,18 +662,33 @@ export class MappingQueryTestSuiteState extends MappingTestSuiteState {
   }
 
   override createNewTest(id: string, _class: Class | undefined): MappingTest {
-    return createBareMappingDataTest(id, undefined);
+    const data = _class
+      ? createBareModelStoreData(_class, this.mappingTestableState.editorStore)
+      : undefined;
+    return createBareMappingDataTest(id, data, this.suite);
   }
+
   buildQueryState(): MappingTestableQueryState {
     const queryState = new MappingTestableQueryState(
       this.editorStore,
       this.suite,
-      this.suite.query,
+      this.suite.func,
     );
-    flowResult(queryState.updateLamba(this.suite.query)).catch(
+    flowResult(queryState.updateLamba(this.suite.func)).catch(
       this.editorStore.applicationStore.alertUnhandledError,
     );
     return queryState;
+  }
+
+  getDefaultClass(): Class | undefined {
+    const dataTest = this.suite.tests.filter(filterByType(MappingDataTest))[0];
+    if (dataTest) {
+      const storeTestData = dataTest.storeTestData[0]?.data;
+      if (storeTestData instanceof ModelStoreData) {
+        return storeTestData.modelData?.[0]?.model.value;
+      }
+    }
+    return undefined;
   }
 }
 
@@ -637,6 +696,7 @@ export class CreateSuiteState {
   readonly editorStore: EditorStore;
   readonly mappingTestableState: MappingTestableState;
   showModal = false;
+  isCreatingSuiteState = ActionState.create();
 
   constructor(
     editorStore: EditorStore,
@@ -649,6 +709,7 @@ export class CreateSuiteState {
       showModal: observable,
       setShowModal: action,
       createAndAddTestSuite: flow,
+      isCreatingSuiteState: observable,
     });
   }
 
@@ -660,40 +721,55 @@ export class CreateSuiteState {
     _class: Class,
     type: MAPPING_TEST_SUITE_TYPE,
     name: string,
+    testName: string,
   ): GeneratorFn<void> {
     // type
     try {
+      this.isCreatingSuiteState.inProgress();
       const mappingTestableState = this.mappingTestableState;
       if (!mappingTestableState.mappingModelCoverageAnalysisResult) {
+        this.isCreatingSuiteState.setMessage(
+          'Analyzing mapping to generate test query...',
+        );
         yield flowResult(mappingTestableState.analyzeMappingModelCoverage());
       }
+      this.isCreatingSuiteState.setMessage('Creating test query...');
       const rootSetImpl = getRootSetImplementation(
         this.mappingTestableState.mapping,
         _class,
       );
       const query = this.createDefaultQuery(_class);
       const storeTestData = rootSetImpl
-        ? this.attemptToGenerateTestData(rootSetImpl)
+        ? this.attemptToGenerateTestData(rootSetImpl, this.editorStore)
         : undefined;
       let testSuite: MappingTestSuite;
-      const test1 = `test_1`;
-      const assertionId = 'assertion_1';
       if (type === MAPPING_TEST_SUITE_TYPE.DATA) {
         const dataSuite = new MappingDataTestSuite();
         dataSuite.storeTestData = storeTestData ? [storeTestData] : [];
-        const test = new MappingQueryTest();
-        dataSuite.tests = [
-          createBareMappingQueryTest(`${_class.name}_test_1`, query),
-        ];
-        // add assertion
-        test.assertions = [createDefaultEqualToJSONTestAssertion(assertionId)];
+        const test = createBareMappingQueryTest(testName, query, dataSuite);
+        test.__parent = dataSuite;
+        dataSuite.tests = [test];
+        const _assertion = createDefaultEqualToJSONTestAssertion(
+          `${testName}_assertion1`,
+        );
+        test.assertions = [_assertion];
+        _assertion.parentTest = test;
         testSuite = dataSuite;
       } else {
         const querySuite = new MappingQueryTestSuite();
-        querySuite.query = query;
-        testSuite = querySuite;
+        querySuite.func = query;
         // add test
-        querySuite.tests = [createBareMappingDataTest(test1, storeTestData)];
+        const _test = createBareMappingDataTest(
+          testName,
+          storeTestData,
+          querySuite,
+        );
+        const _assertion = createDefaultEqualToJSONTestAssertion(
+          `${testName}_assertion1`,
+        );
+        _test.assertions = [_assertion];
+        _assertion.parentTest = _test;
+        testSuite = querySuite;
       }
       testSuite.id = name;
       mapping_addTestSuite(
@@ -702,13 +778,25 @@ export class CreateSuiteState {
         this.editorStore.changeDetectionState.observerContext,
       );
       this.mappingTestableState.changeSuite(testSuite);
+      const selectTestState =
+        this.mappingTestableState.selectedTestSuite?.selectTestState;
+      const selectedAsertionState = selectTestState?.selectedAsertionState;
+      if (selectTestState && selectedAsertionState) {
+        this.isCreatingSuiteState.setMessage(
+          'Attempting to generate expected result...',
+        );
+        selectTestState.setSelectedTab(TESTABLE_TEST_TAB.ASSERTIONS);
+        yield flowResult(selectedAsertionState.generateExpected());
+      }
+      this.setShowModal(false);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
         `Unable to create to test suite: ${error.message}`,
       );
     } finally {
-      this.setShowModal(false);
+      this.isCreatingSuiteState.complete();
+      this.isCreatingSuiteState.setMessage(undefined);
     }
   }
 
@@ -776,37 +864,41 @@ export class CreateSuiteState {
   // change to use api call for relational
   attemptToGenerateTestData(
     setImpl: SetImplementation,
+    editorStore: EditorStore,
   ): StoreTestData | undefined {
     if (
       setImpl instanceof RelationalInstanceSetImplementation ||
       setImpl instanceof EmbeddedRelationalInstanceSetImplementation ||
       setImpl instanceof EmbeddedRelationalInstanceSetImplementation
     ) {
-      const _store = resolveMappingSourceToStore(
-        getMappingElementSource(
-          setImpl,
-          this.editorStore.pluginManager.getApplicationPlugins(),
-        ),
+      const _table = getMappingElementSource(
+        setImpl,
+        editorStore.pluginManager.getApplicationPlugins(),
       );
-      if (_store instanceof Database) {
-        const _storeData = new StoreTestData();
-        _storeData.store = PackageableElementExplicitReference.create(_store);
-        _storeData.data = new RelationalCSVData();
-        return _storeData;
+      if (_table instanceof TableAlias) {
+        const relation = _table.relation.value;
+        const owner = relation.schema._OWNER;
+        const val = new RelationalCSVData();
+        if (relation instanceof Table) {
+          const mockTable = new RelationalCSVDataTable();
+          const values = createMockDataForTable(relation);
+          mockTable.table = relation.name;
+          mockTable.schema = relation.schema.name;
+          mockTable.values = values;
+          val.tables.push(mockTable);
+        }
+        const testData = new StoreTestData();
+        testData.data = val;
+        testData.store = PackageableElementExplicitReference.create(owner);
+        return testData;
       }
     } else if (setImpl instanceof PureInstanceSetImplementation) {
       const srcClass = setImpl.srcClass;
       if (srcClass) {
-        const embeddedData = createEmbeddedDataFromClass(
+        return createBareModelStoreData(
           srcClass.value,
-          this.editorStore,
+          this.mappingTestableState.editorStore,
         );
-        const testData = new StoreTestData();
-        testData.data = embeddedData;
-        testData.store = PackageableElementExplicitReference.create(
-          ModelStore.INSTANCE,
-        );
-        return testData;
       }
     }
     return undefined;

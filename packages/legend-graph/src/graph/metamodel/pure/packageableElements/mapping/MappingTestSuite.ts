@@ -45,14 +45,14 @@ export class MappingQueryTestSuite
    *
    * @discrepancy model
    */
-  query!: RawLambda;
+  func!: RawLambda;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_TEST_QUERY_SUITE,
       this.id,
       this.doc ?? '',
-      this.query,
+      this.func,
       hashArray(this.tests),
     ]);
   }

@@ -1,3 +1,4 @@
+7;
 /**
  * Copyright (c) 2020-present, Goldman Sachs
  *
@@ -18,10 +19,9 @@ import {
   type PlainObject,
   UnsupportedOperationError,
   usingConstantValueSchema,
-  serializeMap,
-  deserializeMap,
   usingModelSchema,
   customListWithSchema,
+  optionalCustomList,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -32,14 +32,18 @@ import {
   serialize,
   optional,
   list,
+  raw,
 } from 'serializr';
 import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import {
   type V1_EmbeddedData,
+  type V1_ModelData,
   V1_ExternalFormatData,
   V1_ModelStoreData,
   V1_DataElementReference,
+  V1_ModelEmbeddedData,
+  V1_ModelInstanceData,
 } from '../../../model/data/V1_EmbeddedData.js';
 import {
   V1_RelationalCSVData,
@@ -54,6 +58,11 @@ import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNA
 
 export const V1_DATA_ELEMENT_PROTOCOL_TYPE = 'dataElement';
 
+enum ModelDataType {
+  MODEL_EMBEDDED_DATA = 'modelEmbeddedData',
+  MODEL_INSTANCE_DATA = 'modelInstanceData',
+}
+
 export enum V1_EmbeddedDataType {
   MODEL_STORE_DATA = 'modelStore',
   EXTERNAL_FORMAT_DATA = 'externalFormat',
@@ -61,16 +70,63 @@ export enum V1_EmbeddedDataType {
   RELATIONAL_DATA = 'relationalCSVData',
 }
 
-export const V1_modelStoreDataModelSchema = createModelSchema(
-  V1_ModelStoreData,
-  {
-    _type: usingConstantValueSchema(V1_EmbeddedDataType.MODEL_STORE_DATA),
-    instances: custom(
-      (val) => serializeMap(val, (v) => v),
-      (val) => deserializeMap(val, (v) => v),
+const V1_dataModelDataSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ModelEmbeddedData> =>
+  createModelSchema(V1_ModelEmbeddedData, {
+    _type: usingConstantValueSchema(ModelDataType.MODEL_EMBEDDED_DATA),
+    data: custom(
+      (val) => V1_serializeEmbeddedDataType(val, plugins),
+      (val) => V1_deserializeEmbeddedDataType(val, plugins),
     ),
-  },
-);
+    model: primitive(),
+  });
+
+const V1_dataModelInstanceDataSchema = createModelSchema(V1_ModelInstanceData, {
+  _type: usingConstantValueSchema(ModelDataType.MODEL_INSTANCE_DATA),
+  instances: raw(),
+  model: primitive(),
+});
+
+const V1_serializeModelData = (
+  protocol: V1_ModelData,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_ModelData> => {
+  if (protocol instanceof V1_ModelInstanceData) {
+    return serialize(V1_dataModelInstanceDataSchema, protocol);
+  } else if (protocol instanceof V1_ModelEmbeddedData) {
+    return serialize(V1_dataModelDataSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize model data`, protocol);
+};
+
+const V1_deserializeModelData = (
+  json: PlainObject<V1_ModelData>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_ModelData => {
+  switch (json._type) {
+    case ModelDataType.MODEL_EMBEDDED_DATA:
+      return deserialize(V1_dataModelDataSchema(plugins), json);
+    case ModelDataType.MODEL_INSTANCE_DATA:
+      return deserialize(V1_dataModelInstanceDataSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize assertion status of type '${json._type}'`,
+      );
+  }
+};
+
+export const V1_modelStoreDataModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ModelStoreData> =>
+  createModelSchema(V1_ModelStoreData, {
+    _type: usingConstantValueSchema(V1_EmbeddedDataType.MODEL_STORE_DATA),
+    modelData: optionalCustomList(
+      (value: V1_ModelData) => V1_serializeModelData(value, plugins),
+      (value: PlainObject<V1_ModelData>) =>
+        V1_deserializeModelData(value, plugins),
+    ),
+  });
 
 export const V1_externalFormatDataModelSchema = createModelSchema(
   V1_ExternalFormatData,
@@ -103,16 +159,16 @@ const V1_relationalDataModelSchema = createModelSchema(V1_RelationalCSVData, {
   tables: list(usingModelSchema(V1_relationalDataTableModelSchema)),
 });
 
-export const V1_serializeEmbeddedDataType = (
+export function V1_serializeEmbeddedDataType(
   protocol: V1_EmbeddedData,
   plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_EmbeddedData> => {
+): PlainObject<V1_EmbeddedData> {
   if (protocol instanceof V1_INTERNAL__UnknownEmbeddedData) {
     return protocol.content;
   } else if (protocol instanceof V1_ExternalFormatData) {
     return serialize(V1_externalFormatDataModelSchema, protocol);
   } else if (protocol instanceof V1_ModelStoreData) {
-    return serialize(V1_modelStoreDataModelSchema, protocol);
+    return serialize(V1_modelStoreDataModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_DataElementReference) {
     return serialize(V1_dataElementReferenceModelSchema, protocol);
   } else if (protocol instanceof V1_RelationalCSVData) {
@@ -135,17 +191,17 @@ export const V1_serializeEmbeddedDataType = (
     `Can't serialize embedded data: no compatible serializer available from plugins`,
     protocol,
   );
-};
+}
 
-export const V1_deserializeEmbeddedDataType = (
+export function V1_deserializeEmbeddedDataType(
   json: PlainObject<V1_EmbeddedData>,
   plugins: PureProtocolProcessorPlugin[],
-): V1_EmbeddedData => {
+): V1_EmbeddedData {
   switch (json._type) {
     case V1_EmbeddedDataType.EXTERNAL_FORMAT_DATA:
       return deserialize(V1_externalFormatDataModelSchema, json);
     case V1_EmbeddedDataType.MODEL_STORE_DATA:
-      return deserialize(V1_modelStoreDataModelSchema, json);
+      return deserialize(V1_modelStoreDataModelSchema(plugins), json);
     case V1_EmbeddedDataType.DATA_ELEMENT_REFERENCE:
       return deserialize(V1_dataElementReferenceModelSchema, json);
     case V1_EmbeddedDataType.RELATIONAL_DATA:
@@ -170,7 +226,7 @@ export const V1_deserializeEmbeddedDataType = (
       return protocol;
     }
   }
-};
+}
 
 export const V1_dataElementModelSchema = (
   plugins: PureProtocolProcessorPlugin[],

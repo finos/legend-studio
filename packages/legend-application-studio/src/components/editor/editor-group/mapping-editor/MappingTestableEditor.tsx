@@ -18,7 +18,6 @@ import { observer } from 'mobx-react-lite';
 import {
   type Class,
   type MappingTestSuite,
-  type StoreTestData,
   type Store,
   type DataElement,
   ModelStore,
@@ -62,9 +61,6 @@ import {
   TimesCircleIcon,
   PanelLoadingIndicator,
   ContextMenu,
-  PURE_ModelStoreIcon,
-  PURE_UnknownElementTypeIcon,
-  PURE_DatabaseIcon,
 } from '@finos/legend-art';
 import {
   assertErrorThrown,
@@ -120,9 +116,15 @@ import { EmbeddedDataType } from '../../../../stores/editor/editor-state/Externa
 import type { EmbeddedDataTypeOption } from '../../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import {
   buildElementOption,
+  getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
 
+const SOURCE_CLASS_FORM_TITLE = 'Source Class To Add Data';
+const SOURCE_CLASS_FORM_PROMPT = 'Source class to provide test data for';
+const TARGET_CLASS_FORM_TITLE = 'Target Class To Test';
+const TARGET_CLASS_FORM_PROMPT =
+  'Mapped class for which you would like to build test query';
 interface ClassSelectOption {
   label: string;
   value: Class;
@@ -153,21 +155,14 @@ const CreateTestSuiteModal = observer(
       }
       return MAPPING_TEST_SUITE_TYPE.QUERY;
     };
-    const getDefaultSuiteNamePrefix = (
-      type: MAPPING_TEST_SUITE_TYPE,
-      _class: Class | undefined,
-    ): string => {
-      if (type === MAPPING_TEST_SUITE_TYPE.QUERY && _class) {
-        return `${_class.name}_suite`;
-      }
-      return 'suite';
-    };
     // Class mapping selector
     const compatibleClasses = getMappingCompatibleClasses(
       mapping,
       editorStore.graphManagerState.usableClasses,
     );
-    const mappedClassSelectorRef = useRef<SelectComponent>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const handleEnter = (): void => inputRef.current?.focus();
     const mappedClassOptions = uniq(compatibleClasses)
       .map((e) => ({
         label: e.name,
@@ -185,26 +180,14 @@ const CreateTestSuiteModal = observer(
       : null;
     // init states
     const [suiteType, setSuiteType] = useState(getDefaultSuite(selectedClass));
-    const [suiteName, setSuiteName] = useState(
-      generateEnumerableNameFromToken(
-        mapping.tests.map((e) => e.id),
-        getDefaultSuiteNamePrefix(suiteType, selectedClass),
-      ),
-    );
-    const isValid = selectedClass && suiteName;
-    const handleEnterClassMappingSelectorModal = (): void =>
-      mappedClassSelectorRef.current?.focus();
+    const [suiteName, setSuiteName] = useState<string | undefined>(undefined);
+    const [testName, setTestName] = useState<string | undefined>(undefined);
 
+    const isValid = selectedClass && suiteName && testName;
     const changeClassOption = (val: ClassSelectOption | null): void => {
       if (val?.value) {
         setSelectedClass(val.value);
         setSuiteType(getDefaultSuite(val.value));
-        setSuiteName(
-          generateEnumerableNameFromToken(
-            mapping.tests.map((e) => e.id),
-            getDefaultSuiteNamePrefix(suiteType, selectedClass),
-          ),
-        );
       } else {
         setSelectedClass(undefined);
         setSuiteType(getDefaultSuite(undefined));
@@ -214,12 +197,13 @@ const CreateTestSuiteModal = observer(
     // model
     const close = (): void => creatorState.setShowModal(false);
     const create = (): void => {
-      if (selectedClass && suiteName) {
+      if (selectedClass && suiteName && testName) {
         flowResult(
           creatorState.createAndAddTestSuite(
             selectedClass,
             suiteType,
             suiteName,
+            testName,
           ),
         ).catch(editorStore.applicationStore.alertUnhandledError);
       }
@@ -229,44 +213,66 @@ const CreateTestSuiteModal = observer(
         open={creatorState.showModal}
         onClose={close}
         TransitionProps={{
-          onEnter: handleEnterClassMappingSelectorModal,
+          onEnter: handleEnter,
         }}
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <Modal darkMode={true} className="search-modal">
-          <ModalTitle title="Create Test Suite" />
+          <ModalTitle title="Create Mapping Test Suite" />
+
           <ModalBody>
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Target Class To Test
+            <PanelLoadingIndicator
+              isLoading={creatorState.isCreatingSuiteState.isInProgress}
+            />
+            {creatorState.isCreatingSuiteState.message && (
+              <div className="service-registration-editor__progress-msg">
+                {`${creatorState.isCreatingSuiteState.message}...`}
               </div>
-              <div className="panel__content__form__section__header__prompt">
-                Mapped class for which you would like to build test suite for
-              </div>
-              <CustomSelectorInput
-                ref={mappedClassSelectorRef}
-                options={mappedClassOptions}
-                onChange={changeClassOption}
-                value={selectedClassOption}
-                darkMode={true}
-                placeholder="Choose a class..."
-                isClearable={true}
-              />
-            </div>
+            )}
             <PanelFormTextField
+              ref={inputRef}
               name="Test Suite Name"
-              prompt=""
+              prompt="Unique Identifier for suite i.e Person_suite"
               value={suiteName}
               update={(value: string | undefined): void =>
                 setSuiteName(value ?? '')
               }
               errorMessage={validateTestableId(suiteName, undefined)}
             />
+            <PanelFormTextField
+              name="Test Name"
+              prompt="Unique Identifier for first test in suite"
+              value={testName}
+              update={(value: string | undefined): void =>
+                setTestName(value ?? '')
+              }
+              errorMessage={validateTestableId(testName, undefined)}
+            />
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Class Mapping
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                Mapped Class for which you would like to build test suite for
+              </div>
+              <CustomSelectorInput
+                options={mappedClassOptions}
+                onChange={changeClassOption}
+                value={selectedClassOption}
+                formatOptionLabel={getPackageableElementOptionFormatter({})}
+                darkMode={true}
+                placeholder="Choose a class..."
+                isClearable={true}
+              />
+            </div>
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              disabled={!isValid}
+              disabled={
+                !isValid || creatorState.isCreatingSuiteState.isInProgress
+              }
+              title={'Create Test'}
               onClick={create}
               text="Create"
             />
@@ -301,7 +307,7 @@ const CreateTestModal = observer(
     };
     // class
     const [selectedClass, setSelectedClass] = useState<Class | undefined>(
-      compatibleClasses[0],
+      mappingSuiteState.getDefaultClass(),
     );
     const selectedClassOption = selectedClass
       ? {
@@ -350,6 +356,15 @@ const CreateTestModal = observer(
       mappingSuiteState.addNewTest(id, selectedClass);
       close();
     };
+
+    const modalTitle =
+      mappingSuiteState instanceof MappingDataTestSuiteState
+        ? TARGET_CLASS_FORM_TITLE
+        : SOURCE_CLASS_FORM_TITLE;
+    const modalPrompt =
+      mappingSuiteState instanceof MappingDataTestSuiteState
+        ? TARGET_CLASS_FORM_PROMPT
+        : SOURCE_CLASS_FORM_PROMPT;
     return (
       <Dialog
         open={mappingSuiteState.showCreateModal}
@@ -373,25 +388,23 @@ const CreateTestModal = observer(
                   : undefined
               }
             />
-            {mappingSuiteState instanceof MappingDataTestSuiteState && (
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Target Class To Test
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  Mapped class for which you would like to build test suite for
-                </div>
-                <CustomSelectorInput
-                  ref={mappedClassSelectorRef}
-                  options={mappedClassOptions}
-                  onChange={changeClassOption}
-                  value={selectedClassOption}
-                  darkMode={true}
-                  placeholder="Choose a class..."
-                  isClearable={true}
-                />
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                {modalTitle}
               </div>
-            )}
+              <div className="panel__content__form__section__header__prompt">
+                {modalPrompt}
+              </div>
+              <CustomSelectorInput
+                ref={mappedClassSelectorRef}
+                options={mappedClassOptions}
+                onChange={changeClassOption}
+                value={selectedClassOption}
+                darkMode={true}
+                placeholder="Choose a class..."
+                isClearable={true}
+              />
+            </div>
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
@@ -870,93 +883,6 @@ const MappingTestAssertionsEditor = observer(
   },
 );
 
-const StoreTestDataContextMenu = observer(
-  forwardRef<
-    HTMLDivElement,
-    {
-      storeTestData: StoreTestData;
-      deleteStoreData: () => void;
-    }
-  >(function TestContainerContextMenu(props, ref) {
-    const { deleteStoreData } = props;
-    const remove = (): void => deleteStoreData();
-
-    return (
-      <MenuContent ref={ref}>
-        <MenuContentItem onClick={remove}>Delete</MenuContentItem>
-      </MenuContent>
-    );
-  }),
-);
-
-const StoreTestDataItem = observer(
-  (props: {
-    mappingTestableDataState: MappingTestableDataState;
-    storeTestData: StoreTestData;
-  }) => {
-    const { storeTestData, mappingTestableDataState } = props;
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
-      useState(false);
-    const store = storeTestData.store.value;
-    const isReadOnly =
-      mappingTestableDataState.mappingTestableState.mappingEditorState
-        .isReadOnly;
-    const openConnectionTestData = (): void =>
-      mappingTestableDataState.openStoreTestData(storeTestData);
-    const isActive =
-      mappingTestableDataState.selectedDataState?.storeTestData ===
-      storeTestData;
-    const deleteStoreTestData = (): void =>
-      mappingTestableDataState.deleteStoreTestData(storeTestData);
-    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
-    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
-    const icon =
-      store instanceof ModelStore ? (
-        <PURE_ModelStoreIcon />
-      ) : store instanceof Database ? (
-        <PURE_DatabaseIcon />
-      ) : (
-        <PURE_UnknownElementTypeIcon />
-      );
-
-    return (
-      <ContextMenu
-        className={clsx(
-          'testable-test-assertion-explorer__item',
-          {
-            'testable-test-assertion-explorer__item--selected-from-context-menu':
-              !isActive && isSelectedFromContextMenu,
-          },
-          { 'testable-test-assertion-explorer__item--active': isActive },
-        )}
-        disabled={isReadOnly}
-        content={
-          <StoreTestDataContextMenu
-            storeTestData={storeTestData}
-            deleteStoreData={deleteStoreTestData}
-          />
-        }
-        menuProps={{ elevation: 7 }}
-        onOpen={onContextMenuOpen}
-        onClose={onContextMenuClose}
-      >
-        <button
-          className={clsx('testable-test-assertion-explorer__item__label')}
-          onClick={openConnectionTestData}
-          tabIndex={-1}
-        >
-          <div className="testable-test-assertion-explorer__item__label__icon testable-test-assertion-explorer__test-result-indicator__container">
-            {icon}
-          </div>
-          <div className="testable-test-assertion-explorer__item__label__text">
-            {store.name}
-          </div>
-        </button>
-      </ContextMenu>
-    );
-  },
-);
-
 const StoreTestDataEditor = observer(
   (props: {
     mappingTestableDataState: MappingTestableDataState;
@@ -971,15 +897,8 @@ const StoreTestDataEditor = observer(
         <div className="service-test-suite-editor__header">
           <div className="service-test-suite-editor__header__title">
             <div className="service-test-suite-editor__header__title__label">
-              data
+              test data input
             </div>
-          </div>
-          <div className="panel__header__actions">
-            <div
-              className={clsx('panel__content__form__section__toggler', {
-                'panel__content__form__section__toggler--disabled': isReadOnly,
-              })}
-            ></div>
           </div>
         </div>
         <EmbeddedDataEditor
@@ -999,188 +918,34 @@ const MappingTestableStoreDataEditor = observer(
     };
     return (
       <div className="service-test-data-editor panel">
-        <div className="service-test-suite-editor__header">
-          <div className="service-test-suite-editor__header__title">
-            <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--data">
-              Data
-            </div>
-          </div>
-        </div>
-        <div className="service-test-data-editor__data">
-          {mappingTestableDataState.dataHolder.storeTestData.length ? (
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={100}>
-                <div className="binding-editor__header">
-                  <div className="binding-editor__header__title">
-                    <div className="binding-editor__header__title__label">
-                      stores
-                    </div>
-                  </div>
-                  <div className="panel__header__actions">
-                    <button
-                      className="panel__header__action"
-                      tabIndex={-1}
-                      onClick={addStoreTestData}
-                      title="Add Store Test Data"
-                    >
-                      <PlusIcon />
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  {mappingTestableDataState.dataHolder.storeTestData.map(
-                    (storeTestData) => (
-                      <StoreTestDataItem
-                        key={storeTestData.store.value.name}
-                        storeTestData={storeTestData}
-                        mappingTestableDataState={mappingTestableDataState}
-                      />
-                    ),
-                  )}
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-              </ResizablePanelSplitter>
-              <ResizablePanel minSize={600}>
-                <PanelLoadingIndicator
-                  isLoading={Boolean(
-                    mappingTestableDataState.selectedDataState
-                      ?.generatingTestDataSate.isInProgress,
-                  )}
-                />
-                {mappingTestableDataState.selectedDataState && (
-                  <StoreTestDataEditor
-                    storeTestDataState={
-                      mappingTestableDataState.selectedDataState
-                    }
-                    mappingTestableDataState={mappingTestableDataState}
-                  />
-                )}
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          ) : (
-            <BlankPanelPlaceholder
-              text="Add Store Test Data"
-              onClick={addStoreTestData}
-              clickActionType="add"
-              tooltipText="Click to add store test data"
+        {mappingTestableDataState.dataHolder.storeTestData.length ? (
+          <>
+            <PanelLoadingIndicator
+              isLoading={Boolean(
+                mappingTestableDataState.selectedDataState
+                  ?.generatingTestDataSate.isInProgress,
+              )}
             />
-          )}
-          {mappingTestableDataState.showNewModal && (
-            <CreateStoreTestDataModal
-              mappingTestableDataState={mappingTestableDataState}
-            />
-          )}
-        </div>
-      </div>
-    );
-  },
-);
-
-const MappingDataTestSetupEditor = observer(
-  (props: { mappingDataTestState: MappingDataTestState }) => {
-    const { mappingDataTestState } = props;
-    const test = mappingDataTestState.test;
-    return (
-      <div className="panel service-test-editor">
-        <div className="panel__header">
-          <div className="service-test-suite-editor__header__title">
-            <div className="service-test-suite-editor__header__title__label">
-              setup
-            </div>
-          </div>
-        </div>
-        <div className="service-test-editor__content">
-          <ResizablePanelGroup orientation="horizontal">
-            <ResizablePanel size={150} minSize={28}>
-              <div className="service-test-data-editor panel">
-                <div className="service-test-suite-editor__header">
-                  <div className="service-test-suite-editor__header__title">
-                    <div className="service-test-suite-editor__header__title__label">
-                      configuration
-                    </div>
-                  </div>
-                </div>
-                <div className="service-test-editor__setup__configuration">
-                  <PanelFormTextField
-                    name="Documentation"
-                    prompt="Test Documentation"
-                    value={test.doc}
-                    update={(value: string | undefined): void =>
-                      atomicTest_setDoc(test, value ?? undefined)
-                    }
-                  />
-                </div>
-              </div>
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={56}>
-              <MappingTestableStoreDataEditor
-                mappingTestableDataState={mappingDataTestState.dataState}
+            {mappingTestableDataState.selectedDataState && (
+              <StoreTestDataEditor
+                storeTestDataState={mappingTestableDataState.selectedDataState}
+                mappingTestableDataState={mappingTestableDataState}
               />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-      </div>
-    );
-  },
-);
-
-const MappingQueryTestSetupEditor = observer(
-  (props: { mappingQueryTestState: MappingQueryTestState }) => {
-    const { mappingQueryTestState } = props;
-    const test = mappingQueryTestState.test;
-    const mappingTestableState = mappingQueryTestState.mappingTestableState;
-    const queryState = mappingQueryTestState.queryState;
-    const isReadOnly =
-      mappingQueryTestState.mappingTestableState.mappingEditorState.isReadOnly;
-    return (
-      <div className="panel service-test-editor">
-        <div className="panel__header">
-          <div className="service-test-suite-editor__header__title">
-            <div className="service-test-suite-editor__header__title__label">
-              setup
-            </div>
-          </div>
-        </div>
-        <div className="service-test-editor__content">
-          <ResizablePanelGroup orientation="horizontal">
-            <ResizablePanel size={150} minSize={28}>
-              <div className="service-test-data-editor panel">
-                <div className="service-test-suite-editor__header">
-                  <div className="service-test-suite-editor__header__title">
-                    <div className="service-test-suite-editor__header__title__label">
-                      configuration
-                    </div>
-                  </div>
-                </div>
-                <div className="service-test-editor__setup__configuration">
-                  <PanelFormTextField
-                    name="Documentation"
-                    prompt="Test Documentation"
-                    value={test.doc}
-                    update={(value: string | undefined): void =>
-                      atomicTest_setDoc(test, value)
-                    }
-                  />
-                </div>
-              </div>
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={56}>
-              <MappingTestableQueryEditor
-                testableQueryState={queryState}
-                mappingTestableState={mappingTestableState}
-                isReadOnly={isReadOnly}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
+            )}
+          </>
+        ) : (
+          <BlankPanelPlaceholder
+            text="Add Store Test Data"
+            onClick={addStoreTestData}
+            clickActionType="add"
+            tooltipText="Click to add store test data"
+          />
+        )}
+        {mappingTestableDataState.showNewModal && (
+          <CreateStoreTestDataModal
+            mappingTestableDataState={mappingTestableDataState}
+          />
+        )}
       </div>
     );
   },
@@ -1190,20 +955,48 @@ const MappingTestEditor = observer(
   (props: { mappingTestState: MappingTestState }) => {
     const { mappingTestState } = props;
     const selectedTab = mappingTestState.selectedTab;
-
+    const isReadOnly =
+      mappingTestState.mappingTestableState.mappingEditorState.isReadOnly;
     const renderMappingSetupTestEditor = (): React.ReactNode => {
-      if (mappingTestState instanceof MappingDataTestState) {
-        return (
-          <MappingDataTestSetupEditor mappingDataTestState={mappingTestState} />
-        );
-      } else if (mappingTestState instanceof MappingQueryTestState) {
-        return (
-          <MappingQueryTestSetupEditor
-            mappingQueryTestState={mappingTestState}
-          />
-        );
-      }
-      return null;
+      const test = mappingTestState.test;
+      return (
+        <div className="panel mapping-testable-editorr">
+          <div className="mapping-testable-editor__content">
+            <ResizablePanelGroup orientation="horizontal">
+              <ResizablePanel size={150}>
+                <div className="service-test-data-editor panel">
+                  <div className="service-test-editor__setup__configuration">
+                    <PanelFormTextField
+                      name="Test Documentation"
+                      value={test.doc}
+                      update={(value: string | undefined): void =>
+                        atomicTest_setDoc(test, value)
+                      }
+                    />
+                  </div>
+                </div>
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel>
+                {mappingTestState instanceof MappingQueryTestState && (
+                  <MappingTestableQueryEditor
+                    testableQueryState={mappingTestState.queryState}
+                    mappingTestableState={mappingTestState.mappingTestableState}
+                    isReadOnly={isReadOnly}
+                  />
+                )}
+                {mappingTestState instanceof MappingDataTestState && (
+                  <MappingTestableStoreDataEditor
+                    mappingTestableDataState={mappingTestState.dataState}
+                  />
+                )}
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
+        </div>
+      );
     };
     return (
       <div className="service-test-editor panel">
@@ -1348,15 +1141,20 @@ const MappingTestItem = observer(
 const MappingTestSuiteEditor = observer(
   (props: { mappingTestSuiteState: MappingTestSuiteState }) => {
     const { mappingTestSuiteState } = props;
+    const editorStore = mappingTestSuiteState.editorStore;
     const selectedTestState = mappingTestSuiteState.selectTestState;
     const isReadOnly =
       mappingTestSuiteState.mappingTestableState.mappingEditorState.isReadOnly;
     const addTest = (): void => mappingTestSuiteState.setShowModal(true);
     const runTests = (): void => {
-      mappingTestSuiteState.runTests();
+      flowResult(mappingTestSuiteState.runSuite()).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
     };
     const runFailingTests = (): void => {
-      mappingTestSuiteState.runFailingTests();
+      flowResult(mappingTestSuiteState.runFailingTests()).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
     };
     const renderMappingTestSuiteDriver = (): React.ReactNode => {
       if (mappingTestSuiteState instanceof MappingDataTestSuiteState) {
@@ -1435,7 +1233,7 @@ const MappingTestSuiteEditor = observer(
                 </div>
               </div>
               <PanelContent>
-                {mappingTestSuiteState.testsStates.map((test) => (
+                {mappingTestSuiteState.testStates.map((test) => (
                   <MappingTestItem
                     key={test.uuid}
                     mappingTestState={test}
@@ -1636,15 +1434,8 @@ export const MappingTestableEditor = observer(
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={56}>
-              <div className="panel service-test-editor">
-                <div className="service-test-suite-editor__header">
-                  <div className="service-test-suite-editor__header__title">
-                    <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--tests-suites">
-                      suite
-                    </div>
-                  </div>
-                </div>
-                <div className="service-test-editor__content">
+              <div className="panel mapping-testable-editorr">
+                <div className="mapping-testable-editor__content">
                   {renderSuiteState()}
                 </div>
               </div>

@@ -977,57 +977,63 @@ export const TEST_DATA__ServiceRoundtrip = [
               {
                 data: {
                   _type: 'modelStore',
-                  instances: {
-                    'my::Person': {
-                      _type: 'collection',
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
-                      values: [
+                  modelData: [
+                    {
+                      _type: 'modelInstanceData',
+                      model: 'my::Person',
+                      instances: [
                         {
-                          _type: 'func',
-                          function: 'new',
-                          parameters: [
+                          _type: 'collection',
+                          multiplicity: {
+                            lowerBound: 1,
+                            upperBound: 1,
+                          },
+                          values: [
                             {
-                              _type: 'packageableElementPtr',
-                              fullPath: 'my::Person',
-                            },
-                            {
-                              _type: 'string',
-                              value: 'dummy',
-                            },
-                            {
-                              _type: 'collection',
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                              values: [
+                              _type: 'func',
+                              function: 'new',
+                              parameters: [
                                 {
-                                  _type: 'keyExpression',
-                                  add: false,
-                                  expression: {
-                                    _type: 'collection',
-                                    multiplicity: {
-                                      lowerBound: 2,
-                                      upperBound: 2,
+                                  _type: 'packageableElementPtr',
+                                  fullPath: 'my::Person',
+                                },
+                                {
+                                  _type: 'string',
+                                  value: 'dummy',
+                                },
+                                {
+                                  _type: 'collection',
+                                  multiplicity: {
+                                    lowerBound: 1,
+                                    upperBound: 1,
+                                  },
+                                  values: [
+                                    {
+                                      _type: 'keyExpression',
+                                      add: false,
+                                      expression: {
+                                        _type: 'collection',
+                                        multiplicity: {
+                                          lowerBound: 2,
+                                          upperBound: 2,
+                                        },
+                                        values: [
+                                          {
+                                            _type: 'string',
+                                            value: 'Fred',
+                                          },
+                                          {
+                                            _type: 'string',
+                                            value: 'William',
+                                          },
+                                        ],
+                                      },
+                                      key: {
+                                        _type: 'string',
+                                        value: 'givenNames',
+                                      },
                                     },
-                                    values: [
-                                      {
-                                        _type: 'string',
-                                        value: 'Fred',
-                                      },
-                                      {
-                                        _type: 'string',
-                                        value: 'William',
-                                      },
-                                    ],
-                                  },
-                                  key: {
-                                    _type: 'string',
-                                    value: 'givenNames',
-                                  },
+                                  ],
                                 },
                               ],
                             },
@@ -1035,7 +1041,7 @@ export const TEST_DATA__ServiceRoundtrip = [
                         },
                       ],
                     },
-                  },
+                  ],
                 },
                 id: 'connection1',
               },

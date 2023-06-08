@@ -60,6 +60,9 @@ export const validateTestableId = (
   id: string | undefined,
   possibleIds: string[] | undefined,
 ): string | undefined => {
+  if (id === undefined) {
+    return undefined;
+  }
   if (!id) {
     return 'ID is required';
   } else if (id.includes(' ')) {

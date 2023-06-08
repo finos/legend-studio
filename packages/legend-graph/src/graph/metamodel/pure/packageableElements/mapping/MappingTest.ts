@@ -28,14 +28,14 @@ export class MappingQueryTest extends MappingTest implements Hashable {
    *
    * @discrepancy model
    */
-  query!: RawLambda;
+  func!: RawLambda;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_QUERY_TEST,
       this.id,
       this.doc ?? '',
-      this.query,
+      this.func,
       hashArray(this.assertions),
     ]);
   }

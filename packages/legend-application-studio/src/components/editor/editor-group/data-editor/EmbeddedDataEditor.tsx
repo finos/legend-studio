@@ -27,14 +27,18 @@ import {
   MenuContent,
   MenuContentItem,
   PanelContent,
+  PURE_ClassIcon,
   PURE_DataIcon,
   WrenchIcon,
+  type SelectComponent,
+  createFilter,
 } from '@finos/legend-art';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
+  modelStoreData_setDataModelModel,
 } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
@@ -43,9 +47,19 @@ import {
   DataElementReferenceState,
   ExternalFormatDataState,
   RelationalCSVDataState,
+  ModelStoreDataState,
+  ModelEmbeddedDataState,
 } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
-import type { DataElement } from '@finos/legend-graph';
-import { buildElementOption } from '@finos/legend-lego/graph-editor';
+import {
+  PackageableElementExplicitReference,
+  type Class,
+  type DataElement,
+} from '@finos/legend-graph';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+  type PackageableElementOption,
+} from '@finos/legend-lego/graph-editor';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 
@@ -218,6 +232,111 @@ export const DataElementReferenceDataEditor = observer(
   },
 );
 
+export const ModelEmbeddedDataEditor = observer(
+  (props: {
+    modelDataState: ModelEmbeddedDataState;
+    modelStoreDataState: ModelStoreDataState;
+    isReadOnly: boolean;
+  }) => {
+    const { isReadOnly, modelStoreDataState, modelDataState } = props;
+    const modelData = modelDataState.modelData;
+    const classSelectorRef = useRef<SelectComponent>(null);
+    const elementFilterOption = createFilter({
+      ignoreCase: true,
+      ignoreAccents: false,
+      stringify: (option: PackageableElementOption<Class>): string =>
+        option.value.path,
+    });
+    const editorStore = modelStoreDataState.editorStore;
+    const _class = modelData.model.value;
+    const classOptions = editorStore.graphManagerState.usableClasses.map(
+      (_cl) => ({
+        value: _cl,
+        label: _cl.name,
+      }),
+    );
+
+    const selectedClassOption = {
+      value: _class,
+      label: _class.name,
+    };
+
+    const changeClass = (val: PackageableElementOption<Class> | null): void => {
+      if (val?.value) {
+        modelStoreData_setDataModelModel(
+          modelData,
+          PackageableElementExplicitReference.create(val.value),
+        );
+      }
+    };
+
+    return (
+      <div>
+        <div className="sample-data-generator__controller">
+          <div
+            className="sample-data-generator__controller__icon"
+            title="class"
+          >
+            <PURE_ClassIcon />
+          </div>
+          <CustomSelectorInput
+            ref={classSelectorRef}
+            className="sample-data-generator__controller__class-selector"
+            options={classOptions}
+            onChange={changeClass}
+            value={selectedClassOption}
+            darkMode={true}
+            filterOption={elementFilterOption}
+            formatOptionLabel={getPackageableElementOptionFormatter({
+              darkMode: true,
+            })}
+          />
+        </div>
+        <div>
+          {renderEmbeddedDataEditor(
+            modelDataState.embeddedDataState,
+            isReadOnly,
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+export const ModelStoreDataEditor = observer(
+  (props: {
+    modelStoreDataState: ModelStoreDataState;
+    isReadOnly: boolean;
+  }) => {
+    const { isReadOnly, modelStoreDataState } = props;
+
+    return (
+      <div className="panel connection-editor">
+        {modelStoreDataState.modelDataStates.map((_modelDataState) => {
+          if (_modelDataState instanceof ModelEmbeddedDataState) {
+            return (
+              <ModelEmbeddedDataEditor
+                key={_modelDataState.uuid}
+                modelDataState={_modelDataState}
+                modelStoreDataState={modelStoreDataState}
+                isReadOnly={isReadOnly}
+              />
+            );
+          }
+
+          return (
+            <UnsupportedEditorPanel
+              key={_modelDataState.uuid}
+              text={'Unsuppored Model Data Type'}
+              isReadOnly={false}
+            />
+          );
+        })}
+      </div>
+    );
+  },
+);
+
 export const EmbeddedDataEditor = observer(
   (props: {
     embeddedDataEditorState: EmbeddedDataEditorState;
@@ -257,6 +376,13 @@ export function renderEmbeddedDataEditor(
     return (
       <DataElementReferenceDataEditor
         dataElementReferenceState={embeddedDataState}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (embeddedDataState instanceof ModelStoreDataState) {
+    return (
+      <ModelStoreDataEditor
+        modelStoreDataState={embeddedDataState}
         isReadOnly={isReadOnly}
       />
     );

@@ -72,7 +72,6 @@ import {
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import type { MappingEditorTabState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingTabManagerState.js';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import { MappingTestableEditor } from './MappingTestableEditor.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {
@@ -348,7 +347,6 @@ const _MappingEditor = observer(() => {
 
 export const MappingEditorWithTestable = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
   const mappingEditorState =
     editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
   const isReadOnly = mappingEditorState.isReadOnly;
@@ -358,10 +356,6 @@ export const MappingEditorWithTestable = observer(() => {
     (tab: MAPPING_EDITOR_TAB): (() => void) =>
     (): void =>
       mappingEditorState.setSelectedTab(tab);
-  applicationStore.assistantService.openDocumentationEntry(
-    LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST,
-  );
-
   return (
     <div className="service-editor">
       <div className="panel">
