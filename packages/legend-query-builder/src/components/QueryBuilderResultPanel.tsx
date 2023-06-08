@@ -104,16 +104,14 @@ import {
 } from '@finos/legend-lego/code-editor';
 import { ExecutionPlanViewer } from './execution-plan/ExecutionPlanViewer.js';
 import type {
-  CellCoordinate,
+  QueryBuilderTDSResultCellCoordinate,
   QueryBuilderResultState,
-  CellData,
+  QueryBuilderTDSResultCellData,
 } from '../stores/QueryBuilderResultState.js';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
-
-// import { ICellRendererComp, ICellRendererParams } from 'ag-grid-community';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -128,7 +126,7 @@ const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      event: CellData | null;
+      event: QueryBuilderTDSResultCellData | null;
       tdsState: QueryBuilderTDSState;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
@@ -180,7 +178,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const updateFilterConditionValue = (
       conditionValue: InstanceValue,
-      cellData: CellData,
+      cellData: QueryBuilderTDSResultCellData,
     ): void => {
       if (cellData.value) {
         instanceValue_setValue(
@@ -203,7 +201,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const generateNewPostFilterConditionNodeData = async (
       operator: QueryBuilderPostFilterOperator,
-      cellData: CellData,
+      cellData: QueryBuilderTDSResultCellData,
     ): Promise<void> => {
       let postFilterConditionState: PostFilterConditionState;
       try {
@@ -262,7 +260,7 @@ const QueryBuilderGridResultContextMenu = observer(
     const updateExistingPostFilterConditionNodeData = (
       existingPostFilterNode: QueryBuilderPostFilterTreeNodeData,
       isFilterBy: boolean,
-      cellData: CellData,
+      cellData: QueryBuilderTDSResultCellData,
       operator: QueryBuilderPostFilterOperator,
     ): void => {
       if (
@@ -345,7 +343,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const getFilterOperator = (
       isFilterBy: boolean,
-      cellData: CellData,
+      cellData: QueryBuilderTDSResultCellData,
     ): QueryBuilderPostFilterOperator => {
       if (isFilterBy === true) {
         if (cellData.value === null) {
@@ -364,7 +362,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const filterByOrOutValue = (
       isFilterBy: boolean,
-      cellData: CellData,
+      cellData: QueryBuilderTDSResultCellData,
     ): void => {
       tdsState.setShowPostFilterPanel(true);
 
@@ -448,13 +446,13 @@ const QueryBuilderGridResultContextMenu = observer(
 
 type IQueryRendererParamsWithGridType = DataGridCellRendererParams & {
   resultState: QueryBuilderResultState;
-  cellExecutionResult: TDSExecutionResult;
+  tdsExecutionResult: TDSExecutionResult;
 };
 
 const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
     const resultState = params.resultState;
-    const cellExecutionResult = params.cellExecutionResult;
+    const tdsExecutionResult = params.tdsExecutionResult;
 
     const cellValue = params.value as string;
     const columnName = params.column?.getColId() ?? '';
@@ -462,8 +460,8 @@ const QueryResultCellRenderer = observer(
     const findCoordinatesFromResultValue = (
       colId: string,
       rowNumber: number,
-    ): CellCoordinate => {
-      const colIndex = cellExecutionResult.result.columns.findIndex(
+    ): QueryBuilderTDSResultCellCoordinate => {
+      const colIndex = tdsExecutionResult.result.columns.findIndex(
         (col) => col === colId,
       );
 
@@ -572,7 +570,7 @@ const QueryResultCellRenderer = observer(
                 rowIndex: x,
                 colIndex: y,
               },
-            } as CellData;
+            } as QueryBuilderTDSResultCellData;
 
             if (
               !resultState.selectedCells.find(
@@ -680,7 +678,7 @@ const QueryBuilderGridResult = observer(
               cellRenderer: QueryResultCellRenderer,
               cellRendererParams: {
                 resultState: resultState,
-                cellExecutionResult: executionResult, // Complementing the Cell Renderer parameters
+                tdsExecutionResult: executionResult,
               },
             }))}
           />

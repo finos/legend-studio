@@ -57,13 +57,13 @@ export interface ExportDataInfo {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
-export interface CellData {
+export interface QueryBuilderTDSResultCellData {
   value: string | number | boolean | null | undefined;
   columnName: string;
-  coordinates: CellCoordinate;
+  coordinates: QueryBuilderTDSResultCellCoordinate;
 }
 
-export interface CellCoordinate {
+export interface QueryBuilderTDSResultCellCoordinate {
   rowIndex: number;
   colIndex: number;
 }
@@ -80,9 +80,10 @@ export class QueryBuilderResultState {
   executionResult?: ExecutionResult | undefined;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
-  selectedCells: CellData[];
-  mousedOverCell: CellData | null = null;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
+
+  selectedCells: QueryBuilderTDSResultCellData[];
+  mousedOverCell: QueryBuilderTDSResultCellData | null = null;
   isSelectingCells: boolean;
 
   constructor(queryBuilderState: QueryBuilderState) {
@@ -142,15 +143,15 @@ export class QueryBuilderResultState {
     this.previewLimit = Math.max(1, val);
   };
 
-  addCellData = (val: CellData): void => {
+  addCellData = (val: QueryBuilderTDSResultCellData): void => {
     this.selectedCells.push(val);
   };
 
-  setSelectedCells = (val: CellData[]): void => {
+  setSelectedCells = (val: QueryBuilderTDSResultCellData[]): void => {
     this.selectedCells = val;
   };
 
-  setMouseOverCell = (val: CellData | null): void => {
+  setMouseOverCell = (val: QueryBuilderTDSResultCellData | null): void => {
     this.mousedOverCell = val;
   };
 
@@ -184,11 +185,6 @@ export class QueryBuilderResultState {
     return this.executionResult.result.rows[rowIndex]?.values ?? [''];
   };
 
-  // NOTE: Due to the ways we edit Ag-grid's rendering, i.e.,
-  // we convert boolean values to strings values and
-  // a null value may show up as an empty string,
-  // we search for the coordinates of the ag-grid table and
-  // then find the original value of our execution results to store
   findResultValueFromCoordinates = (
     resultCoordinate: [number, number],
   ): string | number | boolean | null | undefined => {
