@@ -114,7 +114,10 @@ export class TDSBuilder extends ResultBuilder {
     super(BuilderType.TDS_BUILDER);
   }
 }
-
+export interface ResultCoordinate {
+  rowIndex: number;
+  colIndex: number;
+}
 export class TDSRow {
   values: (string | number | boolean | null)[] = [];
 }

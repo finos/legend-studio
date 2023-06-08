@@ -569,6 +569,7 @@ export class QueryBuilderPostFilterState
         undefined,
         QUERY_BUILDER_GROUP_OPERATION.AND,
       );
+
       groupNode.addChildNode(rootNode);
       groupNode.addChildNode(node);
       this.rootIds = [groupNode.id];

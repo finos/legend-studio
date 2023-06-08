@@ -37,6 +37,7 @@ import {
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   extractExecutionResultValues,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -56,6 +57,17 @@ export interface ExportDataInfo {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
+export interface CellData {
+  value: string | number | boolean | null | undefined;
+  columnName: string;
+  coordinates: CellCoordinate;
+}
+
+export interface CellCoordinate {
+  rowIndex: number;
+  colIndex: number;
+}
+
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
   readonly exportDataState = ActionState.create();
@@ -68,7 +80,10 @@ export class QueryBuilderResultState {
   executionResult?: ExecutionResult | undefined;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
+  selectedCells: CellData[];
+  mousedOverCell: CellData | null = null;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  isSelectingCells: boolean;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
@@ -78,24 +93,38 @@ export class QueryBuilderResultState {
       latestRunHashCode: observable,
       queryRunPromise: observable,
       isGeneratingPlan: observable,
+      selectedCells: observable,
+      mousedOverCell: observable,
       isRunningQuery: observable,
+      isSelectingCells: observable,
+      setIsSelectingCells: action,
       setIsRunningQuery: action,
       setExecutionResult: action,
       setExecutionDuration: action,
       setPreviewLimit: action,
+      addCellData: action,
+      setSelectedCells: action,
+      setMouseOverCell: action,
       setQueryRunPromise: action,
+
       exportData: flow,
       runQuery: flow,
       cancelQuery: flow,
       generatePlan: flow,
     });
+    this.isSelectingCells = false;
 
+    this.selectedCells = [];
     this.queryBuilderState = queryBuilderState;
     this.executionPlanState = new ExecutionPlanState(
       this.queryBuilderState.applicationStore,
       this.queryBuilderState.graphManagerState,
     );
   }
+
+  setIsSelectingCells = (val: boolean): void => {
+    this.isSelectingCells = val;
+  };
 
   setIsRunningQuery = (val: boolean): void => {
     this.isRunningQuery = val;
@@ -113,10 +142,67 @@ export class QueryBuilderResultState {
     this.previewLimit = Math.max(1, val);
   };
 
+  addCellData = (val: CellData): void => {
+    this.selectedCells.push(val);
+  };
+
+  setSelectedCells = (val: CellData[]): void => {
+    this.selectedCells = val;
+  };
+
+  setMouseOverCell = (val: CellData | null): void => {
+    this.mousedOverCell = val;
+  };
+
   setQueryRunPromise = (
     promise: Promise<ExecutionResult> | undefined,
   ): void => {
     this.queryRunPromise = promise;
+  };
+
+  findColumnFromCoordinates = (
+    colIndex: number,
+  ): string | number | boolean | null | undefined => {
+    if (
+      !this.executionResult ||
+      !(this.executionResult instanceof TDSExecutionResult)
+    ) {
+      return undefined;
+    }
+    return this.executionResult.result.columns[colIndex];
+  };
+
+  findRowFromRowIndex = (
+    rowIndex: number,
+  ): (string | number | boolean | null)[] => {
+    if (
+      !this.executionResult ||
+      !(this.executionResult instanceof TDSExecutionResult)
+    ) {
+      return [''];
+    }
+    return this.executionResult.result.rows[rowIndex]?.values ?? [''];
+  };
+
+  // NOTE: Due to the ways we edit Ag-grid's rendering, i.e.,
+  // we convert boolean values to strings values and
+  // a null value may show up as an empty string,
+  // we search for the coordinates of the ag-grid table and
+  // then find the original value of our execution results to store
+  findResultValueFromCoordinates = (
+    resultCoordinate: [number, number],
+  ): string | number | boolean | null | undefined => {
+    const rowIndex = resultCoordinate[0];
+    const colIndex = resultCoordinate[1];
+
+    if (
+      !this.executionResult ||
+      !(this.executionResult instanceof TDSExecutionResult)
+    ) {
+      return undefined;
+    }
+
+    return this.executionResult.result.rows[rowIndex]?.values[colIndex];
   };
 
   get checkForStaleResults(): boolean {
