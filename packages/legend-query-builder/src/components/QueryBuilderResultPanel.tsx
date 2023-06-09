@@ -112,6 +112,7 @@ import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
+import { QueryUsageViewer } from './QueryUsageViewer.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -1041,6 +1042,15 @@ export const QueryBuilderResultPanel = observer(
                       {format}
                     </MenuContentItem>
                   ))}
+                  <MenuContentItem
+                    className="query-builder__result__export__dropdown__menu__item"
+                    onClick={(): void =>
+                      resultState.setIsQueryUsageViewerOpened(true)
+                    }
+                    disabled={queryBuilderState.changeDetectionState.hasChanged}
+                  >
+                    View Query Usage...
+                  </MenuContentItem>
                 </MenuContent>
               }
               menuProps={{
@@ -1056,6 +1066,9 @@ export const QueryBuilderResultPanel = observer(
                 <CaretDownIcon />
               </div>
             </DropdownMenu>
+            {resultState.isQueryUsageViewerOpened && (
+              <QueryUsageViewer resultState={resultState} />
+            )}
           </div>
         </div>
         <PanelContent>

@@ -38,6 +38,13 @@ export type DatasetEntitlementAccessReportActionConfiguration = {
   ) => React.ReactNode;
 };
 
+export type QueryExportUsageConfiguration = {
+  key: string;
+  title: string;
+  icon?: React.ReactNode | undefined;
+  renderer(): React.ReactNode;
+};
+
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
   /**
@@ -49,4 +56,9 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of dataset entitlement access report action configurations.
    */
   getExtraDatasetEntitlementAccessNotGrantedReportActionConfigurations?(): DatasetEntitlementAccessReportActionConfiguration[];
+
+  /**
+   * Get the list of query usage configurations
+   */
+  getExtraQueryUsageConfigurations?(): QueryExportUsageConfiguration[];
 }
