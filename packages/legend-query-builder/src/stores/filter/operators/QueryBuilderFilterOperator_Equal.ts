@@ -22,12 +22,10 @@ import { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import {
   type ValueSpecification,
   type SimpleFunctionExpression,
-  type Enum,
   type AbstractPropertyExpression,
   EnumValueInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
-  EnumValueExplicitReference,
   Enumeration,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
@@ -43,14 +41,12 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
-  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
-import { instanceValue_setValues } from '../../shared/ValueSpecificationModifierHelper.js';
 
 export class QueryBuilderFilterOperator_Equal
   extends QueryBuilderFilterOperator
@@ -116,7 +112,7 @@ export class QueryBuilderFilterOperator_Equal
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -125,7 +121,7 @@ export class QueryBuilderFilterOperator_Equal
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           PRIMITIVE_TYPE.STRICTDATE,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -136,16 +132,6 @@ export class QueryBuilderFilterOperator_Equal
               GenericTypeExplicitReference.create(
                 new GenericType(propertyType),
               ),
-            );
-            instanceValue_setValues(
-              enumValueInstanceValue,
-              [
-                EnumValueExplicitReference.create(
-                  propertyType.values[0] as Enum,
-                ),
-              ],
-              filterConditionState.filterState.queryBuilderState
-                .observerContext,
             );
             return enumValueInstanceValue;
           }

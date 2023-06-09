@@ -644,7 +644,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   get allValidationIssues(): string[] {
-    return this.fetchStructureState.implementation.allValidationIssues;
+    return this.fetchStructureState.implementation.allValidationIssues.concat(
+      this.filterState.allValidationIssues,
+    );
   }
 
   /**

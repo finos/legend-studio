@@ -42,6 +42,7 @@ import {
   type ValueSpecification,
   type VariableExpression,
   observe_ValueSpecification,
+  InstanceValue,
 } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
@@ -53,7 +54,10 @@ import {
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
-import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecificationHelper.js';
+import {
+  isValidInstanceValue,
+  isValueExpressionReferencedInValue,
+} from '../QueryBuilderValueSpecificationHelper.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -406,6 +410,7 @@ export class QueryBuilderFilterState
       collapseTree: action,
       setShowPanel: action,
       expandTree: action,
+      allValidationIssues: computed,
       hashCode: computed,
     });
 
@@ -793,6 +798,28 @@ export class QueryBuilderFilterState
         .filter(isNonNullable)
         .find((value) => isValueExpressionReferencedInValue(variable, value)),
     );
+  }
+
+  get allValidationIssues(): string[] {
+    const validationIssues: string[] = [];
+    Array.from(this.nodes.values()).forEach((node) => {
+      if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+        if (
+          node.condition.value instanceof InstanceValue &&
+          !isValidInstanceValue(node.condition.value)
+        ) {
+          validationIssues.push(
+            `Filter value for ${node.condition.propertyExpressionState.title} is missing`,
+          );
+        }
+        if (!node.condition.propertyExpressionState.isValid) {
+          validationIssues.push(
+            `Derived property parameter value for ${node.condition.propertyExpressionState.title} is missing`,
+          );
+        }
+      }
+    });
+    return validationIssues;
   }
 
   get hashCode(): string {

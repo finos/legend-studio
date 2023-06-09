@@ -119,7 +119,7 @@ export const createMockEnumerationProperty = (
 export const buildPrimitiveInstanceValue = (
   graph: PureModel,
   type: PRIMITIVE_TYPE,
-  value: unknown,
+  value: unknown | undefined,
   observerContext: ObserverContext,
 ): PrimitiveInstanceValue => {
   const instance = new PrimitiveInstanceValue(
@@ -127,7 +127,9 @@ export const buildPrimitiveInstanceValue = (
       new GenericType(graph.getPrimitiveType(type)),
     ),
   );
-  instanceValue_setValues(instance, [value], observerContext);
+  if (value) {
+    instanceValue_setValues(instance, [value], observerContext);
+  }
   return instance;
 };
 

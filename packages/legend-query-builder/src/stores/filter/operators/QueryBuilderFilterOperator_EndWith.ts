@@ -36,7 +36,6 @@ import {
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import {
   buildNotExpression,
-  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
@@ -83,7 +82,7 @@ export class QueryBuilderFilterOperator_EndWith
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }

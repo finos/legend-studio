@@ -33,6 +33,7 @@ import {
   BasePopover,
   PanelFormSection,
   CalculateIcon,
+  type SelectComponent,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -67,6 +68,7 @@ import {
   parseCSVString,
   guaranteeIsNumber,
   csvStringify,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -227,6 +229,8 @@ const StringPrimitiveInstanceValueEditor = observer(
       selectorConfig,
       obseverContext,
     } = props;
+    const inputRef = useRef<HTMLInputElement>(null);
+    const selectorRef = useRef<SelectComponent>(null);
     const useSelector = Boolean(selectorConfig);
     const applicationStore = useApplicationStore();
     const value = valueSpecification.values[0] as string;
@@ -277,10 +281,19 @@ const StringPrimitiveInstanceValueEditor = observer(
     const noOptionsMessage =
       selectorConfig?.values === undefined ? (): null => null : undefined;
 
+    useEffect(() => {
+      if (useSelector) {
+        selectorRef.current?.focus();
+      } else {
+        inputRef.current?.focus();
+      }
+    }, [useSelector]);
+
     return (
       <div className={clsx('value-spec-editor', className)}>
         {useSelector ? (
           <CustomSelectorInput
+            ref={selectorRef}
             className="value-spec-editor__enum-selector"
             options={queryOptions}
             onChange={changeValue}
@@ -300,6 +313,7 @@ const StringPrimitiveInstanceValueEditor = observer(
           />
         ) : (
           <input
+            ref={inputRef}
             className="panel__content__form__section__input value-spec-editor__input"
             spellCheck={false}
             value={value}
@@ -380,12 +394,16 @@ const NumberPrimitiveInstanceValueEditor = observer(
       obseverContext,
     } = props;
     const [value, setValue] = useState(
-      (valueSpecification.values[0] as number).toString(),
+      valueSpecification.values[0] !== undefined
+        ? (valueSpecification.values[0] as number).toString()
+        : '',
     );
     const inputRef = useRef<HTMLInputElement>(null);
-    const numericValue = isInteger
-      ? Number.parseInt(Number(value).toString(), 10)
-      : Number(value);
+    const numericValue = value
+      ? isInteger
+        ? Number.parseInt(Number(value).toString(), 10)
+        : Number(value)
+      : undefined;
 
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       setValue(event.target.value);
@@ -393,7 +411,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     // Support expression evaluation
     const calculateExpression = (): void => {
-      if (isNaN(numericValue)) {
+      if (value && numericValue !== undefined && isNaN(numericValue)) {
         try {
           const calculatedValue = guaranteeIsNumber(evaluate(value));
           setValue(
@@ -405,7 +423,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
           setValue((valueSpecification.values[0] as number).toString());
         }
       } else {
-        setValue(numericValue.toString());
+        setValue(numericValue ? numericValue.toString() : '');
       }
     };
 
@@ -419,11 +437,14 @@ const NumberPrimitiveInstanceValueEditor = observer(
     };
 
     useEffect(() => {
-      setValue((valueSpecification.values[0] as number).toString());
+      valueSpecification.values[0] !== undefined
+        ? setValue((valueSpecification.values[0] as number).toString())
+        : setValue('');
     }, [valueSpecification]);
 
     useEffect(() => {
       if (
+        numericValue !== undefined &&
         !isNaN(numericValue) &&
         numericValue !== valueSpecification.values[0]
       ) {
@@ -434,6 +455,12 @@ const NumberPrimitiveInstanceValueEditor = observer(
           obseverContext,
         );
         setValueSpecification(valueSpecification);
+      } else if (
+        numericValue === undefined &&
+        numericValue !== valueSpecification.values[0]
+      ) {
+        instanceValue_setValues(valueSpecification, [], obseverContext);
+        setValueSpecification(valueSpecification);
       }
     }, [
       numericValue,
@@ -441,6 +468,10 @@ const NumberPrimitiveInstanceValueEditor = observer(
       setValueSpecification,
       obseverContext,
     ]);
+
+    useEffect(() => {
+      inputRef.current?.focus();
+    }, []);
 
     return (
       <div className={clsx('value-spec-editor', className)}>
@@ -493,9 +524,13 @@ const EnumValueInstanceValueEditor = observer(
       setValueSpecification,
       obseverContext,
     } = props;
-    const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
-    const enumValue = enumValueRef.value;
-    const options = enumValue._OWNER.values.map((value) => ({
+    const selectorRef = useRef<SelectComponent>(null);
+    const enumValueRef = valueSpecification.values[0];
+    const enumValue = enumValueRef?.value;
+    const options = guaranteeType(
+      valueSpecification.genericType?.ownerReference.value,
+      Enumeration,
+    ).values.map((value) => ({
       label: value.name,
       value: value,
     }));
@@ -509,13 +544,18 @@ const EnumValueInstanceValueEditor = observer(
       setValueSpecification(valueSpecification);
     };
 
+    useEffect(() => {
+      selectorRef.current?.focus();
+    }, []);
+
     return (
       <div className={clsx('value-spec-editor', className)}>
         <CustomSelectorInput
+          ref={selectorRef}
           className="value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}
-          value={{ value: enumValue, label: enumValue.name }}
+          value={enumValue ? { value: enumValue, label: enumValue.name } : null}
           darkMode={true}
         />
         <button
@@ -667,7 +707,7 @@ const CollectionValueInstanceValueEditor = observer(
     } = props;
     const inputRef = useRef<HTMLInputElement>(null);
     const [text, setText] = useState(stringifyValue(valueSpecification.values));
-    const [editable, setEditable] = useState(false);
+    const [editable, setEditable] = useState(true);
     const [showAdvancedEditorPopover, setShowAdvancedEditorPopover] =
       useState(false);
     const valueText = stringifyValue(valueSpecification.values);

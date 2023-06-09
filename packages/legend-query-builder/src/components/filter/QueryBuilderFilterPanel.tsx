@@ -45,6 +45,7 @@ import {
   MoreVerticalIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -72,14 +73,17 @@ import {
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { ValueSpecification } from '@finos/legend-graph';
+import { InstanceValue, type ValueSpecification } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilderFilterOperator.js';
-import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import {
+  isTypeCompatibleForAssignment,
+  isValidInstanceValue,
+} from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 import {
   BasicValueSpecificationEditor,
@@ -87,6 +91,7 @@ import {
   QUERY_BUILDER_VARIABLE_DND_TYPE,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
+import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 
 export const IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
@@ -231,7 +236,6 @@ const QueryBuilderFilterConditionEditor = observer(
       reloadValues: debouncedTypeaheadSearch,
       cleanUpReloadValues,
     };
-
     const { showDroppableSuggestion } = useDragLayer((monitor) => ({
       showDroppableSuggestion:
         monitor.isDragging() &&
@@ -240,7 +244,9 @@ const QueryBuilderFilterConditionEditor = observer(
           : IS_DRAGGABLE_FILTER_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
-
+    const isFilterValueInValid =
+      node.condition.value instanceof InstanceValue &&
+      !isValidInstanceValue(node.condition.value);
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
         {showDroppableSuggestion && (
@@ -323,6 +329,11 @@ const QueryBuilderFilterConditionEditor = observer(
                     )}
                   />
                 </PanelEntryDropZonePlaceholder>
+                {isFilterValueInValid && (
+                  <div className="query-builder-filter-tree__condition-node__error--icon">
+                    <ExclamationTriangleIcon />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -906,6 +917,11 @@ export const QueryBuilderFilterPanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">filter</div>
+            {filterState.allValidationIssues.length !== 0 && (
+              <QueryBuilderPanelIssueCountBadge
+                issues={filterState.allValidationIssues}
+              />
+            )}
           </div>
 
           <div className="panel__header__actions">

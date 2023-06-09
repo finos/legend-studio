@@ -274,6 +274,18 @@ export class QueryBuilderTDSState
 
   get fetchStructureValidationIssues(): string[] {
     const validationIssues: string[] = [];
+    this.projectionColumns.forEach((column) => {
+      if (
+        column instanceof QueryBuilderSimpleProjectionColumnState &&
+        column.propertyExpressionState.derivedPropertyExpressionStates.some(
+          (p) => !p.isValid,
+        )
+      ) {
+        validationIssues.push(
+          `Derived property parameter value for ${column.propertyExpressionState.title} is missing`,
+        );
+      }
+    });
     const hasInValidCalendarAggregateColumns =
       this.aggregationState.columns.some(
         (column) =>
@@ -306,6 +318,7 @@ export class QueryBuilderTDSState
     const fetchStructureValidationIssues = [
       ...this.fetchStructureValidationIssues,
       ...this.windowState.windowValidationIssues,
+      ...this.postFilterState.allValidationIssues,
     ];
 
     return fetchStructureValidationIssues;

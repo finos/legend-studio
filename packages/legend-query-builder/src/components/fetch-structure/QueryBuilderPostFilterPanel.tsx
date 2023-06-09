@@ -46,12 +46,14 @@ import {
   MoreVerticalIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import {
   type ValueSpecification,
   Class,
   Enumeration,
   PrimitiveType,
+  InstanceValue,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -82,7 +84,10 @@ import {
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import {
+  isTypeCompatibleForAssignment,
+  isValidInstanceValue,
+} from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import {
@@ -100,6 +105,7 @@ import {
 } from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
+import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -366,6 +372,9 @@ const QueryBuilderPostFilterConditionEditor = observer(
       reloadValues: debouncedTypeaheadSearch,
       cleanUpReloadValues,
     };
+    const isPostFilterValueInValid =
+      node.condition.value instanceof InstanceValue &&
+      !isValidInstanceValue(node.condition.value);
 
     const { showDroppableSuggestion } = useDragLayer((monitor) => ({
       showDroppableSuggestion:
@@ -454,6 +463,11 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     )}
                   />
                 </PanelEntryDropZonePlaceholder>
+                {isPostFilterValueInValid && (
+                  <div className="query-builder-post-filter-tree__condition-node__error--icon">
+                    <ExclamationTriangleIcon />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -971,6 +985,11 @@ const QueryBuilderPostFilterPanelContent = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">post-filter</div>
+            {postFilterState.allValidationIssues.length !== 0 && (
+              <QueryBuilderPanelIssueCountBadge
+                issues={postFilterState.allValidationIssues}
+              />
+            )}
           </div>
           <div className="panel__header__actions">
             <DropdownMenu

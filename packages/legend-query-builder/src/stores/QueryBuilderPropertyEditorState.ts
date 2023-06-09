@@ -26,17 +26,14 @@ import {
 import {
   Class,
   type AbstractProperty,
-  type Enum,
   type ValueSpecification,
   type PureModel,
   AbstractPropertyExpression,
   DerivedProperty,
   Enumeration,
-  EnumValueExplicitReference,
   EnumValueInstanceValue,
   InstanceValue,
   PrimitiveInstanceValue,
-  type PRIMITIVE_TYPE,
   VariableExpression,
   SimpleFunctionExpression,
   matchFunctionName,
@@ -50,7 +47,7 @@ import {
 } from '@finos/legend-graph';
 import {
   createNullishValue,
-  generateDefaultValueForPrimitiveType,
+  isValidInstanceValue,
 } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
@@ -58,7 +55,6 @@ import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils
 import {
   propertyExpression_setFunc,
   functionExpression_setParametersValues,
-  instanceValue_setValues,
 } from './shared/ValueSpecificationModifierHelper.js';
 import { generateMilestonedPropertyParameterValue } from './milestoning/QueryBuilderMilestoningHelper.js';
 
@@ -157,28 +153,11 @@ export const generateValueSpecificationForParameter = (
           ),
         ),
       );
-      if (type !== PrimitiveType.LATESTDATE) {
-        instanceValue_setValues(
-          primitiveInstanceValue,
-          [generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE)],
-          observerContext,
-        );
-      }
       return primitiveInstanceValue;
     } else if (type instanceof Enumeration) {
       const enumValueInstanceValue = new EnumValueInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(type)),
       );
-      if (type.values.length) {
-        const enumValueRef = EnumValueExplicitReference.create(
-          type.values[0] as Enum,
-        );
-        instanceValue_setValues(
-          enumValueInstanceValue,
-          [enumValueRef],
-          observerContext,
-        );
-      }
       return enumValueInstanceValue;
     }
   }
@@ -285,22 +264,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
     // TODO: more type matching logic here (take into account multiplicity, type, etc.)
     return this.parameterValues.every((paramValue) => {
       if (paramValue instanceof InstanceValue) {
-        const isRequired = paramValue.multiplicity.lowerBound >= 1;
-        // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
-        if (
-          isRequired &&
-          paramValue.genericType?.value.rawType !== PrimitiveType.LATESTDATE &&
-          !paramValue.values.length
-        ) {
-          return false;
-        }
-        // more values than allowed
-        if (
-          paramValue.multiplicity.upperBound &&
-          paramValue.values.length > paramValue.multiplicity.upperBound
-        ) {
-          return false;
-        }
+        return isValidInstanceValue(paramValue);
       }
       return true;
     });

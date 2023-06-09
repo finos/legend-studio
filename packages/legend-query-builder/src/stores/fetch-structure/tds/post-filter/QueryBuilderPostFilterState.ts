@@ -25,6 +25,7 @@ import {
   PRIMITIVE_TYPE,
   observe_ValueSpecification,
   PrimitiveType,
+  InstanceValue,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -60,6 +61,7 @@ import {
   QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
   QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
 } from '../projection/QueryBuilderProjectionColumnState.js';
 import {
   buildProjectionColumnTypeaheadQuery,
@@ -70,7 +72,10 @@ import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperati
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
-import { isValueExpressionReferencedInValue } from '../../../QueryBuilderValueSpecificationHelper.js';
+import {
+  isValidInstanceValue,
+  isValueExpressionReferencedInValue,
+} from '../../../QueryBuilderValueSpecificationHelper.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -502,6 +507,7 @@ export class QueryBuilderPostFilterState
       expandTree: action,
       replaceBlankNodeWithNode: action,
       setRearrangingConditions: action,
+      allValidationIssues: computed,
       hashCode: computed,
     });
 
@@ -873,6 +879,34 @@ export class QueryBuilderPostFilterState
         .filter(isNonNullable)
         .find((value) => isValueExpressionReferencedInValue(variable, value)),
     );
+  }
+
+  get allValidationIssues(): string[] {
+    const validationIssues: string[] = [];
+    Array.from(this.nodes.values()).forEach((node) => {
+      if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
+        if (
+          node.condition.value instanceof InstanceValue &&
+          !isValidInstanceValue(node.condition.value) &&
+          node.condition.columnState instanceof
+            QueryBuilderSimpleProjectionColumnState
+        ) {
+          validationIssues.push(
+            `Filter value for ${node.condition.columnState.propertyExpressionState.title} is missing`,
+          );
+        }
+        if (
+          node.condition.columnState instanceof
+            QueryBuilderSimpleProjectionColumnState &&
+          !node.condition.columnState.propertyExpressionState.isValid
+        ) {
+          validationIssues.push(
+            `Derived property parameter value for ${node.condition.columnState.propertyExpressionState.title} is missing`,
+          );
+        }
+      }
+    });
+    return validationIssues;
   }
 
   get hashCode(): string {

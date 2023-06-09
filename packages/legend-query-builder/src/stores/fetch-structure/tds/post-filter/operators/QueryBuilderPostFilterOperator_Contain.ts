@@ -36,7 +36,6 @@ import type {
 } from '../QueryBuilderPostFilterState.js';
 import {
   buildNotExpression,
-  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
@@ -78,7 +77,7 @@ export class QueryBuilderPostFilterOperator_Contain
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
           propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          undefined,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );
