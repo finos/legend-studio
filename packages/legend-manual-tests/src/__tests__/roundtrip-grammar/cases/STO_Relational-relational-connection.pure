@@ -85,6 +85,46 @@ RelationalDatabaseConnection connection::relation::MySnowFlakeWithQuotedIdentifi
   };
 }
 
+RelationalDatabaseConnection connection::relation::MySnowFlakeWithEnableQueryTags
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+    enableQueryTags: false;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'user';
+    privateKeyVaultReference: 'value';
+    passPhraseVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relation::MySnowFlakeWithEnableQueryTags2
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+    enableQueryTags: true;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'user';
+    privateKeyVaultReference: 'value';
+    passPhraseVaultReference: 'value';
+  };
+}
+
 RelationalDatabaseConnection connection::relational::H2Connection
 {
   store: store::db;

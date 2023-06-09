@@ -309,6 +309,12 @@ export const snowflakeDatasourceSpec_setQuotedIdentifiersIgnoreCase = action(
   },
 );
 
+export const snowflakeDatasourceSpec_setEnableQueryTags = action(
+  (spec: SnowflakeDatasourceSpecification, val: boolean | undefined): void => {
+    spec.enableQueryTags = val;
+  },
+);
+
 export const snowflakeDatasourceSpec_setProxyHost = action(
   (spec: SnowflakeDatasourceSpecification, val: string | undefined): void => {
     spec.proxyHost = val;

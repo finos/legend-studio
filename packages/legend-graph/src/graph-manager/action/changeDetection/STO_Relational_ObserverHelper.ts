@@ -801,6 +801,7 @@ export const observe_SnowflakeDatasourceSpecification = skipObserved(
       databaseName: observable,
       cloudType: observable,
       quotedIdentifiersIgnoreCase: observable,
+      enableQueryTags: observable,
       proxyHost: observable,
       proxyPort: observable,
       nonProxyHosts: observable,

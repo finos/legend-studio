@@ -226,6 +226,7 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
     proxyHost: optional(primitive()),
     proxyPort: optional(primitive()),
     quotedIdentifiersIgnoreCase: optional(primitive()),
+    enableQueryTags: optional(primitive()),
     region: primitive(),
     role: optional(primitive()),
     warehouseName: primitive(),

@@ -128,6 +128,7 @@ import {
   snowflakeDatasourceSpec_setProxyHost,
   snowflakeDatasourceSpec_setProxyPort,
   snowflakeDatasourceSpec_setQuotedIdentifiersIgnoreCase,
+  snowflakeDatasourceSpec_setEnableQueryTags,
   snowflakeDatasourceSpec_setRegion,
   snowflakeDatasourceSpec_setRole,
   snowflakeDatasourceSpec_setWarehouseName,
@@ -580,6 +581,18 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           prompt="Controls whether Snowflake will treat alphabetic characters in double-quoted identifiers as uppercase"
           update={(value: boolean | undefined): void =>
             snowflakeDatasourceSpec_setQuotedIdentifiersIgnoreCase(
+              sourceSpec,
+              Boolean(value),
+            )
+          }
+        />
+        <PanelFormBooleanField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.enableQueryTags}
+          name="Enable Query Tags"
+          prompt="Controls whether engine sets a tag on each query for identification"
+          update={(value: boolean | undefined): void =>
+            snowflakeDatasourceSpec_setEnableQueryTags(
               sourceSpec,
               Boolean(value),
             )
