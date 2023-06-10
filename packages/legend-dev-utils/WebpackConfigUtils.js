@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import sass from 'sass';
+import * as sass from 'sass';
 import { resolve, join } from 'path';
 import { existsSync } from 'fs';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';

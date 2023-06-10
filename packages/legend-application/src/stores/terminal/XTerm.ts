@@ -282,13 +282,8 @@ export class XTerm extends Terminal {
     });
 
     this.searcher.onDidChangeResults((result) => {
-      if (result) {
-        this.setSearchResultCount(result.resultCount);
-        this.setSearchCurrentResultIndex(result.resultIndex);
-      } else {
-        this.setSearchResultCount(undefined);
-        this.setSearchCurrentResultIndex(undefined);
-      }
+      this.setSearchResultCount(result.resultCount);
+      this.setSearchCurrentResultIndex(result.resultIndex);
     });
 
     // NOTE: `xterm` expects to be attached to a proper terminal program which handles

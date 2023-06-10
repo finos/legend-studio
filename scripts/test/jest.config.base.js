@@ -46,6 +46,9 @@ export const getBaseJestConfig = (isGlobal) => {
 
       // yaml
       'yaml',
+
+      // ag-grid
+      '@ag-grid-community',
     ],
   });
 
