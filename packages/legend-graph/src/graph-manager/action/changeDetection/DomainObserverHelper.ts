@@ -330,6 +330,7 @@ export const observe_Property = skipObserved(
     makeObservable(metamodel, {
       name: observable,
       multiplicity: observable,
+      aggregation: observable,
       stereotypes: observable,
       taggedValues: observable,
       hashCode: computed,
