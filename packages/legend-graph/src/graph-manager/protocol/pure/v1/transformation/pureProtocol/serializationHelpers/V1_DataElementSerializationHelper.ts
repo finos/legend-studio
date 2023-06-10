@@ -1,4 +1,3 @@
-7;
 /**
  * Copyright (c) 2020-present, Goldman Sachs
  *
