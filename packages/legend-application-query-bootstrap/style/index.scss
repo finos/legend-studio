@@ -1265,6 +1265,9 @@
       --ag-row-border-color: var(--color-legacylight-light-grey-200);
     }
 
+    .query-builder__result__values__table__cell--active {
+      background-color: var(--color-navy-600);
+    }
     // ------------------------------------ Other / Modal ---------------------------------------
 
     .query-builder__tooltip {

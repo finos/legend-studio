@@ -37,6 +37,7 @@ import {
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   extractExecutionResultValues,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -56,6 +57,17 @@ export interface ExportDataInfo {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
+export interface QueryBuilderTDSResultCellData {
+  value: string | number | boolean | null | undefined;
+  columnName: string;
+  coordinates: QueryBuilderTDSResultCellCoordinate;
+}
+
+export interface QueryBuilderTDSResultCellCoordinate {
+  rowIndex: number;
+  colIndex: number;
+}
+
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
   readonly exportDataState = ActionState.create();
@@ -70,6 +82,10 @@ export class QueryBuilderResultState {
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
+  selectedCells: QueryBuilderTDSResultCellData[];
+  mousedOverCell: QueryBuilderTDSResultCellData | null = null;
+  isSelectingCells: boolean;
+
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       executionResult: observable,
@@ -78,24 +94,38 @@ export class QueryBuilderResultState {
       latestRunHashCode: observable,
       queryRunPromise: observable,
       isGeneratingPlan: observable,
+      selectedCells: observable,
+      mousedOverCell: observable,
       isRunningQuery: observable,
+      isSelectingCells: observable,
+      setIsSelectingCells: action,
       setIsRunningQuery: action,
       setExecutionResult: action,
       setExecutionDuration: action,
       setPreviewLimit: action,
+      addCellData: action,
+      setSelectedCells: action,
+      setMouseOverCell: action,
       setQueryRunPromise: action,
+
       exportData: flow,
       runQuery: flow,
       cancelQuery: flow,
       generatePlan: flow,
     });
+    this.isSelectingCells = false;
 
+    this.selectedCells = [];
     this.queryBuilderState = queryBuilderState;
     this.executionPlanState = new ExecutionPlanState(
       this.queryBuilderState.applicationStore,
       this.queryBuilderState.graphManagerState,
     );
   }
+
+  setIsSelectingCells = (val: boolean): void => {
+    this.isSelectingCells = val;
+  };
 
   setIsRunningQuery = (val: boolean): void => {
     this.isRunningQuery = val;
@@ -113,10 +143,62 @@ export class QueryBuilderResultState {
     this.previewLimit = Math.max(1, val);
   };
 
+  addCellData = (val: QueryBuilderTDSResultCellData): void => {
+    this.selectedCells.push(val);
+  };
+
+  setSelectedCells = (val: QueryBuilderTDSResultCellData[]): void => {
+    this.selectedCells = val;
+  };
+
+  setMouseOverCell = (val: QueryBuilderTDSResultCellData | null): void => {
+    this.mousedOverCell = val;
+  };
+
   setQueryRunPromise = (
     promise: Promise<ExecutionResult> | undefined,
   ): void => {
     this.queryRunPromise = promise;
+  };
+
+  findColumnFromCoordinates = (
+    colIndex: number,
+  ): string | number | boolean | null | undefined => {
+    if (
+      !this.executionResult ||
+      !(this.executionResult instanceof TDSExecutionResult)
+    ) {
+      return undefined;
+    }
+    return this.executionResult.result.columns[colIndex];
+  };
+
+  findRowFromRowIndex = (
+    rowIndex: number,
+  ): (string | number | boolean | null)[] => {
+    if (
+      !this.executionResult ||
+      !(this.executionResult instanceof TDSExecutionResult)
+    ) {
+      return [''];
+    }
+    return this.executionResult.result.rows[rowIndex]?.values ?? [''];
+  };
+
+  findResultValueFromCoordinates = (
+    resultCoordinate: [number, number],
+  ): string | number | boolean | null | undefined => {
+    const rowIndex = resultCoordinate[0];
+    const colIndex = resultCoordinate[1];
+
+    if (
+      !this.executionResult ||
+      !(this.executionResult instanceof TDSExecutionResult)
+    ) {
+      return undefined;
+    }
+
+    return this.executionResult.result.rows[rowIndex]?.values[colIndex];
   };
 
   get checkForStaleResults(): boolean {
