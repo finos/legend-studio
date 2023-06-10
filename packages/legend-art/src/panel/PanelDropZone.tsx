@@ -23,7 +23,6 @@ import {
   useDragLayer,
 } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { Portal } from '../utils/ComponentUtils.js';
 import { VerticalDragHandleIcon } from '../icon/Icon.js';
 
 export const PanelDropZone: React.FC<{
@@ -42,13 +41,13 @@ export const PanelDropZone: React.FC<{
   } = props;
   return (
     <>
-      {showDroppableSuggestion && (
-        <div
-          className={clsx('dnd__dropzone--droppable', className)}
-          ref={dropTargetConnector}
-        ></div>
-      )}
-      <div className="dnd__dropzone">
+      <div
+        className={clsx('dnd__dropzone', className)}
+        ref={dropTargetConnector}
+      >
+        {showDroppableSuggestion && (
+          <div className="dnd__dropzone--droppable"></div>
+        )}
         {isDragOver && <div className="panel__dnd__dropzone__overlay" />}
         <div className="panel__dnd__dropzone__content">{children}</div>
       </div>
@@ -144,7 +143,6 @@ export function DragPreviewLayer<T>(props: {
       itemType: monitor.getItemType(),
       item: monitor.getItem<T | null>(),
       isDragging: monitor.isDragging(),
-      initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
     }),
   );
@@ -157,24 +155,21 @@ export function DragPreviewLayer<T>(props: {
     return null;
   }
   return (
-    // use portal so this will show on top of everything regardless of the parent element's container
-    <Portal>
-      <div className="dnd__drag-preview-layer">
-        <div
-          className="dnd__drag-preview-layer__content"
-          style={
-            !currentPosition
-              ? { display: 'none' }
-              : {
-                  transform: `translate(${currentPosition.x / 10 + 2}rem, ${
-                    currentPosition.y / 10 + 1
-                  }rem)`,
-                }
-          }
-        >
-          {labelGetter(item)}
-        </div>
+    <div className="dnd__drag-preview-layer">
+      <div
+        className="dnd__drag-preview-layer__content"
+        style={
+          !currentPosition
+            ? { display: 'none' }
+            : {
+                transform: `translate(${currentPosition.x / 10 + 2}rem, ${
+                  currentPosition.y / 10 + 1
+                }rem)`,
+              }
+        }
+      >
+        {labelGetter(item)}
       </div>
-    </Portal>
+    </div>
   );
 }
