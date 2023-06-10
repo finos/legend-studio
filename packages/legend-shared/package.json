@@ -46,7 +46,7 @@
     "@types/pako": "2.0.0",
     "@types/papaparse": "5.3.7",
     "@types/seedrandom": "3.0.5",
-    "@types/uuid": "9.0.1",
+    "@types/uuid": "9.0.2",
     "date-fns": "2.30.0",
     "fuse.js": "6.6.2",
     "hash.js": "1.1.7",
