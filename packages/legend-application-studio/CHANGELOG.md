@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 26.1.9
+
+### Patch Changes
+
+- [#2319](https://github.com/finos/legend-studio/pull/2319) [`660f96c39`](https://github.com/finos/legend-studio/commit/660f96c392d86344b58676a7217aabd0ef6a7940) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Minor improvements in service test editor for services with one connection and date parameters. Add Import CSV option for relational csv data.
+
+- [#2317](https://github.com/finos/legend-studio/pull/2317) [`ba835606f`](https://github.com/finos/legend-studio/commit/ba835606fd6883651b9f4055f79bff884757b3bf) ([@abhishoya-gs](https://github.com/abhishoya-gs)) - Add field enableQueryTags to SnowflakeDatasourceSpec
+
 ## 26.1.8
 
 ## 26.1.7

@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.0.10
+
+### Patch Changes
+
+- [#2137](https://github.com/finos/legend-studio/pull/2137) [`3c2508388`](https://github.com/finos/legend-studio/commit/3c2508388af8b59554ab3aa44bccb92c4f7a04f1) ([@xannem](https://github.com/xannem)) - Add ability to filter by multiple cell values in query results
+
 ## 4.0.9
 
 ### Patch Changes

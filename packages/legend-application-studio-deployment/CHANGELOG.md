@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-deployment
 
+## 9.55.0
+
 ## 9.54.0
 
 ## 9.53.0
