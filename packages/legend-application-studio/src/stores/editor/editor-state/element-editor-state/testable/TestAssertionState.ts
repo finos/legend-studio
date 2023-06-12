@@ -45,8 +45,8 @@ import {
 import type { TestableTestEditorState } from './TestableEditorState.js';
 
 export enum TEST_ASSERTION_TAB {
-  ASSERTION_SETUP = 'ASSERTION_SETUP',
-  ASSERTION_RESULT = 'ASSERTION_RESULT',
+  SETUP = 'SETUP',
+  RESULT = 'RESULT',
 }
 
 export abstract class TestAssertionStatusState {
@@ -273,7 +273,7 @@ export class TestAssertionEditorState {
   assertionState: TestAssertionState;
   assertionResultState: TestAssertionResultState;
   assertion: TestAssertion;
-  selectedTab = TEST_ASSERTION_TAB.ASSERTION_SETUP;
+  selectedTab = TEST_ASSERTION_TAB.SETUP;
   generatingExpectedAction = ActionState.create();
   constructor(
     editorStore: EditorStore,
@@ -320,7 +320,7 @@ export class TestAssertionEditorState {
       this.editorStore.applicationStore.notificationService.notifyError(
         `Error generating expected result, please check data input: ${error.message}.`,
       );
-      this.setSelectedTab(TEST_ASSERTION_TAB.ASSERTION_SETUP);
+      this.setSelectedTab(TEST_ASSERTION_TAB.SETUP);
       this.generatingExpectedAction.fail();
     }
   }

@@ -78,8 +78,11 @@ export const NewSchemaSetDriverEditor = observer(() => {
     }
   };
   return (
-    <div>
-      <div className="">
+    <>
+      <div className="panel__content__form__section__header__label">
+        Schema Type
+      </div>
+      <div className="explorer__new-element-modal__driver">
         <CustomSelectorInput
           className="sub-panel__content__form__section__dropdown"
           options={options}
@@ -87,6 +90,6 @@ export const NewSchemaSetDriverEditor = observer(() => {
           value={newConnectionDriver.formatOption}
         />
       </div>
-    </div>
+    </>
   );
 });

@@ -573,4 +573,34 @@
       padding-top: 1rem;
     }
   }
+
+  &__import {
+    width: 60rem;
+    height: 60rem;
+    padding: 0;
+    overflow: hidden;
+
+    &__textarea {
+      width: 100%;
+      min-width: 50rem;
+      background: var(--color-dark-grey-100);
+      color: var(--color-light-grey-200);
+      padding: 1rem;
+      border-radius: 0.1rem;
+      height: 47rem;
+      resize: none;
+      line-height: 2rem;
+      border: 0.1rem solid var(--color-dark-grey-100);
+
+      &:focus {
+        border: 0.1rem solid var(--color-blue-200);
+        outline: none;
+      }
+
+      &[disabled] {
+        color: var(--color-dark-grey-500);
+        cursor: not-allowed;
+      }
+    }
+  }
 }

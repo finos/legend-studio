@@ -45,6 +45,7 @@ import {
   relationalData_setTableValues,
 } from '../../../../graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { EmbeddedDataType } from '../../ExternalFormatState.js';
+import { TEMPORARY__createRelationalDataFromCSV } from '../../../utils/TestableUtils.js';
 
 export const createEmbeddedData = (
   type: string,
@@ -115,7 +116,7 @@ export class ExternalFormatDataState extends EmbeddedDataState {
   }
 
   label(): string {
-    return 'ExternalFormat Data';
+    return 'External Format Data';
   }
 
   setCanEditoContentType(val: boolean): void {
@@ -273,6 +274,7 @@ export class RelationalCSVDataState extends EmbeddedDataState {
   showTableIdentifierModal = false;
   tableIdentifierState: IdentifierTableState;
   selectedTable: RelationalCSVDataTableState | undefined;
+  showImportCSVModal = false;
 
   constructor(editorStore: EditorStore, embeddedData: RelationalCSVData) {
     super(editorStore, embeddedData);
@@ -281,14 +283,22 @@ export class RelationalCSVDataState extends EmbeddedDataState {
       showTableIdentifierModal: observable,
       deleteTable: observable,
       tableIdentifierState: observable,
+      showImportCSVModal: observable,
       resetSelectedTable: action,
       changeSelectedTable: action,
       closeModal: action,
       openIdentifierModal: action,
+      setShowImportCsvModal: action,
+      closeCSVModal: action,
+      importCSV: action,
     });
     this.embeddedData = embeddedData;
     this.tableIdentifierState = new IdentifierTableState(this);
     this.resetSelectedTable();
+  }
+
+  setShowImportCsvModal(val: boolean): void {
+    this.showImportCSVModal = val;
   }
 
   openIdentifierModal(renameTable?: RelationalCSVDataTable | undefined): void {
@@ -296,10 +306,22 @@ export class RelationalCSVDataState extends EmbeddedDataState {
     this.tableIdentifierState.setTable(renameTable);
   }
 
+  closeCSVModal(): void {
+    this.showImportCSVModal = false;
+  }
+
   closeModal(): void {
     this.tableIdentifierState.setSchemaName('');
     this.tableIdentifierState.setTableName('');
     this.showTableIdentifierModal = false;
+  }
+
+  importCSV(val: string): void {
+    const generated = TEMPORARY__createRelationalDataFromCSV(val);
+    generated.tables.forEach((t) =>
+      relationalData_addTable(this.embeddedData, t),
+    );
+    this.resetSelectedTable();
   }
 
   resetSelectedTable(): void {

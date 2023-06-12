@@ -21,11 +21,17 @@ import {
   Dialog,
   MenuContent,
   MenuContentItem,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
+  ModalHeader,
   PlusIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  UploadIcon,
 } from '@finos/legend-art';
 import type { RelationalCSVDataTable } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
@@ -126,6 +132,52 @@ const RelationalCSVTableContextMenu = observer(
   }),
 );
 
+const ImportModal = observer(
+  (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {
+    const { isReadOnly, dataState } = props;
+    const [csv, setCSV] = useState('');
+    const closeModal = (): void => dataState.closeCSVModal();
+    const importVal = (): void => {
+      dataState.importCSV(csv);
+      setCSV('');
+      closeModal();
+    };
+    const changeCSV: React.ChangeEventHandler<
+      HTMLTextAreaElement | HTMLInputElement
+    > = (event) => {
+      setCSV(event.target.value);
+    };
+    return (
+      <Dialog
+        open={dataState.showImportCSVModal}
+        onClose={closeModal}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true} className="relational-data-editor__import">
+          <ModalHeader title="Import CSV" />
+          <ModalBody>
+            <textarea
+              className="relational-data-editor__import__textarea"
+              spellCheck={false}
+              value={csv}
+              onChange={changeCSV}
+              disabled={isReadOnly}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              text="Import"
+              title="Create new query"
+              onClick={importVal}
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const RelationalCSVDataEditor = observer(
   (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {
     const { dataState, isReadOnly } = props;
@@ -145,6 +197,7 @@ export const RelationalCSVDataEditor = observer(
       setSelectedTableFromContextMenu(undefined);
     const isTableActive = (table: RelationalCSVDataTable): boolean =>
       currentTableState?.table === table;
+    const showCSVModal = (): void => dataState.setShowImportCsvModal(true);
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel minSize={30} size={300}>
@@ -156,6 +209,15 @@ export const RelationalCSVDataEditor = observer(
                 </div>
               </div>
               <div className="relational-data-editor__header__actions">
+                <button
+                  className="schema-set-panel__header__action"
+                  onClick={showCSVModal}
+                  disabled={isReadOnly}
+                  tabIndex={-1}
+                  title="Import CSV"
+                >
+                  <UploadIcon />
+                </button>
                 <button
                   className="relational-data-editor__header__action"
                   onClick={openIdentifierModal}
@@ -249,6 +311,9 @@ export const RelationalCSVDataEditor = observer(
                   dataState={dataState}
                   isReadOnly={isReadOnly}
                 />
+              )}
+              {dataState.showImportCSVModal && (
+                <ImportModal dataState={dataState} isReadOnly={isReadOnly} />
               )}
             </div>
           </div>

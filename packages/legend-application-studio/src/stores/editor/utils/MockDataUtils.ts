@@ -268,7 +268,7 @@ export const createMockDataForColumn = (
 
 export const createMockDataForTable = (
   table: Table,
-  ITERATIONS = 9,
+  ITERATIONS = 1,
 ): string => {
   const targetedCols = table.columns.filter(filterByType(Column));
   const colNames = targetedCols.map((e) => e.name).join(',');

@@ -478,9 +478,6 @@ export class MappingDataTestState extends MappingTestState {
   }
 
   override defaultTab(): TESTABLE_TEST_TAB {
-    // return this.test.storeTestData.length
-    //   ? TESTABLE_TEST_TAB.ASSERTIONS
-    //   : TESTABLE_TEST_TAB.SETUP;
     return TESTABLE_TEST_TAB.SETUP;
   }
 }
@@ -785,7 +782,6 @@ export class CreateSuiteState {
         this.isCreatingSuiteState.setMessage(
           'Attempting to generate expected result...',
         );
-        selectTestState.setSelectedTab(TESTABLE_TEST_TAB.ASSERTIONS);
         yield flowResult(selectedAsertionState.generateExpected());
       }
       this.setShowModal(false);

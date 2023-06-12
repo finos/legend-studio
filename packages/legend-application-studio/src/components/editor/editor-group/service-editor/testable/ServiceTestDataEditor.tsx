@@ -24,8 +24,10 @@ import {
   MaskIcon,
   MenuContent,
   MenuContentItem,
+  Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   ModalHeader,
   PanelLoadingIndicator,
   PlusIcon,
@@ -36,10 +38,13 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
-import type {
-  IdentifiedConnection,
-  ConnectionTestData,
-  DataElement,
+import {
+  type IdentifiedConnection,
+  type ConnectionTestData,
+  type DataElement,
+  getAllIdentifiedServiceConnections,
+  DataElementReference,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
@@ -60,8 +65,84 @@ import { buildElementOption } from '@finos/legend-lego/graph-editor';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../../__lib__/LegendStudioDocumentation.js';
 import { LambdaParameterValuesEditor } from '@finos/legend-query-builder';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../../__lib__/LegendStudioDocumentation.js';
+
+export const UseDataElementModal = observer(
+  (props: { connectionTestDataState: ConnectionTestDataState }) => {
+    const { connectionTestDataState } = props;
+    const editorStore = connectionTestDataState.editorStore;
+    const useSharedModal = connectionTestDataState.useSharedModal;
+    const closeModal = (): void =>
+      connectionTestDataState.setUseSharedModal(false);
+    const dataElements =
+      connectionTestDataState.editorStore.graphManagerState.graph.dataElements;
+    const [dataElement, setDataElement] = useState(dataElements[0]);
+    const dataElementOptions =
+      editorStore.graphManagerState.usableDataElements.map(buildElementOption);
+    const selectedDataElement = dataElement
+      ? buildElementOption(dataElement)
+      : null;
+    const onDataElementChange = (val: {
+      label: string;
+      value?: DataElement;
+    }): void => {
+      if (val.value !== selectedDataElement?.value && val.value) {
+        setDataElement(val.value);
+      }
+    };
+    const change = (): void => {
+      if (dataElement) {
+        const value = new DataElementReference();
+        value.dataElement =
+          PackageableElementExplicitReference.create(dataElement);
+        connectionTestDataState.changeEmbeddedData(value);
+      }
+      closeModal();
+    };
+    const isReadOnly =
+      connectionTestDataState.testDataState.testSuiteState.testableState
+        .serviceEditorState.isReadOnly;
+    return (
+      <Dialog
+        open={useSharedModal}
+        onClose={closeModal}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true} className="service-test-data-modal">
+          <ModalBody>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Data Element
+              </div>
+              <div className="explorer__new-element-modal__driver">
+                <CustomSelectorInput
+                  className="panel__content__form__section__dropdown data-element-reference-editor__value__dropdown"
+                  disabled={false}
+                  options={dataElementOptions}
+                  onChange={onDataElementChange}
+                  value={selectedDataElement}
+                  darkMode={true}
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              className="database-builder__action--btn"
+              disabled={isReadOnly}
+              onClick={change}
+              title="Change to use Shared Data"
+            >
+              Change
+            </ModalFooterButton>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
 
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
@@ -72,6 +153,13 @@ export const ConnectionTestDataEditor = observer(
     const isReadOnly =
       connectionTestDataState.testDataState.testSuiteState.testableState
         .serviceEditorState.isReadOnly;
+    const dataElements =
+      connectionTestDataState.editorStore.graphManagerState.graph.dataElements;
+    const openShared = (): void => {
+      if (dataElements.length) {
+        connectionTestDataState.setUseSharedModal(true);
+      }
+    };
     // test data
     const anonymizeGeneratedData =
       connectionTestDataState.anonymizeGeneratedData;
@@ -159,6 +247,22 @@ export const ConnectionTestDataEditor = observer(
                 </div>
               </div>
             </button>
+            <button
+              className="panel__header__action service-execution-editor__test-data__generate-btn"
+              onClick={openShared}
+              title="Use Shared Data via Defined Data Element"
+              disabled={
+                connectionTestDataState.generatingTestDataState.isInProgress ||
+                !dataElements.length
+              }
+              tabIndex={-1}
+            >
+              <div className="service-execution-editor__test-data__generate-btn__label">
+                <div className="service-execution-editor__test-data__generate-btn__label__title">
+                  Shared Data
+                </div>
+              </div>
+            </button>
           </div>
         </div>
         <EmbeddedDataEditor
@@ -174,6 +278,11 @@ export const ConnectionTestDataEditor = observer(
                 .observerContext
             }
             lambdaParametersState={connectionTestDataState.parametersState}
+          />
+        )}
+        {connectionTestDataState.useSharedModal && (
+          <UseDataElementModal
+            connectionTestDataState={connectionTestDataState}
           />
         )}
       </div>
@@ -279,13 +388,15 @@ export const NewConnectionDataModal = observer(
     };
     const isReadOnly =
       testDataState.testSuiteState.testableState.serviceEditorState.isReadOnly;
+    const service =
+      testDataState.testSuiteState.testableState.serviceEditorState.service;
     const closeModal = (): void => newConnectionState.setModal(false);
-    const connectionOptions = testDataState.allIdentifiedConnections.map(
-      (e) => ({
-        label: e.id,
-        value: e,
-      }),
-    );
+    const allIdentifiedConnections =
+      getAllIdentifiedServiceConnections(service);
+    const connectionOptions = allIdentifiedConnections.map((e) => ({
+      label: e.id,
+      value: e,
+    }));
     const selectedConnection = newConnectionState.connection
       ? {
           label: newConnectionState.connection.id,
@@ -294,7 +405,7 @@ export const NewConnectionDataModal = observer(
       : undefined;
     const isDisabled =
       isReadOnly ||
-      !testDataState.allIdentifiedConnections.length ||
+      !allIdentifiedConnections.length ||
       Boolean(
         testDataState.testData.connectionsTestData.find(
           (c) => c.connectionId === selectedConnection?.value.id,
@@ -439,6 +550,15 @@ export const ServiceTestDataEditor = observer(
     const applicationStore = useApplicationStore();
     const testData = testDataState.testData;
     const newConnectionDataState = testDataState.newConnectionDataState;
+    const identifedConnections = getAllIdentifiedServiceConnections(
+      testDataState.testSuiteState.testableState.service,
+    );
+    const selectedDataState = testDataState.selectedDataState;
+    const hideExplorer =
+      identifedConnections.length === 1 &&
+      testData.connectionsTestData.length === 1 &&
+      testData.connectionsTestData[0]?.connectionId ===
+        identifedConnections[0]?.id;
     const addConnectionTestData = (): void => {
       testDataState.newConnectionDataState.openModal();
     };
@@ -451,7 +571,7 @@ export const ServiceTestDataEditor = observer(
         <div className="service-test-suite-editor__header">
           <div className="service-test-suite-editor__header__title">
             <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--data">
-              test suite data
+              Test DATA
             </div>
           </div>
         </div>
@@ -464,63 +584,69 @@ export const ServiceTestDataEditor = observer(
               tooltipText="Click to add connection test data"
             />
           )}
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel minSize={100}>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="binding-editor__header__title__label">
-                    connections
+          {hideExplorer && selectedDataState ? (
+            <ConnectionTestDataEditor
+              connectionTestDataState={selectedDataState}
+            />
+          ) : (
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={100}>
+                <div className="binding-editor__header">
+                  <div className="binding-editor__header__title">
+                    <div className="binding-editor__header__title__label">
+                      connections
+                      <button
+                        className="binding-editor__header__title__label__hint"
+                        tabIndex={-1}
+                        onClick={seeDocumentation}
+                        title="click to see more details on connection test data"
+                      >
+                        <InfoCircleIcon />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="panel__header__actions">
                     <button
-                      className="binding-editor__header__title__label__hint"
+                      className="panel__header__action"
                       tabIndex={-1}
-                      onClick={seeDocumentation}
-                      title="click to see more details on connection test data"
+                      onClick={addConnectionTestData}
+                      title="Add Connection Test Data"
                     >
-                      <InfoCircleIcon />
+                      <PlusIcon />
                     </button>
                   </div>
                 </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action"
-                    tabIndex={-1}
-                    onClick={addConnectionTestData}
-                    title="Add Connection Test Data"
-                  >
-                    <PlusIcon />
-                  </button>
+                <div>
+                  {testData.connectionsTestData.map((connectionTestData) => (
+                    <ConnectionTestDataItem
+                      key={connectionTestData.connectionId}
+                      serviceTestDataState={testDataState}
+                      connectionTestData={connectionTestData}
+                    />
+                  ))}
                 </div>
-              </div>
-              <div>
-                {testData.connectionsTestData.map((connectionTestData) => (
-                  <ConnectionTestDataItem
-                    key={connectionTestData.connectionId}
-                    serviceTestDataState={testDataState}
-                    connectionTestData={connectionTestData}
-                  />
-                ))}
-              </div>
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={600}>
-              <PanelLoadingIndicator
-                isLoading={Boolean(
-                  testDataState.selectedDataState?.generatingTestDataState
-                    .isInProgress,
-                )}
-              />
-              {testDataState.selectedDataState && (
-                <ConnectionTestDataEditor
-                  connectionTestDataState={testDataState.selectedDataState}
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel minSize={600}>
+                <PanelLoadingIndicator
+                  isLoading={Boolean(
+                    testDataState.selectedDataState?.generatingTestDataState
+                      .isInProgress,
+                  )}
                 />
-              )}
-              {newConnectionDataState.showModal && (
-                <NewConnectionDataModal testDataState={testDataState} />
-              )}
-            </ResizablePanel>
-          </ResizablePanelGroup>
+                {testDataState.selectedDataState && (
+                  <ConnectionTestDataEditor
+                    connectionTestDataState={testDataState.selectedDataState}
+                  />
+                )}
+                {newConnectionDataState.showModal && (
+                  <NewConnectionDataModal testDataState={testDataState} />
+                )}
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          )}
         </div>
       </div>
     );

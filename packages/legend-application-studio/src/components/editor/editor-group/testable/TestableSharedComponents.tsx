@@ -497,12 +497,12 @@ export const TestAssertionEditor = observer(
           </div>
         </div>
         <div className="testable-test-assertion-editor__content">
-          {selectedTab === TEST_ASSERTION_TAB.ASSERTION_SETUP && (
+          {selectedTab === TEST_ASSERTION_TAB.SETUP && (
             <div className="testable-test-assertion-editor__setup">
               {renderContent(testAssertionState.assertionState)}
             </div>
           )}
-          {selectedTab === TEST_ASSERTION_TAB.ASSERTION_RESULT && (
+          {selectedTab === TEST_ASSERTION_TAB.RESULT && (
             <TestAssertionResultViewer
               testAssertionEditorState={testAssertionState}
             />

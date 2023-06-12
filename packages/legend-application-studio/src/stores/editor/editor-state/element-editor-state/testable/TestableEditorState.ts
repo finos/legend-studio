@@ -68,7 +68,7 @@ export class TestableTestResultState {
 
 export enum TESTABLE_TEST_TAB {
   SETUP = 'SETUP',
-  ASSERTIONS = 'ASSERTIONS',
+  ASSERTION = 'ASSERTION',
 }
 
 export class TestableTestEditorState {
@@ -77,7 +77,7 @@ export class TestableTestEditorState {
   test: AtomicTest;
   selectedAsertionState: TestAssertionEditorState | undefined;
   assertionEditorStates: TestAssertionEditorState[] = [];
-  selectedTab = TESTABLE_TEST_TAB.ASSERTIONS;
+  selectedTab = TESTABLE_TEST_TAB.ASSERTION;
   assertionToRename: TestAssertion | undefined;
   runningTestAction = ActionState.create();
   testResultState: TestableTestResultState;
@@ -179,7 +179,7 @@ export class TestableTestEditorState {
     this.testResultState.setResult(testResult);
     this.assertionEditorStates.forEach((assertionState) => {
       assertionState.assertionResultState.setTestResult(testResult);
-      assertionState.setSelectedTab(TEST_ASSERTION_TAB.ASSERTION_RESULT);
+      assertionState.setSelectedTab(TEST_ASSERTION_TAB.RESULT);
     });
   }
 

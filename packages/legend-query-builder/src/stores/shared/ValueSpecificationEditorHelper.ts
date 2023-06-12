@@ -41,16 +41,22 @@ import {
   Multiplicity,
   CORE_PURE_PATH,
   buildRawLambdaFromLambdaFunction,
+  getValueSpecificationReturnType,
 } from '@finos/legend-graph';
-import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  Randomizer,
+  UnsupportedOperationError,
+  returnUndefOnError,
+} from '@finos/legend-shared';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
 import {
   instanceValue_setValues,
   valueSpecification_setGenericType,
 } from './ValueSpecificationModifierHelper.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
-
-const VAR_DEFAULT_NAME = 'var';
+import {
+  QUERY_BUILDER_PURE_PATH,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from '../../graph/QueryBuilderMetaModelConst.js';
 
 export const createSupportedFunctionExpression = (
   supportedFuncName: string,
@@ -63,59 +69,6 @@ export const createSupportedFunctionExpression = (
   );
   return funcExpression;
 };
-
-const createMockPrimitiveValueSpecification = (
-  primitiveType: PrimitiveType,
-  propertyName: string,
-  observerContext: ObserverContext,
-): ValueSpecification => {
-  const primitiveTypeName = primitiveType.name;
-  if (
-    primitiveTypeName === PRIMITIVE_TYPE.DATE ||
-    primitiveTypeName === PRIMITIVE_TYPE.DATETIME
-  ) {
-    return createSupportedFunctionExpression(
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
-      PrimitiveType.DATETIME,
-    );
-  } else if (primitiveTypeName === PRIMITIVE_TYPE.STRICTDATE) {
-    return createSupportedFunctionExpression(
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
-      PrimitiveType.STRICTDATE,
-    );
-  }
-  const primitiveInstanceValue = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(new GenericType(primitiveType)),
-  );
-  const randomizer = new Randomizer();
-  let value: string | boolean | number;
-  switch (primitiveType.name) {
-    case PRIMITIVE_TYPE.BOOLEAN:
-      value = randomizer.getRandomItemInCollection([true, false]) ?? true;
-      break;
-    case PRIMITIVE_TYPE.FLOAT:
-      value = randomizer.getRandomFloat();
-      break;
-    case PRIMITIVE_TYPE.DECIMAL:
-      value = randomizer.getRandomDouble();
-      break;
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.INTEGER:
-      value = randomizer.getRandomWholeNumber(100);
-      break;
-    case PRIMITIVE_TYPE.STRING:
-    default:
-      value = `${propertyName} ${randomizer.getRandomWholeNumber(100)}`;
-  }
-  instanceValue_setValues(primitiveInstanceValue, [value], observerContext);
-  return primitiveInstanceValue;
-};
-
-export const createMockEnumerationProperty = (
-  enumeration: Enumeration,
-): string =>
-  new Randomizer().getRandomItemInCollection(enumeration.values)?.name ?? '';
-
 export const buildPrimitiveInstanceValue = (
   graph: PureModel,
   type: PRIMITIVE_TYPE,
@@ -130,6 +83,52 @@ export const buildPrimitiveInstanceValue = (
   instanceValue_setValues(instance, [value], observerContext);
   return instance;
 };
+
+const createMockPrimitiveValueSpecification = (
+  primitiveType: PrimitiveType,
+  graph: PureModel,
+  observerContext: ObserverContext,
+  options?: {
+    useCurrentDateDependentFunctions?: boolean;
+  },
+): ValueSpecification => {
+  const primitiveTypeName = primitiveType.name;
+  if (options?.useCurrentDateDependentFunctions) {
+    if (
+      primitiveTypeName === PRIMITIVE_TYPE.DATE ||
+      primitiveTypeName === PRIMITIVE_TYPE.DATETIME
+    ) {
+      return createSupportedFunctionExpression(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
+        PrimitiveType.DATETIME,
+      );
+    } else if (primitiveTypeName === PRIMITIVE_TYPE.STRICTDATE) {
+      return createSupportedFunctionExpression(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TODAY,
+        PrimitiveType.STRICTDATE,
+      );
+    }
+  }
+  if (primitiveTypeName === PRIMITIVE_TYPE.DATE) {
+    return buildPrimitiveInstanceValue(
+      graph,
+      PRIMITIVE_TYPE.STRICTDATE,
+      generateDefaultValueForPrimitiveType(primitiveTypeName),
+      observerContext,
+    );
+  }
+  return buildPrimitiveInstanceValue(
+    graph,
+    primitiveTypeName as PRIMITIVE_TYPE,
+    generateDefaultValueForPrimitiveType(primitiveTypeName as PRIMITIVE_TYPE),
+    observerContext,
+  );
+};
+
+export const createMockEnumerationProperty = (
+  enumeration: Enumeration,
+): string =>
+  new Randomizer().getRandomItemInCollection(enumeration.values)?.name ?? '';
 
 export const buildDefaultInstanceValue = (
   graph: PureModel,
@@ -219,6 +218,9 @@ export const generateVariableExpressionMockValue = (
   parameter: VariableExpression,
   graph: PureModel,
   observerContext: ObserverContext,
+  options?: {
+    useCurrentDateDependentFunctions?: boolean;
+  },
 ): ValueSpecification | undefined => {
   const varType = parameter.genericType?.value.rawType;
   const multiplicity = parameter.multiplicity;
@@ -231,8 +233,9 @@ export const generateVariableExpressionMockValue = (
   if (varType instanceof PrimitiveType) {
     return createMockPrimitiveValueSpecification(
       varType,
-      VAR_DEFAULT_NAME,
+      graph,
       observerContext,
+      options,
     );
   } else if (varType instanceof Enumeration) {
     const enumValueInstance = new EnumValueInstanceValue(
@@ -271,4 +274,24 @@ export const getValueSpecificationStringValue = (
       .join(',');
   }
   return undefined;
+};
+
+export const valueSpecReturnTDS = (
+  val: ValueSpecification,
+  graph: PureModel,
+): boolean => {
+  const retunType = returnUndefOnError(() =>
+    getValueSpecificationReturnType(val),
+  );
+  const tdsType = returnUndefOnError(() =>
+    graph.getClass(QUERY_BUILDER_PURE_PATH.TDS_TABULAR_DATASET),
+  );
+  const tdsRowType = returnUndefOnError(() =>
+    graph.getClass(QUERY_BUILDER_PURE_PATH.TDS_ROW),
+  );
+  // FIXME: we sometimes return tds row when tds is the return type of the lambda. We do this to properly build post filters.
+  // We should fix this to properly build filter functions after a tds function
+  return Boolean(
+    retunType && tdsType && (retunType === tdsType || retunType === tdsRowType),
+  );
 };

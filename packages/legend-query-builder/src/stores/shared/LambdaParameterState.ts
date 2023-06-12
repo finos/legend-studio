@@ -235,6 +235,7 @@ export class LambdaParameterState implements Hashable {
         this.parameter,
         this.graph,
         this.observerContext,
+        { useCurrentDateDependentFunctions: true },
       ),
     );
   }
