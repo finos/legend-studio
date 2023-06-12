@@ -186,11 +186,14 @@ test(
       'activateService',
     ).mockResolvedValue();
 
-    await TEST__openElementFromExplorerTree('test::myService', renderResult);
+    await TEST__openElementFromExplorerTree(
+      'model::RelationalService',
+      renderResult,
+    );
     const editorGroupHeader = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP__HEADER_TABS),
     );
-    await waitFor(() => getByText(editorGroupHeader, 'myService'));
+    await waitFor(() => getByText(editorGroupHeader, 'RelationalService'));
     const editorGroup = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
     );
@@ -289,11 +292,14 @@ test(
       'activateService',
     ).mockResolvedValue();
 
-    await TEST__openElementFromExplorerTree('test::myService', renderResult);
+    await TEST__openElementFromExplorerTree(
+      'model::RelationalService',
+      renderResult,
+    );
     const editorGroupHeader = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP__HEADER_TABS),
     );
-    await waitFor(() => getByText(editorGroupHeader, 'myService'));
+    await waitFor(() => getByText(editorGroupHeader, 'RelationalService'));
     const editorGroup = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
     );

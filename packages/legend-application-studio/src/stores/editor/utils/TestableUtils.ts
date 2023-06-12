@@ -25,19 +25,17 @@ import {
   type RelationalDatabaseConnection,
   type XmlModelConnection,
   type Runtime,
-  type IdentifiedConnection,
   type TestAssertion,
   type AtomicTest,
   type Class,
   ExternalFormatData,
   RelationalCSVData,
   ConnectionTestData,
-  EngineRuntime,
-  RuntimePointer,
   EqualToJson,
   DEFAULT_TEST_ASSERTION_PREFIX,
   RelationalCSVDataTable,
   type INTERNAL__UnknownConnection,
+  getAllIdentifiedConnectionsFromRuntime,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -91,22 +89,6 @@ export const createDefaultEqualToJSONTestAssertion = (
   assertion.expected = xt;
   assertion.id = id ?? uuid();
   return assertion;
-};
-
-export const getAllIdentifiedConnectionsFromRuntime = (
-  runtime: Runtime,
-): IdentifiedConnection[] => {
-  const resolvedRuntimes: EngineRuntime[] = [];
-  if (runtime instanceof RuntimePointer) {
-    resolvedRuntimes.push(runtime.packageableRuntime.value.runtimeValue);
-  } else if (runtime instanceof EngineRuntime) {
-    resolvedRuntimes.push(runtime);
-  }
-  return resolvedRuntimes
-    .flatMap((e) =>
-      e.connections.map((connection) => connection.storeConnections),
-    )
-    .flat();
 };
 
 export const createEmbeddedDataFromClass = (

@@ -49,26 +49,34 @@ import { RenameModal } from '../../testable/TestableSharedComponents.js';
 export const ServiceTestSuiteEditor = observer(
   (props: { serviceTestSuiteState: ServiceTestSuiteState }) => {
     const { serviceTestSuiteState } = props;
+    const serviceRuntime =
+      serviceTestSuiteState.testableState.serviceEditorState.executionState
+        .serviceExecutionParameters?.runtime;
+
     return (
       <div className="service-test-suite-editor">
-        <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel size={300} minSize={28}>
-            {serviceTestSuiteState.testDataState && (
-              <ServiceTestDataEditor
-                testDataState={serviceTestSuiteState.testDataState}
-              />
-            )}
-            {!serviceTestSuiteState.testDataState && (
-              <BlankPanelContent>No test data specified</BlankPanelContent>
-            )}
-          </ResizablePanel>
-          <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-          </ResizablePanelSplitter>
-          <ResizablePanel minSize={56}>
-            <ServiceTestsEditor suiteState={serviceTestSuiteState} />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+        {serviceRuntime ? (
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel size={300} minSize={28}>
+              {serviceTestSuiteState.testDataState && (
+                <ServiceTestDataEditor
+                  testDataState={serviceTestSuiteState.testDataState}
+                />
+              )}
+              {!serviceTestSuiteState.testDataState && (
+                <BlankPanelContent>No test data specified</BlankPanelContent>
+              )}
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel minSize={56}>
+              <ServiceTestsEditor suiteState={serviceTestSuiteState} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          <ServiceTestsEditor suiteState={serviceTestSuiteState} />
+        )}
       </div>
     );
   },

@@ -61,6 +61,7 @@ import {
   TimesCircleIcon,
   PanelLoadingIndicator,
   ContextMenu,
+  ModalHeader,
 } from '@finos/legend-art';
 import {
   assertErrorThrown,
@@ -218,9 +219,10 @@ const CreateTestSuiteModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true} className="search-modal">
-          <ModalTitle title="Create Mapping Test Suite" />
-
+        <Modal darkMode={true}>
+          <ModalHeader>
+            <ModalTitle title="Create Mapping Test Suite" />
+          </ModalHeader>
           <ModalBody>
             <PanelLoadingIndicator
               isLoading={creatorState.isCreatingSuiteState.isInProgress}
@@ -233,7 +235,7 @@ const CreateTestSuiteModal = observer(
             <PanelFormTextField
               ref={inputRef}
               name="Test Suite Name"
-              prompt="Unique Identifier for suite i.e Person_suite"
+              prompt="Unique Identifier for Test suite i.e Person_suite"
               value={suiteName}
               update={(value: string | undefined): void =>
                 setSuiteName(value ?? '')
@@ -1022,7 +1024,7 @@ const MappingTestEditor = observer(
           {selectedTab === TESTABLE_TEST_TAB.SETUP &&
             renderMappingSetupTestEditor()}
 
-          {selectedTab === TESTABLE_TEST_TAB.ASSERTIONS && (
+          {selectedTab === TESTABLE_TEST_TAB.ASSERTION && (
             <MappingTestAssertionsEditor
               mappingDataTestState={mappingTestState}
             />

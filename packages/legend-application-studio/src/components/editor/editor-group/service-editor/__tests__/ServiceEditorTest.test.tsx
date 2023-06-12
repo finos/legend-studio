@@ -29,7 +29,10 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
-import { TEST_DATA__multiEXecutionService } from './TEST_DATA__ServiceEditor.js';
+import {
+  TEST_DATA__multiEXecutionService,
+  TEST_DATA__serviceEntities,
+} from './TEST_DATA__ServiceEditor.js';
 import TEST_DATA__ExternalFormatServiceEntities from './TEST_DATA__ExternalFormatServiceEntities.json';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
@@ -121,6 +124,15 @@ test(
     const serviceTestEditor = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR),
     );
+    // basic test screen
+    const connectionTestData = queryByText(
+      serviceTestEditor,
+      'Add Connection Test Data',
+    );
+    expect(connectionTestData).toBeNull();
+    await waitFor(() => getByText(serviceTestEditor, 'test_1'));
+
+    // binding
     await waitFor(() => getByText(serviceTestEditor, 'Setup'));
     fireEvent.click(getByText(serviceTestEditor, 'Setup'));
     const serviceTestSetupEditor = await waitFor(() =>
@@ -147,5 +159,62 @@ test(
     await waitFor(() =>
       getAllByTitle(serviceTestSetupEditor, 'Open in a popup...'),
     );
+
+    // basic test suite set up
+
+    const testSuiteId = getByText(editorGroup, 'testSuite_1');
+    fireEvent.contextMenu(testSuiteId);
+    fireEvent.click(renderResult.getByText('Delete'));
+    await waitFor(() => getByText(editorGroup, 'Add Test Suite'));
+    fireEvent.click(getByText(editorGroup, 'Add Test Suite'));
+    const newServiceTestEditor = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR),
+    );
+    getByText(newServiceTestEditor, 'test_1');
+    getByText(newServiceTestEditor, 'Setup');
+    getByText(newServiceTestEditor, 'data');
+    getByText(newServiceTestEditor, 'data1');
+    getByText(newServiceTestEditor, 'parameters');
+    getByText(newServiceTestEditor, 'Assertion');
+    const newConnectionTestData = queryByText(
+      newServiceTestEditor,
+      'Add Connection Test Data',
+    );
+    expect(newConnectionTestData).toBeNull();
+  },
+);
+
+test(
+  integrationTest('Test Basic Service Editor Test With Relational'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      {
+        entities: TEST_DATA__serviceEntities,
+      },
+    );
+
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+    await TEST__openElementFromExplorerTree(
+      'model::RelationalService',
+      renderResult,
+    );
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    await waitFor(() => getByText(editorGroup, 'Test'));
+    fireEvent.click(getByText(editorGroup, 'Test'));
+    await waitFor(() => getByText(editorGroup, 'Add Test Suite'));
+    fireEvent.click(getByText(editorGroup, 'Add Test Suite'));
+    const serviceTestEditor = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR),
+    );
+    await waitFor(() => getByText(serviceTestEditor, 'test_1'));
+    getByText(serviceTestEditor, 'TABULAR DATA');
+    getByText(editorGroup, 'Add a relational data table');
+    getByTitle(editorGroup, 'Import CSV');
+    getByText(editorGroup, 'Relational Table Explorer');
+    getByText(editorGroup, 'CSV Values');
   },
 );

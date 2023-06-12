@@ -156,8 +156,10 @@ export * from './graph/helpers/DSL_Mapping_Helper.js';
 export * from './graph/helpers/STO_Relational_Helper.js';
 export * from './graph/helpers/STO_FlatData_Helper.js';
 export * from './graph/helpers/DSL_Generation_Helper.js';
+export * from './graph/helpers/DSL_Service_Helper.js';
 
 export * from './graph/helpers/PureLanguageHelper.js';
+export * from './graph/helpers/ValueSpecificationHelper.js';
 
 export * from './graph/helpers/creator/DomainModelCreatorHelper.js';
 export * from './graph/helpers/creator/DSL_Mapping_ModelCreatorHelper.js';

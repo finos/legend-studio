@@ -34,6 +34,8 @@ import {
   ConnectionPointer,
   reportGraphAnalytics,
   observe_ValueSpecification,
+  getAllIdentifiedConnectionsFromRuntime,
+  getAllIdentifiedServiceConnections,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -44,7 +46,6 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
   getNullableFirstEntry,
-  uniq,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -55,7 +56,6 @@ import {
 import {
   TEMPORARY__createRelationalDataFromCSV,
   EmbeddedDataConnectionTypeVisitor,
-  getAllIdentifiedConnectionsFromRuntime,
   TEMPORARY__EmbeddedDataConnectionVisitor,
 } from '../../../../utils/TestableUtils.js';
 import { EmbeddedDataType } from '../../../ExternalFormatState.js';
@@ -73,6 +73,18 @@ import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
 } from '@finos/legend-query-builder';
+
+export const createConnectionTestData = (
+  val: IdentifiedConnection,
+  embeddedDataType: string,
+  editorStore: EditorStore,
+): ConnectionTestData => {
+  const connectionTestData = new ConnectionTestData();
+  connectionTestData.connectionId = val.id;
+  const testData = createEmbeddedData(embeddedDataType, editorStore);
+  connectionTestData.testData = testData;
+  return connectionTestData;
+};
 
 export class ServiceTestDataParametersState extends LambdaParametersState {
   connectionTestDataState: ConnectionTestDataState;
@@ -140,6 +152,7 @@ export class ConnectionTestDataState {
   readonly connectionData: ConnectionTestData;
   readonly parametersState: ServiceTestDataParametersState;
   readonly generatingTestDataState = ActionState.create();
+  useSharedModal = false;
 
   embeddedEditorState: EmbeddedDataEditorState;
   anonymizeGeneratedData = true;
@@ -151,8 +164,10 @@ export class ConnectionTestDataState {
     makeObservable(this, {
       generatingTestDataState: observable,
       embeddedEditorState: observable,
+      useSharedModal: observable,
       anonymizeGeneratedData: observable,
       setAnonymizeGeneratedData: action,
+      changeEmbeddedData: action,
       generateTestData: flow,
       generateTestDataForDatabaseConnection: flow,
     });
@@ -169,6 +184,10 @@ export class ConnectionTestDataState {
     return this.getAllIdentifiedConnections().find(
       (c) => c.id === this.connectionData.connectionId,
     );
+  }
+
+  setUseSharedModal(val: boolean): void {
+    this.useSharedModal = val;
   }
 
   setAnonymizeGeneratedData(val: boolean): void {
@@ -290,6 +309,18 @@ export class ConnectionTestDataState {
     }
   }
 
+  changeEmbeddedData(val: EmbeddedData): void {
+    service_setConnectionTestDataEmbeddedData(
+      this.connectionData,
+      val,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    this.embeddedEditorState = new EmbeddedDataEditorState(
+      this.testDataState.editorStore,
+      this.connectionData.testData,
+    );
+  }
+
   resolveConnectionValue(id: string): Connection | undefined {
     const connection = this.getAllIdentifiedConnections().find(
       (c) => c.id === id,
@@ -358,7 +389,10 @@ export class NewConnectionDataState {
 
   openModal(): void {
     this.setModal(true);
-    this.connection = this.testSuiteState.allIdentifiedConnections[0];
+    const service =
+      this.testSuiteState.testSuiteState.testableState.serviceEditorState
+        .service;
+    this.connection = getAllIdentifiedServiceConnections(service)[0];
     if (this.connection) {
       this.handleConnectionChange(this.connection);
     }
@@ -468,17 +502,5 @@ export class ServiceTestDataState {
     if (this.selectedDataState?.connectionData !== val) {
       this.setSelectedDataState(new ConnectionTestDataState(this, val));
     }
-  }
-  get allIdentifiedConnections(): IdentifiedConnection[] {
-    const service =
-      this.testSuiteState.testableState.serviceEditorState.service;
-    const execution = service.execution;
-    let runtimes: Runtime[] = [];
-    if (execution instanceof PureSingleExecution && execution.runtime) {
-      runtimes = [execution.runtime];
-    } else if (execution instanceof PureMultiExecution) {
-      runtimes = execution.executionParameters.map((t) => t.runtime);
-    }
-    return uniq(runtimes.flatMap(getAllIdentifiedConnectionsFromRuntime));
   }
 }

@@ -20,6 +20,7 @@ import {
   type PlainObject,
   assertErrorThrown,
   guaranteeType,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -33,16 +34,19 @@ import { ServiceRegistrationState } from '../../../editor-state/element-editor-s
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
 import {
   type PackageableElement,
-  type RawLambda,
+  type ValueSpecification,
   Service,
   PureSingleExecution,
   PureMultiExecution,
-  PureExecution,
   isStubbed_RawLambda,
+  getValueSpecificationReturnType,
+  type Type,
+  resolveServiceQueryRawLambda,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
 import { ServicePostValidationsState } from './ServicePostValidationState.js';
+import { valueSpecReturnTDS } from '@finos/legend-query-builder';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
@@ -51,6 +55,45 @@ export enum SERVICE_TAB {
   REGISTRATION = 'REGISTRATION',
   POST_VALIDATION = 'POST_VALIDATION',
 }
+
+export const resolveServiceQueryValueSpec = (
+  service: Service,
+  editorStore: EditorStore,
+): ValueSpecification | undefined => {
+  const rawLambda = resolveServiceQueryRawLambda(service);
+  if (rawLambda) {
+    return editorStore.graphManagerState.graphManager.buildValueSpecification(
+      editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+        rawLambda,
+      ),
+      editorStore.graphManagerState.graph,
+    );
+  }
+  return undefined;
+};
+
+export const resolveServiceQueryReturnType = (
+  service: Service,
+  editorStore: EditorStore,
+): Type | undefined => {
+  const valueSpec = resolveServiceQueryValueSpec(service, editorStore);
+  if (valueSpec) {
+    return returnUndefOnError(() => getValueSpecificationReturnType(valueSpec));
+  }
+  return undefined;
+};
+
+export const isServiceQueryTDS = (
+  service: Service,
+  editorStore: EditorStore,
+): boolean => {
+  const valueSpec = resolveServiceQueryValueSpec(service, editorStore);
+  return Boolean(
+    valueSpec
+      ? valueSpecReturnTDS(valueSpec, editorStore.graphManagerState.graph)
+      : undefined,
+  );
+};
 
 export const MINIMUM_SERVICE_OWNERS = 2;
 export class ServiceEditorState extends ElementEditorState {
@@ -144,14 +187,6 @@ export class ServiceEditorState extends ElementEditorState {
       Service,
       'Element inside service editor state must be a service',
     );
-  }
-
-  get serviceQuery(): RawLambda | undefined {
-    const execution = this.service.execution;
-    if (execution instanceof PureExecution) {
-      return execution.func;
-    }
-    return undefined;
   }
 
   *searchUsers(name: string): GeneratorFn<User[]> {
