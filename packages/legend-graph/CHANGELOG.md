@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 30.0.6
+
+### Patch Changes
+
+- [#2317](https://github.com/finos/legend-studio/pull/2317) [`ba835606f`](https://github.com/finos/legend-studio/commit/ba835606fd6883651b9f4055f79bff884757b3bf) ([@abhishoya-gs](https://github.com/abhishoya-gs)) - Add field enableQueryTags to SnowflakeDatasourceSpec
+
 ## 30.0.5
 
 ## 30.0.4
