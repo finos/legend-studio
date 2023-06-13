@@ -17,10 +17,10 @@
 import type { EditorStore } from '../EditorStore.js';
 import { EditorState } from './EditorState.js';
 import { observable, makeObservable, computed } from 'mobx';
-import type { FileSystem_File } from '../utils/FileSystemTreeUtils.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { returnUndefOnError } from '@finos/legend-shared';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-lego/code-editor';
+import type { FileSystem_File } from '../utils/FileSystemTreeUtils.js';
 
 export const getTextContent = (
   content: string,
@@ -51,30 +51,33 @@ export const getEditorLanguageForFormat = (
   }
 };
 
-export class FileGenerationViewerState extends EditorState {
-  file: FileSystem_File;
+export class ArtifactGenerationViewerState extends EditorState {
+  artifact: FileSystem_File;
 
   constructor(editorStore: EditorStore, file: FileSystem_File) {
     super(editorStore);
 
     makeObservable(this, {
-      file: observable,
+      artifact: observable,
       label: computed,
       generatedFilePath: computed,
     });
 
-    this.file = file;
+    this.artifact = file;
   }
 
   get label(): string {
-    return this.file.name;
+    return this.artifact.name;
   }
 
   override match(tab: EditorState): boolean {
-    return tab instanceof FileGenerationViewerState && tab.file === this.file;
+    return (
+      tab instanceof ArtifactGenerationViewerState &&
+      tab.artifact === this.artifact
+    );
   }
 
   get generatedFilePath(): string {
-    return this.file.path;
+    return this.artifact.path;
   }
 }

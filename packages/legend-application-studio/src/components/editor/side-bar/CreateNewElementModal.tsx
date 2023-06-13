@@ -38,7 +38,6 @@ import {
   type Class,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { FileGenerationTypeOption } from '../../../stores/editor/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -51,6 +50,7 @@ import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/utils/ModelClassifierUtils.js';
 import { EmbeddedDataType } from '../../../stores/editor/editor-state/ExternalFormatState.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import type { GenerationTypeOption } from '../../../stores/editor/editor-state/GraphGenerationState.js';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,
@@ -379,11 +379,9 @@ const NewFileGenerationDriverEditor = observer(() => {
     NewFileGenerationDriver,
   );
   const options =
-    editorStore.graphState.graphGenerationState
+    editorStore.graphState.graphGenerationState.globalFileGenerationState
       .fileGenerationConfigurationOptions;
-  const onTypeSelectionChange = (
-    val: FileGenerationTypeOption | null,
-  ): void => {
+  const onTypeSelectionChange = (val: GenerationTypeOption | null): void => {
     if (!val) {
       newConnectionDriver.setTypeOption(undefined);
     } else {

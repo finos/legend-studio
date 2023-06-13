@@ -313,6 +313,11 @@ import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
 import { V1_INTERNAL__UnknownStore } from './model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_ValueSpecification } from './model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_GrammarParserBatchInputEntry } from './engine/V1_EngineServerClient.js';
+import type { ArtifactGenerationExtensionResult } from '../../../action/generation/ArtifactGenerationExtensionResult.js';
+import {
+  V1_ArtifactGenerationExtensionInput,
+  V1_buildArtifactsByExtensionElement,
+} from './engine/generation/V1_ArtifactGenerationExtensionApi.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2000,6 +2005,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     GenerationConfigurationDescription[]
   > {
     return this.engine.getAvailableGenerationConfigurationDescriptions();
+  }
+
+  async generateArtifacts(
+    graph: PureModel,
+  ): Promise<ArtifactGenerationExtensionResult> {
+    const model = this.getFullGraphModelData(graph);
+    const input = new V1_ArtifactGenerationExtensionInput(
+      model,
+      // TODO provide plugin to filter out artifacts we don't want to show in the generation
+      graph.allOwnElements.map((e) => e.path),
+    );
+    const result = await this.engine.generateArtifacts(input);
+    return V1_buildArtifactsByExtensionElement(result);
   }
 
   async generateFile(

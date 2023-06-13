@@ -69,7 +69,6 @@ import {
   externalFormatData_setContentType,
   externalFormatData_setData,
 } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
-import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
 import {
@@ -79,6 +78,7 @@ import {
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {

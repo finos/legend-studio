@@ -52,6 +52,11 @@ export const DevToolPanel = observer(() => {
       editorStore.graphState.enableStrictMode,
     );
   };
+  const toggleArtifactGeneration = (): void => {
+    editorStore.graphState.graphGenerationState.setEnableArtifactGeneration(
+      !editorStore.graphState.graphGenerationState.enableArtifactGeneration,
+    );
+  };
 
   return (
     <Panel>
@@ -115,6 +120,15 @@ export const DevToolPanel = observer(() => {
           value={editorStore.graphState.enableStrictMode}
           isReadOnly={false}
           update={toggleStrictMode}
+        />
+        <PanelFormBooleanField
+          name="Generate Artifact Generations"
+          prompt="Include generation of artifacet extensions during generation action (F10)"
+          value={
+            editorStore.graphState.graphGenerationState.enableArtifactGeneration
+          }
+          isReadOnly={false}
+          update={toggleArtifactGeneration}
         />
       </PanelForm>
     </Panel>

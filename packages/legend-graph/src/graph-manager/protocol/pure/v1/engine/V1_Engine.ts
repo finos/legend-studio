@@ -131,6 +131,10 @@ import {
   type V1_RawSQLExecuteInput,
 } from './execution/V1_RawSQLExecuteInput.js';
 import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
+import {
+  V1_ArtifactGenerationExtensionOutput,
+  V1_ArtifactGenerationExtensionInput,
+} from './generation/V1_ArtifactGenerationExtensionApi.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -700,6 +704,18 @@ export class V1_Engine {
       V1_RunTestsInput.serialization.toJson(input),
     )) as unknown as PlainObject<V1_RunTestsResult>;
     return V1_RunTestsResult.serialization.fromJson(result);
+  }
+
+  // -------------------------------------------  Generation -------------------------------------------
+
+  async generateArtifacts(
+    input: V1_ArtifactGenerationExtensionInput,
+  ): Promise<V1_ArtifactGenerationExtensionOutput> {
+    return V1_ArtifactGenerationExtensionOutput.serialization.fromJson(
+      await this.engineServerClient.generateAritfacts(
+        V1_ArtifactGenerationExtensionInput.serialization.toJson(input),
+      ),
+    );
   }
 
   // ------------------------------------------- File Generation -------------------------------------------

@@ -44,7 +44,6 @@ import {
   type InnerSchemaSetEditorState,
   SCHEMA_SET_TAB_TYPE,
 } from '../../../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
-import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -59,6 +58,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 
 const SchemaLoader = observer(
   (props: {

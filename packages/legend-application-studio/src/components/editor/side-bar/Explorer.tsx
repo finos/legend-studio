@@ -977,7 +977,7 @@ const ExplorerTrees = observer(() => {
 
   // Generated Files Tree
   const generationFileTreeData =
-    editorStore.explorerTreeState.getFileGenerationTreeData();
+    editorStore.explorerTreeState.getArtifactsGenerationTreeData();
   const onGenerationFileTreeNodeSelect = (node: FileSystemTreeNodeData): void =>
     editorStore.graphState.graphGenerationState.onTreeNodeSelect(
       node,

@@ -41,7 +41,6 @@ import {
   modelStoreData_setDataModelModel,
 } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import {
   type EmbeddedDataState,
   DataElementReferenceState,
@@ -62,6 +61,7 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
