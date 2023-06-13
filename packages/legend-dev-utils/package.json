@@ -70,7 +70,7 @@
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.8.1",
     "cssnano": "6.0.1",
-    "html-webpack-plugin": "5.5.2",
+    "html-webpack-plugin": "5.5.3",
     "isbinaryfile": "5.0.0",
     "jest": "29.5.0",
     "jest-canvas-mock": "2.5.1",
