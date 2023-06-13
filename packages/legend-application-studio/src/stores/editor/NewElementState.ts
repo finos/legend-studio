@@ -34,7 +34,7 @@ import {
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import {
-  type FileGenerationTypeOption,
+  type GenerationTypeOption,
   DEFAULT_GENERATION_SPECIFICATION_NAME,
 } from './editor-state/GraphGenerationState.js';
 import {
@@ -523,7 +523,7 @@ export class NewServiceDriver extends NewElementDriver<Service> {
 }
 
 export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpecification> {
-  typeOption?: FileGenerationTypeOption | undefined;
+  typeOption?: GenerationTypeOption | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -534,13 +534,13 @@ export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpec
     });
 
     this.typeOption = editorStore.graphState.graphGenerationState
-      .fileGenerationConfigurationOptions.length
-      ? editorStore.graphState.graphGenerationState
+      .globalFileGenerationState.fileGenerationConfigurationOptions.length
+      ? editorStore.graphState.graphGenerationState.globalFileGenerationState
           .fileGenerationConfigurationOptions[0]
       : undefined;
   }
 
-  setTypeOption(typeOption: FileGenerationTypeOption | undefined): void {
+  setTypeOption(typeOption: GenerationTypeOption | undefined): void {
     this.typeOption = typeOption;
   }
 

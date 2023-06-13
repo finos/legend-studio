@@ -104,6 +104,7 @@ import type {
 import type { FunctionActivatorConfiguration } from './action/functionActivator/FunctionActivatorConfiguration.js';
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
+import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -405,6 +406,9 @@ export abstract class AbstractPureGraphManager {
   abstract getAvailableGenerationConfigurationDescriptions(): Promise<
     GenerationConfigurationDescription[]
   >;
+  abstract generateArtifacts(
+    graph: PureModel,
+  ): Promise<ArtifactGenerationExtensionResult>;
   abstract generateFile(
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,

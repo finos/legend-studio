@@ -98,6 +98,7 @@ import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../__lib__/LegendStudioSetting.js';
 import type { TabState } from '@finos/legend-lego/application';
 import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
+import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -583,15 +584,15 @@ export class EditorGraphState {
           openedTabEditorPaths.push(state.elementPath);
         }
       });
+      const currentTab = this.editorStore.tabManagerState.currentTab;
       const currentTabState =
-        this.editorStore.tabManagerState.currentTab instanceof
-        ElementEditorState
+        currentTab instanceof ElementEditorState ||
+        currentTab instanceof ArtifactGenerationViewerState
           ? undefined
-          : this.editorStore.tabManagerState.currentTab;
+          : currentTab;
       const currentTabElementPath =
-        this.editorStore.tabManagerState.currentTab instanceof
-        ElementEditorState
-          ? this.editorStore.tabManagerState.currentTab.elementPath
+        currentTab instanceof ElementEditorState
+          ? currentTab.elementPath
           : undefined;
       this.editorStore.tabManagerState.closeAllTabs();
 
