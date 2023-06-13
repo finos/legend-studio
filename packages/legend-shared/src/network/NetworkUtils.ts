@@ -66,7 +66,7 @@ export enum HttpMethod {
 const DEFAULT_CLIENT_REQUEST_OPTIONS = {
   mode: 'cors', // allow CORS - See https://developer.mozilla.org/en-US/docs/Web/API/Request/mode
   credentials: 'include', // allow sending credentials to other domain
-  redirect: 'manual', // avoid following authentication redirects
+  redirect: 'follow', // avoid following authentication redirects
 };
 
 // NOTE: We could further improve this by using the MIME library https://flaviocopes.com/node-get-file-extension-mime-type/
