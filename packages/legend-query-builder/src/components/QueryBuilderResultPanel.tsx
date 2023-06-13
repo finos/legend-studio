@@ -126,11 +126,11 @@ const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      event: QueryBuilderTDSResultCellData | null;
+      data: QueryBuilderTDSResultCellData | null;
       tdsState: QueryBuilderTDSState;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { event, tdsState } = props;
+    const { data, tdsState } = props;
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
@@ -145,10 +145,10 @@ const QueryBuilderGridResultContextMenu = observer(
     const postFilterState = tdsState.postFilterState;
 
     const projectionColumnState = tdsState.projectionColumns
-      .filter((c) => c.columnName === event?.columnName)
+      .filter((c) => c.columnName === data?.columnName)
       .concat(
         tdsState.aggregationState.columns
-          .filter((c) => c.columnName === event?.columnName)
+          .filter((c) => c.columnName === data?.columnName)
           .map((ag) => ag.projectionColumnState),
       )[0];
     const getExistingPostFilterNode = (
@@ -319,7 +319,7 @@ const QueryBuilderGridResultContextMenu = observer(
                 : (v as InstanceValue).values,
             )
             .flat()
-            .includes(cellData.value ?? event?.value);
+            .includes(cellData.value ?? data?.value);
 
         if (!doesValueAlreadyExist) {
           const newValueSpecification = (
@@ -399,7 +399,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
       applicationStore.clipboardService.copyTextToClipboard(
-        event?.value?.toString() ?? '',
+        data?.value?.toString() ?? '',
       ),
     );
 
@@ -597,7 +597,7 @@ const QueryResultCellRenderer = observer(
           // NOTE: we only support this functionality for grid result with a projection fetch-structure
           fetchStructureImplementation instanceof QueryBuilderTDSState ? (
             <QueryBuilderGridResultContextMenu
-              event={resultState.mousedOverCell}
+              data={resultState.mousedOverCell}
               tdsState={fetchStructureImplementation}
             />
           ) : null
