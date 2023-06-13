@@ -77,10 +77,10 @@ export type TestableMetadataGetter = (
   editorStore: EditorStore,
 ) => TestableMetadata | undefined;
 
-export type TestRunnerTabRenderer = (
-  selectedTab: string,
-  editorStore: EditorStore,
-) => React.ReactNode | undefined;
+export type TestRunnerTabRenderer = (editorStore: EditorStore) => {
+  tabName: string;
+  tabRender: React.ReactNode | undefined;
+};
 
 export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -124,11 +124,6 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
    * Get the list of extension for testables
    */
   getExtraTestableMetadata?(): TestableMetadataGetter[];
-
-  /**
-   * Get the list of the supported classifers for test runner tabs.
-   */
-  getExtraTestRunnerTabClassifiers?(): string[];
 
   /**
    * Get the list of renderers for the editor for a test runner tab.

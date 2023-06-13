@@ -15,11 +15,38 @@
  */
 
 .code-editor {
+  &__background__container {
+    background: var(--color-dark-grey-50);
+  }
+
   &__container {
     height: 100%;
     width: 100%;
     position: relative;
     background: var(--color-dark-grey-50);
+  }
+
+  &__icon--text-wrap {
+    margin-bottom: 10px;
+  }
+
+  &__icon--text-wrap__icon {
+    font-size: 1.8rem;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    color: var(--color-dark-grey-400);
+
+    &:hover {
+      font-size: 1.8rem;
+      color: var(--color-dark-grey-500);
+    }
+
+    &--active,
+    &--active:hover {
+      color: var(--color-light-grey-300);
+    }
   }
 
   &__body {

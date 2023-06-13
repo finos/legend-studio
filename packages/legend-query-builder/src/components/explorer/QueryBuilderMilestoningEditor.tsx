@@ -271,9 +271,11 @@ export const MilestoningParametersEditor = observer(
           <ModalHeader title="Milestoning Parameters" />
           <ModalBody className="query-builder__variables__modal__body">
             <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
-            <div className="panel__content__form__section__header__label">
-              List of compatible milestoning parameters
-            </div>
+            <PanelFormSection>
+              <div className="panel__content__form__section__header__label">
+                List of compatible milestoning parameters
+              </div>
+            </PanelFormSection>
             <div className="panel__content__form__section__list__items">
               <VariableSelector
                 queryBuilderState={queryBuilderState}

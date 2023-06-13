@@ -429,14 +429,16 @@ export const GlobalTestRunner = observer(
     const editorStore = useEditorStore();
     const globalTestRunnerState = props.globalTestRunnerState;
     const isDispatchingAction = globalTestRunnerState.isDispatchingAction;
-    const testRunnerTabs = (Object.values(TEST_RUNNER_TABS) as string[])
-      .concat(
-        editorStore.pluginManager
-          .getApplicationPlugins()
-          .flatMap(
-            (plugin) => plugin.getExtraTestRunnerTabClassifiers?.() ?? [],
-          ),
+
+    const extraTestRunnerTab = editorStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) => plugin.getExtraTestRunnerTabEditorRenderers?.() ?? [],
       )
+      .map((editor) => editor(editorStore).tabName);
+
+    const testRunnerTabs = (Object.values(TEST_RUNNER_TABS) as string[])
+      .concat(extraTestRunnerTab)
       .map((e) => ({
         value: e,
         label: prettyCONSTName(e),
@@ -584,9 +586,9 @@ export const GlobalTestRunner = observer(
             (plugin) => plugin.getExtraTestRunnerTabEditorRenderers?.() ?? [],
           );
         for (const editorRenderer of extraTestRunnerTabEditorRenderers) {
-          const editor = editorRenderer(selectedTab, editorStore);
-          if (editor) {
-            return editor;
+          const editor = editorRenderer(editorStore);
+          if (editor.tabName === selectedTab) {
+            return editor.tabRender;
           }
         }
         return (
