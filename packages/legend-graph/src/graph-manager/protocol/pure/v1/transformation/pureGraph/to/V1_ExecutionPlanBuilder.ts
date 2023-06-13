@@ -25,6 +25,13 @@ import { RelationalTDSInstantiationExecutionNode } from '../../../../../../../gr
 import { SQLExecutionNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/SQLExecutionNode.js';
 import { SQLResultColumn } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/SQLResultColumn.js';
 import { DatabaseConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
+import { FunctionParametersValidationNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/FunctionParametersValidationNode.js';
+import { VariableExpression } from '../../../../../../../graph/metamodel/pure/valueSpecification/VariableExpression.js';
+import type { ParameterValidationContext } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/ParameterValidationContext.js';
+import { EnumValidationContext } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/EnumValidationContext.js';
+import { AllocationExecutionNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/AllocationExecutionNode.js';
+import { ConstantExecutionNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/ConstantExecutionNode.js';
+import { SequenceExecutionNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/SequenceExecutionNode.js';
 import {
   type RelationalDataType,
   Real,
@@ -49,6 +56,13 @@ import type { V1_ExecutionNode } from '../../../model/executionPlan/nodes/V1_Exe
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode.js';
 import { V1_SQLExecutionNode } from '../../../model/executionPlan/nodes/V1_SQLExecutionNode.js';
 import type { V1_SQLResultColumn } from '../../../model/executionPlan/nodes/V1_SQLResultColumn.js';
+import { V1_FunctionParametersValidationNode } from '../../../model/executionPlan/nodes/V1_FunctionParametersValidationNode.js';
+import type { V1_Variable } from '../../../model/valueSpecification/V1_Variable.js';
+import type { V1_ParameterValidationContext } from '../../../model/executionPlan/nodes/V1_ParameterValidationContext.js';
+import { V1_EnumValidationContext } from '../../../model/executionPlan/nodes/V1_EnumValidationContext.js';
+import { V1_AllocationExecutionNode } from '../../../model/executionPlan/nodes/V1_AllocationExecutionNode.js';
+import { V1_ConstantExecutionNode } from '../../../model/executionPlan/nodes/V1_ConstantExecutionNode.js';
+import { V1_SequenceExecutionNode } from '../../../model/executionPlan/nodes/V1_SequenceExecutionNode.js';
 import type { V1_ExecutionPlan } from '../../../model/executionPlan/V1_ExecutionPlan.js';
 import { V1_SimpleExecutionPlan } from '../../../model/executionPlan/V1_SimpleExecutionPlan.js';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
@@ -66,6 +80,7 @@ import { V1_INTERNAL__UnknownResultType } from '../../../model/executionPlan/res
 import { INTERNAL__UnknownResultType } from '../../../../../../../graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
 import { V1_INTERNAL__UnknownExecutionNode } from '../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
 import { INTERNAL__UnknownExecutionNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
+import { V1_buildValueSpecification } from './helpers/V1_ValueSpecificationBuilderHelper.js';
 
 export const V1_parseDataType = (val: string): RelationalDataType => {
   const getTypeParams = (typeVal: string): number[] =>
@@ -225,6 +240,31 @@ const buildSQLResultColumn = (
   return metamodel;
 };
 
+const buildParameterValidationContext = (
+  protocol: V1_ParameterValidationContext,
+): ParameterValidationContext => {
+  if (protocol instanceof V1_EnumValidationContext) {
+    const metamodel = new EnumValidationContext();
+    metamodel.varName = protocol.varName;
+    metamodel.validEnumValues = protocol.validEnumValues;
+    return metamodel;
+  }
+  throw new UnsupportedOperationError(
+    `Unknown parameter validation context type`,
+    protocol,
+  );
+};
+
+const buildFunctionParameters = (
+  protocol: V1_Variable,
+  context: V1_GraphBuilderContext,
+): VariableExpression => {
+  return guaranteeType(
+    V1_buildValueSpecification(protocol, context),
+    VariableExpression,
+  );
+};
+
 const buildBaseExecutionNode = (
   metamodel: ExecutionNode,
   protocol: V1_ExecutionNode,
@@ -275,6 +315,50 @@ const buildRelationalTDSInstantiationExecutionNode = (
   return metamodel;
 };
 
+const buildFunctionParametersValidationNode = (
+  protocol: V1_FunctionParametersValidationNode,
+  context: V1_GraphBuilderContext,
+): FunctionParametersValidationNode => {
+  const metamodel = new FunctionParametersValidationNode();
+  buildBaseExecutionNode(metamodel, protocol, context);
+  metamodel.functionParameters = protocol.functionParameters.map((p) =>
+    buildFunctionParameters(p, context),
+  );
+  metamodel.parameterValidationContext =
+    protocol.parameterValidationContext.map(buildParameterValidationContext);
+  return metamodel;
+};
+
+const buildAllocationExecutionNode = (
+  protocol: V1_AllocationExecutionNode,
+  context: V1_GraphBuilderContext,
+): AllocationExecutionNode => {
+  const metamodel = new AllocationExecutionNode();
+  buildBaseExecutionNode(metamodel, protocol, context);
+  metamodel.varName = protocol.varName;
+  metamodel.realizeInMemory = protocol.realizeInMemory;
+  return metamodel;
+};
+
+const buildConstantExecutionNode = (
+  protocol: V1_ConstantExecutionNode,
+  context: V1_GraphBuilderContext,
+): ConstantExecutionNode => {
+  const metamodel = new ConstantExecutionNode();
+  buildBaseExecutionNode(metamodel, protocol, context);
+  metamodel.values = protocol.values;
+  return metamodel;
+};
+
+const buildSequenceExecutionNode = (
+  protocol: V1_SequenceExecutionNode,
+  context: V1_GraphBuilderContext,
+): SequenceExecutionNode => {
+  const metamodel = new SequenceExecutionNode();
+  buildBaseExecutionNode(metamodel, protocol, context);
+  return metamodel;
+};
+
 function buildExecutionNode(
   protocol: V1_ExecutionNode,
   context: V1_GraphBuilderContext,
@@ -288,6 +372,14 @@ function buildExecutionNode(
     return buildSQLExecutionNode(protocol, context);
   } else if (protocol instanceof V1_RelationalTDSInstantiationExecutionNode) {
     return buildRelationalTDSInstantiationExecutionNode(protocol, context);
+  } else if (protocol instanceof V1_FunctionParametersValidationNode) {
+    return buildFunctionParametersValidationNode(protocol, context);
+  } else if (protocol instanceof V1_AllocationExecutionNode) {
+    return buildAllocationExecutionNode(protocol, context);
+  } else if (protocol instanceof V1_ConstantExecutionNode) {
+    return buildConstantExecutionNode(protocol, context);
+  } else if (protocol instanceof V1_SequenceExecutionNode) {
+    return buildSequenceExecutionNode(protocol, context);
   }
   throw new UnsupportedOperationError(`Can't build execution node`, protocol);
 }

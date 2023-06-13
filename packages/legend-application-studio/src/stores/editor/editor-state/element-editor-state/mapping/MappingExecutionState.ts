@@ -903,7 +903,7 @@ export class MappingExecutionState extends MappingEditorTabState {
               rawPlan,
               this.editorStore.graphManagerState.graph,
             );
-          this.executionPlanState.setPlan(plan);
+          this.executionPlanState.initialize(plan);
         } catch {
           // do nothing
         }

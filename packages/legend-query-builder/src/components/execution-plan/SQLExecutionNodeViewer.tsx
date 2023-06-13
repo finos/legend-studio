@@ -19,7 +19,11 @@ import {
   type ExecutionPlanState,
   EXECUTION_PLAN_VIEW_MODE,
 } from '../../stores/execution-plan/ExecutionPlanState.js';
-import { type SQLResultColumn, stringifyDataType } from '@finos/legend-graph';
+import {
+  type SQLResultColumn,
+  stringifyDataType,
+  type ResultType,
+} from '@finos/legend-graph';
 import {
   PanelListItem,
   CopyIcon,
@@ -28,6 +32,7 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { tryToFormatSql } from '../QueryBuilderResultPanel.js';
+import { ResultTypeViewer } from './ResultTypeViewer.js';
 import {
   CodeEditor,
   CODE_EDITOR_LANGUAGE,
@@ -43,9 +48,12 @@ import {
 export const SQLExecutionNodeViewer: React.FC<{
   query: string;
   resultColumns: SQLResultColumn[];
+  resultType: ResultType;
   executionPlanState: ExecutionPlanState;
+  viewJson: boolean;
 }> = observer((props) => {
-  const { query, resultColumns, executionPlanState } = props;
+  const { query, resultColumns, resultType, executionPlanState, viewJson } =
+    props;
 
   const applicationStore = executionPlanState.applicationStore;
   const copyExpression = (value: string): void => {
@@ -126,16 +134,18 @@ export const SQLExecutionNodeViewer: React.FC<{
         </div>
       </div>
       <PanelDivider />
-
-      <div className="query-builder__sql__container">
-        <Button
-          className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"
-          onClick={(): void =>
-            executionPlanState.setViewMode(EXECUTION_PLAN_VIEW_MODE.JSON)
-          }
-          text="View JSON"
-        />
-      </div>
+      <ResultTypeViewer resultType={resultType} />
+      {viewJson && (
+        <div className="query-builder__sql__container">
+          <Button
+            className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"
+            onClick={(): void =>
+              executionPlanState.setViewMode(EXECUTION_PLAN_VIEW_MODE.JSON)
+            }
+            text="View JSON"
+          />
+        </div>
+      )}
       <PanelDivider />
     </PanelContent>
   );

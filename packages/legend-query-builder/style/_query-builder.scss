@@ -834,11 +834,286 @@
   }
 
   &__table {
+    min-width: 50%;
+  }
+
+  &__item {
     width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-family: monospace;
+    font-size: 1.3rem;
+    padding: 1rem;
+    margin: 5px 0;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+  }
+}
+
+.query-builder__function-parameters-validation__container {
+  width: 95%;
+  margin: 1% auto 0;
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    min-width: 50%;
   }
 
   &__item {
     &__label {
+      color: var(--color-white);
+    }
+  }
+}
+
+.query-builder__allocation__container {
+  width: 95%;
+  margin: 1% auto 0;
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    width: 100%;
+  }
+
+  &__info {
+    margin-bottom: 0.5em;
+    display: inline-block;
+
+    &__var-name {
+      display: inline-block;
+      text-indent: 5rem;
+    }
+
+    &__value {
+      display: inline-block;
+      text-indent: 7.5rem;
+    }
+  }
+
+  &__item {
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-size: 2rem;
+    padding: 1rem;
+    margin: 5px;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+  }
+}
+
+.query-builder__constant__container {
+  width: 95%;
+  margin: 1% auto 0;
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    width: 100%;
+  }
+
+  &__info {
+    margin-bottom: 0.5em;
+  }
+
+  &__item {
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-size: 2rem;
+    padding: 1rem;
+    margin: 5px;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+  }
+}
+
+.query-builder__execution__container {
+  width: 95%;
+  margin: 1% auto 0;
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    width: 100%;
+  }
+
+  &__info {
+    margin-bottom: 0.5em;
+  }
+
+  &__item {
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-size: 2rem;
+    padding: 1rem;
+    margin: 5px;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-light-grey-400);
+    }
+  }
+}
+
+.query-builder__sequence__container {
+  width: 95%;
+  margin: 1% auto 0;
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    min-width: 50%;
+  }
+
+  &__info {
+    margin-bottom: 0.5em;
+  }
+
+  &__item {
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-size: 2rem;
+    margin: 10px;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+
+    &__btn {
+      height: 3rem;
+      width: 100%;
+      display: block;
+      text-align: left;
+      font-size: large;
+      padding: 1rem auto;
+      text-indent: 1rem;
+      color: var(--color-white);
+
+      &:hover {
+        background: var(--color-dark-grey-200);
+      }
+    }
+  }
+}
+
+.query-builder__result__container {
+  width: 95%;
+  margin: 1% auto 0;
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    min-width: 50%;
+  }
+
+  &__info {
+    margin-bottom: 0.5em;
+  }
+
+  &__item {
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-size: 1.3rem;
+    // padding: 1rem;
+    margin: 1px 0;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__data-type {
+      color: var(--color-light-grey-400);
+
+      &__type {
+        display: inline-block;
+      }
+
+      &__value {
+        display: inline-block;
+        text-indent: 1rem;
+      }
+    }
+
+    &__tds {
       color: var(--color-light-grey-400);
     }
   }

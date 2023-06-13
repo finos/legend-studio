@@ -543,7 +543,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             rawPlan,
             this.editorStore.graphManagerState.graph,
           );
-        this.executionPlanState.setPlan(plan);
+        this.executionPlanState.initialize(plan);
       } catch {
         // do nothing
       }

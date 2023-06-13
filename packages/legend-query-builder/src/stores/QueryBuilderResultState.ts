@@ -442,7 +442,7 @@ export class QueryBuilderResultState {
             rawPlan,
             this.queryBuilderState.graphManagerState.graph,
           );
-        this.executionPlanState.setPlan(plan);
+        this.executionPlanState.initialize(plan);
       } catch {
         // do nothing
       }

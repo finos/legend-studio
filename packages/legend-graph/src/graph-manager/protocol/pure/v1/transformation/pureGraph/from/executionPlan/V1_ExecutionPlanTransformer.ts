@@ -21,10 +21,24 @@ import { RelationalTDSInstantiationExecutionNode } from '../../../../../../../..
 import { SQLExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/SQLExecutionNode.js';
 import type { SQLResultColumn } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/SQLResultColumn.js';
 import { RelationalDataType } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalDataType.js';
+import { FunctionParametersValidationNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/FunctionParametersValidationNode.js';
+import type { ParameterValidationContext } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/ParameterValidationContext.js';
+import { EnumValidationContext } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/EnumValidationContext.js';
+import type { VariableExpression } from '../../../../../../../../graph/metamodel/pure/valueSpecification/VariableExpression.js';
+import { AllocationExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/AllocationExecutionNode.js';
+import { ConstantExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/ConstantExecutionNode.js';
+import { SequenceExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/SequenceExecutionNode.js';
 import type { V1_ExecutionNode } from '../../../../model/executionPlan/nodes/V1_ExecutionNode.js';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode.js';
 import { V1_SQLExecutionNode } from '../../../../model/executionPlan/nodes/V1_SQLExecutionNode.js';
 import { V1_SQLResultColumn } from '../../../../model/executionPlan/nodes/V1_SQLResultColumn.js';
+import { V1_FunctionParametersValidationNode } from '../../../../model/executionPlan/nodes/V1_FunctionParametersValidationNode.js';
+import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable.js';
+import type { V1_ParameterValidationContext } from '../../../../model/executionPlan/nodes/V1_ParameterValidationContext.js';
+import { V1_EnumValidationContext } from '../../../../model/executionPlan/nodes/V1_EnumValidationContext.js';
+import { V1_AllocationExecutionNode } from '../../../../model/executionPlan/nodes/V1_AllocationExecutionNode.js';
+import { V1_ConstantExecutionNode } from '../../../../model/executionPlan/nodes/V1_ConstantExecutionNode.js';
+import { V1_SequenceExecutionNode } from '../../../../model/executionPlan/nodes/V1_SequenceExecutionNode.js';
 import type { V1_ExecutionPlan } from '../../../../model/executionPlan/V1_ExecutionPlan.js';
 import type { V1_GraphTransformerContext } from '../V1_GraphTransformerContext.js';
 import type { V1_ResultType } from '../../../../model/executionPlan/results/V1_ResultType.js';
@@ -117,6 +131,31 @@ const transformSQLResultColumn = (
   return protocol;
 };
 
+const transformParameterValidationContext = (
+  metamodel: ParameterValidationContext,
+): V1_ParameterValidationContext => {
+  if (metamodel instanceof EnumValidationContext) {
+    const protocol = new V1_EnumValidationContext();
+    protocol.varName = metamodel.varName;
+    protocol.validEnumValues = metamodel.validEnumValues;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Unknown parameter validation context type`,
+    metamodel,
+  );
+};
+
+const transformFunctionParameters = (
+  metamodel: VariableExpression,
+): V1_Variable => {
+  const protocol = new V1_Variable();
+  protocol.name = metamodel.name;
+  protocol.multiplicity = V1_transformMultiplicity(metamodel.multiplicity);
+  protocol.class = metamodel.genericType?.value.rawType.name;
+  return protocol;
+};
+
 const transformBaseExecutionNode = (
   metamodel: ExecutionNode,
   protocol: V1_ExecutionNode,
@@ -154,6 +193,52 @@ const transformSQLExecutionNode = (
   return protocol;
 };
 
+const transformFunctionParametersValidationExecutionNode = (
+  metamodel: FunctionParametersValidationNode,
+  context: V1_GraphTransformerContext,
+): V1_FunctionParametersValidationNode => {
+  const protocol = new V1_FunctionParametersValidationNode();
+  transformBaseExecutionNode(metamodel, protocol, context);
+  protocol.functionParameters = metamodel.functionParameters.map(
+    transformFunctionParameters,
+  );
+  protocol.parameterValidationContext =
+    metamodel.parameterValidationContext.map(
+      transformParameterValidationContext,
+    );
+  return protocol;
+};
+
+const transformAllocationExecutionNode = (
+  metamodel: AllocationExecutionNode,
+  context: V1_GraphTransformerContext,
+): V1_AllocationExecutionNode => {
+  const protocol = new V1_AllocationExecutionNode();
+  transformBaseExecutionNode(metamodel, protocol, context);
+  protocol.varName = metamodel.varName;
+  protocol.realizeInMemory = metamodel.realizeInMemory;
+  return protocol;
+};
+
+const transformConstantExecutionNode = (
+  metamodel: ConstantExecutionNode,
+  context: V1_GraphTransformerContext,
+): V1_ConstantExecutionNode => {
+  const protocol = new V1_ConstantExecutionNode();
+  transformBaseExecutionNode(metamodel, protocol, context);
+  protocol.values = metamodel.values;
+  return protocol;
+};
+
+const transformSequenceExecutionNode = (
+  metamodel: SequenceExecutionNode,
+  context: V1_GraphTransformerContext,
+): V1_SequenceExecutionNode => {
+  const protocol = new V1_SequenceExecutionNode();
+  transformBaseExecutionNode(metamodel, protocol, context);
+  return protocol;
+};
+
 const transformRelationalTDSInstantiationExecutionNode = (
   metamodel: RelationalTDSInstantiationExecutionNode,
   context: V1_GraphTransformerContext,
@@ -176,6 +261,17 @@ export function V1_transformExecutionNode(
     return transformSQLExecutionNode(metamodel, context);
   } else if (metamodel instanceof RelationalTDSInstantiationExecutionNode) {
     return transformRelationalTDSInstantiationExecutionNode(metamodel, context);
+  } else if (metamodel instanceof FunctionParametersValidationNode) {
+    return transformFunctionParametersValidationExecutionNode(
+      metamodel,
+      context,
+    );
+  } else if (metamodel instanceof AllocationExecutionNode) {
+    return transformAllocationExecutionNode(metamodel, context);
+  } else if (metamodel instanceof ConstantExecutionNode) {
+    return transformConstantExecutionNode(metamodel, context);
+  } else if (metamodel instanceof SequenceExecutionNode) {
+    return transformSequenceExecutionNode(metamodel, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform execution node`,
