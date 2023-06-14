@@ -61,6 +61,7 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
+  PANEL_MODE,
 } from '../../../stores/editor/EditorConfig.js';
 import { getTreeChildNodes } from '../../../stores/editor/utils/PackageTreeUtils.js';
 import type { PackageTreeNodeData } from '../../../stores/editor/utils/TreeUtils.js';
@@ -76,6 +77,7 @@ import {
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  guaranteeType,
   isNonNullable,
   toTitleCase,
 } from '@finos/legend-shared';
@@ -513,6 +515,15 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const openSQLPlayground = (): void => {
+      if (isRelationalDatabaseConnection(node?.packageableElement)) {
+        editorStore.panelGroupDisplayState.open();
+        editorStore.setActivePanelMode(PANEL_MODE.SQL_PLAYGROUND);
+        editorStore.sqlPlaygroundState.setConnection(
+          guaranteeType(node?.packageableElement, PackageableConnection),
+        );
+      }
+    };
     const removeElement = (): void => {
       if (node) {
         flowResult(
@@ -724,6 +735,12 @@ const ExplorerContextMenu = observer(
         )}
         {isRelationalDatabaseConnection(node.packageableElement) && (
           <>
+            {editorStore.applicationStore.config.options
+              .TEMPORARY__enableRawSQLExecutor && (
+              <MenuContentItem onClick={openSQLPlayground}>
+                Execute SQL...
+              </MenuContentItem>
+            )}
             <MenuContentItem onClick={buildDatabase}>
               Build Database...
             </MenuContentItem>
