@@ -1150,6 +1150,10 @@ export const FunctionEditor = observer(() => {
               <>
                 <DropdownMenu
                   className="btn__dropdown-combo"
+                  disabled={
+                    !editorStore.graphState.functionActivatorConfigurations
+                      .length
+                  }
                   content={
                     <MenuContent>
                       {editorStore.graphState.functionActivatorConfigurations.map(

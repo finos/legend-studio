@@ -21,4 +21,7 @@ export type QuickInputState<T> = {
   options: QuickInputOption<T>[];
   getSearchValue: (option: QuickInputOption<T>) => string;
   onSelect: (option: QuickInputOption<T>) => void;
+  customization?: {
+    rowHeight?: number | undefined;
+  };
 };

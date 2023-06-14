@@ -244,9 +244,18 @@
     background: var(--color-dark-grey-250);
   }
 
+  &[disabled] &__label__icon,
+  &[disabled] &__label__title,
+  &[disabled]:hover &__label__icon,
+  &[disabled]:hover &__label__title,
+  &__label[disabled]:hover &__label__icon,
+  &__label[disabled]:hover &__label__title,
   &__label[disabled] &__label__icon,
   &__label[disabled] &__label__title,
-  &__dropdown-btn[disabled] svg {
+  &[disabled] &__dropdown-btn svg,
+  &[disabled]:hover &__dropdown-btn svg,
+  &__dropdown-btn[disabled] svg,
+  &__dropdown-btn[disabled]:hover svg {
     color: var(--color-dark-grey-500);
   }
 

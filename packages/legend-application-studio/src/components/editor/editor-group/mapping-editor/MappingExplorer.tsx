@@ -168,7 +168,7 @@ export const MappingExplorerContextMenu = observer(
 
     const allowRemoveFilter =
       mappingElement instanceof PureInstanceSetImplementation &&
-      !!mappingElement.filter;
+      Boolean(mappingElement.filter);
 
     return (
       <MenuContent ref={ref}>
@@ -390,7 +390,7 @@ const MappingElementTreeNodeContainer = observer(
               {getMappingElementLabel(mappingElement, editorStore).value}
             </div>
             {mappingElement instanceof PureInstanceSetImplementation &&
-              !!mappingElement.filter && (
+              Boolean(mappingElement.filter) && (
                 <div className="mapping-explorer__item__label__filter-icon">
                   <FilterIcon />
                 </div>
