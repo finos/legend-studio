@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 26.1.10
+
+### Patch Changes
+
+- [#2327](https://github.com/finos/legend-studio/pull/2327) [`448d4ba4f`](https://github.com/finos/legend-studio/commit/448d4ba4fcb1de3c46dd1c1bf62ecf4d3b92e61c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show generated artifacts triggered by artifact extensions in engine. Include flag to enable this as part of generation flow.
+
 ## 26.1.9
 
 ### Patch Changes
