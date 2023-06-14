@@ -72,6 +72,17 @@ const DataAccessOverviewChart = observer(
             <RefreshIcon />
           </button>
         </div>
+        {Boolean(
+          dataAccessState.datasets.find(
+            (dataset) =>
+              dataset.entitlementReport instanceof
+              DatasetEntitlementUnsupportedReport,
+          ),
+        ) && (
+          <div className="data-access-overview__chart__warning">
+            Use case is not fully supported!
+          </div>
+        )}
         <div className="data-access-overview__chart__container">
           <Doughnut
             data={{
@@ -109,7 +120,7 @@ const DataAccessOverviewChart = observer(
           />
           <div className="data-access-overview__chart__stats">
             <div className="data-access-overview__chart__stats__percentage">
-              {accessGrantedPercentage}%
+              {total === 0 ? 0 : accessGrantedPercentage}%
             </div>
             <div className="data-access-overview__chart__stats__tally">
               {total === 0 ? 0 : accessGrantedCount}/{total}
@@ -285,7 +296,10 @@ export const DataAccessOverview = observer(
     const applicationStore = useApplicationStore();
 
     useEffect(() => {
-      dataAccessState.intialize().catch(applicationStore.alertUnhandledError);
+      // NOTE: @YannanGao-gs - force refresh for now, let's investigate why the data is empty
+      // when we fetched it from cache
+      dataAccessState.refresh().catch(applicationStore.alertUnhandledError);
+      // dataAccessState.intialize().catch(applicationStore.alertUnhandledError);
     }, [applicationStore, dataAccessState]);
 
     return (

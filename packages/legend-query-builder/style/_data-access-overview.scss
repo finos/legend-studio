@@ -25,6 +25,22 @@
     padding: 3rem;
     position: relative;
 
+    &__warning {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      padding: 0.5rem 1rem;
+      border-radius: 0.2rem;
+      background: var(--color-yellow-300);
+      color: var(--color-dark-grey-250);
+      font-size: 1.2rem;
+      font-weight: 500;
+      max-width: calc(100% - 5rem);
+      user-select: none;
+      box-shadow: var(--color-dark-shade-280) 0 0 0.5rem 0;
+    }
+
     &__actions {
       position: absolute;
       top: 0;
