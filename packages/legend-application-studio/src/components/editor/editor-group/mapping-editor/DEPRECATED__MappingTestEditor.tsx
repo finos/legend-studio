@@ -260,30 +260,30 @@ const MappingTestQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
-            <div className="mapping-test-editor__action-btn">
+            <div className="btn__dropdown-combo">
               <button
-                className="mapping-test-editor__action-btn__label"
+                className="btn__dropdown-combo__label"
                 onClick={editWithQueryBuilder()}
                 title="Edit Query"
                 tabIndex={-1}
               >
-                <PencilIcon className="mapping-test-editor__action-btn__label__icon" />
-                <div className="mapping-test-editor__action-btn__label__title">
+                <PencilIcon className="btn__dropdown-combo__label__icon" />
+                <div className="btn__dropdown-combo__label__title">
                   Edit Query
                 </div>
               </button>
               <DropdownMenu
-                className="mapping-test-editor__action-btn__dropdown-btn"
+                className="btn__dropdown-combo__dropdown-btn"
                 content={
                   <MenuContent>
                     <MenuContentItem
-                      className="mapping-test-editor__action-btn__option"
+                      className="btn__dropdown-combo__option"
                       onClick={editWithQueryBuilder(true)}
                     >
                       Text Mode
                     </MenuContentItem>
                     <MenuContentItem
-                      className="mapping-test-editor__action-btn__option"
+                      className="btn__dropdown-combo__option"
                       onClick={clearQuery}
                     >
                       Clear Query
@@ -791,64 +791,66 @@ export const DEPRECATED__MappingTestEditor = observer(
             ))}
           </div>
           <div className="panel__header__actions mapping-test-editor__header__actions">
-            {testState.isRunningTest ? (
-              <button
-                className="mapping-test-editor__stop-btn"
-                onClick={cancelTest}
-                tabIndex={-1}
-              >
-                <div className="btn--dark btn--caution mapping-test-editor__stop-btn__label">
-                  <PauseCircleIcon className="mapping-test-editor__stop-btn__label__icon" />
-                  <div className="mapping-test-editor__stop-btn__label__title">
-                    Stop
-                  </div>
-                </div>
-              </button>
-            ) : (
-              <div className="mapping-test-editor__action-btn">
+            <div className="mapping-test-editor__action-btn btn__dropdown-combo btn__dropdown-combo--primary">
+              {testState.isRunningTest ? (
                 <button
-                  className="mapping-test-editor__action-btn__label"
-                  onClick={runTest}
-                  disabled={
-                    testState.isExecutingTest || testState.isGeneratingPlan
-                  }
+                  className="btn__dropdown-combo__canceler"
+                  onClick={cancelTest}
                   tabIndex={-1}
                 >
-                  <PlayIcon className="mapping-test-editor__action-btn__label__icon" />
-                  <div className="mapping-test-editor__action-btn__label__title">
-                    Run Test
+                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
+                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                    <div className="btn__dropdown-combo__canceler__label__title">
+                      Stop
+                    </div>
                   </div>
                 </button>
-                <DropdownMenu
-                  className="mapping-test-editor__action-btn__dropdown-btn"
-                  disabled={
-                    testState.isExecutingTest || testState.isGeneratingPlan
-                  }
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        className="mapping-test-editor__action-btn__option"
-                        onClick={generatePlan}
-                      >
-                        Generate Plan
-                      </MenuContentItem>
-                      <MenuContentItem
-                        className="mapping-test-editor__action-btn__option"
-                        onClick={debugPlanGeneration}
-                      >
-                        Debug
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  }}
-                >
-                  <CaretDownIcon />
-                </DropdownMenu>
-              </div>
-            )}
+              ) : (
+                <>
+                  <button
+                    className="btn__dropdown-combo__label"
+                    onClick={runTest}
+                    disabled={
+                      testState.isExecutingTest || testState.isGeneratingPlan
+                    }
+                    tabIndex={-1}
+                  >
+                    <PlayIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Run Test
+                    </div>
+                  </button>
+                  <DropdownMenu
+                    className="btn__dropdown-combo__dropdown-btn"
+                    disabled={
+                      testState.isExecutingTest || testState.isGeneratingPlan
+                    }
+                    content={
+                      <MenuContent>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={generatePlan}
+                        >
+                          Generate Plan
+                        </MenuContentItem>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={debugPlanGeneration}
+                        >
+                          Debug
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    }}
+                  >
+                    <CaretDownIcon />
+                  </DropdownMenu>
+                </>
+              )}
+            </div>
           </div>
         </div>
         <div className="mapping-test-editor__content">

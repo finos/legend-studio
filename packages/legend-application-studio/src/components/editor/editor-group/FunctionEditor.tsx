@@ -1082,66 +1082,74 @@ export const FunctionEditor = observer(() => {
             ))}
           </div>
           <div className="panel__header__actions">
-            {functionEditorState.isRunningQuery ? (
-              <button
-                className="function-editor__execution__stop-btn"
-                onClick={cancelQuery}
-                tabIndex={-1}
-              >
-                <div className="btn--dark btn--caution function-editor__execution__stop-btn__label">
-                  <PauseCircleIcon className="function-editor__execution__stop-btn__label__icon" />
-                  <div className="function-editor__execution__stop-btn__label__title">
-                    Stop
-                  </div>
-                </div>
-              </button>
-            ) : (
-              <div className="function-editor__execution__action-btn">
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              {functionEditorState.isRunningQuery ? (
                 <button
-                  className="function-editor__execution__action-btn__label"
-                  onClick={runQuery}
-                  title="Run Query"
-                  disabled={executionIsRunning}
+                  className="btn__dropdown-combo__canceler"
+                  onClick={cancelQuery}
                   tabIndex={-1}
                 >
-                  <PlayIcon className="function-editor__execution__action-btn__label__icon" />
-                  <div className="function-editor__execution__action-btn__label__title">
-                    Run Query
+                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
+                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                    <div className="btn__dropdown-combo__canceler__label__title">
+                      Stop
+                    </div>
                   </div>
                 </button>
-                <DropdownMenu
-                  className="function-editor__execution__action-btn__dropdown-btn"
-                  disabled={executionIsRunning}
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        className="function-editor__execution__action-btn__option"
-                        onClick={generatePlan}
-                      >
-                        Generate Plan
-                      </MenuContentItem>
-                      <MenuContentItem
-                        className="function-editor__execution__action-btn__option"
-                        onClick={debugPlanGeneration}
-                      >
-                        Debug
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  }}
-                >
-                  <CaretDownIcon />
-                </DropdownMenu>
-              </div>
-            )}
+              ) : (
+                <>
+                  <button
+                    className="btn__dropdown-combo__label"
+                    onClick={runQuery}
+                    title="Run Query"
+                    disabled={executionIsRunning}
+                    tabIndex={-1}
+                  >
+                    <PlayIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Run Query
+                    </div>
+                  </button>
+                  <DropdownMenu
+                    className="btn__dropdown-combo__dropdown-btn"
+                    disabled={executionIsRunning}
+                    content={
+                      <MenuContent>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={generatePlan}
+                        >
+                          Generate Plan
+                        </MenuContentItem>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={debugPlanGeneration}
+                        >
+                          Debug
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: {
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                    }}
+                  >
+                    <CaretDownIcon />
+                  </DropdownMenu>
+                </>
+              )}
+            </div>
             {editorStore.applicationStore.config.options
               .TEMPORARY__enableFunctionActivatorSupport && (
               <>
                 <DropdownMenu
-                  className="function-editor__activate-btn"
+                  className="btn__dropdown-combo"
                   content={
                     <MenuContent>
                       {editorStore.graphState.functionActivatorConfigurations.map(
@@ -1172,15 +1180,15 @@ export const FunctionEditor = observer(() => {
                     transformOrigin: { vertical: 'top', horizontal: 'right' },
                   }}
                 >
-                  <div className="function-editor__activate-btn__label">
-                    <div className="function-editor__activate-btn__label__icon">
+                  <div className="btn__dropdown-combo__label">
+                    <div className="btn__dropdown-combo__label__icon">
                       <LaunchIcon />
                     </div>
-                    <div className="function-editor__activate-btn__label__title">
+                    <div className="btn__dropdown-combo__label__title">
                       Activate
                     </div>
                   </div>
-                  <div className="function-editor__activate-btn__dropdown-btn">
+                  <div className="btn__dropdown-combo__dropdown-btn">
                     <CaretDownIcon />
                   </div>
                 </DropdownMenu>

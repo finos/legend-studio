@@ -522,15 +522,15 @@ export class FunctionEditorState extends ElementEditorState {
         );
       }
     } catch (error) {
-      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
+      // When user cancels the query by calling the cancelQuery api, it will throw an execution failure error.
       // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
       // When cancelled the query, we set the queryRunPromise as undefined.
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-        error,
-      );
       if (this.queryRunPromise === promise) {
         assertErrorThrown(error);
+        this.editorStore.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+          error,
+        );
         this.editorStore.applicationStore.notificationService.notifyError(
           error,
         );

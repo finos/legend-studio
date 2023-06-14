@@ -66,7 +66,6 @@ import {
   DEFAULT_TEST_PREFIX,
   EqualToJson,
   ServiceTest,
-  extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_EVENT,
   Class,
@@ -498,6 +497,7 @@ export class MappingExecutionState extends MappingEditorTabState {
   isGeneratingPlan = false;
   executionPlanState: ExecutionPlanState;
   planGenerationDebugText?: string | undefined;
+  executionRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -515,6 +515,8 @@ export class MappingExecutionState extends MappingEditorTabState {
       isExecuting: observable,
       isGeneratingPlan: observable,
       planGenerationDebugText: observable,
+      executionRunPromise: observable,
+      setExecutionRunPromise: action,
       setQueryState: action,
       setInputDataState: action,
       setExecutionResultText: action,
@@ -524,6 +526,7 @@ export class MappingExecutionState extends MappingEditorTabState {
       reset: action,
       promoteToTest: flow,
       promoteToService: flow,
+      cancelExecution: flow,
       executeMapping: flow,
       generatePlan: flow,
       buildQueryWithClassMapping: flow,
@@ -550,6 +553,11 @@ export class MappingExecutionState extends MappingEditorTabState {
   get label(): string {
     return this.name;
   }
+
+  setExecutionRunPromise(promise: Promise<ExecutionResult> | undefined): void {
+    this.executionRunPromise = promise;
+  }
+
   setQueryState(val: MappingExecutionQueryState): void {
     this.queryState = val;
   }
@@ -759,7 +767,24 @@ export class MappingExecutionState extends MappingEditorTabState {
     }
   }
 
+  *cancelExecution(): GeneratorFn<void> {
+    this.isExecuting = false;
+    this.setExecutionRunPromise(undefined);
+    try {
+      yield this.editorStore.graphManagerState.graphManager.cancelUserExecutions(
+        true,
+      );
+    } catch (error) {
+      // don't notify users about success or failure
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+    }
+  }
+
   *executeMapping(): GeneratorFn<void> {
+    let promise;
     try {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
@@ -779,45 +804,46 @@ export class MappingExecutionState extends MappingEditorTabState {
           this.editorStore.graphManagerState.graph,
         );
 
-        const result =
-          (yield this.editorStore.graphManagerState.graphManager.runQuery(
-            query,
-            this.mappingEditorState.mapping,
-            runtime,
-            this.editorStore.graphManagerState.graph,
-            {
-              useLosslessParse: true,
-            },
-            report,
-          )) as ExecutionResult;
-
-        this.setExecutionResultText(
-          stringifyLosslessJSON(
-            extractExecutionResultValues(result),
-            undefined,
-            DEFAULT_TAB_SIZE,
-          ),
-        );
-
-        // report
-        report.timings =
-          this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
-            stopWatch,
-            report.timings,
-          );
-        QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
-          this.editorStore.applicationStore.telemetryService,
+        promise = this.editorStore.graphManagerState.graphManager.runQuery(
+          query,
+          this.mappingEditorState.mapping,
+          runtime,
+          this.editorStore.graphManagerState.graph,
+          {
+            useLosslessParse: true,
+          },
           report,
         );
+        this.setExecutionRunPromise(promise);
+        const result = (yield promise) as ExecutionResult;
+        if (this.executionRunPromise === promise) {
+          this.setExecutionResultText(
+            stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
+          );
+          // report
+          report.timings =
+            this.editorStore.applicationStore.timeService.finalizeTimingsRecord(
+              stopWatch,
+              report.timings,
+            );
+          QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
+            this.editorStore.applicationStore.telemetryService,
+            report,
+          );
+        }
       }
     } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.setExecutionResultText('');
+      if (this.executionRunPromise === promise) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+          error,
+        );
+        this.editorStore.applicationStore.notificationService.notifyError(
+          error,
+        );
+        this.setExecutionResultText('');
+      }
     } finally {
       this.isExecuting = false;
     }
