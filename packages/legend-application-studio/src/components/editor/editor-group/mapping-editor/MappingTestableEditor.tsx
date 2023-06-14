@@ -62,6 +62,7 @@ import {
   PanelLoadingIndicator,
   ContextMenu,
   ModalHeader,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
   assertErrorThrown,
@@ -225,12 +226,15 @@ const CreateTestSuiteModal = observer(
           </ModalHeader>
           <ModalBody>
             <PanelLoadingIndicator
+              className="panel-loading-indicator--in__modal"
               isLoading={creatorState.isCreatingSuiteState.isInProgress}
             />
             {creatorState.isCreatingSuiteState.message && (
-              <div className="service-registration-editor__progress-msg">
-                {`${creatorState.isCreatingSuiteState.message}...`}
-              </div>
+              <PanelFormSection>
+                <div className="service-registration-editor__progress-msg">
+                  {`${creatorState.isCreatingSuiteState.message}...`}
+                </div>
+              </PanelFormSection>
             )}
             <PanelFormTextField
               ref={inputRef}

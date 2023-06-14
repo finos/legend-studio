@@ -160,6 +160,7 @@ const ImportModal = observer(
             <textarea
               className="relational-data-editor__import__textarea"
               spellCheck={false}
+              placeholder="CSV Text"
               value={csv}
               onChange={changeCSV}
               disabled={isReadOnly}
