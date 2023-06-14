@@ -671,6 +671,9 @@ export class EditorStore implements CommandRegistrar {
         },
         {
           tracerService: this.applicationStore.tracerService,
+          TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism:
+            this.applicationStore.config.options
+              .TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism,
         },
       ),
     ]);
