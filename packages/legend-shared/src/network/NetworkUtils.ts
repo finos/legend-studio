@@ -66,7 +66,15 @@ export enum HttpMethod {
 const DEFAULT_CLIENT_REQUEST_OPTIONS = {
   mode: 'cors', // allow CORS - See https://developer.mozilla.org/en-US/docs/Web/API/Request/mode
   credentials: 'include', // allow sending credentials to other domain
-  redirect: 'follow', // avoid following authentication redirects
+  /**
+   * NOTE: We must set this to `follow` for the fetch to handle 3xx redirects automatically.
+   * The other modes available are `error` which will throw error and does not really give a
+   * response object, and `manual` which returns an opaque response object with status code 0;
+   * either way, we cannot really handle the redirect manually ourselves.
+   * See https://fetch.spec.whatwg.org/#concept-request-redirect-mode
+   * See https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
+   */
+  redirect: 'follow',
 };
 
 // NOTE: We could further improve this by using the MIME library https://flaviocopes.com/node-get-file-extension-mime-type/
@@ -139,10 +147,6 @@ const extractMessage = (payload: Payload): string => {
     ? payloadAsObject.message
     : payload;
 };
-
-// NOTE: status 0 is either timeout or client error possibly caused by authentication
-export const unauthenticated = (response: Response): boolean =>
-  response.status === 0 || response.status === HttpStatus.UNAUTHORIZED;
 
 /**
  * This is a fairly basic way to attempt re-authentication.
@@ -287,23 +291,6 @@ const processResponse = async <T>(
         ),
       );
   }
-};
-
-const retry = async <T>(
-  url: string,
-  init: RequestInit,
-  responseProcessConfig?: ResponseProcessConfig,
-): Promise<T> => {
-  if (responseProcessConfig?.autoReAuthenticateUrl) {
-    return autoReAuthenticate(responseProcessConfig.autoReAuthenticateUrl)
-      .then(() => fetch(url, init))
-      .then((response) =>
-        processResponse(response, init, responseProcessConfig),
-      );
-  }
-  return fetch(url, init).then((response) =>
-    processResponse(response, init, responseProcessConfig),
-  );
 };
 
 export const createRequestHeaders = (
@@ -491,14 +478,35 @@ export class NetworkClient {
      * See https://www.npmjs.com/package/node-fetch#motivation
      */
     return fetch(requestUrl, requestInit)
-      .then((response) =>
-        unauthenticated(response)
-          ? retry<T>(requestUrl, requestInit, responseProcessConfig)
-          : processResponse<T>(response, requestInit, responseProcessConfig),
-      )
+      .then((response) => {
+        if (
+          // NOTE: status 0 is either timeout or client error possibly caused by authentication
+          response.status === 0 ||
+          response.status === HttpStatus.UNAUTHORIZED
+        ) {
+          // NOTE: we might want to consider different handling here rather than just proceeding with a retry
+          // this is a good place to add an auto retry/authenticate mechanism
+          if (responseProcessConfig?.autoReAuthenticateUrl) {
+            return autoReAuthenticate(
+              responseProcessConfig.autoReAuthenticateUrl,
+            )
+              .then(() => fetch(requestUrl, requestInit))
+              .then((resp) =>
+                processResponse<T>(resp, requestInit, responseProcessConfig),
+              );
+          }
+          return fetch(requestUrl, requestInit).then((resp) =>
+            processResponse<T>(resp, requestInit, responseProcessConfig),
+          );
+        }
+        return processResponse<T>(response, requestInit, responseProcessConfig);
+      })
       .catch((error) =>
         couldBeCORS(error)
-          ? retry<T>(requestUrl, requestInit, responseProcessConfig)
+          ? // NOTE: we might want to consider different handling here rather than just proceeding with a retry
+            fetch(requestUrl, requestInit).then((resp) =>
+              processResponse<T>(resp, requestInit, responseProcessConfig),
+            )
           : Promise.reject(error),
       );
   }
