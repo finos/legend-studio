@@ -417,15 +417,7 @@ export const ServiceExecutionQueryEditor = observer(
               executionState.isOpeningQueryEditor || executionIsRunning
             }
           />
-          <div
-            className="service-execution-query-editor__content"
-            title="Double click to edit in query builder"
-            onDoubleClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              editWithQueryBuilder()();
-            }}
-          >
+          <div className="service-execution-query-editor__content">
             <CodeEditor
               inputValue={queryState.lambdaString}
               isReadOnly={true}

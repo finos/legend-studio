@@ -302,15 +302,7 @@ const MappingTestQueryEditor = observer(
         </div>
         {!isStubbed_RawLambda(queryState.query) && (
           <PanelContent>
-            <div
-              className="mapping-test-editor__query-panel__query"
-              title="Double click to edit in query builder"
-              onDoubleClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                editWithQueryBuilder()();
-              }}
-            >
+            <div className="mapping-test-editor__query-panel__query">
               <CodeEditor
                 inputValue={queryState.lambdaString}
                 isReadOnly={true}
