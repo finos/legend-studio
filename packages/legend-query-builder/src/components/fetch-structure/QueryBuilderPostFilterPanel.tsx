@@ -1075,8 +1075,7 @@ const QueryBuilderPostFilterPanelContent = observer(
                 <QueryBuilderPostFilterTree tdsState={tdsState} />
               </>
             )}
-
-            {showDroppableSuggestion && (
+            {showDroppableSuggestion && !postFilterState.isEmpty && (
               <div
                 ref={dropTargetConnector}
                 className={clsx(
