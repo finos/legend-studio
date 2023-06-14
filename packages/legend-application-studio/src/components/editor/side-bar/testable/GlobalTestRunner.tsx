@@ -432,10 +432,8 @@ export const GlobalTestRunner = observer(
 
     const extraTestRunnerTab = editorStore.pluginManager
       .getApplicationPlugins()
-      .flatMap(
-        (plugin) => plugin.getExtraTestRunnerTabEditorRenderers?.() ?? [],
-      )
-      .map((editor) => editor(editorStore).tabName);
+      .flatMap((plugin) => plugin.getExtraTestRunnerTabEditorSetup?.() ?? [])
+      .map((editor) => editor(editorStore).name);
 
     const testRunnerTabs = (Object.values(TEST_RUNNER_TABS) as string[])
       .concat(extraTestRunnerTab)
@@ -583,12 +581,12 @@ export const GlobalTestRunner = observer(
         const extraTestRunnerTabEditorRenderers = editorStore.pluginManager
           .getApplicationPlugins()
           .flatMap(
-            (plugin) => plugin.getExtraTestRunnerTabEditorRenderers?.() ?? [],
+            (plugin) => plugin.getExtraTestRunnerTabEditorSetup?.() ?? [],
           );
         for (const editorRenderer of extraTestRunnerTabEditorRenderers) {
           const editor = editorRenderer(editorStore);
-          if (editor.tabName === selectedTab) {
-            return editor.tabRender;
+          if (editor.name === selectedTab) {
+            return editor.renderer;
           }
         }
         return (

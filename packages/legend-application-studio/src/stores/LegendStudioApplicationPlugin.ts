@@ -77,9 +77,9 @@ export type TestableMetadataGetter = (
   editorStore: EditorStore,
 ) => TestableMetadata | undefined;
 
-export type TestRunnerTabRenderer = (editorStore: EditorStore) => {
-  tabName: string;
-  tabRender: React.ReactNode | undefined;
+export type TestRunnerTabSetup = (editorStore: EditorStore) => {
+  name: string;
+  renderer: React.ReactNode | undefined;
 };
 
 export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlugin {
@@ -128,7 +128,7 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   /**
    * Get the list of renderers for the editor for a test runner tab.
    */
-  getExtraTestRunnerTabEditorRenderers?(): TestRunnerTabRenderer[];
+  getExtraTestRunnerTabEditorSetup?(): TestRunnerTabSetup[];
 }
 
 export type PureGrammarElementLabeler = (

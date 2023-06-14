@@ -426,7 +426,7 @@
     position: relative;
     border: 0.1rem solid var(--color-dark-grey-100);
     resize: both;
-    overflow: auto;
+    overflow: hidden;
   }
 
   &__section__number-input {
