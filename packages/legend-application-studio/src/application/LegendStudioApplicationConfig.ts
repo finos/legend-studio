@@ -81,6 +81,11 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__enableRawSQLExecutor = false;
 
   /**
+   * This flag can be removed when the support the new service registration input collector mechanism is official
+   */
+  TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism = false;
+
+  /**
    * Indicates whether we should render the new mapping testable editor or the deprecated legacy editor.
    * This flag will be removed once the editor for testable editor is agreed on.
    */

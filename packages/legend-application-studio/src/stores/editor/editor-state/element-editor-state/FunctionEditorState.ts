@@ -21,6 +21,7 @@ import {
   makeObservable,
   flow,
   flowResult,
+  override,
 } from 'mobx';
 import type { EditorStore } from '../../EditorStore.js';
 import {
@@ -50,6 +51,7 @@ import {
   buildLambdaVariableExpressions,
   VariableExpression,
   observe_ValueSpecification,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 import {
   ExecutionPlanState,
@@ -254,13 +256,14 @@ export class FunctionEditorState extends ElementEditorState {
 
     makeObservable(this, {
       selectedTab: observable,
-      functionElement: computed,
-      setSelectedTab: action,
-      reprocess: action,
       isRunningQuery: observable,
       isGeneratingPlan: observable,
       executionResultText: observable,
       executionPlanState: observable,
+      label: override,
+      functionElement: computed,
+      setSelectedTab: action,
+      reprocess: action,
       setExecutionResultText: action,
       setIsRunningQuery: action,
       runQuery: flow,
@@ -285,6 +288,13 @@ export class FunctionEditorState extends ElementEditorState {
       this.editorStore.graphManagerState,
     );
     this.parametersState = new FunctionParametersState(this);
+  }
+
+  override get label(): string {
+    return generateFunctionPrettyName(this.functionElement, {
+      fullPath: true,
+      spacing: false,
+    });
   }
 
   get functionElement(): ConcreteFunctionDefinition {
@@ -512,15 +522,15 @@ export class FunctionEditorState extends ElementEditorState {
         );
       }
     } catch (error) {
-      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
+      // When user cancels the query by calling the cancelQuery api, it will throw an execution failure error.
       // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
       // When cancelled the query, we set the queryRunPromise as undefined.
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-        error,
-      );
       if (this.queryRunPromise === promise) {
         assertErrorThrown(error);
+        this.editorStore.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+          error,
+        );
         this.editorStore.applicationStore.notificationService.notifyError(
           error,
         );

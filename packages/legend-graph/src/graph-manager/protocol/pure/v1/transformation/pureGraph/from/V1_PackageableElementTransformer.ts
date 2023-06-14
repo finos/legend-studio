@@ -75,6 +75,7 @@ import type { INTERNAL__UnknownFunctionActivator } from '../../../../../../../gr
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { INTERNAL__UnknownStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
+import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -119,7 +120,10 @@ class V1_PackageableElementTransformer
   ): V1_PackageableElement {
     const protocol = new V1_INTERNAL__UnknownFunctionActivator();
     V1_initPackageableElement(protocol, element);
-    protocol.function = element.function.valueForSerialization ?? '';
+    protocol.function = generateFunctionPrettyName(element.function.value, {
+      fullPath: true,
+      spacing: false,
+    });
     protocol.content = element.content;
     return protocol;
   }

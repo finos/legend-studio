@@ -248,6 +248,9 @@ const buildRelationalDatabaseConnectionOption = (
         <div className="sql-playground__config__connection-selector__option__type">
           {connectionValue.type}
         </div>
+        <div className="sql-playground__config__connection-selector__option__path">
+          {connection.path}
+        </div>
       </div>
     ),
   };

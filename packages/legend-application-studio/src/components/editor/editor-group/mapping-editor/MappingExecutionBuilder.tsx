@@ -47,6 +47,7 @@ import {
   PanelHeader,
   PanelHeaderActions,
   Panel,
+  PauseCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -721,6 +722,9 @@ export const MappingExecutionBuilder = observer(
     const applicationStore = useApplicationStore();
     const { queryState, inputDataState } = executionState;
     // execute
+    const cancelExecution = applicationStore.guardUnhandledError(() =>
+      flowResult(executionState.cancelExecution()),
+    );
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan(false)),
     );
@@ -780,54 +784,71 @@ export const MappingExecutionBuilder = observer(
                 <FlaskIcon />
               </button>
             )}
-            <div className="mapping-execution-builder__action-btn">
-              <button
-                className="mapping-execution-builder__action-btn__label"
-                onClick={execute}
-                disabled={
-                  isStubbed_RawLambda(queryState.query) ||
-                  !inputDataState.isValid ||
-                  executionState.isGeneratingPlan ||
-                  executionState.isExecuting
-                }
-                tabIndex={-1}
-              >
-                <PlayIcon className="mapping-execution-builder__action-btn__label__icon" />
-                <div className="mapping-execution-builder__action-btn__label__title">
-                  Run Query
-                </div>
-              </button>
-              <DropdownMenu
-                className="mapping-execution-builder__action-btn__dropdown-btn"
-                disabled={
-                  isStubbed_RawLambda(queryState.query) ||
-                  !inputDataState.isValid ||
-                  executionState.isGeneratingPlan ||
-                  executionState.isExecuting
-                }
-                content={
-                  <MenuContent>
-                    <MenuContentItem
-                      className="mapping-execution-builder__action-btn__option"
-                      onClick={generatePlan}
-                    >
-                      Generate Plan
-                    </MenuContentItem>
-                    <MenuContentItem
-                      className="mapping-execution-builder__action-btn__option"
-                      onClick={debugPlanGeneration}
-                    >
-                      Debug
-                    </MenuContentItem>
-                  </MenuContent>
-                }
-                menuProps={{
-                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                  transformOrigin: { vertical: 'top', horizontal: 'right' },
-                }}
-              >
-                <CaretDownIcon />
-              </DropdownMenu>
+            <div className="mapping-execution-builder__action-btn btn__dropdown-combo btn__dropdown-combo--primary">
+              {executionState.isExecuting ? (
+                <button
+                  className="btn__dropdown-combo__canceler"
+                  onClick={cancelExecution}
+                  tabIndex={-1}
+                >
+                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
+                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                    <div className="btn__dropdown-combo__canceler__label__title">
+                      Stop
+                    </div>
+                  </div>
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="btn__dropdown-combo__label"
+                    onClick={execute}
+                    disabled={
+                      isStubbed_RawLambda(queryState.query) ||
+                      !inputDataState.isValid ||
+                      executionState.isGeneratingPlan ||
+                      executionState.isExecuting
+                    }
+                    tabIndex={-1}
+                  >
+                    <PlayIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Run Query
+                    </div>
+                  </button>
+                  <DropdownMenu
+                    className="btn__dropdown-combo__dropdown-btn"
+                    disabled={
+                      isStubbed_RawLambda(queryState.query) ||
+                      !inputDataState.isValid ||
+                      executionState.isGeneratingPlan ||
+                      executionState.isExecuting
+                    }
+                    content={
+                      <MenuContent>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={generatePlan}
+                        >
+                          Generate Plan
+                        </MenuContentItem>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={debugPlanGeneration}
+                        >
+                          Debug
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    }}
+                  >
+                    <CaretDownIcon />
+                  </DropdownMenu>
+                </>
+              )}
             </div>
           </div>
         </div>
