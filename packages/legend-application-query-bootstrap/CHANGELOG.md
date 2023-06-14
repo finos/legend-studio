@@ -1,5 +1,7 @@
 # @finos/legend-application-query-bootstrap
 
+## 9.56.0
+
 ## 9.55.0
 
 ## 9.54.0
