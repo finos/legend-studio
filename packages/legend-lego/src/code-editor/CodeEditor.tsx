@@ -39,7 +39,7 @@ export const CodeEditor: React.FC<{
   hideMinimap?: boolean | undefined;
   hideGutter?: boolean | undefined;
   hidePadding?: boolean | undefined;
-  hideWordWrap?: boolean | undefined;
+  hideActionBar?: boolean | undefined;
   extraEditorOptions?:
     | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
     | undefined;
@@ -54,7 +54,7 @@ export const CodeEditor: React.FC<{
     hideMinimap,
     hideGutter,
     hidePadding,
-    hideWordWrap,
+    hideActionBar,
     extraEditorOptions,
   } = props;
   const applicationStore = useApplicationStore();
@@ -167,19 +167,20 @@ export const CodeEditor: React.FC<{
   return (
     <>
       <div className="code-editor__background__container">
-        {!hideWordWrap && (
-          <button
-            className={clsx('code-editor__icon--text-wrap')}
-            tabIndex={-1}
-            onClick={toogleWordWrap}
-            title={`[${isWordWrap ? 'on' : 'off'}] Toggle word wrap`}
-          >
-            <WordWrapIcon
-              className={clsx('code-editor__icon--text-wrap__icon', {
-                'code-editor__icon--text-wrap__icon--active': isWordWrap,
-              })}
-            />
-          </button>
+        {!hideActionBar && (
+          <div className="code-editor__action-bar">
+            <button
+              tabIndex={-1}
+              onClick={toogleWordWrap}
+              title={`[${isWordWrap ? 'on' : 'off'}] Toggle word wrap`}
+            >
+              <WordWrapIcon
+                className={clsx('code-editor__icon--text-wrap__icon', {
+                  'code-editor__icon--text-wrap__icon--active': isWordWrap,
+                })}
+              />
+            </button>
+          </div>
         )}
       </div>
       <div
