@@ -183,6 +183,7 @@ export const CodeEditor: React.FC<{
       <div
         className={clsx('code-editor__content', {
           'code-editor__content--padding': !hidePadding,
+          'code-editor__content--with__header': !hideActionBar,
         })}
       >
         <div className="code-editor__body" ref={textInputRef} />

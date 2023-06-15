@@ -65,6 +65,10 @@
     border-radius: 0.2rem;
   }
 
+  &__content--with__header {
+    height: calc(100% - 2.8rem);
+  }
+
   &__content--padding &__body {
     border-radius: 0.2rem;
   }
