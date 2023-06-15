@@ -77,7 +77,7 @@ export const CodeEditor: React.FC<{
   const value = normalizeLineEnding(inputValue);
   const textInputRef = useRef<HTMLDivElement>(null);
 
-  const toogleWordWrap = (): void => {
+  const toggleWordWrap = (): void => {
     const updatedWordWrap = !isWordWrap;
     setIsWordWrap(updatedWordWrap);
     editor?.updateOptions({
@@ -165,7 +165,7 @@ export const CodeEditor: React.FC<{
   );
 
   return (
-    <div className="code-editor__wrapper">
+    <div className="code-editor">
       {!hideActionBar && (
         <div className="code-editor__header">
           <button
@@ -173,7 +173,7 @@ export const CodeEditor: React.FC<{
             className={clsx('code-editor__header__action', {
               'code-editor__header__action--active': isWordWrap,
             })}
-            onClick={toogleWordWrap}
+            onClick={toggleWordWrap}
             title={`[${isWordWrap ? 'on' : 'off'}] Toggle word wrap`}
           >
             <WordWrapIcon />
@@ -181,8 +181,8 @@ export const CodeEditor: React.FC<{
         </div>
       )}
       <div
-        className={clsx('code-editor__container', {
-          'code-editor__container--padding': !hidePadding,
+        className={clsx('code-editor__content', {
+          'code-editor__content--padding': !hidePadding,
         })}
       >
         <div className="code-editor__body" ref={textInputRef} />

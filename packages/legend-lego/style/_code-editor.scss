@@ -16,16 +16,10 @@
 @use 'mixins' as *;
 
 .code-editor {
-  &__background__container {
-    background: var(--color-dark-grey-50);
-  }
+  height: 100%;
+  width: 100%;
 
-  &__wrapper {
-    height: 100%;
-    width: 100%;
-  }
-
-  &__container {
+  &__content {
     height: 100%;
     width: 100%;
     position: relative;
@@ -67,11 +61,11 @@
     overflow: hidden;
   }
 
-  &__container--padding {
+  &__content--padding {
     border-radius: 0.2rem;
   }
 
-  &__container--padding &__body {
+  &__content--padding &__body {
     border-radius: 0.2rem;
   }
 }
