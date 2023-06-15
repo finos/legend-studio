@@ -665,7 +665,8 @@ const CollectionValueInstanceValueEditor = observer(
       setValueSpecification,
       obseverContext,
     } = props;
-    const inputRef = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
+
     const [text, setText] = useState(stringifyValue(valueSpecification.values));
     const [editable, setEditable] = useState(false);
     const [showAdvancedEditorPopover, setShowAdvancedEditorPopover] =
@@ -697,9 +698,7 @@ const CollectionValueInstanceValueEditor = observer(
       setText(stringifyValue(valueSpecification.values));
       setValueSpecification(valueSpecification);
     };
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      setText(event.target.value);
-    };
+
     const changeValueTextArea: React.ChangeEventHandler<HTMLTextAreaElement> = (
       event,
     ) => {
@@ -742,15 +741,20 @@ const CollectionValueInstanceValueEditor = observer(
             </BasePopover>
           )}
           <div className={clsx('value-spec-editor', className)}>
-            <input
+            <textarea
               ref={inputRef}
               className={clsx(
-                'panel__content__form__section__input value-spec-editor__input',
+                'panel__content__form__section__input value-spec-editor__input value-spec-editor__textarea ',
               )}
               spellCheck={false}
               value={text}
               placeholder={text === '' ? '(empty)' : undefined}
-              onChange={changeValue}
+              onChange={changeValueTextArea}
+              onKeyDown={(event): void => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  saveEdit();
+                }
+              }}
             />
             <button
               className="value-spec-editor__list-editor__expand-button btn--dark"

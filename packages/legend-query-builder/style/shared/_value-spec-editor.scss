@@ -209,6 +209,11 @@
     margin-bottom: 0;
   }
 
+  &__textarea {
+    resize: none;
+    line-height: 2.6rem;
+  }
+
   &__number {
     &__input-container {
       display: flex;
