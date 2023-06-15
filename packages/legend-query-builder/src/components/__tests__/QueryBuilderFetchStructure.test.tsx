@@ -38,6 +38,7 @@ import {
   TEST_DATA__getAllWithOneIntegerConditionFilter,
   TEST_DATA_getAllWithOneFloatConditionFilter,
   TEST_DATA_projectionWithWindowFunction,
+  TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -58,6 +59,7 @@ import {
   create_RawLambda,
   getClassProperty,
   stub_RawLambda,
+  CollectionInstanceValue,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
@@ -598,7 +600,6 @@ test(
     const inputEl = getByDisplayValue(filterPanel, '0');
 
     // valid input should be recorded and saved to state
-    // await act(() => fireEvent.change(inputEl, { target: { value: '1000' } }));
     fireEvent.change(inputEl, { target: { value: '1000' } });
     expect(filterConditionValue.values[0]).toEqual(1000);
     await waitFor(() => getByDisplayValue(filterPanel, '1000'));
@@ -608,6 +609,77 @@ test(
     fireEvent.blur(inputEl);
     expect(filterConditionValue.values[0]).toEqual(1000);
     await waitFor(() => getByDisplayValue(filterPanel, '1000'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder filter supports actions/flows for is in clause',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    await waitFor(() => renderResult.getByText('Add a filter condition'));
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__getAllWithOneIntegerIsInConditionFilter.parameters,
+          TEST_DATA__getAllWithOneIntegerIsInConditionFilter.body,
+        ),
+      );
+    });
+
+    const filterConditionValue = guaranteeType(
+      guaranteeType(
+        getNullableFirstEntry(
+          Array.from(queryBuilderState.filterState.nodes.values()),
+        ),
+        QueryBuilderFilterTreeConditionNodeData,
+      ).condition.value,
+      CollectionInstanceValue,
+    );
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+    );
+    await waitFor(() => getByText(filterPanel, 'is in'));
+
+    //Should support linebreaked seperated values
+    fireEvent.click(getByDisplayValue(filterPanel, 'List(3): 1,2,3'));
+    const firstInputEl = getByDisplayValue(filterPanel, '1,2,3');
+    fireEvent.change(firstInputEl, { target: { value: '5\n2\n8' } });
+    fireEvent.keyDown(firstInputEl, { key: 'Enter' });
+
+    //Should support comma seperated values
+    fireEvent.click(getByDisplayValue(filterPanel, 'List(3): 5,2,8'));
+    const secondInputEl = getByDisplayValue(filterPanel, '5,2,8');
+    fireEvent.change(secondInputEl, { target: { value: '4,9,1' } });
+    fireEvent.keyDown(secondInputEl, { key: 'Enter' });
+
+    //Should support same actions in expanded window
+    fireEvent.click(getByDisplayValue(filterPanel, 'List(3): 4,9,1'));
+    const thirdInputEl = getByDisplayValue(filterPanel, '4,9,1');
+    await waitFor(() =>
+      fireEvent.click(getByTitle(filterPanel, 'Expand window...')),
+    );
+
+    fireEvent.change(thirdInputEl, { target: { value: '0\n1\n' } });
+    fireEvent.keyDown(thirdInputEl, { key: 'Enter' });
+
+    expect(
+      (filterConditionValue.values[0] as PrimitiveInstanceValue).values[0],
+    ).toEqual(0);
+    expect(
+      (filterConditionValue.values[1] as PrimitiveInstanceValue).values[0],
+    ).toEqual(1);
+    expect(
+      await waitFor(() => getByDisplayValue(filterPanel, 'List(2): 0,1')),
+    ).not.toBeNull();
   },
 );
 
