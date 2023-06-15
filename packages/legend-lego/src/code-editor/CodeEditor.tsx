@@ -165,24 +165,21 @@ export const CodeEditor: React.FC<{
   );
 
   return (
-    <>
-      <div className="code-editor__background__container">
-        {!hideActionBar && (
-          <div className="code-editor__action-bar">
-            <button
-              tabIndex={-1}
-              onClick={toogleWordWrap}
-              title={`[${isWordWrap ? 'on' : 'off'}] Toggle word wrap`}
-            >
-              <WordWrapIcon
-                className={clsx('code-editor__icon--text-wrap__icon', {
-                  'code-editor__icon--text-wrap__icon--active': isWordWrap,
-                })}
-              />
-            </button>
-          </div>
-        )}
-      </div>
+    <div className="code-editor__wrapper">
+      {!hideActionBar && (
+        <div className="code-editor__header">
+          <button
+            tabIndex={-1}
+            className={clsx('code-editor__header__action', {
+              'code-editor__header__action--active': isWordWrap,
+            })}
+            onClick={toogleWordWrap}
+            title={`[${isWordWrap ? 'on' : 'off'}] Toggle word wrap`}
+          >
+            <WordWrapIcon />
+          </button>
+        </div>
+      )}
       <div
         className={clsx('code-editor__container', {
           'code-editor__container--padding': !hidePadding,
@@ -190,6 +187,6 @@ export const CodeEditor: React.FC<{
       >
         <div className="code-editor__body" ref={textInputRef} />
       </div>
-    </>
+    </div>
   );
 };
