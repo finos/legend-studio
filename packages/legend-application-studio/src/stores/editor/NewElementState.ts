@@ -66,7 +66,6 @@ import {
   PackageableElementExplicitReference,
   RelationalDatabaseConnection,
   DatabaseType,
-  StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
   DataElement,
@@ -74,6 +73,7 @@ import {
   Measure,
   Multiplicity,
   PrimitiveType,
+  LocalH2DatasourceSpecification,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -302,6 +302,8 @@ export class NewFlatDataConnectionDriver extends NewConnectionValueDriver<FlatDa
   }
 }
 
+const DEFAULT_H2_SQL =
+  '-- loads sample data for getting started. See https://github.com/pthom/northwind_psql for more info\n call loadNorthwindData()';
 export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDriver<RelationalDatabaseConnection> {
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -327,10 +329,12 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
       const dbs = this.editorStore.graphManagerState.usableDatabases;
       selectedStore = dbs.length ? (dbs[0] as Database) : stub_Database();
     }
+    const spec = new LocalH2DatasourceSpecification();
+    spec.testDataSetupSqls = [DEFAULT_H2_SQL];
     return new RelationalDatabaseConnection(
       PackageableElementExplicitReference.create(selectedStore),
       DatabaseType.H2,
-      new StaticDatasourceSpecification('dummyHost', 80, 'myDb'),
+      spec,
       new DefaultH2AuthenticationStrategy(),
     );
   }
