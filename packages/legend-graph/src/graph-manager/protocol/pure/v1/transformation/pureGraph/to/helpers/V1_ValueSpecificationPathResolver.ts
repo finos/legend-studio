@@ -73,6 +73,7 @@ import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import type { V1_GenericTypeInstance } from '../../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
 import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
+import type { V1_CByteArray } from '../../../../model/valueSpecification/raw/V1_CByteArray.js';
 
 class V1_ValueSpecificationPathResolver
   implements V1_ValueSpecificationVisitor<V1_ValueSpecification>
@@ -190,6 +191,10 @@ class V1_ValueSpecificationPathResolver
   }
 
   visit_CBoolean(spec: V1_CBoolean): V1_ValueSpecification {
+    return spec;
+  }
+
+  visit_CByteArray(spec: V1_CByteArray): V1_ValueSpecification {
     return spec;
   }
 

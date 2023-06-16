@@ -85,6 +85,7 @@ import { V1_GenericTypeInstance } from '../../../model/valueSpecification/raw/V1
 import { V1_ClassInstance } from '../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import { V1_ClassInstanceType } from '../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import type { KeyExpressionInstanceValue } from '../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
+import { V1_CByteArray } from '../../../model/valueSpecification/raw/V1_CByteArray.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -291,6 +292,11 @@ class V1_ValueSpecificationTransformer
 
         cBoolean.value = guaranteeIsBoolean(valueSpecification.values[0]);
         return cBoolean;
+      }
+      case PRIMITIVE_TYPE.BYTE: {
+        const cByteArray = new V1_CByteArray();
+        cByteArray.value = guaranteeIsString(valueSpecification.values[0]);
+        return cByteArray;
       }
       // since we don't have a corresponding protocol for abstract type `Date`, we will default to use `DateTime`
       case PRIMITIVE_TYPE.DATE:
