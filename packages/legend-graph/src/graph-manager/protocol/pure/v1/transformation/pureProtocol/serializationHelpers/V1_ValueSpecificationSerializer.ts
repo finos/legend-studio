@@ -85,6 +85,7 @@ import type { V1_PrimitiveValueSpecification } from '../../../model/valueSpecifi
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import { V1_ClassInstance } from '../../../model/valueSpecification/raw/V1_ClassInstance.js';
+import { V1_CByteArray } from '../../../model/valueSpecification/raw/V1_CByteArray.js';
 
 enum V1_ExecutionContextType {
   BASE_EXECUTION_CONTEXT = 'BaseExecutionContext',
@@ -135,6 +136,7 @@ enum V1_ValueSpecificationType {
   CDECIMAL = 'decimal',
   CSTRING = 'string',
   CBOOLEAN = 'boolean',
+  CBYTEARRAY = 'byteArray',
   CFLOAT = 'float',
   CDATETIME = 'dateTime',
   CSTRICTDATE = 'strictDate',
@@ -327,6 +329,11 @@ const CLatestDateModelSchema = createModelSchema(V1_CLatestDate, {
 
 const CBooleanModelSchema = createModelSchema(V1_CBoolean, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CBOOLEAN),
+  value: primitive(),
+});
+
+const CByteArrayModelSchema = createModelSchema(V1_CByteArray, {
+  _type: usingConstantValueSchema(V1_ValueSpecificationType.CBYTEARRAY),
   value: primitive(),
 });
 
@@ -901,6 +908,12 @@ class V1_ValueSpecificationSerializer
     return serialize(CBooleanModelSchema, valueSpecification);
   }
 
+  visit_CByteArray(
+    valueSpecification: V1_CByteArray,
+  ): PlainObject<V1_ValueSpecification> {
+    return serialize(CByteArrayModelSchema, valueSpecification);
+  }
+
   visit_CFloat(
     valueSpecification: V1_CFloat,
   ): PlainObject<V1_ValueSpecification> {
@@ -965,6 +978,11 @@ export function V1_deserializeValueSpecification(
       return deserializePrimitiveValueSpecification(json, plugins, (val) =>
         deserialize(CBooleanModelSchema, val),
       );
+    case V1_ValueSpecificationType.CBYTEARRAY: {
+      return deserializePrimitiveValueSpecification(json, plugins, (val) =>
+        deserialize(CByteArrayModelSchema, val),
+      );
+    }
     case V1_ValueSpecificationType.CDATETIME:
       return deserializePrimitiveValueSpecification(json, plugins, (val) =>
         deserialize(CDateTimeModelSchema, val),

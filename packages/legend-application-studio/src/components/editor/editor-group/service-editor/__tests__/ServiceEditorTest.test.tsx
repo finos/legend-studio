@@ -161,7 +161,6 @@ test(
     );
 
     // basic test suite set up
-
     const testSuiteId = getByText(editorGroup, 'testSuite_1');
     fireEvent.contextMenu(testSuiteId);
     fireEvent.click(renderResult.getByText('Delete'));
@@ -181,6 +180,60 @@ test(
       'Add Connection Test Data',
     );
     expect(newConnectionTestData).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Test Enternal Format Service Test Parameter Setup for Binding with Byte',
+  ),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      {
+        entities: TEST_DATA__ExternalFormatServiceEntities,
+      },
+    );
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+    await TEST__openElementFromExplorerTree(
+      'demo::externalFormat::flatdata::simple::service::FlatdataInternalizeByte',
+      renderResult,
+    );
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    await waitFor(() => getByText(editorGroup, 'Test'));
+    fireEvent.click(getByText(editorGroup, 'Test'));
+    const serviceTestEditor = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR),
+    );
+    await waitFor(() => getByText(serviceTestEditor, 'Setup'));
+    fireEvent.click(getByText(serviceTestEditor, 'Setup'));
+    const serviceTestSetupEditor = await waitFor(() =>
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.SERVICE_TEST_EDITOR__SETUP__PARAMETERS,
+      ),
+    );
+    fireEvent.click(getByText(serviceTestEditor, 'Setup'));
+    const bindingParmPairsForByte = MOCK__editorStore.tabManagerState
+      .getCurrentEditorState(ServiceEditorState)
+      .testableState.selectedSuiteState?.testStates[0]?.setupState.getBindingWithParamFromQuery();
+    expect(bindingParmPairsForByte).toHaveLength(1);
+    expect(
+      guaranteeNonNullable(guaranteeNonNullable(bindingParmPairsForByte)[0])
+        .binding.name,
+    ).toBe('PersonBinding');
+    //Test showing actual string as value for byte type
+    await waitFor(() =>
+      getByText(
+        serviceTestSetupEditor,
+        'First Name,Last NameJohn,DoeOlive,Yew',
+      ),
+    );
+    await waitFor(() =>
+      getAllByTitle(serviceTestSetupEditor, 'Open in a popup...'),
+    );
   },
 );
 

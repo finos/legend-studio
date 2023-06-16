@@ -225,6 +225,14 @@ const ServiceTestParameterEditor = observer(
     const type = bindingParamPair
       ? bindingParamPair.binding.contentType
       : paramState.varExpression.genericType?.value.rawType.name ?? 'unknown';
+    const paramValue = (
+      paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
+        ? atob(
+            (paramState.valueSpec as PrimitiveInstanceValue)
+              .values[0] as string,
+          )
+        : (paramState.valueSpec as PrimitiveInstanceValue).values[0]
+    ) as string;
 
     const openInPopUp = (): void => setShowPopUp(!showPopUp);
     const closePopUp = (): void => setShowPopUp(false);
@@ -232,7 +240,10 @@ const ServiceTestParameterEditor = observer(
       if (paramState.valueSpec instanceof PrimitiveInstanceValue) {
         instanceValue_setValue(
           paramState.valueSpec,
-          val,
+          paramState.varExpression.genericType?.value.rawType ===
+            PrimitiveType.BYTE
+            ? btoa(val)
+            : val,
           0,
           setupState.editorStore.changeDetectionState.observerContext,
         );
@@ -261,10 +272,7 @@ const ServiceTestParameterEditor = observer(
               <textarea
                 className="panel__content__form__section__textarea value-spec-editor__input"
                 spellCheck={false}
-                value={
-                  (paramState.valueSpec as PrimitiveInstanceValue)
-                    .values[0] as string
-                }
+                value={paramValue}
                 placeholder={
                   ((paramState.valueSpec as PrimitiveInstanceValue)
                     .values[0] as string) === ''

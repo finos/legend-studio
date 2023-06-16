@@ -254,10 +254,20 @@ export class ServiceTestSetupState {
             ),
             this.editorStore.graphManagerState.graph,
           );
-
         if (valueSpec instanceof LambdaFunctionInstanceValue) {
           return this.getBindingWithParamRecursively(
-            valueSpec.values[0]?.expressionSequence[0],
+            valueSpec.values[0]?.expressionSequence.find(
+              (exp) =>
+                exp instanceof SimpleFunctionExpression &&
+                (matchFunctionName(
+                  exp.functionName,
+                  QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
+                ) ||
+                  matchFunctionName(
+                    exp.functionName,
+                    QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXTERNALIZE,
+                  )),
+            ),
           );
         }
       } catch (error) {

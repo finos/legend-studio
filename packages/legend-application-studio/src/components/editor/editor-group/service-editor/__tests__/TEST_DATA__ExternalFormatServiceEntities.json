@@ -431,6 +431,153 @@
     "classifierPath": "meta::pure::mapping::Mapping"
   },
   {
+    "path": "demo::externalFormat::flatdata::simple::service::FlatdataInternalizeByte",
+    "content": {
+      "_type": "service",
+      "autoActivateUpdates": true,
+      "documentation": "Demonstrates usage of internalize with flatdata",
+      "execution": {
+        "_type": "pureSingleExecution",
+        "func": {
+          "_type": "lambda",
+          "body": [
+            {
+              "_type": "func",
+              "function": "serialize",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "internalize",
+                  "parameters": [
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "demo::externalFormat::flatdata::simple::models::Person"
+                    },
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "demo::externalFormat::flatdata::simple::binding::PersonBinding"
+                    },
+                    {
+                      "_type": "var",
+                      "name": "data"
+                    }
+                  ]
+                },
+                {
+                  "_type": "classInstance",
+                  "type": "rootGraphFetchTree",
+                  "value": {
+                    "subTrees": [
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "subTrees": [],
+                        "subTypeTrees": [],
+                        "property": "firstName",
+                        "parameters": []
+                      },
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "subTrees": [],
+                        "subTypeTrees": [],
+                        "property": "lastName",
+                        "parameters": []
+                      }
+                    ],
+                    "subTypeTrees": [],
+                    "_type": "rootGraphFetchTree",
+                    "class": "demo::externalFormat::flatdata::simple::models::Person"
+                  }
+                }
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "_type": "var",
+              "name": "data",
+              "multiplicity": {
+                "lowerBound": 0
+              },
+              "class": "Byte"
+            },
+            {
+              "_type": "var",
+              "name": "date",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "class": "String"
+            }
+          ]
+        }
+      },
+      "name": "FlatdataInternalizeByte",
+      "owners": ["maheha"],
+      "package": "demo::externalFormat::flatdata::simple::service",
+      "pattern": "/flatdata/showcase/flatdataInternalize",
+      "testSuites": [
+        {
+          "_type": "serviceTestSuite",
+          "id": "testSuite_1",
+          "testData": {
+            "connectionsTestData": []
+          },
+          "tests": [
+            {
+              "_type": "serviceTest",
+              "assertions": [
+                {
+                  "_type": "equalToJson",
+                  "expected": {
+                    "_type": "externalFormat",
+                    "contentType": "application/json",
+                    "data": "[ \n  {\n    \"firstName\" : \"John\",\n    \"lastName\" : \"Doe\"\n  },\n  {\n    \"firstName\" : \"Olive\",\n    \"lastName\" : \"Yew\"\n  }\n]"
+                  },
+                  "id": "assertion_1"
+                }
+              ],
+              "id": "test_1",
+              "keys": [],
+              "parameters": [
+                {
+                  "name": "data",
+                  "value": {
+                    "_type": "byteArray",
+                    "sourceInformation": {
+                      "sourceId": "",
+                      "startLine": 39,
+                      "startColumn": 20,
+                      "endLine": 39,
+                      "endColumn": 71
+                    },
+                    "value": "Rmlyc3QgTmFtZSxMYXN0IE5hbWVKb2huLERvZU9saXZlLFlldw=="
+                  }
+                },
+                {
+                  "name": "date",
+                  "value": {
+                    "_type": "string",
+                    "sourceInformation": {
+                      "sourceId": "",
+                      "startLine": 40,
+                      "startColumn": 20,
+                      "endLine": 40,
+                      "endColumn": 32
+                    },
+                    "value": "%2020-09-20"
+                  }
+                }
+              ],
+              "serializationFormat": "PURE"
+            }
+          ]
+        }
+      ]
+    },
+    "classifierPath": "meta::legend::service::metamodel::Service"
+  },
+  {
     "path": "demo::externalFormat::flatdata::simple::service::FlatdataWithM2MChainingMerged",
     "content": {
       "_type": "service",
