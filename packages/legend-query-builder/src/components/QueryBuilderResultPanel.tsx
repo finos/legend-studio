@@ -117,10 +117,15 @@ import { QueryUsageViewer } from './QueryUsageViewer.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
-    const formattedSql = formatSQL(sql);
+    const formattedSql = formatSQL(sql, { language: 'mysql' });
     return formattedSql;
   } catch {
-    return sql;
+    try {
+      const formattedSql = formatSQL(sql);
+      return formattedSql;
+    } catch {
+      return sql;
+    }
   }
 };
 

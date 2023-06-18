@@ -148,8 +148,22 @@ export { ConstantExecutionNode } from './graph/metamodel/pure/executionPlan/node
 export { SequenceExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/SequenceExecutionNode.js';
 export { ResultType } from './graph/metamodel/pure/executionPlan/result/ResultType.js';
 export { TDSResultType } from './graph/metamodel/pure/executionPlan/result/TDSResultType.js';
+export { PartialClassResultType } from './graph/metamodel/pure/executionPlan/result/PartialClassResultType.js';
+export { V1_PartialClassResultType } from './graph-manager/protocol/pure/v1/model/executionPlan/results/V1_PartialClassResultType.js';
 export { JavaPlatformImplementation } from './graph/metamodel/pure/executionPlan/nodes/JavaPlatformImplementation.js';
 export { DataTypeResultType } from './graph/metamodel/pure/executionPlan/result/DataTypeResultType.js';
+export { StoreMappingGlobalGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/StoreMappingGlobalGraphFetchExecutionNode.js';
+export { PureExpressionPlatformExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/PureExpressionPlatformExecutionNode.js';
+export { LocalGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/LocalGraphFetchExecutionNode.js';
+export { RelationalGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalGraphFetchExecutionNode.js';
+export { TempTableStrategy } from './graph/metamodel/pure/executionPlan/nodes/TempTableStrategy.js';
+export { LoadFromResultSetAsValueTuplesTempTableStrategy } from './graph/metamodel/pure/executionPlan/nodes/LoadFromResultSetAsValueTuplesTempTableStrategy.js';
+export { LoadFromSubQueryTempTableStrategy } from './graph/metamodel/pure/executionPlan/nodes/LoadFromSubQueryTempTableStrategy.js';
+export { LoadFromTempFileTempTableStrategy } from './graph/metamodel/pure/executionPlan/nodes/LoadFromTempFileTempTableStrategy.js';
+export { RelationalTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalTempTableGraphFetchExecutionNode.js';
+export { RelationalClassQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalClassQueryTempTableGraphFetchExecutionNode.js';
+export { RelationalRootQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalRootQueryTempTableGraphFetchExecutionNode.js';
+export { RelationalCrossRootQueryTempTableGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/RelationalCrossRootQueryTempTableGraphFetchExecutionNode.js';
 
 // --------------------------------------------- HELPER --------------------------------------------------
 

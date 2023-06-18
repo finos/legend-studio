@@ -352,217 +352,6 @@
   }
 }
 
-.query-builder__result {
-  .panel__content {
-    width: 100%;
-  }
-
-  &__analytics {
-    font-size: 1.2rem;
-    color: var(--color-dark-grey-400);
-    margin-left: 0.5rem;
-    font-family: 'Roboto Mono', monospace;
-  }
-
-  &__stale-status {
-    @include flexVCenter;
-
-    margin-left: 1rem;
-
-    &__label {
-      font-size: 1.2rem;
-      color: var(--color-yellow-200);
-      margin-left: 0.5rem;
-      font-family: 'Roboto Mono', monospace;
-    }
-
-    &__icon {
-      color: var(--color-yellow-200);
-      margin-left: 0.5rem;
-    }
-  }
-
-  &__limit {
-    @include flexVCenter;
-
-    height: 100%;
-    padding: 0.5rem;
-
-    &__label {
-      @include flexCenter;
-
-      background: var(--color-dark-grey-280);
-      padding: 0 1rem;
-      height: 2.2rem;
-      border-radius: 0.2rem 0 0 0.2rem;
-      font-size: 1.2rem;
-      user-select: none;
-    }
-
-    &__input {
-      height: 2.2rem;
-
-      &:not(:focus) {
-        border: 0.1rem solid var(--color-dark-grey-250);
-      }
-
-      &[disabled] {
-        cursor: not-allowed;
-      }
-    }
-  }
-
-  &__values {
-    padding: 0 !important;
-    position: relative;
-    height: 100%;
-
-    &__table {
-      width: 100%;
-      height: 100%;
-
-      .ag-cell {
-        padding: 0;
-      }
-
-      &__cell {
-        @include flexVCenter;
-
-        width: 100%;
-        height: 100%;
-        padding: 0 7px;
-        display: flex;
-
-        &--active {
-          background-color: var(--color-navy-300);
-        }
-      }
-    }
-  }
-
-  &__tds-grid {
-    height: 100%;
-
-    // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
-    // might override our theme customization here
-    &.ag-theme-balham-dark {
-      // Customize ag-grid theme
-      // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
-      --ag-border-color: var(--color-dark-grey-200);
-      --ag-background-color: var(--color-dark-grey-50);
-      --ag-foreground-color: var(--color-light-grey-200);
-      --ag-header-background-color: var(--color-dark-grey-100);
-      --ag-header-foreground-color: var(--color-light-grey-50);
-      --ag-balham-active-color: var(--color-blue-200);
-      --ag-odd-row-background-color: var(--color-dark-grey-50);
-      --ag-even-row-background-color: var(--color-dark-grey-50);
-      --ag-row-hover-color: var(--color-dark-blue-shade-100);
-      --ag-row-border-color: var(--color-dark-grey-200);
-    }
-  }
-
-  &__header__actions {
-    @include flexVCenter;
-  }
-
-  &__sql__actions {
-    height: 2.2rem;
-    padding: 0 0.7rem;
-
-    svg {
-      font-size: 1.8rem;
-    }
-  }
-
-  &__stop-btn {
-    @include flexVCenter;
-
-    height: 100%;
-    width: 12rem;
-    margin: 0 0.3rem;
-
-    &__label {
-      @include flexVCenter;
-
-      height: 2.2rem;
-      width: 12rem;
-      padding: 1rem;
-      border-radius: 0.2rem;
-      justify-content: left;
-    }
-
-    &__label__icon {
-      font-size: 1.2rem;
-      color: var(--color-light-grey-180);
-    }
-
-    &__label__title {
-      margin-left: 0.7rem;
-      color: var(--color-light-grey-180);
-      font-size: 1.2rem;
-      font-weight: 500;
-    }
-
-    &__label:hover &__label__icon,
-    &__label:hover &__label__title {
-      color: var(--color-light-grey-50);
-    }
-  }
-
-  &__execute-btn {
-    margin: 0 0.3rem;
-  }
-
-  &__export__dropdown[disabled],
-  &__export__dropdown[disabled]:hover {
-    background: var(--color-dark-grey-250);
-    color: var(--color-dark-grey-500);
-  }
-
-  &__export__dropdown:hover {
-    color: var(--color-light-grey-50);
-  }
-
-  &__export__dropdown {
-    @include flexVCenter;
-
-    margin: 0 0.5rem;
-    height: 2.2rem;
-    border: 0.1rem solid var(--color-dark-grey-250);
-    background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-180);
-
-    &__label {
-      @include flexCenter;
-      @include flexConstantDimension;
-
-      height: 100%;
-      font-weight: 500;
-      font-size: 1.2rem;
-      width: 5rem;
-    }
-
-    &__trigger {
-      @include flexCenter;
-      @include flexConstantDimension;
-
-      height: 100%;
-      width: 2.2rem;
-
-      svg {
-        color: var(--color-dark-grey-500);
-      }
-    }
-
-    &__menu__item {
-      @include flexCenter;
-
-      width: 15rem;
-      height: 2rem;
-    }
-  }
-}
-
 .query-builder__icon {
   &__edit {
     font-size: 1.2rem;
@@ -1046,11 +835,28 @@
       }
     }
   }
+
+  &__execution {
+    display: inline-block;
+    width: 100%;
+
+    &__label {
+      width: 50%;
+    }
+
+    &__icon {
+      width: 2rem;
+    }
+  }
+
+  &__expand-icon {
+    width: 2rem;
+  }
 }
 
 .query-builder__result__container {
   width: 95%;
-  margin: 1% auto 0;
+  margin: 2rem 0;
 
   &__icon svg {
     margin-left: 0.5rem;
@@ -1063,6 +869,7 @@
 
   &__table {
     min-width: 50%;
+    margin-left: 2.5%;
   }
 
   &__info {
@@ -1083,6 +890,7 @@
 
     &__data-type {
       color: var(--color-light-grey-400);
+      margin-left: 3%;
 
       &__type {
         display: inline-block;
@@ -1096,6 +904,453 @@
 
     &__tds {
       color: var(--color-light-grey-400);
+      margin: 1rem 5rem;
+
+      &__table {
+        min-width: 50%;
+      }
+    }
+
+    &__partial-class {
+      color: var(--color-light-grey-400);
+      margin-left: 0.5%;
+    }
+  }
+
+  &__table--partial-class {
+    min-width: 50%;
+    margin-left: 0.5%;
+  }
+}
+
+.query-builder__store-mapping-global-graph-fetch__container {
+  width: 95%;
+  margin: 2rem 2.5rem;
+
+  &__tree--header {
+    margin: 2rem 0 0;
+    color: var(--color-light-grey-400);
+  }
+
+  &__graph-fetch {
+    margin: 2rem 0.5rem;
+  }
+
+  &__result {
+    margin: 4rem;
+  }
+
+  &__label2 {
+    margin-top: 2rem;
+  }
+
+  &__implementation {
+    margin-left: 0.5rem;
+  }
+
+  &__xstore {
+    margin-top: 2rem;
+  }
+
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      font-weight: bold;
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-300) !important;
+    }
+
+    &__content {
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
+    }
+  }
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    min-width: 50%;
+  }
+
+  &__item {
+    width: 100%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-size: 2rem;
+    padding: 1rem;
+    margin: 0.5rem;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+  }
+
+  &__tabs__header {
+    padding-left: 0;
+  }
+
+  &__tabs {
+    height: 2.8rem;
+    z-index: 1;
+    display: flex;
+    overflow-x: overlay;
+    overflow-y: hidden;
+  }
+
+  &__tab {
+    @include flexCenter;
+
+    display: inline-flex;
+    height: 100%;
+    color: var(--color-light-grey-400);
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-dark-grey-80);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  &__tab--active {
+    position: relative;
+  }
+
+  &__tab--active::after {
+    content: '';
+    height: 0.2rem;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background: var(--color-yellow-200);
+  }
+
+  &__tab__hint {
+    @include flexCenter;
+
+    border-radius: 0.2rem;
+    margin-left: 1rem;
+    color: var(--color-light-grey-300);
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__config-group {
+    width: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      height: 1.6rem;
+      padding-left: 1rem;
+      background: var(--color-dark-grey-280);
+      border-radius: 0.2rem 0.2rem 0.2rem 0;
+
+      &__title {
+        color: var(--color-light-grey-300);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      &__dropdown-trigger {
+        @include flexCenter;
+
+        height: 100%;
+        width: 3rem;
+
+        svg {
+          color: var(--color-light-grey-300);
+        }
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      padding: 0.5rem 0 0 0.5rem;
+    }
+
+    &__item {
+      @include flexVCenter;
+
+      width: 100%;
+    }
+
+    &__item__label {
+      @include flexCenter;
+
+      background: var(--color-dark-grey-100);
+      margin-right: 0.5rem;
+    }
+
+    &__item__selector {
+      width: 100%;
+      max-width: unset;
+    }
+
+    &__item + &__item {
+      margin-top: 0.5rem;
+    }
+
+    &--class &__header {
+      background: var(--color-purple-400);
+    }
+
+    &--class &__content {
+      padding-top: 0;
+      border-left: 0.5rem solid var(--color-purple-400);
+    }
+
+    &--class &__item__label {
+      border: 0.1rem solid var(--color-purple-400);
+    }
+  }
+}
+
+.query-builder__result {
+  .panel__content {
+    width: 100%;
+  }
+
+  &__analytics {
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-400);
+    margin-left: 0.5rem;
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  &__stale-status {
+    @include flexVCenter;
+
+    margin-left: 1rem;
+
+    &__label {
+      font-size: 1.2rem;
+      color: var(--color-yellow-200);
+      margin-left: 0.5rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__icon {
+      color: var(--color-yellow-200);
+      margin-left: 0.5rem;
+    }
+  }
+
+  &__limit {
+    @include flexVCenter;
+
+    height: 100%;
+    padding: 0.5rem;
+
+    &__label {
+      @include flexCenter;
+
+      background: var(--color-dark-grey-280);
+      padding: 0 1rem;
+      height: 2.2rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    &__input {
+      height: 2.2rem;
+
+      &:not(:focus) {
+        border: 0.1rem solid var(--color-dark-grey-250);
+      }
+
+      &[disabled] {
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &__values {
+    padding: 0 !important;
+    position: relative;
+    height: 100%;
+
+    &__table {
+      width: 100%;
+      height: 100%;
+
+      .ag-cell {
+        padding: 0;
+      }
+
+      &__cell {
+        @include flexVCenter;
+
+        width: 100%;
+        height: 100%;
+        padding: 0 7px;
+        display: flex;
+
+        &--active {
+          background-color: var(--color-navy-300);
+        }
+      }
+    }
+  }
+
+  &__tds-grid {
+    height: 100%;
+
+    // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
+    // might override our theme customization here
+    &.ag-theme-balham-dark {
+      // Customize ag-grid theme
+      // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
+      --ag-border-color: var(--color-dark-grey-200);
+      --ag-background-color: var(--color-dark-grey-50);
+      --ag-foreground-color: var(--color-light-grey-200);
+      --ag-header-background-color: var(--color-dark-grey-100);
+      --ag-header-foreground-color: var(--color-light-grey-50);
+      --ag-balham-active-color: var(--color-blue-200);
+      --ag-odd-row-background-color: var(--color-dark-grey-50);
+      --ag-even-row-background-color: var(--color-dark-grey-50);
+      --ag-row-hover-color: var(--color-dark-blue-shade-100);
+      --ag-row-border-color: var(--color-dark-grey-200);
+    }
+  }
+
+  &__header__actions {
+    @include flexVCenter;
+  }
+
+  &__sql__actions {
+    height: 2.2rem;
+    padding: 0 0.7rem;
+
+    svg {
+      font-size: 1.8rem;
+    }
+  }
+
+  &__stop-btn {
+    @include flexVCenter;
+
+    height: 100%;
+    width: 12rem;
+    margin: 0 0.3rem;
+
+    &__label {
+      @include flexVCenter;
+
+      height: 2.2rem;
+      width: 12rem;
+      padding: 1rem;
+      border-radius: 0.2rem;
+      justify-content: left;
+    }
+
+    &__label__icon {
+      font-size: 1.2rem;
+      color: var(--color-light-grey-180);
+    }
+
+    &__label__title {
+      margin-left: 0.7rem;
+      color: var(--color-light-grey-180);
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    &__label:hover &__label__icon,
+    &__label:hover &__label__title {
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  &__execute-btn {
+    margin: 0 0.3rem;
+  }
+
+  &__export__dropdown[disabled],
+  &__export__dropdown[disabled]:hover {
+    background: var(--color-dark-grey-250);
+    color: var(--color-dark-grey-500);
+  }
+
+  &__export__dropdown:hover {
+    color: var(--color-light-grey-50);
+  }
+
+  &__export__dropdown {
+    @include flexVCenter;
+
+    margin: 0 0.5rem;
+    height: 2.2rem;
+    border: 0.1rem solid var(--color-dark-grey-250);
+    background: var(--color-dark-grey-300);
+    color: var(--color-light-grey-180);
+
+    &__label {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      font-weight: 500;
+      font-size: 1.2rem;
+      width: 5rem;
+    }
+
+    &__trigger {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      width: 2.2rem;
+
+      svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+
+    &__menu__item {
+      @include flexCenter;
+
+      width: 15rem;
+      height: 2rem;
     }
   }
 }
@@ -1151,6 +1406,7 @@
       display: block;
       text-align: left;
       color: var(--color-light-grey-50);
+      font-family: monospace;
     }
 
     &--active,
@@ -1180,7 +1436,7 @@
   }
 
   &__title {
-    padding: 2.5rem;
+    margin: 1rem 0 1rem 2.5rem;
   }
 
   &__code {
@@ -1189,7 +1445,7 @@
   }
 
   &__json {
-    margin: 2rem 6%;
+    margin: 2rem 2.5rem;
   }
 }
 
@@ -1436,6 +1692,53 @@
   }
 }
 
+.query-builder__relational-root-query-temptable-graph-fetch__container {
+  &__header {
+    margin: 2rem 0 0 3rem;
+    width: 90%;
+  }
+}
+
+.query-builder__temp-table-strategy__container {
+  margin: 0;
+
+  &__header {
+    margin: 1% auto 0;
+    width: 95%;
+  }
+
+  &__item {
+    width: 95%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    padding: 1rem;
+    margin: 1% auto 0;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+  }
+
+  &__item2 {
+    width: 95%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    margin: 1% auto 0;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+  }
+}
+
 .query-builder__lambda-editor {
   border: 0.1rem solid var(--color-dark-grey-280);
 
@@ -1450,6 +1753,105 @@
     .monaco-editor-background {
       background: var(--color-dark-grey-50) !important;
     }
+  }
+}
+
+.query-builder__pure-expression-platform__container {
+  &__header {
+    margin: 2rem 0 0 5rem;
+  }
+
+  &__code {
+    height: 30rem;
+    width: 98%;
+  }
+
+  &__java-btn {
+    color: var(--color-white);
+  }
+
+  &__item {
+    width: 95%;
+    margin: 1rem 5rem;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-size: 2rem;
+    padding: 1rem;
+    line-height: 1.8rem;
+  }
+
+  &__table {
+    min-width: 55%;
+  }
+
+  &__implementation {
+    margin-left: 5rem;
+  }
+
+  &__btn {
+    margin-left: 4.5rem;
+  }
+}
+
+.query-builder__implementation__container {
+  &__header {
+    margin-top: 2rem;
+  }
+
+  &__code {
+    height: 30rem;
+    width: 98%;
+  }
+
+  &__java-btn {
+    color: var(--color-white);
+  }
+
+  &__label {
+    display: inline-block;
+
+    &__name {
+      display: inline-block;
+      text-indent: 2rem;
+    }
+  }
+
+  &__item {
+    width: 50%;
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    font-size: 2rem;
+    margin: 1rem 0;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+
+    &__java-btn {
+      height: 3rem;
+      width: 100%;
+      display: block;
+      text-align: left;
+      text-indent: 1rem;
+      color: var(--color-white);
+
+      &:hover {
+        background: var(--color-dark-grey-200);
+      }
+    }
+  }
+
+  &__table {
+    min-width: 25%;
+  }
+
+  &__btn {
+    margin-left: 4.5rem;
   }
 }
 

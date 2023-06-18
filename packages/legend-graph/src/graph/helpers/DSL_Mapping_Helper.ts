@@ -31,7 +31,7 @@ import type { Mapping } from '../metamodel/pure/packageableElements/mapping/Mapp
 import { AggregationAwareSetImplementation } from '../metamodel/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 import { RootRelationalInstanceSetImplementation } from '../metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import type { PropertyMapping } from '../metamodel/pure/packageableElements/mapping/PropertyMapping.js';
-import type { InstanceSetImplementation } from '../metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import { InstanceSetImplementation } from '../metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type {
   EngineRuntime,
   IdentifiedConnection,
@@ -39,6 +39,7 @@ import type {
 import { OperationSetImplementation } from '../metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
 import type { PackageableRuntime } from '../metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import { ObjectInputType } from '../metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
+import type { AbstractProperty } from '..//metamodel/pure/packageableElements/domain/AbstractProperty.js';
 
 // ----------------------------------------- Mapping -----------------------------------------
 
@@ -297,6 +298,28 @@ export const getClassCompatibleMappings = (
     ),
   );
   return uniq([...mappingsWithClassMapped, ...resolvedMappingIncludes]);
+};
+
+export const findMappingLocalProperty = (
+  mappings: Mapping[],
+  propertyName: string,
+): AbstractProperty | undefined => {
+  let newProperty: AbstractProperty | undefined;
+  mappings.forEach((mapping) => {
+    mapping.classMappings.forEach((setImplementation) => {
+      if (setImplementation instanceof InstanceSetImplementation) {
+        setImplementation.propertyMappings.forEach((propertyMapping) => {
+          if (
+            propertyMapping.localMappingProperty &&
+            propertyMapping.property.value.name === propertyName
+          ) {
+            newProperty = propertyMapping.property.value;
+          }
+        });
+      }
+    });
+  });
+  return newProperty;
 };
 
 // ----------------------------------------- Runtime -----------------------------------------

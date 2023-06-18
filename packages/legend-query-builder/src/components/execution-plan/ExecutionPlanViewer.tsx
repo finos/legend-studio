@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   type TreeNodeContainerProps,
   Dialog,
@@ -49,6 +49,7 @@ import {
   EXECUTION_PLAN_VIEW_MODE,
   type ExecutionPlanState,
   generateExecutionNodeTreeNodeData,
+  PLAN_TABS,
 } from '../../stores/execution-plan/ExecutionPlanState.js';
 import { observer } from 'mobx-react-lite';
 import {
@@ -61,9 +62,19 @@ import {
   ConstantExecutionNode,
   SequenceExecutionNode,
   type RawExecutionPlan,
+  StoreMappingGlobalGraphFetchExecutionNode,
+  PureExpressionPlatformExecutionNode,
+  RelationalClassQueryTempTableGraphFetchExecutionNode,
+  RelationalRootQueryTempTableGraphFetchExecutionNode,
+  RelationalCrossRootQueryTempTableGraphFetchExecutionNode,
+  RelationalGraphFetchExecutionNode,
   JavaPlatformImplementation,
+  RootGraphFetchTree,
+  PropertyGraphFetchTree,
+  LocalGraphFetchExecutionNode,
 } from '@finos/legend-graph';
 import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
+import { StoreMappingGlobalGraphFetchExecutionNodeViewer } from './StoreMappingGlobalGraphFetchExecutionNodeViewer.js';
 import { FunctionParametersValidationNodeViewer } from './FunctionParametersValidationNodeViewer.js';
 import { AllocationExecutionNodeViewer } from './AllocationExecutionNodeViewer.js';
 import { ConstantExecutionNodeViewer } from './ConstantExecutionNodeViewer.js';
@@ -74,8 +85,28 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import { RelationalRootQueryTempTableGraphFetchExecutionNodeViewer } from './RelationalRootQueryTempTableGraphFetchExecutionNodeViewer.js';
+import { RelationalClassQueryTempTableGraphFetchExecutionNodeViewer } from './RelationalClassQueryTempTableGraphFetchExecutionNodeViewer.js';
+import { PureExpressionPlatformExecutionNodeViewer } from './PureExpressionPlatformExecutionViewer.js';
+import { RelationalCrossRootQueryTempTableGraphFetchExecutionNodeViewer } from './RelationalCrossRootQueryTempTableGraphFetchExecutionNodeViewer.js';
 
 const EXECUTION_PLAN = 'Execution Plan';
+
+const generateExecutionNodePrefixLabel = (node: ExecutionNode): string => {
+  if (
+    node instanceof StoreMappingGlobalGraphFetchExecutionNode ||
+    node instanceof LocalGraphFetchExecutionNode
+  ) {
+    if (node.graphFetchTree instanceof RootGraphFetchTree) {
+      return node.graphFetchTree.class.value.name;
+    }
+    if (node.graphFetchTree instanceof PropertyGraphFetchTree) {
+      return node.graphFetchTree.property.value.name;
+    }
+  }
+  return '';
+};
+
 /**
  * @modularize
  * See https://github.com/finos/legend-studio/issues/65
@@ -93,15 +124,26 @@ export const generateExecutionNodeLabel = (type: ExecutionNode): string => {
     return `Constant Execution Node`;
   } else if (type instanceof SequenceExecutionNode) {
     return `Sequence Execution Node`;
+  } else if (type instanceof StoreMappingGlobalGraphFetchExecutionNode) {
+    return `Store Mapping Global Graph Fetch Execution Node`;
+  } else if (
+    type instanceof RelationalRootQueryTempTableGraphFetchExecutionNode
+  ) {
+    return `Relational Root Query TempTable Graph Fetch Execution Node`;
+  } else if (
+    type instanceof RelationalCrossRootQueryTempTableGraphFetchExecutionNode
+  ) {
+    return `Relational Cross Root Query TempTable Graph Fetch Execution Node`;
+  } else if (
+    type instanceof RelationalClassQueryTempTableGraphFetchExecutionNode
+  ) {
+    return `Relational Class Query TempTable Graph Fetch Execution Node`;
+  } else if (type instanceof PureExpressionPlatformExecutionNode) {
+    return `Pure Expression Platform Execution Node`;
   } else {
     return 'Other';
   }
 };
-
-enum PLAN_TABS {
-  GENERAL = 'GENERAL',
-  GLOBAL_IMPLEMENTATION_SUPPORT = 'GLOBAL_IMPLEMENTATION_SUPPORT',
-}
 
 export const ExecutionPlanViewerPanelContent: React.FC<{
   executionPlanState: ExecutionPlanState;
@@ -112,10 +154,6 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
     executionPlanState.plan?.globalImplementationSupport;
   const templateFunctions =
     executionPlanState.plan?.processingTemplateFunctions ?? [];
-  const [selectedTab, setSelectedTab] = useState<PLAN_TABS>(PLAN_TABS.GENERAL);
-  const [selectedJavaClass, setSelectedJavaClass] = useState<
-    string | undefined
-  >(undefined);
 
   if (
     globalImplementationSupport &&
@@ -129,11 +167,11 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
     if (
       globalImplementationSupport.classes.length > 0 &&
       globalImplementationSupport.classes[0] &&
-      selectedJavaClass === undefined
+      executionPlanState.globalImplementationSupportState.selectedJavaClass ===
+        undefined
     ) {
-      setSelectedJavaClass(
-        globalImplementationSupport.classes[0]?.package +
-          globalImplementationSupport.classes[0]?.name,
+      executionPlanState.globalImplementationSupportState.setSelectedJavaClass(
+        `${globalImplementationSupport.classes[0]?.package}.${globalImplementationSupport.classes[0]?.name}`,
       );
     }
   }
@@ -146,12 +184,18 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
             {Object.values(PLAN_TABS).map((tab) => (
               <div
                 key={tab}
-                onClick={() => setSelectedTab(tab)}
+                onClick={() =>
+                  executionPlanState.globalImplementationSupportState.setSelectedTab(
+                    tab,
+                  )
+                }
                 className={clsx(
                   'query-builder__execution-plan-form--editor__tab',
                   {
                     'query-builder__execution-plan-form--editor__tab--active':
-                      tab === selectedTab,
+                      tab ===
+                      executionPlanState.globalImplementationSupportState
+                        .selectedTab,
                   },
                 )}
               >
@@ -160,11 +204,12 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
             ))}
           </div>
         </div>
-        {selectedTab === PLAN_TABS.GLOBAL_IMPLEMENTATION_SUPPORT &&
+        {executionPlanState.globalImplementationSupportState.selectedTab ===
+          PLAN_TABS.GLOBAL_IMPLEMENTATION_SUPPORT &&
           globalImplementationSupport &&
           globalImplementationSupport instanceof JavaPlatformImplementation && (
             <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={30} size={250}>
+              <ResizablePanel minSize={30} size={400}>
                 <PanelContent
                   darkMode={
                     !applicationStore.layoutService
@@ -180,7 +225,10 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
                             'query-builder__java__container__item',
                             {
                               'query-builder__java__container__item--active':
-                                `${cl.package}${cl.name}` === selectedJavaClass,
+                                `${cl.package}.${cl.name}` ===
+                                executionPlanState
+                                  .globalImplementationSupportState
+                                  .selectedJavaClass,
                             },
                           )}
                           key={cl.package + cl.name}
@@ -188,7 +236,9 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
                           <button
                             className="query-builder__java__container__item__btn"
                             onClick={() =>
-                              setSelectedJavaClass(cl.package + cl.name)
+                              executionPlanState.globalImplementationSupportState.setSelectedJavaClass(
+                                `${cl.package}.${cl.name}`,
+                              )
                             }
                             tabIndex={-1}
                             title={`Go to ${cl.package}.${cl.name}`}
@@ -206,11 +256,15 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
                 <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
               </ResizablePanelSplitter>
               <ResizablePanel>
-                {selectedJavaClass && (
+                {executionPlanState.globalImplementationSupportState
+                  .selectedJavaClass && (
                   <CodeEditor
                     inputValue={globalImplementationSupport.classes.reduce(
                       (value, cl) => {
-                        if (selectedJavaClass === `${cl.package}${cl.name}`) {
+                        if (
+                          executionPlanState.globalImplementationSupportState
+                            .selectedJavaClass === `${cl.package}.${cl.name}`
+                        ) {
                           return cl.source;
                         }
                         return value;
@@ -225,37 +279,41 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
               </ResizablePanel>
             </ResizablePanelGroup>
           )}
-        {selectedTab === PLAN_TABS.GENERAL && (
-          <>
-            <div className="query-builder__template--function--editor__header">
-              {`AuthDependent: ${executionPlanState.plan?.authDependent.toString()}`}
-            </div>
-            <div className="query-builder__template--function--editor__title">
-              Template Functions
-            </div>
-            <div className="query-builder__template--function--editor__code">
-              <CodeEditor
-                inputValue={templateFunctions.reduce(
-                  (total, func) => (total += `${func}\n`),
-                  '',
-                )}
-                isReadOnly={true}
-                language={CODE_EDITOR_LANGUAGE.XML}
-                hideMinimap={true}
-                hideActionBar={true}
-              />
-            </div>
-            <div className="query-builder__template--function--editor__json">
-              <Button
-                className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"
-                onClick={(): void =>
-                  executionPlanState.setViewMode(EXECUTION_PLAN_VIEW_MODE.JSON)
-                }
-                text="View JSON"
-              />
-            </div>
-          </>
-        )}
+        {executionPlanState.globalImplementationSupportState.selectedTab ===
+          PLAN_TABS.GENERAL &&
+          templateFunctions.length > 0 && (
+            <>
+              <div className="query-builder__template--function--editor__header">
+                {`AuthDependent: ${executionPlanState.plan?.authDependent.toString()}`}
+              </div>
+              <div className="query-builder__template--function--editor__title">
+                Template Functions
+              </div>
+              <div className="query-builder__template--function--editor__code">
+                <CodeEditor
+                  inputValue={templateFunctions.reduce(
+                    (total, func) => (total += `${func}\n`),
+                    '',
+                  )}
+                  isReadOnly={true}
+                  language={CODE_EDITOR_LANGUAGE.XML}
+                  hideMinimap={true}
+                  hideActionBar={true}
+                />
+              </div>
+              <div className="query-builder__template--function--editor__json">
+                <Button
+                  className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"
+                  onClick={(): void =>
+                    executionPlanState.setViewMode(
+                      EXECUTION_PLAN_VIEW_MODE.JSON,
+                    )
+                  }
+                  text="View JSON"
+                />
+              </div>
+            </>
+          )}
       </div>
     </div>
   );
@@ -284,6 +342,23 @@ const ExecutionNodeElementTreeNodeContainer = observer(
     ) : (
       <div />
     );
+    let details = '';
+    let prefixLabel = '';
+    const STORE_MAPPING_LABEL = `Store Mapping Global Graph Fetch Execution Node`;
+    if (node instanceof ExecutionNodeTreeNodeData) {
+      if (node.parentNodeId === STORE_MAPPING_LABEL) {
+        if (
+          node.executionNode instanceof
+          StoreMappingGlobalGraphFetchExecutionNode
+        ) {
+          details = 'Cross';
+        } else if (node.executionNode instanceof LocalGraphFetchExecutionNode) {
+          details = 'Local';
+        }
+      }
+      prefixLabel = generateExecutionNodePrefixLabel(node.executionNode);
+    }
+
     return (
       <div
         className={clsx(
@@ -304,6 +379,20 @@ const ExecutionNodeElementTreeNodeContainer = observer(
         <div className="tree-view__node__icon">
           <div className="tree-view__node__expand-icon">{nodeExpandIcon}</div>
         </div>
+        {details !== '' && (
+          <div className="execution-plan-viewer__node__sub-type">
+            <div className="execution-plan-viewer__node__sub-type__label">
+              {details}
+            </div>
+          </div>
+        )}
+        {prefixLabel !== '' && (
+          <div className="execution-plan-viewer__node__type">
+            <div className="execution-plan-viewer__node__type__label">
+              {prefixLabel}
+            </div>
+          </div>
+        )}
         <button
           className="tree-view__node__label execution-plan-viewer__explorer-tree__node__label"
           tabIndex={-1}
@@ -342,6 +431,45 @@ export const ExecutionPlanTree = observer(
               const executionNodeTreeNode = generateExecutionNodeTreeNodeData(
                 exen,
                 generateExecutionNodeLabel(exen),
+                node,
+              );
+              executionPlanState.setTreeNode(
+                executionNodeTreeNode.id,
+                executionNodeTreeNode,
+              );
+            });
+          }
+          if (
+            node.executionNode instanceof
+            StoreMappingGlobalGraphFetchExecutionNode
+          ) {
+            const localNode = node.executionNode.localGraphFetchExecutionNode;
+            const localNodeTreeData = generateExecutionNodeTreeNodeData(
+              localNode,
+              generateExecutionNodeLabel(localNode),
+              node,
+            );
+            executionPlanState.setTreeNode(
+              localNodeTreeData.id,
+              localNodeTreeData,
+            );
+            node.executionNode.children.forEach((childExecutionNode) => {
+              const executionNodeTreeNode = generateExecutionNodeTreeNodeData(
+                childExecutionNode,
+                generateExecutionNodeLabel(childExecutionNode),
+                node,
+              );
+              executionPlanState.setTreeNode(
+                executionNodeTreeNode.id,
+                executionNodeTreeNode,
+              );
+            });
+          }
+          if (node.executionNode instanceof RelationalGraphFetchExecutionNode) {
+            node.executionNode.children.forEach((childExecutionNode) => {
+              const executionNodeTreeNode = generateExecutionNodeTreeNodeData(
+                childExecutionNode,
+                generateExecutionNodeLabel(childExecutionNode),
                 node,
               );
               executionPlanState.setTreeNode(
@@ -397,12 +525,13 @@ export const ExecutionPlanTree = observer(
   },
 );
 
-const ExecutionNodeViewer = observer(
+export const ExecutionNodeViewer = observer(
   (props: {
     executionNode: ExecutionNode;
     executionPlanState: ExecutionPlanState;
+    viewJson?: boolean | undefined;
   }) => {
-    const { executionNode, executionPlanState } = props;
+    const { executionNode, executionPlanState, viewJson } = props;
     if (executionNode instanceof SQLExecutionNode) {
       return (
         <SQLExecutionNodeViewer
@@ -410,7 +539,7 @@ const ExecutionNodeViewer = observer(
           resultColumns={executionNode.resultColumns}
           resultType={executionNode.resultType}
           executionPlanState={executionPlanState}
-          viewJson={true}
+          viewJson={viewJson}
         />
       );
     }
@@ -451,6 +580,56 @@ const ExecutionNodeViewer = observer(
     if (executionNode instanceof SequenceExecutionNode) {
       return (
         <SequenceExecutionNodeViewer
+          node={executionNode}
+          executionPlanState={executionPlanState}
+          viewJson={viewJson}
+        />
+      );
+    }
+    if (executionNode instanceof StoreMappingGlobalGraphFetchExecutionNode) {
+      return (
+        <StoreMappingGlobalGraphFetchExecutionNodeViewer
+          storeMappingNode={executionNode}
+          executionPlanState={executionPlanState}
+        />
+      );
+    }
+    if (
+      executionNode instanceof
+      RelationalCrossRootQueryTempTableGraphFetchExecutionNode
+    ) {
+      return (
+        <RelationalCrossRootQueryTempTableGraphFetchExecutionNodeViewer
+          node={executionNode}
+          executionPlanState={executionPlanState}
+        />
+      );
+    }
+    if (
+      executionNode instanceof
+      RelationalRootQueryTempTableGraphFetchExecutionNode
+    ) {
+      return (
+        <RelationalRootQueryTempTableGraphFetchExecutionNodeViewer
+          node={executionNode}
+          executionPlanState={executionPlanState}
+        />
+      );
+    }
+    if (
+      executionNode instanceof
+      RelationalClassQueryTempTableGraphFetchExecutionNode
+    ) {
+      return (
+        <RelationalClassQueryTempTableGraphFetchExecutionNodeViewer
+          node={executionNode}
+          executionPlanState={executionPlanState}
+        />
+      );
+    }
+    if (executionNode instanceof PureExpressionPlatformExecutionNode) {
+      return (
+        <PureExpressionPlatformExecutionNodeViewer
           node={executionNode}
           executionPlanState={executionPlanState}
         />
@@ -505,7 +684,6 @@ const ExecutionPlanViewPanel = observer(
       }
     }, [executionPlanState]);
     const nativeViewModes = Object.values(EXECUTION_PLAN_VIEW_MODE);
-
     return (
       <div className="execution-plan-viewer__panel">
         {executionPlanState.selectedNode !== undefined && (
@@ -568,6 +746,7 @@ const ExecutionPlanViewPanel = observer(
                     <ExecutionNodeViewer
                       executionNode={currentElement}
                       executionPlanState={executionPlanState}
+                      viewJson={true}
                     />
                   )}
                   {currentElement instanceof ExecutionPlan && (
@@ -651,6 +830,12 @@ export const ExecutionPlanViewer = observer(
       executionPlanState.setExecutionPlanDisplayData('');
       executionPlanState.setSelectedNode(undefined);
       executionPlanState.setDebugText(undefined);
+      executionPlanState.globalImplementationSupportState.setSelectedTab(
+        PLAN_TABS.GENERAL,
+      );
+      executionPlanState.globalImplementationSupportState.setSelectedJavaClass(
+        undefined,
+      );
     };
     const rawPlan = executionPlanState.rawPlan;
     const isDarkMode =

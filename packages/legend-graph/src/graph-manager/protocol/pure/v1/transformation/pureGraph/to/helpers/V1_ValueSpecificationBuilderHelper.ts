@@ -102,6 +102,7 @@ import {
   KeyExpressionInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 import { V1_SubTypeGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
+import { findMappingLocalProperty } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -688,6 +689,7 @@ export function V1_buildGraphFetchTree(
   parentClass: Class | undefined,
   openVariables: string[],
   processingContext: V1_ProcessingContext,
+  canResolveLocalProperty?: boolean | undefined,
 ): GraphFetchTree {
   if (graphFetchTree instanceof V1_PropertyGraphFetchTree) {
     return buildPropertyGraphFetchTree(
@@ -696,6 +698,7 @@ export function V1_buildGraphFetchTree(
       guaranteeNonNullable(parentClass),
       openVariables,
       processingContext,
+      canResolveLocalProperty,
     );
   } else if (graphFetchTree instanceof V1_RootGraphFetchTree) {
     return buildRootGraphFetchTree(
@@ -703,6 +706,7 @@ export function V1_buildGraphFetchTree(
       context,
       openVariables,
       processingContext,
+      canResolveLocalProperty,
     );
   } else if (graphFetchTree instanceof V1_SubTypeGraphFetchTree) {
     return buildSubTypeGraphFetchTree(
@@ -710,6 +714,7 @@ export function V1_buildGraphFetchTree(
       context,
       openVariables,
       processingContext,
+      canResolveLocalProperty,
     );
   }
   throw new UnsupportedOperationError(
@@ -734,6 +739,7 @@ function buildPropertyGraphFetchTree(
   parentClass: Class,
   openVariables: string[],
   processingContext: V1_ProcessingContext,
+  canResolveLocalProperty?: boolean | undefined,
 ): PropertyGraphFetchTree {
   let property: AbstractProperty;
   let pureParameters: ValueSpecification[] = [];
@@ -766,11 +772,38 @@ function buildPropertyGraphFetchTree(
     processingContext.flushVariable('this');
     processingContext.pop();
   } else {
-    property = V1_getAppliedProperty(
-      parentClass,
-      undefined,
-      propertyGraphFetchTree.property,
-    );
+    // While building property graph fetch tree, the Class of root graph
+    // fetch tree is passed as the parentClass of property graph fetch tree.
+    // This Class contains the properties of property graph fetch trees.
+    // But sometimes, a local property is missing in the parentClass and
+    // causing error in V1_getAppliedProperty.
+    // To fix this, we get the local property from PureModel context.graph
+    // mappings. The function findProperty() is used for this purpose.
+    if (canResolveLocalProperty) {
+      try {
+        property = V1_getAppliedProperty(
+          parentClass,
+          undefined,
+          propertyGraphFetchTree.property,
+        );
+      } catch (error) {
+        const newProperty = findMappingLocalProperty(
+          context.graph.mappings,
+          propertyGraphFetchTree.property,
+        );
+        if (newProperty) {
+          property = newProperty;
+        } else {
+          throw error;
+        }
+      }
+    } else {
+      property = V1_getAppliedProperty(
+        parentClass,
+        undefined,
+        propertyGraphFetchTree.property,
+      );
+    }
   }
   const _subType = propertyGraphFetchTree.subType
     ? context.resolveClass(propertyGraphFetchTree.subType)
@@ -790,6 +823,7 @@ function buildPropertyGraphFetchTree(
         _returnTypeClasss,
         openVariables,
         processingContext,
+        canResolveLocalProperty,
       ),
     );
   }
@@ -809,6 +843,7 @@ function buildRootGraphFetchTree(
   context: V1_GraphBuilderContext,
   openVariables: string[],
   processingContext: V1_ProcessingContext,
+  canResolveLocalProperty?: boolean | undefined,
 ): RootGraphFetchTree {
   const _class = context.resolveClass(rootGraphFetchTree.class);
   const subTreeChildren = rootGraphFetchTree.subTrees.map((subTree) =>
@@ -818,6 +853,7 @@ function buildRootGraphFetchTree(
       _class.value,
       openVariables,
       processingContext,
+      canResolveLocalProperty,
     ),
   );
   const subTypeTreeChildren = rootGraphFetchTree.subTypeTrees.map(
@@ -827,6 +863,7 @@ function buildRootGraphFetchTree(
         context,
         openVariables,
         processingContext,
+        canResolveLocalProperty,
       ),
   );
   const _rootGraphFetchTree = new RootGraphFetchTree(
@@ -842,6 +879,7 @@ function buildSubTypeGraphFetchTree(
   context: V1_GraphBuilderContext,
   openVariables: string[],
   processingContext: V1_ProcessingContext,
+  canResolveLocalProperty?: boolean | undefined,
 ): SubTypeGraphFetchTree {
   const subTypeClass = context.resolveClass(subTypeGraphFetchTree.subTypeClass);
   const children = subTypeGraphFetchTree.subTrees.map((subTree) =>
@@ -851,6 +889,7 @@ function buildSubTypeGraphFetchTree(
       subTypeClass.value,
       openVariables,
       processingContext,
+      canResolveLocalProperty,
     ),
   );
   const _subTypeGraphFetchTree = new SubTypeGraphFetchTree(
