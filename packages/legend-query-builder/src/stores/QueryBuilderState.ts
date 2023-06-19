@@ -122,6 +122,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isEditingWatermark = false;
   isCheckingEntitlments = false;
   isCalendarEnabled = false;
+  INTERNAL__enableInitializingDefaultSimpleExpressionValue = false;
 
   class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -152,6 +153,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isEditingWatermark: observable,
       isCheckingEntitlments: observable,
       isCalendarEnabled: observable,
+      INTERNAL__enableInitializingDefaultSimpleExpressionValue: observable,
       changeDetectionState: observable,
       class: observable,
       mapping: observable,
@@ -166,6 +168,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setIsEditingWatermark: action,
       setIsCalendarEnabled: action,
       setIsCheckingEntitlments: action,
+      setINTERNAL__enableInitializingDefaultSimpleExpressionValue: action,
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
@@ -273,6 +276,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setRuntimeValue(val: Runtime | undefined): void {
     this.runtimeValue = val;
+  }
+
+  setINTERNAL__enableInitializingDefaultSimpleExpressionValue(
+    val: boolean,
+  ): void {
+    this.INTERNAL__enableInitializingDefaultSimpleExpressionValue = val;
   }
 
   get isQuerySupported(): boolean {

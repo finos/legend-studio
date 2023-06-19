@@ -36,6 +36,7 @@ import {
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
+  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
 } from '../../QueryBuilderValueSpecificationHelper.js';
@@ -98,7 +99,10 @@ export class QueryBuilderFilterOperator_GreaterThan
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           propertyType.path,
-          undefined,
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -107,7 +111,10 @@ export class QueryBuilderFilterOperator_GreaterThan
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           PRIMITIVE_TYPE.STRICTDATE,
-          undefined,
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }

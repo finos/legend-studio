@@ -25,6 +25,8 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
+  type Enum,
+  EnumValueExplicitReference,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -40,6 +42,7 @@ import type {
 } from '../QueryBuilderPostFilterState.js';
 import {
   buildNotExpression,
+  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
@@ -48,6 +51,7 @@ import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOper
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 import { buildPrimitiveInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
+import { instanceValue_setValues } from '../../../../shared/ValueSpecificationModifierHelper.js';
 
 export class QueryBuilderPostFilterOperator_Equal
   extends QueryBuilderPostFilterOperator
@@ -111,7 +115,10 @@ export class QueryBuilderPostFilterOperator_Equal
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
           propertyType.path,
-          undefined,
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );
@@ -121,7 +128,10 @@ export class QueryBuilderPostFilterOperator_Equal
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
           PRIMITIVE_TYPE.STRICTDATE,
-          undefined,
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );
@@ -134,6 +144,22 @@ export class QueryBuilderPostFilterOperator_Equal
                 new GenericType(propertyType),
               ),
             );
+            if (
+              postFilterConditionState.postFilterState.tdsState
+                .queryBuilderState
+                .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ) {
+              instanceValue_setValues(
+                enumValueInstanceValue,
+                [
+                  EnumValueExplicitReference.create(
+                    propertyType.values[0] as Enum,
+                  ),
+                ],
+                postFilterConditionState.postFilterState.tdsState
+                  .queryBuilderState.observerContext,
+              );
+            }
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(

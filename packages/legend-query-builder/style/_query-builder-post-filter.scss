@@ -251,14 +251,6 @@
       font-size: 1.2rem;
       font-weight: 500;
     }
-
-    &__error--icon {
-      @include flexCenter;
-
-      height: 100%;
-      width: 2.8rem;
-      color: var(--color-red-200);
-    }
   }
 }
 

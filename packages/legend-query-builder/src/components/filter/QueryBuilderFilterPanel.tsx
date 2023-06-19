@@ -45,7 +45,6 @@ import {
   MoreVerticalIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
-  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -73,17 +72,13 @@ import {
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { InstanceValue, type ValueSpecification } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilderFilterOperator.js';
-import {
-  isTypeCompatibleForAssignment,
-  isValidInstanceValue,
-} from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 import {
   BasicValueSpecificationEditor,
@@ -244,9 +239,7 @@ const QueryBuilderFilterConditionEditor = observer(
           : IS_DRAGGABLE_FILTER_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
-    const isFilterValueInValid =
-      node.condition.value instanceof InstanceValue &&
-      !isValidInstanceValue(node.condition.value);
+
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
         {showDroppableSuggestion && (
@@ -329,11 +322,6 @@ const QueryBuilderFilterConditionEditor = observer(
                     )}
                   />
                 </PanelEntryDropZonePlaceholder>
-                {isFilterValueInValid && (
-                  <div className="query-builder-filter-tree__condition-node__error--icon">
-                    <ExclamationTriangleIcon />
-                  </div>
-                )}
               </div>
             )}
           </div>

@@ -46,7 +46,6 @@ import {
   MoreVerticalIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
-  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import {
   type ValueSpecification,
@@ -463,11 +462,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     )}
                   />
                 </PanelEntryDropZonePlaceholder>
-                {isPostFilterValueInValid && (
-                  <div className="query-builder-post-filter-tree__condition-node__error--icon">
-                    <ExclamationTriangleIcon />
-                  </div>
-                )}
               </div>
             )}
           </div>

@@ -44,9 +44,13 @@ import {
   PropertyExplicitReference,
   PrimitiveType,
   type ObserverContext,
+  PRIMITIVE_TYPE,
+  Enum,
+  EnumValueExplicitReference,
 } from '@finos/legend-graph';
 import {
   createNullishValue,
+  generateDefaultValueForPrimitiveType,
   isValidInstanceValue,
 } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -55,6 +59,7 @@ import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils
 import {
   propertyExpression_setFunc,
   functionExpression_setParametersValues,
+  instanceValue_setValues,
 } from './shared/ValueSpecificationModifierHelper.js';
 import { generateMilestonedPropertyParameterValue } from './milestoning/QueryBuilderMilestoningHelper.js';
 
@@ -138,6 +143,7 @@ export const getPropertyPath = (
 export const generateValueSpecificationForParameter = (
   parameter: VariableExpression,
   graph: PureModel,
+  INTERNAL__enableInitializingDefaultSimpleExpressionValue: boolean,
   observerContext: ObserverContext,
 ): ValueSpecification => {
   if (parameter.genericType) {
@@ -153,11 +159,34 @@ export const generateValueSpecificationForParameter = (
           ),
         ),
       );
+      if (
+        INTERNAL__enableInitializingDefaultSimpleExpressionValue &&
+        type !== PrimitiveType.LATESTDATE
+      ) {
+        instanceValue_setValues(
+          primitiveInstanceValue,
+          [generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE)],
+          observerContext,
+        );
+      }
       return primitiveInstanceValue;
     } else if (type instanceof Enumeration) {
       const enumValueInstanceValue = new EnumValueInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(type)),
       );
+      if (
+        INTERNAL__enableInitializingDefaultSimpleExpressionValue &&
+        type.values.length
+      ) {
+        const enumValueRef = EnumValueExplicitReference.create(
+          type.values[0] as Enum,
+        );
+        instanceValue_setValues(
+          enumValueInstanceValue,
+          [enumValueRef],
+          observerContext,
+        );
+      }
       return enumValueInstanceValue;
     }
   }

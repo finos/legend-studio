@@ -34,6 +34,7 @@ import type {
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
 import {
+  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
@@ -92,7 +93,10 @@ export class QueryBuilderPostFilterOperator_LessThan
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
           propertyType.path,
-          undefined,
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );
@@ -102,7 +106,10 @@ export class QueryBuilderPostFilterOperator_LessThan
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
           PRIMITIVE_TYPE.STRICTDATE,
-          undefined,
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );

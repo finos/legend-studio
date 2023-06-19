@@ -33,7 +33,7 @@ import {
   BasePopover,
   PanelFormSection,
   CalculateIcon,
-  type SelectComponent,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -79,7 +79,10 @@ import {
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
-import { simplifyValueExpression } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import {
+  isValidInstanceValue,
+  simplifyValueExpression,
+} from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { evaluate } from 'mathjs';
 
 type TypeCheckOption = {
@@ -229,8 +232,6 @@ const StringPrimitiveInstanceValueEditor = observer(
       selectorConfig,
       obseverContext,
     } = props;
-    const inputRef = useRef<HTMLInputElement>(null);
-    const selectorRef = useRef<SelectComponent>(null);
     const useSelector = Boolean(selectorConfig);
     const applicationStore = useApplicationStore();
     const value = valueSpecification.values[0] as string;
@@ -280,20 +281,13 @@ const StringPrimitiveInstanceValueEditor = observer(
       : undefined;
     const noOptionsMessage =
       selectorConfig?.values === undefined ? (): null => null : undefined;
-
-    useEffect(() => {
-      if (useSelector) {
-        selectorRef.current?.focus();
-      } else {
-        inputRef.current?.focus();
-      }
-    }, [useSelector]);
+    const isInValidInstanceValue = !isValidInstanceValue(valueSpecification);
 
     return (
       <div className={clsx('value-spec-editor', className)}>
+        {console.log(isInValidInstanceValue)}
         {useSelector ? (
           <CustomSelectorInput
-            ref={selectorRef}
             className="value-spec-editor__enum-selector"
             options={queryOptions}
             onChange={changeValue}
@@ -312,13 +306,13 @@ const StringPrimitiveInstanceValueEditor = observer(
             }}
           />
         ) : (
-          <input
-            ref={inputRef}
-            className="panel__content__form__section__input value-spec-editor__input"
+          <InputWithInlineValidation
+            className="panel__content__form__section__input value-spec-editor__input input-group__inpu"
             spellCheck={false}
             value={value}
             placeholder={value === '' ? '(empty)' : undefined}
             onChange={changeInputValue}
+            error={isInValidInstanceValue ? 'Invalid String value' : undefined}
           />
         )}
         <button
@@ -399,11 +393,12 @@ const NumberPrimitiveInstanceValueEditor = observer(
         : '',
     );
     const inputRef = useRef<HTMLInputElement>(null);
-    const numericValue = value
-      ? isInteger
-        ? Number.parseInt(Number(value).toString(), 10)
-        : Number(value)
-      : undefined;
+    const numericValue =
+      value !== ''
+        ? isInteger
+          ? Number.parseInt(Number(value).toString(), 10)
+          : Number(value)
+        : undefined;
 
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       setValue(event.target.value);
@@ -469,10 +464,6 @@ const NumberPrimitiveInstanceValueEditor = observer(
       obseverContext,
     ]);
 
-    useEffect(() => {
-      inputRef.current?.focus();
-    }, []);
-
     return (
       <div className={clsx('value-spec-editor', className)}>
         <div className="value-spec-editor__number__input-container">
@@ -524,7 +515,6 @@ const EnumValueInstanceValueEditor = observer(
       setValueSpecification,
       obseverContext,
     } = props;
-    const selectorRef = useRef<SelectComponent>(null);
     const enumValueRef = valueSpecification.values[0];
     const enumValue = enumValueRef?.value;
     const options = guaranteeType(
@@ -544,14 +534,9 @@ const EnumValueInstanceValueEditor = observer(
       setValueSpecification(valueSpecification);
     };
 
-    useEffect(() => {
-      selectorRef.current?.focus();
-    }, []);
-
     return (
       <div className={clsx('value-spec-editor', className)}>
         <CustomSelectorInput
-          ref={selectorRef}
           className="value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}

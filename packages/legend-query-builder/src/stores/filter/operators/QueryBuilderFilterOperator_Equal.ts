@@ -28,6 +28,8 @@ import {
   GenericType,
   Enumeration,
   PRIMITIVE_TYPE,
+  type Enum,
+  EnumValueExplicitReference,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -41,12 +43,14 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
+  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
+import { instanceValue_setValues } from '../../shared/ValueSpecificationModifierHelper.js';
 
 export class QueryBuilderFilterOperator_Equal
   extends QueryBuilderFilterOperator
@@ -112,7 +116,10 @@ export class QueryBuilderFilterOperator_Equal
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           propertyType.path,
-          undefined,
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -121,7 +128,10 @@ export class QueryBuilderFilterOperator_Equal
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           PRIMITIVE_TYPE.STRICTDATE,
-          undefined,
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -133,6 +143,21 @@ export class QueryBuilderFilterOperator_Equal
                 new GenericType(propertyType),
               ),
             );
+            if (
+              filterConditionState.filterState.queryBuilderState
+                .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ) {
+              instanceValue_setValues(
+                enumValueInstanceValue,
+                [
+                  EnumValueExplicitReference.create(
+                    propertyType.values[0] as Enum,
+                  ),
+                ],
+                filterConditionState.filterState.queryBuilderState
+                  .observerContext,
+              );
+            }
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(
