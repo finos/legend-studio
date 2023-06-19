@@ -163,7 +163,8 @@ export class GraphManagerState extends BasicGraphManagerState {
   get usableClassPropertyTypes(): Type[] {
     return [
       ...this.graph.primitiveTypes.filter(
-        (type) => type !== PrimitiveType.LATESTDATE,
+        (type) =>
+          type !== PrimitiveType.LATESTDATE && type !== PrimitiveType.BINARY,
       ),
       ...this.graph.ownTypes,
       ...this.graphManager.collectExposedSystemElements(
