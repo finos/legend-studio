@@ -578,7 +578,6 @@ export class GraphEditFormModeState extends GraphEditorMode {
 
   *onLeave(): GeneratorFn<void> {
     this.editorStore.sqlPlaygroundState.setConnection(undefined);
-    return;
   }
 
   *cleanupBeforeEntering(fallbackOptions?: {

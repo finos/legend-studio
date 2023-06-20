@@ -242,7 +242,7 @@ export const getPrimitiveTypeFromRelationalType = (
 export const createMockDataForColumn = (
   col: Column,
   isPrimaryKey: boolean,
-  idx?: number | number,
+  idx?: number | undefined,
 ): string | undefined => {
   const type = col.type;
 
