@@ -75,6 +75,13 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__enableFunctionActivatorSupport = false;
 
   /**
+   * This flag can be removed when the support for local connection is official
+   * Right now it's done to support the SnowflakeApp creation demo
+   * See https://github.com/finos/legend-engine/pull/1819
+   */
+  TEMPORARY__enableLocalConnectionBuilder = false;
+
+  /**
    * This flag can be removed when the support for raw SQL execution is official
    * See https://github.com/finos/legend-engine/pull/1841
    */
@@ -110,6 +117,7 @@ class LegendStudioApplicationCoreOptions {
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
       TEMPORARY__enableRawSQLExecutor: optional(primitive()),
+      TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
       TEMPORARY__enableMappingTestableEditor: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),

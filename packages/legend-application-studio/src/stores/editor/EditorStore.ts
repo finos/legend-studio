@@ -929,25 +929,37 @@ export class EditorStore implements CommandRegistrar {
         PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION,
         PACKAGEABLE_ELEMENT_TYPE.FUNCTION,
         PACKAGEABLE_ELEMENT_TYPE.MEASURE,
-        PACKAGEABLE_ELEMENT_TYPE.MAPPING,
-        PACKAGEABLE_ELEMENT_TYPE.RUNTIME,
-        PACKAGEABLE_ELEMENT_TYPE.CONNECTION,
-        PACKAGEABLE_ELEMENT_TYPE.SERVICE,
-        PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION,
-        PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
-        PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
-        PACKAGEABLE_ELEMENT_TYPE.DATABASE,
-        PACKAGEABLE_ELEMENT_TYPE.DATA,
       ] as string[]
     ).concat(
-      this.pluginManager
-        .getApplicationPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_LegendStudioApplicationPlugin_Extension
-            ).getExtraSupportedElementTypes?.() ?? [],
-        ),
+      (
+        [
+          PACKAGEABLE_ELEMENT_TYPE.MAPPING,
+          PACKAGEABLE_ELEMENT_TYPE.RUNTIME,
+          PACKAGEABLE_ELEMENT_TYPE.CONNECTION,
+          PACKAGEABLE_ELEMENT_TYPE.SERVICE,
+          PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION,
+          PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
+          PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
+          PACKAGEABLE_ELEMENT_TYPE.DATABASE,
+          PACKAGEABLE_ELEMENT_TYPE.DATA,
+          this.applicationStore.config.options
+            .TEMPORARY__enableLocalConnectionBuilder
+            ? PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION
+            : undefined,
+        ] as (string | undefined)[]
+      )
+        .filter(isNonNullable)
+        .concat(
+          this.pluginManager
+            .getApplicationPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_LegendStudioApplicationPlugin_Extension
+                ).getExtraSupportedElementTypes?.() ?? [],
+            ),
+        )
+        .sort((a, b) => a.localeCompare(b)),
     );
   }
 
