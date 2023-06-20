@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 30.0.9
+
+### Patch Changes
+
+- [#2343](https://github.com/finos/legend-studio/pull/2343) [`8e1be63cd`](https://github.com/finos/legend-studio/commit/8e1be63cd6bc9af1e84a163fecf8638779f6930b) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Remove Binary Datatype from Dropdown
+
 ## 30.0.8
 
 ## 30.0.7

@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.0.13
+
+### Patch Changes
+
+- [#2343](https://github.com/finos/legend-studio/pull/2343) [`8e1be63cd`](https://github.com/finos/legend-studio/commit/8e1be63cd6bc9af1e84a163fecf8638779f6930b) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Remove Binary Datatype from Dropdown
+
 ## 4.0.12
 
 ## 4.0.11
