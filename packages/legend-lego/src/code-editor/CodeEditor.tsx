@@ -29,7 +29,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { CODE_EDITOR_THEME } from './CodeEditorTheme.js';
-import { clsx } from '@finos/legend-art';
+import { clsx, WordWrapIcon } from '@finos/legend-art';
 
 export const CodeEditor: React.FC<{
   inputValue: string;
@@ -39,6 +39,7 @@ export const CodeEditor: React.FC<{
   hideMinimap?: boolean | undefined;
   hideGutter?: boolean | undefined;
   hidePadding?: boolean | undefined;
+  hideActionBar?: boolean | undefined;
   extraEditorOptions?:
     | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
     | undefined;
@@ -53,12 +54,14 @@ export const CodeEditor: React.FC<{
     hideMinimap,
     hideGutter,
     hidePadding,
+    hideActionBar,
     extraEditorOptions,
   } = props;
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
+  const [isWordWrap, setIsWordWrap] = useState(false);
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
@@ -73,6 +76,14 @@ export const CodeEditor: React.FC<{
    */
   const value = normalizeLineEnding(inputValue);
   const textInputRef = useRef<HTMLDivElement>(null);
+
+  const toggleWordWrap = (): void => {
+    const updatedWordWrap = !isWordWrap;
+    setIsWordWrap(updatedWordWrap);
+    editor?.updateOptions({
+      wordWrap: updatedWordWrap ? 'on' : 'off',
+    });
+  };
 
   useEffect(() => {
     if (!editor && textInputRef.current) {
@@ -154,12 +165,29 @@ export const CodeEditor: React.FC<{
   );
 
   return (
-    <div
-      className={clsx('code-editor__container', {
-        'code-editor__container--padding': !hidePadding,
-      })}
-    >
-      <div className="code-editor__body" ref={textInputRef} />
+    <div className="code-editor">
+      {!hideActionBar && (
+        <div className="code-editor__header">
+          <button
+            tabIndex={-1}
+            className={clsx('code-editor__header__action', {
+              'code-editor__header__action--active': isWordWrap,
+            })}
+            onClick={toggleWordWrap}
+            title={`[${isWordWrap ? 'on' : 'off'}] Toggle word wrap`}
+          >
+            <WordWrapIcon />
+          </button>
+        </div>
+      )}
+      <div
+        className={clsx('code-editor__content', {
+          'code-editor__content--padding': !hidePadding,
+          'code-editor__content--with__header': !hideActionBar,
+        })}
+      >
+        <div className="code-editor__body" ref={textInputRef} />
+      </div>
     </div>
   );
 };

@@ -1186,8 +1186,8 @@ export const QueryBuilderTDSWindowPanel = observer(
         >
           <PanelHeader>
             <div className="panel__header__title">
-              <div className="panel__header__title__label">Window Function</div>
-              {tdsWindowState.windowValidationIssues.length && (
+              <div className="panel__header__title__label">window function</div>
+              {tdsWindowState.windowValidationIssues.length > 0 && (
                 <QueryBuilderPanelIssueCountBadge
                   issues={tdsWindowState.windowValidationIssues}
                 />
