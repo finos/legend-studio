@@ -267,7 +267,7 @@ const QueryEditorExistingQueryHeader = observer(
       existingEditorStore.updateState.setQueryRenamer(true);
     };
     const renameQuery = (val: string): void => {
-      if (!(queryRenameName === existingEditorStore.lightQuery.name)) {
+      if (queryRenameName !== existingEditorStore.lightQuery.name) {
         flowResult(updateState.updateQuery(val)).catch(
           applicationStore.alertUnhandledError,
         );

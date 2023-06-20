@@ -444,7 +444,6 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
       this.store = store;
       this.newConnectionValueDriver = newDriver;
     }
-    return;
   }
 
   get isValid(): boolean {

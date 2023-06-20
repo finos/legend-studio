@@ -411,7 +411,7 @@ export class PostValidationState {
     );
     serviceValidation_deleteAssertion(this.validation, assertion);
     this.assertionStates = this.assertionStates.filter(
-      (e) => !(e === _assertionState),
+      (e) => e !== _assertionState,
     );
   }
 }

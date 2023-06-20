@@ -152,7 +152,7 @@ export class GlobalBulkServiceRegistrationState {
   }
 
   setSelectAll(val: boolean): void {
-    this.bulkServiceRegistrationStates.map(
+    this.bulkServiceRegistrationStates.forEach(
       (serviceRegistrationState) => (serviceRegistrationState.isSelected = val),
     );
   }
