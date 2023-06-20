@@ -41,6 +41,8 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
 
 const RelationalTableIdentifierModal = observer(
   (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {
@@ -199,6 +201,10 @@ export const RelationalCSVDataEditor = observer(
     const isTableActive = (table: RelationalCSVDataTable): boolean =>
       currentTableState?.table === table;
     const showCSVModal = (): void => dataState.setShowImportCsvModal(true);
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_RELATIONAL_EDITOR,
+    );
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel minSize={30} size={300}>
