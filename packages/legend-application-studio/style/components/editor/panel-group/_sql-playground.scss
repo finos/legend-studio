@@ -25,11 +25,28 @@
     border-right: 0.1rem solid var(--color-dark-grey-100);
   }
 
-  &__config__connection-selector {
-    display: flex;
-    height: 5rem;
-    padding: 1rem;
+  &__config__setup {
+    height: 9rem;
     border-bottom: 0.1rem solid var(--color-dark-grey-100);
+    padding: 1rem;
+  }
+
+  &__config__database-selector {
+    margin-top: 1rem;
+
+    &__update-btn {
+      margin-left: 0.5rem;
+
+      svg {
+        font-size: 1.8rem;
+      }
+    }
+  }
+
+  &__config__connection-selector,
+  &__config__database-selector {
+    display: flex;
+    height: 2.8rem;
 
     &__icon {
       @include flexCenter;
@@ -84,7 +101,7 @@
   }
 
   &__config__schema-explorer {
-    height: calc(100% - 5rem);
+    height: calc(100% - 9rem);
     padding: 1rem 0;
     overflow: overlay;
   }

@@ -40,6 +40,8 @@ import {
   CircleIcon,
   CheckCircleIcon,
   EmptyCircleIcon,
+  PURE_DatabaseIcon,
+  SyncIcon,
 } from '@finos/legend-art';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -698,6 +700,10 @@ export const SQLPlaygroundPanel = observer(() => {
     [handleConnectionDrop],
   );
 
+  const updateDatabase = applicationStore.guardUnhandledError(() =>
+    flowResult(playgroundState.updateDatabase()),
+  );
+
   useEffect(() => {
     flowResult(playgroundState.fetchDatabaseMetadata()).catch(
       applicationStore.alertUnhandledError,
@@ -719,20 +725,50 @@ export const SQLPlaygroundPanel = observer(() => {
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={300}>
               <div className="sql-playground__config">
-                <div className="sql-playground__config__connection-selector">
-                  <div className="sql-playground__config__connection-selector__icon">
-                    <PURE_ConnectionIcon />
+                <div className="sql-playground__config__setup">
+                  <div className="sql-playground__config__connection-selector">
+                    <div className="sql-playground__config__connection-selector__icon">
+                      <PURE_ConnectionIcon />
+                    </div>
+                    <CustomSelectorInput
+                      ref={connectionSelectorRef}
+                      className="sql-playground__config__connection-selector__input"
+                      options={connectionOptions}
+                      onChange={changeConnection}
+                      value={selectedConnectionOption}
+                      darkMode={true}
+                      placeholder="Choose a connection..."
+                      filterOption={connectionFilterOption}
+                    />
                   </div>
-                  <CustomSelectorInput
-                    ref={connectionSelectorRef}
-                    className="sql-playground__config__connection-selector__input"
-                    options={connectionOptions}
-                    onChange={changeConnection}
-                    value={selectedConnectionOption}
-                    darkMode={true}
-                    placeholder="Choose a connection..."
-                    filterOption={connectionFilterOption}
-                  />
+                  <div className="sql-playground__config__database-selector">
+                    <div className="sql-playground__config__database-selector__icon">
+                      <PURE_DatabaseIcon />
+                    </div>
+                    <CustomSelectorInput
+                      ref={connectionSelectorRef}
+                      className="sql-playground__config__database-selector__input"
+                      options={connectionOptions}
+                      onChange={changeConnection}
+                      value={selectedConnectionOption}
+                      darkMode={true}
+                      placeholder="Choose a connection..."
+                      filterOption={connectionFilterOption}
+                    />
+                    <button
+                      className="sql-playground__config__database-selector__update-btn btn--sm btn--dark"
+                      disabled={
+                        !playgroundState.connection ||
+                        !playgroundState.database ||
+                        playgroundState.isBuildingDatabase ||
+                        playgroundState.isUpdatingDatabase
+                      }
+                      onClick={updateDatabase}
+                      title="Update database"
+                    >
+                      <SyncIcon />
+                    </button>
+                  </div>
                 </div>
                 <div className="sql-playground__config__schema-explorer">
                   {playgroundState.treeData && (
