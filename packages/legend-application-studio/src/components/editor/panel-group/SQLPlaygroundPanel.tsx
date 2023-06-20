@@ -758,7 +758,6 @@ export const SQLPlaygroundPanel = observer(() => {
                     <button
                       className="sql-playground__config__database-selector__update-btn btn--sm btn--dark"
                       disabled={
-                        !playgroundState.connection ||
                         !playgroundState.database ||
                         playgroundState.isBuildingDatabase ||
                         playgroundState.isUpdatingDatabase
