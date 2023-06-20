@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 27.0.0
+
+### Major Changes
+
+- [#2329](https://github.com/finos/legend-studio/pull/2329) [`131a8f06d`](https://github.com/finos/legend-studio/commit/131a8f06d7c1f3a5519f7d98bce46cd241970278) ([@xannem](https://github.com/xannem)) - **BREAKING CHANGE:** Removed `getExtraTestRunnerTabClassifiers` and renamed to `getExtraTestRunnerTabEditorRenderer` to `getExtraTestRunnerTabConfigurations` and put tab name directly in `TestRunnerTabConfiguration`
+
+### Patch Changes
+
+- [#2333](https://github.com/finos/legend-studio/pull/2333) [`f00a00823`](https://github.com/finos/legend-studio/commit/f00a00823753bc54fa945ceb8939ab543d01b0bf) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add support for using the new external format biding service test parameter UI for type Byte
+
+- [#2344](https://github.com/finos/legend-studio/pull/2344) [`09556cbfb`](https://github.com/finos/legend-studio/commit/09556cbfb084404fe81d93257ccb5cfabff07560) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use northWind proc as default relational connection to provide sample data for users.
+
 ## 26.1.11
 
 ## 26.1.10
