@@ -22,7 +22,6 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   PanelLoadingIndicator,
-  clsx,
   TreeView,
   PURE_DatabaseSchemaIcon,
   PURE_DatabaseTableIcon,
@@ -139,7 +138,7 @@ const DatabaseBuilderTreeNodeContainer = observer(
 
     return (
       <div
-        className={clsx('tree-view__node__container')}
+        className="tree-view__node__container"
         style={{
           paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
           display: 'flex',
@@ -151,7 +150,7 @@ const DatabaseBuilderTreeNodeContainer = observer(
             {nodeExpandIcon}
           </div>
           <div
-            className={clsx('database-builder-tree__checker-icon')}
+            className="database-builder-tree__checker-icon"
             onClick={(event) => {
               event.stopPropagation();
               toggleCheckedNode(node);
@@ -198,6 +197,13 @@ export const DatabaseBuilderExplorer = observer(
       );
     };
 
+    const getChildNodes = (
+      node: DatabaseBuilderTreeNodeData,
+    ): DatabaseBuilderTreeNodeData[] =>
+      databaseBuilderState
+        .getChildNodes(node, treeData)
+        ?.sort((a, b) => a.label.localeCompare(b.label)) ?? [];
+
     const isPartiallySelected = (
       node: DatabaseBuilderTreeNodeData,
     ): boolean => {
@@ -208,22 +214,15 @@ export const DatabaseBuilderExplorer = observer(
         return Boolean(
           databaseBuilderState
             .getChildNodes(node, treeData)
-            ?.find((s) => s.isChecked === true),
+            ?.find((childNode) => childNode.isChecked === true),
         );
       }
       return false;
     };
 
-    const getChildNodes = (
-      node: DatabaseBuilderTreeNodeData,
-    ): DatabaseBuilderTreeNodeData[] =>
-      databaseBuilderState
-        .getChildNodes(node, treeData)
-        ?.sort((a, b) => a.label.localeCompare(b.label)) ?? [];
-
-    const toggleCheckedNode = (node: DatabaseBuilderTreeNodeData): void => {
+    const toggleCheckedNode = (node: DatabaseBuilderTreeNodeData): void =>
       databaseBuilderState.toggleCheckedNode(node, treeData);
-    };
+
     return (
       <TreeView
         className="database-builder-tree"

@@ -146,8 +146,8 @@ export class DatabaseBuilderState {
     makeObservable<DatabaseBuilderState>(this, {
       showModal: observable,
       targetDatabasePath: observable,
-      isBuildingDatabase: observable,
       databaseGrammarCode: observable,
+      isBuildingDatabase: observable,
       isSavingDatabase: observable,
       currentDatabase: computed,
       setTargetDatabasePath: action,
@@ -219,7 +219,7 @@ export class DatabaseBuilderState {
     treeData: DatabaseBuilderTreeData,
   ): DatabaseBuilderTreeNodeData[] | undefined {
     return node.childrenIds
-      ?.map((n) => treeData.nodes.get(n))
+      ?.map((childNode) => treeData.nodes.get(childNode))
       .filter(isNonNullable);
   }
 
@@ -245,7 +245,8 @@ export class DatabaseBuilderState {
         }
       }
     }
-    // TODO: handle ColumnDatabaseBuilderTreeNodeData
+
+    // TODO: support toggling check for columns
     this.setTreeData({ ...treeData });
   }
 
@@ -279,6 +280,7 @@ export class DatabaseBuilderState {
             schemaId,
             schema,
           );
+          nodes.set(schemaId, schemaNode);
 
           schemaNode.setChecked(
             Boolean(
@@ -287,7 +289,6 @@ export class DatabaseBuilderState {
               ),
             ),
           );
-          nodes.set(schemaId, schemaNode);
         });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
@@ -341,6 +342,8 @@ export class DatabaseBuilderState {
             schema,
             table,
           );
+          treeData.nodes.set(tableId, tableNode);
+          addUniqueEntry(childrenIds, tableId);
 
           if (this.currentDatabase) {
             const matchingSchema = getNullableSchema(
@@ -357,9 +360,6 @@ export class DatabaseBuilderState {
           } else {
             tableNode.setChecked(false);
           }
-
-          treeData.nodes.set(tableId, tableNode);
-          addUniqueEntry(childrenIds, tableId);
         });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
@@ -605,6 +605,8 @@ export class DatabaseBuilderState {
       } else {
         currentDatabase = this.currentDatabase;
       }
+
+      // remove undefined schemas
       const schemas = Array.from(this.treeData.nodes.values())
         .map((schemaNode) => {
           if (schemaNode instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -613,11 +615,32 @@ export class DatabaseBuilderState {
           return undefined;
         })
         .filter(isNonNullable);
-      this.updateDatabase(currentDatabase, database, schemas);
+      currentDatabase.schemas = currentDatabase.schemas.filter((schema) => {
+        if (
+          schemas.find((item) => item.name === schema.name) &&
+          !database.schemas.find((s) => s.name === schema.name)
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+      // update existing schemas
+      database.schemas.forEach((schema) => {
+        (schema as Writable<Schema>)._OWNER = currentDatabase;
+        const currentSchemaIndex = currentDatabase.schemas.findIndex(
+          (item) => item.name === schema.name,
+        );
+        if (currentSchemaIndex !== -1) {
+          currentDatabase.schemas[currentSchemaIndex] = schema;
+        } else {
+          currentDatabase.schemas.push(schema);
+        }
+      });
+
       this.editorStore.applicationStore.notificationService.notifySuccess(
-        `Database successfully '${isUpdating ? 'updated' : 'created'}.`,
+        `Database successfully '${isUpdating ? 'updated' : 'created'}`,
       );
-      this.fetchDatabaseMetadata();
       if (isUpdating) {
         yield flowResult(
           this.editorStore
@@ -638,35 +661,5 @@ export class DatabaseBuilderState {
     } finally {
       this.isSavingDatabase = false;
     }
-  }
-
-  updateDatabase(
-    current: Database,
-    generatedDatabase: Database,
-    allSchemas: Schema[],
-  ): void {
-    // remove undefined schemas
-    current.schemas = current.schemas.filter((schema) => {
-      if (
-        allSchemas.find((item) => item.name === schema.name) &&
-        !generatedDatabase.schemas.find((c) => c.name === schema.name)
-      ) {
-        return false;
-      }
-      return true;
-    });
-
-    // update existing schemas
-    generatedDatabase.schemas.forEach((schema) => {
-      (schema as Writable<Schema>)._OWNER = current;
-      const currentSchemaIndex = current.schemas.findIndex(
-        (item) => item.name === schema.name,
-      );
-      if (currentSchemaIndex !== -1) {
-        current.schemas[currentSchemaIndex] = schema;
-      } else {
-        current.schemas.push(schema);
-      }
-    });
   }
 }

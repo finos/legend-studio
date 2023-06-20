@@ -25,6 +25,9 @@ import {
   ActionState,
   getNonNullableEntry,
   getNullableLastEntry,
+  type Writable,
+  guaranteeNonNullable,
+  IllegalStateError,
 } from '@finos/legend-shared';
 import { observable, makeObservable, flow, flowResult, action } from 'mobx';
 import { editor as monacoEditorAPI } from 'monaco-editor';
@@ -40,6 +43,8 @@ import {
   getSchema,
   guaranteeRelationalDatabaseConnection,
   GRAPH_MANAGER_EVENT,
+  getNullableSchema,
+  getNullableTable,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
@@ -50,6 +55,8 @@ import {
 import type { CommandRegistrar } from '@finos/legend-application';
 import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY } from '../../../__lib__/STO_Relational_LegendStudioCommand.js';
 import { PANEL_MODE } from '../EditorConfig.js';
+import type { Entity } from '@finos/legend-storage';
+import { GraphEditFormModeState } from '../GraphEditFormModeState.js';
 
 export abstract class DatabaseSchemaExplorerTreeNodeData
   implements TreeNodeData
@@ -59,11 +66,21 @@ export abstract class DatabaseSchemaExplorerTreeNodeData
   label: string;
   parentId?: string | undefined;
   childrenIds?: string[] | undefined;
+  isChecked = false;
 
   constructor(id: string, label: string, parentId: string | undefined) {
+    makeObservable(this, {
+      isChecked: observable,
+      setChecked: action,
+    });
+
     this.id = id;
     this.label = label;
     this.parentId = parentId;
+  }
+
+  setChecked(val: boolean): void {
+    this.isChecked = val;
   }
 }
 
@@ -118,6 +135,7 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
   isExecutingRawSQL = false;
 
   connection?: PackageableConnection | undefined;
+  database?: Database | undefined;
   treeData?: DatabaseSchemaExplorerTreeData | undefined;
   readonly sqlEditorTextModel: monacoEditorAPI.ITextModel;
   sqlEditor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
@@ -125,17 +143,23 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
   sqlText = DEFAULT_SQL_TEXT;
   sqlExecutionResult?: string | undefined;
 
+  isBuildingDatabase = false;
+  isUpdatingDatabase = false;
+
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
       isFetchingSchema: observable,
       isExecutingRawSQL: observable,
       connection: observable,
+      database: observable,
       treeData: observable,
       sqlText: observable,
       resetSQL: action,
       sqlExecutionResult: observable,
       sqlEditor: observable.ref,
       sqlEditorViewState: observable.ref,
+      isBuildingDatabase: observable,
+      isUpdatingDatabase: observable,
       setTreeData: action,
       setConnection: action,
       setSQLEditor: action,
@@ -146,6 +170,8 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
       fetchSchemaMetadata: flow,
       fetchTableMetadata: flow,
       executeRawSQL: flow,
+      generateDatabase: flow,
+      updateDatabase: flow,
     });
 
     this.editorStore = editorStore;
@@ -161,6 +187,9 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
 
   setConnection(val: PackageableConnection | undefined): void {
     this.connection = val;
+    if (val) {
+      this.database = guaranteeRelationalDatabaseConnection(val).store.value;
+    }
     this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
   }
 
@@ -238,8 +267,35 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
     treeData: DatabaseSchemaExplorerTreeData,
   ): DatabaseSchemaExplorerTreeNodeData[] | undefined {
     return node.childrenIds
-      ?.map((n) => treeData.nodes.get(n))
+      ?.map((childNode) => treeData.nodes.get(childNode))
       .filter(isNonNullable);
+  }
+
+  toggleCheckedNode(
+    node: DatabaseSchemaExplorerTreeNodeData,
+    treeData: DatabaseSchemaExplorerTreeData,
+  ): void {
+    node.setChecked(!node.isChecked);
+    if (node instanceof DatabaseSchemaExplorerTreeSchemaNodeData) {
+      this.getChildNodes(node, treeData)?.forEach((childNode) => {
+        childNode.setChecked(node.isChecked);
+      });
+    } else if (node instanceof DatabaseSchemaExplorerTreeTableNodeData) {
+      if (node.parentId) {
+        const parent = treeData.nodes.get(node.parentId);
+        if (
+          parent &&
+          this.getChildNodes(parent, treeData)?.every(
+            (e) => e.isChecked === node.isChecked,
+          )
+        ) {
+          parent.setChecked(node.isChecked);
+        }
+      }
+    }
+
+    // TODO: support toggling check for columns
+    this.setTreeData({ ...treeData });
   }
 
   *fetchDatabaseMetadata(): GeneratorFn<void> {
@@ -279,6 +335,14 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
             dbSchema,
           );
           nodes.set(schemaId, schemaNode);
+
+          schemaNode.setChecked(
+            Boolean(
+              this.database?.schemas.find(
+                (schema) => schema.name === dbSchema.name,
+              ),
+            ),
+          );
         });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
@@ -339,6 +403,22 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
           );
           treeData.nodes.set(tableId, tableNode);
           addUniqueEntry(childrenIds, tableId);
+
+          if (this.database) {
+            const matchingSchema = getNullableSchema(
+              this.database,
+              schema.name,
+            );
+            tableNode.setChecked(
+              Boolean(
+                matchingSchema
+                  ? getNullableTable(matchingSchema, table.name)
+                  : undefined,
+              ),
+            );
+          } else {
+            tableNode.setChecked(false);
+          }
         });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
@@ -480,6 +560,149 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isExecutingRawSQL = false;
+    }
+  }
+
+  *generateDatabase(): GeneratorFn<Entity> {
+    if (!this.database || !this.connection || !this.treeData) {
+      throw new IllegalStateError(
+        `Can't build database: builder is not properly set up`,
+      );
+    }
+
+    try {
+      this.isBuildingDatabase = true;
+
+      const treeData = this.treeData;
+      const databaseBuilderInput = new DatabaseBuilderInput(
+        guaranteeRelationalDatabaseConnection(this.connection),
+      );
+      const packagePath = guaranteeNonNullable(this.database.package).path;
+      const databaseName = this.database.name;
+      databaseBuilderInput.targetDatabase = new TargetDatabase(
+        packagePath,
+        databaseName,
+      );
+      const config = databaseBuilderInput.config;
+      config.maxTables = undefined;
+      config.enrichTables = true;
+      config.enrichColumns = true;
+      config.enrichPrimaryKeys = true;
+      treeData.rootIds
+        .map((e) => treeData.nodes.get(e))
+        .filter(isNonNullable)
+        .forEach((schemaNode) => {
+          if (schemaNode instanceof DatabaseSchemaExplorerTreeSchemaNodeData) {
+            const tableNodes = this.getChildNodes(schemaNode, treeData);
+            const allChecked = tableNodes?.every((t) => t.isChecked === true);
+            if (
+              allChecked ||
+              (schemaNode.isChecked && !schemaNode.childrenIds)
+            ) {
+              config.patterns.push(
+                new DatabasePattern(schemaNode.schema.name, undefined),
+              );
+            } else {
+              tableNodes?.forEach((t) => {
+                if (
+                  t instanceof DatabaseSchemaExplorerTreeTableNodeData &&
+                  t.isChecked
+                ) {
+                  config.patterns.push(
+                    new DatabasePattern(schemaNode.schema.name, t.table.name),
+                  );
+                }
+              });
+            }
+          }
+        });
+      const entities =
+        (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
+          databaseBuilderInput,
+        )) as Entity[];
+      return getNonNullableEntry(
+        entities,
+        0,
+        'Expected a database to be generated',
+      );
+    } finally {
+      this.isBuildingDatabase = false;
+    }
+  }
+
+  *updateDatabase(): GeneratorFn<void> {
+    if (!this.treeData || !this.database || !this.connection) {
+      return;
+    }
+
+    try {
+      this.isUpdatingDatabase = true;
+
+      const graph = this.editorStore.graphManagerState.createNewGraph();
+      (yield this.editorStore.graphManagerState.graphManager.buildGraph(
+        graph,
+        [(yield flowResult(this.generateDatabase())) as Entity],
+        ActionState.create(),
+      )) as Entity[];
+      const generatedDatabase = getNonNullableEntry(
+        graph.ownDatabases,
+        0,
+        'Expected one database to be generated from input',
+      );
+
+      const currentDatabase = this.database;
+
+      // remove undefined schemas
+      const schemas = Array.from(this.treeData.nodes.values())
+        .map((schemaNode) => {
+          if (schemaNode instanceof DatabaseSchemaExplorerTreeSchemaNodeData) {
+            return schemaNode.schema;
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      currentDatabase.schemas = currentDatabase.schemas.filter((schema) => {
+        if (
+          schemas.find((item) => item.name === schema.name) &&
+          !generatedDatabase.schemas.find((s) => s.name === schema.name)
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+      // update existing schemas
+      generatedDatabase.schemas.forEach((schema) => {
+        (schema as Writable<Schema>)._OWNER = currentDatabase;
+        const currentSchemaIndex = currentDatabase.schemas.findIndex(
+          (item) => item.name === schema.name,
+        );
+        if (currentSchemaIndex !== -1) {
+          currentDatabase.schemas[currentSchemaIndex] = schema;
+        } else {
+          currentDatabase.schemas.push(schema);
+        }
+      });
+
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        `Database successfully updated`,
+      );
+      yield flowResult(
+        this.editorStore
+          .getGraphEditorMode(GraphEditFormModeState)
+          .globalCompile({
+            message: `Can't compile graph after editing database. Redirecting you to text mode`,
+          }),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.isUpdatingDatabase = false;
     }
   }
 }

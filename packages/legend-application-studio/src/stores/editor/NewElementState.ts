@@ -74,6 +74,12 @@ import {
   Multiplicity,
   PrimitiveType,
   LocalH2DatasourceSpecification,
+  SnowflakeDatasourceSpecification,
+  SnowflakePublicAuthenticationStrategy,
+  StoreConnections,
+  ConnectionPointer,
+  IdentifiedConnection,
+  generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -646,7 +652,6 @@ export class NewElementState {
       _package: observable,
       name: observable,
       newElementDriver: observable,
-      elementAndPackageName: computed,
       selectedPackage: computed,
       isValid: computed,
       setShowModal: action,
@@ -663,14 +668,6 @@ export class NewElementState {
 
     this.editorStore = editorStore;
     this.type = PACKAGEABLE_ELEMENT_TYPE.PACKAGE;
-  }
-
-  get elementAndPackageName(): [string, string] {
-    return resolvePackageAndElementName(
-      this.selectedPackage,
-      this._package === this.editorStore.graphManagerState.graph.root,
-      this.name,
-    );
   }
 
   get selectedPackage(): Package {
@@ -778,7 +775,11 @@ export class NewElementState {
 
   *save(): GeneratorFn<void> {
     if (this.name && this.isValid) {
-      const [packagePath, elementName] = this.elementAndPackageName;
+      const [packagePath, elementName] = resolvePackageAndElementName(
+        this.selectedPackage,
+        this._package === this.editorStore.graphManagerState.graph.root,
+        this.name,
+      );
       if (
         this.editorStore.graphManagerState.graph.getNullablePackage(
           packagePath,
@@ -789,17 +790,105 @@ export class NewElementState {
           `Can't create elements for type other than 'package' in root package`,
         );
       } else {
-        const element = this.createElement(elementName);
-        yield flowResult(
-          this.editorStore.graphEditorMode.addElement(
-            element,
-            packagePath,
-            true,
-          ),
-        );
+        if (
+          this.editorStore.applicationStore.config.options
+            .TEMPORARY__enableLocalConnectionBuilder &&
+          this.type === PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION
+        ) {
+          // NOTE: this is temporary until we have proper support for local connection
+          // For now, we aim to fulfill the PoC for SnowflakeApp use case and will generate
+          // everything: mapping, store, connection, runtime, etc.
+          const store = new Database(`${this.name}_Database`);
+          const mapping = new Mapping(`${this.name}_Mapping`);
+          // connection
+          const connection = new PackageableConnection(
+            `${this.name}_LocalConnection`,
+          );
+          const _suffix = `${packagePath.replaceAll(
+            ELEMENT_PATH_DELIMITER,
+            '-',
+          )}-${connection.name}`;
+          const datasourceSpecification = new SnowflakeDatasourceSpecification(
+            `legend-local-snowflake-accountName-${_suffix}`,
+            `legend-local-snowflake-region-${_suffix}`,
+            `legend-local-snowflake-warehouseName-${_suffix}`,
+            `legend-local-snowflake-databaseName-${_suffix}`,
+          );
+          datasourceSpecification.cloudType = `legend-local-snowflake-cloudType-${_suffix}`;
+          datasourceSpecification.role = `legend-local-snowflake-role-${_suffix}`;
+          const connectionValue = new RelationalDatabaseConnection(
+            PackageableElementExplicitReference.create(store),
+            DatabaseType.Snowflake,
+            datasourceSpecification,
+            new SnowflakePublicAuthenticationStrategy(
+              `legend-local-snowflake-privateKeyVaultReference-${_suffix}`,
+              `legend-local-snowflake-passphraseVaultReference-${_suffix}`,
+              `legend-local-snowflake-publicuserName-${_suffix}`,
+            ),
+          );
+          connectionValue.localMode = true;
+          connection.connectionValue = connectionValue;
+          // runtime
+          const runtime = new PackageableRuntime(`${this.name}_Runtime`);
+          const engineRuntime = new EngineRuntime();
+          engineRuntime.mappings = [
+            PackageableElementExplicitReference.create(mapping),
+          ];
+          const storeConnections = new StoreConnections(
+            PackageableElementExplicitReference.create(store),
+          );
+          storeConnections.storeConnections = [
+            new IdentifiedConnection(
+              generateIdentifiedConnectionId(engineRuntime),
+              new ConnectionPointer(
+                PackageableElementExplicitReference.create(connection),
+              ),
+            ),
+          ];
+          engineRuntime.connections = [storeConnections];
+          runtime.runtimeValue = engineRuntime;
+          // add the elements
+          yield flowResult(
+            this.editorStore.graphEditorMode.addElement(
+              store,
+              packagePath,
+              false,
+            ),
+          );
+          yield flowResult(
+            this.editorStore.graphEditorMode.addElement(
+              connection,
+              packagePath,
+              false,
+            ),
+          );
+          yield flowResult(
+            this.editorStore.graphEditorMode.addElement(
+              mapping,
+              packagePath,
+              false,
+            ),
+          );
+          yield flowResult(
+            this.editorStore.graphEditorMode.addElement(
+              runtime,
+              packagePath,
+              false,
+            ),
+          );
+        } else {
+          const element = this.createElement(elementName);
+          yield flowResult(
+            this.editorStore.graphEditorMode.addElement(
+              element,
+              packagePath,
+              true,
+            ),
+          );
 
-        // post creation handling
-        yield handlePostCreateAction(element, this.editorStore);
+          // post creation handling
+          yield handlePostCreateAction(element, this.editorStore);
+        }
       }
     }
     this.closeModal();
