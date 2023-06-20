@@ -57,6 +57,8 @@ import {
   QuerySearchSpecification,
   toLightQuery,
   QueryParameterValue,
+  type GraphInitializationReport,
+  reportGraphAnalytics,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -422,7 +424,9 @@ export abstract class QueryEditorStore {
   /**
    * Set up the query builder state after building the graph
    */
-  protected abstract initializeQueryBuilderState(): Promise<QueryBuilderState>;
+  protected abstract initializeQueryBuilderState(
+    stopWatch?: StopWatch | undefined,
+  ): Promise<QueryBuilderState>;
 
   abstract getPersistConfiguration(
     lambda: RawLambda,
@@ -436,6 +440,7 @@ export abstract class QueryEditorStore {
 
     try {
       this.initState.inProgress();
+      const stopWatch = new StopWatch();
 
       // TODO: when we genericize the way to initialize an application page
       this.applicationStore.assistantService.setIsHidden(false);
@@ -458,8 +463,9 @@ export abstract class QueryEditorStore {
 
       yield this.setUpEditorState();
       yield flowResult(this.buildGraph());
-      this.queryBuilderState =
-        (yield this.initializeQueryBuilderState()) as QueryBuilderState;
+      this.queryBuilderState = (yield this.initializeQueryBuilderState(
+        stopWatch,
+      )) as QueryBuilderState;
       this.queryLoaderState.initialize(this.queryBuilderState);
       this.initState.pass();
     } catch (error) {
@@ -497,6 +503,15 @@ export abstract class QueryEditorStore {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error);
     }
+  }
+
+  logBuildGraphMetrics(
+    graphBuilderReportData: GraphInitializationReport,
+  ): void {
+    LegendQueryTelemetryHelper.logEvent_GraphInitializationSucceeded(
+      this.applicationStore.telemetryService,
+      graphBuilderReportData,
+    );
   }
 
   *buildGraph(): GeneratorFn<void> {
@@ -581,10 +596,7 @@ export abstract class QueryEditorStore {
         this.graphManagerState.graph.dependencyManager.numberOfDependencies,
       graph: graph_buildReport,
     };
-    LegendQueryTelemetryHelper.logEvent_GraphInitializationSucceeded(
-      this.applicationStore.telemetryService,
-      graphBuilderReportData,
-    );
+    this.logBuildGraphMetrics(graphBuilderReportData);
 
     this.applicationStore.logService.info(
       LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
@@ -909,6 +921,25 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
   }
 
+  override logBuildGraphMetrics(
+    graphBuilderReportData: GraphInitializationReport,
+  ): void {
+    const currentQuery = guaranteeNonNullable(this._lightQuery);
+    LegendQueryTelemetryHelper.logEvent_GraphInitializationSucceeded(
+      this.applicationStore.telemetryService,
+      {
+        graph: graphBuilderReportData,
+        query: {
+          id: currentQuery.id,
+          name: currentQuery.name,
+          groupId: currentQuery.groupId,
+          artifactId: currentQuery.artifactId,
+          versionId: currentQuery.versionId,
+        },
+      },
+    );
+  }
+
   setLightQuery(val: LightQuery): void {
     this._lightQuery = val;
   }
@@ -931,7 +962,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
   }
 
-  async initializeQueryBuilderState(): Promise<QueryBuilderState> {
+  async initializeQueryBuilderState(
+    stopWatch: StopWatch,
+  ): Promise<QueryBuilderState> {
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
@@ -981,15 +1014,43 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         );
     }
 
+    const initailizeQueryStateStopWatch = new StopWatch();
+    const initailizeQueryStateReport = reportGraphAnalytics(
+      this.graphManagerState.graph,
+    );
     queryBuilderState.initializeWithQuery(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
       defaultParameters,
     );
+    initailizeQueryStateReport.timings =
+      this.applicationStore.timeService.finalizeTimingsRecord(
+        initailizeQueryStateStopWatch,
+        initailizeQueryStateReport.timings,
+      );
+    const report = reportGraphAnalytics(this.graphManagerState.graph);
+    report.timings = this.applicationStore.timeService.finalizeTimingsRecord(
+      stopWatch,
+      report.timings,
+    );
 
     // send analytics
+    LegendQueryTelemetryHelper.logEvent_InitializeQueryStateSucceeded(
+      this.applicationStore.telemetryService,
+      {
+        ...initailizeQueryStateReport,
+        query: {
+          id: query.id,
+          name: query.name,
+          groupId: query.groupId,
+          artifactId: query.artifactId,
+          versionId: query.versionId,
+        },
+      },
+    );
     LegendQueryTelemetryHelper.logEvent_ViewQuerySucceeded(
       this.applicationStore.telemetryService,
       {
+        ...report,
         query: {
           id: query.id,
           name: query.name,
