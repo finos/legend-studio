@@ -158,6 +158,14 @@ export const ExternalFormatParameterEditorModal = observer(
       updateParamValue,
       bindingParamPair,
     } = props;
+    const paramValue =
+      paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
+        ? atob(
+            (paramState.valueSpec as PrimitiveInstanceValue)
+              .values[0] as string,
+          )
+        : ((paramState.valueSpec as PrimitiveInstanceValue)
+            .values[0] as string);
     return (
       <Dialog
         open={true}
@@ -177,10 +185,7 @@ export const ExternalFormatParameterEditorModal = observer(
               <div className="service-test-editor__setup__parameter__code-editor__container__content">
                 <CodeEditor
                   key={paramState.uuid}
-                  inputValue={
-                    (paramState.valueSpec as PrimitiveInstanceValue)
-                      .values[0] as string
-                  }
+                  inputValue={paramValue}
                   updateInput={updateParamValue}
                   isReadOnly={isReadOnly}
                   language={
@@ -225,14 +230,14 @@ const ServiceTestParameterEditor = observer(
     const type = bindingParamPair
       ? bindingParamPair.binding.contentType
       : paramState.varExpression.genericType?.value.rawType.name ?? 'unknown';
-    const paramValue = (
+    const paramValue =
       paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
         ? atob(
             (paramState.valueSpec as PrimitiveInstanceValue)
               .values[0] as string,
           )
-        : (paramState.valueSpec as PrimitiveInstanceValue).values[0]
-    ) as string;
+        : ((paramState.valueSpec as PrimitiveInstanceValue)
+            .values[0] as string);
 
     const openInPopUp = (): void => setShowPopUp(!showPopUp);
     const closePopUp = (): void => setShowPopUp(false);
