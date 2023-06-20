@@ -23,6 +23,7 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   EDITOR = 'studio.editor',
 
   MODEL_LOADER = 'studio.editor.model-loader',
+  MODEL_LOADER_EXTERNAL_FORMAT_IMPORTER = 'studio.editor.model-loader-external-format-importer',
   TEXT_MODE_EDITOR = 'studio.editor.text-mode-editor',
   EMBEDDED_QUERY_BUILDER = 'studio.editor.embedded-query-builder',
 
@@ -56,7 +57,17 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   SERVICE_EDITOR_EXECUTION = 'studio.editor.service-editor.execution',
   SERVICE_EDITOR_TEST = 'studio.editor.service-editor.test',
 
-  DATA_ELEMENT_EDITOR = 'studio.editor.data-element-editor',
-
   SQL_PLAYGROUND = 'studio.editor.panel-group.sql-playground',
+
+  // DataElement/Embedded data
+  DATA_ELEMENT_EDITOR = 'studio.editor.data-element-editor',
+  EMBEDDED_DATA_RELATIONAL_EDITOR = 'studio.editor.embedded-data-relational-editor',
+  EMBEDDED_DATA_EXTERNAL_FORMAT_EDITOR = 'studio.editor.embedded-data-external-format-editor',
+  EMBEDDED_DATA_DATA_ELEMENT_REFERENCE_EDITOR = 'studio.editor.embedded-data-data-element-reference-editor',
+  EMBEDDED_DATA_MODEL_STORE_EDITOR = 'studio.editor.embedded-data-model-store-editor',
+
+  // external format
+  SCHEMA_SET_EDITOR = 'dsl-external-format.studio.editor.schema-set-editor',
+  SCHEMA_SET_MODEL_GENERATION = 'dsl-external-format.studio.editor.schema-set-model-generation',
+  BINDING_EDITOR = 'dsl-external-format.studio.editor.binding-editor',
 }

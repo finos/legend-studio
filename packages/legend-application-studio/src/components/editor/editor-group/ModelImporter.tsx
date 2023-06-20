@@ -100,6 +100,10 @@ const ExternalFormatModelImporterEditor = observer(
         </BlankPanelContent>
       );
     };
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MODEL_LOADER_EXTERNAL_FORMAT_IMPORTER,
+    );
     return (
       <Panel className="schema-set-panel">
         <PanelContent className="model-loader">

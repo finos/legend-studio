@@ -59,6 +59,8 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
 
 const SchemaLoader = observer(
   (props: {
@@ -414,6 +416,10 @@ export const SchemaSetEditor = observer(() => {
       </BlankPanelContent>
     );
   };
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SCHEMA_SET_EDITOR,
+  );
 
   return (
     <div className="panel schema-set-panel">

@@ -62,6 +62,8 @@ import {
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -92,6 +94,9 @@ export const ExternalFormatDataEditor = observer(
       ),
     );
     const format = (): void => externalFormatDataState.format();
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_EXTERNAL_FORMAT_EDITOR,
+    );
     return (
       <div className="panel external-format-data-editor">
         <div className="external-format-data-editor__header">
@@ -184,6 +189,9 @@ export const DataElementReferenceDataEditor = observer(
     };
     const visitData = (): void =>
       editorStore.graphEditorMode.openElement(dataElement);
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_DATA_ELEMENT_REFERENCE_EDITOR,
+    );
     return (
       <div className="panel data-element-reference-editor">
         <div className="data-element-reference-editor__header">
@@ -309,7 +317,9 @@ export const ModelStoreDataEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { isReadOnly, modelStoreDataState } = props;
-
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_MODEL_STORE_EDITOR,
+    );
     return (
       <div className="panel connection-editor">
         {modelStoreDataState.modelDataStates.map((_modelDataState) => {
