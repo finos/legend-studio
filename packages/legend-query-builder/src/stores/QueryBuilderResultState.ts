@@ -81,6 +81,7 @@ export class QueryBuilderResultState {
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  isQueryUsageViewerOpened = false;
 
   selectedCells: QueryBuilderTDSResultCellData[];
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
@@ -99,6 +100,7 @@ export class QueryBuilderResultState {
       isRunningQuery: observable,
       isSelectingCells: observable,
       setIsSelectingCells: action,
+      isQueryUsageViewerOpened: observable,
       setIsRunningQuery: action,
       setExecutionResult: action,
       setExecutionDuration: action,
@@ -107,7 +109,7 @@ export class QueryBuilderResultState {
       setSelectedCells: action,
       setMouseOverCell: action,
       setQueryRunPromise: action,
-
+      setIsQueryUsageViewerOpened: action,
       exportData: flow,
       runQuery: flow,
       cancelQuery: flow,
@@ -200,6 +202,10 @@ export class QueryBuilderResultState {
 
     return this.executionResult.result.rows[rowIndex]?.values[colIndex];
   };
+
+  setIsQueryUsageViewerOpened(val: boolean): void {
+    this.isQueryUsageViewerOpened = val;
+  }
 
   get checkForStaleResults(): boolean {
     if (this.latestRunHashCode !== this.queryBuilderState.hashCode) {

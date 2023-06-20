@@ -559,7 +559,7 @@
     &__menu__item {
       @include flexCenter;
 
-      width: 7rem;
+      width: 15rem;
       height: 2rem;
     }
   }
@@ -907,5 +907,95 @@
   &__container {
     height: 100%;
     padding: 2rem;
+  }
+}
+
+.query-builder__usage-viewer {
+  &__modal {
+    padding: 0;
+    height: 30vh;
+    width: 50vw;
+    overflow: hidden;
+  }
+
+  &__body {
+    height: calc(100% - 8.5rem);
+  }
+
+  &__tabs {
+    @include flexVCenter;
+
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  &__tab__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    height: 3.8rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-280);
+    border-top: 0.1rem solid var(--color-dark-grey-280);
+  }
+
+  &__tab {
+    @include flexVCenter;
+
+    padding: 0.5rem;
+    color: var(--color-light-grey-300);
+    user-select: none;
+  }
+
+  &__tab + &__tab {
+    border-left: 0.1rem solid var(--color-dark-grey-280);
+  }
+
+  &__tab__label {
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  &__tab__icon {
+    &--query {
+      font-size: 1.6rem;
+    }
+  }
+
+  &__tab__icon + &__tab__label {
+    margin-left: 0.5rem;
+  }
+
+  &__tab:hover &__tab__label {
+    color: var(--color-dark-grey-400);
+  }
+
+  &__tab:hover &__tab__icon {
+    svg {
+      color: var(--color-dark-grey-400);
+    }
+  }
+
+  &__tab--active:hover &__tab__label,
+  &__tab--active &__tab__label {
+    color: var(--color-blue-200);
+    font-weight: 500;
+  }
+
+  &__tab--active:hover &__tab__icon,
+  &__tab--active &__tab__icon {
+    svg {
+      color: var(--color-blue-200);
+    }
+  }
+
+  &__tab__content {
+    margin-top: 1rem;
+    height: 30rem;
+  }
+
+  &__content {
+    height: calc(100% - 3.8rem);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    position: relative;
   }
 }
