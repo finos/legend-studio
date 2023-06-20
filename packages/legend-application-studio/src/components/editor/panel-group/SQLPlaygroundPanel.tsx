@@ -20,7 +20,6 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
-  clsx,
   TreeView,
   PURE_DatabaseSchemaIcon,
   PURE_DatabaseTableIcon,
@@ -38,6 +37,9 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   TrashIcon,
+  CircleIcon,
+  CheckCircleIcon,
+  EmptyCircleIcon,
 } from '@finos/legend-art';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -119,11 +121,15 @@ const DatabaseSchemaExplorerTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     DatabaseSchemaExplorerTreeNodeData,
     {
-      // empty
+      toggleCheckedNode: (node: DatabaseSchemaExplorerTreeNodeData) => void;
+      isPartiallySelected: (
+        node: DatabaseSchemaExplorerTreeNodeData,
+      ) => boolean;
     }
   >
 > = (props) => {
-  const { node, level, stepPaddingInRem, onNodeSelect } = props;
+  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
+  const { toggleCheckedNode, isPartiallySelected } = innerProps;
   const isExpandable =
     Boolean(!node.childrenIds || node.childrenIds.length) &&
     !(node instanceof DatabaseSchemaExplorerTreeColumnNodeData);
@@ -154,9 +160,22 @@ const DatabaseSchemaExplorerTreeNodeContainer: React.FC<
     node instanceof DatabaseSchemaExplorerTreeColumnNodeData &&
     node.owner.primaryKey.includes(node.column);
 
+  const renderCheckedIcon = (
+    _node: DatabaseSchemaExplorerTreeNodeData,
+  ): React.ReactNode => {
+    if (_node instanceof DatabaseSchemaExplorerTreeColumnNodeData) {
+      return null;
+    } else if (isPartiallySelected(_node)) {
+      return <CircleIcon />;
+    } else if (_node.isChecked) {
+      return <CheckCircleIcon />;
+    }
+    return <EmptyCircleIcon />;
+  };
+
   return (
     <div
-      className={clsx('tree-view__node__container')}
+      className="tree-view__node__container"
       style={{
         paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
         display: 'flex',
@@ -167,6 +186,15 @@ const DatabaseSchemaExplorerTreeNodeContainer: React.FC<
       <div className="tree-view__node__icon sql-playground__database-schema-explorer-tree__node__icon__group">
         <div className="sql-playground__database-schema-explorer-tree__expand-icon">
           {nodeExpandIcon}
+        </div>
+        <div
+          className="sql-playground__database-schema-explorer-tree__toggle-icon"
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleCheckedNode(node);
+          }}
+        >
+          {renderCheckedIcon(node)}
         </div>
         <div className="sql-playground__database-schema-explorer-tree__type-icon">
           {nodeTypeIcon}
@@ -215,13 +243,36 @@ export const DatabaseSchemaExplorer = observer(
         .getChildNodes(node, treeData)
         ?.sort((a, b) => a.label.localeCompare(b.label)) ?? [];
 
+    const isPartiallySelected = (
+      node: DatabaseSchemaExplorerTreeNodeData,
+    ): boolean => {
+      if (
+        node instanceof DatabaseSchemaExplorerTreeSchemaNodeData &&
+        !node.isChecked
+      ) {
+        return Boolean(
+          playgroundState
+            .getChildNodes(node, treeData)
+            ?.find((childNode) => childNode.isChecked === true),
+        );
+      }
+      return false;
+    };
+
+    const toggleCheckedNode = (
+      node: DatabaseSchemaExplorerTreeNodeData,
+    ): void => playgroundState.toggleCheckedNode(node, treeData);
+
     return (
       <TreeView
         className="sql-playground__database-schema-explorer-tree"
         components={{
           TreeNodeContainer: DatabaseSchemaExplorerTreeNodeContainer,
         }}
-        innerProps={{}}
+        innerProps={{
+          toggleCheckedNode,
+          isPartiallySelected,
+        }}
         treeData={treeData}
         onNodeSelect={onNodeSelect}
         getChildNodes={getChildNodes}

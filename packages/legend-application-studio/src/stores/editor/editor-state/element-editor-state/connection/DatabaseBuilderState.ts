@@ -219,7 +219,7 @@ export class DatabaseBuilderState {
     treeData: DatabaseBuilderTreeData,
   ): DatabaseBuilderTreeNodeData[] | undefined {
     return node.childrenIds
-      ?.map((n) => treeData.nodes.get(n))
+      ?.map((childNode) => treeData.nodes.get(childNode))
       .filter(isNonNullable);
   }
 
@@ -245,7 +245,8 @@ export class DatabaseBuilderState {
         }
       }
     }
-    // TODO: handle ColumnDatabaseBuilderTreeNodeData
+
+    // TODO: support toggling check for columns
     this.setTreeData({ ...treeData });
   }
 
@@ -279,6 +280,7 @@ export class DatabaseBuilderState {
             schemaId,
             schema,
           );
+          nodes.set(schemaId, schemaNode);
 
           schemaNode.setChecked(
             Boolean(
@@ -287,7 +289,6 @@ export class DatabaseBuilderState {
               ),
             ),
           );
-          nodes.set(schemaId, schemaNode);
         });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
@@ -341,6 +342,8 @@ export class DatabaseBuilderState {
             schema,
             table,
           );
+          treeData.nodes.set(tableId, tableNode);
+          addUniqueEntry(childrenIds, tableId);
 
           if (this.currentDatabase) {
             const matchingSchema = getNullableSchema(
@@ -357,9 +360,6 @@ export class DatabaseBuilderState {
           } else {
             tableNode.setChecked(false);
           }
-
-          treeData.nodes.set(tableId, tableNode);
-          addUniqueEntry(childrenIds, tableId);
         });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });

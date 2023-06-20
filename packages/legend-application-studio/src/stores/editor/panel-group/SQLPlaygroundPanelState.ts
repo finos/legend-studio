@@ -40,6 +40,8 @@ import {
   getSchema,
   guaranteeRelationalDatabaseConnection,
   GRAPH_MANAGER_EVENT,
+  getNullableSchema,
+  getNullableTable,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
@@ -59,11 +61,21 @@ export abstract class DatabaseSchemaExplorerTreeNodeData
   label: string;
   parentId?: string | undefined;
   childrenIds?: string[] | undefined;
+  isChecked = false;
 
   constructor(id: string, label: string, parentId: string | undefined) {
+    makeObservable(this, {
+      isChecked: observable,
+      setChecked: action,
+    });
+
     this.id = id;
     this.label = label;
     this.parentId = parentId;
+  }
+
+  setChecked(val: boolean): void {
+    this.isChecked = val;
   }
 }
 
@@ -118,6 +130,7 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
   isExecutingRawSQL = false;
 
   connection?: PackageableConnection | undefined;
+  database?: Database | undefined;
   treeData?: DatabaseSchemaExplorerTreeData | undefined;
   readonly sqlEditorTextModel: monacoEditorAPI.ITextModel;
   sqlEditor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
@@ -130,6 +143,7 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
       isFetchingSchema: observable,
       isExecutingRawSQL: observable,
       connection: observable,
+      database: observable,
       treeData: observable,
       sqlText: observable,
       resetSQL: action,
@@ -161,6 +175,9 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
 
   setConnection(val: PackageableConnection | undefined): void {
     this.connection = val;
+    this.database = guaranteeRelationalDatabaseConnection(
+      this.connection,
+    ).store.value;
     this.sqlEditorTextModel.setValue(DEFAULT_SQL_TEXT);
   }
 
@@ -238,8 +255,35 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
     treeData: DatabaseSchemaExplorerTreeData,
   ): DatabaseSchemaExplorerTreeNodeData[] | undefined {
     return node.childrenIds
-      ?.map((n) => treeData.nodes.get(n))
+      ?.map((childNode) => treeData.nodes.get(childNode))
       .filter(isNonNullable);
+  }
+
+  toggleCheckedNode(
+    node: DatabaseSchemaExplorerTreeNodeData,
+    treeData: DatabaseSchemaExplorerTreeData,
+  ): void {
+    node.setChecked(!node.isChecked);
+    if (node instanceof DatabaseSchemaExplorerTreeSchemaNodeData) {
+      this.getChildNodes(node, treeData)?.forEach((childNode) => {
+        childNode.setChecked(node.isChecked);
+      });
+    } else if (node instanceof DatabaseSchemaExplorerTreeTableNodeData) {
+      if (node.parentId) {
+        const parent = treeData.nodes.get(node.parentId);
+        if (
+          parent &&
+          this.getChildNodes(parent, treeData)?.every(
+            (e) => e.isChecked === node.isChecked,
+          )
+        ) {
+          parent.setChecked(node.isChecked);
+        }
+      }
+    }
+
+    // TODO: support toggling check for columns
+    this.setTreeData({ ...treeData });
   }
 
   *fetchDatabaseMetadata(): GeneratorFn<void> {
@@ -279,6 +323,14 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
             dbSchema,
           );
           nodes.set(schemaId, schemaNode);
+
+          schemaNode.setChecked(
+            Boolean(
+              this.database?.schemas.find(
+                (schema) => schema.name === dbSchema.name,
+              ),
+            ),
+          );
         });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
@@ -339,6 +391,22 @@ export class SQLPlaygroundPanelState implements CommandRegistrar {
           );
           treeData.nodes.set(tableId, tableNode);
           addUniqueEntry(childrenIds, tableId);
+
+          if (this.database) {
+            const matchingSchema = getNullableSchema(
+              this.database,
+              schema.name,
+            );
+            tableNode.setChecked(
+              Boolean(
+                matchingSchema
+                  ? getNullableTable(matchingSchema, table.name)
+                  : undefined,
+              ),
+            );
+          } else {
+            tableNode.setChecked(false);
+          }
         });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });

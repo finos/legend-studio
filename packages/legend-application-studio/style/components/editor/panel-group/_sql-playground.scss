@@ -151,6 +151,7 @@
   }
 
   &__expand-icon,
+  &__toggle-icon,
   &__type-icon {
     @include flexHCenter;
 
@@ -159,8 +160,8 @@
   }
 
   &__node__icon__group {
-    width: 3.6rem;
-    min-width: 3.6rem;
+    width: 5.4rem;
+    min-width: 5.4rem;
   }
 
   &__expand-icon svg {
