@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 27.1.0
+
+### Minor Changes
+
+- [#2354](https://github.com/finos/legend-studio/pull/2354) [`7b1d19977`](https://github.com/finos/legend-studio/commit/7b1d19977cc39371413a2fd1af1bbc0528673b9f) ([@akphi](https://github.com/akphi)) - Add temporary support for creating local connection, right now this is a PoC aim to demonstrate the support for `SnowflakeApp`, this can be enabled by setting the config flag `TEMPORARY__enableLocalConnectionBuilder=true`.
+
 ## 27.0.0
 
 ### Major Changes

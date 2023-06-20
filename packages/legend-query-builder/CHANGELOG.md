@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.1.0
+
+### Minor Changes
+
+- [#2321](https://github.com/finos/legend-studio/pull/2321) [`f0017123d`](https://github.com/finos/legend-studio/commit/f0017123d1798af73cef2a91b0af13bd1b9a831f) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for export query to other formats.
+
 ## 4.0.13
 
 ### Patch Changes
