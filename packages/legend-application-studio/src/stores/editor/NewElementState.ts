@@ -619,7 +619,6 @@ export class NewDataElementDriver extends NewElementDriver<DataElement> {
   createElement(name: string): DataElement {
     const embeddedDataOption = guaranteeNonNullable(this.embeddedDataOption);
     const dataElement = new DataElement(name);
-
     const data = createEmbeddedData(embeddedDataOption.value, this.editorStore);
     dataElement_setEmbeddedData(
       dataElement,

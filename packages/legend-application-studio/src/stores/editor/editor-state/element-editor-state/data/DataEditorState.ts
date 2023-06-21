@@ -26,6 +26,7 @@ import { ElementEditorState } from '../ElementEditorState.js';
 import {
   type EmbeddedDataState,
   buildEmbeddedDataEditorState,
+  type EmbeddedDataStateOption,
 } from './EmbeddedDataState.js';
 
 export enum DATA_TAB_TYPE {
@@ -45,12 +46,17 @@ export class EmbeddedDataEditorState {
   readonly embeddedData: EmbeddedData;
   readonly embeddedDataState: EmbeddedDataState;
 
-  constructor(editorStore: EditorStore, embeddedData: EmbeddedData) {
+  constructor(
+    editorStore: EditorStore,
+    embeddedData: EmbeddedData,
+    options?: EmbeddedDataStateOption,
+  ) {
     this.editorStore = editorStore;
     this.embeddedData = embeddedData;
     this.embeddedDataState = buildEmbeddedDataEditorState(
       embeddedData,
       editorStore,
+      options,
     );
   }
 }

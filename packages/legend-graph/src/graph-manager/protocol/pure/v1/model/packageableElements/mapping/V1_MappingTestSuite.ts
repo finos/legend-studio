@@ -17,34 +17,9 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import { V1_TestSuite } from '../../test/V1_TestSuite.js';
-import type { V1_MappingStoreTestData } from './V1_MappingStoreTestData.js';
 import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
 
-export abstract class V1_MappingTestSuite
-  extends V1_TestSuite
-  implements Hashable {}
-
-export class V1_MappingDataTestSuite
-  extends V1_MappingTestSuite
-  implements Hashable
-{
-  storeTestData: V1_MappingStoreTestData[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.MAPPING_TEST_DATA_SUITE,
-      this.id,
-      this.doc ?? '',
-      hashArray(this.storeTestData),
-      hashArray(this.tests),
-    ]);
-  }
-}
-
-export class V1_MappingQueryTestSuite
-  extends V1_MappingTestSuite
-  implements Hashable
-{
+export class V1_MappingTestSuite extends V1_TestSuite implements Hashable {
   /**
    * Studio does not process value specification, they are left in raw JSON form
    *
@@ -54,7 +29,7 @@ export class V1_MappingQueryTestSuite
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.MAPPING_TEST_QUERY_SUITE,
+      CORE_HASH_STRUCTURE.MAPPING_TEST_SUITE,
       this.id,
       this.doc ?? '',
       this.func,

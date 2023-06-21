@@ -308,6 +308,8 @@ export const createMockDataForMappingElementSource = (
     srcElement.relation instanceof Table
   ) {
     return createMockDataForTable(srcElement.relation);
+  } else if (srcElement instanceof Table) {
+    return createMockDataForTable(srcElement);
   }
   editorStore.applicationStore.notificationService.notifyWarning(
     new UnsupportedOperationError(

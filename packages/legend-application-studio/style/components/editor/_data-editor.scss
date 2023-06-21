@@ -232,16 +232,9 @@
   }
 
   &__content__input {
-    width: 100%;
-    min-width: 0;
-    border: 0.1rem solid var(--color-dark-grey-100);
-    border-radius: 0.2rem 0 0 0.2rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
-    height: 50rem;
-    margin-left: 0.1rem;
     overflow-y: hidden;
     position: relative;
+    height: 100%;
   }
 
   &__content__input:hover,

@@ -28,6 +28,7 @@ import {
   type TestAssertion,
   type AtomicTest,
   type Class,
+  type EmbeddedDataVisitor,
   ExternalFormatData,
   RelationalCSVData,
   ConnectionTestData,
@@ -36,6 +37,14 @@ import {
   RelationalCSVDataTable,
   type INTERNAL__UnknownConnection,
   getAllIdentifiedConnectionsFromRuntime,
+  ModelStoreData,
+  ModelEmbeddedData,
+  PackageableElementExplicitReference,
+  type DataElementReference,
+  type INTERNAL__UnknownEmbeddedData,
+  type TestResult,
+  TestExecuted,
+  TestExecutionStatus,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -58,6 +67,7 @@ export const validateTestableId = (
   id: string | undefined,
   possibleIds: string[] | undefined,
 ): string | undefined => {
+  // undefined in this case means user has yet to write anything so we shouldnt show any error message
   if (id === undefined) {
     return undefined;
   }
@@ -100,6 +110,64 @@ export const createEmbeddedDataFromClass = (
   data.data = _json;
   return data;
 };
+
+export const createBareModelStoreData = (
+  _class: Class,
+  editorStore: EditorStore,
+): ModelStoreData => {
+  const embeddedData = createEmbeddedDataFromClass(_class, editorStore);
+  const modelStoreData = new ModelStoreData();
+  const modelData = new ModelEmbeddedData();
+  modelData.data = embeddedData;
+  modelData.model = PackageableElementExplicitReference.create(_class);
+  modelStoreData.modelData = [modelData];
+  return modelStoreData;
+};
+
+export class EmbeddedDataCreatorFromEmbeddedData
+  implements EmbeddedDataVisitor<EmbeddedData>
+{
+  visit_EmbeddedData(data: EmbeddedData): EmbeddedData {
+    throw new Error('Method not implemented.');
+  }
+  visit_INTERNAL__UnknownEmbeddedData(
+    data: INTERNAL__UnknownEmbeddedData,
+  ): EmbeddedData {
+    throw new Error('Method not implemented.');
+  }
+  visit_ExternalFormatData(data: ExternalFormatData): EmbeddedData {
+    const val = new ExternalFormatData();
+    val.contentType = data.contentType;
+    val.data = '';
+    return val;
+  }
+  visit_ModelStoreData(data: ModelStoreData): EmbeddedData {
+    const val = new ModelStoreData();
+    val.modelData = data.modelData
+      ?.map((e) => {
+        if (e instanceof ModelEmbeddedData) {
+          const v = new ModelEmbeddedData();
+          v.model = PackageableElementExplicitReference.create(e.model.value);
+          v.data = e.data.accept_EmbeddedDataVisitor(
+            new EmbeddedDataCreatorFromEmbeddedData(),
+          );
+          return v;
+        }
+        return undefined;
+      })
+      .filter(isNonNullable);
+    return val;
+  }
+  visit_DataElementReference(data: DataElementReference): EmbeddedData {
+    return data.dataElement.value.data.accept_EmbeddedDataVisitor(
+      new EmbeddedDataCreatorFromEmbeddedData(),
+    );
+  }
+  visit_RelationalCSVData(data: RelationalCSVData): EmbeddedData {
+    const val = new RelationalCSVData();
+    return val;
+  }
+}
 
 // NOTE: this will all move to `engine` once engine support generating test data for all connections
 // Throws if unable to generate test data
@@ -251,3 +319,8 @@ export const TEMPORARY__createRelationalDataFromCSV = (
   });
   return data;
 };
+
+// test result
+export const isTestPassing = (testResult: TestResult): boolean =>
+  testResult instanceof TestExecuted &&
+  testResult.testExecutionStatus === TestExecutionStatus.PASS;
