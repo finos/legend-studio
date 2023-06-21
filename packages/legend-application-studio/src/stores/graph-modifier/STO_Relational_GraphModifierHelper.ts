@@ -102,6 +102,12 @@ export const relationDbConnection_setNewAuthenticationStrategy = action(
   },
 );
 
+export const relationDbConnection_setDatasourceSpecificationFromType = action(
+  (con: RelationalDatabaseConnection): void => {
+    con;
+  },
+);
+
 // --------------------------------------------- AuthenticationStrategy -------------------------------------
 
 export const delegatedKerberosAuthenticationStrategy_setServerPrincipal =

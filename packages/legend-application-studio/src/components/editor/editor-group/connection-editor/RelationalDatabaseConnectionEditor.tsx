@@ -1589,11 +1589,21 @@ const RelationalConnectionGeneralEditor = observer(
       val: { label: string; value: string } | null,
     ): void => {
       dBConnection_setType(connection, val?.value ?? DatabaseType.H2);
+      if (connectionValueState.selectedValidDatasources[0]) {
+        connectionValueState.changeDatasourceSpec(
+          connectionValueState.selectedValidDatasources[0],
+        );
+      }
+      if (connectionValueState.selectedValidAuthenticationStrategies[0]) {
+        connectionValueState.changeAuthenticationStrategy(
+          connectionValueState.selectedValidAuthenticationStrategies[0],
+        );
+      }
     };
 
     // source spec type
     const sourceSpecOptions = (
-      Object.values(CORE_DATASOURCE_SPEC_TYPE) as string[]
+      Object.values(connectionValueState.selectedValidDatasources) as string[]
     )
       .concat(
         plugins.flatMap(
@@ -1622,7 +1632,9 @@ const RelationalConnectionGeneralEditor = observer(
 
     // auth type
     const authOptions = (
-      Object.values(CORE_AUTHENTICATION_STRATEGY_TYPE) as string[]
+      Object.values(
+        connectionValueState.selectedValidAuthenticationStrategies,
+      ) as string[]
     )
       .concat(
         plugins.flatMap(
@@ -1657,9 +1669,9 @@ const RelationalConnectionGeneralEditor = observer(
             <PanelHeader title="general"></PanelHeader>
             <PanelContent className="relational-connection-editor__general">
               <PanelFormSection>
-                <div className="panel__content__form__section__header__label">
+                <label className="panel__content__form__section__header__label">
                   Database Type
-                </div>
+                </label>
                 <CustomSelectorInput
                   options={typeOptions}
                   onChange={onTypeChange}
@@ -1681,9 +1693,9 @@ const RelationalConnectionGeneralEditor = observer(
               <PanelHeader title="general"></PanelHeader>
               <PanelContent className="relational-connection-editor__general">
                 <PanelFormSection>
-                  <div className="panel__content__form__section__header__label">
+                  <label className="panel__content__form__section__header__label">
                     Database Type
-                  </div>
+                  </label>
                   <CustomSelectorInput
                     options={typeOptions}
                     onChange={onTypeChange}
@@ -1707,7 +1719,7 @@ const RelationalConnectionGeneralEditor = observer(
           <ResizablePanel>
             <div className="relational-connection-editor__content">
               <ResizablePanelGroup orientation="vertical">
-                <ResizablePanel size={450} minSize={50}>
+                <ResizablePanel size={700} minSize={50}>
                   <div className="relational-connection-editor__auth">
                     <PanelHeader title="datasource specification"></PanelHeader>
                     <PanelContent className="relational-connection-editor__auth__content">

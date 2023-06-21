@@ -29,6 +29,7 @@ import {
   type ValidationIssue,
   type AuthenticationStrategy,
   type DatasourceSpecification,
+  DatabaseType,
   PackageableConnection,
   JsonModelConnection,
   FlatDataConnection,
@@ -133,6 +134,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       postProcessorState: observable,
       selectedDatasourceSpecificationType: computed,
       selectedAuthenticationStrategyType: computed,
+      selectedValidDatasources: computed,
+      selectedValidAuthenticationStrategies: computed,
       setLocalMode: action,
       setSelectedTab: action,
       selectPostProcessor: action,
@@ -225,6 +228,93 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
     }
     return undefined;
+  }
+
+  get selectedValidDatasources(): Array<CORE_DATASOURCE_SPEC_TYPE> {
+    switch (this.connection.type) {
+      case DatabaseType.H2: {
+        return [
+          CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL,
+          CORE_DATASOURCE_SPEC_TYPE.STATIC,
+        ];
+      }
+      case DatabaseType.BigQuery: {
+        return [CORE_DATASOURCE_SPEC_TYPE.BIGQUERY];
+      }
+      case DatabaseType.MemSQL: {
+        return [CORE_DATASOURCE_SPEC_TYPE.STATIC];
+      }
+      case DatabaseType.Trino: {
+        return [CORE_DATASOURCE_SPEC_TYPE.TRINO];
+      }
+      case DatabaseType.SqlServer: {
+        return [CORE_DATASOURCE_SPEC_TYPE.STATIC];
+      }
+      case DatabaseType.Databricks: {
+        return [CORE_DATASOURCE_SPEC_TYPE.DATABRICKS];
+      }
+      case DatabaseType.Postgres: {
+        return [CORE_DATASOURCE_SPEC_TYPE.STATIC];
+      }
+      case DatabaseType.Snowflake: {
+        return [CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE];
+      }
+      case DatabaseType.Spanner: {
+        return [CORE_DATASOURCE_SPEC_TYPE.SPANNER];
+      }
+      case DatabaseType.Redshift: {
+        return [CORE_DATASOURCE_SPEC_TYPE.REDSHIFT];
+      }
+      default: {
+        return Object.values(CORE_DATASOURCE_SPEC_TYPE);
+      }
+    }
+  }
+
+  get selectedValidAuthenticationStrategies(): Array<CORE_AUTHENTICATION_STRATEGY_TYPE> {
+    switch (this.connection.type) {
+      case DatabaseType.H2: {
+        return [CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT];
+      }
+      case DatabaseType.BigQuery: {
+        return [
+          CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS,
+          CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION,
+        ];
+      }
+      case DatabaseType.MemSQL: {
+        return [CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD];
+      }
+      case DatabaseType.Trino: {
+        return [
+          CORE_AUTHENTICATION_STRATEGY_TYPE.TRINO_DELEGATED_KERBEROS,
+          CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD,
+        ];
+      }
+      case DatabaseType.SqlServer: {
+        return [CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD];
+      }
+      case DatabaseType.Databricks: {
+        return [CORE_AUTHENTICATION_STRATEGY_TYPE.API_TOKEN];
+      }
+      case DatabaseType.Postgres: {
+        return [CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD];
+      }
+      case DatabaseType.Snowflake: {
+        return [CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC];
+      }
+      case DatabaseType.Spanner: {
+        return [
+          CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS,
+        ];
+      }
+      case DatabaseType.Redshift: {
+        return [CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD];
+      }
+      default: {
+        return Object.values(CORE_AUTHENTICATION_STRATEGY_TYPE);
+      }
+    }
   }
 
   changeDatasourceSpec(type: string): void {
