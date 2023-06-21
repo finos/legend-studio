@@ -36,6 +36,7 @@ import {
   isNonNullable,
   filterByType,
   isString,
+  assertNonEmptyString,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -303,6 +304,7 @@ import {
   V1_ArtifactGenerationExtensionInput,
   V1_buildArtifactsByExtensionElement,
 } from './engine/generation/V1_ArtifactGenerationExtensionApi.js';
+import { RelationalConnectionConfiguration } from '../../../action/relational/RelationalConnectionConfiguration.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3010,6 +3012,45 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const generatedModel =
       await this.engine.generateModelsFromDatabaseSpecification(input);
     return this.pureModelContextDataToEntities(generatedModel);
+  }
+
+  async getDbTypeToDataSourceAndAuthMapping(): Promise<
+    RelationalConnectionConfiguration[]
+  > {
+    return (
+      await Promise.all(
+        (await this.engine.getDbTypeToDataSourceAndAuthMap()).map(
+          (dbDataSourceAuth) => {
+            try {
+              assertNonEmptyString(
+                dbDataSourceAuth.dbType,
+                'Property dbType missing in database authentication flow',
+              );
+              assertNonEmptyString(
+                dbDataSourceAuth.dataSource,
+                'Property dataSource missing in database authentication flow',
+              );
+              assertNonEmptyString(
+                dbDataSourceAuth.authStrategy,
+                'Property authStrategy missing in database authentication flow',
+              );
+              const config = new RelationalConnectionConfiguration();
+              config.dbType = dbDataSourceAuth.dbType;
+              config.dataSource = dbDataSourceAuth.dataSource;
+              config.authStrategy = dbDataSourceAuth.authStrategy;
+              return config;
+            } catch (error) {
+              assertErrorThrown(error);
+              this.logService.warn(
+                LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+                `Can't fetch database authentication flows: ${error.message}`,
+              );
+              return undefined;
+            }
+          },
+        ),
+      )
+    ).filter(isNonNullable);
   }
 
   // --------------------------------------------- Service ---------------------------------------------

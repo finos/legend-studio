@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, makeObservable } from 'mobx';
+import { computed, observable, action, makeObservable, flow } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   guaranteeType,
   uuid,
   UnsupportedOperationError,
+  assertErrorThrown,
+  LogEvent,
+  type GeneratorFn,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
@@ -27,7 +30,6 @@ import {
   type PackageableElement,
   type Connection,
   type ValidationIssue,
-  type AuthenticationStrategy,
   type DatasourceSpecification,
   PackageableConnection,
   JsonModelConnection,
@@ -57,6 +59,8 @@ import {
   isStubbed_PackageableElement,
   type PostProcessor,
   MapperPostProcessor,
+  type AuthenticationStrategy,
+  type RelationalConnectionConfiguration,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -68,6 +72,7 @@ import {
   MapperPostProcessorEditorState,
   type PostProcessorEditorState,
 } from './PostProcessorEditorState.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -116,11 +121,66 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   TRINO_DELEGATED_KERBEROS = 'Trino Delegated Kerberos',
 }
 
+class DatabaseTypeConfiguration {
+  compatibleDataSources: string[] = [];
+  compatibleAuthStragies: string[] = [];
+
+  constructor(
+    compatibleDataSources: string[],
+    compatibleAuthStragies: string[],
+  ) {
+    this.compatibleDataSources = compatibleDataSources;
+    this.compatibleAuthStragies = compatibleAuthStragies;
+  }
+}
+
+const TEMPRORARY_DATASOURCE_SPECIFICATION_PROTOCOL_TO_PRETTIER = new Map<
+  string,
+  string
+>([
+  ['static', CORE_DATASOURCE_SPEC_TYPE.STATIC],
+  ['h2Local', CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL],
+  ['Trino', CORE_DATASOURCE_SPEC_TYPE.TRINO],
+  ['databricks', CORE_DATASOURCE_SPEC_TYPE.DATABRICKS],
+  ['bigQuery', CORE_DATASOURCE_SPEC_TYPE.BIGQUERY],
+  ['spanner', CORE_DATASOURCE_SPEC_TYPE.SPANNER],
+  ['redshift', CORE_DATASOURCE_SPEC_TYPE.REDSHIFT],
+  ['snowflake', CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE],
+]);
+
+const TEMPRORARY_AUTHENICATION_STRATEGY_PROTOCOL_TO_PRETTIER = new Map<
+  string,
+  string
+>([
+  ['userNamePassword', CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD],
+  [
+    'TrinoDelegatedKerberosAuth',
+    CORE_AUTHENTICATION_STRATEGY_TYPE.TRINO_DELEGATED_KERBEROS,
+  ],
+  [
+    'gcpApplicationDefaultCredentials',
+    CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS,
+  ],
+  [
+    'middleTierUserNamePassword',
+    CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD,
+  ],
+  ['snowflakePublic', CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC],
+  [
+    'gcpWorkloadIdentityFederation',
+    CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION,
+  ],
+  ['apiToken', CORE_AUTHENTICATION_STRATEGY_TYPE.API_TOKEN],
+  ['h2Default', CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT],
+]);
+
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
   override connection: RelationalDatabaseConnection;
   localMode = false;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   postProcessorState: PostProcessorEditorState | undefined;
+  dbTypeToDataSourceAndAuthMap: Map<string, DatabaseTypeConfiguration> =
+    new Map<string, DatabaseTypeConfiguration>();
 
   constructor(
     editorStore: EditorStore,
@@ -131,14 +191,81 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       localMode: observable,
       selectedTab: observable,
       postProcessorState: observable,
-      selectedDatasourceSpecificationType: computed,
-      selectedAuthenticationStrategyType: computed,
+      dbTypeToDataSourceAndAuthMap: observable,
+      selectedValidDatasources: computed,
+      selectedValidAuthenticationStrategies: computed,
+      stringRepresentationOfDbTypeToDatSourceAndAuthMap: computed,
       setLocalMode: action,
       setSelectedTab: action,
       selectPostProcessor: action,
+      fetchAvailableDbAuthenticationFlows: flow,
     });
 
     this.connection = connection;
+  }
+
+  *fetchAvailableDbAuthenticationFlows(): GeneratorFn<void> {
+    try {
+      const dbTypeDataSourceAndAuths =
+        (yield this.editorStore.graphManagerState.graphManager.getDbTypeToDataSourceAndAuthMapping()) as RelationalConnectionConfiguration[];
+      const dbTypeToDataSourceAndAuthMap: Map<
+        string,
+        DatabaseTypeConfiguration
+      > = new Map<string, DatabaseTypeConfiguration>();
+      const allAvailableDataSourceSpecs = Object.values(
+        CORE_DATASOURCE_SPEC_TYPE,
+      ) as string[];
+      const allAvailableAuths = Object.values(
+        CORE_AUTHENTICATION_STRATEGY_TYPE,
+      ) as string[];
+      dbTypeDataSourceAndAuths.forEach((dbTypeDataSourceAndAuth) => {
+        const dbType = dbTypeDataSourceAndAuth.dbType;
+        const dataSource =
+          TEMPRORARY_DATASOURCE_SPECIFICATION_PROTOCOL_TO_PRETTIER.get(
+            dbTypeDataSourceAndAuth.dataSource,
+          ) ?? '';
+        const authStrategy =
+          TEMPRORARY_AUTHENICATION_STRATEGY_PROTOCOL_TO_PRETTIER.get(
+            dbTypeDataSourceAndAuth.authStrategy,
+          ) ?? '';
+        if (
+          allAvailableDataSourceSpecs.includes(dataSource) &&
+          allAvailableAuths.includes(authStrategy)
+        ) {
+          if (!dbTypeToDataSourceAndAuthMap.has(dbType)) {
+            dbTypeToDataSourceAndAuthMap.set(
+              dbType,
+              new DatabaseTypeConfiguration([dataSource], [authStrategy]),
+            );
+          } else {
+            const getDatasourcesAndAuths =
+              dbTypeToDataSourceAndAuthMap.get(dbType) ??
+              new DatabaseTypeConfiguration([], []);
+            const dataSources = getDatasourcesAndAuths.compatibleDataSources;
+            const authStrategies =
+              getDatasourcesAndAuths.compatibleAuthStragies;
+            if (!dataSources.includes(dataSource)) {
+              dataSources.push(dataSource);
+            }
+            if (!authStrategies.includes(authStrategy)) {
+              authStrategies.push(authStrategy);
+            }
+            dbTypeToDataSourceAndAuthMap.set(
+              dbType,
+              new DatabaseTypeConfiguration(dataSources, authStrategies),
+            );
+          }
+        }
+      });
+      this.dbTypeToDataSourceAndAuthMap = dbTypeToDataSourceAndAuthMap;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERIC_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    }
   }
 
   selectPostProcessor = (postProcessor: PostProcessor | undefined): void => {
@@ -188,8 +315,9 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     return `${this.connection.type} connection`;
   }
 
-  get selectedDatasourceSpecificationType(): string | undefined {
-    const spec = this.connection.datasourceSpecification;
+  selectedDatasourceSpecificationType(
+    spec: DatasourceSpecification,
+  ): string | undefined {
     if (spec instanceof StaticDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.STATIC;
     } else if (spec instanceof EmbeddedH2DatasourceSpecification) {
@@ -225,6 +353,49 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
     }
     return undefined;
+  }
+
+  get selectedValidDatasources(): string[] {
+    return this.dbTypeToDataSourceAndAuthMap.has(this.connection.type)
+      ? (this.dbTypeToDataSourceAndAuthMap.get(this.connection.type)
+          ?.compatibleDataSources as string[])
+      : (Object.values(CORE_DATASOURCE_SPEC_TYPE) as string[]);
+  }
+
+  get selectedValidAuthenticationStrategies(): string[] {
+    return this.dbTypeToDataSourceAndAuthMap.has(this.connection.type)
+      ? (this.dbTypeToDataSourceAndAuthMap.get(this.connection.type)
+          ?.compatibleAuthStragies as string[])
+      : (Object.values(CORE_AUTHENTICATION_STRATEGY_TYPE) as string[]);
+  }
+
+  get validationMessage(): string {
+    let warning = '';
+    if (this.dbTypeToDataSourceAndAuthMap.size > 0) {
+      const dbType = this.connection.type;
+      const dataSource =
+        this.selectedDatasourceSpecificationType(
+          this.connection.datasourceSpecification,
+        ) ?? '';
+      const auth =
+        this.selectedAuthenticationStrategyType(
+          this.connection.authenticationStrategy,
+        ) ?? '';
+      const dbTypeToDataSourceAndAuthMap = this.dbTypeToDataSourceAndAuthMap;
+      if (
+        dbTypeToDataSourceAndAuthMap.has(dbType) &&
+        (!dbTypeToDataSourceAndAuthMap
+          .get(dbType)
+          ?.compatibleDataSources.includes(dataSource) ||
+          !dbTypeToDataSourceAndAuthMap
+            .get(dbType)
+            ?.compatibleAuthStragies.includes(auth))
+      ) {
+        warning = `Database Type: ${dbType}, Datasource: ${dataSource}, and Authentication: ${auth} do not form a valid Database Authentication Flow. List of valid flows:`;
+        warning += this.stringRepresentationOfDbTypeToDatSourceAndAuthMap;
+      }
+    }
+    return warning;
   }
 
   changeDatasourceSpec(type: string): void {
@@ -314,8 +485,9 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     );
   }
 
-  get selectedAuthenticationStrategyType(): string | undefined {
-    const auth = this.connection.authenticationStrategy;
+  selectedAuthenticationStrategyType(
+    auth: AuthenticationStrategy,
+  ): string | undefined {
     if (auth instanceof DelegatedKerberosAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS;
     } else if (auth instanceof DefaultH2AuthenticationStrategy) {
@@ -444,6 +616,21 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       authStrategy,
       observerContext,
     );
+  }
+
+  get stringRepresentationOfDbTypeToDatSourceAndAuthMap(): string {
+    let stringRepresentation = '';
+    for (const [
+      type,
+      dataSourceAndAuth,
+    ] of this.dbTypeToDataSourceAndAuthMap.entries()) {
+      for (const dataSource of dataSourceAndAuth.compatibleDataSources) {
+        for (const auth of dataSourceAndAuth.compatibleAuthStragies) {
+          stringRepresentation += `{Database Type: ${type}, Datasource: ${dataSource}, Authentication: ${auth}}, `;
+        }
+      }
+    }
+    return stringRepresentation.slice(0, -2);
   }
 }
 

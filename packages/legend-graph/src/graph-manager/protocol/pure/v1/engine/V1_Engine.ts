@@ -136,6 +136,7 @@ import {
   V1_ArtifactGenerationExtensionInput,
 } from './generation/V1_ArtifactGenerationExtensionApi.js';
 import { V1_DatabaseToModelGenerationInput } from './relational/V1_DatabaseToModelGenerationInput.js';
+import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -1039,6 +1040,22 @@ export class V1_Engine {
         );
       }
       throw error;
+    }
+  }
+
+  async getDbTypeToDataSourceAndAuthMap(): Promise<
+    V1_RelationalConnectionBuilder[]
+  > {
+    try {
+      return (
+        await this.engineServerClient.getDbTypeDataSourceAuthCombinations()
+      ).map((dbTypeToDataSourceAndAuthMap) =>
+        V1_RelationalConnectionBuilder.serialization.fromJson(
+          dbTypeToDataSourceAndAuthMap,
+        ),
+      );
+    } catch (error) {
+      return [];
     }
   }
 }

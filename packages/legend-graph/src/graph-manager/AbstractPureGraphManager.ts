@@ -98,6 +98,7 @@ import type {
   SubtypeInfo,
 } from './action/protocol/ProtocolInfo.js';
 import type { FunctionActivatorConfiguration } from './action/functionActivator/FunctionActivatorConfiguration.js';
+import type { RelationalConnectionConfiguration } from './action/relational/RelationalConnectionConfiguration.js';
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
 import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
@@ -576,6 +577,10 @@ export abstract class AbstractPureGraphManager {
     databasePath: string,
     graph: PureModel,
   ): Promise<Entity[]>;
+
+  abstract getDbTypeToDataSourceAndAuthMapping(): Promise<
+    RelationalConnectionConfiguration[]
+  >;
 
   // ------------------------------------------- Service -------------------------------------------
   /**
