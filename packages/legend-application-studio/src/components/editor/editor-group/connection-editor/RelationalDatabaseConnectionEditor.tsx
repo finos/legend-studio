@@ -15,11 +15,9 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   type RelationalDatabaseConnectionValueState,
-  CORE_AUTHENTICATION_STRATEGY_TYPE,
-  CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
   POST_PROCESSOR_TYPE,
 } from '../../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
@@ -56,11 +54,14 @@ import {
   ModalFooterButton,
   ModalHeader,
   Button,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import {
   type RelationalDatabaseConnection,
   type Store,
   type PostProcessor,
+  type DatasourceSpecification,
+  type AuthenticationStrategy,
   DatabaseType,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
@@ -165,6 +166,7 @@ import {
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 const LocalH2DatasourceSpecificationEditor = observer(
   (props: {
@@ -1575,43 +1577,65 @@ const RelationalConnectionGeneralEditor = observer(
     const connection = connectionValueState.connection;
     const editorStore = useEditorStore();
     const plugins = editorStore.pluginManager.getApplicationPlugins();
+    const availableDbTypes = Object.values(DatabaseType) as string[];
 
-    // database type
-    const typeOptions = Object.values(DatabaseType).map((type) => ({
-      value: type,
-      label: type,
-    }));
+    const typeOptions = (
+      connectionValueState.dbTypeToDataSourceAndAuthMap !== undefined &&
+      connectionValueState.dbTypeToDataSourceAndAuthMap.size > 0
+        ? Array.from(
+            new Set(
+              Array.from(
+                connectionValueState.dbTypeToDataSourceAndAuthMap.keys(),
+              ).concat(DatabaseType.H2),
+            ),
+          )
+        : availableDbTypes
+    )
+      .filter((dbType) => availableDbTypes.includes(dbType))
+      .map((dbType) => ({
+        value: dbType,
+        label: dbType,
+      }));
+
     const selectedType = {
       value: connection.type,
       label: connection.type,
     };
+
     const onTypeChange = (
       val: { label: string; value: string } | null,
     ): void => {
       dBConnection_setType(connection, val?.value ?? DatabaseType.H2);
+      if (connectionValueState.selectedValidDatasources[0]) {
+        connectionValueState.changeDatasourceSpec(
+          connectionValueState.selectedValidDatasources[0],
+        );
+      }
+      if (connectionValueState.selectedValidAuthenticationStrategies[0]) {
+        connectionValueState.changeAuthenticationStrategy(
+          connectionValueState.selectedValidAuthenticationStrategies[0],
+        );
+      }
     };
 
     // source spec type
-    const sourceSpecOptions = (
-      Object.values(CORE_DATASOURCE_SPEC_TYPE) as string[]
-    )
-      .concat(
-        plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
-            ).getExtraDatasourceSpecificationTypes?.() ?? [],
-        ),
-      )
-      .map((type) => ({
+    const sourceSpecOptions = connectionValueState.selectedValidDatasources.map(
+      (type) => ({
         value: type,
-        label: type,
-      }));
-    const selectedSourceSpec = {
-      label:
-        connectionValueState.selectedDatasourceSpecificationType ?? 'Unknown',
-      value: connectionValueState.selectedDatasourceSpecificationType,
-    };
+        label: prettyCONSTName(type),
+      }),
+    );
+
+    const selectedSourceSpec = (
+      spec: DatasourceSpecification,
+    ): { label: string; value: string | undefined } => ({
+      label: prettyCONSTName(
+        connectionValueState.selectedDatasourceSpecificationType(spec) ??
+          'Unknown',
+      ),
+      value: connectionValueState.selectedDatasourceSpecificationType(spec),
+    });
+
     const onSourceSpecChange = (
       val: { label: string; value: string | undefined } | null,
     ): void => {
@@ -1621,26 +1645,24 @@ const RelationalConnectionGeneralEditor = observer(
     };
 
     // auth type
-    const authOptions = (
-      Object.values(CORE_AUTHENTICATION_STRATEGY_TYPE) as string[]
-    )
-      .concat(
-        plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
-            ).getExtraAuthenticationStrategyTypes?.() ?? [],
-        ),
-      )
-      .map((type) => ({
-        value: type,
-        label: type,
-      }));
-    const selectedAuth = {
-      label:
-        connectionValueState.selectedAuthenticationStrategyType ?? 'Unknown',
-      value: connectionValueState.selectedAuthenticationStrategyType,
-    };
+    const authOptions =
+      connectionValueState.selectedValidAuthenticationStrategies.map(
+        (type) => ({
+          value: type,
+          label: prettyCONSTName(type),
+        }),
+      );
+
+    const selectedAuth = (
+      auth: AuthenticationStrategy,
+    ): { label: string; value: string | undefined } => ({
+      label: prettyCONSTName(
+        connectionValueState.selectedAuthenticationStrategyType(auth) ??
+          'Unknown',
+      ),
+      value: connectionValueState.selectedAuthenticationStrategyType(auth),
+    });
+
     const onAuthStrategyChange = (
       val: { label: string; value: string | undefined } | null,
     ): void => {
@@ -1672,6 +1694,17 @@ const RelationalConnectionGeneralEditor = observer(
         </div>
       );
     }
+
+    useEffect(() => {
+      if (connectionValueState.validationMessage !== '') {
+        editorStore.applicationStore.notificationService.notifyWarning(
+          connectionValueState.validationMessage,
+        );
+      }
+    }, [
+      editorStore.applicationStore.notificationService,
+      connectionValueState.validationMessage,
+    ]);
 
     return (
       <div className="relational-connection-editor">
@@ -1712,13 +1745,29 @@ const RelationalConnectionGeneralEditor = observer(
                     <PanelHeader title="datasource specification"></PanelHeader>
                     <PanelContent className="relational-connection-editor__auth__content">
                       <PanelFormSection>
-                        <div className="panel__content__form__section__header__label">
-                          Datasource
+                        <div style={{ width: '100%' }}>
+                          <div
+                            style={{ display: 'inline-block', width: '10px' }}
+                            className="panel__content__form__section__header__label"
+                          >
+                            Datasource
+                          </div>
+                          {connectionValueState.validationMessage !== '' && (
+                            <ExclamationTriangleIcon
+                              style={{
+                                display: 'inline-block',
+                                width: '160px',
+                              }}
+                              className="input--with-validation__caution__indicator"
+                            />
+                          )}
                         </div>
                         <CustomSelectorInput
                           options={sourceSpecOptions}
                           onChange={onSourceSpecChange}
-                          value={selectedSourceSpec}
+                          value={selectedSourceSpec(
+                            connection.datasourceSpecification,
+                          )}
                           darkMode={true}
                         />
                       </PanelFormSection>
@@ -1739,13 +1788,29 @@ const RelationalConnectionGeneralEditor = observer(
                     <PanelHeader title="authentication strategy"></PanelHeader>
                     <PanelContent className="relational-connection-editor__source__content">
                       <PanelFormSection>
-                        <div className="panel__content__form__section__header__label">
-                          Authentication
+                        <div style={{ width: '100%' }}>
+                          <div
+                            style={{ display: 'inline-block', width: '10px' }}
+                            className="panel__content__form__section__header__label"
+                          >
+                            Authentication
+                          </div>
+                          {connectionValueState.validationMessage !== '' && (
+                            <ExclamationTriangleIcon
+                              style={{
+                                display: 'inline-block',
+                                width: '200px',
+                              }}
+                              className="input--with-validation__caution__indicator"
+                            />
+                          )}
                         </div>
                         <CustomSelectorInput
                           options={authOptions}
                           onChange={onAuthStrategyChange}
-                          value={selectedAuth}
+                          value={selectedAuth(
+                            connection.authenticationStrategy,
+                          )}
                           darkMode={true}
                         />
                       </PanelFormSection>

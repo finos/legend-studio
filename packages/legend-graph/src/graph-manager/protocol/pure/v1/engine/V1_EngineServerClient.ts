@@ -80,6 +80,7 @@ import type {
 import type { V1_DatabaseToModelGenerationInput } from './relational/V1_DatabaseToModelGenerationInput.js';
 import type { V1_TestDataGenerationInput } from './service/V1_TestDataGenerationInput.js';
 import type { V1_TestDataGenerationResult } from './service/V1_TestDataGenerationResult.js';
+import type { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -807,6 +808,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
       this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.DATABASE_TO_MODELS),
     );
   }
+
+  getDbTypeDataSourceAuthCombinations = (): Promise<
+    PlainObject<V1_RelationalConnectionBuilder>[]
+  > =>
+    this.get(
+      `${this._relationalElement()}/connection/supportedDbAuthenticationFlows`,
+    );
 
   // ------------------------------------------- Service -------------------------------------------
 

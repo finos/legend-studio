@@ -141,6 +141,7 @@ import {
   type V1_TestDataGenerationResult,
   V1_testDataGenerationResultModelSchema,
 } from './service/V1_TestDataGenerationResult.js';
+import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -1058,6 +1059,22 @@ export class V1_Engine {
         );
       }
       throw error;
+    }
+  }
+
+  async getDbTypeToDataSourceAndAuthMap(): Promise<
+    V1_RelationalConnectionBuilder[]
+  > {
+    try {
+      return (
+        await this.engineServerClient.getDbTypeDataSourceAuthCombinations()
+      ).map((dbTypeToDataSourceAndAuthMap) =>
+        V1_RelationalConnectionBuilder.serialization.fromJson(
+          dbTypeToDataSourceAndAuthMap,
+        ),
+      );
+    } catch (error) {
+      return [];
     }
   }
 }
