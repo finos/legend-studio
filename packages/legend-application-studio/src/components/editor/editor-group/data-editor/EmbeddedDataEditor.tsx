@@ -152,16 +152,14 @@ export const ExternalFormatDataEditor = observer(
             </DropdownMenu>
           </div>
         </div>
-        <div className={clsx('external-format-data-editor__content')}>
-          <div className="external-format-data-editor__content__input">
-            <CodeEditor
-              language={language}
-              inputValue={externalFormatDataState.embeddedData.data}
-              updateInput={changeData}
-              hideGutter={true}
-            />
-          </div>
-        </div>
+        <PanelContent className="model-loader__editor">
+          <CodeEditor
+            language={language}
+            inputValue={externalFormatDataState.embeddedData.data}
+            updateInput={changeData}
+            hideGutter={true}
+          />
+        </PanelContent>
       </div>
     );
   },
@@ -248,6 +246,7 @@ export const ModelEmbeddedDataEditor = observer(
   }) => {
     const { isReadOnly, modelStoreDataState, modelDataState } = props;
     const modelData = modelDataState.modelData;
+    const hideClass = modelStoreDataState.hideClass;
     const classSelectorRef = useRef<SelectComponent>(null);
     const elementFilterOption = createFilter({
       ignoreCase: true,
@@ -279,34 +278,32 @@ export const ModelEmbeddedDataEditor = observer(
     };
 
     return (
-      <div>
-        <div className="sample-data-generator__controller">
-          <div
-            className="sample-data-generator__controller__icon"
-            title="class"
-          >
-            <PURE_ClassIcon />
+      <>
+        {!hideClass && (
+          <div className="sample-data-generator__controller">
+            <div
+              className="sample-data-generator__controller__icon"
+              title="class"
+            >
+              <PURE_ClassIcon />
+            </div>
+            <CustomSelectorInput
+              ref={classSelectorRef}
+              className="sample-data-generator__controller__class-selector"
+              options={classOptions}
+              onChange={changeClass}
+              value={selectedClassOption}
+              darkMode={true}
+              filterOption={elementFilterOption}
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode: true,
+              })}
+            />
           </div>
-          <CustomSelectorInput
-            ref={classSelectorRef}
-            className="sample-data-generator__controller__class-selector"
-            options={classOptions}
-            onChange={changeClass}
-            value={selectedClassOption}
-            darkMode={true}
-            filterOption={elementFilterOption}
-            formatOptionLabel={getPackageableElementOptionFormatter({
-              darkMode: true,
-            })}
-          />
-        </div>
-        <div>
-          {renderEmbeddedDataEditor(
-            modelDataState.embeddedDataState,
-            isReadOnly,
-          )}
-        </div>
-      </div>
+        )}
+
+        {renderEmbeddedDataEditor(modelDataState.embeddedDataState, isReadOnly)}
+      </>
     );
   },
 );

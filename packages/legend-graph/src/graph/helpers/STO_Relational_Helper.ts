@@ -120,6 +120,16 @@ export const getRelationalInputType = (type: string): RelationalInputType => {
   }
 };
 
+export const getAllSchemasFromDatabase = (database: Database): Schema[] =>
+  Array.from(getAllIncludedDatabases(database))
+    .map((d) => d.schemas)
+    .flat();
+
+export const getAllTablesFromDatabase = (database: Database): Table[] =>
+  getAllSchemasFromDatabase(database)
+    .map((t) => t.tables)
+    .flat();
+
 export const getNullableSchema = (
   database: Database,
   name: string,

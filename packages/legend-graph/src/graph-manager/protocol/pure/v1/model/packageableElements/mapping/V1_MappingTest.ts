@@ -16,39 +16,15 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
-import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
 import { V1_AtomicTest } from '../../test/V1_AtomicTest.js';
 import type { V1_MappingStoreTestData } from './V1_MappingStoreTestData.js';
 
-export abstract class V1_MappingTest
-  extends V1_AtomicTest
-  implements Hashable {}
-
-export class V1_MappingQueryTest extends V1_MappingTest implements Hashable {
-  /**
-   * Studio does not process value specification, they are left in raw JSON form
-   *
-   * @discrepancy model
-   */
-  func!: V1_RawLambda;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.MAPPING_QUERY_TEST,
-      this.id,
-      this.doc ?? '',
-      this.func,
-      hashArray(this.assertions),
-    ]);
-  }
-}
-
-export class V1_MappingDataTest extends V1_MappingTest implements Hashable {
+export class V1_MappingTest extends V1_AtomicTest implements Hashable {
   storeTestData: V1_MappingStoreTestData[] = [];
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.MAPPING_DATA_TEST,
+      CORE_HASH_STRUCTURE.MAPPING_TEST,
       this.id,
       this.doc ?? '',
       hashArray(this.storeTestData),

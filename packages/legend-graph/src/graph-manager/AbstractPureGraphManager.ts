@@ -68,10 +68,6 @@ import type { GraphManagerOperationReport } from './GraphManagerStatistics.js';
 import type { RunTestsTestableInput } from '../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../graph/metamodel/pure/test/result/TestResult.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
-import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
-import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
-import type { TestAssertion } from '../graph/metamodel/pure/test/assertion/TestAssertion.js';
-import type { AssertFail } from '../graph/metamodel/pure/test/assertion/status/AssertFail.js';
 import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
@@ -369,13 +365,6 @@ export abstract class AbstractPureGraphManager {
     inputs: RunTestsTestableInput[],
     graph: PureModel,
   ): Promise<TestResult[]>;
-
-  abstract generateExpectedResult(
-    testable: Testable,
-    test: AtomicTest,
-    assertion: TestAssertion,
-    graph: PureModel,
-  ): Promise<AssertFail>;
 
   // ------------------------------------------- Value Specification -------------------------------------------
 

@@ -119,24 +119,15 @@ import {
   observe_RootRelationalInstanceSetImplementation,
 } from './STO_Relational_ObserverHelper.js';
 import type { FlatDataAssociationPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
-import {
-  type MappingTest,
-  MappingDataTest,
-  MappingQueryTest,
-} from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import type { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import {
   observe_AtomicTest,
   observe_TestAssertion,
   observe_TestSuite,
 } from './Testable_ObserverHelper.js';
-import {
-  MappingDataTestSuite,
-  MappingQueryTestSuite,
-  type MappingTestSuite,
-} from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import type { MappingTestSuite } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 import type { StoreTestData } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
-import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { INTERNAL__UnknownConnection } from '../../../graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
 import type { INTERNAL__UnknownPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 import type { INTERNAL__UnknownSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
@@ -182,24 +173,8 @@ export const observe_MappingStoreTestData = skipObservedWithContext(
   },
 );
 
-const observe_MappingQueryTest = skipObserved(
-  (metamodel: MappingQueryTest): MappingQueryTest => {
-    makeObservable(metamodel, {
-      id: observable,
-      doc: observable,
-      func: observable,
-      assertions: observable,
-      hashCode: computed,
-    });
-
-    metamodel.assertions.forEach(observe_TestAssertion);
-
-    return metamodel;
-  },
-);
-
-const observe_MappingDataTest = skipObservedWithContext(
-  (metamodel: MappingDataTest, context: ObserverContext): MappingDataTest => {
+export const observe_MappingTest = skipObservedWithContext(
+  (metamodel: MappingTest, context: ObserverContext): MappingTest => {
     makeObservable(metamodel, {
       id: observable,
       assertions: observable,
@@ -215,44 +190,8 @@ const observe_MappingDataTest = skipObservedWithContext(
   },
 );
 
-export const observe_MappingTest = (
-  metamodel: MappingTest,
-  context: ObserverContext,
-): MappingTest => {
-  if (metamodel instanceof MappingQueryTest) {
-    return observe_MappingQueryTest(metamodel);
-  } else if (metamodel instanceof MappingDataTest) {
-    return observe_MappingDataTest(metamodel, context);
-  }
-  throw new UnsupportedOperationError();
-};
-
-export const observe_MappingDataTestSuite = skipObservedWithContext(
-  (
-    metamodel: MappingDataTestSuite,
-    context: ObserverContext,
-  ): MappingDataTestSuite => {
-    makeObservable(metamodel, {
-      id: observable,
-      tests: observable,
-      storeTestData: observable,
-      hashCode: computed,
-    });
-
-    metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
-    metamodel.storeTestData.forEach((testData) =>
-      observe_MappingStoreTestData(testData, context),
-    );
-
-    return metamodel;
-  },
-);
-
-export const observe_MappingQueryTestSuite = skipObservedWithContext(
-  (
-    metamodel: MappingQueryTestSuite,
-    context: ObserverContext,
-  ): MappingQueryTestSuite => {
+export const observe_MappingTestSuite = skipObservedWithContext(
+  (metamodel: MappingTestSuite, context: ObserverContext): MappingTestSuite => {
     makeObservable(metamodel, {
       id: observable,
       tests: observable,
@@ -266,17 +205,6 @@ export const observe_MappingQueryTestSuite = skipObservedWithContext(
   },
 );
 
-export const observe_MappingTestSuite = (
-  metamodel: MappingTestSuite,
-  context: ObserverContext,
-): MappingTestSuite => {
-  if (metamodel instanceof MappingDataTestSuite) {
-    return observe_MappingDataTestSuite(metamodel, context);
-  } else if (metamodel instanceof MappingQueryTestSuite) {
-    return observe_MappingQueryTestSuite(metamodel, context);
-  }
-  throw new UnsupportedOperationError('Unsupported test suite');
-};
 // ------------------------------------- Mapping -------------------------------------
 
 export const observe_EnumerationMappingReference = skipObserved(

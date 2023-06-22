@@ -80,27 +80,11 @@ import {
 import { getRelationalInputType } from '../../../../../../../../graph/helpers/STO_Relational_Helper.js';
 import { getEnumValue } from '../../../../../../../../graph/helpers/DomainHelper.js';
 import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
-import {
-  V1_MappingDataTestSuite,
-  V1_MappingQueryTestSuite,
-  type V1_MappingTestSuite,
-} from '../../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
-import {
-  MappingDataTestSuite,
-  MappingQueryTestSuite,
-  type MappingTestSuite,
-} from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
-import {
-  V1_MappingDataTest,
-  V1_MappingQueryTest,
-  type V1_MappingTest,
-} from '../../../../model/packageableElements/mapping/V1_MappingTest.js';
+import { type V1_MappingTestSuite } from '../../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
+import { MappingTestSuite } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import { V1_MappingTest } from '../../../../model/packageableElements/mapping/V1_MappingTest.js';
 import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
-import {
-  MappingDataTest,
-  MappingQueryTest,
-  type MappingTest,
-} from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import { MappingTest } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
 import type { V1_MappingStoreTestData } from '../../../../model/packageableElements/mapping/V1_MappingStoreTestData.js';
 import { StoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
@@ -273,32 +257,12 @@ const buildMappingStoreTestData = (
   return mappingStoreTestData;
 };
 
-export const V1_buildMappingQueryTest = (
-  element: V1_MappingQueryTest,
+export const V1_buildMappingTest = (
+  element: V1_MappingTest,
   parentSuite: TestSuite,
   context: V1_GraphBuilderContext,
-): MappingQueryTest => {
-  const mappingTest = new MappingQueryTest();
-  mappingTest.id = element.id;
-  mappingTest.doc = element.doc;
-  mappingTest.__parent = parentSuite;
-  mappingTest.assertions = element.assertions.map((assertion) =>
-    V1_buildTestAssertion(assertion, mappingTest, context),
-  );
-  mappingTest.func = V1_buildRawLambdaWithResolvedPaths(
-    element.func.parameters,
-    element.func.body,
-    context,
-  );
-  return mappingTest;
-};
-
-export const V1_buildMappingDataTest = (
-  element: V1_MappingDataTest,
-  parentSuite: TestSuite,
-  context: V1_GraphBuilderContext,
-): MappingDataTest => {
-  const mappingTest = new MappingDataTest();
+): MappingTest => {
+  const mappingTest = new MappingTest();
   mappingTest.id = element.id;
   mappingTest.__parent = parentSuite;
   mappingTest.doc = element.doc;
@@ -311,63 +275,26 @@ export const V1_buildMappingDataTest = (
   return mappingTest;
 };
 
-export const V1_buildMappingTest = (
-  element: V1_MappingTest,
-  parentSuite: TestSuite,
+export const V1_buildMappingTestSuite = (
+  element: V1_MappingTestSuite,
   context: V1_GraphBuilderContext,
-): MappingTest => {
-  if (element instanceof V1_MappingDataTest) {
-    return V1_buildMappingDataTest(element, parentSuite, context);
-  } else if (element instanceof V1_MappingQueryTest) {
-    return V1_buildMappingQueryTest(element, parentSuite, context);
-  }
-  throw new UnsupportedOperationError(
-    'Unable to build mapping test: Unsupported mapping test type',
-  );
-};
-
-const V1_buildMappingDataTestSuite = (
-  element: V1_MappingDataTestSuite,
-  context: V1_GraphBuilderContext,
-): MappingDataTestSuite => {
-  const mappingTestSuite = new MappingDataTestSuite();
-  mappingTestSuite.id = element.id;
-  mappingTestSuite.storeTestData = element.storeTestData.map((testData) =>
-    buildMappingStoreTestData(testData, context),
-  );
-  mappingTestSuite.tests = element.tests.map((test) =>
-    V1_buildMappingTest(test, mappingTestSuite, context),
-  );
-  return mappingTestSuite;
-};
-
-const V1_buildMappingQueryTestSuite = (
-  element: V1_MappingQueryTestSuite,
-  context: V1_GraphBuilderContext,
-): MappingQueryTestSuite => {
-  const mappingTestSuite = new MappingQueryTestSuite();
+): MappingTestSuite => {
+  const mappingTestSuite = new MappingTestSuite();
   mappingTestSuite.id = element.id;
   mappingTestSuite.func = V1_buildRawLambdaWithResolvedPaths(
     element.func.parameters,
     element.func.body,
     context,
   );
-  mappingTestSuite.tests = element.tests.map((test) =>
-    V1_buildMappingTest(test, mappingTestSuite, context),
-  );
+  mappingTestSuite.tests = element.tests.map((test) => {
+    if (test instanceof V1_MappingTest) {
+      return V1_buildMappingTest(test, mappingTestSuite, context);
+    }
+    throw new UnsupportedOperationError(
+      'Unable to build mapping test: Unsupported mapping test type',
+    );
+  });
   return mappingTestSuite;
-};
-
-export const V1_buildMappingTestSuite = (
-  element: V1_MappingTestSuite,
-  context: V1_GraphBuilderContext,
-): MappingTestSuite => {
-  if (element instanceof V1_MappingDataTestSuite) {
-    return V1_buildMappingDataTestSuite(element, context);
-  } else if (element instanceof V1_MappingQueryTestSuite) {
-    return V1_buildMappingQueryTestSuite(element, context);
-  }
-  throw new UnsupportedOperationError('Unsupported mapping test suite type');
 };
 
 const V1_buildMappingTestInputData = (

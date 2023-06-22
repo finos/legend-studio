@@ -81,10 +81,10 @@ const createEmptyServiceTestSuite = (
   );
   // data
   suite.testData = new TestData();
-  const connections = getAllIdentifiedServiceConnections(service);
-  if (connections.length === 1) {
-    const iVal = guaranteeNonNullable(connections[0]);
-    const connectionValue = iVal.connection;
+  const identifiedConnections = getAllIdentifiedServiceConnections(service);
+  if (identifiedConnections.length === 1) {
+    const connectionVal = guaranteeNonNullable(identifiedConnections[0]);
+    const connectionValue = connectionVal.connection;
     const type = returnUndefOnError(() =>
       connectionValue.accept_ConnectionVisitor(
         new EmbeddedDataConnectionTypeVisitor(serviceEditorState.editorStore),
@@ -92,7 +92,7 @@ const createEmptyServiceTestSuite = (
     );
     if (type) {
       const testData = createConnectionTestData(
-        iVal,
+        connectionVal,
         type,
         serviceEditorState.editorStore,
       );
