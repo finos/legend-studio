@@ -898,6 +898,9 @@ export const QueryBuilderFilterPanel = observer(
       [handleDrop],
     );
 
+    const addFilterRef = useRef<HTMLInputElement>(null);
+    dropTargetConnector(addFilterRef);
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER}
@@ -1014,7 +1017,7 @@ export const QueryBuilderFilterPanel = observer(
 
             {showDroppableSuggestion && !filterState.isEmpty && (
               <div
-                ref={dropTargetConnector}
+                ref={addFilterRef}
                 className={clsx(
                   'query-builder-post-filter-tree__blank-node--droppable--tall',
                   {

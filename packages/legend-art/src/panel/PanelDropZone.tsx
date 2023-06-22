@@ -16,7 +16,7 @@
 
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { type RefObject, useEffect, forwardRef } from 'react';
+import { type RefObject, useEffect, forwardRef, useRef } from 'react';
 import {
   type ConnectDropTarget,
   type ConnectDragPreview,
@@ -39,12 +39,13 @@ export const PanelDropZone: React.FC<{
     showDroppableSuggestion,
     dropTargetConnector,
   } = props;
+
+  const ref = useRef<HTMLInputElement>(null);
+  dropTargetConnector(ref);
+
   return (
     <>
-      <div
-        className={clsx('dnd__dropzone', className)}
-        ref={dropTargetConnector}
-      >
+      <div className={clsx('dnd__dropzone', className)} ref={ref}>
         {showDroppableSuggestion && (
           <div className="dnd__dropzone--droppable"></div>
         )}

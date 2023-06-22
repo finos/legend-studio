@@ -959,6 +959,9 @@ const QueryBuilderPostFilterPanelContent = observer(
       [applicationStore, handleDrop],
     );
 
+    const addPostFilterRef = useRef<HTMLInputElement>(null);
+    dropTargetConnector(addPostFilterRef);
+
     const { showDroppableSuggestion } = useDragLayer((monitor) => ({
       showDroppableSuggestion:
         monitor.isDragging() &&
@@ -1077,7 +1080,7 @@ const QueryBuilderPostFilterPanelContent = observer(
             )}
             {showDroppableSuggestion && !postFilterState.isEmpty && (
               <div
-                ref={dropTargetConnector}
+                ref={addPostFilterRef}
                 className={clsx(
                   'query-builder-post-filter-tree__blank-node--droppable--tall',
                   {
