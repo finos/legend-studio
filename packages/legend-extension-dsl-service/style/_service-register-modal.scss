@@ -78,7 +78,7 @@
       width: 9.4rem;
       background: var(--color-dark-grey-200);
       font-family: 'Roboto Mono', monospace;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       padding: 0 1rem;
       border-radius: 0.2rem 0 0 0.2rem;
       color: var(--color-dark-grey-500);
@@ -90,7 +90,7 @@
     }
 
     &__service-owner__selector {
-      overflow-y: scroll;
+      overflow-y: auto;
     }
 
     & + & {

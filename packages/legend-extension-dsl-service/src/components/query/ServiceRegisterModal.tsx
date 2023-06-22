@@ -37,6 +37,7 @@ import {
   Modal,
   ModalTitle,
   Panel,
+  PanelDivider,
   PanelFullContent,
   PanelLoadingIndicator,
   RocketIcon,
@@ -113,6 +114,10 @@ const ServiceRegisterModal = observer(
     };
     const toggleActivateService = (): void =>
       setActivateService(!activateService);
+
+    const darkMode =
+      !editorStore.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     const registerService = editorStore.applicationStore.guardUnhandledError(
       async (): Promise<void> => {
@@ -217,7 +222,7 @@ const ServiceRegisterModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true} className="search-modal">
+        <Modal darkMode={darkMode} className="search-modal">
           <ModalTitle title="Register Service Semi-interactively..." />
           <Panel>
             <PanelLoadingIndicator isLoading={registrationState.isInProgress} />
@@ -256,7 +261,7 @@ const ServiceRegisterModal = observer(
                       placeholder="Enter an owner..."
                       spellCheck={false}
                       inputValue={text}
-                      darkMode={true}
+                      darkMode={darkMode}
                       onInputChange={onTextChange}
                       onChange={onUserOptionChange}
                       isMulti={true}
@@ -274,7 +279,7 @@ const ServiceRegisterModal = observer(
                       options={envOptions}
                       onChange={onServerEnvChange}
                       value={selectedEnvOption}
-                      darkMode={true}
+                      darkMode={darkMode}
                     />
                   </div>
                 </div>
@@ -301,6 +306,7 @@ const ServiceRegisterModal = observer(
                   </div>
                 </div>
               </div>
+              <PanelDivider />
             </PanelFullContent>
           </Panel>
           <div className="search-modal__actions">

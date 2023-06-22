@@ -316,7 +316,12 @@
     cursor: pointer;
   }
 
-  &__mode--selected {
+  &__mode:hover {
+    background: var(--color-dark-grey-200);
+  }
+
+  &__mode--selected,
+  &__mode--selected:hover {
     background: var(--color-blue-200);
   }
 }
@@ -907,6 +912,10 @@
   &__container {
     height: 100%;
     padding: 2rem;
+  }
+
+  .panel-loading-indicator__container {
+    margin-top: -2rem;
   }
 }
 

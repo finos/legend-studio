@@ -238,7 +238,7 @@
   }
 
   .query-builder__projection__options__sort__sortby--btn {
-    background: var(--color-dark-grey-500);
+    background: var(--color-legacylight-light-blue-100);
   }
 
   .lambda-editor__popup__content {
@@ -512,7 +512,12 @@
       color: var(--color-dark-grey-500);
     }
 
-    &__mode--selected {
+    &__mode:hover {
+      background: var(--color-light-grey-200);
+    }
+
+    &__mode--selected,
+    &__mode--selected:hover {
       background: var(--color-legacylight-light-blue-200);
       color: var(--color-light-grey-100);
     }
@@ -539,6 +544,18 @@
     .Mui-checked {
       color: var(--color-legacylight-light-blue-200);
     }
+  }
+
+  // ---------------------------- Service Register Modal -------------------------------
+
+  .service-register-modal__input__label {
+    background: var(--color-light-grey-50);
+    color: var(--color-legacylight-dark-grey-200);
+    border-color: var(--color-light-grey-250);
+  }
+
+  .service-register-modal__group__content {
+    border-color: var(--color-light-grey-250);
   }
 
   // ---------------------------- Other -------------------------------
@@ -1268,6 +1285,7 @@
     .query-builder__result__values__table__cell--active {
       background-color: var(--color-navy-600);
     }
+
     // ------------------------------------ Other / Modal ---------------------------------------
 
     .query-builder__tooltip {
