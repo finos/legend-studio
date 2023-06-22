@@ -84,9 +84,9 @@ export class JsonExecutionResult extends ExecutionResult {
 }
 
 export class RawExecutionResult extends ExecutionResult {
-  value!: string;
+  value!: string | number | boolean | null;
 
-  constructor(content: string) {
+  constructor(content: string | number | boolean | null) {
     super();
     this.value = content;
   }

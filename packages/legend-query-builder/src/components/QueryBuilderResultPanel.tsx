@@ -703,10 +703,14 @@ const QueryBuilderResultValues = observer(
         />
       );
     } else if (executionResult instanceof RawExecutionResult) {
+      const inputValue =
+        executionResult.value === null
+          ? 'null'
+          : executionResult.value.toString();
       return (
         <CodeEditor
           language={CODE_EDITOR_LANGUAGE.TEXT}
-          inputValue={executionResult.value}
+          inputValue={inputValue}
           isReadOnly={true}
         />
       );
