@@ -25,6 +25,10 @@ import {
 type QueryExecution_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
 };
+type QueryMappingModelCoverageAnalysis_TelemetryData =
+  GraphManagerOperationReport & {
+    dependenciesCount: number;
+  };
 
 export class QueryBuilderTelemetryHelper {
   static logEvent_QueryRunLaunched(service: TelemetryService): void {
@@ -180,6 +184,25 @@ export class QueryBuilderTelemetryHelper {
     service.logEvent(
       QUERY_BUILDER_POST_FILTER_EVENT.FILTER__SIMPLIFY__TREE__LAUNCH,
       {},
+    );
+  }
+
+  static logEvent_QueryMappingModelCoverageAnalysisLaunched(
+    service: TelemetryService,
+  ): void {
+    service.logEvent(
+      QUERY_BUILDER_EVENT.MAPPING_MODEL_COVERAGE_ANALYSYS__LAUNCH,
+      {},
+    );
+  }
+
+  static logEvent_QueryMappingModelCoverageAnalysisSucceeded(
+    service: TelemetryService,
+    data: QueryMappingModelCoverageAnalysis_TelemetryData,
+  ): void {
+    service.logEvent(
+      QUERY_BUILDER_EVENT.MAPPING_MODEL_COVERAGE_ANALYSYS__SUCCESS,
+      data,
     );
   }
 }

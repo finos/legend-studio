@@ -23,6 +23,7 @@ import {
   type GeneratorFn,
   assertType,
   UnsupportedOperationError,
+  StopWatch,
 } from '@finos/legend-shared';
 import {
   type AbstractProperty,
@@ -57,6 +58,7 @@ import {
   type ExecutionResult,
   getAllSubclasses,
   PropertyExplicitReference,
+  reportGraphAnalytics,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
@@ -69,6 +71,7 @@ import {
 import { QueryBuilderPropertySearchState } from './QueryBuilderPropertySearchState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { propertyExpression_setFunc } from '../shared/ValueSpecificationModifierHelper.js';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -669,6 +672,14 @@ export class QueryBuilderExplorerState {
         this.mappingModelCoverageAnalysisResult?.mapping
     ) {
       this.mappingModelCoverageAnalysisState.inProgress();
+      QueryBuilderTelemetryHelper.logEvent_QueryMappingModelCoverageAnalysisLaunched(
+        this.queryBuilderState.applicationStore.telemetryService,
+      );
+
+      const stopWatch = new StopWatch();
+      const report = reportGraphAnalytics(
+        this.queryBuilderState.graphManagerState.graph,
+      );
       this.mappingModelCoverageAnalysisState.setMessage('Analyzing Mapping...');
       try {
         this.mappingModelCoverageAnalysisResult = (yield flowResult(
@@ -678,6 +689,15 @@ export class QueryBuilderExplorerState {
           ),
         )) as MappingModelCoverageAnalysisResult;
         this.refreshTreeData();
+        report.timings =
+          this.queryBuilderState.applicationStore.timeService.finalizeTimingsRecord(
+            stopWatch,
+            report.timings,
+          );
+        QueryBuilderTelemetryHelper.logEvent_QueryMappingModelCoverageAnalysisSucceeded(
+          this.queryBuilderState.applicationStore.telemetryService,
+          report,
+        );
       } catch (error) {
         assertErrorThrown(error);
         this.queryBuilderState.applicationStore.notificationService.notifyError(
