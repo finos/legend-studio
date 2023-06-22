@@ -29,6 +29,15 @@ import {
   V1_TEST_DATA__unsupportedFunctionExpression,
   V1_TEST_DATA__valueSpecificationWithLatestDate,
 } from './V1_TEST_DATA__ValueSpecificationBuilder.js';
+import {
+  Numeric,
+  Decimal,
+  Binary,
+  VarBinary,
+  Char,
+  VarChar,
+} from '../../../../../../../../STO_Relational_Exports.js';
+import { V1_parseDataType } from '../V1_ExecutionPlanBuilder.js';
 
 type RoundtripTestCase = [
   string,
@@ -86,4 +95,13 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       }
     },
   );
+});
+
+test(unitTest('Parse data type from string'), () => {
+  expect(V1_parseDataType('NUMERIC(52,8)') === new Numeric(52, 8));
+  expect(V1_parseDataType('DECIMAL(49,1)') === new Decimal(49, 1));
+  expect(V1_parseDataType('BINARY(0)') === new Binary(0));
+  expect(V1_parseDataType('VARBINARY(0)') === new VarBinary(0));
+  expect(V1_parseDataType('CHAR(0)') === new Char(0));
+  expect(V1_parseDataType('VARCHAR(0)') === new VarChar(0));
 });

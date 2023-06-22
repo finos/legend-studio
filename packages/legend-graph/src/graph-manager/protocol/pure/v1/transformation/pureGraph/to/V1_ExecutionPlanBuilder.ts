@@ -67,7 +67,7 @@ import { INTERNAL__UnknownResultType } from '../../../../../../../graph/metamode
 import { V1_INTERNAL__UnknownExecutionNode } from '../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
 import { INTERNAL__UnknownExecutionNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
 
-const parseDataType = (val: string): RelationalDataType => {
+export const V1_parseDataType = (val: string): RelationalDataType => {
   const getTypeParams = (typeVal: string): number[] =>
     typeVal
       .replace(/^.*\((?<params>.*)\)$/u, '$<params>')
@@ -127,17 +127,17 @@ const parseDataType = (val: string): RelationalDataType => {
             `BINARY type size is missing`,
           ),
         );
-      } else if (val.match(/^DECIMAL\(\d+\)$/)) {
+      } else if (val.match(/^DECIMAL\(\d+,*\d+\)$/)) {
         const params = getTypeParams(val);
         return new Decimal(
           guaranteeNonNullable(params[0], `Decimal type precision is missing`),
           guaranteeNonNullable(params[1], `Decimal type scale is missing`),
         );
-      } else if (val.match(/^NUMERIC\(\d+\)$/)) {
+      } else if (val.match(/^NUMERIC\(\d+,*\d+\)$/)) {
         const params = getTypeParams(val);
         return new Numeric(
-          guaranteeNonNullable(params[0], `Decimal type precision is missing`),
-          guaranteeNonNullable(params[1], `Decimal type scale is missing`),
+          guaranteeNonNullable(params[0], `Numeric type precision is missing`),
+          guaranteeNonNullable(params[1], `Numeric type scale is missing`),
         );
       }
       throw new UnsupportedOperationError(`Can't parse data type '${val}'`);
@@ -167,7 +167,7 @@ const buildTDSColumn = (
   );
   metamodel.documentation = protocol.doc;
   metamodel.sourceDataType = protocol.relationalType
-    ? parseDataType(protocol.relationalType)
+    ? V1_parseDataType(protocol.relationalType)
     : undefined;
   metamodel.type = protocol.type
     ? context.resolveDataType(protocol.type)
@@ -220,7 +220,7 @@ const buildSQLResultColumn = (
     `SQL result column 'label' field is missing`,
   );
   metamodel.dataType = protocol.dataType
-    ? parseDataType(protocol.dataType)
+    ? V1_parseDataType(protocol.dataType)
     : undefined;
   return metamodel;
 };
