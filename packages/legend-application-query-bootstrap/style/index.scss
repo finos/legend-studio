@@ -232,6 +232,11 @@
     background: var(--color-white);
   }
 
+  .code-editor__header {
+    background: var(--color-light-grey-0);
+    border-bottom: 0.1rem solid var(--color-light-grey-200);
+  }
+
   .query-builder__projection__options__sort__sortby {
     background: var(--color-dark-grey-400);
     color: var(--color-light-grey-100);
@@ -949,6 +954,10 @@
       }
     }
 
+    .query-builder__olap__column__action[disabled] svg {
+      color: var(--color-light-grey-200);
+    }
+
     .query-builder__projection__column__action .query-builder__icon,
     .query-builder__projection__column__action svg {
       color: var(--color-legacylight-light-grey-300);
@@ -1243,6 +1252,11 @@
       svg {
         color: var(--color-white);
       }
+    }
+
+    .btn__dropdown-combo__label[disabled],
+    .btn__dropdown-combo__dropdown-btn[disabled] {
+      background: var(--color-light-grey-400);
     }
 
     .query-builder__result__export__dropdown {
