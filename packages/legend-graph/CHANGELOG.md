@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 30.0.10
+
+### Patch Changes
+
+- [#2323](https://github.com/finos/legend-studio/pull/2323) [`7730ad3ed`](https://github.com/finos/legend-studio/commit/7730ad3ed1fe21f6ae2ef04052ed6f85baada568) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revamp mapping suites to be driven by query with multiple tests each with its own test data.
+
+- [#2358](https://github.com/finos/legend-studio/pull/2358) [`dc34a3f3e`](https://github.com/finos/legend-studio/commit/dc34a3f3e169ec049b113e2d0bbf70ec84e3a8c4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle non string constant execution result values
+
 ## 30.0.9
 
 ### Patch Changes
