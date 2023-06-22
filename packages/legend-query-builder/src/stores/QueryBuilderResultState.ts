@@ -271,7 +271,7 @@ export class QueryBuilderResultState {
         )) as ExecutionResult;
       let content: string;
       if (result instanceof RawExecutionResult) {
-        content = result.value;
+        content = result.value === null ? 'null' : result.value.toString();
       } else {
         content = JSON.stringify(
           extractExecutionResultValues(result),
