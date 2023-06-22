@@ -59,6 +59,8 @@ import {
   QueryParameterValue,
   type GraphInitializationReport,
   reportGraphAnalytics,
+  cloneQueryStereotype,
+  cloneQueryTaggedValue,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -162,14 +164,17 @@ export class QueryCreatorState {
   readonly createQueryState = ActionState.create();
   queryName: string;
   showCreateModal = false;
+  originalQuery: Query | undefined;
 
   constructor(editorStore: QueryEditorStore, queryName: string | undefined) {
     makeObservable(this, {
       queryName: observable,
       showCreateModal: observable,
       createQueryState: observable,
+      originalQuery: observable,
+      open: action,
       setQueryName: action,
-      setShowCreateModal: action,
+      close: action,
       createQuery: flow,
     });
     this.editorStore = editorStore;
@@ -180,8 +185,15 @@ export class QueryCreatorState {
     this.queryName = val;
   }
 
-  setShowCreateModal(val: boolean): void {
-    this.showCreateModal = val;
+  open(originalQuery?: Query | undefined): void {
+    this.showCreateModal = true;
+    this.originalQuery = originalQuery;
+  }
+
+  close(): void {
+    this.showCreateModal = false;
+    this.originalQuery = undefined;
+    this.editorStore.setExistingQueryName(undefined);
   }
 
   *createQuery(): GeneratorFn<void> {
@@ -203,6 +215,11 @@ export class QueryCreatorState {
       )) as Query;
       query.name = this.queryName;
       query.id = uuid();
+      query.stereotypes =
+        this.originalQuery?.stereotypes?.map(cloneQueryStereotype);
+      query.taggedValues = this.originalQuery?.taggedValues?.map(
+        cloneQueryTaggedValue,
+      );
       const newQuery =
         (yield this.editorStore.graphManagerState.graphManager.createQuery(
           query,
