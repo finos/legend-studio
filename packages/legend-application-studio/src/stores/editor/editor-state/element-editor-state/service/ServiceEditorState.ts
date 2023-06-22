@@ -76,7 +76,9 @@ export const resolveServiceQueryReturnType = (
   service: Service,
   editorStore: EditorStore,
 ): Type | undefined => {
-  const valueSpec = resolveServiceQueryValueSpec(service, editorStore);
+  const valueSpec = returnUndefOnError(() =>
+    resolveServiceQueryValueSpec(service, editorStore),
+  );
   if (valueSpec) {
     return returnUndefOnError(() => getValueSpecificationReturnType(valueSpec));
   }
@@ -87,7 +89,9 @@ export const isServiceQueryTDS = (
   service: Service,
   editorStore: EditorStore,
 ): boolean => {
-  const valueSpec = resolveServiceQueryValueSpec(service, editorStore);
+  const valueSpec = returnUndefOnError(() =>
+    resolveServiceQueryValueSpec(service, editorStore),
+  );
   return Boolean(
     valueSpec
       ? valueSpecReturnTDS(valueSpec, editorStore.graphManagerState.graph)

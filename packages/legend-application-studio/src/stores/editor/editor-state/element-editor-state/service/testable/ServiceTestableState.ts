@@ -341,12 +341,20 @@ export class ServiceTestableState {
   }
 
   addTestSuite(): void {
-    const suite = createEmptyServiceTestSuite(this);
-    service_addTestSuite(
-      this.serviceEditorState.service,
-      suite,
-      this.serviceEditorState.editorStore.changeDetectionState.observerContext,
-    );
-    this.selectedSuiteState = new ServiceTestSuiteState(suite, this);
+    try {
+      const suite = createEmptyServiceTestSuite(this);
+      service_addTestSuite(
+        this.serviceEditorState.service,
+        suite,
+        this.serviceEditorState.editorStore.changeDetectionState
+          .observerContext,
+      );
+      this.selectedSuiteState = new ServiceTestSuiteState(suite, this);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to create service test suite: ${error.message}`,
+      );
+    }
   }
 }
