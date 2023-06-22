@@ -18,8 +18,6 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
   type RelationalDatabaseConnectionValueState,
-  CORE_AUTHENTICATION_STRATEGY_TYPE,
-  CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
   POST_PROCESSOR_TYPE,
 } from '../../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
