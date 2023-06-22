@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.0.28
+
+### Patch Changes
+
+- [#2355](https://github.com/finos/legend-studio/pull/2355) [`da96b9922`](https://github.com/finos/legend-studio/commit/da96b99223e9bcac566bcb5e3f7b9840109998ae) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use existing query metadata when saving over (save as) to new query.
+
 ## 13.0.27
 
 ## 13.0.26

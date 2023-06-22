@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.1.1
+
+### Patch Changes
+
+- [#2358](https://github.com/finos/legend-studio/pull/2358) [`dc34a3f3e`](https://github.com/finos/legend-studio/commit/dc34a3f3e169ec049b113e2d0bbf70ec84e3a8c4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle non string constant execution result values
+
 ## 4.1.0
 
 ### Minor Changes
