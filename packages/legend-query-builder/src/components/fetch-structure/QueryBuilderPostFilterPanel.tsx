@@ -959,27 +959,8 @@ const QueryBuilderPostFilterPanelContent = observer(
       [applicationStore, handleDrop],
     );
 
-    const [{ addPostfilterDragOver }, postfilterTargetConnector] = useDrop<
-      QueryBuilderProjectionColumnDragSource,
-      void,
-      { addPostfilterDragOver: boolean }
-    >(
-      () => ({
-        accept: [
-          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
-        ],
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop(item).catch(applicationStore.alertUnhandledError);
-          }
-        },
-        collect: (monitor) => ({
-          addPostfilterDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [applicationStore, handleDrop],
-    );
+    const addPostFilterRef = useRef<HTMLInputElement>(null);
+    dropTargetConnector(addPostFilterRef);
 
     const { showDroppableSuggestion } = useDragLayer((monitor) => ({
       showDroppableSuggestion:
@@ -1099,12 +1080,11 @@ const QueryBuilderPostFilterPanelContent = observer(
             )}
             {showDroppableSuggestion && !postFilterState.isEmpty && (
               <div
-                ref={postfilterTargetConnector}
+                ref={addPostFilterRef}
                 className={clsx(
                   'query-builder-post-filter-tree__blank-node--droppable--tall',
                   {
-                    'dnd__entry--droppable__indicator--dragover':
-                      addPostfilterDragOver,
+                    'dnd__entry--droppable__indicator--dragover': isDragOver,
                   },
                 )}
               >

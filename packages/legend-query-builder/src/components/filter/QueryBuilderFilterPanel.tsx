@@ -898,34 +898,8 @@ export const QueryBuilderFilterPanel = observer(
       [handleDrop],
     );
 
-    const [{ addFilterDragOver }, filterTargetConnector] = useDrop<
-      QueryBuilderExplorerTreeDragSource,
-      void,
-      { addFilterDragOver: boolean }
-    >(
-      () => ({
-        accept:
-          queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-            ? [
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-                QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-              ]
-            : [
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              ],
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop(item, monitor.getItemType() as string);
-          } // prevent drop event propagation to accomondate for nested DnD
-        },
-        collect: (monitor) => ({
-          addFilterDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDrop],
-    );
+    const addFilterRef = useRef<HTMLInputElement>(null);
+    dropTargetConnector(addFilterRef);
 
     return (
       <div
@@ -1043,12 +1017,11 @@ export const QueryBuilderFilterPanel = observer(
 
             {showDroppableSuggestion && !filterState.isEmpty && (
               <div
-                ref={filterTargetConnector}
+                ref={addFilterRef}
                 className={clsx(
                   'query-builder-post-filter-tree__blank-node--droppable--tall',
                   {
-                    'dnd__entry--droppable__indicator--dragover':
-                      addFilterDragOver,
+                    'dnd__entry--droppable__indicator--dragover': isDragOver,
                   },
                 )}
               >
