@@ -258,12 +258,11 @@ const buildParameterValidationContext = (
 const buildFunctionParameters = (
   protocol: V1_Variable,
   context: V1_GraphBuilderContext,
-): VariableExpression => {
-  return guaranteeType(
+): VariableExpression =>
+  guaranteeType(
     V1_buildValueSpecification(protocol, context),
     VariableExpression,
   );
-};
 
 const buildBaseExecutionNode = (
   metamodel: ExecutionNode,
