@@ -224,8 +224,6 @@ export const ChevronRightIcon = GO.GoChevronRight;
 export const BinaryTypeIcon = GO.GoFileBinary;
 export const GitPullRequestIcon = GO.GoGitPullRequest;
 export const GitMergeIcon = GO.GoGitMerge;
-export const CloudDownloadIcon = GO.GoCloudDownload;
-export const CloudUploadIcon = GO.GoCloudUpload;
 export const SyncIcon = GO.GoSync;
 export const GitBranchIcon = GO.GoGitBranch;
 export const XIcon = GO.GoX;
@@ -243,6 +241,8 @@ export const FlaskIcon = IO.IoFlaskSharp;
 export const AvailabilityIcon = IO.IoSyncCircleSharp;
 export const StatisticsIcon = IO.IoStatsChart;
 export const SupportIcon = IO.IoHelpBuoy;
+export const CloudDownloadIcon = IO.IoCloudDownloadOutline;
+export const CloudUploadIcon = IO.IoCloudUploadOutline;
 
 const BS = ReactIcons.BS;
 export const DisplayIcon = BS.BsDisplayFill;

@@ -1109,7 +1109,7 @@ const RelationalConnectionStoreEditor = observer(
       }
     };
     const openDatabaseBuilder = (): void =>
-      connectionValueState.editorStore.explorerTreeState.buildDbBuilderState(
+      connectionValueState.editorStore.explorerTreeState.buildDatabase(
         connection,
         isReadOnly,
       );

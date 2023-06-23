@@ -16,16 +16,9 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  type TreeNodeContainerProps,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
-  TreeView,
-  PURE_DatabaseSchemaIcon,
-  PURE_DatabaseTableIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  KeyIcon,
   CustomSelectorInput,
   type SelectComponent,
   createFilter,
@@ -37,9 +30,6 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   TrashIcon,
-  CircleIcon,
-  CheckCircleIcon,
-  EmptyCircleIcon,
   PURE_DatabaseIcon,
   SyncIcon,
 } from '@finos/legend-art';
@@ -65,18 +55,9 @@ import {
   PackageableConnection,
   RelationalDatabaseConnection,
   guaranteeRelationalDatabaseConnection,
-  stringifyDataType,
 } from '@finos/legend-graph';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
-import {
-  DatabaseSchemaExplorerTreeColumnNodeData,
-  DatabaseSchemaExplorerTreeSchemaNodeData,
-  DatabaseSchemaExplorerTreeTableNodeData,
-  type DatabaseSchemaExplorerTreeData,
-  type DatabaseSchemaExplorerTreeNodeData,
-  type SQLPlaygroundPanelState,
-} from '../../../stores/editor/panel-group/SQLPlaygroundPanelState.js';
-import { renderColumnTypeIcon } from '../editor-group/connection-editor/DatabaseEditorHelper.js';
+import { type SQLPlaygroundPanelState } from '../../../stores/editor/panel-group/SQLPlaygroundPanelState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PANEL_MODE } from '../../../stores/editor/EditorConfig.js';
 import { useDrag, useDrop } from 'react-dnd';
@@ -94,191 +75,35 @@ import {
   parseCSVString,
   uniqBy,
 } from '@finos/legend-shared';
-
-const getDatabaseSchemaNodeIcon = (
-  node: DatabaseSchemaExplorerTreeNodeData,
-): React.ReactNode => {
-  if (node instanceof DatabaseSchemaExplorerTreeSchemaNodeData) {
-    return (
-      <div className="sql-playground__database-schema-explorer-tree__icon--schema">
-        <PURE_DatabaseSchemaIcon />
-      </div>
-    );
-  } else if (node instanceof DatabaseSchemaExplorerTreeTableNodeData) {
-    return (
-      <div className="sql-playground__database-schema-explorer-tree__icon--table">
-        <PURE_DatabaseTableIcon />
-      </div>
-    );
-  } else if (node instanceof DatabaseSchemaExplorerTreeColumnNodeData) {
-    return renderColumnTypeIcon(node.column.type);
-  }
-  return null;
-};
+import {
+  DatabaseSchemaExplorer,
+  DatabaseSchemaExplorerTreeNodeContainer,
+  type DatabaseSchemaExplorerTreeNodeContainerProps,
+} from '../editor-group/connection-editor/DatabaseSchemaExplorer.js';
+import { DatabaseSchemaExplorerTreeTableNodeData } from '../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
 
 const DATABASE_NODE_DND_TYPE = 'DATABASE_NODE_DND_TYPE';
 type DatabaseNodeDragType = { text: string };
 
-const DatabaseSchemaExplorerTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<
-    DatabaseSchemaExplorerTreeNodeData,
-    {
-      toggleCheckedNode: (node: DatabaseSchemaExplorerTreeNodeData) => void;
-      isPartiallySelected: (
-        node: DatabaseSchemaExplorerTreeNodeData,
-      ) => boolean;
-    }
-  >
-> = (props) => {
-  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-  const { toggleCheckedNode, isPartiallySelected } = innerProps;
-  const isExpandable =
-    Boolean(!node.childrenIds || node.childrenIds.length) &&
-    !(node instanceof DatabaseSchemaExplorerTreeColumnNodeData);
-  const nodeExpandIcon = isExpandable ? (
-    node.isOpen ? (
-      <ChevronDownIcon />
-    ) : (
-      <ChevronRightIcon />
-    )
-  ) : (
-    <div />
-  );
-  const [, nodeDragRef] = useDrag<DatabaseNodeDragType>(
-    () => ({
-      type: DATABASE_NODE_DND_TYPE,
-      item: {
-        text:
-          node instanceof DatabaseSchemaExplorerTreeTableNodeData
-            ? `${node.owner.name}.${node.label}`
-            : node.label,
-      },
-    }),
-    [node],
-  );
-  const nodeTypeIcon = getDatabaseSchemaNodeIcon(node);
-  const toggleExpandNode = (): void => onNodeSelect?.(node);
-  const isPrimaryKeyColumn =
-    node instanceof DatabaseSchemaExplorerTreeColumnNodeData &&
-    node.owner.primaryKey.includes(node.column);
+const SQLPlaygroundDatabaseSchemaExplorerTreeNodeContainer = observer(
+  (props: DatabaseSchemaExplorerTreeNodeContainerProps) => {
+    const { node } = props;
 
-  const renderCheckedIcon = (
-    _node: DatabaseSchemaExplorerTreeNodeData,
-  ): React.ReactNode => {
-    if (_node instanceof DatabaseSchemaExplorerTreeColumnNodeData) {
-      return null;
-    } else if (isPartiallySelected(_node)) {
-      return <CircleIcon />;
-    } else if (_node.isChecked) {
-      return <CheckCircleIcon />;
-    }
-    return <EmptyCircleIcon />;
-  };
-
-  return (
-    <div
-      className="tree-view__node__container"
-      style={{
-        paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
-        display: 'flex',
-      }}
-      ref={nodeDragRef}
-      onClick={toggleExpandNode}
-    >
-      <div className="tree-view__node__icon sql-playground__database-schema-explorer-tree__node__icon__group">
-        <div className="sql-playground__database-schema-explorer-tree__expand-icon">
-          {nodeExpandIcon}
-        </div>
-        <div
-          className="sql-playground__database-schema-explorer-tree__toggle-icon"
-          onClick={(event) => {
-            event.stopPropagation();
-            toggleCheckedNode(node);
-          }}
-        >
-          {renderCheckedIcon(node)}
-        </div>
-        <div className="sql-playground__database-schema-explorer-tree__type-icon">
-          {nodeTypeIcon}
-        </div>
-      </div>
-      <div className="tree-view__node__label sql-playground__database-schema-explorer-tree__node__label">
-        {node.label}
-        {node instanceof DatabaseSchemaExplorerTreeColumnNodeData && (
-          <div className="sql-playground__database-schema-explorer-tree__node__type">
-            <div className="sql-playground__database-schema-explorer-tree__node__type__label">
-              {stringifyDataType(node.column.type)}
-            </div>
-          </div>
-        )}
-        {isPrimaryKeyColumn && (
-          <div
-            className="sql-playground__database-schema-explorer-tree__node__pk"
-            title="Primary Key"
-          >
-            <KeyIcon />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export const DatabaseSchemaExplorer = observer(
-  (props: {
-    treeData: DatabaseSchemaExplorerTreeData;
-    playgroundState: SQLPlaygroundPanelState;
-  }) => {
-    const { treeData, playgroundState } = props;
-    const applicationStore = useApplicationStore();
-
-    const onNodeSelect = (node: DatabaseSchemaExplorerTreeNodeData): void => {
-      flowResult(playgroundState.onNodeSelect(node, treeData)).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
-
-    const getChildNodes = (
-      node: DatabaseSchemaExplorerTreeNodeData,
-    ): DatabaseSchemaExplorerTreeNodeData[] =>
-      playgroundState
-        .getChildNodes(node, treeData)
-        ?.sort((a, b) => a.label.localeCompare(b.label)) ?? [];
-
-    const isPartiallySelected = (
-      node: DatabaseSchemaExplorerTreeNodeData,
-    ): boolean => {
-      if (
-        node instanceof DatabaseSchemaExplorerTreeSchemaNodeData &&
-        !node.isChecked
-      ) {
-        return Boolean(
-          playgroundState
-            .getChildNodes(node, treeData)
-            ?.find((childNode) => childNode.isChecked === true),
-        );
-      }
-      return false;
-    };
-
-    const toggleCheckedNode = (
-      node: DatabaseSchemaExplorerTreeNodeData,
-    ): void => playgroundState.toggleCheckedNode(node, treeData);
+    const [, nodeDragRef] = useDrag<DatabaseNodeDragType>(
+      () => ({
+        type: DATABASE_NODE_DND_TYPE,
+        item: {
+          text:
+            node instanceof DatabaseSchemaExplorerTreeTableNodeData
+              ? `${node.owner.name}.${node.label}`
+              : node.label,
+        },
+      }),
+      [node],
+    );
 
     return (
-      <TreeView
-        className="sql-playground__database-schema-explorer-tree"
-        components={{
-          TreeNodeContainer: DatabaseSchemaExplorerTreeNodeContainer,
-        }}
-        innerProps={{
-          toggleCheckedNode,
-          isPartiallySelected,
-        }}
-        treeData={treeData}
-        onNodeSelect={onNodeSelect}
-        getChildNodes={getChildNodes}
-      />
+      <DatabaseSchemaExplorerTreeNodeContainer {...props} ref={nodeDragRef} />
     );
   },
 );
@@ -369,9 +194,11 @@ const getDatabaseSchemaEntities = async (
   model: monacoEditorAPI.ITextModel,
   playgroundState: SQLPlaygroundPanelState,
 ): Promise<monacoLanguagesAPI.CompletionItem[]> => {
-  if (playgroundState.treeData) {
+  if (playgroundState.schemaExplorerState?.treeData) {
     return uniqBy(
-      Array.from(playgroundState.treeData.nodes.values()).map(
+      Array.from(
+        playgroundState.schemaExplorerState.treeData.nodes.values(),
+      ).map(
         (value) =>
           ({
             label: value.label,
@@ -700,15 +527,21 @@ export const SQLPlaygroundPanel = observer(() => {
     [handleConnectionDrop],
   );
 
-  const updateDatabase = applicationStore.guardUnhandledError(() =>
-    flowResult(playgroundState.updateDatabase()),
-  );
+  const updateDatabase = (): void => {
+    if (playgroundState.schemaExplorerState) {
+      flowResult(playgroundState.schemaExplorerState.updateDatabase()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    }
+  };
 
   useEffect(() => {
-    flowResult(playgroundState.fetchDatabaseMetadata()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [playgroundState, applicationStore, playgroundState.connection]);
+    if (playgroundState.schemaExplorerState) {
+      flowResult(
+        playgroundState.schemaExplorerState.fetchDatabaseMetadata(),
+      ).catch(applicationStore.alertUnhandledError);
+    }
+  }, [playgroundState, applicationStore, playgroundState.schemaExplorerState]);
 
   useConditionedApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SQL_PLAYGROUND,
@@ -770,10 +603,13 @@ export const SQLPlaygroundPanel = observer(() => {
                   </div>
                 </div>
                 <div className="sql-playground__config__schema-explorer">
-                  {playgroundState.treeData && (
+                  {playgroundState.schemaExplorerState?.treeData && (
                     <DatabaseSchemaExplorer
-                      treeData={playgroundState.treeData}
-                      playgroundState={playgroundState}
+                      treeData={playgroundState.schemaExplorerState.treeData}
+                      schemaExplorerState={playgroundState.schemaExplorerState}
+                      treeNodeContainerComponent={
+                        SQLPlaygroundDatabaseSchemaExplorerTreeNodeContainer
+                      }
                     />
                   )}
                 </div>

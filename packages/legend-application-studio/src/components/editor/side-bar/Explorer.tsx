@@ -133,7 +133,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
-import { DatabaseBuilder } from '../editor-group/connection-editor/DatabaseBuilder.js';
+import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
 import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 
 const ElementRenamer = observer(() => {
@@ -516,7 +516,7 @@ const ExplorerContextMenu = observer(
     const buildDatabase = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (isRelationalDatabaseConnection(node?.packageableElement)) {
-          editorStore.explorerTreeState.buildDbBuilderState(
+          editorStore.explorerTreeState.buildDatabase(
             guaranteeRelationalDatabaseConnection(node?.packageableElement),
             editorStore.isInViewerMode,
           );
@@ -1128,7 +1128,7 @@ const ExplorerTrees = observer(() => {
               <ElementRenamer />
               <SampleDataGenerator />
               {editorStore.explorerTreeState.databaseBuilderState && (
-                <DatabaseBuilder
+                <DatabaseBuilderWizard
                   databaseBuilderState={
                     editorStore.explorerTreeState.databaseBuilderState
                   }
