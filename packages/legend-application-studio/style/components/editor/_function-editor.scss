@@ -199,6 +199,11 @@
     &__lambda-editor {
       height: 35rem !important;
     }
+
+    &__result-viewer {
+      height: 35rem !important;
+      border: 0.1rem solid var(--color-dark-grey-280);
+    }
   }
 
   &__return__type-editor {
