@@ -275,6 +275,11 @@ const WorkflowExplorerContextMenu = observer(
         workflowState.cancelJob(node.workflowJob, treeData);
       }
     };
+    const runManualJob = (): void => {
+      if (node instanceof WorkflowJobTreeNodeData) {
+        workflowState.runManualJob(node.workflowJob, treeData);
+      }
+    };
     const viewLogs = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
         workflowManagerState.logState.viewJobLogs(node.workflowJob);
@@ -303,6 +308,11 @@ const WorkflowExplorerContextMenu = observer(
             )}
             {node.workflowJob.status === WorkflowJobStatus.IN_PROGRESS && (
               <MenuContentItem onClick={cancelJob}>Cancel Job</MenuContentItem>
+            )}
+            {node.workflowJob.status === WorkflowJobStatus.WAITING_MANUAL && (
+              <MenuContentItem onClick={runManualJob}>
+                Run Manual Job
+              </MenuContentItem>
             )}
           </>
         )}
