@@ -109,7 +109,10 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(
+    pretty: boolean,
+    preserveCompilationError?: boolean | undefined,
+  ): GeneratorFn<void> {
     if (this.propertyMapping instanceof FlatDataPropertyMapping) {
       if (!isStubbed_RawLambda(this.propertyMapping.transform)) {
         try {
@@ -126,7 +129,9 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
               ? this.extractLambdaString(grammarText)
               : '',
           );
-          this.clearErrors();
+          this.clearErrors({
+            preserveCompilationError: preserveCompilationError,
+          });
         } catch (error) {
           assertErrorThrown(error);
           this.editorStore.applicationStore.logService.error(
@@ -347,7 +352,9 @@ export class EmbeddedFlatDataInstanceSetImplementationState
   extractLambdaString(fullLambdaString: string): string {
     throw new UnsupportedOperationError();
   }
-  clearErrors(): void {
+  clearErrors(options?: {
+    preserveCompilationError?: boolean | undefined;
+  }): void {
     // TODO
     return;
   }

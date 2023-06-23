@@ -104,7 +104,10 @@ export class DerivedPropertyState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(
+    pretty: boolean,
+    preserveCompilationError?: boolean | undefined,
+  ): GeneratorFn<void> {
     if (this.derivedProperty.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -126,7 +129,9 @@ export class DerivedPropertyState extends LambdaEditorState {
             ? this.extractLambdaString(grammarText)
             : '',
         );
-        this.clearErrors();
+        this.clearErrors({
+          preserveCompilationError: preserveCompilationError,
+        });
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.logService.error(
@@ -196,7 +201,10 @@ export class ConstraintState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(
+    pretty: boolean,
+    preserveCompilationError?: boolean | undefined,
+  ): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.constraint.functionDefinition)) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -212,7 +220,9 @@ export class ConstraintState extends LambdaEditorState {
             ? this.extractLambdaString(grammarText)
             : '',
         );
-        this.clearErrors();
+        this.clearErrors({
+          preserveCompilationError: preserveCompilationError,
+        });
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.logService.error(
