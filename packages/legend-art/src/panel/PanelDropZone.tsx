@@ -27,18 +27,13 @@ import { VerticalDragHandleIcon } from '../icon/Icon.js';
 
 export const PanelDropZone: React.FC<{
   children: React.ReactNode;
-  isDragOver: boolean;
   className?: string | undefined;
   dropTargetConnector: ConnectDropTarget;
-  showDroppableSuggestion?: boolean | undefined;
+  isDragOver: boolean;
+  isDroppable?: boolean | undefined;
 }> = (props) => {
-  const {
-    children,
-    className,
-    isDragOver,
-    showDroppableSuggestion,
-    dropTargetConnector,
-  } = props;
+  const { children, className, isDragOver, isDroppable, dropTargetConnector } =
+    props;
 
   const ref = useRef<HTMLInputElement>(null);
   dropTargetConnector(ref);
@@ -46,33 +41,11 @@ export const PanelDropZone: React.FC<{
   return (
     <>
       <div className={clsx('dnd__dropzone', className)} ref={ref}>
-        {showDroppableSuggestion && (
-          <div className="dnd__dropzone--droppable"></div>
-        )}
+        {isDroppable && <div className="dnd__dropzone--droppable"></div>}
         {isDragOver && <div className="panel__dnd__dropzone__overlay" />}
         <div className="panel__dnd__dropzone__content">{children}</div>
       </div>
     </>
-  );
-};
-
-export const PanelDnDEntryDragHandle: React.FC<{
-  dropTargetConnector: RefObject<HTMLDivElement>;
-  isBeingDragged: boolean;
-  className?: string;
-}> = (props) => {
-  const { isBeingDragged, dropTargetConnector, className } = props;
-  return (
-    <div
-      ref={dropTargetConnector}
-      className={clsx('dnd__entry__handle__container', className, {
-        'dnd__entry__handle__container--dragging': isBeingDragged,
-      })}
-    >
-      <div className="dnd__entry-drag-handle">
-        <VerticalDragHandleIcon />
-      </div>
-    </div>
   );
 };
 
@@ -81,11 +54,11 @@ export const PanelDnDEntry = observer(
     HTMLDivElement,
     {
       children: React.ReactNode;
+      className?: string;
       placeholder?: React.ReactNode;
       showPlaceholder: boolean;
-      className?: string;
     }
-  >(function PanelDnDEntryAttempt(props, ref) {
+  >(function PanelDnDEntry(props, ref) {
     const { children, placeholder, showPlaceholder, className } = props;
     return (
       <div ref={ref} className={clsx('dnd__entry__container', className)}>
@@ -104,25 +77,55 @@ export const PanelDnDEntry = observer(
   }),
 );
 
-export const PanelEntryDropZonePlaceholder: React.FC<{
-  children: React.ReactNode;
-  showPlaceholder: boolean;
-  label?: string;
+export const PanelEntryDragHandle: React.FC<{
+  dragSourceConnector: RefObject<HTMLDivElement>;
   className?: string;
+  isDragging: boolean;
 }> = (props) => {
-  const { children, label, showPlaceholder, className } = props;
-  if (!showPlaceholder) {
-    return <>{children}</>;
-  }
+  const { isDragging, dragSourceConnector, className } = props;
   return (
-    <div className={clsx(['dnd__entry-dropzone__placeholder', className])}>
-      <div className="dnd__entry-dropzone__placeholder__content">
-        <div className="dnd__entry-dropzone__placeholder__label">
-          {label ?? ''}
-        </div>
+    <div
+      ref={dragSourceConnector}
+      className={clsx('dnd__entry__handle__container', className, {
+        'dnd__entry__handle__container--dragging': isDragging,
+      })}
+    >
+      <div className="dnd__entry-drag-handle">
+        <VerticalDragHandleIcon />
       </div>
     </div>
   );
+};
+
+export const PanelEntryDropZonePlaceholder: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+  label?: string;
+  isDragOver: boolean;
+  isDroppable?: boolean | undefined;
+}> = (props) => {
+  const { children, label, isDragOver, isDroppable, className } = props;
+  if (isDragOver || isDroppable) {
+    return (
+      <div
+        className={clsx([
+          'dnd__entry-dropzone__placeholder',
+          className,
+          {
+            'dnd__entry-dropzone__placeholder--active': isDragOver,
+            'dnd__entry-dropzone__placeholder--droppable': isDroppable,
+          },
+        ])}
+      >
+        <div className="dnd__entry-dropzone__placeholder__content">
+          <div className="dnd__entry-dropzone__placeholder__label">
+            {label ?? ''}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return <>{children}</>;
 };
 
 export const useDragPreviewLayer = (

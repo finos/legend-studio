@@ -40,7 +40,7 @@ import {
   PlusIcon,
   TimesIcon,
   ArrowCircleRightIcon,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
   Panel,
@@ -332,9 +332,9 @@ const ParameterBasicEditor = observer(
         className="property-basic-editor__container"
         showPlaceholder={isBeingDragged}
       >
-        <PanelDnDEntryDragHandle
-          dropTargetConnector={handleRef}
-          isBeingDragged={isBeingDragged}
+        <PanelEntryDragHandle
+          dragSourceConnector={handleRef}
+          isDragging={isBeingDragged}
         />
         <div className="property-basic-editor">
           {isReadOnly && (

@@ -21,7 +21,7 @@ import {
   createFilter,
   TimesIcon,
   ArrowCircleRightIcon,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   PanelDnDEntry,
   DragPreviewLayer,
   useDragPreviewLayer,
@@ -179,9 +179,9 @@ export const StereotypeSelector = observer(
         placeholder={<div className="dnd__placeholder--light"></div>}
         showPlaceholder={isBeingDragged}
       >
-        <PanelDnDEntryDragHandle
-          dropTargetConnector={handleRef}
-          isBeingDragged={isBeingDragged}
+        <PanelEntryDragHandle
+          dragSourceConnector={handleRef}
+          isDragging={isBeingDragged}
         />
         <div
           className={clsx('stereotype-selector', {

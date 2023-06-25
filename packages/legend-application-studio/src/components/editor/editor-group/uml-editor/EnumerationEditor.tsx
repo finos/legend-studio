@@ -42,7 +42,7 @@ import {
   LockIcon,
   FireIcon,
   StickArrowCircleRightIcon,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelDropZone,
@@ -165,9 +165,9 @@ const EnumBasicEditor = observer(
         placeholder={<div className="dnd__placeholder--light"></div>}
         className="enum-basic-editor__container"
       >
-        <PanelDnDEntryDragHandle
-          dropTargetConnector={handleRef}
-          isBeingDragged={isBeingDragged}
+        <PanelEntryDragHandle
+          dragSourceConnector={handleRef}
+          isDragging={isBeingDragged}
         />
 
         <div className="enum-basic-editor">
