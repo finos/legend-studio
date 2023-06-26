@@ -45,16 +45,14 @@ import {
  * @modularize
  * See https://github.com/finos/legend-studio/issues/65
  */
-export const SQLExecutionNodeViewer: React.FC<{
+
+export const SQLExecutionNodeViewerHelper: React.FC<{
   query: string;
   resultColumns: SQLResultColumn[];
   resultType: ResultType;
   executionPlanState: ExecutionPlanState;
-  viewJson: boolean;
 }> = observer((props) => {
-  const { query, resultColumns, resultType, executionPlanState, viewJson } =
-    props;
-
+  const { query, resultColumns, resultType, executionPlanState } = props;
   const applicationStore = executionPlanState.applicationStore;
   const copyExpression = (value: string): void => {
     applicationStore.clipboardService
@@ -68,12 +66,9 @@ export const SQLExecutionNodeViewer: React.FC<{
       )
       .catch(applicationStore.alertUnhandledError);
   };
+
   return (
-    <PanelContent
-      darkMode={
-        !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-      }
-    >
+    <>
       <div className="query-builder__sql__container">
         <PanelDivider />
         <div key={query}>
@@ -133,8 +128,34 @@ export const SQLExecutionNodeViewer: React.FC<{
           </table>
         </div>
       </div>
-      <PanelDivider />
       <ResultTypeViewer resultType={resultType} />
+    </>
+  );
+});
+
+export const SQLExecutionNodeViewer: React.FC<{
+  query: string;
+  resultColumns: SQLResultColumn[];
+  resultType: ResultType;
+  executionPlanState: ExecutionPlanState;
+  viewJson: boolean;
+}> = observer((props) => {
+  const { query, resultColumns, resultType, executionPlanState, viewJson } =
+    props;
+  const applicationStore = executionPlanState.applicationStore;
+
+  return (
+    <PanelContent
+      darkMode={
+        !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+      }
+    >
+      <SQLExecutionNodeViewerHelper
+        query={query}
+        resultColumns={resultColumns}
+        resultType={resultType}
+        executionPlanState={executionPlanState}
+      />
       {viewJson && (
         <div className="query-builder__sql__container">
           <Button
