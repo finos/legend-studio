@@ -121,6 +121,8 @@ export class QueryBuilderTDSState
   isConvertDerivationProjectionObjects = false;
   showPostFilterPanel: boolean;
   showWindowFuncPanel = false;
+  draggedColumnIndex: number | undefined;
+  hoveredColumnIndex: number | undefined;
 
   postFilterOperators: QueryBuilderPostFilterOperator[] =
     getQueryBuilderCorePostFilterOperators();
@@ -142,17 +144,23 @@ export class QueryBuilderTDSState
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
       showWindowFuncPanel: observable,
+      draggedColumnIndex: observable,
+      hoveredColumnIndex: observable,
       TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
       addColumn: action,
       moveColumn: action,
+      setRearrangeColumnsIndex: action,
       replaceColumn: action,
       initialize: action,
       setShowPostFilterPanel: action,
       setShowWindowFuncPanel: action,
       convertDerivationProjectionObjects: flow,
     });
+
+    this.draggedColumnIndex = undefined;
+    this.hoveredColumnIndex = undefined;
 
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.postFilterState = new QueryBuilderPostFilterState(
@@ -172,6 +180,14 @@ export class QueryBuilderTDSState
       this.queryBuilderState.applicationStore.settingService.getBooleanValue(
         QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL,
       ) ?? false;
+  }
+
+  setRearrangeColumnsIndex(
+    draggedColumnIndex: number | undefined,
+    hoveredColumnIndex: number | undefined,
+  ): void {
+    this.draggedColumnIndex = draggedColumnIndex;
+    this.hoveredColumnIndex = hoveredColumnIndex;
   }
 
   get type(): string {

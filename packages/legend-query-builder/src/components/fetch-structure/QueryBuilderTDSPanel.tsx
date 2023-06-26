@@ -324,17 +324,19 @@ const buildCalendarTypeOption = (
 });
 
 const QueryBuilderProjectionColumnEditor = observer(
-  (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
+  (props: {
+    projectionColumnState: QueryBuilderProjectionColumnState;
+    hoveredColumn: number | undefined;
+  }) => {
     const handleRef = useRef<HTMLDivElement>(null);
     const applicationStore = useApplicationStore();
-
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+    const { projectionColumnState, hoveredColumn } = props;
 
-    const { projectionColumnState } = props;
     const tdsState = projectionColumnState.tdsState;
     const isCalendarEnabled = tdsState.queryBuilderState.isCalendarEnabled;
     const isRemovalDisabled = tdsState.isColumnInUse(projectionColumnState);
@@ -478,6 +480,23 @@ const QueryBuilderProjectionColumnEditor = observer(
       }
     };
 
+    const handleDroppingColumn = useCallback(
+      (type: string): void => {
+        if (
+          type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE &&
+          tdsState.draggedColumnIndex !== undefined &&
+          tdsState.hoveredColumnIndex !== undefined
+        ) {
+          tdsState.moveColumn(
+            tdsState.draggedColumnIndex,
+            tdsState.hoveredColumnIndex,
+          );
+        }
+        tdsState.setRearrangeColumnsIndex(undefined, undefined);
+      },
+      [tdsState],
+    );
+
     // Drag and Drop
     const handleHover = useCallback(
       (
@@ -490,6 +509,11 @@ const QueryBuilderProjectionColumnEditor = observer(
         const hoverIndex = tdsState.projectionColumns.findIndex(
           (e) => e === projectionColumnState,
         );
+
+        if (dragIndex === hoverIndex) {
+          tdsState.setRearrangeColumnsIndex(undefined, hoverIndex);
+        }
+
         if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
           return;
         }
@@ -507,7 +531,8 @@ const QueryBuilderProjectionColumnEditor = observer(
         if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
           return;
         }
-        tdsState.moveColumn(dragIndex, hoverIndex);
+
+        tdsState.setRearrangeColumnsIndex(dragIndex, hoverIndex);
       },
       [projectionColumnState, tdsState],
     );
@@ -515,9 +540,15 @@ const QueryBuilderProjectionColumnEditor = observer(
       () => ({
         accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
         hover: (item, monitor): void => handleHover(item, monitor),
+        drop: (item, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDroppingColumn(monitor.getItemType() as string);
+          }
+        },
       }),
-      [handleHover],
+      [handleHover, handleDroppingColumn],
     );
+
     const [
       { projectionColumnBeingDragged },
       dragConnector,
@@ -548,8 +579,11 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [projectionColumnState],
     );
+
     const isBeingDragged =
-      projectionColumnState === projectionColumnBeingDragged;
+      hoveredColumn === tdsState.hoveredColumnIndex &&
+      projectionColumnBeingDragged !== undefined;
+
     dragConnector(handleRef);
     dropConnector(ref);
 
@@ -613,6 +647,16 @@ const QueryBuilderProjectionColumnEditor = observer(
     return (
       <PanelDnDEntry
         ref={ref}
+        placeholder={
+          <div
+            className={
+              (tdsState.hoveredColumnIndex ?? 0) >
+              (tdsState.draggedColumnIndex ?? 0)
+                ? 'query-builder__projection__column__placeholder--bottom'
+                : 'query-builder__projection__column__placeholder--top'
+            }
+          ></div>
+        }
         showPlaceholder={isBeingDragged}
         className="query-builder__projection__column"
       >
@@ -638,7 +682,7 @@ const QueryBuilderProjectionColumnEditor = observer(
         >
           <div className="query-builder__projection__column__container">
             <PanelDnDEntryDragHandle
-              isBeingDragged={isBeingDragged}
+              isBeingDragged={false}
               dropTargetConnector={handleRef}
               className="query-builder__projection__column__drag-handle__container"
             />
@@ -937,6 +981,21 @@ export const QueryBuilderTDSPanel = observer(
       [handleDrop],
     );
 
+    const [{ isOverProjectionColumns }, projectionColumnDropConnector] =
+      useDrop<
+        QueryBuilderProjectionColumnDragSource,
+        void,
+        { isOverProjectionColumns: boolean }
+      >(
+        () => ({
+          accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
+          collect: (monitor) => ({
+            isOverProjectionColumns: monitor.isOver({ shallow: false }),
+          }),
+        }),
+        [],
+      );
+
     const { showDroppableSuggestion } = useDragLayer((monitor) => ({
       showDroppableSuggestion:
         monitor.isDragging() &&
@@ -1003,6 +1062,7 @@ export const QueryBuilderTDSPanel = observer(
               <div
                 data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
                 className="query-builder__projection__columns"
+                ref={projectionColumnDropConnector}
               >
                 <DragPreviewLayer
                   labelGetter={(
@@ -1014,12 +1074,17 @@ export const QueryBuilderTDSPanel = observer(
                   }
                   types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
                 />
-                {projectionColumns.map((projectionColumnState) => (
-                  <QueryBuilderProjectionColumnEditor
-                    key={projectionColumnState.uuid}
-                    projectionColumnState={projectionColumnState}
-                  />
-                ))}
+                {projectionColumns.map(
+                  (projectionColumnState, hoveredColumn) => (
+                    <QueryBuilderProjectionColumnEditor
+                      key={projectionColumnState.uuid}
+                      hoveredColumn={
+                        isOverProjectionColumns ? hoveredColumn : -1
+                      }
+                      projectionColumnState={projectionColumnState}
+                    />
+                  ),
+                )}
               </div>
             )}
             <QueryResultModifierModal tdsState={tdsState} />

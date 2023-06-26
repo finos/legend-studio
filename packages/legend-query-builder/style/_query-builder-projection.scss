@@ -44,6 +44,16 @@
     &:hover {
       background: var(--color-dark-blue-shade-100);
     }
+
+    &__placeholder--bottom {
+      height: 100%;
+      border-bottom: 0.2rem dashed var(--color-light-grey-300);
+    }
+
+    &__placeholder--top {
+      height: 100%;
+      border-top: 0.2rem dashed var(--color-light-grey-300);
+    }
   }
 
   &__column__context-menu {
@@ -485,6 +495,5 @@
 .query-builder__projection__calendar__date__column__dnd__placeholder
   .dnd__entry-dropzone__placeholder__content {
   border-color: var(--color-dark-grey-100);
-  color: var(--color-dark-grey-300);
   border: 0.2rem dashed var(--color-dark-grey-300);
 }
