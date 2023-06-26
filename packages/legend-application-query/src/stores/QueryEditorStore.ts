@@ -919,6 +919,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       _lightQuery: observable,
       lightQuery: computed,
       setLightQuery: action,
+      setLightName: action,
       setQuery: action,
       isPerformingBlockingAction: override,
     });
@@ -965,6 +966,12 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     this.query = val;
   }
 
+  setLightName(val: string): void {
+    if (this._lightQuery) {
+      this._lightQuery.name = val;
+    }
+  }
+
   getProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.lightQuery.groupId,
@@ -986,6 +993,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       this.queryId,
       this.graphManagerState.graph,
     );
+
+    //svp1
     this.setQuery(query);
     LegendQueryUserDataHelper.addRecentlyViewedQuery(
       this.applicationStore.userDataService,
@@ -1079,6 +1088,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
     return queryBuilderState;
   }
+
+  // svp
 
   getPersistConfiguration(
     lambda: RawLambda,

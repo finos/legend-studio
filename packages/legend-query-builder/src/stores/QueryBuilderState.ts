@@ -122,6 +122,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isEditingWatermark = false;
   isCheckingEntitlments = false;
   isCalendarEnabled = false;
+  isNewQuery = false;
 
   class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -152,6 +153,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isEditingWatermark: observable,
       isCheckingEntitlments: observable,
       isCalendarEnabled: observable,
+      isNewQuery: observable,
       changeDetectionState: observable,
       class: observable,
       mapping: observable,
@@ -170,6 +172,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setMapping: action,
       setRuntimeValue: action,
 
+      setisNewQuery: action,
       resetQueryResult: action,
       resetQueryContent: action,
       changeClass: action,
@@ -305,6 +308,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     [QUERY_BUILDER_COMMAND_KEY.COMPILE].forEach((key) =>
       this.applicationStore.commandService.deregisterCommand(key),
     );
+  }
+
+  setisNewQuery(val: boolean): void {
+    this.isNewQuery = val;
   }
 
   resetQueryResult(options?: { preserveResult?: boolean | undefined }): void {

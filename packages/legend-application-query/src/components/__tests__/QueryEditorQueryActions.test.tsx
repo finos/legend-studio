@@ -225,3 +225,61 @@ test(
     ).toBe(false);
   },
 );
+
+test(
+  integrationTest('Query state allows new query in header actions'),
+  async () => {
+    const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore();
+    mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      mockedQueryEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    const _class = 'model::Firm';
+    const mapping = 'execution::RelationalMapping';
+    const runtime = 'execution::Runtime';
+    const rawLambda = TEST_DATA__simpleProjectionQuery;
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass(_class);
+
+    await act(async () => {
+      queryBuilderState.changeClass(_modelClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    const lambda = create_RawLambda(rawLambda.parameters, rawLambda.body);
+    await waitFor(() =>
+      getByText(queryBuilderSetup, extractElementNameFromPath(mapping)),
+    );
+    await waitFor(() =>
+      getByText(queryBuilderSetup, extractElementNameFromPath(runtime)),
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(lambda);
+    });
+
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
+    );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS),
+    );
+    const queryActionsPanel = renderResult.getByTestId(
+      QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS,
+    );
+
+    expect(
+      getByTitle(queryActionsPanel, 'New query').hasAttribute('disabled'),
+    ).toBe(false);
+  },
+);

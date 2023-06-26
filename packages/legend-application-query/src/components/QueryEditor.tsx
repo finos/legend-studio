@@ -44,6 +44,7 @@ import {
   clsx,
   ModalHeaderActions,
   TimesIcon,
+  FileEmptyIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -61,6 +62,8 @@ import {
   ExistingQueryEditorStore,
 } from '../stores/QueryEditorStore.js';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
   LEGEND_APPLICATION_COLOR_THEME,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -366,6 +369,8 @@ const QueryEditorHeaderContent = observer(
     const editorStore = useQueryEditorStore();
     const applicationStore = useLegendQueryApplicationStore();
     const isExistingQuery = editorStore instanceof ExistingQueryEditorStore;
+    const isNewQuery = Boolean(editorStore.queryBuilderState?.isNewQuery);
+
     const renameQuery = (): void => {
       if (editorStore instanceof ExistingQueryEditorStore) {
         editorStore.updateState.setQueryRenamer(true);
@@ -412,6 +417,41 @@ const QueryEditorHeaderContent = observer(
       if (editorStore instanceof ExistingQueryEditorStore) {
         editorStore.updateState.showSaveModal();
       }
+    };
+
+    const newQuery = (): void => {
+      console.log('svpp');
+      editorStore.queryBuilderState?.resetQueryResult();
+      editorStore.queryBuilderState?.resetQueryContent();
+      editorStore.queryBuilderState?.setisNewQuery(true);
+
+      if (editorStore instanceof ExistingQueryEditorStore) {
+        editorStore.setLightName('');
+      }
+    };
+
+    const cautionNewQuery = (
+      event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    ): void => {
+      event.preventDefault();
+      editorStore.applicationStore.alertService.setActionAlertInfo({
+        message: 'Create new query',
+        prompt:
+          'Any unsaved changes to your query will be lost if you continue. Are you sure?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Confirm',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => newQuery(),
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
     };
 
     const toggleAssistant = (): void =>
@@ -500,11 +540,21 @@ const QueryEditorHeaderContent = observer(
               Load Query
             </div>
           </Button>
-
+          <Button
+            className="query-editor__header__action btn--dark"
+            disabled={editorStore.isPerformingBlockingAction}
+            onClick={cautionNewQuery}
+            title="New query"
+          >
+            <FileEmptyIcon />
+            <div className="query-editor__header__action__label">New</div>
+          </Button>
           <Button
             className="query-editor__header__action btn--dark"
             disabled={
-              !isExistingQuery || editorStore.isPerformingBlockingAction
+              !isExistingQuery ||
+              isNewQuery ||
+              editorStore.isPerformingBlockingAction
             }
             onClick={openSaveQueryModal}
             title="Save query"
