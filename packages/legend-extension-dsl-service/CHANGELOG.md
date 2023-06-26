@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.40
+
+### Patch Changes
+
+- [#2370](https://github.com/finos/legend-studio/pull/2370) [`3d079af2a`](https://github.com/finos/legend-studio/commit/3d079af2a71d41084570a19c9a9d5f2e268c107d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Generate valid service url that has query params
+
 ## 1.0.39
 
 ## 1.0.38
