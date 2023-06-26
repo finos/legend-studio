@@ -204,6 +204,7 @@ export class WorkflowState {
       cancelJob: flow,
       refreshWorkflow: flow,
       retryJob: flow,
+      runManualJob: flow,
     });
 
     this.editorStore = editorStore;
@@ -325,6 +326,26 @@ export class WorkflowState {
       this.isExecutingWorkflowRequest = false;
     }
   }
+
+  *runManualJob(
+    workflowJob: WorkflowJob,
+    treeData: TreeData<WorkflowExplorerTreeNodeData>,
+  ): GeneratorFn<void> {
+    try {
+      this.isExecutingWorkflowRequest = true;
+      yield flowResult(this.workflowManagerState.runManualJob(workflowJob));
+      yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.isExecutingWorkflowRequest = false;
+    }
+  }
 }
 
 export abstract class WorkflowManagerState {
@@ -346,6 +367,7 @@ export abstract class WorkflowManagerState {
       getJob: flow,
       retryJob: flow,
       cancelJob: flow,
+      runManualJob: flow,
       getJobLogs: flow,
     });
 
@@ -365,6 +387,7 @@ export abstract class WorkflowManagerState {
   abstract getJobs(workflowId: string): GeneratorFn<WorkflowJob[]>;
   abstract getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]>;
   abstract retryJob(workflowJob: WorkflowJob): GeneratorFn<void>;
+  abstract runManualJob(workflowJob: WorkflowJob): GeneratorFn<void>;
   abstract cancelJob(workflowJob: WorkflowJob): GeneratorFn<void>;
   abstract getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string>;
 
@@ -475,6 +498,14 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
     )) as PlainObject<WorkflowJob>[];
   }
 
+  override *runManualJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.runManualWorkflowJob(
+      this.sdlcState.activeProject.projectId,
+      this.sdlcState.activeWorkspace,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
   override *cancelJob(workflowJob: WorkflowJob): GeneratorFn<void> {
     (yield this.editorStore.sdlcServerClient.cancelWorkflowJob(
       this.sdlcState.activeProject.projectId,
@@ -556,6 +587,14 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
     )) as PlainObject<WorkflowJob>[];
   }
 
+  override *runManualJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.runManualWorkflowJobByVersion(
+      this.sdlcState.activeProject.projectId,
+      this.version.id.id,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
   override *cancelJob(workflowJob: WorkflowJob): GeneratorFn<void> {
     (yield this.editorStore.sdlcServerClient.cancelWorkflowJobByVersion(
       this.sdlcState.activeProject.projectId,
@@ -621,6 +660,14 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
 
   override *retryJob(workflowJob: WorkflowJob): GeneratorFn<void> {
     (yield this.editorStore.sdlcServerClient.retryWorkflowJob(
+      this.sdlcState.activeProject.projectId,
+      undefined,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
+  override *runManualJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.runManualWorkflowJob(
       this.sdlcState.activeProject.projectId,
       undefined,
       workflowJob,
