@@ -1667,9 +1667,9 @@ const RelationalConnectionGeneralEditor = observer(
             <PanelHeader title="general"></PanelHeader>
             <PanelContent className="relational-connection-editor__general">
               <PanelFormSection>
-                <label className="panel__content__form__section__header__label">
+                <div className="panel__content__form__section__header__label">
                   Database Type
-                </label>
+                </div>
                 <CustomSelectorInput
                   options={typeOptions}
                   onChange={onTypeChange}
@@ -1691,9 +1691,9 @@ const RelationalConnectionGeneralEditor = observer(
               <PanelHeader title="general"></PanelHeader>
               <PanelContent className="relational-connection-editor__general">
                 <PanelFormSection>
-                  <label className="panel__content__form__section__header__label">
+                  <div className="panel__content__form__section__header__label">
                     Database Type
-                  </label>
+                  </div>
                   <CustomSelectorInput
                     options={typeOptions}
                     onChange={onTypeChange}
@@ -1717,7 +1717,7 @@ const RelationalConnectionGeneralEditor = observer(
           <ResizablePanel>
             <div className="relational-connection-editor__content">
               <ResizablePanelGroup orientation="vertical">
-                <ResizablePanel size={700} minSize={50}>
+                <ResizablePanel size={450} minSize={50}>
                   <div className="relational-connection-editor__auth">
                     <PanelHeader title="datasource specification"></PanelHeader>
                     <PanelContent className="relational-connection-editor__auth__content">
