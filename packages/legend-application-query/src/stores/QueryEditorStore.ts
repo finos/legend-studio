@@ -215,11 +215,13 @@ export class QueryCreatorState {
       )) as Query;
       query.name = this.queryName;
       query.id = uuid();
-      query.stereotypes =
-        this.originalQuery?.stereotypes?.map(cloneQueryStereotype);
-      query.taggedValues = this.originalQuery?.taggedValues?.map(
-        cloneQueryTaggedValue,
-      );
+      if (this.originalQuery) {
+        query.stereotypes =
+          this.originalQuery.stereotypes?.map(cloneQueryStereotype);
+        query.taggedValues = this.originalQuery.taggedValues?.map(
+          cloneQueryTaggedValue,
+        );
+      }
       const newQuery =
         (yield this.editorStore.graphManagerState.graphManager.createQuery(
           query,
