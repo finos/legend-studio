@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 27.1.2
+
+### Patch Changes
+
+- [#2365](https://github.com/finos/legend-studio/pull/2365) [`f1dc0d520`](https://github.com/finos/legend-studio/commit/f1dc0d520ae2fc380659221961f319a1524527b3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enhance function editor to run function other than execution results.
+
+- [#2369](https://github.com/finos/legend-studio/pull/2369) [`5540660e8`](https://github.com/finos/legend-studio/commit/5540660e8fbc4e7a3b0fe9370629f83548bb33c1) ([@gs-gunjan](https://github.com/gs-gunjan)) - Implementing trigger to run manual jobs in a workflow
+
 ## 27.1.1
 
 ### Patch Changes

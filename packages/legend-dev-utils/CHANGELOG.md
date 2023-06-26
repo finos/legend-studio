@@ -1,5 +1,7 @@
 # @finos/legend-dev-utils
 
+## 2.0.70
+
 ## 2.0.69
 
 ## 2.0.68
