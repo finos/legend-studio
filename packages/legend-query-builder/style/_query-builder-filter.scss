@@ -21,8 +21,15 @@
     padding: 0.5rem 0;
   }
 
+  &--droppable {
+    margin: 1rem 1.5rem;
+    height: 70%;
+    text-align: center;
+  }
+
   &__free-drop-zone {
-    padding: 0 1.5rem;
+    height: 100%;
+    padding: 0;
   }
 
   &__expand-icon {

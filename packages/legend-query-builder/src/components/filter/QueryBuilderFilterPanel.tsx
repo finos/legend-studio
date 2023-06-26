@@ -233,22 +233,9 @@ const QueryBuilderFilterConditionEditor = observer(
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
-        {/* {isDragOver && (
-          <div
-            className={clsx(
-              'dnd__entry--droppable__indicator dnd__entry-potential__dropzone__indicator--full',
-              {
-                'dnd__entry--droppable__indicator--dragover': isDragOver,
-              },
-            )}
-          ></div>
-        )} */}
-
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
           label="Add New Logical Group"
-          //svp
-          // className="query-builder__dnd__placeholder query-builder-filter-tree__condition-node__container"
         >
           <div className="query-builder-filter-tree__condition-node">
             <div className="query-builder-filter-tree__condition-node__property">
@@ -999,7 +986,10 @@ export const QueryBuilderFilterPanel = observer(
               </>
             )}
             {isDroppable && !filterState.isEmpty && (
-              <div ref={addFilterRef}>
+              <div
+                ref={addFilterRef}
+                className="query-builder-filter-tree--droppable"
+              >
                 <PanelEntryDropZonePlaceholder
                   isDragOver={isDragOver}
                   isDroppable={isDroppable}

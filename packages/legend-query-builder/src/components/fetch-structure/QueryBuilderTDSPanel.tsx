@@ -482,7 +482,6 @@ const QueryBuilderProjectionColumnEditor = observer(
 
     const handleDroppingColumn = useCallback(
       (type: string): void => {
-        console.log('svp');
         if (
           type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE &&
           tdsState.draggedColumnIndex !== undefined &&
@@ -985,24 +984,6 @@ export const QueryBuilderTDSPanel = observer(
       [handleDrop],
     );
 
-    const [{ isOverProjectionColumns }, projectionColumnDropConnector] =
-      useDrop<
-        QueryBuilderProjectionColumnDragSource,
-        void,
-        { isOverProjectionColumns: boolean }
-      >(
-        () => ({
-          accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
-          collect: (monitor) => ({
-            isOverProjectionColumns: monitor.isOver({ shallow: false }),
-          }),
-        }),
-        [],
-      );
-
-    // const { showDroppableSuggestion } = useDragLayer((monitor) => ({
-    //   showDroppableSuggestion:
-
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
         monitor.isDragging() &&
@@ -1084,10 +1065,6 @@ export const QueryBuilderTDSPanel = observer(
                   (projectionColumnState, hoveredColumn) => (
                     <QueryBuilderProjectionColumnEditor
                       key={projectionColumnState.uuid}
-                      // hoveredColumn={
-                      //   isOverProjectionColumns ? hoveredColumn : -1
-                      // }
-
                       hoveredColumn={hoveredColumn}
                       projectionColumnState={projectionColumnState}
                     />

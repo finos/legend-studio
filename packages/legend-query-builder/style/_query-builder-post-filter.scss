@@ -22,12 +22,9 @@
   }
 
   &--droppable {
-    margin: 1rem;
-    // padding: 1rem;
+    margin: 1rem 1.5rem;
     height: 70%;
     text-align: center;
-    border: 0.2rem dashed var(--color-dark-grey-400);
-    color: var(--color-dark-grey-400);
   }
 
   &__free-drop-zone {

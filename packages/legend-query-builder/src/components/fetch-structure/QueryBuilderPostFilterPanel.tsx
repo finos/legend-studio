@@ -1048,14 +1048,17 @@ const QueryBuilderPostFilterPanelContent = observer(
               </>
             )}
             {isDroppable && !postFilterState.isEmpty && (
-              <div ref={addPostFilterRef}>
+              <div
+                ref={addPostFilterRef}
+                className="query-builder-post-filter-tree--droppable"
+              >
                 <PanelEntryDropZonePlaceholder
                   isDragOver={isDragOver}
                   isDroppable={isDroppable}
                   className="query-builder-post-filter-tree__free-drop-zone"
                   label="Add post-filter to main group"
                 >
-                  <></>
+                  <></>{' '}
                 </PanelEntryDropZonePlaceholder>
               </div>
             )}
