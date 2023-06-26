@@ -18,16 +18,28 @@ import {
   BlankPanelPlaceholder,
   clsx,
   ContextMenu,
+  CustomSelectorInput,
   Dialog,
   MenuContent,
   MenuContentItem,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
+  ModalHeader,
+  PanelFormBooleanField,
   PlusIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  UploadIcon,
 } from '@finos/legend-art';
-import type { RelationalCSVDataTable } from '@finos/legend-graph';
+import {
+  type Table,
+  getAllTablesFromDatabase,
+  RelationalCSVDataTable,
+} from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
 import type { RelationalCSVDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
@@ -35,22 +47,92 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import {
+  relationalData_addTable,
+  relationalData_setTableName,
+  relationalData_setTableSchemaName,
+} from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
+import { createMockDataForMappingElementSource } from '../../../../stores/editor/utils/MockDataUtils.js';
 
-const RelationalTableIdentifierModal = observer(
+interface TableOption {
+  value: Table;
+  label: string;
+}
+
+const RelationalTableIdentifierEditor = observer(
   (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {
     const { isReadOnly, dataState } = props;
-    const tableIdentifierState = dataState.tableIdentifierState;
-    const editableTable = tableIdentifierState.table;
-    const closeModal = (): void => dataState.closeModal();
-    const changeTableValue: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      tableIdentifierState.setTableName(event.target.value);
+    const resolvedDb = dataState.database;
+    const existingDataTable = dataState.tableToEdit;
+
+    // table
+    const [schemaName, setSchemaName] = useState<string | undefined>(
+      existingDataTable?.schema,
+    );
+    const [tableName, setTableName] = useState<string | undefined>(
+      existingDataTable?.table,
+    );
+    // selectors if db provided
+    const tables = resolvedDb
+      ? getAllTablesFromDatabase(resolvedDb)
+      : undefined;
+    const [dbTable, setDbTable] = useState<Table | undefined>(tables?.[0]);
+    const [includeBare, setIncludeBare] = useState(true);
+    const showFullPath = resolvedDb && resolvedDb.schemas.length > 2;
+    const tableOptions =
+      tables?.map((_t) => ({
+        label: showFullPath ? `${_t.schema.name}.${_t.name}` : `${_t.name}`,
+        value: _t,
+      })) ?? [];
+    const onTableChange = (val: TableOption | null): void => {
+      setDbTable(val?.value);
     };
+    const selectedTable = dbTable
+      ? {
+          label: showFullPath
+            ? `${dbTable.schema.name}.${dbTable.name}`
+            : `${dbTable.name}`,
+          value: dbTable,
+        }
+      : undefined;
+    const closeModal = (): void => dataState.closeModal();
     const changeSchemaValue: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
-      tableIdentifierState.setSchemaName(event.target.value);
+      setSchemaName(event.target.value);
+    };
+    const changeTableValue: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setTableName(event.target.value);
+    };
+    const toggleIncludeBare = (): void => {
+      setIncludeBare(!includeBare);
+    };
+    const useSelector = resolvedDb && !existingDataTable;
+    const isDisabled = useSelector ? !dbTable : !(schemaName && tableName);
+
+    const handleSubmit = (): void => {
+      const newTable = new RelationalCSVDataTable();
+      newTable.values = '';
+      const editTable = existingDataTable ?? newTable;
+      const _schemaName = useSelector ? dbTable?.schema.name : schemaName;
+      const _name = useSelector ? dbTable?.name : tableName;
+      relationalData_setTableSchemaName(editTable, _schemaName ?? '');
+      relationalData_setTableName(editTable, _name ?? '');
+      if (!existingDataTable && dbTable && includeBare) {
+        editTable.values = createMockDataForMappingElementSource(
+          dbTable,
+          dataState.editorStore,
+        );
+      }
+      if (!existingDataTable) {
+        relationalData_addTable(dataState.embeddedData, editTable);
+        dataState.changeSelectedTable(editTable);
+      }
+      closeModal();
     };
     return (
       <Dialog
@@ -62,42 +144,71 @@ const RelationalTableIdentifierModal = observer(
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            tableIdentifierState.handleSubmit();
+            handleSubmit();
             closeModal();
           }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">
-            {editableTable
+            {existingDataTable
               ? 'Rename Relational Data Table'
               : 'Add Relational Data Table'}
           </div>
           <div className="relational-data-editor__identifier">
-            <div className="relational-data-editor__identifier__values">
-              <input
-                className="panel__content__form__section__input"
-                disabled={isReadOnly}
-                placeholder="schemaName"
-                value={tableIdentifierState.schemaName}
-                onChange={changeSchemaValue}
-              />
-            </div>
-            <div className="relational-data-editor__identifier__values">
-              <input
-                className="relational-data-editor__identifier__values panel__content__form__section__input"
-                disabled={isReadOnly}
-                placeholder="tableName"
-                value={tableIdentifierState.tableName}
-                onChange={changeTableValue}
-              />
-            </div>
+            {resolvedDb && !existingDataTable ? (
+              <>
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__label">
+                    Table
+                  </div>
+                  <div className="explorer__new-element-modal__driver">
+                    <CustomSelectorInput
+                      className="explorer__new-element-modal__driver__dropdown"
+                      options={tableOptions}
+                      onChange={onTableChange}
+                      value={selectedTable}
+                      isClearable={false}
+                      darkMode={true}
+                    />
+                  </div>
+                </div>
+                <PanelFormBooleanField
+                  isReadOnly={isReadOnly}
+                  value={includeBare}
+                  name="Include Columns and First Row"
+                  prompt="Will include table columns and first row using table definition"
+                  update={toggleIncludeBare}
+                />
+              </>
+            ) : (
+              <>
+                <div className="relational-data-editor__identifier__values">
+                  <input
+                    className="panel__content__form__section__input"
+                    disabled={isReadOnly}
+                    placeholder="schemaName"
+                    value={schemaName}
+                    onChange={changeSchemaValue}
+                  />
+                </div>
+                <div className="relational-data-editor__identifier__values">
+                  <input
+                    className="relational-data-editor__identifier__values panel__content__form__section__input"
+                    disabled={isReadOnly}
+                    placeholder="tableName"
+                    value={tableName}
+                    onChange={changeTableValue}
+                  />
+                </div>
+              </>
+            )}
           </div>
           <div className="search-modal__actions">
             <button
               className="btn btn--dark"
-              disabled={tableIdentifierState.isEditingDisabled || isReadOnly}
+              disabled={isDisabled || isReadOnly}
             >
-              {editableTable ? 'Rename' : 'Add'}
+              {existingDataTable ? 'Rename' : 'Add'}
             </button>
           </div>
         </form>
@@ -126,6 +237,53 @@ const RelationalCSVTableContextMenu = observer(
   }),
 );
 
+const ImportModal = observer(
+  (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {
+    const { isReadOnly, dataState } = props;
+    const [csv, setCSV] = useState('');
+    const closeModal = (): void => dataState.closeCSVModal();
+    const importVal = (): void => {
+      dataState.importCSV(csv);
+      setCSV('');
+      closeModal();
+    };
+    const changeCSV: React.ChangeEventHandler<
+      HTMLTextAreaElement | HTMLInputElement
+    > = (event) => {
+      setCSV(event.target.value);
+    };
+    return (
+      <Dialog
+        open={dataState.showImportCSVModal}
+        onClose={closeModal}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true} className="relational-data-editor__import">
+          <ModalHeader title="Import CSV" />
+          <ModalBody>
+            <textarea
+              className="relational-data-editor__import__textarea"
+              spellCheck={false}
+              placeholder="CSV Text"
+              value={csv}
+              onChange={changeCSV}
+              disabled={isReadOnly}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              text="Import"
+              title="Create new query"
+              onClick={importVal}
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 export const RelationalCSVDataEditor = observer(
   (props: { dataState: RelationalCSVDataState; isReadOnly: boolean }) => {
     const { dataState, isReadOnly } = props;
@@ -145,6 +303,11 @@ export const RelationalCSVDataEditor = observer(
       setSelectedTableFromContextMenu(undefined);
     const isTableActive = (table: RelationalCSVDataTable): boolean =>
       currentTableState?.table === table;
+    const showCSVModal = (): void => dataState.setShowImportCsvModal(true);
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_RELATIONAL_EDITOR,
+    );
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel minSize={30} size={300}>
@@ -156,6 +319,15 @@ export const RelationalCSVDataEditor = observer(
                 </div>
               </div>
               <div className="relational-data-editor__header__actions">
+                <button
+                  className="schema-set-panel__header__action"
+                  onClick={showCSVModal}
+                  disabled={isReadOnly}
+                  tabIndex={-1}
+                  title="Import CSV"
+                >
+                  <UploadIcon />
+                </button>
                 <button
                   className="relational-data-editor__header__action"
                   onClick={openIdentifierModal}
@@ -245,10 +417,13 @@ export const RelationalCSVDataEditor = observer(
                 />
               )}
               {dataState.showTableIdentifierModal && (
-                <RelationalTableIdentifierModal
+                <RelationalTableIdentifierEditor
                   dataState={dataState}
                   isReadOnly={isReadOnly}
                 />
+              )}
+              {dataState.showImportCSVModal && (
+                <ImportModal dataState={dataState} isReadOnly={isReadOnly} />
               )}
             </div>
           </div>

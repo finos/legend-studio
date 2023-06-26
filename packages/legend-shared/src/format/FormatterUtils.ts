@@ -131,19 +131,19 @@ export const parseCSVString = (value: string): string[] | undefined => {
     });
     parseData = parseResult.data.flat();
     if (parseResult.errors.length) {
-      if (
-        parseResult.errors[0] &&
-        parseResult.errors[0].code === 'UndetectableDelimiter' &&
-        parseResult.errors[0].type === 'Delimiter' &&
-        parseResult.data.length === 1
-      ) {
-        // NOTE: this happens when the user only put one item in the value input
-        // we can go the other way by ensure the input has a comma but this is arguably neater
-        // as it tinkers with the parser
-      } else {
-        // there were some parsing error, escape
-        // NOTE: ideally, we could show a warning here
-      }
+      // if (
+      //   parseResult.errors[0] &&
+      //   parseResult.errors[0].code === 'UndetectableDelimiter' &&
+      //   parseResult.errors[0].type === 'Delimiter' &&
+      //   parseResult.data.length === 1
+      // ) {
+      //   // NOTE: this happens when the user only put one item in the value input
+      //   // we can go the other way by ensure the input has a comma but this is arguably neater
+      //   // as it tinkers with the parser
+      // } else {
+      //   // there were some parsing error, escape
+      //   // NOTE: ideally, we could show a warning here
+      // }
       return undefined;
     } else {
       return parseData;

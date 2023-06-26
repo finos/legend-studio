@@ -163,9 +163,9 @@ export class V1_ClassExecutionResult extends V1_ExecutionResult {
 }
 
 export class V1_RawExecutionResult extends V1_ExecutionResult {
-  value: string;
+  value: string | number | boolean | null;
 
-  constructor(value: string) {
+  constructor(value: string | number | boolean | null) {
     super();
     this.value = value;
   }

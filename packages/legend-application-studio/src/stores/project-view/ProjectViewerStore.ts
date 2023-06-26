@@ -439,7 +439,7 @@ export class ProjectViewerStore {
 
       // fetch available editor configurations
       yield Promise.all([
-        this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+        this.editorStore.graphState.graphGenerationState.globalFileGenerationState.fetchAvailableFileGenerationDescriptions(),
         this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
         this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
         this.editorStore.graphState.fetchAvailableFunctionActivatorConfigurations(),

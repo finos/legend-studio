@@ -742,7 +742,7 @@ const DataSpaceModelsDocumentationFilterTreeNodeContainer = observer(
         <EmptySquareIcon />
       );
     const nodeCount = getFilterNodeCount(node, documentationState);
-    const toggleChecker: React.MouseEventHandler<Element> = (event) => {
+    const toggleChecker: React.MouseEventHandler = (event) => {
       event.stopPropagation();
 
       if (
@@ -756,7 +756,7 @@ const DataSpaceModelsDocumentationFilterTreeNodeContainer = observer(
       refreshTreeData();
       updateFilter();
     };
-    const toggleExpandNode: React.MouseEventHandler<Element> = (event) => {
+    const toggleExpandNode: React.MouseEventHandler = (event) => {
       event.stopPropagation();
 
       if (isExpandable) {

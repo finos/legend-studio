@@ -42,6 +42,7 @@ import {
   PURE_PackageIcon,
   PURE_DataIcon,
   LaunchIcon,
+  LinkIcon,
 } from '@finos/legend-art';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../stores/editor/utils/ModelClassifierUtils.js';
 
@@ -88,6 +89,8 @@ export const getElementTypeIcon = (
       return <PURE_ServiceIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:
       return <PURE_ConnectionIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION:
+      return <LinkIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
       return <PURE_RuntimeIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:

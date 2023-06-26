@@ -68,10 +68,6 @@ import type { GraphManagerOperationReport } from './GraphManagerStatistics.js';
 import type { RunTestsTestableInput } from '../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../graph/metamodel/pure/test/result/TestResult.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
-import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
-import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
-import type { TestAssertion } from '../graph/metamodel/pure/test/assertion/TestAssertion.js';
-import type { AssertFail } from '../graph/metamodel/pure/test/assertion/status/AssertFail.js';
 import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
@@ -104,6 +100,7 @@ import type {
 import type { FunctionActivatorConfiguration } from './action/functionActivator/FunctionActivatorConfiguration.js';
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
+import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -207,6 +204,9 @@ export abstract class AbstractPureGraphManager {
     config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
+      TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism?:
+        | boolean
+        | undefined;
     },
   ): Promise<void>;
 
@@ -366,13 +366,6 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<TestResult[]>;
 
-  abstract generateExpectedResult(
-    testable: Testable,
-    test: AtomicTest,
-    assertion: TestAssertion,
-    graph: PureModel,
-  ): Promise<AssertFail>;
-
   // ------------------------------------------- Value Specification -------------------------------------------
 
   abstract buildValueSpecification(
@@ -405,6 +398,9 @@ export abstract class AbstractPureGraphManager {
   abstract getAvailableGenerationConfigurationDescriptions(): Promise<
     GenerationConfigurationDescription[]
   >;
+  abstract generateArtifacts(
+    graph: PureModel,
+  ): Promise<ArtifactGenerationExtensionResult>;
   abstract generateFile(
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,

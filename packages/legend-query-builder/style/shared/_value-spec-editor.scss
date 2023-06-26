@@ -23,7 +23,7 @@
   width: 100%;
 
   &__variable__info svg {
-    color: var(--color-light-grey-400);
+    color: var(--color-light-grey-200);
   }
 
   &__reset-btn {
@@ -207,6 +207,11 @@
     border: 0.1rem solid var(--color-dark-grey-200);
     border-radius: 0;
     margin-bottom: 0;
+  }
+
+  &__textarea {
+    resize: none;
+    line-height: 2.6rem;
   }
 
   &__number {

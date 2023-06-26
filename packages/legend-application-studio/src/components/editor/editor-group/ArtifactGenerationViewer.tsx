@@ -16,33 +16,34 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  FileGenerationViewerState,
-  getTextContent,
-  getEditorLanguageForFormat,
-} from '../../../stores/editor/editor-state/FileGenerationViewerState.js';
-import {
   LockIcon,
   FireIcon,
   StickArrowCircleRightIcon,
   Panel,
   PanelContent,
 } from '@finos/legend-art';
-import type { FileGenerationSpecification } from '@finos/legend-graph';
+import type { PackageableElement } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import {
+  ArtifactGenerationViewerState,
+  getEditorLanguageForFormat,
+  getTextContent,
+} from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 
-export const FileGenerationViewer = observer(() => {
+export const ArtifactGenerationViewer = observer(() => {
   const editorStore = useEditorStore();
-  const generatedFileState = editorStore.tabManagerState.getCurrentEditorState(
-    FileGenerationViewerState,
-  );
-  const generatedFile = generatedFileState.file;
-  const fileGeneration = generatedFile.parentId
-    ? editorStore.graphManagerState.graph.getNullableFileGeneration(
-        generatedFile.parentId,
+  const generatedArtifactState =
+    editorStore.tabManagerState.getCurrentEditorState(
+      ArtifactGenerationViewerState,
+    );
+  const generatedArtifact = generatedArtifactState.artifact;
+  const generator = generatedArtifact.parentId
+    ? editorStore.graphManagerState.graph.getNullableElement(
+        generatedArtifact.parentId,
       )
     : undefined;
-  const visitFileGeneration = (fg: FileGenerationSpecification): void =>
+  const visitGenerator = (fg: PackageableElement): void =>
     editorStore.graphEditorMode.openElement(fg);
 
   return (
@@ -55,9 +56,11 @@ export const FileGenerationViewer = observer(() => {
                 <LockIcon />
               </div>
             }
-            <div className="panel__header__title__label">generated-file</div>
+            <div className="panel__header__title__label">
+              generated-artifact
+            </div>
             <div className="panel__header__title__content">
-              {generatedFile.name}
+              {generatedArtifact.name}
             </div>
           </div>
         </div>
@@ -65,22 +68,22 @@ export const FileGenerationViewer = observer(() => {
           <div className="panel__header">
             <div className="panel__header__title">
               <div className="panel__header__title__label">
-                {fileGeneration?.type}
+                {generator?.name}
               </div>
             </div>
             <div className="panel__header__actions">
-              {fileGeneration && (
+              {generator && (
                 <button
                   className="uml-element-editor__header__generation-origin"
-                  onClick={(): void => visitFileGeneration(fileGeneration)}
+                  onClick={(): void => visitGenerator(generator)}
                   tabIndex={-1}
-                  title={`Visit generation parent '${fileGeneration.path}'`}
+                  title={`Visit generation parent '${generator.path}'`}
                 >
                   <div className="uml-element-editor__header__generation-origin__label">
                     <FireIcon />
                   </div>
                   <div className="uml-element-editor__header__generation-origin__parent-name">
-                    {fileGeneration.name}
+                    {generator.name}
                   </div>
                   <div className="uml-element-editor__header__generation-origin__visit-btn">
                     <StickArrowCircleRightIcon />
@@ -92,11 +95,11 @@ export const FileGenerationViewer = observer(() => {
           <PanelContent>
             <CodeEditor
               inputValue={getTextContent(
-                generatedFile.content,
-                generatedFile.format,
+                generatedArtifact.content,
+                generatedArtifact.format,
               )}
               isReadOnly={true}
-              language={getEditorLanguageForFormat(generatedFile.format)}
+              language={getEditorLanguageForFormat(generatedArtifact.format)}
             />
           </PanelContent>
         </div>

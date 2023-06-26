@@ -15,11 +15,13 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { clsx } from '../utils/ComponentUtils.js';
 
 export const PanelLoadingIndicator: React.FC<{
   isLoading: boolean;
+  className?: string;
 }> = (props) => {
-  const { isLoading } = props;
+  const { isLoading, className } = props;
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +41,10 @@ export const PanelLoadingIndicator: React.FC<{
   return (
     <div
       ref={ref}
-      className={`panel-loading-indicator${isLoading ? '' : '--disabled'}`}
+      className={clsx(
+        className,
+        `panel-loading-indicator${isLoading ? '' : '--disabled'}`,
+      )}
     />
   );
 };

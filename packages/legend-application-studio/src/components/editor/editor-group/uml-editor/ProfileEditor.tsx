@@ -26,7 +26,7 @@ import {
   PlusIcon,
   TimesIcon,
   LockIcon,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
   Panel,
@@ -126,9 +126,9 @@ const TagBasicEditor = observer(
         placeholder={<div className="dnd__placeholder--light"></div>}
         showPlaceholder={isBeingDragged}
       >
-        <PanelDnDEntryDragHandle
-          dropTargetConnector={handleRef}
-          isBeingDragged={isBeingDragged}
+        <PanelEntryDragHandle
+          dragSourceConnector={handleRef}
+          isDragging={isBeingDragged}
         />
         <div className="tag-basic-editor">
           <InputWithInlineValidation
@@ -229,9 +229,9 @@ const StereotypeBasicEditor = observer(
         className="stereotype-basic-editor__container"
         showPlaceholder={isBeingDragged}
       >
-        <PanelDnDEntryDragHandle
-          dropTargetConnector={handleRef}
-          isBeingDragged={isBeingDragged}
+        <PanelEntryDragHandle
+          dragSourceConnector={handleRef}
+          isDragging={isBeingDragged}
         />
         <div className="stereotype-basic-editor">
           <InputWithInlineValidation

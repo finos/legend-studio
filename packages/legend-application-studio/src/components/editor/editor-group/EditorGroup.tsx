@@ -66,8 +66,7 @@ import { UnsupportedElementEditor } from './UnsupportedElementEditor.js';
 import { getPrettyLabelForRevision } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { GenerationSpecificationEditorState } from '../../../stores/editor/editor-state/GenerationSpecificationEditorState.js';
 import { GenerationSpecificationEditor } from './GenerationSpecificationEditor.js';
-import { FileGenerationViewerState } from '../../../stores/editor/editor-state/FileGenerationViewerState.js';
-import { FileGenerationViewer } from './FileGenerationViewer.js';
+import { ArtifactGenerationViewer } from './ArtifactGenerationViewer.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
@@ -77,6 +76,7 @@ import { TabManager, type TabState } from '@finos/legend-lego/application';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
 import { getElementIcon } from '../../ElementIconUtils.js';
+import { ArtifactGenerationViewerState } from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -194,7 +194,7 @@ export const EditorGroup = observer(() => {
       : [];
   const generationViewModes = (
     currentTabState instanceof ElementEditorState
-      ? editorStore.graphState.graphGenerationState.fileGenerationConfigurations
+      ? editorStore.graphState.graphGenerationState.globalFileGenerationState.fileGenerationConfigurations
           .slice()
           .sort((a, b): number => a.label.localeCompare(b.label))
       : []
@@ -309,8 +309,8 @@ export const EditorGroup = observer(() => {
           conflictEditorState={currentTabState}
         />
       );
-    } else if (currentTabState instanceof FileGenerationViewerState) {
-      return <FileGenerationViewer key={currentTabState.uuid} />;
+    } else if (currentTabState instanceof ArtifactGenerationViewerState) {
+      return <ArtifactGenerationViewer key={currentTabState.uuid} />;
     } else if (currentTabState instanceof ModelImporterState) {
       return <ModelImporter />;
     } else if (currentTabState instanceof ProjectConfigurationEditorState) {
@@ -478,7 +478,7 @@ export const EditorGroup = observer(() => {
                               key={mode.key}
                               className="editor-group__view-mode__option"
                               disabled={
-                                !editorStore.graphState.graphGenerationState.supportedFileGenerationConfigurationsForCurrentElement.includes(
+                                !editorStore.graphState.graphGenerationState.globalFileGenerationState.supportedFileGenerationConfigurationsForCurrentElement.includes(
                                   mode,
                                 )
                               }

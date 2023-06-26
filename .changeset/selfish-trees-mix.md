@@ -20,11 +20,6 @@
 '@finos/legend-query-builder': patch
 '@finos/legend-application': patch
 '@finos/legend-dev-utils': patch
-'@finos/stylelint-config-legend-studio': patch
-'@finos/eslint-plugin-legend-studio': patch
-'@finos/legend-shared': patch
-'@finos/babel-preset-legend-studio': patch
-'@finos/legend-graph': patch
 '@finos/legend-lego': patch
 '@finos/legend-art': patch
 ---

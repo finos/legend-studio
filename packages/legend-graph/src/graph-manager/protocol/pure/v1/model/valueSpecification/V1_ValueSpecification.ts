@@ -34,6 +34,7 @@ import type { V1_PackageableElementPtr } from './raw/V1_PackageableElementPtr.js
 import type { V1_INTERNAL__UnknownValueSpecification } from './V1_INTERNAL__UnknownValueSpecfication.js';
 import type { V1_GenericTypeInstance } from './raw/V1_GenericTypeInstance.js';
 import type { V1_ClassInstance } from './raw/V1_ClassInstance.js';
+import type { V1_CByteArray } from './raw/V1_CByteArray.js';
 
 export interface V1_ValueSpecificationVisitor<T> {
   visit_INTERNAL__UnknownValueSpecfication(
@@ -56,6 +57,7 @@ export interface V1_ValueSpecificationVisitor<T> {
   visit_CDecimal(valueSpecification: V1_CDecimal): T;
   visit_CString(valueSpecification: V1_CString): T;
   visit_CBoolean(valueSpecification: V1_CBoolean): T;
+  visit_CByteArray(valueSpecification: V1_CByteArray): T;
   visit_CFloat(valueSpecification: V1_CFloat): T;
   visit_CDateTime(valueSpecification: V1_CDateTime): T;
   visit_CStrictDate(valueSpecification: V1_CStrictDate): T;

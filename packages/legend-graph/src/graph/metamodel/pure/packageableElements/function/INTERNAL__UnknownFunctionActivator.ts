@@ -36,7 +36,15 @@ export class INTERNAL__UnknownFunctionActivator
     return hashArray([
       CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_FUNCTION_ACTIVATOR,
       this.path,
-      this.function.valueForSerialization ?? '',
+      // TODO: for simplicity, we won't allow changing the function
+      // for unknown function activator, this is also due to
+      // the fact that to properly compute the hash, we need to
+      // use an utility function to generate the function pretty name
+      //
+      // generateFunctionPrettyName(this.function.value, {
+      //   fullPath: true,
+      //   spacing: false,
+      // }),
       hashObjectWithoutSourceInformation(this.content),
     ]);
   }

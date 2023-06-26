@@ -36,7 +36,7 @@ export class V1_INTERNAL__UnknownFunctionActivator
     return hashArray([
       CORE_HASH_STRUCTURE.INTERNAL__UNKNOWN_FUNCTION_ACTIVATOR,
       this.path,
-      this.function,
+      // this.function,
       hashObjectWithoutSourceInformation(this.content),
     ]);
   }

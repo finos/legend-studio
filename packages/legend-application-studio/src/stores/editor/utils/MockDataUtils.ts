@@ -242,7 +242,7 @@ export const getPrimitiveTypeFromRelationalType = (
 export const createMockDataForColumn = (
   col: Column,
   isPrimaryKey: boolean,
-  idx?: number | number,
+  idx?: number | undefined,
 ): string | undefined => {
   const type = col.type;
 
@@ -268,7 +268,7 @@ export const createMockDataForColumn = (
 
 export const createMockDataForTable = (
   table: Table,
-  ITERATIONS = 9,
+  ITERATIONS = 1,
 ): string => {
   const targetedCols = table.columns.filter(filterByType(Column));
   const colNames = targetedCols.map((e) => e.name).join(',');
@@ -308,6 +308,8 @@ export const createMockDataForMappingElementSource = (
     srcElement.relation instanceof Table
   ) {
     return createMockDataForTable(srcElement.relation);
+  } else if (srcElement instanceof Table) {
+    return createMockDataForTable(srcElement);
   }
   editorStore.applicationStore.notificationService.notifyWarning(
     new UnsupportedOperationError(

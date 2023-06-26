@@ -31,7 +31,6 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  MoreVerticalIcon,
 } from '@finos/legend-art';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -287,24 +286,24 @@ export const ServiceExecutionQueryEditor = observer(
             </div>
           </div>
           <div className="panel__header__actions">
-            <div className="service-editor__execution__action-btn">
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               <button
-                className="service-editor__execution__action-btn__label service-editor__execution__action-btn__label--primary"
+                className="btn__dropdown-combo__label"
                 onClick={editWithQueryBuilder()}
                 title="Edit Query"
                 tabIndex={-1}
               >
-                <PencilIcon className="service-editor__execution__action-btn__label__icon" />
-                <div className="service-editor__execution__action-btn__label__title">
+                <PencilIcon className="btn__dropdown-combo__label__icon" />
+                <div className="btn__dropdown-combo__label__title">
                   Edit Query
                 </div>
               </button>
               <DropdownMenu
-                className="service-editor__execution__action-btn__dropdown-btn service-editor__execution__action-btn__dropdown-btn--primary"
+                className="btn__dropdown-combo__dropdown-btn"
                 content={
                   <MenuContent>
                     <MenuContentItem
-                      className="service-editor__execution__action-btn__option"
+                      className="btn__dropdown-combo__option"
                       onClick={editWithQueryBuilder(true)}
                     >
                       Text Mode
@@ -319,96 +318,97 @@ export const ServiceExecutionQueryEditor = observer(
                 <CaretDownIcon />
               </DropdownMenu>
             </div>
-            {executionState.isRunningQuery ? (
-              <button
-                className="service-editor__execution__stop-btn"
-                onClick={cancelQuery}
-                tabIndex={-1}
-              >
-                <div className="btn--dark btn--caution service-editor__execution__stop-btn__label">
-                  <PauseCircleIcon className="service-editor__execution__stop-btn__label__icon" />
-                  <div className="service-editor__execution__stop-btn__label__title">
-                    Stop
-                  </div>
-                </div>
-              </button>
-            ) : (
-              <div className="service-editor__execution__action-btn">
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              {executionState.isRunningQuery ? (
                 <button
-                  className="service-editor__execution__action-btn__label"
-                  onClick={runQuery}
-                  title="Run Query"
-                  disabled={executionIsRunning}
+                  className="btn__dropdown-combo__canceler"
+                  onClick={cancelQuery}
                   tabIndex={-1}
                 >
-                  <PlayIcon className="service-editor__execution__action-btn__label__icon" />
-                  <div className="service-editor__execution__action-btn__label__title">
-                    Run Query
+                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
+                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                    <div className="btn__dropdown-combo__canceler__label__title">
+                      Stop
+                    </div>
                   </div>
                 </button>
-                <DropdownMenu
-                  className="service-editor__execution__action-btn__dropdown-btn"
-                  disabled={executionIsRunning}
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        className="service-editor__execution__action-btn__option"
-                        onClick={generatePlan}
-                      >
-                        Generate Plan
-                      </MenuContentItem>
-                      <MenuContentItem
-                        className="service-editor__execution__action-btn__option"
-                        onClick={debugPlanGeneration}
-                      >
-                        Debug
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  }}
-                >
-                  <CaretDownIcon />
-                </DropdownMenu>
-              </div>
-            )}
-            <div>
-              <DropdownMenu
-                className="service-editor__execution__advanced-btn"
-                disabled={executionIsRunning}
-                content={
-                  <MenuContent>
-                    <MenuContentItem
-                      className="service-editor__execution__advanced-btn__option"
-                      onClick={importQuery}
-                    >
-                      Import Query
-                    </MenuContentItem>
-                    <MenuContentItem
-                      className="service-editor__execution__advanced-btn__option"
-                      onClick={openQueryInLegendQuery}
-                      disabled={!applicationStore.config.queryApplicationUrl}
-                    >
-                      Create an Ad-hoc Query
-                    </MenuContentItem>
-                  </MenuContent>
-                }
-                menuProps={{
-                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                  transformOrigin: { vertical: 'top', horizontal: 'right' },
-                }}
-              >
-                <div className="service-editor__execution__advanced-btn__label">
-                  <MoreVerticalIcon className="service-editor__execution__advanced-btn__label__icon" />
+              ) : (
+                <>
+                  <button
+                    className="btn__dropdown-combo__label"
+                    onClick={runQuery}
+                    title="Run Query"
+                    disabled={executionIsRunning}
+                    tabIndex={-1}
+                  >
+                    <PlayIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Run Query
+                    </div>
+                  </button>
+                  <DropdownMenu
+                    className="btn__dropdown-combo__dropdown-btn"
+                    disabled={executionIsRunning}
+                    content={
+                      <MenuContent>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={generatePlan}
+                        >
+                          Generate Plan
+                        </MenuContentItem>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={debugPlanGeneration}
+                        >
+                          Debug
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    }}
+                  >
+                    <CaretDownIcon />
+                  </DropdownMenu>
+                </>
+              )}
+            </div>
+            <DropdownMenu
+              className="btn__dropdown-combo"
+              disabled={executionIsRunning}
+              content={
+                <MenuContent>
+                  <MenuContentItem
+                    className="btn__dropdown-combo__option"
+                    onClick={importQuery}
+                  >
+                    Import Query
+                  </MenuContentItem>
+                  <MenuContentItem
+                    className="btn__dropdown-combo__option"
+                    onClick={openQueryInLegendQuery}
+                    disabled={!applicationStore.config.queryApplicationUrl}
+                  >
+                    Create an Ad-hoc Query
+                  </MenuContentItem>
+                </MenuContent>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+              }}
+            >
+              <div className="btn__dropdown-combo__label">
+                <div className="btn__dropdown-combo__label__title">
                   Advanced
                 </div>
-                <div className="service-editor__execution__advanced-btn__icon">
-                  <CaretDownIcon />
-                </div>
-              </DropdownMenu>
-            </div>
+              </div>
+              <div className="btn__dropdown-combo__dropdown-btn">
+                <CaretDownIcon />
+              </div>
+            </DropdownMenu>
           </div>
         </div>
         <div className="panel__content property-mapping-editor__entry__container">
@@ -417,15 +417,7 @@ export const ServiceExecutionQueryEditor = observer(
               executionState.isOpeningQueryEditor || executionIsRunning
             }
           />
-          <div
-            className="service-execution-query-editor__content"
-            title="Double click to edit in query builder"
-            onDoubleClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              editWithQueryBuilder()();
-            }}
-          >
+          <div className="service-execution-query-editor__content">
             <CodeEditor
               inputValue={queryState.lambdaString}
               isReadOnly={true}

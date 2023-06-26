@@ -54,7 +54,6 @@ import {
   type GeneratorFn,
   isNonNullable,
   prettyCONSTName,
-  toTitleCase,
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useState } from 'react';
@@ -429,22 +428,27 @@ export const GlobalTestRunner = observer(
     const editorStore = useEditorStore();
     const globalTestRunnerState = props.globalTestRunnerState;
     const isDispatchingAction = globalTestRunnerState.isDispatchingAction;
-    const testRunnerTabs = (Object.values(TEST_RUNNER_TABS) as string[])
-      .concat(
-        editorStore.pluginManager
-          .getApplicationPlugins()
-          .flatMap(
-            (plugin) => plugin.getExtraTestRunnerTabClassifiers?.() ?? [],
-          ),
-      )
-      .map((e) => ({
-        value: e,
-        label: prettyCONSTName(e),
-      }));
 
     const [selectedTab, setSelectedTab] = useState(
       TEST_RUNNER_TABS.TEST_RUNNER.valueOf(),
     );
+
+    const extractTestRunnerTabConfigurations = editorStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap((plugin) => plugin.getExtraTestRunnerTabConfigurations?.() ?? [])
+      .filter((configuration) => configuration.renderer(editorStore));
+
+    const testRunnerTabs = (Object.values(TEST_RUNNER_TABS) as string[])
+      .map((e) => ({
+        value: e,
+        label: prettyCONSTName(e),
+      }))
+      .concat(
+        extractTestRunnerTabConfigurations.map((config) => ({
+          value: config.key,
+          label: config.title,
+        })),
+      );
 
     const changeTab = (tab: string): void => {
       setSelectedTab(tab);
@@ -544,7 +548,7 @@ export const GlobalTestRunner = observer(
                     ['panel__header__tab--active']: tab.value === selectedTab,
                   })}
                 >
-                  {toTitleCase(prettyCONSTName(tab.value))}
+                  {tab.label}
                 </div>
               ))}
             </div>
@@ -578,15 +582,9 @@ export const GlobalTestRunner = observer(
           </div>
         );
       } else {
-        const extraTestRunnerTabEditorRenderers = editorStore.pluginManager
-          .getApplicationPlugins()
-          .flatMap(
-            (plugin) => plugin.getExtraTestRunnerTabEditorRenderers?.() ?? [],
-          );
-        for (const editorRenderer of extraTestRunnerTabEditorRenderers) {
-          const editor = editorRenderer(selectedTab, editorStore);
-          if (editor) {
-            return editor;
+        for (const testRunnerTabConfiguration of extractTestRunnerTabConfigurations) {
+          if (testRunnerTabConfiguration.key === selectedTab) {
+            return testRunnerTabConfiguration.renderer(editorStore);
           }
         }
         return (

@@ -81,6 +81,7 @@ export class QueryBuilderResultState {
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  isQueryUsageViewerOpened = false;
 
   selectedCells: QueryBuilderTDSResultCellData[];
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
@@ -99,6 +100,7 @@ export class QueryBuilderResultState {
       isRunningQuery: observable,
       isSelectingCells: observable,
       setIsSelectingCells: action,
+      isQueryUsageViewerOpened: observable,
       setIsRunningQuery: action,
       setExecutionResult: action,
       setExecutionDuration: action,
@@ -107,7 +109,7 @@ export class QueryBuilderResultState {
       setSelectedCells: action,
       setMouseOverCell: action,
       setQueryRunPromise: action,
-
+      setIsQueryUsageViewerOpened: action,
       exportData: flow,
       runQuery: flow,
       cancelQuery: flow,
@@ -201,6 +203,10 @@ export class QueryBuilderResultState {
     return this.executionResult.result.rows[rowIndex]?.values[colIndex];
   };
 
+  setIsQueryUsageViewerOpened(val: boolean): void {
+    this.isQueryUsageViewerOpened = val;
+  }
+
   get checkForStaleResults(): boolean {
     if (this.latestRunHashCode !== this.queryBuilderState.hashCode) {
       return true;
@@ -265,7 +271,7 @@ export class QueryBuilderResultState {
         )) as ExecutionResult;
       let content: string;
       if (result instanceof RawExecutionResult) {
-        content = result.value;
+        content = result.value === null ? 'null' : result.value.toString();
       } else {
         content = JSON.stringify(
           extractExecutionResultValues(result),
@@ -345,7 +351,7 @@ export class QueryBuilderResultState {
         );
       }
     } catch (error) {
-      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
+      // When user cancels the query by calling the cancelQuery api, it will throw an execution failure error.
       // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
       // When cancelled the query, we set the queryRunPromise as undefined.
       if (this.queryRunPromise === promise) {

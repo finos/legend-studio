@@ -31,9 +31,13 @@ import {
   LambdaFunctionInstanceValue,
   SimpleFunctionExpression,
   CollectionInstanceValue,
+  resolveServiceQueryRawLambda,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { TestableTestEditorState } from '../../testable/TestableEditorState.js';
+import {
+  TESTABLE_TEST_TAB,
+  TestableTestEditorState,
+} from '../../testable/TestableEditorState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import {
   service_addAssertKeyForTest,
@@ -70,9 +74,9 @@ export enum SERIALIZATION_FORMAT {
 }
 
 export enum SERIALIZATION_FORMAT_LABEL {
-  DEFAULT = 'DEFAULT',
   PURE = 'PURE',
-  TDS = 'TDS',
+  TABULAR_DATA = 'TABULAR DATA',
+  DEFAULT = 'DEFAULT',
 }
 
 const getSerializationFormatLabel = (val: string): string => {
@@ -82,7 +86,7 @@ const getSerializationFormatLabel = (val: string): string => {
     case SERIALIZATION_FORMAT.PURE:
       return SERIALIZATION_FORMAT.PURE;
     case SERIALIZATION_FORMAT.PURE_TDSOBJECT:
-      return SERIALIZATION_FORMAT_LABEL.TDS;
+      return SERIALIZATION_FORMAT_LABEL.TABULAR_DATA;
     default:
       return val;
   }
@@ -200,8 +204,7 @@ export class ServiceTestSetupState {
   }
 
   get queryVariableExpressions(): VariableExpression[] {
-    const query =
-      this.testState.suiteState.testableState.serviceEditorState.serviceQuery;
+    const query = resolveServiceQueryRawLambda(this.testState.service);
     return query
       ? buildLambdaVariableExpressions(
           query,
@@ -240,8 +243,7 @@ export class ServiceTestSetupState {
     binding: Binding;
     param: string;
   }[] {
-    const query =
-      this.testState.suiteState.testableState.serviceEditorState.serviceQuery;
+    const query = resolveServiceQueryRawLambda(this.testState.service);
     if (query && !isStubbed_RawLambda(query)) {
       // safely pass unsupported funtions when building ValueSpecification from Rawlambda
       try {
@@ -252,10 +254,20 @@ export class ServiceTestSetupState {
             ),
             this.editorStore.graphManagerState.graph,
           );
-
         if (valueSpec instanceof LambdaFunctionInstanceValue) {
           return this.getBindingWithParamRecursively(
-            valueSpec.values[0]?.expressionSequence[0],
+            valueSpec.values[0]?.expressionSequence.find(
+              (exp) =>
+                exp instanceof SimpleFunctionExpression &&
+                (matchFunctionName(
+                  exp.functionName,
+                  QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
+                ) ||
+                  matchFunctionName(
+                    exp.functionName,
+                    QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXTERNALIZE,
+                  )),
+            ),
           );
         }
       } catch (error) {
@@ -560,5 +572,10 @@ export class ServiceTestState extends TestableTestEditorState {
     this.suiteState = suiteState;
     this.testable = suiteState.testableState.serviceEditorState.service;
     this.setupState = new ServiceTestSetupState(this);
+    this.selectedTab = TESTABLE_TEST_TAB.SETUP;
+  }
+
+  get service(): Service {
+    return this.suiteState.testableState.service;
   }
 }

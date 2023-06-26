@@ -40,7 +40,7 @@ import {
   PlusIcon,
   TimesIcon,
   ArrowCircleRightIcon,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   DragPreviewLayer,
   useDragPreviewLayer,
   Panel,
@@ -60,6 +60,7 @@ import {
   Modal,
   PauseCircleIcon,
   PlayIcon,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
@@ -95,6 +96,8 @@ import {
   generateFunctionPrettyName,
   extractAnnotatedElementDocumentation,
   getClassProperty,
+  RawExecutionResult,
+  extractExecutionResultValues,
 } from '@finos/legend-graph';
 import {
   type ApplicationStore,
@@ -103,6 +106,7 @@ import {
   type LegendApplicationPluginManager,
   useApplicationNavigationContext,
   useApplicationStore,
+  DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import {
   type PackageableElementOption,
@@ -139,6 +143,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { PanelGroupItemExperimentalBadge } from '../panel-group/PanelGroup.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -327,9 +332,9 @@ const ParameterBasicEditor = observer(
         className="property-basic-editor__container"
         showPlaceholder={isBeingDragged}
       >
-        <PanelDnDEntryDragHandle
-          dropTargetConnector={handleRef}
-          isBeingDragged={isBeingDragged}
+        <PanelEntryDragHandle
+          dragSourceConnector={handleRef}
+          isDragging={isBeingDragged}
         />
         <div className="property-basic-editor">
           {isReadOnly && (
@@ -661,6 +666,7 @@ const FunctionDefinitionEditor = observer(
     const applicationStore = useApplicationStore();
     const lambdaEditorState = functionEditorState.functionDefinitionEditorState;
     const functionElement = functionEditorState.functionElement;
+    const execResult = functionEditorState.executionResult;
 
     // Parameters
     const addParameter = (): void => {
@@ -706,83 +712,136 @@ const FunctionDefinitionEditor = observer(
       [handleDropParameter],
     );
 
-    return (
-      <div className="function-editor__definition">
-        <div className="function-editor__definition__item">
-          <div className="function-editor__definition__item__header">
-            <div className="function-editor__definition__item__header__title">
-              PARAMETERS
-            </div>
-            <button
-              className="function-editor__definition__item__header__add-btn btn--dark"
-              disabled={isReadOnly}
-              onClick={addParameter}
-              tabIndex={-1}
-              title="Add Parameter"
-            >
-              <PlusIcon />
-            </button>
-          </div>
-          <DragPreviewLayer
-            labelGetter={(item: FunctionParameterDragSource): string =>
-              item.parameter.name === '' ? '(unknown)' : item.parameter.name
-            }
-            types={[FUNCTION_PARAMETER_DND_TYPE]}
+    const renderFuncResult = (): React.ReactNode => {
+      if (execResult instanceof RawExecutionResult) {
+        const val =
+          execResult.value === null ? 'null' : execResult.value.toString();
+        return (
+          <CodeEditor
+            language={CODE_EDITOR_LANGUAGE.TEXT}
+            inputValue={val}
+            isReadOnly={true}
           />
-          <div
-            ref={dropParameterRef}
-            className={clsx('function-editor__definition__item__content', {
-              'panel__content__lists--dnd-over':
-                isParameterDragOver && !isReadOnly,
-            })}
-          >
-            {functionElement.parameters.map((param) => (
-              <ParameterBasicEditor
-                key={param._UUID}
-                parameter={param}
-                _func={functionElement}
-                deleteParameter={deleteParameter(param)}
-                isReadOnly={isReadOnly}
-              />
-            ))}
-            {functionElement.parameters.length === 0 && (
-              <div className="function-editor__definition__item__content--empty">
-                No parameters
+        );
+      } else if (execResult !== undefined) {
+        const json =
+          returnUndefOnError(() =>
+            JSON.stringify(
+              extractExecutionResultValues(execResult),
+              null,
+              DEFAULT_TAB_SIZE,
+            ),
+          ) ?? JSON.stringify(execResult);
+        return (
+          <CodeEditor
+            language={CODE_EDITOR_LANGUAGE.JSON}
+            inputValue={json}
+            isReadOnly={true}
+          />
+        );
+      }
+      return <BlankPanelContent>Function Did Not Run</BlankPanelContent>;
+    };
+
+    return (
+      <>
+        <PanelLoadingIndicator
+          isLoading={
+            functionEditorState.isGeneratingPlan ||
+            functionEditorState.isRunningFunc
+          }
+        />
+        <div className="function-editor__definition">
+          <div className="function-editor__definition__item">
+            <div className="function-editor__definition__item__header">
+              <div className="function-editor__definition__item__header__title">
+                PARAMETERS
               </div>
-            )}
-          </div>
-        </div>
-        <div className="function-editor__definition__item">
-          <div className="function-editor__definition__item__header">
-            <div className="function-editor__definition__item__header__title">
-              LAMBDA
+              <button
+                className="function-editor__definition__item__header__add-btn btn--dark"
+                disabled={isReadOnly}
+                onClick={addParameter}
+                tabIndex={-1}
+                title="Add Parameter"
+              >
+                <PlusIcon />
+              </button>
             </div>
-            <div className="">
-              <ReturnTypeEditor
-                functionElement={functionElement}
-                isReadOnly={isReadOnly}
+            <DragPreviewLayer
+              labelGetter={(item: FunctionParameterDragSource): string =>
+                item.parameter.name === '' ? '(unknown)' : item.parameter.name
+              }
+              types={[FUNCTION_PARAMETER_DND_TYPE]}
+            />
+            <div
+              ref={dropParameterRef}
+              className={clsx('function-editor__definition__item__content', {
+                'panel__content__lists--dnd-over':
+                  isParameterDragOver && !isReadOnly,
+              })}
+            >
+              {functionElement.parameters.map((param) => (
+                <ParameterBasicEditor
+                  key={param._UUID}
+                  parameter={param}
+                  _func={functionElement}
+                  deleteParameter={deleteParameter(param)}
+                  isReadOnly={isReadOnly}
+                />
+              ))}
+              {functionElement.parameters.length === 0 && (
+                <div className="function-editor__definition__item__content--empty">
+                  No parameters
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="function-editor__definition__item">
+            <div className="function-editor__definition__item__header">
+              <div className="function-editor__definition__item__header__title">
+                LAMBDA
+              </div>
+              <div className="">
+                <ReturnTypeEditor
+                  functionElement={functionElement}
+                  isReadOnly={isReadOnly}
+                />
+              </div>
+            </div>
+            <div
+              className={clsx('function-editor__definition__item__content', {
+                backdrop__element: Boolean(
+                  functionEditorState.functionDefinitionEditorState.parserError,
+                ),
+              })}
+            >
+              <LambdaEditor
+                className="function-editor__definition__lambda-editor lambda-editor--dark"
+                disabled={
+                  lambdaEditorState.isConvertingFunctionBodyToString ||
+                  isReadOnly
+                }
+                lambdaEditorState={lambdaEditorState}
+                forceBackdrop={false}
+                autoFocus={true}
               />
             </div>
           </div>
-          <div
-            className={clsx('function-editor__definition__item__content', {
-              backdrop__element: Boolean(
-                functionEditorState.functionDefinitionEditorState.parserError,
-              ),
-            })}
-          >
-            <LambdaEditor
-              className="function-editor__definition__lambda-editor lambda-editor--dark"
-              disabled={
-                lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly
-              }
-              lambdaEditorState={lambdaEditorState}
-              forceBackdrop={false}
-              autoFocus={true}
-            />
+          <div className="function-editor__definition__item">
+            <div className="function-editor__definition__item__header">
+              <div className="function-editor__definition__item__header__title">
+                RESULT
+                <PanelGroupItemExperimentalBadge />
+              </div>
+            </div>
+            <div className="function-editor__definition__item__content">
+              <div className="function-editor__definition__result-viewer">
+                {renderFuncResult()}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   },
 );
@@ -868,47 +927,6 @@ const FunctionActivatorContentBuilder = observer(
         </div>
         <ProtocolValueBuilder builderState={valueBuilderState} />
       </>
-    );
-  },
-);
-
-const ExecutionResultViewer = observer(
-  (props: { functionEditorState: FunctionEditorState }) => {
-    const { functionEditorState } = props;
-    // execution
-    const executionResultText = functionEditorState.executionResultText;
-    const closeExecutionResultViewer = (): void =>
-      functionEditorState.setExecutionResultText(undefined);
-
-    return (
-      <Dialog
-        open={Boolean(executionResultText)}
-        onClose={closeExecutionResultViewer}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-      >
-        <Modal darkMode={true} className="editor-modal">
-          <ModalHeader title="Execution Result" />
-          <ModalBody>
-            <CodeEditor
-              inputValue={executionResultText ?? ''}
-              isReadOnly={true}
-              language={CODE_EDITOR_LANGUAGE.JSON}
-            />
-          </ModalBody>
-          <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn btn--dark"
-              onClick={closeExecutionResultViewer}
-            >
-              Close
-            </button>
-          </ModalFooter>
-        </Modal>
-      </Dialog>
     );
   },
 );
@@ -1019,15 +1037,15 @@ export const FunctionEditor = observer(() => {
     );
   };
 
-  const runQuery = applicationStore.guardUnhandledError(() =>
-    flowResult(functionEditorState.handleRunQuery()),
+  const runFunc = applicationStore.guardUnhandledError(() =>
+    flowResult(functionEditorState.handleRunFunc()),
   );
 
   const executionIsRunning =
-    functionEditorState.isRunningQuery || functionEditorState.isGeneratingPlan;
+    functionEditorState.isRunningFunc || functionEditorState.isGeneratingPlan;
 
   const cancelQuery = applicationStore.guardUnhandledError(() =>
-    flowResult(functionEditorState.cancelQuery()),
+    flowResult(functionEditorState.cancelFuncRun()),
   );
 
   const generatePlan = applicationStore.guardUnhandledError(() =>
@@ -1082,66 +1100,76 @@ export const FunctionEditor = observer(() => {
             ))}
           </div>
           <div className="panel__header__actions">
-            {functionEditorState.isRunningQuery ? (
-              <button
-                className="function-editor__execution__stop-btn"
-                onClick={cancelQuery}
-                tabIndex={-1}
-              >
-                <div className="btn--dark btn--caution function-editor__execution__stop-btn__label">
-                  <PauseCircleIcon className="function-editor__execution__stop-btn__label__icon" />
-                  <div className="function-editor__execution__stop-btn__label__title">
-                    Stop
-                  </div>
-                </div>
-              </button>
-            ) : (
-              <div className="function-editor__execution__action-btn">
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              {functionEditorState.isRunningFunc ? (
                 <button
-                  className="function-editor__execution__action-btn__label"
-                  onClick={runQuery}
-                  title="Run Query"
-                  disabled={executionIsRunning}
+                  className="btn__dropdown-combo__canceler"
+                  onClick={cancelQuery}
                   tabIndex={-1}
                 >
-                  <PlayIcon className="function-editor__execution__action-btn__label__icon" />
-                  <div className="function-editor__execution__action-btn__label__title">
-                    Run Query
+                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
+                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                    <div className="btn__dropdown-combo__canceler__label__title">
+                      Stop
+                    </div>
                   </div>
                 </button>
-                <DropdownMenu
-                  className="function-editor__execution__action-btn__dropdown-btn"
-                  disabled={executionIsRunning}
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        className="function-editor__execution__action-btn__option"
-                        onClick={generatePlan}
-                      >
-                        Generate Plan
-                      </MenuContentItem>
-                      <MenuContentItem
-                        className="function-editor__execution__action-btn__option"
-                        onClick={debugPlanGeneration}
-                      >
-                        Debug
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  }}
-                >
-                  <CaretDownIcon />
-                </DropdownMenu>
-              </div>
-            )}
+              ) : (
+                <>
+                  <button
+                    className="btn__dropdown-combo__label"
+                    onClick={runFunc}
+                    title="Run Function"
+                    disabled={executionIsRunning}
+                    tabIndex={-1}
+                  >
+                    <PlayIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">Run</div>
+                  </button>
+                  <DropdownMenu
+                    className="btn__dropdown-combo__dropdown-btn"
+                    disabled={executionIsRunning}
+                    content={
+                      <MenuContent>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={generatePlan}
+                        >
+                          Generate Plan
+                        </MenuContentItem>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={debugPlanGeneration}
+                        >
+                          Debug
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: {
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                    }}
+                  >
+                    <CaretDownIcon />
+                  </DropdownMenu>
+                </>
+              )}
+            </div>
             {editorStore.applicationStore.config.options
               .TEMPORARY__enableFunctionActivatorSupport && (
               <>
                 <DropdownMenu
-                  className="function-editor__activate-btn"
+                  className="btn__dropdown-combo"
+                  disabled={
+                    !editorStore.graphState.functionActivatorConfigurations
+                      .length
+                  }
                   content={
                     <MenuContent>
                       {editorStore.graphState.functionActivatorConfigurations.map(
@@ -1172,15 +1200,15 @@ export const FunctionEditor = observer(() => {
                     transformOrigin: { vertical: 'top', horizontal: 'right' },
                   }}
                 >
-                  <div className="function-editor__activate-btn__label">
-                    <div className="function-editor__activate-btn__label__icon">
+                  <div className="btn__dropdown-combo__label">
+                    <div className="btn__dropdown-combo__label__icon">
                       <LaunchIcon />
                     </div>
-                    <div className="function-editor__activate-btn__label__title">
+                    <div className="btn__dropdown-combo__label__title">
                       Activate
                     </div>
                   </div>
-                  <div className="function-editor__activate-btn__dropdown-btn">
+                  <div className="btn__dropdown-combo__dropdown-btn">
                     <CaretDownIcon />
                   </div>
                 </DropdownMenu>
@@ -1331,7 +1359,6 @@ export const FunctionEditor = observer(() => {
           <ExecutionPlanViewer
             executionPlanState={functionEditorState.executionPlanState}
           />
-          <ExecutionResultViewer functionEditorState={functionEditorState} />
           {functionEditorState.parametersState.parameterValuesEditorState
             .showModal && (
             <LambdaParameterValuesEditor

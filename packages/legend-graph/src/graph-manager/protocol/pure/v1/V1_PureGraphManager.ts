@@ -34,10 +34,7 @@ import {
   promisify,
   StopWatch,
   isNonNullable,
-  addUniqueEntry,
-  uuid,
-  deleteEntry,
-  IllegalStateError,
+  uniq,
   filterByType,
   isString,
 } from '@finos/legend-shared';
@@ -234,23 +231,12 @@ import {
 import { V1_UniqueTestId } from './model/test/V1_UniqueTestId.js';
 import type { RunTestsTestableInput } from '../../../../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
-import {
-  type TestResult,
-  TestError,
-  TestExecuted,
-  TestExecutionStatus,
-} from '../../../../graph/metamodel/pure/test/result/TestResult.js';
+import { type TestResult } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
 import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js';
 import {
   getNullableIDFromTestable,
   getNullableTestable,
 } from '../../../helpers/DSL_Data_GraphManagerHelper.js';
-import type { TestAssertion } from '../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
-import { AssertFail } from '../../../../graph/metamodel/pure/test/assertion/status/AssertFail.js';
-import {
-  type AtomicTest,
-  TestSuite,
-} from '../../../../graph/metamodel/pure/test/Test.js';
 import { pruneSourceInformation } from '../../../../graph/MetaModelUtils.js';
 import {
   V1_buildModelCoverageAnalysisResult,
@@ -272,7 +258,6 @@ import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_S
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import { V1_LambdaReturnTypeInput } from './engine/compilation/V1_LambdaReturnType.js';
-import { MultiExecutionServiceTestResult } from '../../../../graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import { V1_ExecutionEnvironmentInstance } from './model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
@@ -299,6 +284,7 @@ import {
 } from '../../../GraphData.js';
 import type { DEPRECATED__MappingTest } from '../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import { DEPRECATED__validate_MappingTest } from '../../../action/validation/DSL_Mapping_ValidationHelper.js';
+import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 import { V1_INTERNAL__UnknownPackageableElement } from './model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { SourceInformation } from '../../../action/SourceInformation.js';
 import type { V1_SourceInformation } from './model/V1_SourceInformation.js';
@@ -313,6 +299,12 @@ import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
 import { V1_INTERNAL__UnknownStore } from './model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_ValueSpecification } from './model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_GrammarParserBatchInputEntry } from './engine/V1_EngineServerClient.js';
+import type { ArtifactGenerationExtensionResult } from '../../../action/generation/ArtifactGenerationExtensionResult.js';
+import {
+  V1_ArtifactGenerationExtensionInput,
+  V1_buildArtifactsByExtensionElement,
+} from './engine/generation/V1_ArtifactGenerationExtensionApi.js';
+import { V1_SchemaSet } from './model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_SchemaSet.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -518,6 +510,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     storeSubtypes: [],
     functionActivatorSubtypes: [],
   };
+  private TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism?:
+    | boolean
+    | undefined;
 
   // Pure Client Version represent the version of the pure protocol.
   // Most Engine APIs will interrupt an undefined pure client version to mean
@@ -551,8 +546,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
+      TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism?:
+        | boolean
+        | undefined;
     },
   ): Promise<void> {
+    this.TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism =
+      options?.TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism;
     this.engine = new V1_Engine(config.clientConfig, this.logService);
     this.engine
       .getEngineServerClient()
@@ -2002,6 +2002,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.getAvailableGenerationConfigurationDescriptions();
   }
 
+  async generateArtifacts(
+    graph: PureModel,
+  ): Promise<ArtifactGenerationExtensionResult> {
+    const model = this.getFullGraphModelData(graph);
+    const input = new V1_ArtifactGenerationExtensionInput(
+      model,
+      // TODO provide plugin to filter out artifacts we don't want to show in the generation
+      graph.allOwnElements.map((e) => e.path),
+    );
+    const result = await this.engine.generateArtifacts(input);
+    return V1_buildArtifactsByExtensionElement(result);
+  }
+
   async generateFile(
     fileGeneration: FileGenerationSpecification,
     generationMode: GenerationMode,
@@ -2102,89 +2115,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     return result;
-  }
-
-  async generateExpectedResult(
-    testable: Testable,
-    test: AtomicTest,
-    baseAssertion: TestAssertion,
-    graph: PureModel,
-  ): Promise<AssertFail> {
-    const id = uuid();
-    try {
-      baseAssertion.id = id;
-      addUniqueEntry(test.assertions, baseAssertion);
-      const runTestsInput = new V1_RunTestsInput();
-      runTestsInput.model = this.getFullGraphModelData(graph);
-      const runTestableInput = new V1_RunTestsTestableInput();
-      const unitAtomicTest = new V1_UniqueTestId();
-      runTestableInput.testable = guaranteeNonNullable(
-        getNullableIDFromTestable(
-          testable,
-          graph,
-          this.pluginManager.getPureGraphManagerPlugins(),
-        ),
-      );
-      runTestableInput.unitTestIds = [unitAtomicTest];
-      runTestsInput.testables = [runTestableInput];
-      const parent = test.__parent;
-      unitAtomicTest.testSuiteId =
-        parent instanceof TestSuite ? parent.id : undefined;
-      unitAtomicTest.atomicTestId = test.id;
-      const runTestsResult = await this.engine.runTests(runTestsInput);
-      const results = V1_buildTestsResult(
-        runTestsResult,
-        (_id: string): Testable | undefined =>
-          getNullableTestable(
-            _id,
-            graph,
-            this.pluginManager.getPureGraphManagerPlugins(),
-          ),
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      );
-      const result = results[0];
-      let status: AssertFail | undefined = undefined;
-      if (
-        result instanceof TestExecuted &&
-        result.testExecutionStatus === TestExecutionStatus.FAIL
-      ) {
-        status = result.assertStatuses.find(
-          (aStatus) =>
-            aStatus.assertion === baseAssertion &&
-            aStatus instanceof AssertFail,
-        );
-      } else if (result instanceof MultiExecutionServiceTestResult) {
-        status = Array.from(result.keyIndexedTestResults.values())
-          .map((testResult) => {
-            if (
-              testResult instanceof TestExecuted &&
-              testResult.testExecutionStatus === TestExecutionStatus.FAIL
-            ) {
-              return testResult.assertStatuses.find(
-                (aStatus) =>
-                  aStatus.assertion === baseAssertion &&
-                  aStatus instanceof AssertFail,
-              );
-            } else if (testResult instanceof TestError) {
-              throw new IllegalStateError(testResult.error);
-            }
-            return undefined;
-          })
-          .filter(isNonNullable)[0];
-      } else if (result instanceof TestError) {
-        throw new IllegalStateError(result.error);
-      } else {
-        throw new UnsupportedOperationError(
-          'Unable to derive expected result from test result',
-        );
-      }
-      return guaranteeNonNullable(status);
-    } catch (error) {
-      assertErrorThrown(error);
-      throw error;
-    } finally {
-      deleteEntry(test.assertions, baseAssertion);
-    }
   }
 
   // ------------------------------------------- Value Specification -------------------------------------------
@@ -2740,6 +2670,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
+    return this.engine.cancelUserExecutions(broadcastToCluster);
+  }
+
   // --------------------------------------------- Query ---------------------------------------------
 
   async searchQueries(
@@ -3094,19 +3028,28 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     switch (executionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE: {
-        const data = this.TEMPORARY__prepareGraphDataForServiceRegistration(
-          this.getFullGraphModelData(graph),
-          this.elementToProtocol<V1_Service>(service),
-        );
-        const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
-        sdlcInfo.packageableElementPointers = [
-          new V1_PackageableElementPointer(
-            PackageableElementPointerType.SERVICE,
-            service.path,
-          ),
-        ];
-        data.origin = new V1_PureModelContextPointer(protocol, sdlcInfo);
-        input = data;
+        if (
+          this.TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism
+        ) {
+          const data = this.getFullGraphModelData(graph);
+          const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
+          sdlcInfo.packageableElementPointers = [
+            new V1_PackageableElementPointer(
+              PackageableElementPointerType.SERVICE,
+              service.path,
+            ),
+          ];
+          data.origin = new V1_PureModelContextPointer(protocol, sdlcInfo);
+          input = data;
+        } else {
+          const data = this.TEMPORARY__pruneServicesFromGraphForRegistration(
+            graph,
+            this.getFullGraphModelData(graph),
+          );
+          data.elements.push(this.elementToProtocol<V1_Service>(service));
+          data.origin = new V1_PureModelContextPointer(protocol);
+          input = data;
+        }
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
@@ -3199,7 +3142,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: ServiceRegistrationOptions,
   ): Promise<ServiceRegistrationResult[]> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
-    const input: ServiceRegistrationInput[] = [];
+    const inputs: ServiceRegistrationInput[] = [];
 
     const protocol = new V1_Protocol(
       V1_PureGraphManager.PURE_PROTOCOL_NAME,
@@ -3207,11 +3150,36 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     switch (executionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE: {
-        const pmcp = this.createBulkServiceRegistrationInput(graph, services);
-        pmcp.forEach((data) => {
-          const pmcd = data.context as V1_PureModelContextData;
-          pmcd.origin = new V1_PureModelContextPointer(protocol);
-          input.push({ service: data.service, context: pmcd });
+        const graphData = this.getFullGraphModelData(graph);
+
+        services.forEach((service) => {
+          if (
+            this.TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism
+          ) {
+            const pmcd = new V1_PureModelContextData();
+            pmcd.serializer = graphData.serializer;
+            pmcd.INTERNAL__rawDependencyEntities =
+              graphData.INTERNAL__rawDependencyEntities;
+            pmcd.elements = graphData.elements;
+            const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
+            sdlcInfo.packageableElementPointers = [
+              new V1_PackageableElementPointer(
+                PackageableElementPointerType.SERVICE,
+                service.path,
+              ),
+            ];
+            inputs.push({ service: service, context: pmcd });
+          } else {
+            const prunedGraphData =
+              this.TEMPORARY__pruneServicesFromGraphForRegistration(
+                graph,
+                graphData,
+              );
+            prunedGraphData.elements.push(
+              this.elementToProtocol<V1_Service>(service),
+            );
+            inputs.push({ service: service, context: prunedGraphData });
+          }
         });
         break;
       }
@@ -3261,7 +3229,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             );
           }
           // composite input
-          input.push({
+          inputs.push({
             service: service,
             context: new V1_PureModelContextComposite(protocol, data, pointer),
           });
@@ -3277,7 +3245,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             service.path,
           );
           sdlcInfo.packageableElementPointers.push(data);
-          input.push({ service: service, context: pointer });
+          inputs.push({ service: service, context: pointer });
         });
         break;
       }
@@ -3290,7 +3258,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     const results = (
       await Promise.all(
-        input.map(async (inputData) => {
+        inputs.map(async (inputData) => {
           try {
             const result = await this.engine.registerService(
               inputData.context,
@@ -3333,48 +3301,46 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  // NOTE: This is somewhat hacky: service registration the input expects only the first service in the graph data
-  // to be the service used for registration.
-  // TODO: the service registration API should be modified to accept service as a parameter outside the model
-  private TEMPORARY__prepareGraphDataForServiceRegistration = (
-    graphData: V1_PureModelContextData,
-    service: V1_Service,
-  ): V1_PureModelContextData => {
-    graphData.elements = graphData.elements.filter(
-      (element) => element.path !== service.path,
-    );
-    // insert the service as the first element so it gets indexed first
-    graphData.elements.unshift(service);
-    if (graphData.INTERNAL__rawDependencyEntities) {
-      graphData.INTERNAL__rawDependencyEntities =
-        graphData.INTERNAL__rawDependencyEntities.filter(
-          (entity) => entity.path !== service.path,
-        );
-    }
-    return graphData;
-  };
-
-  private createBulkServiceRegistrationInput = (
+  // NOTE: We almost should never be poking into dependency entities. However for service registration the input
+  // expects only one service in the graph data. Perhaps, the service registration API should be modified to accept
+  // service as a parameter outside the model
+  // TODO: this is temporary and to be removed when we use the new registration mechanism
+  private TEMPORARY__pruneServicesFromGraphForRegistration = (
     graph: PureModel,
-    services: Service[],
-  ): ServiceRegistrationInput[] => {
-    const graphData = this.getFullGraphModelData(graph);
-    const results: ServiceRegistrationInput[] = [];
-    services.forEach((service) => {
-      results.push({
-        service: service,
-        context: this.TEMPORARY__prepareGraphDataForServiceRegistration(
-          graphData,
-          this.elementToProtocol<V1_Service>(service),
-        ),
-      });
-    });
-    return results;
+    graphData: V1_PureModelContextData,
+  ): V1_PureModelContextData => {
+    const prunedGraphData = this.prunePureModelContextData(
+      graphData,
+      (element) =>
+        element instanceof V1_Class ||
+        element instanceof V1_Enumeration ||
+        element instanceof V1_Profile ||
+        element instanceof V1_Association ||
+        element instanceof V1_ConcreteFunctionDefinition ||
+        element instanceof V1_FunctionActivator ||
+        element instanceof V1_Measure ||
+        element instanceof V1_SchemaSet ||
+        element instanceof V1_Store ||
+        element instanceof V1_PackageableConnection ||
+        element instanceof V1_PackageableRuntime ||
+        element instanceof V1_Mapping,
+      (entity: Entity) => {
+        const content = entity.content as { _type: string };
+        return content._type !== V1_SERVICE_ELEMENT_PROTOCOL_TYPE;
+      },
+    );
+    const extraExecutionElements = this.pluginManager
+      .getPureProtocolProcessorPlugins()
+      .flatMap(
+        (element) => element.V1_getExtraExecutionInputCollectors?.() ?? [],
+      )
+      .flatMap((getter) => getter(graph, graphData));
+    prunedGraphData.elements = uniq([
+      ...prunedGraphData.elements,
+      ...extraExecutionElements,
+    ]);
+    return prunedGraphData;
   };
-
-  async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
-    return this.engine.cancelUserExecutions(broadcastToCluster);
-  }
 
   // --------------------------------------------- Change Detection ---------------------------------------------
 
@@ -3436,6 +3402,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       entity.content = pruneSourceInformation(entity.content);
     }
     return entity;
+  };
+
+  private prunePureModelContextData = (
+    data: V1_PureModelContextData,
+    elementFilter?: (val: V1_PackageableElement) => boolean,
+    entityFilter?: (entity: Entity) => boolean,
+  ): V1_PureModelContextData => {
+    const prunedGraphData = new V1_PureModelContextData();
+    prunedGraphData.elements = data.elements.filter((element) =>
+      elementFilter ? elementFilter(element) : true,
+    );
+    prunedGraphData.INTERNAL__rawDependencyEntities =
+      data.INTERNAL__rawDependencyEntities?.filter((entity) =>
+        entityFilter ? entityFilter(entity) : true,
+      );
+    return prunedGraphData;
   };
 
   private buildPureModelSDLCPointer(

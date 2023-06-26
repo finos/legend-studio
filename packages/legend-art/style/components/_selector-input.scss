@@ -176,6 +176,12 @@
     pointer-events: initial !important;
   }
 
+  .packageable-element-option-label__tag {
+    color: var(--color-light-grey-100);
+    background: var(--color-dark-grey-300);
+    border: 0.1rem solid var(--color-dark-grey-300);
+  }
+
   &__control {
     cursor: text;
     border-radius: 0;

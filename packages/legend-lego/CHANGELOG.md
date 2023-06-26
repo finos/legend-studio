@@ -1,5 +1,21 @@
 # @finos/legend-lego
 
+## 1.1.2
+
+## 1.1.1
+
+## 1.1.0
+
+### Minor Changes
+
+- [#2329](https://github.com/finos/legend-studio/pull/2329) [`131a8f06d`](https://github.com/finos/legend-studio/commit/131a8f06d7c1f3a5519f7d98bce46cd241970278) ([@xannem](https://github.com/xannem)) - Add wordwrap option for text in `CodeEditor`
+
+## 1.0.21
+
+## 1.0.20
+
+## 1.0.19
+
 ## 1.0.18
 
 ## 1.0.17

@@ -28,6 +28,7 @@ import {
   TestError,
   MultiExecutionServiceTestResult,
   TestExecutionStatus,
+  getAllIdentifiedServiceConnections,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -39,31 +40,77 @@ import {
   isNonNullable,
   generateEnumerableNameFromToken,
   getNullableFirstEntry,
+  guaranteeNonNullable,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
 import {
+  service_addConnectionTestData,
   service_addTest,
   service_addTestSuite,
   service_deleteTestSuite,
 } from '../../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
-import { createEmptyEqualToJsonAssertion } from '../../../../utils/TestableUtils.js';
-import type { ServiceEditorState } from '../ServiceEditorState.js';
-import { ServiceTestDataState } from './ServiceTestDataState.js';
+import {
+  EmbeddedDataConnectionTypeVisitor,
+  createEmptyEqualToJsonAssertion,
+} from '../../../../utils/TestableUtils.js';
+import {
+  isServiceQueryTDS,
+  type ServiceEditorState,
+} from '../ServiceEditorState.js';
+import {
+  ServiceTestDataState,
+  createConnectionTestData,
+} from './ServiceTestDataState.js';
 import {
   SERIALIZATION_FORMAT,
   ServiceTestState,
 } from './ServiceTestEditorState.js';
 
-const createEmptyServiceTestSuite = (service: Service): ServiceTestSuite => {
+const createEmptyServiceTestSuite = (
+  serviceTestableState: ServiceTestableState,
+): ServiceTestSuite => {
+  // setup
+  const serviceEditorState = serviceTestableState.serviceEditorState;
+  const service = serviceEditorState.service;
   const suite = new ServiceTestSuite();
   suite.id = generateEnumerableNameFromToken(
     service.tests.map((s) => s.id),
     DEFAULT_TEST_SUITE_PREFIX,
   );
+  // data
   suite.testData = new TestData();
+  const identifiedConnections = getAllIdentifiedServiceConnections(service);
+  if (identifiedConnections.length === 1) {
+    const connectionVal = guaranteeNonNullable(identifiedConnections[0]);
+    const connectionValue = connectionVal.connection;
+    const type = returnUndefOnError(() =>
+      connectionValue.accept_ConnectionVisitor(
+        new EmbeddedDataConnectionTypeVisitor(serviceEditorState.editorStore),
+      ),
+    );
+    if (type) {
+      const testData = createConnectionTestData(
+        connectionVal,
+        type,
+        serviceEditorState.editorStore,
+      );
+      service_addConnectionTestData(
+        suite,
+        testData,
+        serviceEditorState.editorStore.changeDetectionState.observerContext,
+      );
+    }
+  }
+  //
   const test = new ServiceTest();
-  test.serializationFormat = SERIALIZATION_FORMAT.PURE;
+  test.serializationFormat = isServiceQueryTDS(
+    serviceEditorState.service,
+    serviceEditorState.editorStore,
+  )
+    ? SERIALIZATION_FORMAT.PURE_TDSOBJECT
+    : SERIALIZATION_FORMAT.PURE;
   test.id = generateEnumerableNameFromToken([], DEFAULT_TEST_PREFIX);
   test.__parent = suite;
   suite.tests = [test];
@@ -258,6 +305,10 @@ export class ServiceTestableState {
     this.initSuites();
   }
 
+  get service(): Service {
+    return this.serviceEditorState.service;
+  }
+
   setSuiteToRename(testSuite: ServiceTestSuite | undefined): void {
     this.suiteToRename = testSuite;
   }
@@ -290,12 +341,20 @@ export class ServiceTestableState {
   }
 
   addTestSuite(): void {
-    const suite = createEmptyServiceTestSuite(this.serviceEditorState.service);
-    service_addTestSuite(
-      this.serviceEditorState.service,
-      suite,
-      this.serviceEditorState.editorStore.changeDetectionState.observerContext,
-    );
-    this.selectedSuiteState = new ServiceTestSuiteState(suite, this);
+    try {
+      const suite = createEmptyServiceTestSuite(this);
+      service_addTestSuite(
+        this.serviceEditorState.service,
+        suite,
+        this.serviceEditorState.editorStore.changeDetectionState
+          .observerContext,
+      );
+      this.selectedSuiteState = new ServiceTestSuiteState(suite, this);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to create service test suite: ${error.message}`,
+      );
+    }
   }
 }

@@ -113,10 +113,7 @@ import { V1_BindingTransformer } from '../../../model/packageableElements/extern
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
 import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
-import {
-  V1_MappingDataTestSuite,
-  V1_MappingQueryTestSuite,
-} from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
+import { V1_MappingTestSuite } from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
 import {
   V1_deserializeAtomicTest,
   V1_deserializeTestAssertion,
@@ -131,10 +128,7 @@ import {
   V1_deserializeEmbeddedDataType,
   V1_serializeEmbeddedDataType,
 } from './V1_DataElementSerializationHelper.js';
-import {
-  V1_MappingDataTest,
-  V1_MappingQueryTest,
-} from '../../../model/packageableElements/mapping/V1_MappingTest.js';
+import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
@@ -887,24 +881,11 @@ export const V1_mappingStoreTestDataModelSchema = (
     store: primitive(),
   });
 
-export const V1_mappingQueryTestModelSchema = createModelSchema(
-  V1_MappingQueryTest,
-  {
-    _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Mapping_Query_Test),
-    assertions: list(
-      custom(V1_serializeTestAssertion, V1_deserializeTestAssertion),
-    ),
-    id: primitive(),
-    doc: optional(primitive()),
-    func: usingModelSchema(V1_rawLambdaModelSchema),
-  },
-);
-
-export const V1_mappingDataTestModelSchema = (
+export const V1_mappingTestModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_MappingDataTest> =>
-  createModelSchema(V1_MappingDataTest, {
-    _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Mapping_Data_Test),
+): ModelSchema<V1_MappingTest> =>
+  createModelSchema(V1_MappingTest, {
+    _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Mapping_Test),
     assertions: list(
       custom(V1_serializeTestAssertion, V1_deserializeTestAssertion),
     ),
@@ -915,29 +896,11 @@ export const V1_mappingDataTestModelSchema = (
     ),
   });
 
-export const V1_mappingDataTestSuiteModelSchema = (
+export const V1_mappingTestSuiteModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_MappingDataTestSuite> =>
-  createModelSchema(V1_MappingDataTestSuite, {
-    _type: usingConstantValueSchema(V1_TestSuiteType.MAPPING_DATA_TEST_SUITE),
-    doc: optional(primitive()),
-    id: primitive(),
-    storeTestData: usingModelSchema(
-      V1_mappingStoreTestDataModelSchema(plugins),
-    ),
-    tests: list(
-      custom(
-        (val) => V1_serializeAtomicTest(val, plugins),
-        (val) => V1_deserializeAtomicTest(val, plugins),
-      ),
-    ),
-  });
-
-export const V1_mappingQueryTestSuiteModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_MappingQueryTestSuite> =>
-  createModelSchema(V1_MappingQueryTestSuite, {
-    _type: usingConstantValueSchema(V1_TestSuiteType.MAPPING_QUERY_TEST_SUITE),
+): ModelSchema<V1_MappingTestSuite> =>
+  createModelSchema(V1_MappingTestSuite, {
+    _type: usingConstantValueSchema(V1_TestSuiteType.MAPPING_TEST_SUITE),
     doc: optional(primitive()),
     id: primitive(),
     func: usingModelSchema(V1_rawLambdaModelSchema),

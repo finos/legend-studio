@@ -1,5 +1,45 @@
 # @finos/legend-application-studio
 
+## 27.1.1
+
+### Patch Changes
+
+- [#2323](https://github.com/finos/legend-studio/pull/2323) [`7730ad3ed`](https://github.com/finos/legend-studio/commit/7730ad3ed1fe21f6ae2ef04052ed6f85baada568) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revamp mapping suites to be driven by query with multiple tests each with its own test data.
+
+## 27.1.0
+
+### Minor Changes
+
+- [#2354](https://github.com/finos/legend-studio/pull/2354) [`7b1d19977`](https://github.com/finos/legend-studio/commit/7b1d19977cc39371413a2fd1af1bbc0528673b9f) ([@akphi](https://github.com/akphi)) - Add temporary support for creating local connection, right now this is a PoC aim to demonstrate the support for `SnowflakeApp`, this can be enabled by setting the config flag `TEMPORARY__enableLocalConnectionBuilder=true`.
+
+## 27.0.0
+
+### Major Changes
+
+- [#2329](https://github.com/finos/legend-studio/pull/2329) [`131a8f06d`](https://github.com/finos/legend-studio/commit/131a8f06d7c1f3a5519f7d98bce46cd241970278) ([@xannem](https://github.com/xannem)) - **BREAKING CHANGE:** Removed `getExtraTestRunnerTabClassifiers` and renamed to `getExtraTestRunnerTabEditorRenderer` to `getExtraTestRunnerTabConfigurations` and put tab name directly in `TestRunnerTabConfiguration`
+
+### Patch Changes
+
+- [#2333](https://github.com/finos/legend-studio/pull/2333) [`f00a00823`](https://github.com/finos/legend-studio/commit/f00a00823753bc54fa945ceb8939ab543d01b0bf) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add support for using the new external format biding service test parameter UI for type Byte
+
+- [#2344](https://github.com/finos/legend-studio/pull/2344) [`09556cbfb`](https://github.com/finos/legend-studio/commit/09556cbfb084404fe81d93257ccb5cfabff07560) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use northWind proc as default relational connection to provide sample data for users.
+
+## 26.1.11
+
+## 26.1.10
+
+### Patch Changes
+
+- [#2327](https://github.com/finos/legend-studio/pull/2327) [`448d4ba4f`](https://github.com/finos/legend-studio/commit/448d4ba4fcb1de3c46dd1c1bf62ecf4d3b92e61c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show generated artifacts triggered by artifact extensions in engine. Include flag to enable this as part of generation flow.
+
+## 26.1.9
+
+### Patch Changes
+
+- [#2319](https://github.com/finos/legend-studio/pull/2319) [`660f96c39`](https://github.com/finos/legend-studio/commit/660f96c392d86344b58676a7217aabd0ef6a7940) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Minor improvements in service test editor for services with one connection and date parameters. Add Import CSV option for relational csv data.
+
+- [#2317](https://github.com/finos/legend-studio/pull/2317) [`ba835606f`](https://github.com/finos/legend-studio/commit/ba835606fd6883651b9f4055f79bff884757b3bf) ([@abhishoya-gs](https://github.com/abhishoya-gs)) - Add field enableQueryTags to SnowflakeDatasourceSpec
+
 ## 26.1.8
 
 ## 26.1.7

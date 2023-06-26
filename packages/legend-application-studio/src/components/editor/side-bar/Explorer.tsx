@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { Fragment, useRef, useEffect, useState, forwardRef } from 'react';
+import React, {
+  Fragment,
+  useRef,
+  useEffect,
+  useState,
+  forwardRef,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -61,6 +67,7 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
+  PANEL_MODE,
 } from '../../../stores/editor/EditorConfig.js';
 import { getTreeChildNodes } from '../../../stores/editor/utils/PackageTreeUtils.js';
 import type { PackageTreeNodeData } from '../../../stores/editor/utils/TreeUtils.js';
@@ -76,6 +83,7 @@ import {
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  guaranteeType,
   isNonNullable,
   toTitleCase,
 } from '@finos/legend-shared';
@@ -102,6 +110,7 @@ import {
   RelationalDatabaseConnection,
   guaranteeRelationalDatabaseConnection,
   extractDependencyGACoordinateFromRootPackageName,
+  type FunctionActivatorConfiguration,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -124,7 +133,8 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
-import { DatabaseBuilder } from '../editor-group/connection-editor/DatabaseBuilder.js';
+import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
+import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -506,13 +516,22 @@ const ExplorerContextMenu = observer(
     const buildDatabase = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (isRelationalDatabaseConnection(node?.packageableElement)) {
-          editorStore.explorerTreeState.buildDbBuilderState(
+          editorStore.explorerTreeState.buildDatabase(
             guaranteeRelationalDatabaseConnection(node?.packageableElement),
             editorStore.isInViewerMode,
           );
         }
       },
     );
+    const openSQLPlayground = (): void => {
+      if (isRelationalDatabaseConnection(node?.packageableElement)) {
+        editorStore.panelGroupDisplayState.open();
+        editorStore.setActivePanelMode(PANEL_MODE.SQL_PLAYGROUND);
+        editorStore.sqlPlaygroundState.setConnection(
+          guaranteeType(node?.packageableElement, PackageableConnection),
+        );
+      }
+    };
     const removeElement = (): void => {
       if (node) {
         flowResult(
@@ -663,6 +682,50 @@ const ExplorerContextMenu = observer(
         ).catch(applicationStore.alertUnhandledError);
       }
     };
+    const activateFunction = (): void => {
+      if (node?.packageableElement instanceof ConcreteFunctionDefinition) {
+        editorStore.setQuickInputState({
+          title: 'Activate function',
+          placeholder: 'Select an activation...',
+          options: editorStore.graphState.functionActivatorConfigurations.map(
+            (config) => ({
+              value: config,
+              label: (
+                <div
+                  className="function-editor__activator__selector__option"
+                  title={config.description}
+                >
+                  <div className="function-editor__activator__selector__option__name">
+                    {config.name}
+                  </div>
+                  <div className="function-editor__activator__selector__option__description">
+                    {config.description}
+                  </div>
+                </div>
+              ),
+            }),
+          ),
+          getSearchValue: (option: {
+            value: FunctionActivatorConfiguration;
+            label: React.ReactNode;
+          }): string => option.value.name,
+          onSelect: (option: {
+            value: FunctionActivatorConfiguration;
+            label: React.ReactNode;
+          }) => {
+            editorStore.graphEditorMode.openElement(node.packageableElement);
+            editorStore.tabManagerState
+              .getCurrentEditorState(FunctionEditorState)
+              .activatorBuilderState.setCurrentActivatorConfiguration(
+                option.value,
+              );
+          },
+          customization: {
+            rowHeight: 70,
+          },
+        });
+      }
+    };
 
     if (isDependencyProjectRoot()) {
       return (
@@ -722,8 +785,27 @@ const ExplorerContextMenu = observer(
             <MenuContentDivider />
           </>
         )}
+        {node.packageableElement instanceof ConcreteFunctionDefinition && (
+          <>
+            {editorStore.applicationStore.config.options
+              .TEMPORARY__enableFunctionActivatorSupport && (
+              <>
+                <MenuContentItem onClick={activateFunction}>
+                  Activate...
+                </MenuContentItem>
+                <MenuContentDivider />
+              </>
+            )}
+          </>
+        )}
         {isRelationalDatabaseConnection(node.packageableElement) && (
           <>
+            {editorStore.applicationStore.config.options
+              .TEMPORARY__enableRawSQLExecutor && (
+              <MenuContentItem onClick={openSQLPlayground}>
+                Execute SQL...
+              </MenuContentItem>
+            )}
             <MenuContentItem onClick={buildDatabase}>
               Build Database...
             </MenuContentItem>
@@ -977,7 +1059,7 @@ const ExplorerTrees = observer(() => {
 
   // Generated Files Tree
   const generationFileTreeData =
-    editorStore.explorerTreeState.getFileGenerationTreeData();
+    editorStore.explorerTreeState.getArtifactsGenerationTreeData();
   const onGenerationFileTreeNodeSelect = (node: FileSystemTreeNodeData): void =>
     editorStore.graphState.graphGenerationState.onTreeNodeSelect(
       node,
@@ -1046,7 +1128,7 @@ const ExplorerTrees = observer(() => {
               <ElementRenamer />
               <SampleDataGenerator />
               {editorStore.explorerTreeState.databaseBuilderState && (
-                <DatabaseBuilder
+                <DatabaseBuilderWizard
                   databaseBuilderState={
                     editorStore.explorerTreeState.databaseBuilderState
                   }

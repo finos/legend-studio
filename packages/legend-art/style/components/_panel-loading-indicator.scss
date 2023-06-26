@@ -38,6 +38,11 @@
     background: var(--color-blue-200);
     animation: panel-loading-indicator__loading 2.5s linear infinite;
   }
+
+  &--in__modal {
+    margin-top: -2rem;
+    margin-left: -2rem;
+  }
 }
 
 @keyframes panel-loading-indicator__loading {

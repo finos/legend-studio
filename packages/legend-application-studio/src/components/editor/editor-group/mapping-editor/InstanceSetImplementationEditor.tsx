@@ -419,7 +419,7 @@ const MappingFilterEditor = observer(
               isReadOnly ||
               instanceSetImplementationState.isConvertingTransformLambdaObjects
             }
-            forceBackdrop={!!filterState.parserError}
+            forceBackdrop={Boolean(filterState.parserError)}
             lambdaEditorState={filterState}
             expectedType={PrimitiveType.BOOLEAN}
           />

@@ -140,60 +140,6 @@
     }
   }
 
-  &__activate-btn {
-    @include flexVCenter;
-
-    height: 100%;
-    width: 12rem;
-    margin: 0 0.3rem;
-
-    &__label {
-      @include flexVCenter;
-
-      height: 2.2rem;
-      width: 10rem;
-      background: var(--color-blue-200);
-      padding: 1rem;
-      border-radius: 0.2rem 0 0 0.2rem;
-    }
-
-    &__label__icon {
-      font-size: 1.2rem;
-      color: var(--color-light-grey-180);
-    }
-
-    &__label__title {
-      margin-left: 0.7rem;
-      color: var(--color-light-grey-180);
-      font-size: 1.2rem;
-      font-weight: 500;
-    }
-
-    &__dropdown-btn {
-      @include flexCenter;
-
-      height: 2.2rem;
-      width: 2rem;
-      background: var(--color-blue-200);
-      border-radius: 0 0.2rem 0.2rem 0;
-      border-left: 0.1rem solid var(--color-dark-shade-280);
-
-      svg {
-        color: var(--color-light-grey-180);
-      }
-    }
-
-    &__label:hover &__label__icon,
-    &__label:hover &__label__title,
-    &__dropdown-btn:hover svg {
-      color: var(--color-light-grey-50);
-    }
-
-    &__option {
-      width: 12rem;
-    }
-  }
-
   &__definition {
     height: 100%;
     width: 100%;
@@ -253,6 +199,11 @@
     &__lambda-editor {
       height: 35rem !important;
     }
+
+    &__result-viewer {
+      height: 35rem !important;
+      border: 0.1rem solid var(--color-dark-grey-280);
+    }
   }
 
   &__return__type-editor {
@@ -264,106 +215,5 @@
   &__activator-builder {
     height: 100%;
     width: 100%;
-  }
-
-  &__execution {
-    &__stop-btn {
-      @include flexVCenter;
-
-      height: 100%;
-      width: 12rem;
-      margin: 0 0.3rem;
-
-      &__label {
-        @include flexVCenter;
-
-        height: 2.2rem;
-        width: 12rem;
-        padding: 1rem;
-        border-radius: 0.2rem 0 0 0.2rem;
-        justify-content: left;
-      }
-
-      &__label__icon {
-        font-size: 1.2rem;
-        color: var(--color-light-grey-180);
-      }
-
-      &__label__title {
-        margin-left: 0.7rem;
-        color: var(--color-light-grey-180);
-        font-size: 1.2rem;
-        font-weight: 500;
-      }
-
-      &__label:hover &__label__icon,
-      &__label:hover &__label__title {
-        color: var(--color-light-grey-50);
-      }
-    }
-
-    &__action-btn {
-      @include flexVCenter;
-
-      height: 100%;
-      margin: 0 0.3rem;
-
-      &__label {
-        @include flexVCenter;
-
-        height: 2.2rem;
-        background: var(--color-blue-200);
-        padding: 1rem;
-        border-radius: 0.2rem 0 0 0.2rem;
-      }
-
-      &__label__icon {
-        font-size: 1.2rem;
-        color: var(--color-light-grey-180);
-      }
-
-      &__label__title {
-        margin-left: 0.7rem;
-        color: var(--color-light-grey-180);
-        font-size: 1.2rem;
-        font-weight: 500;
-      }
-
-      &__dropdown-btn {
-        @include flexCenter;
-
-        height: 2.2rem;
-        width: 2rem;
-        background: var(--color-blue-200);
-        border-radius: 0 0.2rem 0.2rem 0;
-        border-left: 0.1rem solid var(--color-dark-shade-280);
-
-        svg {
-          color: var(--color-light-grey-180);
-        }
-      }
-
-      &__label:hover &__label__icon,
-      &__label:hover &__label__title,
-      &__dropdown-btn:hover svg {
-        color: var(--color-light-grey-50);
-      }
-
-      &__option {
-        text-align: left;
-        width: 12rem;
-      }
-
-      &__label[disabled],
-      &__dropdown-btn[disabled] {
-        background: var(--color-dark-grey-250);
-      }
-
-      &__label[disabled] &__label__icon,
-      &__label[disabled] &__label__title,
-      &__dropdown-btn[disabled] svg {
-        color: var(--color-dark-grey-500);
-      }
-    }
   }
 }

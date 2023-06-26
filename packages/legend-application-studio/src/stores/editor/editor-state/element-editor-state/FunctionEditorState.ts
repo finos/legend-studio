@@ -21,6 +21,7 @@ import {
   makeObservable,
   flow,
   flowResult,
+  override,
 } from 'mobx';
 import type { EditorStore } from '../../EditorStore.js';
 import {
@@ -30,7 +31,6 @@ import {
   guaranteeType,
   assertType,
   StopWatch,
-  stringifyLosslessJSON,
   filterByType,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState.js';
@@ -50,6 +50,7 @@ import {
   buildLambdaVariableExpressions,
   VariableExpression,
   observe_ValueSpecification,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 import {
   ExecutionPlanState,
@@ -63,7 +64,6 @@ import {
   getExecutionQueryFromRawLambda,
 } from '@finos/legend-query-builder';
 import { FunctionActivatorBuilderState } from './FunctionActivatorBuilderState.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
@@ -198,11 +198,11 @@ export class FunctionParametersState extends LambdaParametersState {
     this.functionEditorState = functionEditorState;
   }
 
-  openModal(query: RawLambda): void {
-    this.parameterStates = this.build(query);
+  openModal(lambda: RawLambda): void {
+    this.parameterStates = this.build(lambda);
     this.parameterValuesEditorState.open(
       (): Promise<void> =>
-        flowResult(this.functionEditorState.runQuery()).catch(
+        flowResult(this.functionEditorState.runFunc()).catch(
           this.functionEditorState.editorStore.applicationStore
             .alertUnhandledError,
         ),
@@ -210,9 +210,9 @@ export class FunctionParametersState extends LambdaParametersState {
     );
   }
 
-  build(query: RawLambda): LambdaParameterState[] {
+  build(lambda: RawLambda): LambdaParameterState[] {
     const parameters = buildLambdaVariableExpressions(
-      query,
+      lambda,
       this.functionEditorState.editorStore.graphManagerState,
     )
       .map((parameter) =>
@@ -242,31 +242,32 @@ export class FunctionEditorState extends ElementEditorState {
 
   selectedTab: FUNCTION_EDITOR_TAB;
 
-  isRunningQuery = false;
+  isRunningFunc = false;
   isGeneratingPlan = false;
-  executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
+  executionResult?: ExecutionResult | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
   parametersState: FunctionParametersState;
-  queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  funcRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
       selectedTab: observable,
+      isRunningFunc: observable,
+      isGeneratingPlan: observable,
+      executionResult: observable,
+      executionPlanState: observable,
+      label: override,
       functionElement: computed,
       setSelectedTab: action,
       reprocess: action,
-      isRunningQuery: observable,
-      isGeneratingPlan: observable,
-      executionResultText: observable,
-      executionPlanState: observable,
-      setExecutionResultText: action,
-      setIsRunningQuery: action,
-      runQuery: flow,
+      setExecutionResult: action,
+      setIsRunningFunc: action,
+      runFunc: flow,
       generatePlan: flow,
-      handleRunQuery: flow,
-      cancelQuery: flow,
+      handleRunFunc: flow,
+      cancelFuncRun: flow,
     });
 
     assertType(
@@ -285,6 +286,13 @@ export class FunctionEditorState extends ElementEditorState {
       this.editorStore.graphManagerState,
     );
     this.parametersState = new FunctionParametersState(this);
+  }
+
+  override get label(): string {
+    return generateFunctionPrettyName(this.functionElement, {
+      fullPath: true,
+      spacing: false,
+    });
   }
 
   get functionElement(): ConcreteFunctionDefinition {
@@ -336,21 +344,19 @@ export class FunctionEditorState extends ElementEditorState {
     return functionEditorState;
   }
 
-  setIsRunningQuery(val: boolean): void {
-    this.isRunningQuery = val;
+  setIsRunningFunc(val: boolean): void {
+    this.isRunningFunc = val;
   }
 
-  setExecutionResultText = (executionResult: string | undefined): void => {
-    this.executionResultText = executionResult;
+  setExecutionResult = (executionResult: ExecutionResult | undefined): void => {
+    this.executionResult = executionResult;
   };
 
-  setQueryRunPromise = (
-    promise: Promise<ExecutionResult> | undefined,
-  ): void => {
-    this.queryRunPromise = promise;
+  setFuncRunPromise = (promise: Promise<ExecutionResult> | undefined): void => {
+    this.funcRunPromise = promise;
   };
 
-  get query(): RawLambda {
+  get bodyExpressionSequence(): RawLambda {
     return new RawLambda(
       this.functionElement.parameters.map((parameter) =>
         this.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
@@ -366,7 +372,7 @@ export class FunctionEditorState extends ElementEditorState {
       return;
     }
     try {
-      const query = this.query;
+      const expressionSequence = this.bodyExpressionSequence;
       this.isGeneratingPlan = true;
       let rawPlan: RawExecutionPlan;
 
@@ -381,7 +387,7 @@ export class FunctionEditorState extends ElementEditorState {
         );
         const debugResult =
           (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
-            query,
+            expressionSequence,
             undefined,
             undefined,
             this.editorStore.graphManagerState.graph,
@@ -395,7 +401,7 @@ export class FunctionEditorState extends ElementEditorState {
         );
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
-            query,
+            expressionSequence,
             undefined,
             undefined,
             this.editorStore.graphManagerState.graph,
@@ -446,21 +452,21 @@ export class FunctionEditorState extends ElementEditorState {
     }
   }
 
-  *handleRunQuery(): GeneratorFn<void> {
-    if (this.isRunningQuery) {
+  *handleRunFunc(): GeneratorFn<void> {
+    if (this.isRunningFunc) {
       return;
     }
-    const query = this.query;
-    const parameters = (query.parameters ?? []) as object[];
+    const expressionSequence = this.bodyExpressionSequence;
+    const parameters = (expressionSequence.parameters ?? []) as object[];
     if (parameters.length) {
-      this.parametersState.openModal(query);
+      this.parametersState.openModal(expressionSequence);
     } else {
-      this.runQuery();
+      this.runFunc();
     }
   }
 
-  *runQuery(): GeneratorFn<void> {
-    if (this.isRunningQuery) {
+  *runFunc(): GeneratorFn<void> {
+    if (this.isRunningFunc) {
       return;
     }
 
@@ -470,14 +476,14 @@ export class FunctionEditorState extends ElementEditorState {
 
     let promise;
     try {
-      this.isRunningQuery = true;
+      this.isRunningFunc = true;
       const stopWatch = new StopWatch();
       const report = reportGraphAnalytics(
         this.editorStore.graphManagerState.graph,
       );
       promise = this.editorStore.graphManagerState.graphManager.runQuery(
         getExecutionQueryFromRawLambda(
-          this.query,
+          this.bodyExpressionSequence,
           this.parametersState.parameterStates,
           this.editorStore.graphManagerState,
         ),
@@ -485,7 +491,7 @@ export class FunctionEditorState extends ElementEditorState {
         undefined,
         this.editorStore.graphManagerState.graph,
         {
-          useLosslessParse: true,
+          useLosslessParse: false,
           parameterValues: buildExecutionParameterValues(
             this.parametersState.parameterStates,
             this.editorStore.graphManagerState,
@@ -493,12 +499,10 @@ export class FunctionEditorState extends ElementEditorState {
         },
         report,
       );
-      this.setQueryRunPromise(promise);
+      this.setFuncRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
-      if (this.queryRunPromise === promise) {
-        this.setExecutionResultText(
-          stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
-        );
+      if (this.funcRunPromise === promise) {
+        this.setExecutionResult(result);
         this.parametersState.setParameters([]);
         // report
         report.timings =
@@ -512,27 +516,27 @@ export class FunctionEditorState extends ElementEditorState {
         );
       }
     } catch (error) {
-      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
+      // When user cancels the query by calling the cancelQuery api, it will throw an execution failure error.
       // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
       // When cancelled the query, we set the queryRunPromise as undefined.
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-        error,
-      );
-      if (this.queryRunPromise === promise) {
+      if (this.funcRunPromise === promise) {
         assertErrorThrown(error);
+        this.editorStore.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+          error,
+        );
         this.editorStore.applicationStore.notificationService.notifyError(
           error,
         );
       }
     } finally {
-      this.isRunningQuery = false;
+      this.isRunningFunc = false;
     }
   }
 
-  *cancelQuery(): GeneratorFn<void> {
-    this.setIsRunningQuery(false);
-    this.setQueryRunPromise(undefined);
+  *cancelFuncRun(): GeneratorFn<void> {
+    this.setIsRunningFunc(false);
+    this.setFuncRunPromise(undefined);
     try {
       yield this.editorStore.graphManagerState.graphManager.cancelUserExecutions(
         true,

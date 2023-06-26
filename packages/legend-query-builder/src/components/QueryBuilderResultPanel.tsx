@@ -112,6 +112,7 @@ import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
+import { QueryUsageViewer } from './QueryUsageViewer.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -126,11 +127,11 @@ const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      event: QueryBuilderTDSResultCellData | null;
+      data: QueryBuilderTDSResultCellData | null;
       tdsState: QueryBuilderTDSState;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { event, tdsState } = props;
+    const { data, tdsState } = props;
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
@@ -145,10 +146,10 @@ const QueryBuilderGridResultContextMenu = observer(
     const postFilterState = tdsState.postFilterState;
 
     const projectionColumnState = tdsState.projectionColumns
-      .filter((c) => c.columnName === event?.columnName)
+      .filter((c) => c.columnName === data?.columnName)
       .concat(
         tdsState.aggregationState.columns
-          .filter((c) => c.columnName === event?.columnName)
+          .filter((c) => c.columnName === data?.columnName)
           .map((ag) => ag.projectionColumnState),
       )[0];
     const getExistingPostFilterNode = (
@@ -319,7 +320,7 @@ const QueryBuilderGridResultContextMenu = observer(
                 : (v as InstanceValue).values,
             )
             .flat()
-            .includes(cellData.value ?? event?.value);
+            .includes(cellData.value ?? data?.value);
 
         if (!doesValueAlreadyExist) {
           const newValueSpecification = (
@@ -399,7 +400,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
       applicationStore.clipboardService.copyTextToClipboard(
-        event?.value?.toString() ?? '',
+        data?.value?.toString() ?? '',
       ),
     );
 
@@ -597,7 +598,7 @@ const QueryResultCellRenderer = observer(
           // NOTE: we only support this functionality for grid result with a projection fetch-structure
           fetchStructureImplementation instanceof QueryBuilderTDSState ? (
             <QueryBuilderGridResultContextMenu
-              event={resultState.mousedOverCell}
+              data={resultState.mousedOverCell}
               tdsState={fetchStructureImplementation}
             />
           ) : null
@@ -702,10 +703,14 @@ const QueryBuilderResultValues = observer(
         />
       );
     } else if (executionResult instanceof RawExecutionResult) {
+      const inputValue =
+        executionResult.value === null
+          ? 'null'
+          : executionResult.value.toString();
       return (
         <CodeEditor
           language={CODE_EDITOR_LANGUAGE.TEXT}
-          inputValue={executionResult.value}
+          inputValue={inputValue}
           isReadOnly={true}
         />
       );
@@ -960,70 +965,73 @@ export const QueryBuilderResultPanel = observer(
                 />
               </div>
             )}
-            {resultState.isRunningQuery ? (
-              <button
-                className="query-builder__result__stop-btn"
-                onClick={cancelQuery}
-                tabIndex={-1}
-                disabled={!isQueryValid}
-              >
-                <div className="btn--dark btn--caution query-builder__result__stop-btn__label">
-                  <PauseCircleIcon className="query-builder__result__stop-btn__label__icon" />
-                  <div className="query-builder__result__stop-btn__label__title">
-                    Stop
-                  </div>
-                </div>
-              </button>
-            ) : (
-              <div className="query-builder__result__execute-btn">
+
+            <div className="query-builder__result__execute-btn btn__dropdown-combo btn__dropdown-combo--primary">
+              {resultState.isRunningQuery ? (
                 <button
-                  className="query-builder__result__execute-btn__label"
-                  onClick={runQuery}
+                  className="btn__dropdown-combo__canceler"
+                  onClick={cancelQuery}
                   tabIndex={-1}
-                  title={
-                    allValidationIssues.length
-                      ? `Query is not valid:\n${allValidationIssues
-                          .map((issue) => `\u2022 ${issue}`)
-                          .join('\n')}`
-                      : undefined
-                  }
-                  disabled={isRunQueryDisabled}
+                  disabled={!isQueryValid}
                 >
-                  <PlayIcon className="query-builder__result__execute-btn__label__icon" />
-                  <div className="query-builder__result__execute-btn__label__title">
-                    Run Query
+                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
+                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                    <div className="btn__dropdown-combo__canceler__label__title">
+                      Stop
+                    </div>
                   </div>
                 </button>
-                <DropdownMenu
-                  className="query-builder__result__execute-btn__dropdown-btn"
-                  disabled={isRunQueryDisabled}
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        className="query-builder__result__execute-btn__option"
-                        onClick={generatePlan}
-                        disabled={isRunQueryDisabled}
-                      >
-                        Generate Plan
-                      </MenuContentItem>
-                      <MenuContentItem
-                        className="query-builder__result__execute-btn__option"
-                        onClick={debugPlanGeneration}
-                        disabled={isRunQueryDisabled}
-                      >
-                        Debug
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  }}
-                >
-                  <CaretDownIcon />
-                </DropdownMenu>
-              </div>
-            )}
+              ) : (
+                <>
+                  <button
+                    className="btn__dropdown-combo__label"
+                    onClick={runQuery}
+                    tabIndex={-1}
+                    title={
+                      allValidationIssues.length
+                        ? `Query is not valid:\n${allValidationIssues
+                            .map((issue) => `\u2022 ${issue}`)
+                            .join('\n')}`
+                        : undefined
+                    }
+                    disabled={isRunQueryDisabled}
+                  >
+                    <PlayIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Run Query
+                    </div>
+                  </button>
+                  <DropdownMenu
+                    className="btn__dropdown-combo__dropdown-btn"
+                    disabled={isRunQueryDisabled}
+                    content={
+                      <MenuContent>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={generatePlan}
+                          disabled={isRunQueryDisabled}
+                        >
+                          Generate Plan
+                        </MenuContentItem>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          onClick={debugPlanGeneration}
+                          disabled={isRunQueryDisabled}
+                        >
+                          Debug
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    }}
+                  >
+                    <CaretDownIcon />
+                  </DropdownMenu>
+                </>
+              )}
+            </div>
             <DropdownMenu
               className="query-builder__result__export__dropdown"
               title="Export"
@@ -1041,6 +1049,15 @@ export const QueryBuilderResultPanel = observer(
                       {format}
                     </MenuContentItem>
                   ))}
+                  <MenuContentItem
+                    className="query-builder__result__export__dropdown__menu__item"
+                    onClick={(): void =>
+                      resultState.setIsQueryUsageViewerOpened(true)
+                    }
+                    disabled={queryBuilderState.changeDetectionState.hasChanged}
+                  >
+                    View Query Usage...
+                  </MenuContentItem>
                 </MenuContent>
               }
               menuProps={{
@@ -1056,6 +1073,9 @@ export const QueryBuilderResultPanel = observer(
                 <CaretDownIcon />
               </div>
             </DropdownMenu>
+            {resultState.isQueryUsageViewerOpened && (
+              <QueryUsageViewer resultState={resultState} />
+            )}
           </div>
         </div>
         <PanelContent>

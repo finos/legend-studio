@@ -41,7 +41,6 @@ import {
   modelStoreData_setDataModelModel,
 } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
-import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import {
   type EmbeddedDataState,
   DataElementReferenceState,
@@ -62,6 +61,9 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -92,6 +94,9 @@ export const ExternalFormatDataEditor = observer(
       ),
     );
     const format = (): void => externalFormatDataState.format();
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_EXTERNAL_FORMAT_EDITOR,
+    );
     return (
       <div className="panel external-format-data-editor">
         <div className="external-format-data-editor__header">
@@ -147,16 +152,14 @@ export const ExternalFormatDataEditor = observer(
             </DropdownMenu>
           </div>
         </div>
-        <div className={clsx('external-format-data-editor__content')}>
-          <div className="external-format-data-editor__content__input">
-            <CodeEditor
-              language={language}
-              inputValue={externalFormatDataState.embeddedData.data}
-              updateInput={changeData}
-              hideGutter={true}
-            />
-          </div>
-        </div>
+        <PanelContent className="model-loader__editor">
+          <CodeEditor
+            language={language}
+            inputValue={externalFormatDataState.embeddedData.data}
+            updateInput={changeData}
+            hideGutter={true}
+          />
+        </PanelContent>
       </div>
     );
   },
@@ -184,6 +187,9 @@ export const DataElementReferenceDataEditor = observer(
     };
     const visitData = (): void =>
       editorStore.graphEditorMode.openElement(dataElement);
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_DATA_ELEMENT_REFERENCE_EDITOR,
+    );
     return (
       <div className="panel data-element-reference-editor">
         <div className="data-element-reference-editor__header">
@@ -240,6 +246,7 @@ export const ModelEmbeddedDataEditor = observer(
   }) => {
     const { isReadOnly, modelStoreDataState, modelDataState } = props;
     const modelData = modelDataState.modelData;
+    const hideClass = modelStoreDataState.hideClass;
     const classSelectorRef = useRef<SelectComponent>(null);
     const elementFilterOption = createFilter({
       ignoreCase: true,
@@ -271,34 +278,32 @@ export const ModelEmbeddedDataEditor = observer(
     };
 
     return (
-      <div>
-        <div className="sample-data-generator__controller">
-          <div
-            className="sample-data-generator__controller__icon"
-            title="class"
-          >
-            <PURE_ClassIcon />
+      <>
+        {!hideClass && (
+          <div className="sample-data-generator__controller">
+            <div
+              className="sample-data-generator__controller__icon"
+              title="class"
+            >
+              <PURE_ClassIcon />
+            </div>
+            <CustomSelectorInput
+              ref={classSelectorRef}
+              className="sample-data-generator__controller__class-selector"
+              options={classOptions}
+              onChange={changeClass}
+              value={selectedClassOption}
+              darkMode={true}
+              filterOption={elementFilterOption}
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode: true,
+              })}
+            />
           </div>
-          <CustomSelectorInput
-            ref={classSelectorRef}
-            className="sample-data-generator__controller__class-selector"
-            options={classOptions}
-            onChange={changeClass}
-            value={selectedClassOption}
-            darkMode={true}
-            filterOption={elementFilterOption}
-            formatOptionLabel={getPackageableElementOptionFormatter({
-              darkMode: true,
-            })}
-          />
-        </div>
-        <div>
-          {renderEmbeddedDataEditor(
-            modelDataState.embeddedDataState,
-            isReadOnly,
-          )}
-        </div>
-      </div>
+        )}
+
+        {renderEmbeddedDataEditor(modelDataState.embeddedDataState, isReadOnly)}
+      </>
     );
   },
 );
@@ -309,7 +314,9 @@ export const ModelStoreDataEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { isReadOnly, modelStoreDataState } = props;
-
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_DATA_MODEL_STORE_EDITOR,
+    );
     return (
       <div className="panel connection-editor">
         {modelStoreDataState.modelDataStates.map((_modelDataState) => {

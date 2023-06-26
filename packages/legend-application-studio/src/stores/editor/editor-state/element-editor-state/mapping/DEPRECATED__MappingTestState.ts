@@ -476,6 +476,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
   get label(): string {
     return this.test.name;
   }
+
   setIsRunningTest(val: boolean): void {
     this.isRunningTest = val;
   }
@@ -703,75 +704,6 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
     }
   }
 
-  *runTest(): GeneratorFn<void> {
-    if (DEPRECATED__validate_MappingTest(this.test)) {
-      this.editorStore.applicationStore.notificationService.notifyError(
-        `Can't run test '${this.test.name}'. Please make sure that the test is valid`,
-      );
-      return;
-    } else if (this.isExecutingTest) {
-      this.editorStore.applicationStore.notificationService.notifyWarning(
-        `Test '${this.test.name}' is already running`,
-      );
-      return;
-    }
-    const startTime = Date.now();
-    let promise;
-    try {
-      const runtime = this.inputDataState.runtime;
-      this.isRunningTest = true;
-      promise = this.editorStore.graphManagerState.graphManager.runQuery(
-        this.test.query,
-        this.mappingEditorState.mapping,
-        runtime,
-        this.editorStore.graphManagerState.graph,
-        {
-          useLosslessParse: true,
-        },
-      );
-      this.setTestRunPromise(promise);
-      const result = (yield promise) as ExecutionResult;
-      if (this.testRunPromise === promise) {
-        this.handleResult(result);
-      }
-    } catch (error) {
-      // When user cancels the query by calling the cancelQuery api, it will throw an exeuction failure error.
-      // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
-      // When cancelled the query, we set the queryRunPromise as undefined.
-      if (this.testRunPromise === promise) {
-        assertErrorThrown(error);
-        this.handleError(error, promise);
-      }
-    } finally {
-      this.isRunningTest = false;
-      this.runTime = Date.now() - startTime;
-      // if the test is currently opened and ran but did not pass, switch to the result tab
-      if (
-        [TEST_RESULT.FAILED, TEST_RESULT.ERROR].includes(this.result) &&
-        this.testRunPromise === promise &&
-        this.mappingEditorState.currentTabState === this
-      ) {
-        this.setSelectedTab(MAPPING_TEST_EDITOR_TAB_TYPE.RESULT);
-      }
-    }
-  }
-
-  *cancelTest(): GeneratorFn<void> {
-    this.setIsRunningTest(false);
-    this.setTestRunPromise(undefined);
-    try {
-      yield this.editorStore.graphManagerState.graphManager.cancelUserExecutions(
-        true,
-      );
-    } catch (error) {
-      // don't notify users about success or failure
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-        error,
-      );
-    }
-  }
-
   handleResult(result: ExecutionResult): void {
     this.testExecutionResultText = stringifyLosslessJSON(
       extractExecutionResultValues(result),
@@ -841,6 +773,75 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
       this.assertionState.assert,
       this.editorStore.changeDetectionState.observerContext,
     );
+  }
+
+  *runTest(): GeneratorFn<void> {
+    if (DEPRECATED__validate_MappingTest(this.test)) {
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Can't run test '${this.test.name}'. Please make sure that the test is valid`,
+      );
+      return;
+    } else if (this.isExecutingTest) {
+      this.editorStore.applicationStore.notificationService.notifyWarning(
+        `Test '${this.test.name}' is already running`,
+      );
+      return;
+    }
+    const startTime = Date.now();
+    let promise;
+    try {
+      const runtime = this.inputDataState.runtime;
+      this.isRunningTest = true;
+      promise = this.editorStore.graphManagerState.graphManager.runQuery(
+        this.test.query,
+        this.mappingEditorState.mapping,
+        runtime,
+        this.editorStore.graphManagerState.graph,
+        {
+          useLosslessParse: true,
+        },
+      );
+      this.setTestRunPromise(promise);
+      const result = (yield promise) as ExecutionResult;
+      if (this.testRunPromise === promise) {
+        this.handleResult(result);
+      }
+    } catch (error) {
+      // When user cancels the query by calling the cancelQuery api, it will throw an execution failure error.
+      // For now, we don't want to notify users about this failure. Therefore we check to ensure the promise is still the same one.
+      // When cancelled the query, we set the queryRunPromise as undefined.
+      if (this.testRunPromise === promise) {
+        assertErrorThrown(error);
+        this.handleError(error, promise);
+      }
+    } finally {
+      this.isRunningTest = false;
+      this.runTime = Date.now() - startTime;
+      // if the test is currently opened and ran but did not pass, switch to the result tab
+      if (
+        [TEST_RESULT.FAILED, TEST_RESULT.ERROR].includes(this.result) &&
+        this.testRunPromise === promise &&
+        this.mappingEditorState.currentTabState === this
+      ) {
+        this.setSelectedTab(MAPPING_TEST_EDITOR_TAB_TYPE.RESULT);
+      }
+    }
+  }
+
+  *cancelTest(): GeneratorFn<void> {
+    this.setIsRunningTest(false);
+    this.setTestRunPromise(undefined);
+    try {
+      yield this.editorStore.graphManagerState.graphManager.cancelUserExecutions(
+        true,
+      );
+    } catch (error) {
+      // don't notify users about success or failure
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+    }
   }
 
   *generatePlan(debug: boolean): GeneratorFn<void> {

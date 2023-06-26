@@ -152,8 +152,19 @@
 
   .mapping-explorer,
   .mapping-test-explorer {
+    background: var(--color-dark-grey-85);
     border-right: 0.1rem solid var(--color-dark-grey-200);
     border-bottom: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  .mapping-explorer__content,
+  .mapping-test-explorer__content,
+  .mapping-test-explorer .panel__header,
+  .mapping-explorer .panel__header,
+  .source-panel .panel__content,
+  .source-panel .panel__header,
+  .source-panel {
+    background: var(--color-dark-grey-85);
   }
 
   .mapping-explorer__item__label__text {
@@ -176,11 +187,17 @@
   }
 
   .mapping-editor__header__tab--active {
+    background: var(--color-dark-grey-85);
     border-bottom: 0.2rem solid var(--color-yellow-200);
   }
 
   .mapping-editor__header__tab__content button {
     color: var(--color-light-grey-400);
+  }
+
+  .mapping-test-editor .panel__header__title__label {
+    color: var(--color-light-grey-100);
+    background: var(--color-dark-grey-250);
   }
 
   .type-tree__node__type__label {
@@ -322,5 +339,12 @@
   &__content {
     height: 100%;
     background: var(--color-dark-grey-50);
+  }
+
+  &__doc {
+    &__textarea {
+      max-width: 100%;
+      height: 100% !important;
+    }
   }
 }

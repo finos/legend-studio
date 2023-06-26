@@ -36,7 +36,7 @@ import {
   deleteEntry,
   isNonNullable,
 } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
+import { action, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
 import { atomicTest_addAssertion } from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
 import { createEmptyEqualToJsonAssertion } from '../../../utils/TestableUtils.js';
@@ -68,7 +68,7 @@ export class TestableTestResultState {
 
 export enum TESTABLE_TEST_TAB {
   SETUP = 'SETUP',
-  ASSERTIONS = 'ASSERTIONS',
+  ASSERTION = 'ASSERTION',
 }
 
 export class TestableTestEditorState {
@@ -77,7 +77,7 @@ export class TestableTestEditorState {
   test: AtomicTest;
   selectedAsertionState: TestAssertionEditorState | undefined;
   assertionEditorStates: TestAssertionEditorState[] = [];
-  selectedTab = TESTABLE_TEST_TAB.ASSERTIONS;
+  selectedTab = TESTABLE_TEST_TAB.ASSERTION;
   assertionToRename: TestAssertion | undefined;
   runningTestAction = ActionState.create();
   testResultState: TestableTestResultState;
@@ -141,22 +141,7 @@ export class TestableTestEditorState {
     try {
       this.resetResult();
       this.runningTestAction.inProgress();
-      const input = new RunTestsTestableInput(this.testable);
-      const suite =
-        this.test.__parent instanceof TestSuite
-          ? this.test.__parent
-          : undefined;
-      input.unitTestIds.push(new UniqueTestId(suite, this.test));
-      const testResults =
-        (yield this.editorStore.graphManagerState.graphManager.runTests(
-          [input],
-          this.editorStore.graphManagerState.graph,
-        )) as TestResult[];
-      const result = guaranteeNonNullable(testResults[0]);
-      assertTrue(
-        result.testable === this.testable && result.atomicTest === this.test,
-        'Unexpected test result',
-      );
+      const result = (yield flowResult(this.fetchTestResult())) as TestResult;
       this.handleTestResult(result);
       this.runningTestAction.complete();
     } catch (error) {
@@ -166,6 +151,26 @@ export class TestableTestEditorState {
       );
       this.runningTestAction.fail();
     }
+  }
+
+  // Fetches test results. Caller of test should catch the error
+  async fetchTestResult(): Promise<TestResult> {
+    const input = new RunTestsTestableInput(this.testable);
+    const suite =
+      this.test.__parent instanceof TestSuite ? this.test.__parent : undefined;
+    input.unitTestIds.push(new UniqueTestId(suite, this.test));
+    const testResults =
+      await this.editorStore.graphManagerState.graphManager.runTests(
+        [input],
+        this.editorStore.graphManagerState.graph,
+      );
+    const result = guaranteeNonNullable(testResults[0]);
+    assertTrue(
+      result.testable === this.testable &&
+        result.atomicTest.id === this.test.id,
+      'Unexpected test result',
+    );
+    return result;
   }
 
   resetResult(): void {
@@ -179,7 +184,7 @@ export class TestableTestEditorState {
     this.testResultState.setResult(testResult);
     this.assertionEditorStates.forEach((assertionState) => {
       assertionState.assertionResultState.setTestResult(testResult);
-      assertionState.setSelectedTab(TEST_ASSERTION_TAB.ASSERTION_RESULT);
+      assertionState.setSelectedTab(TEST_ASSERTION_TAB.RESULT);
     });
   }
 
@@ -220,7 +225,7 @@ export class TestableTestSuiteEditorState {
   suite: TestSuite;
   isReadOnly: boolean;
   testStates: TestableTestEditorState[] = [];
-  isRunningTest = ActionState.create();
+  runningSuiteState = ActionState.create();
   selectTestState: TestableTestEditorState | undefined;
 
   constructor(
@@ -237,7 +242,7 @@ export class TestableTestSuiteEditorState {
 
   *runSuite(): GeneratorFn<void> {
     try {
-      this.isRunningTest.inProgress();
+      this.runningSuiteState.inProgress();
       this.testStates.forEach((t) => t.resetResult());
       this.testStates.forEach((t) => t.runningTestAction.inProgress());
       const input = new RunTestsTestableInput(this.testable);
@@ -253,11 +258,11 @@ export class TestableTestSuiteEditorState {
         const state = this.testStates.find((t) => t.test === result.atomicTest);
         state?.handleTestResult(result);
       });
-      this.isRunningTest.complete();
+      this.runningSuiteState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.isRunningTest.fail();
+      this.runningSuiteState.fail();
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
     }
@@ -265,7 +270,7 @@ export class TestableTestSuiteEditorState {
 
   *runFailingTests(): GeneratorFn<void> {
     try {
-      this.isRunningTest.inProgress();
+      this.runningSuiteState.inProgress();
       const input = new RunTestsTestableInput(this.testable);
       input.unitTestIds = this.testStates
         .map((testState) => {
@@ -290,11 +295,11 @@ export class TestableTestSuiteEditorState {
         const state = this.testStates.find((t) => t.test === result.atomicTest);
         state?.handleTestResult(result);
       });
-      this.isRunningTest.complete();
+      this.runningSuiteState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.isRunningTest.fail();
+      this.runningSuiteState.fail();
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
     }

@@ -73,6 +73,10 @@ import type { V1_FunctionActivatorInput } from './functionActivator/V1_FunctionA
 import type { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput.js';
 import type { V1_RawSQLExecuteInput } from './execution/V1_RawSQLExecuteInput.js';
 import type { V1_ValueSpecification } from '../model/valueSpecification/V1_ValueSpecification.js';
+import type {
+  V1_ArtifactGenerationExtensionInput,
+  V1_ArtifactGenerationExtensionOutput,
+} from './generation/V1_ArtifactGenerationExtensionApi.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -87,6 +91,8 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
 
   EXECUTE = 'execute',
   GENERATE_EXECUTION_PLAN = 'generate execution plan',
+
+  GENERATE_ARTIFACTS = 'generate artifacts',
 
   REGISTER_SERVICE = 'register service',
   GET_SERVICE_VERSION = 'get service version',
@@ -468,6 +474,19 @@ export class V1_EngineServerClient extends AbstractServerClient {
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       `${this._pure()}/${mode}/${type}`,
       this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  generateAritfacts = (
+    input: PlainObject<V1_ArtifactGenerationExtensionInput>,
+  ): Promise<PlainObject<V1_ArtifactGenerationExtensionOutput>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_ARTIFACTS),
+      `${this._pure()}/generation/generateArtifacts`,
+      input,
       {},
       undefined,
       undefined,

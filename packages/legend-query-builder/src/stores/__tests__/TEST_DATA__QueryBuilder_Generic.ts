@@ -1145,6 +1145,77 @@ export const TEST_DATA__getAllWithOneIntegerConditionFilter = {
   parameters: [],
 };
 
+export const TEST_DATA__getAllWithOneIntegerIsInConditionFilter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'in',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'age',
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'integer',
+                      value: 1,
+                    },
+                    {
+                      _type: 'integer',
+                      value: 2,
+                    },
+                    {
+                      _type: 'integer',
+                      value: 3,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA_getAllWithOneFloatConditionFilter = {
   _type: 'lambda',
   body: [

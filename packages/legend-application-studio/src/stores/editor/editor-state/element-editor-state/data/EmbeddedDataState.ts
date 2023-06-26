@@ -17,11 +17,12 @@ import {
   type EmbeddedData,
   type ModelData,
   type DataElement,
+  RelationalCSVData,
+  type Database,
+  type RelationalCSVDataTable,
   DataElementReference,
   ExternalFormatData,
   ModelStoreData,
-  RelationalCSVData,
-  RelationalCSVDataTable,
   ModelEmbeddedData,
 } from '@finos/legend-graph';
 import {
@@ -40,11 +41,10 @@ import {
   externalFormatData_setData,
   relationalData_addTable,
   relationalData_deleteData,
-  relationalData_setTableName,
-  relationalData_setTableSchemaName,
   relationalData_setTableValues,
 } from '../../../../graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { EmbeddedDataType } from '../../ExternalFormatState.js';
+import { TEMPORARY__createRelationalDataFromCSV } from '../../../utils/TestableUtils.js';
 
 export const createEmbeddedData = (
   type: string,
@@ -115,7 +115,7 @@ export class ExternalFormatDataState extends EmbeddedDataState {
   }
 
   label(): string {
-    return 'ExternalFormat Data';
+    return 'External Format Data';
   }
 
   setCanEditoContentType(val: boolean): void {
@@ -167,15 +167,26 @@ export class UnsupportedModelDataState extends ModelDataState {}
 export class ModelStoreDataState extends EmbeddedDataState {
   override embeddedData: ModelStoreData;
   modelDataStates: ModelDataState[] = [];
+  hideClass = false;
 
-  constructor(editorStore: EditorStore, embeddedData: ModelStoreData) {
+  constructor(
+    editorStore: EditorStore,
+    embeddedData: ModelStoreData,
+    hideClass?: boolean,
+  ) {
     super(editorStore, embeddedData);
+    makeObservable(this, {
+      hideClass: observable,
+      modelDataStates: observable,
+      buildStates: action,
+    });
     this.embeddedData = embeddedData;
     this.modelDataStates = this.buildStates();
+    this.hideClass = Boolean(hideClass);
   }
 
   label(): string {
-    return 'ModelStore Data';
+    return 'Model Store Data';
   }
 
   buildStates(): ModelDataState[] {
@@ -208,71 +219,15 @@ export class RelationalCSVDataTableState {
   }
 }
 
-export class IdentifierTableState {
-  table: RelationalCSVDataTable | undefined;
-  dataState: RelationalCSVDataState;
-  schemaName = '';
-  tableName = '';
-
-  constructor(dataState: RelationalCSVDataState) {
-    this.dataState = dataState;
-    makeObservable(this, {
-      dataState: observable,
-      schemaName: observable,
-      tableName: observable,
-      table: observable,
-      setTableName: action,
-      setSchemaName: action,
-      setTable: action,
-      handleSubmit: action,
-    });
-  }
-
-  setTable(table: RelationalCSVDataTable | undefined): void {
-    this.table = table;
-    if (table) {
-      this.tableName = table.table;
-      this.schemaName = table.schema;
-    }
-  }
-
-  setTableName(val: string): void {
-    this.tableName = val;
-  }
-
-  setSchemaName(val: string): void {
-    this.schemaName = val;
-  }
-
-  get isEditingDisabled(): boolean {
-    if (!(this.tableName && this.schemaName)) {
-      return true;
-    }
-    return Boolean(
-      this.dataState.embeddedData.tables.find(
-        (t) =>
-          `${t.table}.${t.schema}` === `${this.tableName}.${this.schemaName}`,
-      ),
-    );
-  }
-
-  handleSubmit(): void {
-    const table = this.table ?? new RelationalCSVDataTable();
-    relationalData_setTableSchemaName(table, this.schemaName);
-    relationalData_setTableName(table, this.tableName);
-    if (!this.table) {
-      table.values = '';
-      relationalData_addTable(this.dataState.embeddedData, table);
-      this.dataState.changeSelectedTable(table);
-    }
-  }
-}
-
 export class RelationalCSVDataState extends EmbeddedDataState {
   override embeddedData: RelationalCSVData;
-  showTableIdentifierModal = false;
-  tableIdentifierState: IdentifierTableState;
   selectedTable: RelationalCSVDataTableState | undefined;
+  showImportCSVModal = false;
+  database: Database | undefined;
+
+  //
+  showTableIdentifierModal = false;
+  tableToEdit: RelationalCSVDataTable | undefined;
 
   constructor(editorStore: EditorStore, embeddedData: RelationalCSVData) {
     super(editorStore, embeddedData);
@@ -280,26 +235,49 @@ export class RelationalCSVDataState extends EmbeddedDataState {
       selectedTable: observable,
       showTableIdentifierModal: observable,
       deleteTable: observable,
-      tableIdentifierState: observable,
+      showImportCSVModal: observable,
+      database: observable,
       resetSelectedTable: action,
       changeSelectedTable: action,
+      setDatabase: action,
       closeModal: action,
       openIdentifierModal: action,
+      setShowImportCsvModal: action,
+      closeCSVModal: action,
+      importCSV: action,
     });
     this.embeddedData = embeddedData;
-    this.tableIdentifierState = new IdentifierTableState(this);
     this.resetSelectedTable();
+  }
+
+  setShowImportCsvModal(val: boolean): void {
+    this.showImportCSVModal = val;
+  }
+
+  setDatabase(val: Database | undefined): void {
+    this.database = val;
   }
 
   openIdentifierModal(renameTable?: RelationalCSVDataTable | undefined): void {
     this.showTableIdentifierModal = true;
-    this.tableIdentifierState.setTable(renameTable);
+    this.tableToEdit = renameTable;
+  }
+
+  closeCSVModal(): void {
+    this.showImportCSVModal = false;
   }
 
   closeModal(): void {
-    this.tableIdentifierState.setSchemaName('');
-    this.tableIdentifierState.setTableName('');
     this.showTableIdentifierModal = false;
+    this.tableToEdit = undefined;
+  }
+
+  importCSV(val: string): void {
+    const generated = TEMPORARY__createRelationalDataFromCSV(val);
+    generated.tables.forEach((t) =>
+      relationalData_addTable(this.embeddedData, t),
+    );
+    this.resetSelectedTable();
   }
 
   resetSelectedTable(): void {
@@ -329,14 +307,23 @@ export class RelationalCSVDataState extends EmbeddedDataState {
     return 'Relational Data';
   }
 }
+export interface EmbeddedDataStateOption {
+  hideSource?: boolean;
+}
 
 export class DataElementReferenceState extends EmbeddedDataState {
   override embeddedData: DataElementReference;
   embeddedDataValueState: EmbeddedDataState;
+  options?: EmbeddedDataStateOption | undefined;
 
-  constructor(editorStore: EditorStore, embeddedData: DataElementReference) {
+  constructor(
+    editorStore: EditorStore,
+    embeddedData: DataElementReference,
+    options?: EmbeddedDataStateOption,
+  ) {
     super(editorStore, embeddedData);
     this.embeddedData = embeddedData;
+    this.options = options;
     this.embeddedDataValueState = this.buildValueState();
   }
 
@@ -353,10 +340,11 @@ export class DataElementReferenceState extends EmbeddedDataState {
     this.embeddedDataValueState = this.buildValueState();
   }
 
-  buildValueState(): EmbeddedDataState {
+  buildValueState(options?: EmbeddedDataStateOption): EmbeddedDataState {
     return buildEmbeddedDataEditorState(
       this.embeddedData.dataElement.value.data,
       this.editorStore,
+      this.options,
     );
   }
 }
@@ -370,16 +358,21 @@ export class UnsupportedDataState extends EmbeddedDataState {
 export function buildEmbeddedDataEditorState(
   _embeddedData: EmbeddedData,
   editorStore: EditorStore,
+  options?: EmbeddedDataStateOption,
 ): EmbeddedDataState {
   const embeddedData = _embeddedData;
   if (embeddedData instanceof ExternalFormatData) {
     return new ExternalFormatDataState(editorStore, embeddedData);
   } else if (embeddedData instanceof ModelStoreData) {
-    return new ModelStoreDataState(editorStore, embeddedData);
+    return new ModelStoreDataState(
+      editorStore,
+      embeddedData,
+      options?.hideSource,
+    );
   } else if (embeddedData instanceof RelationalCSVData) {
     return new RelationalCSVDataState(editorStore, embeddedData);
   } else if (embeddedData instanceof DataElementReference) {
-    return new DataElementReferenceState(editorStore, embeddedData);
+    return new DataElementReferenceState(editorStore, embeddedData, options);
   } else {
     const extraEmbeddedDataEditorStateBuilders = editorStore.pluginManager
       .getApplicationPlugins()

@@ -18,6 +18,7 @@ import {
   clsx,
   CompareIcon,
   ContextMenu,
+  CustomSelectorInput,
   Dialog,
   MenuContent,
   MenuContentItem,
@@ -34,7 +35,7 @@ import {
   RefreshIcon,
   WrenchIcon,
 } from '@finos/legend-art';
-import { TestError } from '@finos/legend-graph';
+import { type DataElement, TestError } from '@finos/legend-graph';
 import {
   prettyCONSTName,
   tryToFormatLosslessJSONString,
@@ -61,6 +62,86 @@ import {
 import { forwardRef, useState } from 'react';
 import type { TestableTestEditorState } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
 import { getTestableResultIcon } from '../../side-bar/testable/GlobalTestRunner.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+} from '@finos/legend-lego/graph-editor';
+
+export const SharedDataElementModal = observer(
+  (props: {
+    filterBy?: (val: DataElement) => boolean;
+    handler: (val: DataElement) => void;
+    editorStore: EditorStore;
+    isReadOnly: boolean;
+    close: () => void;
+  }) => {
+    const { filterBy, isReadOnly, close, editorStore, handler } = props;
+    const dataElements =
+      editorStore.graphManagerState.graph.dataElements.filter((e) =>
+        filterBy ? filterBy(e) : true,
+      );
+    const [dataElement, setDataElement] = useState(dataElements[0]);
+    const dataElementOptions =
+      editorStore.graphManagerState.usableDataElements.map(buildElementOption);
+    const selectedDataElement = dataElement
+      ? buildElementOption(dataElement)
+      : null;
+    const onDataElementChange = (val: {
+      label: string;
+      value?: DataElement;
+    }): void => {
+      if (val.value !== selectedDataElement?.value && val.value) {
+        setDataElement(val.value);
+      }
+    };
+    const change = (): void => {
+      if (dataElement) {
+        handler(dataElement);
+      }
+      close();
+    };
+    return (
+      <Dialog
+        open={true}
+        onClose={close}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true} className="service-test-data-modal">
+          <ModalBody>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Data Element
+              </div>
+              <div className="explorer__new-element-modal__driver">
+                <CustomSelectorInput
+                  className="panel__content__form__section__dropdown data-element-reference-editor__value__dropdown"
+                  disabled={false}
+                  options={dataElementOptions}
+                  onChange={onDataElementChange}
+                  formatOptionLabel={getPackageableElementOptionFormatter({})}
+                  value={selectedDataElement}
+                  darkMode={true}
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              className="database-builder__action--btn"
+              disabled={isReadOnly}
+              onClick={change}
+              title="Change to use Data Element"
+            >
+              Change
+            </ModalFooterButton>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
 
 export const RenameModal = observer(
   (props: {
@@ -438,6 +519,10 @@ export const TestAssertionEditor = observer(
     const { testAssertionState } = props;
     const selectedTab = testAssertionState.selectedTab;
     const isReadOnly = testAssertionState.testState.isReadOnly;
+    const isDisabled =
+      isReadOnly ||
+      !testAssertionState.assertionState.supportsGeneratingAssertion ||
+      testAssertionState.generatingExpectedAction.isInProgress;
     const changeTab = (val: TEST_ASSERTION_TAB): void =>
       testAssertionState.setSelectedTab(val);
     const renderContent = (state: TestAssertionState): React.ReactNode => {
@@ -484,7 +569,7 @@ export const TestAssertionEditor = observer(
               className="panel__header__action service-execution-editor__test-data__generate-btn"
               onClick={generate}
               title="Generate expected result if possible"
-              disabled={isReadOnly}
+              disabled={isDisabled}
               tabIndex={-1}
             >
               <div className="service-execution-editor__test-data__generate-btn__label">
@@ -497,12 +582,12 @@ export const TestAssertionEditor = observer(
           </div>
         </div>
         <div className="testable-test-assertion-editor__content">
-          {selectedTab === TEST_ASSERTION_TAB.ASSERTION_SETUP && (
+          {selectedTab === TEST_ASSERTION_TAB.EXPECTED && (
             <div className="testable-test-assertion-editor__setup">
               {renderContent(testAssertionState.assertionState)}
             </div>
           )}
-          {selectedTab === TEST_ASSERTION_TAB.ASSERTION_RESULT && (
+          {selectedTab === TEST_ASSERTION_TAB.RESULT && (
             <TestAssertionResultViewer
               testAssertionEditorState={testAssertionState}
             />

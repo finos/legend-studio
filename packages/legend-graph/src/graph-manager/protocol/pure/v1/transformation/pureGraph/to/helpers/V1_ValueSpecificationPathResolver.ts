@@ -73,6 +73,7 @@ import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import type { V1_GenericTypeInstance } from '../../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
 import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
+import type { V1_CByteArray } from '../../../../model/valueSpecification/raw/V1_CByteArray.js';
 
 class V1_ValueSpecificationPathResolver
   implements V1_ValueSpecificationVisitor<V1_ValueSpecification>
@@ -193,6 +194,10 @@ class V1_ValueSpecificationPathResolver
     return spec;
   }
 
+  visit_CByteArray(spec: V1_CByteArray): V1_ValueSpecification {
+    return spec;
+  }
+
   visit_CFloat(spec: V1_CFloat): V1_ValueSpecification {
     return spec;
   }
@@ -292,10 +297,10 @@ function V1_resolveClassInstanceValueElementPaths(
   } else if (spec instanceof V1_TDSColumnInformation) {
     spec.columnFn.accept_ValueSpecificationVisitor(resolver);
     return spec;
-  } else if (spec instanceof V1_TDSOlapAggregation) {
-    spec.function.accept_ValueSpecificationVisitor(resolver);
-    return spec;
-  } else if (spec instanceof V1_TDSOlapRank) {
+  } else if (
+    spec instanceof V1_TDSOlapAggregation ||
+    spec instanceof V1_TDSOlapRank
+  ) {
     spec.function.accept_ValueSpecificationVisitor(resolver);
     return spec;
   } else if (spec instanceof V1_TDSSortInformation) {

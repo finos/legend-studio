@@ -1,5 +1,33 @@
 # @finos/legend-query-builder
 
+## 4.1.1
+
+### Patch Changes
+
+- [#2358](https://github.com/finos/legend-studio/pull/2358) [`dc34a3f3e`](https://github.com/finos/legend-studio/commit/dc34a3f3e169ec049b113e2d0bbf70ec84e3a8c4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle non string constant execution result values
+
+## 4.1.0
+
+### Minor Changes
+
+- [#2321](https://github.com/finos/legend-studio/pull/2321) [`f0017123d`](https://github.com/finos/legend-studio/commit/f0017123d1798af73cef2a91b0af13bd1b9a831f) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for export query to other formats.
+
+## 4.0.13
+
+### Patch Changes
+
+- [#2343](https://github.com/finos/legend-studio/pull/2343) [`8e1be63cd`](https://github.com/finos/legend-studio/commit/8e1be63cd6bc9af1e84a163fecf8638779f6930b) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Remove Binary Datatype from Dropdown
+
+## 4.0.12
+
+## 4.0.11
+
+## 4.0.10
+
+### Patch Changes
+
+- [#2137](https://github.com/finos/legend-studio/pull/2137) [`3c2508388`](https://github.com/finos/legend-studio/commit/3c2508388af8b59554ab3aa44bccb92c4f7a04f1) ([@xannem](https://github.com/xannem)) - Add ability to filter by multiple cell values in query results
+
 ## 4.0.9
 
 ### Patch Changes

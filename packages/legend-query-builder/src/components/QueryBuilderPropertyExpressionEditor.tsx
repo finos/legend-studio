@@ -423,9 +423,8 @@ export const QueryBuilderPropertyExpressionBadge = observer(
         ref={dropConnector}
       >
         <PanelEntryDropZonePlaceholder
-          showPlaceholder={isDragOver}
+          isDragOver={isDragOver}
           label="Change Property"
-          className="query-builder__dnd__placeholder"
         >
           <div
             className={clsx(

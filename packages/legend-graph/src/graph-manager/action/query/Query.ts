@@ -83,6 +83,23 @@ export const toLightQuery = (query: Query): LightQuery => {
   return lightQuery;
 };
 
+export const cloneQueryTaggedValue = (
+  val: QueryTaggedValue,
+): QueryTaggedValue => {
+  const queryTaggedVal = new QueryTaggedValue();
+  queryTaggedVal.profile = val.profile;
+  queryTaggedVal.tag = val.tag;
+  queryTaggedVal.value = val.value;
+  return queryTaggedVal;
+};
+
+export const cloneQueryStereotype = (val: QueryStereotype): QueryStereotype => {
+  const queryStereotype = new QueryStereotype();
+  queryStereotype.profile = val.profile;
+  queryStereotype.stereotype = val.stereotype;
+  return queryStereotype;
+};
+
 export interface QueryInfo {
   name: string;
   id: string;

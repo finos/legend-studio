@@ -16,11 +16,11 @@
 
 export const TEST_DATA__serviceEntities = [
   {
-    path: 'test::Person',
+    path: 'model::Person',
     content: {
       _type: 'class',
       name: 'Person',
-      package: 'test',
+      package: 'model',
       properties: [
         {
           multiplicity: {
@@ -43,14 +43,14 @@ export const TEST_DATA__serviceEntities = [
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
   {
-    path: 'test::myTestDbInc',
+    path: 'model::RealtionalDatabase',
     content: {
       _type: 'relational',
       filters: [],
       includedStores: [],
       joins: [],
-      name: 'myTestDbInc',
-      package: 'test',
+      name: 'RealtionalDatabase',
+      package: 'model',
       schemas: [
         {
           name: 'default',
@@ -84,18 +84,19 @@ export const TEST_DATA__serviceEntities = [
     classifierPath: 'meta::relational::metamodel::Database',
   },
   {
-    path: 'test::simpleRelationalMappingInc',
+    path: 'model::RelationalMapping',
     content: {
       _type: 'mapping',
       classMappings: [
         {
           _type: 'relational',
-          class: 'test::Person',
+          class: 'model::Person',
           distinct: false,
           id: 'apps_pure_studio_tests_model_simple_Person',
           mainTable: {
             _type: 'Table',
-            database: 'test::myTestDbInc',
+            database: 'model::RealtionalDatabase',
+            mainTableDb: 'model::RealtionalDatabase',
             schema: 'default',
             table: 'personTable',
           },
@@ -105,7 +106,8 @@ export const TEST_DATA__serviceEntities = [
               column: 'ID',
               table: {
                 _type: 'Table',
-                database: 'test::myTestDbInc',
+                database: 'model::RealtionalDatabase',
+                mainTableDb: 'model::RealtionalDatabase',
                 schema: 'default',
                 table: 'personTable',
               },
@@ -116,7 +118,7 @@ export const TEST_DATA__serviceEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'test::Person',
+                class: 'model::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -124,7 +126,8 @@ export const TEST_DATA__serviceEntities = [
                 column: 'FIRSTNAME',
                 table: {
                   _type: 'Table',
-                  database: 'test::myTestDbInc',
+                  database: 'model::RealtionalDatabase',
+                  mainTableDb: 'model::RealtionalDatabase',
                   schema: 'default',
                   table: 'personTable',
                 },
@@ -138,14 +141,35 @@ export const TEST_DATA__serviceEntities = [
       ],
       enumerationMappings: [],
       includedMappings: [],
-      name: 'simpleRelationalMappingInc',
-      package: 'test',
+      name: 'RelationalMapping',
+      package: 'model',
       tests: [],
     },
     classifierPath: 'meta::pure::mapping::Mapping',
   },
   {
-    path: 'test::myService',
+    path: 'model::M2MMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'pureInstance',
+          class: 'model::Person',
+          propertyMappings: [],
+          root: true,
+          srcClass: 'model::Person',
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'M2MMapping',
+      package: 'model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'model::RelationalService',
     content: {
       _type: 'service',
       autoActivateUpdates: true,
@@ -165,7 +189,7 @@ export const TEST_DATA__serviceEntities = [
                   parameters: [
                     {
                       _type: 'packageableElementPtr',
-                      fullPath: 'test::Person',
+                      fullPath: 'model::Person',
                     },
                   ],
                 },
@@ -181,13 +205,13 @@ export const TEST_DATA__serviceEntities = [
                       body: [
                         {
                           _type: 'property',
+                          property: 'firstName',
                           parameters: [
                             {
                               _type: 'var',
                               name: 't',
                             },
                           ],
-                          property: 'firstName',
                         },
                       ],
                       parameters: [
@@ -208,11 +232,7 @@ export const TEST_DATA__serviceEntities = [
                   values: [
                     {
                       _type: 'string',
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
-                      values: ['firstName'],
+                      value: 'firstName',
                     },
                   ],
                 },
@@ -221,20 +241,20 @@ export const TEST_DATA__serviceEntities = [
           ],
           parameters: [],
         },
-        mapping: 'test::simpleRelationalMappingInc',
+        mapping: 'model::RelationalMapping',
         runtime: {
           _type: 'engineRuntime',
           connections: [
             {
               store: {
-                path: 'test::myTestDbInc',
+                path: 'model::RealtionalDatabase',
                 type: 'STORE',
               },
               storeConnections: [
                 {
                   connection: {
                     _type: 'connectionPointer',
-                    connection: 'test::H2Connection',
+                    connection: 'model::H2Connection',
                   },
                   id: 'id1',
                 },
@@ -243,53 +263,153 @@ export const TEST_DATA__serviceEntities = [
           ],
           mappings: [
             {
-              path: 'test::simpleRelationalMappingInc',
+              path: 'model::RelationalMapping',
               type: 'MAPPING',
             },
           ],
         },
       },
-      name: 'myService',
+      name: 'RelationalService',
       owners: ['owner1', 'owner2'],
-      package: 'test',
+      package: 'model',
       pattern: '/example/myTestUrl/{myParam}',
-      test: {
-        _type: 'singleExecutionTest',
-        asserts: [
-          {
-            assert: {
-              _type: 'lambda',
-              body: [
-                {
-                  _type: 'boolean',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: [true],
-                },
-              ],
-              parameters: [
-                {
-                  _type: 'var',
-                  class: 'meta::pure::mapping::Result',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  name: 'res',
-                },
-              ],
-            },
-          },
-        ],
-        data: 'default\npersonTable\nid,firstName\n1,firstName1\n2,firstName2\n3,firstName3\n4,firstName4\n5,firstName5\n6,firstName6\n7,firstName7\n\n\n\n',
-      },
     },
     classifierPath: 'meta::legend::service::metamodel::Service',
   },
   {
-    path: 'test::H2Connection',
+    path: 'model::M2MMappingService',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'serialize',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'graphFetch',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'getAll',
+                      parameters: [
+                        {
+                          _type: 'packageableElementPtr',
+                          fullPath: 'model::Person',
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'classInstance',
+                      type: 'rootGraphFetchTree',
+                      value: {
+                        subTrees: [
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            subTrees: [],
+                            subTypeTrees: [],
+                            property: 'firstName',
+                            parameters: [],
+                          },
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            subTrees: [],
+                            subTypeTrees: [],
+                            property: 'lastName',
+                            parameters: [],
+                          },
+                        ],
+                        subTypeTrees: [],
+                        _type: 'rootGraphFetchTree',
+                        class: 'model::Person',
+                      },
+                    },
+                  ],
+                },
+                {
+                  _type: 'classInstance',
+                  type: 'rootGraphFetchTree',
+                  value: {
+                    subTrees: [
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        subTrees: [],
+                        subTypeTrees: [],
+                        property: 'firstName',
+                        parameters: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        subTrees: [],
+                        subTypeTrees: [],
+                        property: 'lastName',
+                        parameters: [],
+                      },
+                    ],
+                    subTypeTrees: [],
+                    _type: 'rootGraphFetchTree',
+                    class: 'model::Person',
+                  },
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'dateParam',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              class: 'Date',
+            },
+          ],
+        },
+        mapping: 'model::M2MMapping',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [
+            {
+              store: {
+                path: 'ModelStore',
+                type: 'STORE',
+              },
+              storeConnections: [
+                {
+                  connection: {
+                    _type: 'JsonModelConnection',
+                    class: 'model::Person',
+                    url: 'data:application/json,%7B%22firstName%22%3A%22firstName%2073%22%2C%22lastName%22%3A%22lastName%2085%22%7D',
+                  },
+                  id: 'connection_1',
+                },
+              ],
+            },
+          ],
+          mappings: [
+            {
+              path: 'model::M2MMapping',
+              type: 'MAPPING',
+            },
+          ],
+        },
+      },
+      name: 'M2MMappingService',
+      owners: [],
+      package: 'model',
+      pattern: '/c2e1bc8d-ab51-456c-8826-fb51eca31914',
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
+  },
+  {
+    path: 'model::H2Connection',
     content: {
       _type: 'connection',
       connectionValue: {
@@ -297,17 +417,18 @@ export const TEST_DATA__serviceEntities = [
         authenticationStrategy: {
           _type: 'h2Default',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'static',
           databaseName: 'myDb',
           host: 'somehost',
           port: 999,
         },
-        element: 'test::myTestDbInc',
+        element: 'model::RealtionalDatabase',
         type: 'H2',
       },
       name: 'H2Connection',
-      package: 'test',
+      package: 'model',
     },
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },

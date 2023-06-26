@@ -118,16 +118,12 @@ const ProjectDependencyActions = observer(
       dependencyEditorState.dependencyReport?.conflicts.length;
     const viewTree = (): void => {
       if (dependencyEditorState.dependencyReport) {
-        dependencyEditorState.setDependencyReport(
-          DEPENDENCY_REPORT_TAB.EXPLORER,
-        );
+        dependencyEditorState.setReportTab(DEPENDENCY_REPORT_TAB.EXPLORER);
       }
     };
     const viewConflict = (): void => {
       if (dependencyEditorState.dependencyReport) {
-        dependencyEditorState.setDependencyReport(
-          DEPENDENCY_REPORT_TAB.CONFLICTS,
-        );
+        dependencyEditorState.setReportTab(DEPENDENCY_REPORT_TAB.CONFLICTS);
       }
     };
     return (
@@ -604,17 +600,17 @@ const ProjectDependencyReportModal = observer(
     const changeTab =
       (tab: DEPENDENCY_REPORT_TAB): (() => void) =>
       (): void =>
-        dependencyEditorState.setDependencyReport(tab);
+        dependencyEditorState.setReportTab(tab);
     const dependencyReport = dependencyEditorState.dependencyReport;
     const closeModal = (): void =>
-      dependencyEditorState.setDependencyReport(undefined);
+      dependencyEditorState.setReportTab(undefined);
     const [flattenView, setFlattenView] = useState(false);
     const [isExpandingDependencies, setIsExpandingDependencies] =
       useState(false);
     const setTreeData = (
-      treeData: TreeData<ProjectDependencyTreeNodeData>,
+      val: TreeData<ProjectDependencyTreeNodeData>,
     ): void => {
-      dependencyEditorState.setTreeData(treeData, flattenView);
+      dependencyEditorState.setTreeData(val, flattenView);
     };
     const toggleViewAsListOrAsTree = (): void => {
       setFlattenView(!flattenView);

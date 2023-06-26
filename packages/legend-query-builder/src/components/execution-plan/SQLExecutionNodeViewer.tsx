@@ -28,6 +28,10 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { tryToFormatSql } from '../QueryBuilderResultPanel.js';
+import {
+  CodeEditor,
+  CODE_EDITOR_LANGUAGE,
+} from '@finos/legend-lego/code-editor';
 
 /**
  * TODO: Create a new `AbstractPlugin` for this, called `ExecutionPlanViewerPlugin`
@@ -81,9 +85,12 @@ export const SQLExecutionNodeViewer: React.FC<{
               </div>
             </PanelListItem>
           </div>
-          <PanelListItem className="query-builder__sql__container__item">
-            <pre>{tryToFormatSql(query)} </pre>
-          </PanelListItem>
+          <div className="query-builder__sql__container__code-editor">
+            <CodeEditor
+              inputValue={tryToFormatSql(query)}
+              language={CODE_EDITOR_LANGUAGE.SQL}
+            />
+          </div>
           <PanelDivider />
         </div>
       </div>

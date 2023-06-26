@@ -59,6 +59,8 @@ import {
   externalFormat_modelUnit_deletePackageableElementExcludes,
   externalFormat_modelUnit_deletePackageableElementIncludes,
 } from '../../../../stores/graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 const ModelUnitPackagableElementEntryEditor = observer(
   (props: {
@@ -424,6 +426,11 @@ export const BindingEditor = observer(() => {
     (tab: BINDING_TAB_TYPE): (() => void) =>
     (): void =>
       editorState.setSelectedTab(tab);
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.BINDING_EDITOR,
+  );
+
   return (
     <div className="binding-editor">
       <div className="binding-editor__header">

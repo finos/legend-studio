@@ -34,8 +34,13 @@ import {
   assertErrorThrown,
   ContentType,
   UnsupportedOperationError,
+  assertTrue,
+  isNonNullable,
+  IllegalStateError,
+  guaranteeNonNullable,
+  guaranteeType,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
 import { externalFormatData_setData } from '../../../../graph-modifier/DSL_Data_GraphModifierHelper.js';
 import {
@@ -43,10 +48,11 @@ import {
   TESTABLE_RESULT,
 } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import type { TestableTestEditorState } from './TestableEditorState.js';
+import { isTestPassing } from '../../../utils/TestableUtils.js';
 
 export enum TEST_ASSERTION_TAB {
-  ASSERTION_SETUP = 'ASSERTION_SETUP',
-  ASSERTION_RESULT = 'ASSERTION_RESULT',
+  EXPECTED = 'EXPECTED',
+  RESULT = 'RESULT',
 }
 
 export abstract class TestAssertionStatusState {
@@ -221,11 +227,13 @@ export abstract class TestAssertionState {
     this.result = new TestAssertionResultState(editorStore, assertionState);
   }
 
-  abstract generateExpected(status: AssertFail): void;
+  abstract generateExpected(status: AssertFail): boolean;
 
   abstract generateBare(): TestAssertion;
 
   abstract label(): string;
+
+  abstract get supportsGeneratingAssertion(): boolean;
 }
 
 export class EqualToJsonAssertionState extends TestAssertionState {
@@ -235,11 +243,17 @@ export class EqualToJsonAssertionState extends TestAssertionState {
     externalFormatData_setData(this.assertion.expected, val);
   }
 
-  generateExpected(status: AssertFail): void {
+  override get supportsGeneratingAssertion(): boolean {
+    return true;
+  }
+
+  generateExpected(status: AssertFail): boolean {
     if (status instanceof EqualToJsonAssertFail) {
       const expected = status.actual;
       this.setExpectedValue(expected);
+      return true;
     }
+    return false;
   }
   generateBare(): TestAssertion {
     const bareAssertion = new EqualToJson();
@@ -255,11 +269,14 @@ export class EqualToJsonAssertionState extends TestAssertionState {
 }
 
 export class UnsupportedAssertionState extends TestAssertionState {
+  override get supportsGeneratingAssertion(): boolean {
+    return false;
+  }
   generateBare(): TestAssertion {
     throw new UnsupportedOperationError();
   }
-  generateExpected(status: AssertFail): void {
-    return;
+  generateExpected(status: AssertFail): boolean {
+    return false;
   }
 
   label(): string {
@@ -273,7 +290,7 @@ export class TestAssertionEditorState {
   assertionState: TestAssertionState;
   assertionResultState: TestAssertionResultState;
   assertion: TestAssertion;
-  selectedTab = TEST_ASSERTION_TAB.ASSERTION_SETUP;
+  selectedTab = TEST_ASSERTION_TAB.EXPECTED;
   generatingExpectedAction = ActionState.create();
   constructor(
     editorStore: EditorStore,
@@ -299,18 +316,59 @@ export class TestAssertionEditorState {
 
   *generateExpected(): GeneratorFn<void> {
     try {
+      assertTrue(
+        this.assertionState.supportsGeneratingAssertion,
+        'Assertion does not support generation',
+      );
       this.generatingExpectedAction.inProgress();
-      const bare = this.assertionState.generateBare();
-      bare.parentTest = this.assertion.parentTest;
-      const assertFail =
-        (yield this.editorStore.graphManagerState.graphManager.generateExpectedResult(
-          this.testState.testable,
-          this.testState.test,
+      const result = (yield flowResult(
+        this.testState.fetchTestResult(),
+      )) as TestResult;
+      let testExecuted: TestExecuted;
+      if (result instanceof TestExecuted) {
+        testExecuted = result;
+      } else if (result instanceof MultiExecutionServiceTestResult) {
+        testExecuted = guaranteeNonNullable(
+          Array.from(result.keyIndexedTestResults.values())
+            .map((testResult) => {
+              if (testResult instanceof TestExecuted) {
+                return testResult;
+              } else if (testResult instanceof TestError) {
+                throw new IllegalStateError(testResult.error);
+              }
+              return undefined;
+            })
+            .filter(isNonNullable)[0],
+          'Unable to derive expected result from test result',
+        );
+      } else {
+        throw new UnsupportedOperationError(
+          'Unable to derive expected result from test result',
+        );
+      }
+      // if test is passing, update UI and return
+      // if test errors report error
+      if (isTestPassing(testExecuted)) {
+        this.testState.handleTestResult(testExecuted);
+        return;
+      } else if (testExecuted instanceof TestError) {
+        throw new IllegalStateError(testExecuted.error);
+      }
+      const assertionStatus = testExecuted.assertStatuses.find(
+        (aStatus) =>
+          aStatus.assertion.id === this.assertion.id &&
+          aStatus instanceof AssertFail,
+      );
+      const assertFail = guaranteeType(
+        assertionStatus,
+        AssertFail,
+        'Unable to derive expected result from test result',
+      );
+      const generated = this.assertionState.generateExpected(assertFail);
 
-          bare,
-          this.editorStore.graphManagerState.graph,
-        )) as AssertFail;
-      this.assertionState.generateExpected(assertFail);
+      if (generated) {
+        this.setSelectedTab(TEST_ASSERTION_TAB.EXPECTED);
+      }
       this.generatingExpectedAction.complete();
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Expected results generated!`,
@@ -320,7 +378,7 @@ export class TestAssertionEditorState {
       this.editorStore.applicationStore.notificationService.notifyError(
         `Error generating expected result, please check data input: ${error.message}.`,
       );
-      this.setSelectedTab(TEST_ASSERTION_TAB.ASSERTION_SETUP);
+      this.setSelectedTab(TEST_ASSERTION_TAB.EXPECTED);
       this.generatingExpectedAction.fail();
     }
   }

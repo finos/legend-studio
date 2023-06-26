@@ -158,6 +158,14 @@ export const ExternalFormatParameterEditorModal = observer(
       updateParamValue,
       bindingParamPair,
     } = props;
+    const paramValue =
+      paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
+        ? atob(
+            (paramState.valueSpec as PrimitiveInstanceValue)
+              .values[0] as string,
+          )
+        : ((paramState.valueSpec as PrimitiveInstanceValue)
+            .values[0] as string);
     return (
       <Dialog
         open={true}
@@ -177,10 +185,7 @@ export const ExternalFormatParameterEditorModal = observer(
               <div className="service-test-editor__setup__parameter__code-editor__container__content">
                 <CodeEditor
                   key={paramState.uuid}
-                  inputValue={
-                    (paramState.valueSpec as PrimitiveInstanceValue)
-                      .values[0] as string
-                  }
+                  inputValue={paramValue}
                   updateInput={updateParamValue}
                   isReadOnly={isReadOnly}
                   language={
@@ -225,6 +230,14 @@ const ServiceTestParameterEditor = observer(
     const type = bindingParamPair
       ? bindingParamPair.binding.contentType
       : paramState.varExpression.genericType?.value.rawType.name ?? 'unknown';
+    const paramValue =
+      paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
+        ? atob(
+            (paramState.valueSpec as PrimitiveInstanceValue)
+              .values[0] as string,
+          )
+        : ((paramState.valueSpec as PrimitiveInstanceValue)
+            .values[0] as string);
 
     const openInPopUp = (): void => setShowPopUp(!showPopUp);
     const closePopUp = (): void => setShowPopUp(false);
@@ -232,7 +245,10 @@ const ServiceTestParameterEditor = observer(
       if (paramState.valueSpec instanceof PrimitiveInstanceValue) {
         instanceValue_setValue(
           paramState.valueSpec,
-          val,
+          paramState.varExpression.genericType?.value.rawType ===
+            PrimitiveType.BYTE
+            ? btoa(val)
+            : val,
           0,
           setupState.editorStore.changeDetectionState.observerContext,
         );
@@ -261,10 +277,7 @@ const ServiceTestParameterEditor = observer(
               <textarea
                 className="panel__content__form__section__textarea value-spec-editor__input"
                 spellCheck={false}
-                value={
-                  (paramState.valueSpec as PrimitiveInstanceValue)
-                    .values[0] as string
-                }
+                value={paramValue}
                 placeholder={
                   ((paramState.valueSpec as PrimitiveInstanceValue)
                     .values[0] as string) === ''
@@ -542,6 +555,11 @@ const TestAssertionsEditor = observer(
     const isReadOnly =
       serviceTestState.suiteState.testableState.serviceEditorState.isReadOnly;
     const editorStore = serviceTestState.editorStore;
+    const selectedAsertionState = serviceTestState.selectedAsertionState;
+    const hideExplorer =
+      serviceTestState.test.assertions.length === 1 &&
+      serviceTestState.selectedAsertionState?.assertion.id ===
+        serviceTestState.test.assertions[0]?.id;
     const addAssertion = (): void => serviceTestState.addAssertion();
     const renameAssertion = (val: string): void =>
       testAssertion_setId(
@@ -555,95 +573,92 @@ const TestAssertionsEditor = observer(
     };
     return (
       <div className="panel service-test-editor">
-        <div className="service-test-suite-editor__header">
-          <div className="service-test-suite-editor__header__title">
-            <div className="service-test-suite-editor__header__title__label service-test-suite-editor__header__title__label--assertions">
-              assertions
-            </div>
-          </div>
-        </div>
-        <div className="service-test-editor__content">
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel minSize={100} size={200}>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="testable-test-assertion-explorer__header__summary">
-                    <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--assertion">
-                      <TestTubeIcon />
+        {hideExplorer && selectedAsertionState ? (
+          <TestAssertionEditor testAssertionState={selectedAsertionState} />
+        ) : (
+          <div className="service-test-editor__content">
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={100} size={200}>
+                <div className="binding-editor__header">
+                  <div className="binding-editor__header__title">
+                    <div className="testable-test-assertion-explorer__header__summary">
+                      <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--assertion">
+                        <TestTubeIcon />
+                      </div>
+                      <div>{serviceTestState.assertionCount}</div>
                     </div>
-                    <div>{serviceTestState.assertionCount}</div>
+                    <div className="testable-test-assertion-explorer__header__summary">
+                      <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--passed">
+                        <CheckCircleIcon />
+                      </div>
+                      <div>{serviceTestState.assertionPassed}</div>
+                    </div>
+                    <div className="testable-test-assertion-explorer__header__summary">
+                      <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--failed">
+                        <TimesCircleIcon />
+                      </div>
+                      <div>{serviceTestState.assertionFailed}</div>
+                    </div>
                   </div>
-                  <div className="testable-test-assertion-explorer__header__summary">
-                    <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--passed">
-                      <CheckCircleIcon />
-                    </div>
-                    <div>{serviceTestState.assertionPassed}</div>
-                  </div>
-                  <div className="testable-test-assertion-explorer__header__summary">
-                    <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--failed">
-                      <TimesCircleIcon />
-                    </div>
-                    <div>{serviceTestState.assertionFailed}</div>
+                  <div className="panel__header__actions">
+                    <button
+                      className="panel__header__action testable-test-explorer__play__all__icon"
+                      tabIndex={-1}
+                      onClick={runTest}
+                      title="Run All Assertions"
+                    >
+                      <RunAllIcon />
+                    </button>
+                    <button
+                      className="panel__header__action"
+                      tabIndex={-1}
+                      onClick={addAssertion}
+                      title="Add Test Assertion"
+                    >
+                      <PlusIcon />
+                    </button>
                   </div>
                 </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action testable-test-explorer__play__all__icon"
-                    tabIndex={-1}
-                    onClick={runTest}
-                    title="Run All Assertions"
-                  >
-                    <RunAllIcon />
-                  </button>
-                  <button
-                    className="panel__header__action"
-                    tabIndex={-1}
-                    onClick={addAssertion}
-                    title="Add Test Assertion"
-                  >
-                    <PlusIcon />
-                  </button>
+                <div>
+                  {serviceTestState.assertionEditorStates.map(
+                    (assertionState) => (
+                      <TestAssertionItem
+                        key={assertionState.assertion.id}
+                        testableTestState={serviceTestState}
+                        testAssertionEditorState={assertionState}
+                        isReadOnly={
+                          serviceTestState.suiteState.testableState
+                            .serviceEditorState.isReadOnly
+                        }
+                      />
+                    ),
+                  )}
                 </div>
-              </div>
-              <div>
-                {serviceTestState.assertionEditorStates.map(
-                  (assertionState) => (
-                    <TestAssertionItem
-                      key={assertionState.assertion.id}
-                      testableTestState={serviceTestState}
-                      testAssertionEditorState={assertionState}
-                      isReadOnly={
-                        serviceTestState.suiteState.testableState
-                          .serviceEditorState.isReadOnly
-                      }
-                    />
-                  ),
+                {serviceTestState.assertionToRename && (
+                  <RenameModal
+                    val={serviceTestState.assertionToRename.id}
+                    isReadOnly={isReadOnly}
+                    showModal={true}
+                    closeModal={(): void =>
+                      serviceTestState.setAssertionToRename(undefined)
+                    }
+                    setValue={renameAssertion}
+                  />
                 )}
-              </div>
-              {serviceTestState.assertionToRename && (
-                <RenameModal
-                  val={serviceTestState.assertionToRename.id}
-                  isReadOnly={isReadOnly}
-                  showModal={true}
-                  closeModal={(): void =>
-                    serviceTestState.setAssertionToRename(undefined)
-                  }
-                  setValue={renameAssertion}
-                />
-              )}
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel>
-              {serviceTestState.selectedAsertionState && (
-                <TestAssertionEditor
-                  testAssertionState={serviceTestState.selectedAsertionState}
-                />
-              )}
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel>
+                {selectedAsertionState && (
+                  <TestAssertionEditor
+                    testAssertionState={selectedAsertionState}
+                  />
+                )}
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
+        )}
       </div>
     );
   },
@@ -678,7 +693,7 @@ const ServiceTestEditor = observer(
             <ServiceTestSetupEditor serviceTestState={serviceTestState} />
           )}
 
-          {selectedTab === TESTABLE_TEST_TAB.ASSERTIONS && (
+          {selectedTab === TESTABLE_TEST_TAB.ASSERTION && (
             <TestAssertionsEditor serviceTestState={serviceTestState} />
           )}
         </div>

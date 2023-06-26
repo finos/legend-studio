@@ -98,6 +98,7 @@ export const setup = (outputDir) => {
           TEMPORARY__enableMappingTestableEditor: false,
           TEMPORARY__enableFunctionActivatorSupport: false,
           TEMPORARY__enableRawSQLExecutor: false,
+          TEMPORARY__enableLocalConnectionBuilder: false,
         },
       },
       undefined,

@@ -263,12 +263,6 @@
   }
 }
 
-.query-builder__panel {
-  &--droppable {
-    width: calc(100% - 0.5rem);
-  }
-}
-
 .query-builder__diff-panel {
   height: 100%;
   width: 100%;
@@ -511,68 +505,7 @@
   }
 
   &__execute-btn {
-    @include flexVCenter;
-
-    height: 100%;
-    width: 12rem;
     margin: 0 0.3rem;
-
-    &__label {
-      @include flexVCenter;
-
-      height: 2.2rem;
-      width: 10rem;
-      background: var(--color-blue-200);
-      padding: 1rem;
-      border-radius: 0.2rem 0 0 0.2rem;
-    }
-
-    &__label__icon {
-      font-size: 1.2rem;
-      color: var(--color-light-grey-180);
-    }
-
-    &__label__title {
-      margin-left: 0.7rem;
-      color: var(--color-light-grey-180);
-      font-size: 1.2rem;
-      font-weight: 500;
-    }
-
-    &__dropdown-btn {
-      @include flexCenter;
-
-      height: 2.2rem;
-      width: 2rem;
-      background: var(--color-blue-200);
-      border-radius: 0 0.2rem 0.2rem 0;
-      border-left: 0.1rem solid var(--color-dark-shade-280);
-
-      svg {
-        color: var(--color-light-grey-180);
-      }
-    }
-
-    &__label:hover &__label__icon,
-    &__label:hover &__label__title,
-    &__dropdown-btn:hover svg {
-      color: var(--color-light-grey-50);
-    }
-
-    &__option {
-      width: 12rem;
-    }
-
-    &__label[disabled],
-    &__dropdown-btn[disabled] {
-      background: var(--color-dark-grey-250);
-    }
-
-    &__label[disabled] &__label__icon,
-    &__label[disabled] &__label__title,
-    &__dropdown-btn[disabled] svg {
-      color: var(--color-dark-grey-500);
-    }
   }
 
   &__export__dropdown[disabled],
@@ -619,7 +552,7 @@
     &__menu__item {
       @include flexCenter;
 
-      width: 7rem;
+      width: 15rem;
       height: 2rem;
     }
   }
@@ -880,6 +813,10 @@
   width: 95%;
   margin: 1% auto 0;
 
+  &__code-editor {
+    height: 35rem;
+  }
+
   &__icon svg {
     margin-left: 0.5rem;
     color: var(--color-light-grey-400) !important;
@@ -894,19 +831,6 @@
   }
 
   &__item {
-    width: 100%;
-    border: 0.1rem solid var(--color-dark-grey-300);
-    border-radius: 0.3rem;
-    font-family: monospace;
-    font-size: 1.3rem;
-    padding: 1rem;
-    margin: 5px 0;
-    line-height: 1.8rem;
-
-    .decorationsOverviewRuler {
-      display: none !important;
-    }
-
     &__label {
       color: var(--color-light-grey-400);
     }
@@ -976,5 +900,95 @@
   &__container {
     height: 100%;
     padding: 2rem;
+  }
+}
+
+.query-builder__usage-viewer {
+  &__modal {
+    padding: 0;
+    height: 30vh;
+    width: 50vw;
+    overflow: hidden;
+  }
+
+  &__body {
+    height: calc(100% - 8.5rem);
+  }
+
+  &__tabs {
+    @include flexVCenter;
+
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  &__tab__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    height: 3.8rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-280);
+    border-top: 0.1rem solid var(--color-dark-grey-280);
+  }
+
+  &__tab {
+    @include flexVCenter;
+
+    padding: 0.5rem;
+    color: var(--color-light-grey-300);
+    user-select: none;
+  }
+
+  &__tab + &__tab {
+    border-left: 0.1rem solid var(--color-dark-grey-280);
+  }
+
+  &__tab__label {
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  &__tab__icon {
+    &--query {
+      font-size: 1.6rem;
+    }
+  }
+
+  &__tab__icon + &__tab__label {
+    margin-left: 0.5rem;
+  }
+
+  &__tab:hover &__tab__label {
+    color: var(--color-dark-grey-400);
+  }
+
+  &__tab:hover &__tab__icon {
+    svg {
+      color: var(--color-dark-grey-400);
+    }
+  }
+
+  &__tab--active:hover &__tab__label,
+  &__tab--active &__tab__label {
+    color: var(--color-blue-200);
+    font-weight: 500;
+  }
+
+  &__tab--active:hover &__tab__icon,
+  &__tab--active &__tab__icon {
+    svg {
+      color: var(--color-blue-200);
+    }
+  }
+
+  &__tab__content {
+    margin-top: 1rem;
+    height: 30rem;
+  }
+
+  &__content {
+    height: calc(100% - 3.8rem);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    position: relative;
   }
 }

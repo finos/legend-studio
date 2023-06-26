@@ -35,7 +35,7 @@ import {
   PanelContent,
   TrashIcon,
   PanelDnDEntry,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   CalendarIcon,
   CalendarClockIcon,
   CustomSelectorInput,
@@ -326,7 +326,7 @@ const buildCalendarTypeOption = (
 const QueryBuilderProjectionColumnEditor = observer(
   (props: {
     projectionColumnState: QueryBuilderProjectionColumnState;
-    hoveredColumn: number | undefined;
+    hoveredColumn: number;
   }) => {
     const handleRef = useRef<HTMLDivElement>(null);
     const applicationStore = useApplicationStore();
@@ -482,6 +482,7 @@ const QueryBuilderProjectionColumnEditor = observer(
 
     const handleDroppingColumn = useCallback(
       (type: string): void => {
+        console.log('svp');
         if (
           type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE &&
           tdsState.draggedColumnIndex !== undefined &&
@@ -681,9 +682,12 @@ const QueryBuilderProjectionColumnEditor = observer(
           onClose={onContextMenuClose}
         >
           <div className="query-builder__projection__column__container">
-            <PanelDnDEntryDragHandle
+            {/* <PanelDnDEntryDragHandle
               isBeingDragged={false}
-              dropTargetConnector={handleRef}
+              dropTargetConnector={handleRef} */}
+            <PanelEntryDragHandle
+              isDragging={isBeingDragged}
+              dragSourceConnector={handleRef}
               className="query-builder__projection__column__drag-handle__container"
             />
             <div className="query-builder__projection__column__name">
@@ -850,7 +854,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                   ref={dropTargetConnector}
                 >
                   <PanelEntryDropZonePlaceholder
-                    showPlaceholder={isDragOver}
+                    isDragOver={isDragOver}
                     label="Change Date Column"
                     className="query-builder__projection__calendar__date__column__dnd__placeholder"
                   >
@@ -996,8 +1000,11 @@ export const QueryBuilderTDSPanel = observer(
         [],
       );
 
-    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
-      showDroppableSuggestion:
+    // const { showDroppableSuggestion } = useDragLayer((monitor) => ({
+    //   showDroppableSuggestion:
+
+    const { isDroppable } = useDragLayer((monitor) => ({
+      isDroppable:
         monitor.isDragging() &&
         [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -1048,8 +1055,7 @@ export const QueryBuilderTDSPanel = observer(
         <div className="query-builder__projection__content">
           <PanelDropZone
             isDragOver={isDragOver}
-            showDroppableSuggestion={showDroppableSuggestion}
-            className="query-builder__panel--droppable"
+            isDroppable={isDroppable}
             dropTargetConnector={dropTargetConnector}
           >
             {!projectionColumns.length && (
@@ -1078,9 +1084,11 @@ export const QueryBuilderTDSPanel = observer(
                   (projectionColumnState, hoveredColumn) => (
                     <QueryBuilderProjectionColumnEditor
                       key={projectionColumnState.uuid}
-                      hoveredColumn={
-                        isOverProjectionColumns ? hoveredColumn : -1
-                      }
+                      // hoveredColumn={
+                      //   isOverProjectionColumns ? hoveredColumn : -1
+                      // }
+
+                      hoveredColumn={hoveredColumn}
                       projectionColumnState={projectionColumnState}
                     />
                   ),

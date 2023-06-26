@@ -19,6 +19,7 @@ import type { PackageableElement } from '../../../graph/metamodel/pure/packageab
 import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement.js';
 import type { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder.js';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
+import type { PureModel } from '../../../graph/PureModel.js';
 import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type { V1_ValueSpecification } from './v1/model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
@@ -62,6 +63,11 @@ export type V1_FunctionExpressionBuilder = (
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ) => SimpleFunctionExpression | undefined;
+
+export type V1_ExecutionInputCollector = (
+  graph: PureModel,
+  protocolGraph: V1_PureModelContextData,
+) => V1_PackageableElement[];
 
 export type V1_PropertyExpressionTypeInferrer = (
   variable: ValueSpecification | undefined,
@@ -181,6 +187,13 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * (such as while building a query), we would need this method.
    */
   V1_getExtraFunctionExpressionBuilders?(): V1_FunctionExpressionBuilder[];
+
+  /**
+   * Get the list of collectors of graph elements to build execution input.
+   *
+   * In particular, these collectors are used to produce the minimal graph that is needed for such execution.
+   */
+  V1_getExtraExecutionInputCollectors?(): V1_ExecutionInputCollector[];
 
   /**
    * Get the list of type inferrers for property expression.

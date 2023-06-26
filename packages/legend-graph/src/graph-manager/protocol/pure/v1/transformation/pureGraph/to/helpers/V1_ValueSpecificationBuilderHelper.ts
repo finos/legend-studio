@@ -72,6 +72,7 @@ import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw
 import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction.js';
 import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty.js';
 import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean.js';
+import type { V1_CByteArray } from '../../../../model/valueSpecification/raw/V1_CByteArray.js';
 import type { V1_CDateTime } from '../../../../model/valueSpecification/raw/V1_CDateTime.js';
 import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1_CStrictTime.js';
 import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CDecimal.js';
@@ -362,6 +363,16 @@ export class V1_ValueSpecificationBuilder
       [valueSpecification.value],
       this.context,
     );
+  }
+
+  visit_CByteArray(valueSpecification: V1_CByteArray): ValueSpecification {
+    const res = buildPrimtiveInstanceValue(
+      PRIMITIVE_TYPE.BYTE,
+      [valueSpecification.value], // Store a Base64String as the value for BYTE
+      this.context,
+    );
+
+    return res;
   }
 
   visit_CFloat(valueSpecification: V1_CFloat): ValueSpecification {

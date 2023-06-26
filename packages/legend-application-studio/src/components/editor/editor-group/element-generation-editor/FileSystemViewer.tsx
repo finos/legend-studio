@@ -17,10 +17,6 @@
 import { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
-import {
-  getTextContent,
-  getEditorLanguageForFormat,
-} from '../../../../stores/editor/editor-state/FileGenerationViewerState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type TreeNodeContainerProps,
@@ -56,6 +52,10 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import {
+  getEditorLanguageForFormat,
+  getTextContent,
+} from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 
 export const FileSystemTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

@@ -373,7 +373,7 @@ describe('Model to Model Mapping End to End Test', () => {
       expect(constraintSizeDefect.length).to.deep.equal(0);
     });
 
-    // TODO figure out why it can't find exeuction plan btn
+    // TODO figure out why it can't find execution plan btn
     // see execution plan
     cy.get('[title="View exection plan"]').click();
     cy.wait('@postGeneratePlan').its('status').should('eq', 200);

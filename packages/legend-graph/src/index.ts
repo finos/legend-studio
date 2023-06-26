@@ -156,8 +156,10 @@ export * from './graph/helpers/DSL_Mapping_Helper.js';
 export * from './graph/helpers/STO_Relational_Helper.js';
 export * from './graph/helpers/STO_FlatData_Helper.js';
 export * from './graph/helpers/DSL_Generation_Helper.js';
+export * from './graph/helpers/DSL_Service_Helper.js';
 
 export * from './graph/helpers/PureLanguageHelper.js';
+export * from './graph/helpers/ValueSpecificationHelper.js';
 
 export * from './graph/helpers/creator/DomainModelCreatorHelper.js';
 export * from './graph/helpers/creator/DSL_Mapping_ModelCreatorHelper.js';
@@ -213,6 +215,7 @@ export {
   EXECUTION_SERIALIZATION_FORMAT,
 } from './graph-manager/action/execution/ExecutionResult.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';
+export * from './graph-manager/action/generation/ArtifactGenerationExtensionResult.js';
 export * from './graph-manager/action/execution/ExecutionResultHelper.js';
 export * from './graph-manager/PureGraphManagerPlugin.js';
 export * from './graph-manager/action/query/Query.js';

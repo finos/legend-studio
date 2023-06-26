@@ -34,7 +34,8 @@ function QuickInputDialog<T>(props: {
 }): React.ReactElement {
   const { quickInputState } = props;
   const editorStore = useEditorStore();
-  const { placeholder, options, getSearchValue, onSelect } = quickInputState;
+  const { placeholder, options, getSearchValue, onSelect, customization } =
+    quickInputState;
   const inputRef = useRef<SelectComponent>(null);
   const close = (): void => editorStore.setQuickInputState(undefined);
 
@@ -75,6 +76,9 @@ function QuickInputDialog<T>(props: {
             escapeClearsValue={true}
             darkMode={true}
             menuIsOpen={true}
+            optionCustomization={{
+              rowHeight: customization?.rowHeight,
+            }}
           />
         </div>
       </Modal>

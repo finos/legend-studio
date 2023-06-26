@@ -39,6 +39,8 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 enum HIDDEN_CONFIGURATION_PROPERTIES {
   FORMAT = 'format',
@@ -99,6 +101,10 @@ export const SchemaSetModelGenerationEditor = observer(
     const importGeneratedElements = (): void => {
       modelGenerationState.importGeneratedModelsIntoGraph();
     };
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SCHEMA_SET_MODEL_GENERATION,
+    );
 
     return (
       <PanelContent className="file-generation-editor__content">
