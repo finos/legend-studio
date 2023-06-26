@@ -24,7 +24,7 @@ import {
   type RelationalTDSInstantiationExecutionNode,
 } from '@finos/legend-graph';
 import { PanelDivider, Button, PanelContent } from '@finos/legend-art';
-import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
+import { SQLExecutionNodeViewerHelper } from './SQLExecutionNodeViewer.js';
 import { ResultTypeViewer } from './ResultTypeViewer.js';
 
 export const RelationalTDSInstantiationExecutionNodeViewer: React.FC<{
@@ -44,14 +44,14 @@ export const RelationalTDSInstantiationExecutionNodeViewer: React.FC<{
       {node.executionNodes.length > 0 &&
         node.executionNodes[0] !== undefined &&
         node.executionNodes[0] instanceof SQLExecutionNode && (
-          <SQLExecutionNodeViewer
+          <SQLExecutionNodeViewerHelper
             query={node.executionNodes[0].sqlQuery}
             resultColumns={node.executionNodes[0].resultColumns}
             resultType={node.executionNodes[0].resultType}
             executionPlanState={executionPlanState}
-            viewJson={false}
           />
         )}
+      <PanelDivider />
       <ResultTypeViewer resultType={resultType} />
       <div className="query-builder__sql__container">
         <Button
