@@ -984,6 +984,20 @@ export const QueryBuilderTDSPanel = observer(
       [handleDrop],
     );
 
+    const [, projectionColumnDropConnector] = useDrop<
+      QueryBuilderProjectionColumnDragSource,
+      void,
+      { isOverProjectionColumns: boolean }
+    >(
+      () => ({
+        accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
+        collect: (monitor) => ({
+          isOverProjectionColumns: monitor.isOver({ shallow: false }),
+        }),
+      }),
+      [],
+    );
+
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
         monitor.isDragging() &&
@@ -1065,6 +1079,10 @@ export const QueryBuilderTDSPanel = observer(
                   (projectionColumnState, hoveredColumn) => (
                     <QueryBuilderProjectionColumnEditor
                       key={projectionColumnState.uuid}
+                      // hoveredColumn={
+                      //   isOverProjectionColumns ? hoveredColumn : -1
+                      // }
+
                       hoveredColumn={hoveredColumn}
                       projectionColumnState={projectionColumnState}
                     />
