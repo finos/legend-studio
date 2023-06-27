@@ -919,7 +919,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       _lightQuery: observable,
       lightQuery: computed,
       setLightQuery: action,
-      setLightName: action,
+      setLightQueryName: action,
       setQuery: action,
       isPerformingBlockingAction: override,
     });
@@ -966,7 +966,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     this.query = val;
   }
 
-  setLightName(val: string): void {
+  setLightQueryName(val: string): void {
     if (this._lightQuery) {
       this._lightQuery.name = val;
     }

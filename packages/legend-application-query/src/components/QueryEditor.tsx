@@ -420,13 +420,12 @@ const QueryEditorHeaderContent = observer(
     };
 
     const newQuery = (): void => {
-      console.log('svpp');
       editorStore.queryBuilderState?.resetQueryResult();
       editorStore.queryBuilderState?.resetQueryContent();
       editorStore.queryBuilderState?.setisNewQuery(true);
 
       if (editorStore instanceof ExistingQueryEditorStore) {
-        editorStore.setLightName('');
+        editorStore.setLightQueryName('');
       }
     };
 
