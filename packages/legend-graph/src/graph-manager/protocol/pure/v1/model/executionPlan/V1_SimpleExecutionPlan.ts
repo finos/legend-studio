@@ -16,6 +16,7 @@
 
 import type { V1_Protocol } from '../V1_Protocol.js';
 import type { V1_ExecutionNode } from './nodes/V1_ExecutionNode.js';
+import type { V1_PlatformImplementation } from './nodes/V1_PlatformImplementation.js';
 import { V1_ExecutionPlan } from './V1_ExecutionPlan.js';
 
 export class V1_SimpleExecutionPlan extends V1_ExecutionPlan {
@@ -24,10 +25,5 @@ export class V1_SimpleExecutionPlan extends V1_ExecutionPlan {
   serializer!: V1_Protocol;
   templateFunctions: string[] = [];
   rootExecutionNode!: V1_ExecutionNode;
-  /**
-   * Studio does not process the platform implementation info
-   *
-   * @discrepancy model
-   */
-  globalImplementationSupport!: object;
+  globalImplementationSupport?: V1_PlatformImplementation | undefined;
 }

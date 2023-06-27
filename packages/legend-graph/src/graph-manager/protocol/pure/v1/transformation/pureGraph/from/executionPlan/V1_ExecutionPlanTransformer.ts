@@ -61,6 +61,12 @@ import { V1_INTERNAL__UnknownResultType } from '../../../../model/executionPlan/
 import { INTERNAL__UnknownResultType } from '../../../../../../../../graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
 import { INTERNAL__UnknownExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
 import { V1_INTERNAL__UnknownExecutionNode } from '../../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
+import type { JavaClass } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/JavaClass.js';
+import { V1_JavaClass } from '../../../../model/executionPlan/nodes/V1_JavaClass.js';
+import type { PlatformImplementation } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/PlatformImplementation.js';
+import type { V1_PlatformImplementation } from '../../../../model/executionPlan/nodes/V1_PlatformImplementation.js';
+import { JavaPlatformImplementation } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/JavaPlatformImplementation.js';
+import { V1_JavaPlatformImplementation } from '../../../../model/executionPlan/nodes/V1_JavaPlatformImplementation.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 
@@ -281,6 +287,31 @@ export function V1_transformExecutionNode(
 
 // ---------------------------------------- Execution Plan ----------------------------------------
 
+function transformJavaClass(metamodel: JavaClass): V1_JavaClass {
+  const protocol = new V1_JavaClass();
+  protocol.name = metamodel.name;
+  protocol.package = metamodel.package;
+  protocol.source = metamodel.source;
+  protocol.byteCode = metamodel.byteCode;
+  return protocol;
+}
+
+function transformPlatformImplementation(
+  metamodel: PlatformImplementation,
+): V1_PlatformImplementation {
+  if (metamodel instanceof JavaPlatformImplementation) {
+    const protocol = new V1_JavaPlatformImplementation();
+    protocol.classes = metamodel.classes.map(transformJavaClass);
+    protocol.executionClassFullName = metamodel.executionClassFullName;
+    protocol.executionMethodName = metamodel.executionMethodName;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform platform implementation`,
+    metamodel,
+  );
+}
+
 export const V1_transformExecutionPlan = (
   metamodel: ExecutionPlan,
   context: V1_GraphTransformerContext,
@@ -297,6 +328,10 @@ export const V1_transformExecutionPlan = (
     metamodel.rootExecutionNode,
     context,
   );
-  protocol.globalImplementationSupport = metamodel.globalImplementationSupport;
+  if (metamodel.globalImplementationSupport) {
+    protocol.globalImplementationSupport = transformPlatformImplementation(
+      metamodel.globalImplementationSupport,
+    );
+  }
   return protocol;
 };

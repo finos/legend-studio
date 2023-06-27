@@ -57,6 +57,8 @@ import {
 import { V1_INTERNAL__UnknownResultType } from '../../../../model/executionPlan/results/V1_INTERNAL__UnknownResultType.js';
 import { V1_INTERNAL__UnknownExecutionNode } from '../../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
 import type { V1_ExecutionNode } from '../../../../model/executionPlan/nodes/V1_ExecutionNode.js';
+import { V1_JavaPlatformImplementation } from '../../../../model/executionPlan/nodes/V1_JavaPlatformImplementation.js';
+import { V1_JavaClass } from '../../../../model/executionPlan/nodes/V1_JavaClass.js';
 import { V1_variableModelSchema } from '../V1_ValueSpecificationSerializer.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
@@ -313,12 +315,29 @@ export enum V1_ExecutionPlanType {
   COMPOSITE = 'composite',
 }
 
+const javaClassModelSchema = createModelSchema(V1_JavaClass, {
+  package: primitive(),
+  name: primitive(),
+  source: primitive(),
+  byteCode: optional(primitive()),
+});
+
+const javaPlatformImplementationModelSchema = createModelSchema(
+  V1_JavaPlatformImplementation,
+  {
+    classes: list(usingModelSchema(javaClassModelSchema)),
+    executionClassFullName: optional(primitive()),
+    executionMethodName: optional(primitive()),
+  },
+);
 const SimpleExecutionPlanModelSchema = createModelSchema(
   V1_SimpleExecutionPlan,
   {
     _type: usingConstantValueSchema(V1_ExecutionPlanType.SINGLE),
     authDependent: primitive(),
-    globalImplementationSupport: raw(),
+    globalImplementationSupport: optional(
+      usingModelSchema(javaPlatformImplementationModelSchema),
+    ),
     kerberos: optional(primitive()),
     rootExecutionNode: custom(
       V1_serializeExecutionNode,

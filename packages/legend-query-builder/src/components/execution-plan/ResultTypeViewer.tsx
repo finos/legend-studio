@@ -32,6 +32,6 @@ export const ResultTypeViewer: React.FC<{
   } else if (resultType instanceof TDSResultType) {
     return <TDSResultTypeViewer resultType={resultType} />;
   } else {
-    return <></>;
+    return null;
   }
 });

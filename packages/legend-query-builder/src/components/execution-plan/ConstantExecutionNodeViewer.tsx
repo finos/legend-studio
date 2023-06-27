@@ -59,7 +59,7 @@ export const ConstantExecutionNodeViewer: React.FC<{
             <PanelDivider />
             <pre>
               <div className="query-builder__constant__container__item">
-                <div>value : {value}</div>
+                <div>value: {value}</div>
               </div>
             </pre>
           </div>

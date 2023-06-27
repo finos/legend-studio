@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import type { ExecutionNode } from './nodes/ExecutionNode.js';
-import type { PlatformImplementation } from './nodes/PlatformImplementation.js';
+import type { JavaClass } from './JavaClass.js';
+import { PlatformImplementation } from './PlatformImplementation.js';
 
-export type RawExecutionPlan = object;
-
-export class ExecutionPlan {
-  rootExecutionNode!: ExecutionNode;
-  processingTemplateFunctions: string[] = [];
-  authDependent!: boolean;
-  kerberos?: string | undefined;
-  globalImplementationSupport?: PlatformImplementation | undefined;
+export class JavaPlatformImplementation extends PlatformImplementation {
+  classes: JavaClass[] = [];
+  executionClassFullName?: string | undefined;
+  executionMethodName?: string | undefined;
 }
