@@ -669,5 +669,7 @@
     width: 100%;
     overflow: auto;
     pointer-events: all;
+    display: flex;
+    flex-direction: column;
   }
 }

@@ -543,11 +543,6 @@
 
   // ---------------------------- Other -------------------------------
 
-  .query-builder__dnd__placeholder .dnd__entry-dropzone__placeholder__content {
-    border-color: var(--color-light-grey-250);
-    color: var(--color-light-grey-400);
-  }
-
   .execution-plan-viewer__panel__view-mode__option {
     background: var(--color-light-grey-200);
     border-color: var(--color-light-grey-400);
@@ -567,7 +562,10 @@
   .dnd__entry--droppable__indicator {
     border-color: var(--color-light-grey-250);
     color: var(--color-light-grey-400);
-    background: var(--color-white);
+  }
+
+  .dnd__dropzone--droppable {
+    border-color: var(--color-light-grey-250);
   }
 
   .dnd__entry--droppable__indicator--dragover {
@@ -721,10 +719,6 @@
       color: var(--color-dark-grey-300);
       font-weight: 500;
       text-transform: capitalize;
-    }
-
-    .dnd__entry__placeholder {
-      background: var(--color-legacylight-light-grey-100);
     }
 
     .query-builder__projection__column__drag-handle,

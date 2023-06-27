@@ -174,7 +174,7 @@ const Tab = observer(
         onMouseUp={closeTabOnMiddleClick(tabState)}
       >
         <PanelEntryDropZonePlaceholder
-          showPlaceholder={false}
+          isDragOver={false}
           className="tab-manager__tab__dnd__placeholder"
         >
           <ContextMenu

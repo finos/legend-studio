@@ -263,12 +263,6 @@
   }
 }
 
-.query-builder__panel {
-  &--droppable {
-    width: calc(100% - 0.5rem);
-  }
-}
-
 .query-builder__diff-panel {
   height: 100%;
   width: 100%;
@@ -323,7 +317,6 @@
 
 .query-builder__dnd__placeholder .dnd__entry-dropzone__placeholder__content {
   border-color: var(--color-dark-grey-100);
-  color: var(--color-dark-grey-300);
 }
 
 .query-builder__fetch__structure {

@@ -24,7 +24,7 @@ import {
   TimesIcon,
   ArrowCircleRightIcon,
   LongArrowAltUpIcon,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   PanelDnDEntry,
   DragPreviewLayer,
   useDragPreviewLayer,
@@ -189,9 +189,9 @@ export const TaggedValueEditor = observer(
         showPlaceholder={isBeingDragged}
         placeholder={<div className="dnd__placeholder--light"></div>}
       >
-        <PanelDnDEntryDragHandle
-          dropTargetConnector={handleRef}
-          isBeingDragged={isBeingDragged}
+        <PanelEntryDragHandle
+          dragSourceConnector={handleRef}
+          isDragging={isBeingDragged}
         />
         <div
           className={clsx('tagged-value-editor', {

@@ -42,7 +42,7 @@ import {
   ModalFooter,
   PanelFormSection,
   ModalFooterButton,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   PanelDnDEntry,
   PanelHeaderActionItem,
   PanelHeader,
@@ -611,9 +611,8 @@ const TDSColumnReferenceEditor = observer(
             className="query-builder__olap__tds__column-badge"
           >
             <PanelEntryDropZonePlaceholder
-              showPlaceholder={isDragOver}
+              isDragOver={isDragOver}
               label="Change Column"
-              className="query-builder__dnd__placeholder"
             >
               <div className="query-builder__olap__tds__column-badge__content">
                 <div
@@ -875,10 +874,10 @@ const QueryBuilderWindowColumnEditor = observer(
           onOpen={onContextMenuOpen}
           onClose={onContextMenuClose}
         >
-          <PanelDnDEntryDragHandle
-            isBeingDragged={isBeingDragged}
+          <PanelEntryDragHandle
+            isDragging={isBeingDragged}
             className="query-builder__olap__column__drag-handle__container"
-            dropTargetConnector={handleRef}
+            dragSourceConnector={handleRef}
           />
           <div className="query-builder__olap__column__operation">
             <div className="query-builder__olap__column__operation__operator">
@@ -947,9 +946,8 @@ const QueryBuilderWindowColumnEditor = observer(
               className="query-builder__olap__column__window__content"
             >
               <PanelEntryDropZonePlaceholder
-                showPlaceholder={isDragOver}
+                isDragOver={isDragOver}
                 label="Add"
-                className="query-builder__dnd__placeholder"
               >
                 <div
                   title={`${windowColumnState.windowColumns.length} columns partitioned`}

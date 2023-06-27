@@ -99,18 +99,31 @@
   &__content {
     @include flexCenter;
 
-    border: 0.2rem dashed var(--color-light-grey-300);
+    border: 0.2rem dashed var(--color-dark-grey-400);
     height: 100%;
     width: 100%;
     margin: 0;
     font-weight: 700;
+  }
+
+  &--active &__content {
+    background: var(--color-dnd__overlay);
+  }
+
+  &--droppable &__content {
+    border: 0.2rem dashed var(--color-dark-grey-500);
+  }
+
+  &__label {
+    color: var(--color-dark-grey-500);
+    font-size: 1.2rem;
   }
 }
 
 .dnd__entry--droppable__indicator {
   @include flexCenter;
 
-  border: 0.2rem dashed var(--color-dark-grey-400);
+  border: 0.2rem dashed var(--color-dark-grey-500);
   color: var(--color-dark-grey-400);
   display: block;
   width: 100%;
@@ -174,11 +187,12 @@
 }
 
 .dnd__entry__placeholder__content {
-  border: 0.2rem dashed var(--color-light-grey-300);
+  border: 0.2rem dashed var(--color-dark-grey-500);
   height: 100%;
   background: var(--color-dark-grey-100);
 }
 
+// temporary
 .dnd__placeholder--light {
   border: 0.2rem dashed var(--color-light-grey-300);
   background: var(--color-light-grey-0);
@@ -186,7 +200,7 @@
 }
 
 .dnd__dropzone--droppable {
-  border: 0.2rem dashed var(--color-dark-grey-400);
+  border: 0.2rem dashed var(--color-dark-grey-500);
   color: var(--color-dark-grey-400);
   display: block;
   width: 100%;
