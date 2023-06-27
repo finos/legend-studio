@@ -157,7 +157,7 @@ enum V1_ValueSpecificationType {
 
 // ---------------------------------------- Value Specification --------------------------------------
 
-const variableModelSchema = createModelSchema(V1_Variable, {
+export const V1_variableModelSchema = createModelSchema(V1_Variable, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.VARIABLE),
   class: optional(primitive()),
   multiplicity: usingModelSchema(V1_multiplicityModelSchema),
@@ -175,7 +175,7 @@ const lambdaModelSchema = (
         (val) => V1_deserializeValueSpecification(val, plugins),
       ),
     ),
-    parameters: list(usingModelSchema(variableModelSchema)),
+    parameters: list(usingModelSchema(V1_variableModelSchema)),
   });
 
 const keyExpressionModelSchema = (
@@ -824,7 +824,7 @@ class V1_ValueSpecificationSerializer
   visit_Variable(
     valueSpecification: V1_Variable,
   ): PlainObject<V1_ValueSpecification> {
-    return serialize(variableModelSchema, valueSpecification);
+    return serialize(V1_variableModelSchema, valueSpecification);
   }
 
   visit_Lambda(
@@ -964,7 +964,7 @@ export function V1_deserializeValueSpecification(
     case V1_ValueSpecificationType.APPLIED_PROPERTY:
       return deserialize(appliedPropertyModelSchema(plugins), json);
     case V1_ValueSpecificationType.VARIABLE:
-      return deserialize(variableModelSchema, json);
+      return deserialize(V1_variableModelSchema, json);
     case V1_ValueSpecificationType.LAMBDA:
       return deserialize(lambdaModelSchema(plugins), json);
     case V1_ValueSpecificationType.KEY_EXPRESSION:

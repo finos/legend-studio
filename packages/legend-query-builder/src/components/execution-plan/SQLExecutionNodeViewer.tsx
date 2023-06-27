@@ -19,7 +19,11 @@ import {
   type ExecutionPlanState,
   EXECUTION_PLAN_VIEW_MODE,
 } from '../../stores/execution-plan/ExecutionPlanState.js';
-import { type SQLResultColumn, stringifyDataType } from '@finos/legend-graph';
+import {
+  type SQLResultColumn,
+  stringifyDataType,
+  type ResultType,
+} from '@finos/legend-graph';
 import {
   PanelListItem,
   CopyIcon,
@@ -28,6 +32,7 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { tryToFormatSql } from '../QueryBuilderResultPanel.js';
+import { ResultTypeViewer } from './ResultTypeViewer.js';
 import {
   CodeEditor,
   CODE_EDITOR_LANGUAGE,
@@ -40,13 +45,14 @@ import {
  * @modularize
  * See https://github.com/finos/legend-studio/issues/65
  */
-export const SQLExecutionNodeViewer: React.FC<{
+
+export const SQLExecutionNodeViewerHelper: React.FC<{
   query: string;
   resultColumns: SQLResultColumn[];
+  resultType: ResultType;
   executionPlanState: ExecutionPlanState;
 }> = observer((props) => {
-  const { query, resultColumns, executionPlanState } = props;
-
+  const { query, resultColumns, resultType, executionPlanState } = props;
   const applicationStore = executionPlanState.applicationStore;
   const copyExpression = (value: string): void => {
     applicationStore.clipboardService
@@ -60,12 +66,9 @@ export const SQLExecutionNodeViewer: React.FC<{
       )
       .catch(applicationStore.alertUnhandledError);
   };
+
   return (
-    <PanelContent
-      darkMode={
-        !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-      }
-    >
+    <>
       <div className="query-builder__sql__container">
         <PanelDivider />
         <div key={query}>
@@ -125,17 +128,45 @@ export const SQLExecutionNodeViewer: React.FC<{
           </table>
         </div>
       </div>
-      <PanelDivider />
+      <ResultTypeViewer resultType={resultType} />
+    </>
+  );
+});
 
-      <div className="query-builder__sql__container">
-        <Button
-          className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"
-          onClick={(): void =>
-            executionPlanState.setViewMode(EXECUTION_PLAN_VIEW_MODE.JSON)
-          }
-          text="View JSON"
-        />
-      </div>
+export const SQLExecutionNodeViewer: React.FC<{
+  query: string;
+  resultColumns: SQLResultColumn[];
+  resultType: ResultType;
+  executionPlanState: ExecutionPlanState;
+  viewJson: boolean;
+}> = observer((props) => {
+  const { query, resultColumns, resultType, executionPlanState, viewJson } =
+    props;
+  const applicationStore = executionPlanState.applicationStore;
+
+  return (
+    <PanelContent
+      darkMode={
+        !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+      }
+    >
+      <SQLExecutionNodeViewerHelper
+        query={query}
+        resultColumns={resultColumns}
+        resultType={resultType}
+        executionPlanState={executionPlanState}
+      />
+      {viewJson && (
+        <div className="query-builder__sql__container">
+          <Button
+            className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"
+            onClick={(): void =>
+              executionPlanState.setViewMode(EXECUTION_PLAN_VIEW_MODE.JSON)
+            }
+            text="View JSON"
+          />
+        </div>
+      )}
       <PanelDivider />
     </PanelContent>
   );

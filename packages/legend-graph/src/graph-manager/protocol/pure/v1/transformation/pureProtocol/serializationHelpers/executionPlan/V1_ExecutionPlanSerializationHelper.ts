@@ -45,6 +45,11 @@ import { V1_multiplicityModelSchema } from '../V1_CoreSerializationHelper.js';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode.js';
 import { V1_SQLExecutionNode } from '../../../../model/executionPlan/nodes/V1_SQLExecutionNode.js';
 import { V1_SQLResultColumn } from '../../../../model/executionPlan/nodes/V1_SQLResultColumn.js';
+import { V1_FunctionParametersValidationNode } from '../../../../model/executionPlan/nodes/V1_FunctionParametersValidationNode.js';
+import { V1_EnumValidationContext } from '../../../../model/executionPlan/nodes/V1_EnumValidationContext.js';
+import { V1_AllocationExecutionNode } from '../../../../model/executionPlan/nodes/V1_AllocationExecutionNode.js';
+import { V1_ConstantExecutionNode } from '../../../../model/executionPlan/nodes/V1_ConstantExecutionNode.js';
+import { V1_SequenceExecutionNode } from '../../../../model/executionPlan/nodes/V1_SequenceExecutionNode.js';
 import {
   V1_deserializeDatabaseConnectionValue,
   V1_serializeDatabaseConnectionValue,
@@ -52,6 +57,7 @@ import {
 import { V1_INTERNAL__UnknownResultType } from '../../../../model/executionPlan/results/V1_INTERNAL__UnknownResultType.js';
 import { V1_INTERNAL__UnknownExecutionNode } from '../../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
 import type { V1_ExecutionNode } from '../../../../model/executionPlan/nodes/V1_ExecutionNode.js';
+import { V1_variableModelSchema } from '../V1_ValueSpecificationSerializer.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 
@@ -119,6 +125,10 @@ const V1_deserializeResultType = (
 export enum V1_ExecutionNodeType {
   RELATIONAL_TDS_INSTANTIATION = 'relationalTdsInstantiation',
   SQL = 'sql',
+  FUNCTION_PARAMETERS_VALIDATION = 'function-parameters-validation',
+  ALLOCATION = 'allocation',
+  CONSTANT = 'constant',
+  SEQUENCE = 'sequence',
 }
 
 const relationalTDSInstantationExecutionNodeModelSchema = createModelSchema(
@@ -159,6 +169,72 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
   sqlQuery: primitive(),
 });
 
+const parameterValidationContextSchema = createModelSchema(
+  V1_EnumValidationContext,
+  {
+    varName: primitive(),
+    validEnumValues: list(primitive()),
+  },
+);
+
+const functionParametersValidationNodeModelSchema = createModelSchema(
+  V1_FunctionParametersValidationNode,
+  {
+    _type: usingConstantValueSchema(
+      V1_ExecutionNodeType.FUNCTION_PARAMETERS_VALIDATION,
+    ),
+    executionNodes: customList(
+      V1_serializeExecutionNode,
+      V1_deserializeExecutionNode,
+    ),
+    functionParameters: list(usingModelSchema(V1_variableModelSchema)),
+    parameterValidationContext: list(
+      usingModelSchema(parameterValidationContextSchema),
+    ),
+    resultType: custom(V1_serializeResultType, V1_deserializeResultType),
+  },
+);
+
+const allocationExecutionNodeModelSchema = createModelSchema(
+  V1_AllocationExecutionNode,
+  {
+    _type: usingConstantValueSchema(V1_ExecutionNodeType.ALLOCATION),
+    executionNodes: customList(
+      V1_serializeExecutionNode,
+      V1_deserializeExecutionNode,
+    ),
+    realizeInMemory: primitive(),
+    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    resultType: custom(V1_serializeResultType, V1_deserializeResultType),
+    varName: primitive(),
+  },
+);
+
+const constantExecutionNodeModelSchema = createModelSchema(
+  V1_ConstantExecutionNode,
+  {
+    _type: usingConstantValueSchema(V1_ExecutionNodeType.CONSTANT),
+    executionNodes: customList(
+      V1_serializeExecutionNode,
+      V1_deserializeExecutionNode,
+    ),
+    resultType: custom(V1_serializeResultType, V1_deserializeResultType),
+    values: raw(),
+  },
+);
+
+const sequenceExecutionNodeModelSchema = createModelSchema(
+  V1_SequenceExecutionNode,
+  {
+    _type: usingConstantValueSchema(V1_ExecutionNodeType.SEQUENCE),
+    executionNodes: customList(
+      V1_serializeExecutionNode,
+      V1_deserializeExecutionNode,
+    ),
+    resultType: custom(V1_serializeResultType, V1_deserializeResultType),
+  },
+);
+
 export function V1_serializeExecutionNode(
   protocol: V1_ExecutionNode,
 ): PlainObject<V1_ExecutionNode> {
@@ -171,6 +247,14 @@ export function V1_serializeExecutionNode(
     );
   } else if (protocol instanceof V1_SQLExecutionNode) {
     return serialize(SQLExecutionNodeModelSchema, protocol);
+  } else if (protocol instanceof V1_FunctionParametersValidationNode) {
+    return serialize(functionParametersValidationNodeModelSchema, protocol);
+  } else if (protocol instanceof V1_AllocationExecutionNode) {
+    return serialize(allocationExecutionNodeModelSchema, protocol);
+  } else if (protocol instanceof V1_ConstantExecutionNode) {
+    return serialize(constantExecutionNodeModelSchema, protocol);
+  } else if (protocol instanceof V1_SequenceExecutionNode) {
+    return serialize(sequenceExecutionNodeModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize execution node`,
@@ -202,6 +286,14 @@ export function V1_deserializeExecutionNode(
       );
     case V1_ExecutionNodeType.SQL:
       return deserialize(SQLExecutionNodeModelSchema, json);
+    case V1_ExecutionNodeType.FUNCTION_PARAMETERS_VALIDATION:
+      return deserialize(functionParametersValidationNodeModelSchema, json);
+    case V1_ExecutionNodeType.ALLOCATION:
+      return deserialize(allocationExecutionNodeModelSchema, json);
+    case V1_ExecutionNodeType.CONSTANT:
+      return deserialize(constantExecutionNodeModelSchema, json);
+    case V1_ExecutionNodeType.SEQUENCE:
+      return deserialize(sequenceExecutionNodeModelSchema, json);
     default: {
       // Fall back to create unknown stub if not supported
       const protocol = deserialize(

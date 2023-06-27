@@ -890,7 +890,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
             rawPlan,
             this.editorStore.graphManagerState.graph,
           );
-        this.executionPlanState.setPlan(plan);
+        this.executionPlanState.initialize(plan);
       } catch {
         // do nothing
       }
