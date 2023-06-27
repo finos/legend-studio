@@ -146,6 +146,35 @@ const processLetExpression = (
   queryBuilderState.constantState.addConstant(constantExpression);
 };
 
+const processFromExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  console.log(expression);
+  const parameters = expression.parametersValues;
+  assertTrue(
+    expression.parametersValues.length === 3,
+    'Let function expected to have 2 parameters (mapping and runtime)',
+  );
+};
+
+const processCalendarFunction = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  queryBuilderState.isCalendarEnabled = true;
+  assertTrue(
+    expression.parametersValues.length === 4,
+    'Calendar function expected to have four parameters',
+  );
+  processTDSProjectionColumnPropertyExpression(
+    guaranteeType(expression.parametersValues[3], AbstractPropertyExpression),
+    queryBuilderState,
+  );
+};
+
 /**
  * This is the value specification processor (a.k.a state builder) for query builder.
  *
@@ -561,6 +590,13 @@ export class QueryBuilderValueSpecificationProcessor
         valueSpecification,
         this.parentLambda,
         this.queryBuilderState,
+      );
+      return;
+    } else if (matchFunctionName(functionName, [SUPPORTED_FUNCTIONS.FROM])) {
+      processFromExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
       );
       return;
     }

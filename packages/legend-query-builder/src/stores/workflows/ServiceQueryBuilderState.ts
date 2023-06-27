@@ -78,10 +78,6 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
     this.onExecutionContextChange = onExecutionContextChange;
 
     if (service.execution instanceof PureSingleExecution) {
-      assertTrue(
-        Boolean(service.execution.mapping && service.execution.runtime),
-        'Service queries without runtime/mapping are not supported',
-      );
       this.mapping = service.execution.mapping?.value;
       this.runtimeValue = service.execution.runtime;
     } else if (service.execution instanceof PureMultiExecution) {

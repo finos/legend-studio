@@ -94,6 +94,10 @@ import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
 import { QueryBuilderCheckEntitlementsState } from './entitlements/QueryBuilderCheckEntitlementsState.js';
 import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
 import { QUERY_BUILDER_PURE_PATH } from '../graph/QueryBuilderMetaModelConst.js';
+import {
+  QueryBuilderLegacyExecutionContextState,
+  type QueryBuilderExecutionContextState,
+} from './QueryBuilderExecutionContextState.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -124,8 +128,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isCalendarEnabled = false;
 
   class?: Class | undefined;
-  mapping?: Mapping | undefined;
-  runtimeValue?: Runtime | undefined;
+
+  executionContextState: QueryBuilderExecutionContextState;
 
   // NOTE: this makes it so that we need to import components in stores code,
   // we probably want to refactor to an extension mechanism
@@ -154,8 +158,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isCalendarEnabled: observable,
       changeDetectionState: observable,
       class: observable,
-      mapping: observable,
-      runtimeValue: observable,
 
       sideBarClassName: computed,
       isQuerySupported: computed,
@@ -167,8 +169,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setIsCalendarEnabled: action,
       setIsCheckingEntitlments: action,
       setClass: action,
-      setMapping: action,
-      setRuntimeValue: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -199,12 +199,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
+    this.executionContextState = new QueryBuilderLegacyExecutionContextState(
+      this,
+    );
   }
 
+  // TODO revisit this
   get isMappingReadOnly(): boolean {
     return false;
   }
 
+  // TODO revisit this
   get isRuntimeReadOnly(): boolean {
     return false;
   }
@@ -267,6 +272,11 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.class = val;
   }
 
+  setTitleOfQuery(val: string | undefined): void {
+    this.titleOfQuery = val;
+  }
+
+
   setMapping(val: Mapping | undefined): void {
     this.mapping = val;
   }
@@ -274,6 +284,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   setRuntimeValue(val: Runtime | undefined): void {
     this.runtimeValue = val;
   }
+
 
   get isQuerySupported(): boolean {
     return !this.unsupportedQueryState.rawLambda;
@@ -366,12 +377,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.resetQueryContent();
       this.milestoningState.updateMilestoningConfiguration();
     }
-    this.setMapping(val);
+    this.executionContextState.setMapping(val);
   }
 
   changeRuntime(val: Runtime): void {
     this.resetQueryResult();
-    this.setRuntimeValue(val);
+    this.executionContextState.setRuntimeValue(val);
   }
 
   getCurrentParameterValues(): Map<string, ValueSpecification> | undefined {
@@ -659,8 +670,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.graphManagerState,
     );
     basicState.class = this.class;
-    basicState.mapping = this.mapping;
-    basicState.runtimeValue = this.runtimeValue;
+    basicState.executionContextState.setMapping(
+      this.executionContextState.mapping,
+    );
+    basicState.executionContextState.setRuntimeValue(this.executionContextState.runtimeValue);
     return basicState;
   }
 
