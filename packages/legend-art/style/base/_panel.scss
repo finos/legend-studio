@@ -669,6 +669,7 @@
     width: 100%;
     overflow: auto;
     pointer-events: all;
-    scrollbar-gutter: stable;
+    display: flex;
+    flex-direction: column;
   }
 }

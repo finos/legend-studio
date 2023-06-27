@@ -988,7 +988,7 @@ export const QueryBuilderFilterPanel = observer(
             {isDroppable && !filterState.isEmpty && (
               <div
                 ref={addFilterRef}
-                className="query-builder-filter-tree--droppable"
+                className="query-builder-filter-tree__free-drop-zone__container"
               >
                 <PanelEntryDropZonePlaceholder
                   isDragOver={isDragOver}
