@@ -1079,10 +1079,6 @@ export const QueryBuilderTDSPanel = observer(
                   (projectionColumnState, hoveredColumn) => (
                     <QueryBuilderProjectionColumnEditor
                       key={projectionColumnState.uuid}
-                      // hoveredColumn={
-                      //   isOverProjectionColumns ? hoveredColumn : -1
-                      // }
-
                       hoveredColumn={hoveredColumn}
                       projectionColumnState={projectionColumnState}
                     />
