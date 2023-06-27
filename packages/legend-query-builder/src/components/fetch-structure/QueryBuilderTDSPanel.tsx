@@ -324,10 +324,11 @@ const buildCalendarTypeOption = (
 });
 
 const QueryBuilderProjectionColumnEditor = observer(
-  (props: {
-    projectionColumnState: QueryBuilderProjectionColumnState;
-    hoveredColumn: number;
-  }) => {
+  (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
+    const { projectionColumnState } = props;
+    const columnIdx = projectionColumnState.tdsState.tdsColumns.indexOf(
+      projectionColumnState,
+    );
     const handleRef = useRef<HTMLDivElement>(null);
     const applicationStore = useApplicationStore();
     const ref = useRef<HTMLDivElement>(null);
@@ -335,7 +336,6 @@ const QueryBuilderProjectionColumnEditor = observer(
       useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
-    const { projectionColumnState, hoveredColumn } = props;
 
     const tdsState = projectionColumnState.tdsState;
     const isCalendarEnabled = tdsState.queryBuilderState.isCalendarEnabled;
@@ -581,7 +581,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     );
 
     const isBeingDragged =
-      hoveredColumn === tdsState.hoveredColumnIndex &&
+      columnIdx === tdsState.hoveredColumnIndex &&
       projectionColumnBeingDragged !== undefined;
 
     dragConnector(handleRef);
@@ -647,6 +647,11 @@ const QueryBuilderProjectionColumnEditor = observer(
     return (
       <PanelDnDEntry
         ref={ref}
+        // TODO: this is the more appropriate solution than what we did
+        // before and in other places for rearrange because it does no
+        // rearrange while on hovering, but on drop, there's some work to
+        // do about the drop location indicator though
+        // See https://github.com/finos/legend-studio/pull/2330
         placeholder={
           <div
             className={
@@ -655,7 +660,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                 ? 'query-builder__projection__column__placeholder--bottom'
                 : 'query-builder__projection__column__placeholder--top'
             }
-          ></div>
+          />
         }
         showPlaceholder={isBeingDragged}
         className="query-builder__projection__column"
@@ -681,9 +686,6 @@ const QueryBuilderProjectionColumnEditor = observer(
           onClose={onContextMenuClose}
         >
           <div className="query-builder__projection__column__container">
-            {/* <PanelDnDEntryDragHandle
-              isBeingDragged={false}
-              dropTargetConnector={handleRef} */}
             <PanelEntryDragHandle
               isDragging={isBeingDragged}
               dragSourceConnector={handleRef}
@@ -1075,15 +1077,12 @@ export const QueryBuilderTDSPanel = observer(
                   }
                   types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
                 />
-                {projectionColumns.map(
-                  (projectionColumnState, hoveredColumn) => (
-                    <QueryBuilderProjectionColumnEditor
-                      key={projectionColumnState.uuid}
-                      hoveredColumn={hoveredColumn}
-                      projectionColumnState={projectionColumnState}
-                    />
-                  ),
-                )}
+                {projectionColumns.map((projectionColumnState) => (
+                  <QueryBuilderProjectionColumnEditor
+                    key={projectionColumnState.uuid}
+                    projectionColumnState={projectionColumnState}
+                  />
+                ))}
               </div>
             )}
             <QueryResultModifierModal tdsState={tdsState} />
