@@ -187,6 +187,15 @@ export class QueryBuilderResultState {
     return this.executionResult.result.rows[rowIndex]?.values ?? [''];
   };
 
+  findIsCoordinatesSelected = (
+    resultCoordinate: QueryBuilderTDSResultCellCoordinate,
+  ): boolean =>
+    this.selectedCells.some(
+      (cell) =>
+        cell.coordinates.rowIndex === resultCoordinate.rowIndex &&
+        cell.coordinates.colIndex === resultCoordinate.colIndex,
+    );
+
   findResultValueFromCoordinates = (
     resultCoordinate: [number, number],
   ): string | number | boolean | null | undefined => {

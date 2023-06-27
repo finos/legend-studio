@@ -68,7 +68,7 @@ import {
   prettyDuration,
   filterByType,
 } from '@finos/legend-shared';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
@@ -132,6 +132,7 @@ const QueryBuilderGridResultContextMenu = observer(
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
     const { data, tdsState } = props;
+
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
@@ -514,13 +515,6 @@ const QueryResultCellRenderer = observer(
 
         const rowNode = params.api.getRowNode(params.rowIndex.toString());
 
-        if (rowNode) {
-          params.api.refreshCells({
-            force: true,
-            columns: [columnName],
-            rowNodes: [rowNode],
-          });
-        }
         resultState.setSelectedCells([
           {
             value: actualValue,
@@ -528,6 +522,48 @@ const QueryResultCellRenderer = observer(
             coordinates: coordinates,
           },
         ]);
+
+        if (rowNode) {
+          params.api.refreshCells({
+            force: true,
+            columns: [columnName],
+            rowNodes: [rowNode],
+          });
+        }
+
+        resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+      }
+
+      if (event.button === 2) {
+        const coordinates = findCoordinatesFromResultValue(
+          columnName,
+          params.rowIndex,
+        );
+        const isInSelected = resultState.findIsCoordinatesSelected(coordinates);
+        if (!isInSelected) {
+          const actualValue = resultState.findResultValueFromCoordinates([
+            coordinates.rowIndex,
+            coordinates.colIndex,
+          ]);
+
+          resultState.setSelectedCells([
+            {
+              value: actualValue,
+              columnName: columnName,
+              coordinates: coordinates,
+            },
+          ]);
+          const rowNode = params.api.getRowNode(params.rowIndex.toString());
+
+          if (rowNode) {
+            params.api.refreshCells({
+              force: true,
+              columns: [columnName],
+              rowNodes: [rowNode],
+            });
+          }
+          resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+        }
       }
     };
     const mouseUp: React.MouseEventHandler = (event) => {
@@ -828,13 +864,6 @@ export const QueryBuilderResultPanel = observer(
       flowResult(resultState.generatePlan(true)),
     );
 
-    const changeLimit: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      const val = event.target.value;
-      queryBuilderState.resultState.setPreviewLimit(
-        val === '' ? 0 : parseInt(val, 10),
-      );
-    };
-
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
 
     const copyExpression = (value: string): void => {
@@ -877,6 +906,37 @@ export const QueryBuilderResultPanel = observer(
     const resultDescription = executionResult
       ? getResultSetDescription(executionResult)
       : undefined;
+
+    const [previewLimitValue, setPreviewLimitValue] = useState(
+      resultState.previewLimit,
+    );
+
+    const changePreviewLimit: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setPreviewLimitValue(parseInt(event.target.value, 10));
+    };
+
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const getPreviewLimit = (): void => {
+      if (isNaN(previewLimitValue) || previewLimitValue === 0) {
+        setPreviewLimitValue(1);
+        queryBuilderState.resultState.setPreviewLimit(1);
+      } else {
+        queryBuilderState.resultState.setPreviewLimit(previewLimitValue);
+      }
+    };
+
+    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+      if (event.code === 'Enter') {
+        getPreviewLimit();
+        inputRef.current?.focus();
+      } else if (event.code === 'Escape') {
+        inputRef.current?.select();
+      }
+    };
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
@@ -956,11 +1016,14 @@ export const QueryBuilderResultPanel = observer(
                   preview limit
                 </div>
                 <input
+                  ref={inputRef}
                   className="input--dark query-builder__result__limit__input"
                   spellCheck={false}
                   type="number"
-                  value={resultState.previewLimit}
-                  onChange={changeLimit}
+                  value={previewLimitValue}
+                  onChange={changePreviewLimit}
+                  onBlur={getPreviewLimit}
+                  onKeyDown={onKeyDown}
                   disabled={!isQueryValid}
                 />
               </div>
