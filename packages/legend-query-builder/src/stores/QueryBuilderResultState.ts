@@ -37,7 +37,6 @@ import {
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   extractExecutionResultValues,
-  TDSExecutionResult,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -161,55 +160,6 @@ export class QueryBuilderResultState {
     promise: Promise<ExecutionResult> | undefined,
   ): void => {
     this.queryRunPromise = promise;
-  };
-
-  findColumnFromCoordinates = (
-    colIndex: number,
-  ): string | number | boolean | null | undefined => {
-    if (
-      !this.executionResult ||
-      !(this.executionResult instanceof TDSExecutionResult)
-    ) {
-      return undefined;
-    }
-    return this.executionResult.result.columns[colIndex];
-  };
-
-  findRowFromRowIndex = (
-    rowIndex: number,
-  ): (string | number | boolean | null)[] => {
-    if (
-      !this.executionResult ||
-      !(this.executionResult instanceof TDSExecutionResult)
-    ) {
-      return [''];
-    }
-    return this.executionResult.result.rows[rowIndex]?.values ?? [''];
-  };
-
-  findIsCoordinatesSelected = (
-    resultCoordinate: QueryBuilderTDSResultCellCoordinate,
-  ): boolean =>
-    this.selectedCells.some(
-      (cell) =>
-        cell.coordinates.rowIndex === resultCoordinate.rowIndex &&
-        cell.coordinates.colIndex === resultCoordinate.colIndex,
-    );
-
-  findResultValueFromCoordinates = (
-    resultCoordinate: [number, number],
-  ): string | number | boolean | null | undefined => {
-    const rowIndex = resultCoordinate[0];
-    const colIndex = resultCoordinate[1];
-
-    if (
-      !this.executionResult ||
-      !(this.executionResult instanceof TDSExecutionResult)
-    ) {
-      return undefined;
-    }
-
-    return this.executionResult.result.rows[rowIndex]?.values[colIndex];
   };
 
   setIsQueryUsageViewerOpened(val: boolean): void {

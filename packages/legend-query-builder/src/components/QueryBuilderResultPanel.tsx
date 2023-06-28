@@ -405,14 +405,31 @@ const QueryBuilderGridResultContextMenu = observer(
       ),
     );
 
+    const findRowFromRowIndex = (
+      rowIndex: number,
+    ): (string | number | boolean | null)[] => {
+      if (
+        !tdsState.queryBuilderState.resultState.executionResult ||
+        !(
+          tdsState.queryBuilderState.resultState.executionResult instanceof
+          TDSExecutionResult
+        )
+      ) {
+        return [''];
+      }
+      return (
+        tdsState.queryBuilderState.resultState.executionResult.result.rows[
+          rowIndex
+        ]?.values ?? ['']
+      );
+    };
+
     const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
       applicationStore.clipboardService.copyTextToClipboard(
-        tdsState.queryBuilderState.resultState
-          .findRowFromRowIndex(
-            tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
-              .rowIndex ?? 0,
-          )
-          .toString(),
+        findRowFromRowIndex(
+          tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
+            .rowIndex ?? 0,
+        ).toString(),
       ),
     );
 
@@ -481,6 +498,45 @@ const QueryResultCellRenderer = observer(
         result.coordinates.rowIndex === currentCellCoordinates.rowIndex,
     );
 
+    const findColumnFromCoordinates = (
+      colIndex: number,
+    ): string | number | boolean | null | undefined => {
+      if (
+        !resultState.executionResult ||
+        !(resultState.executionResult instanceof TDSExecutionResult)
+      ) {
+        return undefined;
+      }
+      return resultState.executionResult.result.columns[colIndex];
+    };
+
+    const findResultValueFromCoordinates = (
+      resultCoordinate: [number, number],
+    ): string | number | boolean | null | undefined => {
+      const rowIndex = resultCoordinate[0];
+      const colIndex = resultCoordinate[1];
+
+      if (
+        !resultState.executionResult ||
+        !(resultState.executionResult instanceof TDSExecutionResult)
+      ) {
+        return undefined;
+      }
+
+      return resultState.executionResult.result.rows[rowIndex]?.values[
+        colIndex
+      ];
+    };
+
+    const isCoordinatesSelected = (
+      resultCoordinate: QueryBuilderTDSResultCellCoordinate,
+    ): boolean =>
+      resultState.selectedCells.some(
+        (cell) =>
+          cell.coordinates.rowIndex === resultCoordinate.rowIndex &&
+          cell.coordinates.colIndex === resultCoordinate.colIndex,
+      );
+
     const mouseDown: React.MouseEventHandler = (event) => {
       event.preventDefault();
 
@@ -489,7 +545,7 @@ const QueryResultCellRenderer = observer(
           columnName,
           params.rowIndex,
         );
-        const actualValue = resultState.findResultValueFromCoordinates([
+        const actualValue = findResultValueFromCoordinates([
           coordinates.rowIndex,
           coordinates.colIndex,
         ]);
@@ -508,7 +564,7 @@ const QueryResultCellRenderer = observer(
           columnName,
           params.rowIndex,
         );
-        const actualValue = resultState.findResultValueFromCoordinates([
+        const actualValue = findResultValueFromCoordinates([
           coordinates.rowIndex,
           coordinates.colIndex,
         ]);
@@ -539,9 +595,9 @@ const QueryResultCellRenderer = observer(
           columnName,
           params.rowIndex,
         );
-        const isInSelected = resultState.findIsCoordinatesSelected(coordinates);
+        const isInSelected = isCoordinatesSelected(coordinates);
         if (!isInSelected) {
-          const actualValue = resultState.findResultValueFromCoordinates([
+          const actualValue = findResultValueFromCoordinates([
             coordinates.rowIndex,
             coordinates.colIndex,
           ]);
@@ -595,14 +651,11 @@ const QueryResultCellRenderer = observer(
 
         for (let x = minRow; x <= maxRow; x++) {
           for (let y = minCol; y <= maxCol; y++) {
-            const actualValue = resultState.findResultValueFromCoordinates([
-              x,
-              y,
-            ]);
+            const actualValue = findResultValueFromCoordinates([x, y]);
 
             const valueAndColumnId = {
               value: actualValue,
-              columnName: resultState.findColumnFromCoordinates(y),
+              columnName: findColumnFromCoordinates(y),
               coordinates: {
                 rowIndex: x,
                 colIndex: y,
