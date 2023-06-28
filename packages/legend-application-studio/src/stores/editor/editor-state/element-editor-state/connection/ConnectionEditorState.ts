@@ -230,7 +230,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     return undefined;
   }
 
-  get selectedValidDatasources(): Array<CORE_DATASOURCE_SPEC_TYPE> {
+  get selectedValidDatasources(): CORE_DATASOURCE_SPEC_TYPE[] {
     switch (this.connection.type) {
       case DatabaseType.H2: {
         return [
@@ -271,7 +271,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     }
   }
 
-  get selectedValidAuthenticationStrategies(): Array<CORE_AUTHENTICATION_STRATEGY_TYPE> {
+  get selectedValidAuthenticationStrategies(): CORE_AUTHENTICATION_STRATEGY_TYPE[] {
     switch (this.connection.type) {
       case DatabaseType.H2: {
         return [CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT];
