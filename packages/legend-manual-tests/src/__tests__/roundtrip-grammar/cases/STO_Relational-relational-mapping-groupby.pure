@@ -44,4 +44,45 @@ Mapping model::NewMapping
     ~mainTable [model::Test]PersonTable
     name: [model::Test]PersonTable.firstName
   }
+
+  testSuites:
+  [
+    test:
+    {
+      function: |model::Firm.all()->project([x|$x.name], ['Name']);
+      tests:
+      [
+        test:
+        {
+          data:
+          [
+            model::Test:
+              Relational
+              #{
+                default.PersonTable:
+                  'id,firm_id,firstName,lastName\n'+
+                  '1,1,John,Smith\n';
+
+                default.FirmTable:
+                  'id\n'+
+                  '1\n';
+              }#
+          ];
+          asserts:
+          [
+            expectedAssertion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
 )

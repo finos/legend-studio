@@ -20,6 +20,7 @@ import {
   type MappingTestSuite,
   type Store,
   type DataElement,
+  type EmbeddedData,
   ModelStore,
   Database,
   getMappingCompatibleClasses,
@@ -28,6 +29,10 @@ import {
   MappingTest,
   PackageableElementExplicitReference,
   DataElementReference,
+  RelationalCSVData,
+  ModelStoreData,
+  ExternalFormatData,
+  ModelEmbeddedData,
 } from '@finos/legend-graph';
 import { forwardRef, useEffect, useRef, useState } from 'react';
 import {
@@ -208,6 +213,7 @@ const CreateTestSuiteModal = observer(
               name="Test Suite Name"
               prompt="Unique Identifier for Test suite i.e Person_suite"
               value={suiteName}
+              placeholder="Suite Name"
               update={(value: string | undefined): void =>
                 setSuiteName(value ?? '')
               }
@@ -216,6 +222,7 @@ const CreateTestSuiteModal = observer(
             <PanelFormTextField
               name="Test Name"
               prompt="Unique Identifier for first test in suite"
+              placeholder="Test Name"
               value={testName}
               update={(value: string | undefined): void =>
                 setTestName(value ?? '')
@@ -245,7 +252,11 @@ const CreateTestSuiteModal = observer(
               disabled={
                 !isValid || creatorState.isCreatingSuiteState.isInProgress
               }
-              title={'Create Test'}
+              title={
+                !isValid
+                  ? 'Suite Name and Test Name Required'
+                  : 'Create Test Suite'
+              }
               onClick={create}
               text="Create"
             />
@@ -648,30 +659,30 @@ const MappingTestSuiteQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
-            <div className="mapping-test-editor__action-btn">
+            <div className="btn__dropdown-combo">
               <button
-                className="mapping-test-editor__action-btn__label"
+                className="btn__dropdown-combo__label"
                 onClick={editWithQueryBuilder()}
                 title="Edit Query"
                 tabIndex={-1}
               >
-                <PencilIcon className="mapping-test-editor__action-btn__label__icon" />
-                <div className="mapping-test-editor__action-btn__label__title">
+                <PencilIcon className="btn__dropdown-combo__label__icon" />
+                <div className="btn__dropdown-combo__label__title">
                   Edit Query
                 </div>
               </button>
               <DropdownMenu
-                className="mapping-test-editor__action-btn__dropdown-btn"
+                className="btn__dropdown-combo__dropdown-btn"
                 content={
                   <MenuContent>
                     <MenuContentItem
-                      className="mapping-test-editor__action-btn__option"
+                      className="btn__dropdown-combo__option"
                       onClick={editWithQueryBuilder(true)}
                     >
                       Text Mode
                     </MenuContentItem>
                     <MenuContentItem
-                      className="mapping-test-editor__action-btn__option"
+                      className="btn__dropdown-combo__option"
                       onClick={clearQuery}
                     >
                       Clear Query
@@ -715,14 +726,14 @@ const StoreTestDataEditor = observer(
       mappingTestState.mappingTestableState.mappingEditorState.isReadOnly;
     const dataElements =
       storeTestDataState.editorStore.graphManagerState.graph.dataElements;
-    const data = storeTestDataState.storeTestData.data;
-    const isUsingReference = data instanceof DataElementReference;
+    const currentData = storeTestDataState.storeTestData.data;
+    const isUsingReference = currentData instanceof DataElementReference;
     const open = (): void => storeTestDataState.setDataElementModal(true);
     const close = (): void => storeTestDataState.setDataElementModal(false);
     const changeToUseMyOwn = (): void => {
       if (isUsingReference) {
         const newBare = returnUndefOnError(() =>
-          data.accept_EmbeddedDataVisitor(
+          currentData.accept_EmbeddedDataVisitor(
             new EmbeddedDataCreatorFromEmbeddedData(),
           ),
         );
@@ -732,10 +743,49 @@ const StoreTestDataEditor = observer(
       }
     };
 
-    const handler = (val: DataElement): void => {
-      const value = new DataElementReference();
-      value.dataElement = PackageableElementExplicitReference.create(val);
-      storeTestDataState.changeEmbeddedData(value);
+    const sharedDataHandler = (val: DataElement): void => {
+      const dataRef = new DataElementReference();
+      dataRef.dataElement = PackageableElementExplicitReference.create(val);
+      const dataElementValue = val.data;
+      let embeddedData: EmbeddedData = dataRef;
+      if (
+        currentData instanceof ModelStoreData &&
+        dataElementValue instanceof ExternalFormatData
+      ) {
+        const modelStoreVal = currentData.modelData?.[0];
+        if (modelStoreVal instanceof ModelEmbeddedData) {
+          const newModelEmbeddedData = new ModelEmbeddedData();
+          newModelEmbeddedData.model =
+            PackageableElementExplicitReference.create(
+              modelStoreVal.model.value,
+            );
+
+          newModelEmbeddedData.data = dataRef;
+          const modelStoreData = new ModelStoreData();
+          modelStoreData.modelData = [newModelEmbeddedData];
+          embeddedData = modelStoreData;
+        }
+      }
+      storeTestDataState.changeEmbeddedData(embeddedData);
+    };
+    const filter = (val: DataElement): boolean => {
+      const dataElementData = val.data;
+      if (currentData instanceof RelationalCSVData) {
+        if (dataElementData instanceof RelationalCSVData) {
+          return true;
+        }
+        return false;
+      } else if (currentData instanceof ModelStoreData) {
+        if (
+          dataElementData instanceof ExternalFormatData ||
+          dataElementData instanceof ModelStoreData
+        ) {
+          return true;
+        }
+        return false;
+      }
+      // TODO add extensions
+      return true;
     };
     return (
       <div className="service-test-data-editor">
@@ -783,7 +833,8 @@ const StoreTestDataEditor = observer(
             isReadOnly={false}
             editorStore={storeTestDataState.editorStore}
             close={close}
-            handler={handler}
+            filterBy={filter}
+            handler={sharedDataHandler}
           />
         )}
         <EmbeddedDataEditor
@@ -1241,7 +1292,7 @@ export const MappingTestableEditor = observer(
     };
 
     useApplicationNavigationContext(
-      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_TEST_EDITOR,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EDITOR_TEST,
     );
     return (
       <div className="service-test-suite-editor panel">
