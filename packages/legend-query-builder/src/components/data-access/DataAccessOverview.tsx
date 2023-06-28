@@ -246,21 +246,7 @@ const DataAccessOverviewGrid = observer(
     const { dataAccessState } = props;
 
     return (
-      <div
-        className={clsx(
-          'data-access-overview__grid',
-          {
-            'ag-theme-balham-dark':
-              !dataAccessState.applicationStore.layoutService
-                .TEMPORARY__isLightColorThemeEnabled,
-          },
-          {
-            'ag-theme-balham':
-              dataAccessState.applicationStore.layoutService
-                .TEMPORARY__isLightColorThemeEnabled,
-          },
-        )}
-      >
+      <div className="data-access-overview__grid ag-theme-balham-dark">
         <DataGrid
           rowData={dataAccessState.datasets}
           gridOptions={{
@@ -329,7 +315,7 @@ export const DataAccessOverview = observer(
       >
         {isLoading && (
           <>
-            <PanelLoadingIndicator isLoading={true} />
+            <PanelLoadingIndicator belowModalHeader={true} isLoading={true} />
             <PanelDivider />
             <PanelDivider />
           </>

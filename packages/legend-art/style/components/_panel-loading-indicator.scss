@@ -22,6 +22,10 @@
 
   &__container {
     position: relative;
+
+    &__below-modal-header {
+      margin-top: -2rem;
+    }
   }
 
   &--disabled {
