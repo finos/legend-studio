@@ -96,7 +96,7 @@ class LegendStudioApplicationCoreOptions {
    * Indicates whether we should render the new mapping testable editor or the deprecated legacy editor.
    * This flag will be removed once the editor for testable editor is agreed on.
    */
-  TEMPORARY__enableMappingTestableEditor = false;
+  TEMPORARY__enableMappingTestableEditor = true;
 
   /**
    * Provides service registration environment configs.

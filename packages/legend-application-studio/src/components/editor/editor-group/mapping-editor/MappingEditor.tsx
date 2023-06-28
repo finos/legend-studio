@@ -357,7 +357,10 @@ export const MappingEditorWithTestable = observer(() => {
     (): void =>
       mappingEditorState.setSelectedTab(tab);
   return (
-    <div className="service-editor">
+    <div
+      data-testid={LEGEND_STUDIO_TEST_ID.MAPPING_EDITOR}
+      className="service-editor"
+    >
       <div className="panel">
         <div className="panel__header">
           <div className="panel__header__title">
@@ -389,7 +392,7 @@ export const MappingEditorWithTestable = observer(() => {
           {selectedTab === MAPPING_EDITOR_TAB.CLASS_MAPPINGS && (
             <_MappingEditor />
           )}
-          {selectedTab === MAPPING_EDITOR_TAB.BETA_TEST_SUITES && (
+          {selectedTab === MAPPING_EDITOR_TAB.TEST_SUITES && (
             <MappingTestableEditor
               mappingTestableState={mappingEditorState.mappingTestableState}
             />

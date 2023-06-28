@@ -74,7 +74,7 @@ export const validateTestableId = (
   if (!id) {
     return 'ID is required';
   } else if (id.includes(' ')) {
-    return `ID can't contain space`;
+    return `ID can't contain spaces`;
   } else if (possibleIds?.includes(id)) {
     return `ID '${id}' already exists`;
   }
@@ -138,7 +138,7 @@ export class EmbeddedDataCreatorFromEmbeddedData
   visit_ExternalFormatData(data: ExternalFormatData): EmbeddedData {
     const val = new ExternalFormatData();
     val.contentType = data.contentType;
-    val.data = '';
+    val.data = data.data;
     return val;
   }
   visit_ModelStoreData(data: ModelStoreData): EmbeddedData {

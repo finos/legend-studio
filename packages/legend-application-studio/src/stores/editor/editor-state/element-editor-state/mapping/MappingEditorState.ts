@@ -144,7 +144,7 @@ export const generateMappingTestName = (mapping: Mapping): string => {
 
 export enum MAPPING_EDITOR_TAB {
   CLASS_MAPPINGS = 'CLASS_MAPPINGS',
-  BETA_TEST_SUITES = 'TEST_SUITES',
+  TEST_SUITES = 'TEST_SUITES',
 }
 
 export enum MAPPING_ELEMENT_SOURCE_ID_LABEL {
@@ -615,7 +615,7 @@ export interface MappingElementSpec {
 }
 
 export class MappingEditorState extends ElementEditorState {
-  selectedTab = MAPPING_EDITOR_TAB.BETA_TEST_SUITES;
+  selectedTab = MAPPING_EDITOR_TAB.CLASS_MAPPINGS;
   currentTabState?: MappingEditorTabState | undefined;
   openedTabStates: MappingEditorTabState[] = [];
 
