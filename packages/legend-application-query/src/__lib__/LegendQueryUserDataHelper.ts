@@ -51,6 +51,13 @@ export class LegendQueryUserDataHelper {
     );
   }
 
+  static removeRecentlyViewedQueries(service: UserDataService): void {
+    service.persistValue(
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
+      [],
+    );
+  }
+
   static removeRecentlyViewedQuery(
     service: UserDataService,
     queryId: string,

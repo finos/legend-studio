@@ -77,6 +77,10 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
             },
           );
         },
+        handleFetchDefaultQueriesFailure: (): void =>
+          LegendQueryUserDataHelper.removeRecentlyViewedQueries(
+            this.applicationStore.userDataService,
+          ),
       },
     );
   }

@@ -80,6 +80,10 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
             },
           );
         },
+        handleFetchDefaultQueriesFailure: (): void =>
+          LegendQueryUserDataHelper.removeRecentlyViewedQueries(
+            this.applicationStore.userDataService,
+          ),
       },
     );
   }
