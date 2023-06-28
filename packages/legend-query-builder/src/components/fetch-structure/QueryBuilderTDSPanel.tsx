@@ -324,8 +324,11 @@ const buildCalendarTypeOption = (
 });
 
 const QueryBuilderProjectionColumnEditor = observer(
-  (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
-    const { projectionColumnState } = props;
+  (props: {
+    projectionColumnState: QueryBuilderProjectionColumnState;
+    isOverProjectionColumns: boolean;
+  }) => {
+    const { isOverProjectionColumns, projectionColumnState } = props;
     const columnIdx = projectionColumnState.tdsState.tdsColumns.indexOf(
       projectionColumnState,
     );
@@ -484,12 +487,12 @@ const QueryBuilderProjectionColumnEditor = observer(
       (type: string): void => {
         if (
           type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE &&
-          tdsState.draggedColumnIndex !== undefined &&
-          tdsState.hoveredColumnIndex !== undefined
+          tdsState.hoveredColumnIndex !== undefined &&
+          tdsState.draggedColumnIndex !== undefined
         ) {
           tdsState.moveColumn(
-            tdsState.draggedColumnIndex,
             tdsState.hoveredColumnIndex,
+            tdsState.draggedColumnIndex,
           );
         }
         tdsState.setRearrangeColumnsIndex(undefined, undefined);
@@ -581,8 +584,9 @@ const QueryBuilderProjectionColumnEditor = observer(
     );
 
     const isBeingDragged =
-      columnIdx === tdsState.hoveredColumnIndex &&
-      projectionColumnBeingDragged !== undefined;
+      columnIdx === tdsState.draggedColumnIndex &&
+      projectionColumnBeingDragged !== undefined &&
+      isOverProjectionColumns;
 
     dragConnector(handleRef);
     dropConnector(ref);
@@ -644,6 +648,14 @@ const QueryBuilderProjectionColumnEditor = observer(
       [handleDrop],
     );
 
+    const lastColumnBeingDragged =
+      tdsState.tdsColumns.length - 1 === tdsState.draggedColumnIndex &&
+      tdsState.hoveredColumnIndex === undefined;
+
+    const firstColumnBeingDragged =
+      tdsState.draggedColumnIndex === 0 &&
+      tdsState.hoveredColumnIndex === undefined;
+
     return (
       <PanelDnDEntry
         ref={ref}
@@ -655,8 +667,10 @@ const QueryBuilderProjectionColumnEditor = observer(
         placeholder={
           <div
             className={
-              (tdsState.hoveredColumnIndex ?? 0) >
-              (tdsState.draggedColumnIndex ?? 0)
+              ((tdsState.draggedColumnIndex ?? 0) >
+                (tdsState.hoveredColumnIndex ?? 0) &&
+                !lastColumnBeingDragged) ||
+              firstColumnBeingDragged
                 ? 'query-builder__projection__column__placeholder--bottom'
                 : 'query-builder__projection__column__placeholder--top'
             }
@@ -986,7 +1000,7 @@ export const QueryBuilderTDSPanel = observer(
       [handleDrop],
     );
 
-    const [, projectionColumnDropConnector] = useDrop<
+    const [isOverProjectionColumns, projectionColumnDropConnector] = useDrop<
       QueryBuilderProjectionColumnDragSource,
       void,
       { isOverProjectionColumns: boolean }
@@ -1080,6 +1094,9 @@ export const QueryBuilderTDSPanel = observer(
                 {projectionColumns.map((projectionColumnState) => (
                   <QueryBuilderProjectionColumnEditor
                     key={projectionColumnState.uuid}
+                    isOverProjectionColumns={
+                      isOverProjectionColumns.isOverProjectionColumns
+                    }
                     projectionColumnState={projectionColumnState}
                   />
                 ))}
