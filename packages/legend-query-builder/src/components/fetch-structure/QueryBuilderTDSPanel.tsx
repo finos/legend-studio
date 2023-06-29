@@ -1000,19 +1000,20 @@ export const QueryBuilderTDSPanel = observer(
       [handleDrop],
     );
 
-    const [isOverProjectionColumns, projectionColumnDropConnector] = useDrop<
-      QueryBuilderProjectionColumnDragSource,
-      void,
-      { isOverProjectionColumns: boolean }
-    >(
-      () => ({
-        accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
-        collect: (monitor) => ({
-          isOverProjectionColumns: monitor.isOver({ shallow: false }),
+    const [{ isOverProjectionColumns }, projectionColumnDropConnector] =
+      useDrop<
+        QueryBuilderProjectionColumnDragSource,
+        void,
+        { isOverProjectionColumns: boolean }
+      >(
+        () => ({
+          accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
+          collect: (monitor) => ({
+            isOverProjectionColumns: monitor.isOver({ shallow: false }),
+          }),
         }),
-      }),
-      [],
-    );
+        [],
+      );
 
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
@@ -1094,9 +1095,7 @@ export const QueryBuilderTDSPanel = observer(
                 {projectionColumns.map((projectionColumnState) => (
                   <QueryBuilderProjectionColumnEditor
                     key={projectionColumnState.uuid}
-                    isOverProjectionColumns={
-                      isOverProjectionColumns.isOverProjectionColumns
-                    }
+                    isOverProjectionColumns={isOverProjectionColumns}
                     projectionColumnState={projectionColumnState}
                   />
                 ))}
