@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { list, createModelSchema, primitive } from 'serializr';
+import { list, createModelSchema, primitive, optional } from 'serializr';
 import { observable, action, computed, makeObservable } from 'mobx';
 import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion.js';
 import { ProjectDependency } from '../configuration/ProjectDependency.js';
@@ -31,10 +31,21 @@ import { ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
 import { PlatformConfiguration } from './PlatformConfiguration.js';
 import { SDLC_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
 
+/**
+ * Embedded Mode enables user to manage their pipeline/build and deployment flow.
+ * This will disable releasing and platform version configuration.
+ * Additionally, the concept of extension version will not be applicable when dealing with project structure version.
+ */
+export enum ProjectType {
+  MANAGED = 'MANAGED',
+  EMBEDDED = 'EMBEDDED',
+}
+
 export class ProjectConfiguration implements Hashable {
   projectId!: string;
   groupId!: string;
   artifactId!: string;
+  projectType: ProjectType | undefined;
   projectStructureVersion!: ProjectStructureVersion;
   platformConfigurations?: PlatformConfiguration[] | undefined;
   projectDependencies: ProjectDependency[] = [];
@@ -67,6 +78,7 @@ export class ProjectConfiguration implements Hashable {
         usingModelSchema(ProjectDependency.serialization.schema),
       ),
       projectId: primitive(),
+      projectType: optional(primitive()),
       projectStructureVersion: usingModelSchema(
         ProjectStructureVersion.serialization.schema,
       ),

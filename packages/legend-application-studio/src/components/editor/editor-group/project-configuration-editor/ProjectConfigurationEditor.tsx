@@ -20,6 +20,7 @@ import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
+  projectTypeTabFilter,
 } from '../../../../stores/editor/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import {
   clsx,
@@ -41,13 +42,16 @@ import {
   PanelContent,
   PanelHeader,
   PanelContentLists,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
   type Platform,
+  type ProjectConfiguration,
+  type ProjectStructureVersion,
   PlatformConfiguration,
   ProjectDependency,
-  type ProjectConfiguration,
+  ProjectType,
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -64,6 +68,28 @@ import {
 } from '@finos/legend-lego/application';
 import type { StoreProjectData } from '@finos/legend-server-depot';
 
+const isProjectConfigurationVersionOutdated = (
+  projectConfig: ProjectConfiguration,
+  latestVersion: ProjectStructureVersion | undefined,
+  isEmbeddedMode: boolean,
+): boolean => {
+  if (!latestVersion) {
+    return false;
+  }
+  const mainVersionOutdated =
+    latestVersion.version > projectConfig.projectStructureVersion.version;
+  if (isEmbeddedMode) {
+    return mainVersionOutdated;
+  }
+  const currentProjectExtensionVersion =
+    projectConfig.projectStructureVersion.extensionVersion ?? -1;
+  const latestProjectExtensionVersion = latestVersion.extensionVersion ?? -1;
+  return (
+    mainVersionOutdated ||
+    latestProjectExtensionVersion > currentProjectExtensionVersion
+  );
+};
+
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
     const { projectConfig, isReadOnly } = props;
@@ -71,13 +97,12 @@ const ProjectStructureEditor = observer(
     const applicationStore = useApplicationStore();
     const latestVersion =
       editorStore.projectConfigurationEditorState.latestProjectStructureVersion;
-    const currentProjectExtensionVersion =
-      projectConfig.projectStructureVersion.extensionVersion ?? -1;
-    const latestProjectExtensionVersion = latestVersion?.extensionVersion ?? -1;
-    const isVersionOutdated =
-      latestVersion &&
-      (latestVersion.version > projectConfig.projectStructureVersion.version ||
-        latestProjectExtensionVersion > currentProjectExtensionVersion);
+    const isProjectStructureVersionOutdated =
+      isProjectConfigurationVersionOutdated(
+        projectConfig,
+        latestVersion,
+        editorStore.projectConfigurationEditorState.isInEmbeddedMode,
+      );
     const isGroupIdChanged =
       editorStore.projectConfigurationEditorState.isGroupIdChanged;
     const isArtifactIdChanged =
@@ -108,7 +133,7 @@ const ProjectStructureEditor = observer(
         <div className="project-configuration-editor__project__structure__version">
           <div className="project-configuration-editor__project__structure__version__label">
             <div className="project-configuration-editor__project__structure__version__label__status">
-              {isVersionOutdated ? (
+              {isProjectStructureVersionOutdated ? (
                 <ExclamationCircleIcon
                   className="project-configuration-editor__project__structure__version__label__status--outdated"
                   title="Project structure is outdated"
@@ -124,7 +149,7 @@ const ProjectStructureEditor = observer(
               {`PROJECT STRUCTURE VERSION ${projectConfig.projectStructureVersion.fullVersion}`}
             </div>
           </div>
-          {isVersionOutdated && (
+          {isProjectStructureVersionOutdated && latestVersion && (
             <button
               className="project-configuration-editor__project__structure__version__update-btn"
               disabled={isReadOnly}
@@ -132,7 +157,10 @@ const ProjectStructureEditor = observer(
               tabIndex={-1}
               title={`Current project structure is outdated. Click to update to the latest version (v${latestVersion.fullVersion}})`}
             >
-              Update to version {latestVersion.fullVersion}
+              Update to version{' '}
+              {editorStore.projectConfigurationEditorState.isInEmbeddedMode
+                ? latestVersion.version
+                : latestVersion.fullVersion}
             </button>
           )}
         </div>
@@ -511,20 +539,106 @@ const ProjectPlatformVersionEditor = observer(
   },
 );
 
+const ProjectAdvancedEditor = observer(
+  (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
+    const { projectConfig } = props;
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const currentProjectType = projectConfig.projectType ?? ProjectType.MANAGED;
+    const isEmbeddedMode = currentProjectType === ProjectType.EMBEDDED;
+    const managedModeBlurb =
+      'Managed Projects are managed by our SDLC server, which includes managing the build and deployment of your project.This enables rich features such as releasing and dependency management work within our ecosystem.This is the recommended mode and should not be changed unless your customized build is robust to handle these operations and you are aware of the different features our managed mode provides.';
+    const embeddedModeBlurb =
+      'Embedded Projects have their own customized build. The build is managed directly on the underlying version system (gitlab, github etc) and the owners of the projects are responsible for managing their build and incorporating the necessary steps to enable features such as releasing and dependency management. Our SDLC server still manages the file structure of where the elements entities are located and correlate with the project structure version.';
+    const managedToEmbedded =
+      'You are about to change from managed to embedded project type. This will cause your build files (pom, ci etc) to no longer be managed by our SDLC process. Your element folder structure will remain managed by us but your build will become your responsibility. Please ensure you understand the risks of changing over before continuing.';
+    const embeddedToManaged =
+      'You are about to change from embedded to managed project type. Your build will now be managed by our SDLC sever in addition to your element folder structure. Your current build files will all be deleted and replaces with our own. Please ensure you understand the risks of changing over before continuing.';
+    const changeProjectType = (): void => {
+      applicationStore.alertService.setActionAlertInfo({
+        message: `${isEmbeddedMode ? embeddedToManaged : managedToEmbedded}`,
+        prompt: 'Do you want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Continue',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: () => {
+              flowResult(
+                editorStore.projectConfigurationEditorState.changeProjectType(),
+              ).catch(applicationStore.alertUnhandledError);
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    };
+
+    return (
+      <Panel>
+        <PanelForm>
+          <div className="panel__content__form__section__header__label">
+            {`Project Type: ${prettyCONSTName(currentProjectType)} `}
+          </div>
+          <div className="documentation-preview">
+            <div className="documentation-preview__text">
+              <div className="project-configuration-editor__advanced__project-type__info">
+                {managedModeBlurb}
+              </div>
+              <div className="project-configuration-editor__advanced__project-type__info">
+                {embeddedModeBlurb}
+              </div>
+            </div>
+
+            <div className="documentation-preview__hint">
+              <DocumentationLink
+                documentationKey={
+                  LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_EMBEDDED_MODE_PROJECT_TYPE
+                }
+              />
+            </div>
+          </div>
+          <div className="platform-configurations-editor__dependencies">
+            <div className="platform-configurations-editor__dependencies__header">
+              <button
+                className="btn--dark btn--conflict btn--important project-configuration-editor__advanced__caution__btn"
+                onClick={changeProjectType}
+                tabIndex={-1}
+              >
+                {`Change to ${
+                  isEmbeddedMode ? 'Managed Type' : 'Embedded Type'
+                }`}
+              </button>
+            </div>
+          </div>
+        </PanelForm>
+      </Panel>
+    );
+  },
+);
+
 export const ProjectConfigurationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const configState = editorStore.tabManagerState.getCurrentEditorState(
     ProjectConfigurationEditorState,
   );
+  const projectType =
+    configState.originalConfig.projectType ?? ProjectType.MANAGED;
   const sdlcState = editorStore.sdlcState;
   const isReadOnly = editorStore.isInViewerMode;
   const selectedTab = configState.selectedTab;
+  const dependencyEditorState = configState.projectDependencyEditorState;
   const tabs = [
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
     CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS,
-  ];
+    CONFIGURATION_EDITOR_TAB.ADVANCED,
+  ].filter((tab) => projectTypeTabFilter(projectType, tab));
   const changeTab =
     (tab: CONFIGURATION_EDITOR_TAB): (() => void) =>
     (): void =>
@@ -664,6 +778,10 @@ export const ProjectConfigurationEditor = observer(() => {
   if (!configState.projectConfiguration) {
     return null;
   }
+  const isLoading =
+    configState.updatingConfigurationState.isInProgress ||
+    configState.fetchingProjectVersionsState.isInProgress ||
+    dependencyEditorState.fetchingDependencyInfoState.isInProgress;
   return (
     <div className="project-configuration-editor">
       <Panel>
@@ -717,6 +835,7 @@ export const ProjectConfigurationEditor = observer(() => {
           </PanelHeaderActions>
         </PanelHeader>
         <PanelContent className="project-configuration-editor__content">
+          <PanelLoadingIndicator isLoading={isLoading} />
           {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE && (
             <ProjectStructureEditor
               projectConfig={currentProjectConfiguration}
@@ -728,6 +847,12 @@ export const ProjectConfigurationEditor = observer(() => {
           )}
           {selectedTab === CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS && (
             <ProjectPlatformVersionEditor
+              projectConfig={currentProjectConfiguration}
+              isReadOnly={isReadOnly}
+            />
+          )}
+          {selectedTab === CONFIGURATION_EDITOR_TAB.ADVANCED && (
+            <ProjectAdvancedEditor
               projectConfig={currentProjectConfiguration}
               isReadOnly={isReadOnly}
             />

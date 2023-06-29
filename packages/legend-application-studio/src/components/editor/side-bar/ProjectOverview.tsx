@@ -801,6 +801,8 @@ interface ProjectOverviewActivityDisplay {
 export const ProjectOverviewActivityBar = observer(() => {
   const editorStore = useEditorStore();
   const projectOverviewState = editorStore.projectOverviewState;
+  const isInEmbeddedMode =
+    editorStore.projectConfigurationEditorState.isInEmbeddedMode;
   const changeActivity =
     (activity: PROJECT_OVERVIEW_ACTIVITY_MODE): (() => void) =>
     (): void =>
@@ -813,9 +815,18 @@ export const ProjectOverviewActivityBar = observer(() => {
     },
     { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.VERSIONS, title: 'Versions' },
     { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.WORKSPACES, title: 'Workspaces' },
-  ].filter((activity): activity is ProjectOverviewActivityDisplay =>
-    Boolean(activity),
-  );
+  ]
+    .filter((activity): activity is ProjectOverviewActivityDisplay =>
+      Boolean(activity),
+    )
+    .filter(
+      (act) =>
+        // releasing not supported in embedded mode
+        !(
+          act.mode === PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE &&
+          isInEmbeddedMode
+        ),
+    );
 
   return (
     <div
