@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 27.1.3
+
+### Patch Changes
+
+- [#2371](https://github.com/finos/legend-studio/pull/2371) [`6a1fad74c`](https://github.com/finos/legend-studio/commit/6a1fad74cae4cfafe93be9c5326fde280f241baf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable switching to/from EMBEDDED and MANAGED project types. Disable platform version configuration and releasing for EMBEDDED project types.
+
 ## 27.1.2
 
 ### Patch Changes

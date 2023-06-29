@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.1.3
+
+### Patch Changes
+
+- [#2368](https://github.com/finos/legend-studio/pull/2368) [`ae61fed8f`](https://github.com/finos/legend-studio/commit/ae61fed8f464de83d4e8ee18eb7f39602f7bcd2c) ([@Paarth002](https://github.com/Paarth002)) - Uplifted Execution plan viewer support for relational flow and added execution plan viewer support for flow control execution nodes
+
 ## 4.1.2
 
 ## 4.1.1

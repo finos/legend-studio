@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 30.0.12
+
+### Patch Changes
+
+- [#2368](https://github.com/finos/legend-studio/pull/2368) [`ae61fed8f`](https://github.com/finos/legend-studio/commit/ae61fed8f464de83d4e8ee18eb7f39602f7bcd2c) ([@Paarth002](https://github.com/Paarth002)) - Added Allocation Execution Node, Constant Execution Node, Function Parameters Validation Node and Sequence Execution Node.
+
 ## 30.0.11
 
 ## 30.0.10
