@@ -995,7 +995,6 @@ export const ProjectDependencyEditor = observer(() => {
 
   return (
     <PanelContentLists>
-      <PanelLoadingIndicator isLoading={isLoading} />
       {isLoading && (
         <div className="project-dependency-editor__progress-msg">
           {configState.updatingConfigurationState.isInProgress

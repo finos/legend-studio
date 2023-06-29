@@ -28,9 +28,11 @@ import {
   optionalCustom,
   SerializationFactory,
   serializeArray,
+  optionalCustomUsingModelSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
 import { PlatformConfiguration } from './PlatformConfiguration.js';
+import type { ProjectType } from './ProjectConfiguration.js';
 
 export class UpdatePlatformConfigurationsCommand {
   platformConfigurations?: PlatformConfiguration[] | undefined;
@@ -61,12 +63,13 @@ export class UpdateProjectConfigurationCommand {
   platformConfigurations?: UpdatePlatformConfigurationsCommand;
   projectDependenciesToAdd?: ProjectDependency[];
   projectDependenciesToRemove?: ProjectDependency[];
-  projectStructureVersion: ProjectStructureVersion;
+  projectStructureVersion?: ProjectStructureVersion | undefined;
+  projectType?: ProjectType | undefined;
 
   constructor(
     groupId: string,
     artifactId: string,
-    projectStructureVersion: ProjectStructureVersion,
+    projectStructureVersion: ProjectStructureVersion | undefined,
     message: string,
   ) {
     this.groupId = groupId;
@@ -91,9 +94,10 @@ export class UpdateProjectConfigurationCommand {
       projectDependenciesToRemove: list(
         usingModelSchema(ProjectDependency.serialization.schema),
       ),
-      projectStructureVersion: usingModelSchema(
+      projectStructureVersion: optionalCustomUsingModelSchema(
         ProjectStructureVersion.serialization.schema,
       ),
+      projectType: optional(primitive()),
     }),
   );
 }
