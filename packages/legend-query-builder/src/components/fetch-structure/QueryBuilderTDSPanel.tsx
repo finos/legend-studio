@@ -408,6 +408,7 @@ const QueryBuilderProjectionColumnEditor = observer(
         aggregateColumnState?.calendarFunction?.setCalendarType(option.value);
       }
     };
+
     const defaultEndDate = observe_PrimitiveInstanceValue(
       new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(
@@ -513,13 +514,6 @@ const QueryBuilderProjectionColumnEditor = observer(
           (e) => e === projectionColumnState,
         );
 
-        if (dragIndex === hoverIndex) {
-          tdsState.setRearrangeColumnsIndex(undefined, hoverIndex);
-        }
-
-        if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
-          return;
-        }
         // move the item being hovered on when the dragged item position is beyond the its middle point
         const hoverBoundingReact = ref.current?.getBoundingClientRect();
 
@@ -528,6 +522,23 @@ const QueryBuilderProjectionColumnEditor = observer(
           2;
         const dragDistance =
           (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
+        if (dragIndex === hoverIndex) {
+          tdsState.setRearrangeColumnsIndex(undefined, hoverIndex);
+
+          const borderMiddle =
+            hoverBoundingReact?.bottom && hoverBoundingReact.top
+              ? (hoverBoundingReact.bottom + hoverBoundingReact.top) / 2
+              : undefined;
+
+          tdsState.setHoveredColumnGapIsUp(
+            (monitor.getClientOffset()?.y ?? 0) < (borderMiddle ?? 0),
+          );
+        }
+
+        if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
+          return;
+        }
+
         if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
           return;
         }
@@ -648,14 +659,6 @@ const QueryBuilderProjectionColumnEditor = observer(
       [handleDrop],
     );
 
-    const lastColumnBeingDragged =
-      tdsState.tdsColumns.length - 1 === tdsState.draggedColumnIndex &&
-      tdsState.hoveredColumnIndex === undefined;
-
-    const firstColumnBeingDragged =
-      tdsState.draggedColumnIndex === 0 &&
-      tdsState.hoveredColumnIndex === undefined;
-
     return (
       <PanelDnDEntry
         ref={ref}
@@ -667,12 +670,9 @@ const QueryBuilderProjectionColumnEditor = observer(
         placeholder={
           <div
             className={
-              ((tdsState.draggedColumnIndex ?? 0) >
-                (tdsState.hoveredColumnIndex ?? 0) &&
-                !lastColumnBeingDragged) ||
-              firstColumnBeingDragged
-                ? 'query-builder__projection__column__placeholder--bottom'
-                : 'query-builder__projection__column__placeholder--top'
+              tdsState.hoveredColumnGapIsUp
+                ? 'query-builder__projection__column__placeholder--top'
+                : 'query-builder__projection__column__placeholder--bottom'
             }
           />
         }
@@ -701,7 +701,9 @@ const QueryBuilderProjectionColumnEditor = observer(
         >
           <div className="query-builder__projection__column__container">
             <PanelEntryDragHandle
-              isDragging={isBeingDragged}
+              isDragging={false}
+              //svp
+              // isDragging={isBeingDragged}
               dragSourceConnector={handleRef}
               className="query-builder__projection__column__drag-handle__container"
             />

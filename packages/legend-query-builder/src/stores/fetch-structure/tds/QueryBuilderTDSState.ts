@@ -123,6 +123,7 @@ export class QueryBuilderTDSState
   showWindowFuncPanel = false;
   hoveredColumnIndex: number | undefined;
   draggedColumnIndex: number | undefined;
+  hoveredColumnGapIsUp = true;
 
   postFilterOperators: QueryBuilderPostFilterOperator[] =
     getQueryBuilderCorePostFilterOperators();
@@ -146,11 +147,13 @@ export class QueryBuilderTDSState
       showWindowFuncPanel: observable,
       hoveredColumnIndex: observable,
       draggedColumnIndex: observable,
+      hoveredColumnGapIsUp: observable,
       TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
       addColumn: action,
       moveColumn: action,
+      setHoveredColumnGapIsUp: action,
       setRearrangeColumnsIndex: action,
       replaceColumn: action,
       initialize: action,
@@ -180,6 +183,10 @@ export class QueryBuilderTDSState
       this.queryBuilderState.applicationStore.settingService.getBooleanValue(
         QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL,
       ) ?? false;
+  }
+
+  setHoveredColumnGapIsUp(value: boolean): void {
+    this.hoveredColumnGapIsUp = value;
   }
 
   setRearrangeColumnsIndex(
