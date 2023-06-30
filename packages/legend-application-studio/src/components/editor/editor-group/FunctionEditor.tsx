@@ -1060,6 +1060,7 @@ export const FunctionEditor = observer(() => {
     flowResult(
       functionEditorState.functionDefinitionEditorState.convertLambdaObjectToGrammarString(
         true,
+        undefined,
         true,
       ),
     ).catch(applicationStore.alertUnhandledError);

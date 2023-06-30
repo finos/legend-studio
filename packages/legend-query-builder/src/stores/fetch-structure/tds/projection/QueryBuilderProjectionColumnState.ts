@@ -226,7 +226,10 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(
+    pretty: boolean,
+    preserveCompilationError?: boolean | undefined,
+  ): GeneratorFn<void> {
     if (this.derivationProjectionColumnState.lambda.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -248,7 +251,9 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
             ? this.extractLambdaString(grammarText)
             : '',
         );
-        this.clearErrors();
+        this.clearErrors({
+          preserveCompilationError: preserveCompilationError,
+        });
       } catch (error) {
         assertErrorThrown(error);
         this.queryBuilderState.applicationStore.logService.error(

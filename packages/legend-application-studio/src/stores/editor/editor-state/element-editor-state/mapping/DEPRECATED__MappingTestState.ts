@@ -149,7 +149,10 @@ export class MappingTestQueryState extends LambdaEditorState {
     yield flowResult(this.convertLambdaObjectToGrammarString(true));
   }
 
-  *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(
+    pretty?: boolean,
+    preserveCompilationError?: boolean | undefined,
+  ): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.query)) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -165,7 +168,9 @@ export class MappingTestQueryState extends LambdaEditorState {
             ? this.extractLambdaString(grammarText)
             : '',
         );
-        this.clearErrors();
+        this.clearErrors({
+          preserveCompilationError: preserveCompilationError,
+        });
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.logService.error(

@@ -64,9 +64,15 @@ export abstract class LambdaEditorState {
     this.lambdaString = val;
   }
 
-  clearErrors(): void {
-    this.setCompilationError(undefined);
+  clearErrors(options?: {
+    preserveCompilationError?: boolean | undefined;
+  }): void {
     this.setParserError(undefined);
+    if (options?.preserveCompilationError && this.compilationError) {
+      this.compilationError.sourceInformation = undefined;
+    } else {
+      this.setCompilationError(undefined);
+    }
   }
 
   setCompilationError(compilationError: CompilationError | undefined): void {
@@ -113,7 +119,9 @@ export abstract class LambdaEditorState {
   }
 
   abstract convertLambdaGrammarStringToObject(): GeneratorFn<void>;
+  //TODO: refactor to options?: { ... }
   abstract convertLambdaObjectToGrammarString(
     pretty: boolean,
+    preserveCompilationError?: boolean | undefined,
   ): GeneratorFn<void>;
 }

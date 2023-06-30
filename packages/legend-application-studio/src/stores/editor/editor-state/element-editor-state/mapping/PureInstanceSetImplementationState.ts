@@ -97,7 +97,10 @@ export class PurePropertyMappingState extends PropertyMappingState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(
+    pretty: boolean,
+    preserveCompilationError?: boolean | undefined,
+  ): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.propertyMapping.transform)) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -113,7 +116,9 @@ export class PurePropertyMappingState extends PropertyMappingState {
             ? this.extractLambdaString(grammarText)
             : '',
         );
-        this.clearErrors();
+        this.clearErrors({
+          preserveCompilationError: preserveCompilationError,
+        });
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.logService.error(
@@ -190,7 +195,10 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(
+    pretty: boolean,
+    preserveCompilationError?: boolean | undefined,
+  ): GeneratorFn<void> {
     if (this.instanceSetImplementation.filter) {
       try {
         const grammarText =
@@ -199,7 +207,9 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
             pretty,
           )) as string;
         this.setLambdaString(this.extractLambdaString(grammarText));
-        this.clearErrors();
+        this.clearErrors({
+          preserveCompilationError: preserveCompilationError,
+        });
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.logService.error(

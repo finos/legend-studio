@@ -554,7 +554,7 @@ const LambdaEditor_PopUp = observer(
 
     useEffect(() => {
       flowResult(
-        lambdaEditorState.convertLambdaObjectToGrammarString(true),
+        lambdaEditorState.convertLambdaObjectToGrammarString(true, true),
       ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, lambdaEditorState]);
 

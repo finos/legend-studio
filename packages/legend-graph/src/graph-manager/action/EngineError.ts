@@ -16,6 +16,7 @@
 
 import { ApplicationError } from '@finos/legend-shared';
 import type { SourceInformation } from '../action/SourceInformation.js';
+import { makeObservable, observable } from 'mobx';
 
 export class EngineError extends ApplicationError {
   sourceInformation?: SourceInformation | undefined;
@@ -23,6 +24,13 @@ export class EngineError extends ApplicationError {
 
 export class ParserError extends EngineError {}
 
-export class CompilationError extends EngineError {}
+export class CompilationError extends EngineError {
+  constructor(message: string | undefined) {
+    super(message);
+    makeObservable(this, {
+      sourceInformation: observable,
+    });
+  }
+}
 
 export class ExternalFormatError extends CompilationError {}
