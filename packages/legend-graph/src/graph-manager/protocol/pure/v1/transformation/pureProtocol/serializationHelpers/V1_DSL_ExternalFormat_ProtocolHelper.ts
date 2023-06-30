@@ -62,7 +62,6 @@ export const V1_modelUnitModelSchema = createModelSchema(V1_ModelUnit, {
 export const V1_bindingModelSchema = createModelSchema(V1_Binding, {
   _type: usingConstantValueSchema(V1_BINDING_ELEMENT_PROTOCOL_TYPE),
   contentType: primitive(),
-  includedStores: list(primitive()),
   modelUnit: custom(
     (val) => serialize(V1_modelUnitModelSchema, val),
     (val) => deserialize(V1_modelUnitModelSchema, val),

@@ -98,7 +98,6 @@ export const TEST_DATA__roundtrip_case1 = [
     content: {
       _type: 'binding',
       contentType: 'application/json',
-      includedStores: [],
       modelUnit: {
         packageableElementExcludes: [],
         packageableElementIncludes: ['org::dxl::Person'],
@@ -711,7 +710,6 @@ export const TEST_DATA__cloud__roundtrip = [
     content: {
       _type: 'binding',
       contentType: 'application/json',
-      includedStores: [],
       modelUnit: {
         packageableElementExcludes: [],
         packageableElementIncludes: ['org::dxl::Person'],
