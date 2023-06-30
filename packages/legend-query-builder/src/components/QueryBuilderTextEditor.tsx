@@ -54,7 +54,9 @@ export const QueryBuilderTextEditor = observer(
     const mode = queryTextEditorState.mode;
     useEffect(() => {
       flowResult(
-        queryTextEditorState.convertLambdaObjectToGrammarString(true),
+        queryTextEditorState.convertLambdaObjectToGrammarString({
+          pretty: true,
+        }),
       ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, queryTextEditorState]);
 

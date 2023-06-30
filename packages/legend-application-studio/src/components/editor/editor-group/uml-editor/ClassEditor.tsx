@@ -650,7 +650,9 @@ const DerivedPropertyBasicEditor = observer(
     const visitOwner = (): void =>
       editorStore.graphEditorMode.openElement(derivedProperty._OWNER);
     const remove = applicationStore.guardUnhandledError(async () => {
-      await flowResult(dpState.convertLambdaObjectToGrammarString(false));
+      await flowResult(
+        dpState.convertLambdaObjectToGrammarString({ pretty: false }),
+      );
       deleteDerivedProperty();
     });
 
@@ -931,7 +933,7 @@ const ConstraintEditor = observer(
       );
     const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(
-        constraintState.convertLambdaObjectToGrammarString(false),
+        constraintState.convertLambdaObjectToGrammarString({ pretty: false }),
       );
       deleteConstraint();
     });

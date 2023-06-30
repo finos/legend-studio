@@ -119,9 +119,8 @@ export abstract class LambdaEditorState {
   }
 
   abstract convertLambdaGrammarStringToObject(): GeneratorFn<void>;
-  //TODO: refactor to options?: { ... }
-  abstract convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void>;
+  abstract convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void>;
 }

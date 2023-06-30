@@ -146,13 +146,13 @@ export class MappingTestQueryState extends LambdaEditorState {
   *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.query = val;
     DEPRECATED_mappingTest_setQuery(this.test, val);
-    yield flowResult(this.convertLambdaObjectToGrammarString(true));
+    yield flowResult(this.convertLambdaObjectToGrammarString({ pretty: true }));
   }
 
-  *convertLambdaObjectToGrammarString(
-    pretty?: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.query)) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -160,7 +160,7 @@ export class MappingTestQueryState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
@@ -169,7 +169,7 @@ export class MappingTestQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors({
-          preserveCompilationError: preserveCompilationError,
+          preserveCompilationError: options?.preserveCompilationError,
         });
       } catch (error) {
         assertErrorThrown(error);

@@ -272,9 +272,9 @@ export const ServiceExecutionQueryEditor = observer(
 
     // convert to string
     useEffect(() => {
-      flowResult(queryState.convertLambdaObjectToGrammarString(true)).catch(
-        applicationStore.alertUnhandledError,
-      );
+      flowResult(
+        queryState.convertLambdaObjectToGrammarString({ pretty: true }),
+      ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, queryState]);
 
     return (

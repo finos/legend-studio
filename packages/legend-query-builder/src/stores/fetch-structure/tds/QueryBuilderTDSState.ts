@@ -481,7 +481,9 @@ export class QueryBuilderTDSState
     // convert to grammar for display
     flowResult(
       derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
-        false,
+        {
+          pretty: false,
+        },
       ),
     ).catch(this.queryBuilderState.applicationStore.alertUnhandledError);
   }

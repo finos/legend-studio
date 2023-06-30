@@ -104,10 +104,10 @@ export class DerivedPropertyState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (this.derivedProperty.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -121,7 +121,7 @@ export class DerivedPropertyState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
@@ -130,7 +130,7 @@ export class DerivedPropertyState extends LambdaEditorState {
             : '',
         );
         this.clearErrors({
-          preserveCompilationError: preserveCompilationError,
+          preserveCompilationError: options?.preserveCompilationError,
         });
       } catch (error) {
         assertErrorThrown(error);
@@ -201,10 +201,10 @@ export class ConstraintState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.constraint.functionDefinition)) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -212,7 +212,7 @@ export class ConstraintState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
@@ -221,7 +221,7 @@ export class ConstraintState extends LambdaEditorState {
             : '',
         );
         this.clearErrors({
-          preserveCompilationError: preserveCompilationError,
+          preserveCompilationError: options?.preserveCompilationError,
         });
       } catch (error) {
         assertErrorThrown(error);

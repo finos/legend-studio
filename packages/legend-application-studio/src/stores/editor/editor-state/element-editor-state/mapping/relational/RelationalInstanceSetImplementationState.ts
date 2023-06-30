@@ -109,10 +109,10 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (this.propertyMapping instanceof RelationalPropertyMapping) {
       if (!isStubbed_RawRelationalOperationElement(this.propertyMapping)) {
         try {
@@ -132,7 +132,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
               : '',
           );
           this.clearErrors({
-            preserveCompilationError: preserveCompilationError,
+            preserveCompilationError: options?.preserveCompilationError,
           });
         } catch (error) {
           assertErrorThrown(error);
@@ -228,7 +228,10 @@ export class EmbeddedRelationalInstanceSetImplementationState
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
 }

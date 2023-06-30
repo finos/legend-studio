@@ -1059,9 +1059,10 @@ export const FunctionEditor = observer(() => {
   useEffect(() => {
     flowResult(
       functionEditorState.functionDefinitionEditorState.convertLambdaObjectToGrammarString(
-        true,
-        undefined,
-        true,
+        {
+          pretty: true,
+          firstLoad: true,
+        },
       ),
     ).catch(applicationStore.alertUnhandledError);
   }, [applicationStore, functionEditorState]);
