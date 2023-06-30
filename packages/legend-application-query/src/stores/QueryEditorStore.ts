@@ -351,6 +351,10 @@ export abstract class QueryEditorStore {
             },
           );
         },
+        handleFetchDefaultQueriesFailure: (): void =>
+          LegendQueryUserDataHelper.removeRecentlyViewedQueries(
+            this.applicationStore.userDataService,
+          ),
       },
     );
     this.queryCreatorState = new QueryCreatorState(this, undefined);

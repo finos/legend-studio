@@ -47,6 +47,7 @@ export enum GRAPH_MANAGER_EVENT {
   // TODO: consider to spliting all of these generic errors into more specific events
   GRAPH_BUILDER_FAILURE = 'graph-manager.graph-builder.failure',
   EXECUTION_FAILURE = 'graph-manager.execution.failure',
+  GET_QUERY_FAILURE = 'graph-manager.get.query.failure',
   COMPILATION_FAILURE = 'graph-manager.compilation.failure',
   PARSING_FAILURE = 'graph-manager.grammar.parsing.failure',
   GRAPH_MANAGER_FAILURE = 'graph-manager.failure',

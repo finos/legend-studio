@@ -24,12 +24,14 @@ import {
   type QueryInfo,
   type BasicGraphManagerState,
   type Query,
+  GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import {
   ActionState,
   type GeneratorFn,
   assertErrorThrown,
   guaranteeNonNullable,
+  LogEvent,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, flow } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -62,6 +64,7 @@ export class QueryLoaderState {
   readonly isReadOnly?: boolean | undefined;
   readonly onQueryRenamed?: ((query: LightQuery) => void) | undefined;
   readonly onQueryDeleted?: ((query: LightQuery) => void) | undefined;
+  readonly handleFetchDefaultQueriesFailure?: (() => void) | undefined;
 
   queryBuilderState?: QueryBuilderState | undefined;
 
@@ -93,6 +96,7 @@ export class QueryLoaderState {
       isReadOnly?: boolean | undefined;
       onQueryRenamed?: ((query: LightQuery) => void) | undefined;
       onQueryDeleted?: ((query: LightQuery) => void) | undefined;
+      handleFetchDefaultQueriesFailure?: (() => void) | undefined;
     },
   ) {
     makeObservable(this, {
@@ -126,6 +130,8 @@ export class QueryLoaderState {
     this.isReadOnly = options.isReadOnly;
     this.onQueryRenamed = options.onQueryRenamed;
     this.onQueryDeleted = options.onQueryDeleted;
+    this.handleFetchDefaultQueriesFailure =
+      options.handleFetchDefaultQueriesFailure;
   }
 
   setSearchText(val: string): void {
@@ -190,7 +196,11 @@ export class QueryLoaderState {
         } catch (error) {
           this.searchQueriesState.fail();
           assertErrorThrown(error);
-          this.applicationStore.notificationService.notifyError(error);
+          this.applicationStore.logService.error(
+            LogEvent.create(GRAPH_MANAGER_EVENT.GET_QUERY_FAILURE),
+            error,
+          );
+          this.handleFetchDefaultQueriesFailure?.();
         }
       }
 
