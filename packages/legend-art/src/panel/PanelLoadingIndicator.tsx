@@ -20,12 +20,18 @@ import { clsx } from '../utils/ComponentUtils.js';
 export const PanelLoadingIndicator: React.FC<{
   isLoading: boolean;
   className?: string;
+  belowModalHeader?: boolean;
 }> = (props) => {
-  const { isLoading, className } = props;
+  const { isLoading, className, belowModalHeader } = props;
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (ref.current) {
+      if (belowModalHeader) {
+        ref.current.parentElement?.classList.add(
+          'panel-loading-indicator__container__below-modal-header',
+        );
+      }
       if (isLoading) {
         ref.current.parentElement?.classList.add(
           'panel-loading-indicator__container',
@@ -36,7 +42,7 @@ export const PanelLoadingIndicator: React.FC<{
         );
       }
     }
-  }, [isLoading]);
+  }, [isLoading, belowModalHeader]);
 
   return (
     <div

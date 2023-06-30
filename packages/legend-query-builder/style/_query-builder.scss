@@ -310,7 +310,12 @@
     cursor: pointer;
   }
 
-  &__mode--selected {
+  &__mode:hover {
+    background: var(--color-dark-grey-200);
+  }
+
+  &__mode--selected,
+  &__mode--selected:hover {
     background: var(--color-blue-200);
   }
 }
