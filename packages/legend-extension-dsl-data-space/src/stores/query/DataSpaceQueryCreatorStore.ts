@@ -31,7 +31,10 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '@finos/legend-application-query';
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import {
+  type DepotServerClient,
+  StoreProjectData,
+} from '@finos/legend-server-depot';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -49,6 +52,8 @@ import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_Data
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
+import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 
 export const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -120,6 +125,24 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       ),
       `Can't find execution context '${this.executionContext}'`,
     );
+    let dataSpaceAnalysisResult;
+    try {
+      const project = StoreProjectData.serialization.fromJson(
+        await this.depotServerClient.getProject(this.groupId, this.artifactId),
+      );
+      dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
+        this.graphManagerState.graphManager,
+      ).fetchDataSpaceAnalysisFromCache(() =>
+        retrieveAnalyticsResultCache(
+          project,
+          this.versionId,
+          dataSpace.path,
+          this.depotServerClient,
+        ),
+      );
+    } catch {
+      // do nothing
+    }
     const queryBuilderState = new DataSpaceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
@@ -153,6 +176,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           );
         }
       },
+      dataSpaceAnalysisResult,
       (ec: DataSpaceExecutionContext) => {
         // runtime should already be set
         const runtimePointer = guaranteeType(

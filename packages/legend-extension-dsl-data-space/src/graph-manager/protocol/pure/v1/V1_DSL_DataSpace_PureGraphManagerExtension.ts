@@ -30,6 +30,7 @@ import {
   GRAPH_MANAGER_EVENT,
   V1_buildDatasetSpecification,
   type PureProtocolProcessorPlugin,
+  V1_buildModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -101,25 +102,13 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult> {
-    let cachResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
-    if (cacheRetriever) {
-      try {
-        actionState?.setMessage(
-          'Fetching data space analysis result from cache...',
-        );
-        cachResult = await cacheRetriever();
-      } catch (error) {
-        assertErrorThrown(error);
-        this.graphManager.logService.warn(
-          LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
-          `Can't fetch data space analysis result cache: ${error.message}`,
-        );
-      }
-    }
+    const cacheResult = cacheRetriever
+      ? await this.fetchDataSpaceAnalyticsFromCache(cacheRetriever, actionState)
+      : undefined;
     const engineClient = this.graphManager.engine.getEngineServerClient();
     let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
-    if (cachResult) {
-      analysisResult = cachResult;
+    if (cacheResult) {
+      analysisResult = cacheResult;
     } else {
       actionState?.setMessage('Fetching project entities and dependencies...');
       const entities = await entitiesRetriever();
@@ -147,6 +136,42 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       analysisResult,
       this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
     );
+  }
+
+  async fetchDataSpaceAnalysisFromCache(
+    cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+    actionState?: ActionState,
+  ): Promise<DataSpaceAnalysisResult | undefined> {
+    const cacheResult = await this.fetchDataSpaceAnalyticsFromCache(
+      cacheRetriever,
+      actionState,
+    );
+    return cacheResult
+      ? this.buildDataSpaceAnalytics(
+          cacheResult,
+          this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+        )
+      : undefined;
+  }
+
+  private async fetchDataSpaceAnalyticsFromCache(
+    cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+    actionState?: ActionState,
+  ): Promise<PlainObject<V1_DataSpaceAnalysisResult> | undefined> {
+    let cacheResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
+    try {
+      actionState?.setMessage(
+        'Fetching data space analysis result from cache...',
+      );
+      cacheResult = await cacheRetriever();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.graphManager.logService.warn(
+        LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
+        `Can't fetch data space analysis result cache: ${error.message}`,
+      );
+    }
+    return cacheResult;
   }
 
   private async buildDataSpaceAnalytics(
@@ -313,6 +338,11 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       contextAnalysisResult.defaultRuntime = graph.getRuntime(
         context.defaultRuntime,
       );
+      contextAnalysisResult.mappingModelCoverageAnalysisResult =
+        V1_buildModelCoverageAnalysisResult(
+          context.mappingModelCoverageAnalysisResult,
+          contextAnalysisResult.mapping,
+        );
       contextAnalysisResult.compatibleRuntimes = context.compatibleRuntimes.map(
         (runtime) => graph.getRuntime(runtime),
       );

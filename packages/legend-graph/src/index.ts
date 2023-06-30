@@ -553,6 +553,10 @@ export {
   V1_transformDatasetSpecification,
   V1_entitlementReportAnalyticsInputModelSchema,
 } from './graph-manager/protocol/pure/v1/engine/analytics/V1_StoreEntitlementAnalysis.js';
+export {
+  V1_MappingModelCoverageAnalysisResult,
+  V1_buildModelCoverageAnalysisResult,
+} from './graph-manager/protocol/pure/v1/engine/analytics/V1_MappingModelCoverageAnalysis.js';
 
 // ------------------------------------- TO BE MODULARIZED --------------------------------------------
 /**
