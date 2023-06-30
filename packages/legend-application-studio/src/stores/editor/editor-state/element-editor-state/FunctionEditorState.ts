@@ -122,11 +122,11 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-    firstLoad?: boolean,
-  ): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+    firstLoad?: boolean;
+  }): GeneratorFn<void> {
     if (!isStubbed_PackageableElement(this.functionElement)) {
       this.isConvertingFunctionBodyToString = true;
       try {
@@ -139,7 +139,7 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         if (grammarText) {
@@ -163,9 +163,9 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
         }
         // `firstLoad` flag is used in the first rendering of the function editor (in a `useEffect`)
         // This flag helps block editing while the JSON is converting to text and to avoid reseting parser/compiler error in reveal error
-        if (!firstLoad) {
+        if (!options?.firstLoad) {
           this.clearErrors({
-            preserveCompilationError: preserveCompilationError,
+            preserveCompilationError: options?.preserveCompilationError,
           });
         }
         this.isConvertingFunctionBodyToString = false;

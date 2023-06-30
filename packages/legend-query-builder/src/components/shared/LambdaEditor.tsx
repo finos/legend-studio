@@ -140,7 +140,9 @@ const LambdaEditor_Inner = observer(
     const transformLambdaToString = async (pretty: boolean): Promise<void> => {
       transformStringToLambda?.cancel();
       return flowResult(
-        lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
+        lambdaEditorState.convertLambdaObjectToGrammarString({
+          pretty: pretty,
+        }),
       ).catch(applicationStore.alertUnhandledError);
     };
     const discardChanges = applicationStore.guardUnhandledError(() =>
@@ -447,7 +449,9 @@ const LambdaEditor_PopUp = observer(
     const transformLambdaToString = async (pretty: boolean): Promise<void> => {
       transformStringToLambda?.cancel();
       return flowResult(
-        lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
+        lambdaEditorState.convertLambdaObjectToGrammarString({
+          pretty: pretty,
+        }),
       ).catch(applicationStore.alertUnhandledError);
     };
     const discardChanges = applicationStore.guardUnhandledError(() =>
@@ -554,7 +558,10 @@ const LambdaEditor_PopUp = observer(
 
     useEffect(() => {
       flowResult(
-        lambdaEditorState.convertLambdaObjectToGrammarString(true, true),
+        lambdaEditorState.convertLambdaObjectToGrammarString({
+          pretty: true,
+          preserveCompilationError: true,
+        }),
       ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, lambdaEditorState]);
 

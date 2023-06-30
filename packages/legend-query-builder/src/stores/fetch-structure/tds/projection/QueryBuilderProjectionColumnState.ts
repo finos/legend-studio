@@ -226,10 +226,10 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (this.derivationProjectionColumnState.lambda.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -243,7 +243,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.queryBuilderState.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
@@ -252,7 +252,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
             : '',
         );
         this.clearErrors({
-          preserveCompilationError: preserveCompilationError,
+          preserveCompilationError: options?.preserveCompilationError,
         });
       } catch (error) {
         assertErrorThrown(error);

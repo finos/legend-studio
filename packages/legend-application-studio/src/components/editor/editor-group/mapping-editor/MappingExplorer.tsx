@@ -151,7 +151,7 @@ export const MappingExplorerContextMenu = observer(
         ) {
           await flowResult(
             mappingEditorState.currentTabState.mappingFilterState?.convertLambdaObjectToGrammarString(
-              false,
+              { pretty: false },
             ),
           );
           mappingEditorState.currentTabState.mappingFilterState = undefined;

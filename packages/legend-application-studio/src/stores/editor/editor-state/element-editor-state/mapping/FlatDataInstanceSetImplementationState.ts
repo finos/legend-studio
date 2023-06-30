@@ -109,10 +109,10 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (this.propertyMapping instanceof FlatDataPropertyMapping) {
       if (!isStubbed_RawLambda(this.propertyMapping.transform)) {
         try {
@@ -121,7 +121,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
           const isolatedLambdas =
             (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
               lambdas,
-              pretty,
+              options?.pretty,
             )) as Map<string, string>;
           const grammarText = isolatedLambdas.get(this.lambdaId);
           this.setLambdaString(
@@ -130,7 +130,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
               : '',
           );
           this.clearErrors({
-            preserveCompilationError: preserveCompilationError,
+            preserveCompilationError: options?.preserveCompilationError,
           });
         } catch (error) {
           assertErrorThrown(error);
@@ -361,7 +361,9 @@ export class EmbeddedFlatDataInstanceSetImplementationState
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+  }): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }
 }

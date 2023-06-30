@@ -100,10 +100,10 @@ export class PostValidationAssertionState extends LambdaEditorState {
     }
   }
 
-  override *convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void> {
+  override *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.assertion.assertion)) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -111,12 +111,12 @@ export class PostValidationAssertionState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(grammarText ?? '');
         this.clearErrors({
-          preserveCompilationError: preserveCompilationError,
+          preserveCompilationError: options?.preserveCompilationError,
         });
       } catch (error) {
         assertErrorThrown(error);
@@ -203,10 +203,10 @@ export class PostValidationParameterState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(
-    pretty: boolean,
-    preserveCompilationError?: boolean | undefined,
-  ): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty: boolean;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (this.lambda.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -217,12 +217,12 @@ export class PostValidationParameterState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(grammarText ?? '');
         this.clearErrors({
-          preserveCompilationError: preserveCompilationError,
+          preserveCompilationError: options?.preserveCompilationError,
         });
       } catch (error) {
         assertErrorThrown(error);
@@ -380,7 +380,9 @@ export class PostValidationState {
       this.servicePostValidationState.editorStore,
     );
     this.parametersState.push(_paramState);
-    yield flowResult(_paramState.convertLambdaObjectToGrammarString(false));
+    yield flowResult(
+      _paramState.convertLambdaObjectToGrammarString({ pretty: false }),
+    );
   }
 
   deleteParam(paramState: PostValidationParameterState): void {
@@ -410,7 +412,9 @@ export class PostValidationState {
       this.servicePostValidationState.editorStore,
     );
     this.assertionStates.push(aState);
-    yield flowResult(aState.convertLambdaObjectToGrammarString(false));
+    yield flowResult(
+      aState.convertLambdaObjectToGrammarString({ pretty: false }),
+    );
   }
 
   deleteAssertion(assertion: PostValidationAssertion): void {
