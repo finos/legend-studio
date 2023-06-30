@@ -327,11 +327,9 @@ const QueryBuilderProjectionColumnEditor = observer(
   (props: {
     projectionColumnState: QueryBuilderProjectionColumnState;
     isOverProjectionColumns: boolean;
+    colNumber: number;
   }) => {
-    const { isOverProjectionColumns, projectionColumnState } = props;
-    const columnIdx = projectionColumnState.tdsState.tdsColumns.indexOf(
-      projectionColumnState,
-    );
+    const { isOverProjectionColumns, projectionColumnState, colNumber } = props;
     const handleRef = useRef<HTMLDivElement>(null);
     const applicationStore = useApplicationStore();
     const ref = useRef<HTMLDivElement>(null);
@@ -514,26 +512,30 @@ const QueryBuilderProjectionColumnEditor = observer(
           (e) => e === projectionColumnState,
         );
 
+        const hoveredRectangle = ref.current?.getBoundingClientRect();
+
+        const hoveredRectangleMiddle =
+          hoveredRectangle?.top && hoveredRectangle.bottom
+            ? (hoveredRectangle.top + hoveredRectangle.bottom) / 2
+            : undefined;
+
+        const yCoordinate = monitor.getClientOffset()?.y;
+
+        if (yCoordinate && hoveredRectangleMiddle && hoveredRectangle?.top) {
+          if (yCoordinate < hoveredRectangleMiddle) {
+            tdsState.setHoverColumnGap(hoverIndex);
+          } else {
+            tdsState.setHoverColumnGap(hoverIndex + 1);
+          }
+        }
+
         // move the item being hovered on when the dragged item position is beyond the its middle point
         const hoverBoundingReact = ref.current?.getBoundingClientRect();
-
         const distanceThreshold =
           ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
           2;
         const dragDistance =
           (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
-        if (dragIndex === hoverIndex) {
-          tdsState.setRearrangeColumnsIndex(undefined, hoverIndex);
-
-          const borderMiddle =
-            hoverBoundingReact?.bottom && hoverBoundingReact.top
-              ? (hoverBoundingReact.bottom + hoverBoundingReact.top) / 2
-              : undefined;
-
-          tdsState.setHoveredColumnGapIsUp(
-            (monitor.getClientOffset()?.y ?? 0) < (borderMiddle ?? 0),
-          );
-        }
 
         if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
           return;
@@ -593,11 +595,6 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [projectionColumnState],
     );
-
-    const isBeingDragged =
-      columnIdx === tdsState.draggedColumnIndex &&
-      projectionColumnBeingDragged !== undefined &&
-      isOverProjectionColumns;
 
     dragConnector(handleRef);
     dropConnector(ref);
@@ -669,14 +666,22 @@ const QueryBuilderProjectionColumnEditor = observer(
         // See https://github.com/finos/legend-studio/pull/2330
         placeholder={
           <div
-            className={
-              tdsState.hoveredColumnGapIsUp
-                ? 'query-builder__projection__column__placeholder--top'
-                : 'query-builder__projection__column__placeholder--bottom'
-            }
+            className={clsx(
+              {
+                'query-builder__projection__column__placeholder--bottom':
+                  tdsState.hoverColumnGap === colNumber + 1 &&
+                  colNumber === tdsState.projectionColumns.length - 1,
+              },
+              {
+                'query-builder__projection__column__placeholder--top':
+                  tdsState.hoverColumnGap === colNumber,
+              },
+            )}
           />
         }
-        showPlaceholder={isBeingDragged}
+        showPlaceholder={
+          projectionColumnBeingDragged !== undefined && isOverProjectionColumns
+        }
         className="query-builder__projection__column"
       >
         <ContextMenu
@@ -702,8 +707,6 @@ const QueryBuilderProjectionColumnEditor = observer(
           <div className="query-builder__projection__column__container">
             <PanelEntryDragHandle
               isDragging={false}
-              //svp
-              // isDragging={isBeingDragged}
               dragSourceConnector={handleRef}
               className="query-builder__projection__column__drag-handle__container"
             />
@@ -1094,11 +1097,12 @@ export const QueryBuilderTDSPanel = observer(
                   }
                   types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
                 />
-                {projectionColumns.map((projectionColumnState) => (
+                {projectionColumns.map((projectionColumnState, colNumber) => (
                   <QueryBuilderProjectionColumnEditor
                     key={projectionColumnState.uuid}
                     isOverProjectionColumns={isOverProjectionColumns}
                     projectionColumnState={projectionColumnState}
+                    colNumber={colNumber}
                   />
                 ))}
               </div>
