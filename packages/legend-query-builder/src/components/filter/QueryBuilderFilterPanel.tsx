@@ -118,12 +118,16 @@ const QueryBuilderFilterGroupConditionEditor = observer(
           : QUERY_BUILDER_GROUP_OPERATION.AND,
       );
     };
+
+    const operationName =
+      node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND ? 'AND' : 'OR';
+
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
           isDroppable={isDroppable}
-          label="Add to Logical Group"
+          label={`Add to Logical Group '${operationName}'`}
         >
           <div
             className={clsx('query-builder-filter-tree__group-node', {

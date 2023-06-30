@@ -121,8 +121,9 @@ export class QueryBuilderTDSState
   isConvertDerivationProjectionObjects = false;
   showPostFilterPanel: boolean;
   showWindowFuncPanel = false;
-  draggedColumnIndex: number | undefined;
   hoveredColumnIndex: number | undefined;
+  draggedColumnIndex: number | undefined;
+  hoverColumnGap: number | undefined;
 
   postFilterOperators: QueryBuilderPostFilterOperator[] =
     getQueryBuilderCorePostFilterOperators();
@@ -144,14 +145,16 @@ export class QueryBuilderTDSState
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
       showWindowFuncPanel: observable,
-      draggedColumnIndex: observable,
       hoveredColumnIndex: observable,
+      hoverColumnGap: observable,
+      draggedColumnIndex: observable,
       TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
       addColumn: action,
       moveColumn: action,
       setRearrangeColumnsIndex: action,
+      setHoverColumnGap: action,
       replaceColumn: action,
       initialize: action,
       setShowPostFilterPanel: action,
@@ -159,8 +162,8 @@ export class QueryBuilderTDSState
       convertDerivationProjectionObjects: flow,
     });
 
-    this.draggedColumnIndex = undefined;
     this.hoveredColumnIndex = undefined;
+    this.draggedColumnIndex = undefined;
 
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.postFilterState = new QueryBuilderPostFilterState(
@@ -182,12 +185,16 @@ export class QueryBuilderTDSState
       ) ?? false;
   }
 
+  setHoverColumnGap(val: number | undefined): void {
+    this.hoverColumnGap = val;
+  }
+
   setRearrangeColumnsIndex(
-    draggedColumnIndex: number | undefined,
     hoveredColumnIndex: number | undefined,
+    draggedColumnIndex: number | undefined,
   ): void {
-    this.draggedColumnIndex = draggedColumnIndex;
     this.hoveredColumnIndex = hoveredColumnIndex;
+    this.draggedColumnIndex = draggedColumnIndex;
   }
 
   get type(): string {
