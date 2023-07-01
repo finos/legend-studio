@@ -295,7 +295,7 @@ export class MappingTestSuiteQueryState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
   }): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.query)) {
       try {

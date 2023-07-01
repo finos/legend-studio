@@ -29,7 +29,6 @@ import {
   RefreshIcon,
   TimesCircleIcon,
   clsx,
-  PanelDivider,
 } from '@finos/legend-art';
 import {
   DataGrid,
@@ -296,10 +295,6 @@ export const DataAccessOverview = observer(
     const { dataAccessState, compact } = props;
     const applicationStore = useApplicationStore();
 
-    const isLoading =
-      dataAccessState.surveyDatasetsState.isInProgress ||
-      dataAccessState.checkEntitlementsState.isInProgress;
-
     useEffect(() => {
       // NOTE: @YannanGao-gs - force refresh for now, let's investigate why the data is empty
       // when we fetched it from cache
@@ -313,13 +308,12 @@ export const DataAccessOverview = observer(
           'data-access-overview--compact': Boolean(compact),
         })}
       >
-        {isLoading && (
-          <>
-            <PanelLoadingIndicator belowModalHeader={true} isLoading={true} />
-            <PanelDivider />
-            <PanelDivider />
-          </>
-        )}
+        <PanelLoadingIndicator
+          isLoading={
+            dataAccessState.surveyDatasetsState.isInProgress ||
+            dataAccessState.checkEntitlementsState.isInProgress
+          }
+        />
         <DataAccessOverviewChart dataAccessState={dataAccessState} />
         <DataAccessOverviewGrid dataAccessState={dataAccessState} />
       </div>

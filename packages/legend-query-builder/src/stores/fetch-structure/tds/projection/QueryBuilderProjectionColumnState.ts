@@ -227,7 +227,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     if (this.derivationProjectionColumnState.lambda.body) {

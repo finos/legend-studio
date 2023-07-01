@@ -296,7 +296,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
   }): GeneratorFn<void> {
     if (this.execution.func.body) {
       try {

@@ -120,7 +120,7 @@ export abstract class LambdaEditorState {
 
   abstract convertLambdaGrammarStringToObject(): GeneratorFn<void>;
   abstract convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void>;
 }

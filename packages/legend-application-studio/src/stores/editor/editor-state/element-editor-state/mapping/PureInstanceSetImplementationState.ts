@@ -98,7 +98,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.propertyMapping.transform)) {
@@ -196,7 +196,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     if (this.instanceSetImplementation.filter) {
