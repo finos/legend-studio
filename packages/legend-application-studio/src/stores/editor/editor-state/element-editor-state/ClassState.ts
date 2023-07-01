@@ -105,7 +105,7 @@ export class DerivedPropertyState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     if (this.derivedProperty.body) {
@@ -202,7 +202,7 @@ export class ConstraintState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.constraint.functionDefinition)) {

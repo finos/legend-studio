@@ -101,7 +101,7 @@ export class PostValidationAssertionState extends LambdaEditorState {
   }
 
   override *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.assertion.assertion)) {
@@ -204,7 +204,7 @@ export class PostValidationParameterState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     if (this.lambda.body) {

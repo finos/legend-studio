@@ -123,9 +123,9 @@ export class FunctionDefinitionEditorState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
-    firstLoad?: boolean;
+    firstLoad?: boolean | undefined;
   }): GeneratorFn<void> {
     if (!isStubbed_PackageableElement(this.functionElement)) {
       this.isConvertingFunctionBodyToString = true;

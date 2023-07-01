@@ -110,7 +110,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
   }
 
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
     if (this.propertyMapping instanceof FlatDataPropertyMapping) {
@@ -362,7 +362,7 @@ export class EmbeddedFlatDataInstanceSetImplementationState
     throw new UnsupportedOperationError();
   }
   *convertLambdaObjectToGrammarString(options?: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
   }): GeneratorFn<void> {
     throw new UnsupportedOperationError();
   }

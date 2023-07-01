@@ -130,7 +130,7 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(options: {
-    pretty: boolean;
+    pretty?: boolean | undefined;
   }): GeneratorFn<void> {
     if (this.rawLambdaState.lambda.body) {
       this.isConvertingLambdaToString = true;
