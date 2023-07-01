@@ -131,9 +131,6 @@ export class QueryBuilderTDSState
   windowFuncOperators: QueryBuilderTDS_WindowOperator[] =
     getQueryBuilderCoreWindowOperators();
 
-  currentRearrangeDraggedColumnIndex: number | undefined;
-  currentRearrangeDropGapIndex: number | undefined;
-
   constructor(
     queryBuilderState: QueryBuilderState,
     fetchStructureState: QueryBuilderFetchStructureState,
@@ -145,15 +142,11 @@ export class QueryBuilderTDSState
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
       showWindowFuncPanel: observable,
-      currentRearrangeDraggedColumnIndex: observable,
-      currentRearrangeDropGapIndex: observable,
       TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
       addColumn: action,
       moveColumn: action,
-      setCurrentRearrangeDraggedColumnIndex: action,
-      setCurrentRearrangeDropGapIndex: action,
       replaceColumn: action,
       initialize: action,
       setShowPostFilterPanel: action,
@@ -179,14 +172,6 @@ export class QueryBuilderTDSState
       this.queryBuilderState.applicationStore.settingService.getBooleanValue(
         QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL,
       ) ?? false;
-  }
-
-  setCurrentRearrangeDropGapIndex(val: number | undefined): void {
-    this.currentRearrangeDropGapIndex = val;
-  }
-
-  setCurrentRearrangeDraggedColumnIndex(val: number | undefined): void {
-    this.currentRearrangeDraggedColumnIndex = val;
   }
 
   get type(): string {
