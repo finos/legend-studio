@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 27.1.4
+
+### Patch Changes
+
+- [#1704](https://github.com/finos/legend-studio/pull/1704) [`8e25a9357`](https://github.com/finos/legend-studio/commit/8e25a9357aff4ca97978fe56454c7fd060b4df8a) ([@gayathrir11](https://github.com/gayathrir11)) - Fix clearing of compilation errors when we expand the lambda editor ([#1703](https://github.com/finos/legend-studio/issues/1703)).
+
 ## 27.1.3
 
 ### Patch Changes
