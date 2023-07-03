@@ -19,7 +19,6 @@ import {
   usingModelSchema,
 } from '@finos/legend-shared';
 import {
-  alias,
   createModelSchema,
   primitive,
   list,
@@ -28,12 +27,10 @@ import {
   serialize,
   deserialize,
 } from 'serializr';
-import { V1_ExternalFormatConnection } from '../../../model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_ExternalFormatConnection.js';
-import { V1_UrlStream } from '../../../model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_UrlStream.js';
 import { V1_Schema } from '../../../model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_Schema.js';
 import { V1_SchemaSet } from '../../../model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_SchemaSet.js';
-import { V1_Binding } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_Binding.js';
-import { V1_ModelUnit } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_ModelUnit.js';
+import { V1_Binding } from '../../../model/packageableElements/externalFormat/binding/V1_DSL_ExternalFormat_Binding.js';
+import { V1_ModelUnit } from '../../../model/packageableElements/externalFormat/binding/V1_DSL_ExternalFormat_ModelUnit.js';
 
 export const V1_SCHEMA_SET_ELEMENT_PROTOCOL_TYPE = 'externalFormatSchemaSet';
 export const V1_BINDING_ELEMENT_PROTOCOL_TYPE = 'binding';
@@ -71,19 +68,3 @@ export const V1_bindingModelSchema = createModelSchema(V1_Binding, {
   schemaId: optional(primitive()),
   schemaSet: primitive(),
 });
-
-const V1_urlStreamModelSchema = createModelSchema(V1_UrlStream, {
-  _type: usingConstantValueSchema('urlStream'),
-  url: primitive(),
-});
-
-export const V1_externalFormatConnectionModelSchema = createModelSchema(
-  V1_ExternalFormatConnection,
-  {
-    _type: usingConstantValueSchema(
-      V1_EXTERNAL_FORMAT_CONNECTION_ELEMENT_PROTOCOL_TYPE,
-    ),
-    store: alias('element', optional(primitive())),
-    externalSource: usingModelSchema(V1_urlStreamModelSchema),
-  },
-);

@@ -18,7 +18,7 @@ import packageJson from '../../../package.json' assert { type: 'json' };
 import type { Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
 import { PureGraphPlugin } from '../PureGraphPlugin.js';
-import { Binding } from '../metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+import { Binding } from '../metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
 import { SchemaSet } from '../metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 
 export class DSL_ExternalFormat_PureGraphPlugin extends PureGraphPlugin {

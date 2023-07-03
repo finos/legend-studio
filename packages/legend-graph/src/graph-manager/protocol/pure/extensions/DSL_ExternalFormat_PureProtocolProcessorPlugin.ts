@@ -20,30 +20,19 @@ import {
   assertType,
   guaranteeNonEmptyString,
   assertNonNullable,
-  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   getOwnBinding,
   getOwnSchemaSet,
 } from '../../../helpers/DSL_ExternalFormat_GraphManagerHelper.js';
-import type { Connection } from '../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
 import type { PackageableElement } from '../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { PackageableElementReference } from '../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import { ExternalFormatConnection } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
-import { UrlStream } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
 import { Schema } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
 import { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import { Binding } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
-import { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
-import type { Store } from '../../../../graph/metamodel/pure/packageableElements/store/Store.js';
-import type {
-  DSL_Mapping_PureProtocolProcessorPlugin_Extension,
-  V1_ConnectionBuilder,
-  V1_ConnectionProtocolDeserializer,
-  V1_ConnectionProtocolSerializer,
-  V1_ConnectionTransformer,
-} from '../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
+import { Binding } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
+import { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_ModelUnit.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
@@ -51,20 +40,14 @@ import {
   type V1_ElementTransformer,
   PureProtocolProcessorPlugin,
 } from '../PureProtocolProcessorPlugin.js';
-import type { V1_Connection } from '../v1/model/packageableElements/connection/V1_Connection.js';
-import { V1_ExternalFormatConnection } from '../v1/model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_ExternalFormatConnection.js';
-import { V1_UrlStream } from '../v1/model/packageableElements/externalFormat/connection/V1_DSL_ExternalFormat_UrlStream.js';
 import { V1_Schema } from '../v1/model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_Schema.js';
 import { V1_SchemaSet } from '../v1/model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_SchemaSet.js';
-import { V1_Binding } from '../v1/model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_Binding.js';
-import { V1_ModelUnit } from '../v1/model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_ModelUnit.js';
+import { V1_Binding } from '../v1/model/packageableElements/externalFormat/binding/V1_DSL_ExternalFormat_Binding.js';
+import { V1_ModelUnit } from '../v1/model/packageableElements/externalFormat/binding/V1_DSL_ExternalFormat_ModelUnit.js';
 import type { V1_PackageableElement } from '../v1/model/packageableElements/V1_PackageableElement.js';
 import { V1_initPackageableElement } from '../v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
 import type { V1_GraphTransformerContext } from '../v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
-import {
-  V1_resolveBinding,
-  V1_resolveSchemaSet,
-} from '../v1/transformation/pureGraph/to/V1_DSL_ExternalFormat_GraphBuilderHelper.js';
+import { V1_resolveSchemaSet } from '../v1/transformation/pureGraph/to/V1_DSL_ExternalFormat_GraphBuilderHelper.js';
 import { V1_ElementBuilder } from '../v1/transformation/pureGraph/to/V1_ElementBuilder.js';
 import {
   V1_buildFullPath,
@@ -73,8 +56,6 @@ import {
 import {
   V1_bindingModelSchema,
   V1_BINDING_ELEMENT_PROTOCOL_TYPE,
-  V1_externalFormatConnectionModelSchema,
-  V1_EXTERNAL_FORMAT_CONNECTION_ELEMENT_PROTOCOL_TYPE,
   V1_schemaSetModelSchema,
   V1_SCHEMA_SET_ELEMENT_PROTOCOL_TYPE,
 } from '../v1/transformation/pureProtocol/serializationHelpers/V1_DSL_ExternalFormat_ProtocolHelper.js';
@@ -110,7 +91,7 @@ export class DSL_ExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          context.currentSubGraph.setOwnStore(path, element);
+          context.currentSubGraph.setOwnBinding(path, element);
           return element;
         },
         secondPass: (
@@ -267,7 +248,6 @@ export class DSL_ExternalFormat_PureProtocolProcessorPlugin
                 : path,
             );
           protocol.modelUnit = modelUnit;
-          protocol.includedStores = [];
           return protocol;
         } else if (metamodel instanceof SchemaSet) {
           const protocol = new V1_SchemaSet();
@@ -283,98 +263,6 @@ export class DSL_ExternalFormat_PureProtocolProcessorPlugin
             return schemaProtocol;
           });
           return protocol;
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
-    return [
-      (
-        connection: V1_Connection,
-        context: V1_GraphBuilderContext,
-        store?: PackageableElementReference<Store> | undefined,
-      ): Connection | undefined => {
-        if (connection instanceof V1_ExternalFormatConnection) {
-          const Store = !store
-            ? V1_resolveBinding(
-                guaranteeNonNullable(
-                  connection.store,
-                  `External format connection 'store' field is missing`,
-                ),
-                context,
-              )
-            : connection.store
-            ? V1_resolveBinding(connection.store, context)
-            : ((): PackageableElementReference<Binding> => {
-                assertType(
-                  store.value,
-                  Binding,
-                  `External format connection store must be a Binding`,
-                );
-                return store as PackageableElementReference<Binding>;
-              })();
-          const externalFormatConnection = new ExternalFormatConnection(Store);
-          assertNonNullable(
-            connection.externalSource,
-            `External format connection 'externalSource' field is missing`,
-          );
-          const urlStream = new UrlStream();
-          urlStream.url = guaranteeNonEmptyString(
-            connection.externalSource.url,
-            `URL stream 'url' field is missing or empty`,
-          );
-          externalFormatConnection.externalSource = urlStream;
-          return externalFormatConnection;
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  V1_getExtraConnectionTransformers(): V1_ConnectionTransformer[] {
-    return [
-      (
-        metamodel: Connection,
-        context: V1_GraphTransformerContext,
-      ): V1_Connection | undefined => {
-        if (metamodel instanceof ExternalFormatConnection) {
-          const connection = new V1_ExternalFormatConnection();
-          connection.store = metamodel.store.valueForSerialization ?? '';
-          const urlStream = new V1_UrlStream();
-          urlStream.url = metamodel.externalSource.url;
-          connection.externalSource = urlStream;
-          return connection;
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  V1_getExtraConnectionProtocolSerializers(): V1_ConnectionProtocolSerializer[] {
-    return [
-      (
-        connectionProtocol: V1_Connection,
-      ): PlainObject<V1_Connection> | undefined => {
-        if (connectionProtocol instanceof V1_ExternalFormatConnection) {
-          return serialize(
-            V1_externalFormatConnectionModelSchema,
-            connectionProtocol,
-          );
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  V1_getExtraConnectionProtocolDeserializers(): V1_ConnectionProtocolDeserializer[] {
-    return [
-      (json: PlainObject<V1_Connection>): V1_Connection | undefined => {
-        if (
-          json._type === V1_EXTERNAL_FORMAT_CONNECTION_ELEMENT_PROTOCOL_TYPE
-        ) {
-          return deserialize(V1_externalFormatConnectionModelSchema, json);
         }
         return undefined;
       },
