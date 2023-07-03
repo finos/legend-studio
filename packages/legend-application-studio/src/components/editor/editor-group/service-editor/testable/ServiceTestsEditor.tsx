@@ -40,6 +40,7 @@ import {
   ModalFooter,
   ModalBody,
   ModalTitle,
+  PlayIcon,
 } from '@finos/legend-art';
 import {
   type Binding,
@@ -717,8 +718,21 @@ const ServiceTestDataContextMenu = observer(
     const remove = (): void => suiteState.deleteTest(serviceTestState);
     const rename = (): void =>
       suiteState.setTestToRename(serviceTestState.test);
+    const runTest =
+      serviceTestState.editorStore.applicationStore.guardUnhandledError(() =>
+        flowResult(serviceTestState.runTest()),
+      );
     return (
       <MenuContent ref={ref}>
+        <MenuContentItem
+          disabled={
+            suiteState.runningTestState.isInProgress ||
+            serviceTestState.runningTestAction.isInProgress
+          }
+          onClick={runTest}
+        >
+          Run test
+        </MenuContentItem>
         <MenuContentItem onClick={rename}>Rename</MenuContentItem>
         <MenuContentItem onClick={remove}>Delete</MenuContentItem>
         <MenuContentItem onClick={addTest}>Add test</MenuContentItem>
@@ -750,16 +764,12 @@ const ServiceTestItem = observer(
     const resultIcon = getTestableResultIcon(testableResult);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+    const runTest =
+      serviceTestState.editorStore.applicationStore.guardUnhandledError(() =>
+        flowResult(serviceTestState.runTest()),
+      );
     return (
       <ContextMenu
-        className={clsx(
-          'testable-test-explorer__item',
-          {
-            'testable-test-explorer__item--selected-from-context-menu':
-              !isActive && isSelectedFromContextMenu,
-          },
-          { 'testable-test-explorer__item--active': isActive },
-        )}
         disabled={isReadOnly}
         content={
           <ServiceTestDataContextMenu
@@ -771,18 +781,43 @@ const ServiceTestItem = observer(
         onOpen={onContextMenuOpen}
         onClose={onContextMenuClose}
       >
-        <button
-          className={clsx('testable-test-explorer__item__label')}
-          onClick={openTest}
-          tabIndex={-1}
+        <div
+          className={clsx(
+            'testable-test-explorer__item',
+            {
+              'testable-test-explorer__item--selected-from-context-menu':
+                !isActive && isSelectedFromContextMenu,
+            },
+            { 'testable-test-explorer__item--active': isActive },
+          )}
         >
-          <div className="testable-test-explorer__item__label__icon">
-            {resultIcon}
+          <button
+            className={clsx('testable-test-explorer__item__label')}
+            onClick={openTest}
+            tabIndex={-1}
+          >
+            <div className="testable-test-explorer__item__label__icon">
+              {resultIcon}
+            </div>
+            <div className="testable-test-explorer__item__label__text">
+              {serviceTest.id}
+            </div>
+          </button>
+          <div className="mapping-test-explorer__item__actions">
+            <button
+              className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
+              onClick={runTest}
+              disabled={
+                suiteState.runningTestState.isInProgress ||
+                serviceTestState.runningTestAction.isInProgress
+              }
+              tabIndex={-1}
+              title={`Run ${serviceTest.id}`}
+            >
+              {<PlayIcon />}
+            </button>
           </div>
-          <div className="testable-test-explorer__item__label__text">
-            {serviceTest.id}
-          </div>
-        </button>
+        </div>
       </ContextMenu>
     );
   },
