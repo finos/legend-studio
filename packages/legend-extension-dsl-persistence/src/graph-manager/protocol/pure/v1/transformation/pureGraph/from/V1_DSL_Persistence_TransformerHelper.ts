@@ -728,7 +728,8 @@ export const V1_transformTargetShape = (
 export const V1_transformPersister = (
   element: Persister | undefined,
   context: V1_GraphTransformerContext,
-): V1_Persister => {
+): V1_Persister | undefined => {
+  if (element === undefined) return element;
   if (element instanceof StreamingPersister) {
     const protocol = new V1_StreamingPersister();
     protocol.sink = V1_transformSink(element.sink, context);
@@ -746,15 +747,17 @@ export const V1_transformPersister = (
   throw new UnsupportedOperationError(`Can't transform persister '${element}'`);
 };
 
-/**********
+/************************
  * service output targets
- **********/
+ ***********************/
 
 export const V1_transformServiceOutputTargets = (
   element: ServiceOutputTarget[] | undefined,
   context: V1_GraphTransformerContext,
-): V1_ServiceOutputTarget[] => {
-  console.log('V1_transformServiceOutputTargets', element);
+): V1_ServiceOutputTarget[] | undefined => {
+  if (element === undefined) {
+    return element;
+  }
   const protocol: V1_ServiceOutputTarget[] = [];
   for (const v1ServiceOutputTarget of element!) {
     const serviceOutputTarget = new V1_ServiceOutputTarget();
@@ -771,11 +774,14 @@ export const V1_transformServiceOutputTargets = (
   return protocol;
 };
 
+/****************
+ * service output
+ ****************/
+
 export const V1_transformServiceOutput = (
   element: ServiceOutput,
   context: V1_GraphTransformerContext,
 ): V1_ServiceOutput => {
-  console.log('transformServiceOutput element value ', element);
   if (element instanceof GraphFetchServiceOutput) {
     const protocol = new V1_GraphFetchServiceOutput();
     protocol.datasetType = V1_transformDatasetType(
@@ -803,6 +809,10 @@ export const V1_transformServiceOutput = (
   throw new UnsupportedOperationError(`Can't transform ServiceOutput`, element);
 };
 
+/****************
+ * dataset type
+ ****************/
+
 export const V1_transformDatasetType = (
   element: DatasetType,
   context: V1_GraphTransformerContext,
@@ -825,6 +835,10 @@ export const V1_transformDatasetType = (
   throw new UnsupportedOperationError(`Can't transform DatasetType`, element);
 };
 
+/**************
+ * partitioning
+ **************/
+
 export const V1_transformPartitioning = (
   element: Partitioning,
   context: V1_GraphTransformerContext,
@@ -840,21 +854,6 @@ export const V1_transformPartitioning = (
     return V1_transformFieldBasedPartitioning(element, context);
   }
   throw new UnsupportedOperationError(`Can't transform Partitioning`, element);
-};
-
-export const V1_transformEmptyDatasetHandling = (
-  element: EmptyDatasetHandling,
-  context: V1_GraphTransformerContext,
-): V1_EmptyDatasetHandling => {
-  if (element instanceof NoOp) {
-    return new V1_NoOp();
-  } else if (element instanceof DeleteTargetDataset) {
-    return new V1_DeleteTargetDataset();
-  }
-  throw new UnsupportedOperationError(
-    `Can't transform EmptyDatasetHandling`,
-    element,
-  );
 };
 
 export const V1_transformFieldBasedPartitioning = (
@@ -873,6 +872,29 @@ export const V1_transformFieldBasedPartitioning = (
     protocol,
   );
 };
+
+/************************
+ * empty dataset handling
+ ***********************/
+
+export const V1_transformEmptyDatasetHandling = (
+  element: EmptyDatasetHandling,
+  context: V1_GraphTransformerContext,
+): V1_EmptyDatasetHandling => {
+  if (element instanceof NoOp) {
+    return new V1_NoOp();
+  } else if (element instanceof DeleteTargetDataset) {
+    return new V1_DeleteTargetDataset();
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform EmptyDatasetHandling`,
+    element,
+  );
+};
+
+/******************
+ * action indicator
+ ******************/
 
 export const V1_transformActionIndicator = (
   element: ActionIndicatorFields,
@@ -909,11 +931,14 @@ export const V1_transformDeleteIndicator = (
   );
 };
 
+/***************
+ * deduplication
+ ***************/
+
 export const V1_transformDeduplication = (
   element: Deduplication,
   context: V1_GraphTransformerContext,
 ): V1_Deduplication => {
-  console.log('deduplicaiton element value : ', element);
   if (element instanceof NoDeduplication) {
     return new V1_NoDeduplication();
   } else if (element instanceof AnyVersion) {
@@ -938,6 +963,10 @@ export const V1_transformMaxVersion = (
   throw new UnsupportedOperationError(`Can't transform MaxVersion`, element);
 };
 
+/********************
+ * persistence target
+ ********************/
+
 export const V1_transformPersistenceTarget = (
   element: PersistenceTarget,
   context: V1_GraphTransformerContext,
@@ -957,6 +986,10 @@ export const V1_transformPersistenceTarget = (
     element,
   );
 };
+
+/*************
+ * temporality
+ *************/
 
 export const V1_transformTemporality = (
   element: Temporality,
@@ -992,6 +1025,10 @@ export const V1_transformTemporality = (
   throw new UnsupportedOperationError(`Can't transform Temporality`, element);
 };
 
+/**********
+ * auditing
+ **********/
+
 const V1_transformAuditingV2 = (
   element: AuditingV2,
   context: V1_GraphTransformerContext,
@@ -1000,12 +1037,15 @@ const V1_transformAuditingV2 = (
     return new V1_NoAuditingV2();
   } else if (element instanceof AuditingDateTimeV2) {
     const protocol = new V1_AuditingDateTimeV2();
-    console.log('setting auditingDateTimeName : ', element);
     protocol.auditingDateTimeName = element.auditingDateTimeName;
     return protocol;
   }
   throw new UnsupportedOperationError(`Can't transform AuditingV2`, element);
 };
+
+/******************
+ * updates handling
+ ******************/
 
 const V1_transformUpdatesHandling = (
   element: UpdatesHandling,
@@ -1044,6 +1084,10 @@ const V1_transformAppendOnlyUpdatesHandling = (
     element,
   );
 };
+
+/*********************
+ * processing dimesion
+ *********************/
 
 const V1_transformProcessingDimension = (
   element: ProcessingDimension,
@@ -1198,20 +1242,11 @@ export const V1_transformPersistence = (
   protocol.documentation = element.documentation;
   protocol.trigger = V1_transformTrigger(element.trigger, context);
   protocol.service = element.service.valueForSerialization ?? '';
-  // if (typeof protocol.persister !== undefined && !protocol.serviceOutputTargets?.length) {
-  //   protocol.persister = V1_transformPersister(protocol.persister, context);
-  // } else if (typeof protocol.persister === undefined && protocol.serviceOutputTargets?.length) {
-  console.log('protocol value : ', protocol);
+  protocol.persister = V1_transformPersister(element.persister, context);
   protocol.serviceOutputTargets = V1_transformServiceOutputTargets(
     element.serviceOutputTargets,
     context,
   );
-  // } else {
-  //   throw new UnsupportedOperationError(
-  //     `hereee ??? You can't have both Persister and ServiceOutput Target! Please use only one`,
-  //   );
-  // }
-  // protocol.persister = V1_transformPersister(element.persister, context);
   protocol.notifier = V1_transformNotifier(element.notifier, context);
   protocol.tests = element.tests.map((test) =>
     guaranteeType(V1_transformAtomicTest(test, context), V1_PersistenceTest),

@@ -128,7 +128,6 @@ export const V1_transformPersistenceContext = (
 ): V1_PersistenceContext => {
   const protocol = new V1_PersistenceContext();
   V1_initPackageableElement(protocol, element);
-  console.log('V1_transformPersistenceContext element, ', element);
   protocol.persistence = element.persistence.valueForSerialization ?? '';
   protocol.platform = V1_transformPersistencePlatform(
     element.platform,

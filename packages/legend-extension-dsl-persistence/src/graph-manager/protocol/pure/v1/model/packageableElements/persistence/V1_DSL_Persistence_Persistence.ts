@@ -30,8 +30,8 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
   documentation!: string;
   trigger!: V1_Trigger;
   service!: string;
-  persister?: V1_Persister;
-  serviceOutputTargets?: V1_ServiceOutputTarget[];
+  persister: V1_Persister | undefined;
+  serviceOutputTargets: V1_ServiceOutputTarget[] | undefined;
   notifier!: V1_Notifier;
   tests: V1_PersistenceTest[] = [];
 
@@ -41,8 +41,8 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
       this.documentation,
       this.trigger,
       this.service,
-      hashArray(this.serviceOutputTargets!),
-      this.persister!,
+      hashArray(this.serviceOutputTargets ?? []),
+      this.persister ?? '',
       this.notifier,
       hashArray(this.tests),
     ]);

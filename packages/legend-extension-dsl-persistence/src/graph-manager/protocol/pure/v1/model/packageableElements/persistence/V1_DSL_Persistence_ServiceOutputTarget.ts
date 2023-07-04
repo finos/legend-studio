@@ -22,6 +22,7 @@ import { V1_ServiceOutput } from './V1_DSL_Persistence_ServiceOutput.js';
 export class V1_ServiceOutputTarget implements Hashable {
   serviceOutput!: V1_ServiceOutput;
   persistenceTarget!: V1_PersistenceTarget;
+
   get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.SERVICE_OUTPUT_TARGET,

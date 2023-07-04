@@ -36,8 +36,8 @@ export class Persistence
   documentation!: string;
   trigger!: Trigger;
   service!: PackageableElementReference<Service>;
-  persister?: Persister;
-  serviceOutputTargets?: ServiceOutputTarget[];
+  persister: Persister | undefined;
+  serviceOutputTargets: ServiceOutputTarget[] | undefined;
   notifier!: Notifier;
   tests: PersistenceTest[] = [];
 
@@ -46,9 +46,9 @@ export class Persistence
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
       this.trigger,
-      this.service.valueForSerialization,
+      this.service.valueForSerialization ?? '',
       this.persister ?? '',
-      hashArray(this.serviceOutputTargets!),
+      hashArray(this.serviceOutputTargets ?? []),
       this.notifier,
       hashArray(this.tests),
     ]);

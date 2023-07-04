@@ -763,15 +763,14 @@ export const V1_buildPersister = (
   throw new UnsupportedOperationError(`Can't build persister`, protocol);
 };
 
-/**********
+/************************
  * service output targets
- **********/
+ ***********************/
 
 export const V1_buildServiceOutputTargets = (
   protocol: V1_ServiceOutputTarget[] | undefined,
   context: V1_GraphBuilderContext,
 ): ServiceOutputTarget[] => {
-  // if (protocol instanceof )ƒ
   const serviceOutputTargets: ServiceOutputTarget[] = [];
   for (const v1ServiceOutputTarget of protocol!) {
     const serviceOutputTarget = new ServiceOutputTarget();
@@ -787,6 +786,10 @@ export const V1_buildServiceOutputTargets = (
   }
   return serviceOutputTargets;
 };
+
+/****************
+ * service output
+ ****************/
 
 export const V1_buildServiceOutput = (
   protocol: V1_ServiceOutput,
@@ -819,6 +822,10 @@ export const V1_buildServiceOutput = (
   throw new UnsupportedOperationError(`Can't build ServiceOutput`, protocol);
 };
 
+/**************
+ * dataset type
+ **************/
+
 export const V1_buildDatasetType = (
   protocol: V1_DatasetType,
   context: V1_GraphBuilderContext,
@@ -841,6 +848,10 @@ export const V1_buildDatasetType = (
   throw new UnsupportedOperationError(`Can't build DatasetType`, protocol);
 };
 
+/**************
+ * partitioning
+ **************/
+
 export const V1_buildPartitioning = (
   protocol: V1_Partitioning,
   context: V1_GraphBuilderContext,
@@ -856,21 +867,6 @@ export const V1_buildPartitioning = (
     return V1_buildFieldBasedPartitioning(protocol, context);
   }
   throw new UnsupportedOperationError(`Can't build Partitioning`, protocol);
-};
-
-export const V1_buildEmptyDatasetHandling = (
-  protocol: V1_EmptyDatasetHandling,
-  context: V1_GraphBuilderContext,
-): EmptyDatasetHandling => {
-  if (protocol instanceof V1_NoOp) {
-    return new NoOp();
-  } else if (protocol instanceof V1_DeleteTargetDataset) {
-    return new DeleteTargetDataset();
-  }
-  throw new UnsupportedOperationError(
-    `Can't build EmptyDatasetHandling`,
-    protocol,
-  );
 };
 
 export const V1_buildFieldBasedPartitioning = (
@@ -889,6 +885,29 @@ export const V1_buildFieldBasedPartitioning = (
     protocol,
   );
 };
+
+/************************
+ * empty dataset handling
+ ************************/
+
+export const V1_buildEmptyDatasetHandling = (
+  protocol: V1_EmptyDatasetHandling,
+  context: V1_GraphBuilderContext,
+): EmptyDatasetHandling => {
+  if (protocol instanceof V1_NoOp) {
+    return new NoOp();
+  } else if (protocol instanceof V1_DeleteTargetDataset) {
+    return new DeleteTargetDataset();
+  }
+  throw new UnsupportedOperationError(
+    `Can't build EmptyDatasetHandling`,
+    protocol,
+  );
+};
+
+/******************
+ * action indicator
+ ******************/
 
 export const V1_buildActionIndicator = (
   protocol: V1_ActionIndicatorFields,
@@ -919,6 +938,10 @@ export const V1_buildDeleteIndicator = (
   throw new UnsupportedOperationError(`Can't build DeleteIndicator`, protocol);
 };
 
+/******************
+ * de-duplication
+ ******************/
+
 export const V1_buildDeduplication = (
   protocol: V1_Deduplication,
   context: V1_GraphBuilderContext,
@@ -947,11 +970,14 @@ export const V1_buildMaxVersion = (
   throw new UnsupportedOperationError(`Can't build MaxVersio`, protocol);
 };
 
+/********************
+ * persistence target
+ ********************/
+
 export const V1_buildPersistenceTarget = (
   protocol: V1_PersistenceTarget,
   context: V1_GraphBuilderContext,
 ): PersistenceTarget => {
-  console.log('building persistence tartget : ', protocol);
   if (protocol instanceof V1_RelationalPersistenceTarget) {
     const persistentTarget = new RelationalPersistenceTarget();
     persistentTarget.database = protocol.database;
@@ -967,6 +993,10 @@ export const V1_buildPersistenceTarget = (
     protocol,
   );
 };
+
+/*************
+ * temporality
+ *************/
 
 export const V1_buildTemporality = (
   protocol: V1_Temporality,
@@ -1002,11 +1032,14 @@ export const V1_buildTemporality = (
   throw new UnsupportedOperationError(`Can't build Temporality`, protocol);
 };
 
+/*************
+ * auditing V2
+ *************/
+
 const V1_buildAuditingV2 = (
   protocol: V1_AuditingV2,
   context: V1_GraphBuilderContext,
 ): AuditingV2 => {
-  console.log('V1_buildAuditingV2 value : ', protocol);
   if (protocol instanceof V1_NoAuditingV2) {
     return new NoAuditingV2();
   } else if (protocol instanceof V1_AuditingDateTimeV2) {
@@ -1016,6 +1049,10 @@ const V1_buildAuditingV2 = (
   }
   throw new UnsupportedOperationError(`Can't build AuditingV2`, protocol);
 };
+
+/******************
+ * updates handling
+ ******************/
 
 const V1_buildUpdatesHandling = (
   protocol: V1_UpdatesHandling,
@@ -1049,6 +1086,10 @@ const V1_buildAppendOnlyUpdatesHandling = (
     protocol,
   );
 };
+
+/**********************
+ * processing dimension
+ **********************/
 
 const V1_buildProcessingDimension = (
   protocol: V1_ProcessingDimension,
@@ -1202,9 +1243,9 @@ export const V1_buildTestBatch = (
     return testBatch;
   });
 
-/**********
+/*************
  * persistence
- **********/
+ *************/
 
 export const V1_buildPersistence = (
   protocol: V1_Persistence,
@@ -1218,25 +1259,13 @@ export const V1_buildPersistence = (
   );
   persistence.trigger = V1_buildTrigger(protocol.trigger, context);
   persistence.service = context.resolveService(protocol.service);
-  // console.log("typeofpersister : ", typeof protocol.persister);
-  // console.log("serviceOutputTargetLenging : ", protocol.serviceOutputTargets?.length);
-  // if (typeof protocol.persister !== undefined && !protocol.serviceOutputTargets?.length) {
-  //   persistence.persister = V1_buildPersister(protocol.persister, context);
-  // } else if (typeof protocol.persister === undefined && protocol.serviceOutputTargets?.length) {
+  persistence.persister = V1_buildPersister(protocol.persister, context);
   persistence.serviceOutputTargets = V1_buildServiceOutputTargets(
     protocol.serviceOutputTargets,
     context,
   );
-  console.log('get own persistence : ', persistence);
-
-  // } else {
-  // throw new UnsupportedOperationError(
-  // `buildingpersistence : You can't have both Persister and ServiceOutput Target! Please use only one`,
-  // );
-  // }
   persistence.notifier = V1_buildNotifier(protocol.notifier, context);
   persistence.tests = protocol.tests
     .map((test) => V1_buildAtomicTest(test, context))
     .map((e) => guaranteeType(e, PersistenceTest));
-  console.log('Persistence builder helper : ', persistence);
 };
