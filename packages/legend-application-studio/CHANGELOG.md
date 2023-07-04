@@ -1,5 +1,49 @@
 # @finos/legend-application-studio
 
+## 27.1.4
+
+### Patch Changes
+
+- [#1704](https://github.com/finos/legend-studio/pull/1704) [`8e25a9357`](https://github.com/finos/legend-studio/commit/8e25a9357aff4ca97978fe56454c7fd060b4df8a) ([@gayathrir11](https://github.com/gayathrir11)) - Fix clearing of compilation errors when we expand the lambda editor ([#1703](https://github.com/finos/legend-studio/issues/1703)).
+
+## 27.1.3
+
+### Patch Changes
+
+- [#2371](https://github.com/finos/legend-studio/pull/2371) [`6a1fad74c`](https://github.com/finos/legend-studio/commit/6a1fad74cae4cfafe93be9c5326fde280f241baf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable switching to/from EMBEDDED and MANAGED project types. Disable platform version configuration and releasing for EMBEDDED project types.
+
+## 27.1.2
+
+### Patch Changes
+
+- [#2365](https://github.com/finos/legend-studio/pull/2365) [`f1dc0d520`](https://github.com/finos/legend-studio/commit/f1dc0d520ae2fc380659221961f319a1524527b3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enhance function editor to run function other than execution results.
+
+- [#2369](https://github.com/finos/legend-studio/pull/2369) [`5540660e8`](https://github.com/finos/legend-studio/commit/5540660e8fbc4e7a3b0fe9370629f83548bb33c1) ([@gs-gunjan](https://github.com/gs-gunjan)) - Implementing trigger to run manual jobs in a workflow
+
+## 27.1.1
+
+### Patch Changes
+
+- [#2323](https://github.com/finos/legend-studio/pull/2323) [`7730ad3ed`](https://github.com/finos/legend-studio/commit/7730ad3ed1fe21f6ae2ef04052ed6f85baada568) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revamp mapping suites to be driven by query with multiple tests each with its own test data.
+
+## 27.1.0
+
+### Minor Changes
+
+- [#2354](https://github.com/finos/legend-studio/pull/2354) [`7b1d19977`](https://github.com/finos/legend-studio/commit/7b1d19977cc39371413a2fd1af1bbc0528673b9f) ([@akphi](https://github.com/akphi)) - Add temporary support for creating local connection, right now this is a PoC aim to demonstrate the support for `SnowflakeApp`, this can be enabled by setting the config flag `TEMPORARY__enableLocalConnectionBuilder=true`.
+
+## 27.0.0
+
+### Major Changes
+
+- [#2329](https://github.com/finos/legend-studio/pull/2329) [`131a8f06d`](https://github.com/finos/legend-studio/commit/131a8f06d7c1f3a5519f7d98bce46cd241970278) ([@xannem](https://github.com/xannem)) - **BREAKING CHANGE:** Removed `getExtraTestRunnerTabClassifiers` and renamed to `getExtraTestRunnerTabEditorRenderer` to `getExtraTestRunnerTabConfigurations` and put tab name directly in `TestRunnerTabConfiguration`
+
+### Patch Changes
+
+- [#2333](https://github.com/finos/legend-studio/pull/2333) [`f00a00823`](https://github.com/finos/legend-studio/commit/f00a00823753bc54fa945ceb8939ab543d01b0bf) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add support for using the new external format biding service test parameter UI for type Byte
+
+- [#2344](https://github.com/finos/legend-studio/pull/2344) [`09556cbfb`](https://github.com/finos/legend-studio/commit/09556cbfb084404fe81d93257ccb5cfabff07560) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use northWind proc as default relational connection to provide sample data for users.
+
 ## 26.1.11
 
 ## 26.1.10

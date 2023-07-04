@@ -32,6 +32,7 @@ import {
   guaranteeNonNullable,
   hashArray,
   ActionState,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import type { EditorSDLCState } from '../../EditorSDLCState.js';
 import {
@@ -39,6 +40,7 @@ import {
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
   UpdatePlatformConfigurationsCommand,
+  ProjectType,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
 import { SNAPSHOT_ALIAS, StoreProjectData } from '@finos/legend-server-depot';
@@ -48,7 +50,21 @@ export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
   PROJECT_DEPENDENCIES = 'PROJECT_DEPENDENCIES',
   PLATFORM_CONFIGURATIONS = 'PLATFORM_CONFIGURATIONS',
+  ADVANCED = 'ADVANCED',
 }
+
+export const projectTypeTabFilter = (
+  mode: ProjectType,
+  tab: CONFIGURATION_EDITOR_TAB,
+): boolean => {
+  if (
+    mode === ProjectType.EMBEDDED &&
+    tab === CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS
+  ) {
+    return false;
+  }
+  return true;
+};
 
 export class ProjectConfigurationEditorState extends EditorState {
   readonly sdlcState: EditorSDLCState;
@@ -95,6 +111,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       updateToLatestStructure: flow,
       updateConfigs: flow,
       fetchLatestProjectStructureVersion: flow,
+      changeProjectType: flow,
     });
 
     this.projectDependencyEditorState = new ProjectDependencyEditorState(
@@ -165,6 +182,12 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.originalProjectConfiguration?.projectDependencies.some(
         (dependency) => dependency.versionId.endsWith(SNAPSHOT_ALIAS),
       ),
+    );
+  }
+
+  get isInEmbeddedMode(): boolean {
+    return (
+      this.originalProjectConfiguration?.projectType === ProjectType.EMBEDDED
     );
   }
 
@@ -268,11 +291,20 @@ export class ProjectConfigurationEditorState extends EditorState {
   *updateToLatestStructure(): GeneratorFn<void> {
     if (this.latestProjectStructureVersion) {
       try {
+        let latestStructure = this.latestProjectStructureVersion;
+        if (this.isInEmbeddedMode) {
+          const projectStructureVersion = new ProjectStructureVersion();
+          projectStructureVersion.version =
+            this.latestProjectStructureVersion.version;
+          // extension version does not exists in embedded mode
+          projectStructureVersion.extensionVersion = undefined;
+          latestStructure = projectStructureVersion;
+        }
         const updateCommand = new UpdateProjectConfigurationCommand(
           this.currentProjectConfiguration.groupId,
           this.currentProjectConfiguration.artifactId,
-          this.latestProjectStructureVersion,
-          `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
+          latestStructure,
+          `update project configuration from ${this.editorStore.applicationStore.config.appName}: update to latest project structure`,
         );
         yield flowResult(this.updateProjectConfiguration(updateCommand));
       } catch (error) {
@@ -285,6 +317,31 @@ export class ProjectConfigurationEditorState extends EditorState {
           error,
         );
       }
+    }
+  }
+
+  *changeProjectType(): GeneratorFn<void> {
+    try {
+      const newProjectType = this.isInEmbeddedMode
+        ? ProjectType.MANAGED
+        : ProjectType.EMBEDDED;
+      const updateCommand = new UpdateProjectConfigurationCommand(
+        this.currentProjectConfiguration.groupId,
+        this.currentProjectConfiguration.artifactId,
+        undefined,
+        `update project configuration from ${
+          this.editorStore.applicationStore.config.appName
+        }: changed project type to ${prettyCONSTName(newProjectType)}`,
+      );
+      updateCommand.projectType = newProjectType;
+      yield flowResult(this.updateProjectConfiguration(updateCommand));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 

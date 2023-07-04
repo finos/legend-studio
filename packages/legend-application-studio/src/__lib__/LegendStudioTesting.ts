@@ -46,6 +46,7 @@ export enum LEGEND_STUDIO_TEST_ID {
   CLASS_FORM_EDITOR = 'class-form-editor',
   ENUMERATION_EDITOR = 'enumeration-editor',
   ASSOCIATION_EDITOR = 'association-editor',
+  MAPPING_EDITOR = 'mapping-editor',
   UML_ELEMENT_EDITOR__TABS_HEADER = 'uml-element-editor__tabs__header',
   PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER = 'property-basic-editor__type__label--hover',
 

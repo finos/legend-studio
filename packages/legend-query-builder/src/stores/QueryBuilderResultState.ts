@@ -37,7 +37,6 @@ import {
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   extractExecutionResultValues,
-  TDSExecutionResult,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -81,6 +80,7 @@ export class QueryBuilderResultState {
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  isQueryUsageViewerOpened = false;
 
   selectedCells: QueryBuilderTDSResultCellData[];
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
@@ -99,6 +99,7 @@ export class QueryBuilderResultState {
       isRunningQuery: observable,
       isSelectingCells: observable,
       setIsSelectingCells: action,
+      isQueryUsageViewerOpened: observable,
       setIsRunningQuery: action,
       setExecutionResult: action,
       setExecutionDuration: action,
@@ -107,7 +108,7 @@ export class QueryBuilderResultState {
       setSelectedCells: action,
       setMouseOverCell: action,
       setQueryRunPromise: action,
-
+      setIsQueryUsageViewerOpened: action,
       exportData: flow,
       runQuery: flow,
       cancelQuery: flow,
@@ -161,45 +162,9 @@ export class QueryBuilderResultState {
     this.queryRunPromise = promise;
   };
 
-  findColumnFromCoordinates = (
-    colIndex: number,
-  ): string | number | boolean | null | undefined => {
-    if (
-      !this.executionResult ||
-      !(this.executionResult instanceof TDSExecutionResult)
-    ) {
-      return undefined;
-    }
-    return this.executionResult.result.columns[colIndex];
-  };
-
-  findRowFromRowIndex = (
-    rowIndex: number,
-  ): (string | number | boolean | null)[] => {
-    if (
-      !this.executionResult ||
-      !(this.executionResult instanceof TDSExecutionResult)
-    ) {
-      return [''];
-    }
-    return this.executionResult.result.rows[rowIndex]?.values ?? [''];
-  };
-
-  findResultValueFromCoordinates = (
-    resultCoordinate: [number, number],
-  ): string | number | boolean | null | undefined => {
-    const rowIndex = resultCoordinate[0];
-    const colIndex = resultCoordinate[1];
-
-    if (
-      !this.executionResult ||
-      !(this.executionResult instanceof TDSExecutionResult)
-    ) {
-      return undefined;
-    }
-
-    return this.executionResult.result.rows[rowIndex]?.values[colIndex];
-  };
+  setIsQueryUsageViewerOpened(val: boolean): void {
+    this.isQueryUsageViewerOpened = val;
+  }
 
   get checkForStaleResults(): boolean {
     if (this.latestRunHashCode !== this.queryBuilderState.hashCode) {
@@ -265,7 +230,7 @@ export class QueryBuilderResultState {
         )) as ExecutionResult;
       let content: string;
       if (result instanceof RawExecutionResult) {
-        content = result.value;
+        content = result.value === null ? 'null' : result.value.toString();
       } else {
         content = JSON.stringify(
           extractExecutionResultValues(result),
@@ -436,7 +401,7 @@ export class QueryBuilderResultState {
             rawPlan,
             this.queryBuilderState.graphManagerState.graph,
           );
-        this.executionPlanState.setPlan(plan);
+        this.executionPlanState.initialize(plan);
       } catch {
         // do nothing
       }

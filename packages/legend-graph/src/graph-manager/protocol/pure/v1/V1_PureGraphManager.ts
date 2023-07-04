@@ -34,11 +34,7 @@ import {
   promisify,
   StopWatch,
   isNonNullable,
-  addUniqueEntry,
-  uuid,
-  deleteEntry,
   uniq,
-  IllegalStateError,
   filterByType,
   isString,
 } from '@finos/legend-shared';
@@ -235,23 +231,12 @@ import {
 import { V1_UniqueTestId } from './model/test/V1_UniqueTestId.js';
 import type { RunTestsTestableInput } from '../../../../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
-import {
-  type TestResult,
-  TestError,
-  TestExecuted,
-  TestExecutionStatus,
-} from '../../../../graph/metamodel/pure/test/result/TestResult.js';
+import { type TestResult } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
 import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js';
 import {
   getNullableIDFromTestable,
   getNullableTestable,
 } from '../../../helpers/DSL_Data_GraphManagerHelper.js';
-import type { TestAssertion } from '../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
-import { AssertFail } from '../../../../graph/metamodel/pure/test/assertion/status/AssertFail.js';
-import {
-  type AtomicTest,
-  TestSuite,
-} from '../../../../graph/metamodel/pure/test/Test.js';
 import { pruneSourceInformation } from '../../../../graph/MetaModelUtils.js';
 import {
   V1_buildModelCoverageAnalysisResult,
@@ -273,7 +258,6 @@ import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_S
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import { V1_LambdaReturnTypeInput } from './engine/compilation/V1_LambdaReturnType.js';
-import { MultiExecutionServiceTestResult } from '../../../../graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import { V1_ExecutionEnvironmentInstance } from './model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
@@ -2131,89 +2115,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     return result;
-  }
-
-  async generateExpectedResult(
-    testable: Testable,
-    test: AtomicTest,
-    baseAssertion: TestAssertion,
-    graph: PureModel,
-  ): Promise<AssertFail> {
-    const id = uuid();
-    try {
-      baseAssertion.id = id;
-      addUniqueEntry(test.assertions, baseAssertion);
-      const runTestsInput = new V1_RunTestsInput();
-      runTestsInput.model = this.getFullGraphModelData(graph);
-      const runTestableInput = new V1_RunTestsTestableInput();
-      const unitAtomicTest = new V1_UniqueTestId();
-      runTestableInput.testable = guaranteeNonNullable(
-        getNullableIDFromTestable(
-          testable,
-          graph,
-          this.pluginManager.getPureGraphManagerPlugins(),
-        ),
-      );
-      runTestableInput.unitTestIds = [unitAtomicTest];
-      runTestsInput.testables = [runTestableInput];
-      const parent = test.__parent;
-      unitAtomicTest.testSuiteId =
-        parent instanceof TestSuite ? parent.id : undefined;
-      unitAtomicTest.atomicTestId = test.id;
-      const runTestsResult = await this.engine.runTests(runTestsInput);
-      const results = V1_buildTestsResult(
-        runTestsResult,
-        (_id: string): Testable | undefined =>
-          getNullableTestable(
-            _id,
-            graph,
-            this.pluginManager.getPureGraphManagerPlugins(),
-          ),
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      );
-      const result = results[0];
-      let status: AssertFail | undefined = undefined;
-      if (
-        result instanceof TestExecuted &&
-        result.testExecutionStatus === TestExecutionStatus.FAIL
-      ) {
-        status = result.assertStatuses.find(
-          (aStatus) =>
-            aStatus.assertion === baseAssertion &&
-            aStatus instanceof AssertFail,
-        );
-      } else if (result instanceof MultiExecutionServiceTestResult) {
-        status = Array.from(result.keyIndexedTestResults.values())
-          .map((testResult) => {
-            if (
-              testResult instanceof TestExecuted &&
-              testResult.testExecutionStatus === TestExecutionStatus.FAIL
-            ) {
-              return testResult.assertStatuses.find(
-                (aStatus) =>
-                  aStatus.assertion === baseAssertion &&
-                  aStatus instanceof AssertFail,
-              );
-            } else if (testResult instanceof TestError) {
-              throw new IllegalStateError(testResult.error);
-            }
-            return undefined;
-          })
-          .filter(isNonNullable)[0];
-      } else if (result instanceof TestError) {
-        throw new IllegalStateError(result.error);
-      } else {
-        throw new UnsupportedOperationError(
-          'Unable to derive expected result from test result',
-        );
-      }
-      return guaranteeNonNullable(status);
-    } catch (error) {
-      assertErrorThrown(error);
-      throw error;
-    } finally {
-      deleteEntry(test.assertions, baseAssertion);
-    }
   }
 
   // ------------------------------------------- Value Specification -------------------------------------------

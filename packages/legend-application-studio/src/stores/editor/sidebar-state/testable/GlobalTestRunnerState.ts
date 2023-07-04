@@ -326,8 +326,11 @@ export const getTestableResultFromAssertionStatus = (
   return TESTABLE_RESULT.DID_NOT_RUN;
 };
 export const getTestableResultFromTestResults = (
-  testResults: (TestResult | undefined)[],
+  testResults: (TestResult | undefined)[] | undefined,
 ): TESTABLE_RESULT => {
+  if (testResults === undefined || !testResults.length) {
+    return TESTABLE_RESULT.DID_NOT_RUN;
+  }
   if (
     testResults.every(
       (t) =>

@@ -1,5 +1,9 @@
 # @finos/eslint-plugin-legend-studio
 
+## 2.0.56
+
+## 2.0.55
+
 ## 2.0.54
 
 ## 2.0.53

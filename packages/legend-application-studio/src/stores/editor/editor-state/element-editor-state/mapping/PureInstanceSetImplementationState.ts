@@ -97,7 +97,10 @@ export class PurePropertyMappingState extends PropertyMappingState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty?: boolean | undefined;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (!isStubbed_RawLambda(this.propertyMapping.transform)) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -105,7 +108,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
@@ -113,7 +116,9 @@ export class PurePropertyMappingState extends PropertyMappingState {
             ? this.extractLambdaString(grammarText)
             : '',
         );
-        this.clearErrors();
+        this.clearErrors({
+          preserveCompilationError: options?.preserveCompilationError,
+        });
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.logService.error(
@@ -190,16 +195,21 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty?: boolean | undefined;
+    preserveCompilationError?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (this.instanceSetImplementation.filter) {
       try {
         const grammarText =
           (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
             this.instanceSetImplementation.filter,
-            pretty,
+            options?.pretty,
           )) as string;
         this.setLambdaString(this.extractLambdaString(grammarText));
-        this.clearErrors();
+        this.clearErrors({
+          preserveCompilationError: options?.preserveCompilationError,
+        });
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.logService.error(

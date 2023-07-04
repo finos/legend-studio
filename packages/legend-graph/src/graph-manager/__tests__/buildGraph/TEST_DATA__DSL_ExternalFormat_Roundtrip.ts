@@ -53,7 +53,6 @@ export const roundtripTestData = [
     content: {
       _type: 'binding',
       contentType: 'application/json',
-      includedStores: [],
       modelUnit: {
         packageableElementExcludes: [],
         packageableElementIncludes: [],

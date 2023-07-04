@@ -27,7 +27,7 @@ const TEST_DATA__appConfig = {
     url: 'https://testMetadataUrl',
   },
   studio: {
-    url: 'http://testStudioUrl',
+    url: 'https://testStudioUrl',
     instances: [],
   },
 };

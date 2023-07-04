@@ -1,5 +1,15 @@
 # @finos/legend-server-sdlc
 
+## 5.0.19
+
+## 5.0.18
+
+### Patch Changes
+
+- [#2371](https://github.com/finos/legend-studio/pull/2371) [`6a1fad74c`](https://github.com/finos/legend-studio/commit/6a1fad74cae4cfafe93be9c5326fde280f241baf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `ProjectType` with MANAGED and EMBEDDED types to Project Configuration.
+
+## 5.0.17
+
 ## 5.0.16
 
 ## 5.0.15

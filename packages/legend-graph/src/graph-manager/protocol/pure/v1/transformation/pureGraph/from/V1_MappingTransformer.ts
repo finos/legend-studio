@@ -158,31 +158,15 @@ import { FlatDataAssociationImplementation } from '../../../../../../../graph/me
 import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
 import type { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
-import {
-  V1_MappingDataTest,
-  V1_MappingQueryTest,
-  type V1_MappingTest,
-} from '../../../model/packageableElements/mapping/V1_MappingTest.js';
+import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
 import {
   V1_transformAtomicTest,
   V1_transformTestAssertion,
   V1_transformTestSuite,
 } from './V1_TestTransformer.js';
-import {
-  type MappingTest,
-  MappingDataTest,
-  MappingQueryTest,
-} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
-import {
-  MappingDataTestSuite,
-  MappingQueryTestSuite,
-  type MappingTestSuite,
-} from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
-import {
-  type V1_MappingTestSuite,
-  V1_MappingDataTestSuite,
-  V1_MappingQueryTestSuite,
-} from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
+import type { MappingTest } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
+import { type MappingTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
+import { V1_MappingTestSuite } from '../../../model/packageableElements/mapping/V1_MappingTestSuite.js';
 import type { StoreTestData } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 import { V1_MappingStoreTestData } from '../../../model/packageableElements/mapping/V1_MappingStoreTestData.js';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
@@ -378,27 +362,11 @@ const transformMappingStoreTestData = (
   return testData;
 };
 
-export const V1_transformMappingQueryTest = (
-  element: MappingQueryTest,
+export const V1_transformMappingTest = (
+  element: MappingTest,
   context: V1_GraphTransformerContext,
-): V1_MappingQueryTest => {
-  const mappingTest = new V1_MappingQueryTest();
-  mappingTest.id = element.id;
-  mappingTest.doc = element.doc;
-  mappingTest.assertions = element.assertions.map((assertion) =>
-    V1_transformTestAssertion(assertion),
-  );
-  mappingTest.func = element.func.accept_RawValueSpecificationVisitor(
-    new V1_RawValueSpecificationTransformer(context),
-  ) as V1_RawLambda;
-  return mappingTest;
-};
-
-export const V1_transformMappingDataTest = (
-  element: MappingDataTest,
-  context: V1_GraphTransformerContext,
-): V1_MappingDataTest => {
-  const mappingTest = new V1_MappingDataTest();
+): V1_MappingTest => {
+  const mappingTest = new V1_MappingTest();
   mappingTest.id = element.id;
   mappingTest.doc = element.doc;
   mappingTest.assertions = element.assertions.map((assertion) =>
@@ -410,39 +378,11 @@ export const V1_transformMappingDataTest = (
   return mappingTest;
 };
 
-export const V1_transformMappingTest = (
-  element: MappingTest,
+export const V1_transformMappingTestSuite = (
+  element: MappingTestSuite,
   context: V1_GraphTransformerContext,
-): V1_MappingTest => {
-  if (element instanceof MappingQueryTest) {
-    return V1_transformMappingQueryTest(element, context);
-  } else if (element instanceof MappingDataTest) {
-    return V1_transformMappingDataTest(element, context);
-  }
-  throw new UnsupportedOperationError('Unsupported mapping test');
-};
-
-export const V1_transformMappingDataTestSuite = (
-  element: MappingDataTestSuite,
-  context: V1_GraphTransformerContext,
-): V1_MappingDataTestSuite => {
-  const mappingTestSuite = new V1_MappingDataTestSuite();
-  mappingTestSuite.id = element.id;
-  mappingTestSuite.doc = element.doc;
-  mappingTestSuite.storeTestData = element.storeTestData.map((testData) =>
-    transformMappingStoreTestData(testData, context),
-  );
-  mappingTestSuite.tests = element.tests.map((test) =>
-    V1_transformAtomicTest(test, context),
-  );
-  return mappingTestSuite;
-};
-
-export const V1_transformMappingQueryTestSuite = (
-  element: MappingQueryTestSuite,
-  context: V1_GraphTransformerContext,
-): V1_MappingQueryTestSuite => {
-  const mappingTestSuite = new V1_MappingQueryTestSuite();
+): V1_MappingTestSuite => {
+  const mappingTestSuite = new V1_MappingTestSuite();
   mappingTestSuite.id = element.id;
   mappingTestSuite.doc = element.doc;
   mappingTestSuite.func = element.func.accept_RawValueSpecificationVisitor(
@@ -454,20 +394,7 @@ export const V1_transformMappingQueryTestSuite = (
   return mappingTestSuite;
 };
 
-export const V1_transformMappingTestSuite = (
-  element: MappingTestSuite,
-  context: V1_GraphTransformerContext,
-): V1_MappingTestSuite => {
-  if (element instanceof MappingDataTestSuite) {
-    return V1_transformMappingDataTestSuite(element, context);
-  } else if (element instanceof MappingQueryTestSuite) {
-    return V1_transformMappingQueryTestSuite(element, context);
-  }
-  throw new UnsupportedOperationError('Unsupported mapping test suite');
-};
-
 // Include Mapping
-
 const transformMappingInclude = (
   element: MappingInclude,
   context: V1_GraphTransformerContext,

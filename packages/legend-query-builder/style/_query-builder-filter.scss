@@ -21,6 +21,16 @@
     padding: 0.5rem 0;
   }
 
+  &__free-drop-zone {
+    &__container {
+      min-height: 3.8rem;
+      height: 100%;
+      padding: 0.5rem;
+    }
+
+    height: 100%;
+  }
+
   &__expand-icon {
     @include flexVCenter;
 
@@ -98,7 +108,7 @@
   }
 
   &__node__label--expandable {
-    width: calc(100% - 1.5rem);
+    width: calc(100% - 2rem);
   }
 
   &__node__label__content {
@@ -164,19 +174,6 @@
     font-weight: 700;
     color: var(--color-dark-grey-300);
     height: 2.8rem;
-
-    &--droppable {
-      border: 0.2rem dashed var(--color-dark-grey-400);
-      color: var(--color-dark-grey-300);
-
-      &--tall {
-        margin: 1rem;
-        padding: 1rem;
-        text-align: center;
-        border: 0.2rem dashed var(--color-dark-grey-400);
-        color: var(--color-dark-grey-400);
-      }
-    }
   }
 
   &__node__container--selected &__blank-node,

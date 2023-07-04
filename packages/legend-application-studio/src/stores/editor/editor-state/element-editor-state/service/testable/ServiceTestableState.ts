@@ -81,10 +81,10 @@ const createEmptyServiceTestSuite = (
   );
   // data
   suite.testData = new TestData();
-  const connections = getAllIdentifiedServiceConnections(service);
-  if (connections.length === 1) {
-    const iVal = guaranteeNonNullable(connections[0]);
-    const connectionValue = iVal.connection;
+  const identifiedConnections = getAllIdentifiedServiceConnections(service);
+  if (identifiedConnections.length === 1) {
+    const connectionVal = guaranteeNonNullable(identifiedConnections[0]);
+    const connectionValue = connectionVal.connection;
     const type = returnUndefOnError(() =>
       connectionValue.accept_ConnectionVisitor(
         new EmbeddedDataConnectionTypeVisitor(serviceEditorState.editorStore),
@@ -92,7 +92,7 @@ const createEmptyServiceTestSuite = (
     );
     if (type) {
       const testData = createConnectionTestData(
-        iVal,
+        connectionVal,
         type,
         serviceEditorState.editorStore,
       );
@@ -127,7 +127,7 @@ export class ServiceTestSuiteState {
   selectedTestState: ServiceTestState | undefined;
   testStates: ServiceTestState[] = [];
   testToRename: ServiceTest | undefined;
-  isRunningTest = ActionState.create();
+  runningTestState = ActionState.create();
 
   constructor(suite: ServiceTestSuite, testableState: ServiceTestableState) {
     makeObservable(this, {
@@ -188,7 +188,7 @@ export class ServiceTestSuiteState {
 
   *runSuite(): GeneratorFn<void> {
     try {
-      this.isRunningTest.inProgress();
+      this.runningTestState.inProgress();
       this.testStates.forEach((t) => t.resetResult());
       this.testStates.forEach((t) => t.runningTestAction.inProgress());
       const service = this.testableState.serviceEditorState.service;
@@ -205,11 +205,11 @@ export class ServiceTestSuiteState {
         const state = this.testStates.find((t) => t.test === result.atomicTest);
         state?.handleTestResult(result);
       });
-      this.isRunningTest.complete();
+      this.runningTestState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.isRunningTest.fail();
+      this.runningTestState.fail();
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
     }
@@ -217,7 +217,7 @@ export class ServiceTestSuiteState {
 
   *runFailingTests(): GeneratorFn<void> {
     try {
-      this.isRunningTest.inProgress();
+      this.runningTestState.inProgress();
       const service = this.testableState.serviceEditorState.service;
       const input = new RunTestsTestableInput(service);
       input.unitTestIds = this.testStates
@@ -243,11 +243,11 @@ export class ServiceTestSuiteState {
         const state = this.testStates.find((t) => t.test === result.atomicTest);
         state?.handleTestResult(result);
       });
-      this.isRunningTest.complete();
+      this.runningTestState.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.isRunningTest.fail();
+      this.runningTestState.fail();
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
     }
@@ -275,7 +275,20 @@ export class ServiceTestSuiteState {
   }
 
   get testFailed(): number {
-    return this.testCount - this.testPassed;
+    return this.testStates.filter(
+      (e) =>
+        (e.testResultState.result instanceof TestExecuted &&
+          e.testResultState.result.testExecutionStatus !==
+            TestExecutionStatus.PASS) ||
+        (e.testResultState.result instanceof MultiExecutionServiceTestResult &&
+          Array.from(
+            e.testResultState.result.keyIndexedTestResults.values(),
+          ).every(
+            (kv) =>
+              kv instanceof TestExecuted &&
+              kv.testExecutionStatus !== TestExecutionStatus.PASS,
+          )),
+    ).length;
   }
 }
 
@@ -341,12 +354,20 @@ export class ServiceTestableState {
   }
 
   addTestSuite(): void {
-    const suite = createEmptyServiceTestSuite(this);
-    service_addTestSuite(
-      this.serviceEditorState.service,
-      suite,
-      this.serviceEditorState.editorStore.changeDetectionState.observerContext,
-    );
-    this.selectedSuiteState = new ServiceTestSuiteState(suite, this);
+    try {
+      const suite = createEmptyServiceTestSuite(this);
+      service_addTestSuite(
+        this.serviceEditorState.service,
+        suite,
+        this.serviceEditorState.editorStore.changeDetectionState
+          .observerContext,
+      );
+      this.selectedSuiteState = new ServiceTestSuiteState(suite, this);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to create service test suite: ${error.message}`,
+      );
+    }
   }
 }

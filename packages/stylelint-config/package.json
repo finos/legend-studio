@@ -1,6 +1,6 @@
 {
   "name": "@finos/stylelint-config-legend-studio",
-  "version": "3.0.15",
+  "version": "3.0.17",
   "description": "Legend Studio Stylelint config",
   "keywords": [
     "legend",
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.42.0",
+    "eslint": "8.44.0",
     "rimraf": "5.0.1"
   },
   "peerDependencies": {

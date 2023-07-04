@@ -144,10 +144,6 @@
       font-weight: 700;
     }
 
-    .ag-cell-value {
-      word-break: break-word;
-    }
-
     .ag-center-cols-viewport {
       // stripped background for remaining height of the grid when there are not enough rows
       // See https://css-tricks.com/stripes-css/
@@ -158,6 +154,10 @@
         var(--color-dark-grey-80) 0.5rem,
         var(--color-dark-grey-80) 1rem
       );
+    }
+
+    .ag-cell-value {
+      word-break: break-word;
     }
 
     ::-webkit-scrollbar-track-piece {

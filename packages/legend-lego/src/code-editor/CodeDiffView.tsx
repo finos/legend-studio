@@ -53,7 +53,10 @@ export const CodeDiffView = observer(
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
           ...getBaseCodeEditorOptions(),
-          theme: CODE_EDITOR_THEME.DEFAULT_DARK,
+          theme: applicationStore.layoutService
+            .TEMPORARY__isLightColorThemeEnabled
+            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
+            : CODE_EDITOR_THEME.DEFAULT_DARK,
           readOnly: true,
         });
         setEditor(_editor);

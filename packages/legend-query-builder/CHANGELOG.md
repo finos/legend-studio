@@ -1,5 +1,37 @@
 # @finos/legend-query-builder
 
+## 4.1.4
+
+### Patch Changes
+
+- [#1704](https://github.com/finos/legend-studio/pull/1704) [`8e25a9357`](https://github.com/finos/legend-studio/commit/8e25a9357aff4ca97978fe56454c7fd060b4df8a) ([@gayathrir11](https://github.com/gayathrir11)) - Fix clearing of compilation errors when we expand the lambda editor ([#1703](https://github.com/finos/legend-studio/issues/1703)).
+
+## 4.1.3
+
+### Patch Changes
+
+- [#2368](https://github.com/finos/legend-studio/pull/2368) [`ae61fed8f`](https://github.com/finos/legend-studio/commit/ae61fed8f464de83d4e8ee18eb7f39602f7bcd2c) ([@Paarth002](https://github.com/Paarth002)) - Uplifted Execution plan viewer support for relational flow and added execution plan viewer support for flow control execution nodes
+
+## 4.1.2
+
+## 4.1.1
+
+### Patch Changes
+
+- [#2358](https://github.com/finos/legend-studio/pull/2358) [`dc34a3f3e`](https://github.com/finos/legend-studio/commit/dc34a3f3e169ec049b113e2d0bbf70ec84e3a8c4) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle non string constant execution result values
+
+## 4.1.0
+
+### Minor Changes
+
+- [#2321](https://github.com/finos/legend-studio/pull/2321) [`f0017123d`](https://github.com/finos/legend-studio/commit/f0017123d1798af73cef2a91b0af13bd1b9a831f) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for export query to other formats.
+
+## 4.0.13
+
+### Patch Changes
+
+- [#2343](https://github.com/finos/legend-studio/pull/2343) [`8e1be63cd`](https://github.com/finos/legend-studio/commit/8e1be63cd6bc9af1e84a163fecf8638779f6930b) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Remove Binary Datatype from Dropdown
+
 ## 4.0.12
 
 ## 4.0.11

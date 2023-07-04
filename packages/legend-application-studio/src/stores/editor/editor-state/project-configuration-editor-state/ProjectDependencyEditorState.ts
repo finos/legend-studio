@@ -316,7 +316,7 @@ export class ProjectDependencyEditorState {
       reportTab: observable,
       expandConflictsState: observable,
       buildConflictPathState: observable,
-      setDependencyReport: action,
+      setReportTab: action,
       expandAllConflicts: action,
       setFlattenDependencyTreeData: action,
       clearTrees: action,
@@ -356,7 +356,7 @@ export class ProjectDependencyEditorState {
     }
   }
 
-  setDependencyReport(tab: DEPENDENCY_REPORT_TAB | undefined): void {
+  setReportTab(tab: DEPENDENCY_REPORT_TAB | undefined): void {
     this.reportTab = tab;
   }
 

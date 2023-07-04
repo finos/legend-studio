@@ -860,6 +860,6 @@ export class EditorGraphState {
         return label;
       }
     }
-    return PACKAGEABLE_ELEMENT_TYPE.UNKNOWN;
+    return PACKAGEABLE_ELEMENT_TYPE.INTERNAL__UNKNOWN;
   }
 }

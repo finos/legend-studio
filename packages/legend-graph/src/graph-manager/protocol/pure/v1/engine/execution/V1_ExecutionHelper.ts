@@ -19,6 +19,8 @@ import {
   UnsupportedOperationError,
   type PlainObject,
   isString,
+  isNumber,
+  isBoolean,
 } from '@finos/legend-shared';
 import {
   type ExecutionResult,
@@ -167,12 +169,12 @@ export const V1_buildExecutionResult = (
 };
 
 export const V1_serializeExecutionResult = (
-  json: PlainObject<V1_ExecutionResult> | string,
+  json: PlainObject<V1_ExecutionResult> | string | null | boolean | number,
 ): V1_ExecutionResult => {
-  if (isString(json)) {
+  if (json === null || isString(json) || isNumber(json) || isBoolean(json)) {
     return new V1_RawExecutionResult(json);
   }
-  switch ((json.builder as PlainObject<V1_ResultBuilder>)._type) {
+  switch ((json.builder as PlainObject<V1_ResultBuilder> | undefined)?._type) {
     case BuilderType.CLASS_BUILDER:
       return V1_ClassExecutionResult.serialization.fromJson(json);
     case BuilderType.TDS_BUILDER:

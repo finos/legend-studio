@@ -242,7 +242,7 @@ export const getPrimitiveTypeFromRelationalType = (
 export const createMockDataForColumn = (
   col: Column,
   isPrimaryKey: boolean,
-  idx?: number | number,
+  idx?: number | undefined,
 ): string | undefined => {
   const type = col.type;
 
@@ -308,6 +308,8 @@ export const createMockDataForMappingElementSource = (
     srcElement.relation instanceof Table
   ) {
     return createMockDataForTable(srcElement.relation);
+  } else if (srcElement instanceof Table) {
+    return createMockDataForTable(srcElement);
   }
   editorStore.applicationStore.notificationService.notifyWarning(
     new UnsupportedOperationError(

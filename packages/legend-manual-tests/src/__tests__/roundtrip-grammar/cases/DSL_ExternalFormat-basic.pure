@@ -42,17 +42,6 @@ Mapping test::trade::SelfMapping
 )
 
 
-###Connection
-ExternalFormatConnection test::Connection
-{
-  store: test::gen::TestBinding;
-  source: UrlStream
-  {
-    url: 'executor:default';
-  };
-}
-
-
 ###Runtime
 Runtime test::runtime
 {

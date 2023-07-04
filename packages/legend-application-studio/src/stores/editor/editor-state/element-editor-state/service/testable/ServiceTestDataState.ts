@@ -36,6 +36,7 @@ import {
   observe_ValueSpecification,
   getAllIdentifiedConnectionsFromRuntime,
   getAllIdentifiedServiceConnections,
+  Database,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -63,7 +64,10 @@ import {
   type EmbeddedDataTypeOption,
   EmbeddedDataEditorState,
 } from '../../data/DataEditorState.js';
-import { createEmbeddedData } from '../../data/EmbeddedDataState.js';
+import {
+  RelationalCSVDataState,
+  createEmbeddedData,
+} from '../../data/EmbeddedDataState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import { LegendStudioTelemetryHelper } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import {
@@ -168,6 +172,7 @@ export class ConnectionTestDataState {
       anonymizeGeneratedData: observable,
       setAnonymizeGeneratedData: action,
       changeEmbeddedData: action,
+      buildEmbeddedEditorState: action,
       generateTestData: flow,
       generateTestDataForDatabaseConnection: flow,
     });
@@ -179,11 +184,23 @@ export class ConnectionTestDataState {
       connectionData.testData,
     );
     this.parametersState = new ServiceTestDataParametersState(this);
+    this.buildEmbeddedEditorState();
   }
   get identifiedConnection(): IdentifiedConnection | undefined {
     return this.getAllIdentifiedConnections().find(
       (c) => c.id === this.connectionData.connectionId,
     );
+  }
+
+  buildEmbeddedEditorState(): void {
+    const val = this.identifiedConnection?.connection.store.value;
+    if (
+      this.embeddedEditorState.embeddedDataState instanceof
+        RelationalCSVDataState &&
+      val instanceof Database
+    ) {
+      this.embeddedEditorState.embeddedDataState.setDatabase(val);
+    }
   }
 
   setUseSharedModal(val: boolean): void {

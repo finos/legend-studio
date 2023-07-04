@@ -367,7 +367,7 @@ export const openNode = (
   let currentElement: PackageableElement | undefined = element;
   let openingNode: PackageTreeNodeData | undefined;
   while (currentElement.package) {
-    const node: PackageTreeNodeData =
+    const currentNode: PackageTreeNodeData =
       treeData.nodes.get(currentElement.path) ??
       addNode(
         editorStore,
@@ -376,8 +376,8 @@ export const openNode = (
         childFilter,
         isDependencyElement,
       );
-    node.isOpen = currentElement instanceof Package;
-    openingNode = !openingNode ? node : openingNode;
+    currentNode.isOpen = currentElement instanceof Package;
+    openingNode = !openingNode ? currentNode : openingNode;
     currentElement = currentElement.package;
   }
   // Open the dependency root

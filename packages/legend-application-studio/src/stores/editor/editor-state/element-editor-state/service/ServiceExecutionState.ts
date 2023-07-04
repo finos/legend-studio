@@ -292,10 +292,12 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
 
   *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.setLambda(val);
-    yield flowResult(this.convertLambdaObjectToGrammarString(true));
+    yield flowResult(this.convertLambdaObjectToGrammarString({ pretty: true }));
   }
 
-  *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options?: {
+    pretty?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (this.execution.func.body) {
       try {
         const lambdas = new Map<string, RawLambda>();
@@ -309,7 +311,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
@@ -543,7 +545,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             rawPlan,
             this.editorStore.graphManagerState.graph,
           );
-        this.executionPlanState.setPlan(plan);
+        this.executionPlanState.initialize(plan);
       } catch {
         // do nothing
       }

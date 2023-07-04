@@ -37,6 +37,7 @@ import {
   Modal,
   ModalTitle,
   Panel,
+  PanelDivider,
   PanelFullContent,
   PanelLoadingIndicator,
   RocketIcon,
@@ -47,6 +48,8 @@ import {
   ActionAlertActionType,
 } from '@finos/legend-application';
 import {
+  type VariableExpression,
+  Multiplicity,
   RuntimePointer,
   ServiceExecutionMode,
   validate_ServicePattern,
@@ -55,6 +58,19 @@ import { type QueryEditorStore } from '@finos/legend-application-query';
 import type { UserOption } from '../studio/QueryProductionizer.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { resolveVersion } from '@finos/legend-server-depot';
+
+const validURLParamMultiplicityList = [Multiplicity.ONE, Multiplicity.ZERO_ONE];
+
+export const generateServiceURL = (
+  urlPrefix: string | undefined,
+  params: VariableExpression[] | undefined,
+): string => {
+  const paramNames = params
+    ?.filter((p) => validURLParamMultiplicityList.includes(p.multiplicity))
+    .map((e) => `{${e.name}}`);
+  const paramSuffix = paramNames?.length ? `/${paramNames.join('/')}` : '';
+  return `${urlPrefix ?? `/${uuid()}`}${paramSuffix}`;
+};
 
 const ServiceRegisterModal = observer(
   (props: {
@@ -66,7 +82,14 @@ const ServiceRegisterModal = observer(
     const [registrationState] = useState(ActionState.create());
     const [text, setText] = useState('');
     const [activateService, setActivateService] = useState(true);
-    const [servicePattern, setServicePattern] = useState(`/${uuid()}`);
+    const [servicePattern, setServicePattern] = useState(
+      generateServiceURL(
+        undefined,
+        queryBuilderState.parametersState.parameterStates.map(
+          (p) => p.parameter,
+        ),
+      ),
+    );
     const [owners, setOwners] = useState<UserOption[]>([]);
     const [isServiceUrlPatternValid, setIsServiceUrlPatternValid] =
       useState(true);
@@ -113,6 +136,10 @@ const ServiceRegisterModal = observer(
     };
     const toggleActivateService = (): void =>
       setActivateService(!activateService);
+
+    const darkMode =
+      !editorStore.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     const registerService = editorStore.applicationStore.guardUnhandledError(
       async (): Promise<void> => {
@@ -217,7 +244,7 @@ const ServiceRegisterModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true} className="search-modal">
+        <Modal darkMode={darkMode} className="search-modal">
           <ModalTitle title="Register Service Semi-interactively..." />
           <Panel>
             <PanelLoadingIndicator isLoading={registrationState.isInProgress} />
@@ -256,7 +283,7 @@ const ServiceRegisterModal = observer(
                       placeholder="Enter an owner..."
                       spellCheck={false}
                       inputValue={text}
-                      darkMode={true}
+                      darkMode={darkMode}
                       onInputChange={onTextChange}
                       onChange={onUserOptionChange}
                       isMulti={true}
@@ -274,7 +301,7 @@ const ServiceRegisterModal = observer(
                       options={envOptions}
                       onChange={onServerEnvChange}
                       value={selectedEnvOption}
-                      darkMode={true}
+                      darkMode={darkMode}
                     />
                   </div>
                 </div>
@@ -301,6 +328,7 @@ const ServiceRegisterModal = observer(
                   </div>
                 </div>
               </div>
+              <PanelDivider />
             </PanelFullContent>
           </Panel>
           <div className="search-modal__actions">

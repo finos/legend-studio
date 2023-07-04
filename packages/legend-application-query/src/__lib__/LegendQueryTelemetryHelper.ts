@@ -17,6 +17,7 @@
 import type { TelemetryService } from '@finos/legend-application';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryEvent.js';
 import {
+  type GraphManagerOperationReport,
   GRAPH_MANAGER_EVENT,
   type GraphInitializationReport,
 } from '@finos/legend-graph';
@@ -31,12 +32,36 @@ type Query_TelemetryData = {
   };
 };
 
+type QueryGraphInitialization_TelemetryData = Query_TelemetryData & {
+  graph: GraphInitializationReport;
+};
+
+type ViewQuery_TelemetryData = Query_TelemetryData &
+  GraphManagerOperationReport & {
+    dependenciesCount: number;
+  };
+
+type IntializeQueryState_TelemetryData = Query_TelemetryData &
+  GraphManagerOperationReport & {
+    dependenciesCount: number;
+  };
+
 export class LegendQueryTelemetryHelper {
   static logEvent_ViewQuerySucceeded(
     service: TelemetryService,
-    data: Query_TelemetryData,
+    data: ViewQuery_TelemetryData,
   ): void {
     service.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_QUERY__SUCCESS, data);
+  }
+
+  static logEvent_InitializeQueryStateSucceeded(
+    service: TelemetryService,
+    data: IntializeQueryState_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_STATE__SUCCESS,
+      data,
+    );
   }
 
   static logEvent_CreateQuerySucceeded(
@@ -65,7 +90,7 @@ export class LegendQueryTelemetryHelper {
 
   static logEvent_GraphInitializationSucceeded(
     service: TelemetryService,
-    data: GraphInitializationReport,
+    data: QueryGraphInitialization_TelemetryData | GraphInitializationReport,
   ): void {
     service.logEvent(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS, data);
   }

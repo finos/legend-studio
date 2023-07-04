@@ -20,7 +20,7 @@ import { SerializationFactory } from '@finos/legend-shared';
 
 export class ProjectStructureVersion {
   version!: number;
-  extensionVersion?: number;
+  extensionVersion?: number | undefined;
 
   constructor() {
     makeObservable(this, {
@@ -48,6 +48,9 @@ export class ProjectStructureVersion {
   }
 
   get fullVersion(): string {
-    return `${this.version}.${this.extensionVersion ?? 0}`;
+    if (this.extensionVersion) {
+      return `${this.version}.${this.extensionVersion}`;
+    }
+    return `${this.version}`;
   }
 }

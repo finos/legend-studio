@@ -425,6 +425,8 @@
     height: 35rem;
     position: relative;
     border: 0.1rem solid var(--color-dark-grey-100);
+    resize: both;
+    overflow: hidden;
   }
 
   &__section__number-input {
@@ -667,5 +669,7 @@
     width: 100%;
     overflow: auto;
     pointer-events: all;
+    display: flex;
+    flex-direction: column;
   }
 }

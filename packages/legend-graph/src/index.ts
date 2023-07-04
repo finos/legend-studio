@@ -141,8 +141,14 @@ export { INTERNAL__UnknownResultType } from './graph/metamodel/pure/executionPla
 
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
+export { FunctionParametersValidationNode } from './graph/metamodel/pure/executionPlan/nodes/FunctionParametersValidationNode.js';
+export { ParameterValidationContext } from './graph/metamodel/pure/executionPlan/nodes/ParameterValidationContext.js';
+export { AllocationExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/AllocationExecutionNode.js';
+export { ConstantExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ConstantExecutionNode.js';
+export { SequenceExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/SequenceExecutionNode.js';
 export { ResultType } from './graph/metamodel/pure/executionPlan/result/ResultType.js';
 export { TDSResultType } from './graph/metamodel/pure/executionPlan/result/TDSResultType.js';
+export { DataTypeResultType } from './graph/metamodel/pure/executionPlan/result/DataTypeResultType.js';
 
 // --------------------------------------------- HELPER --------------------------------------------------
 

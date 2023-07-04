@@ -129,7 +129,9 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
     }
   }
 
-  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+  *convertLambdaObjectToGrammarString(options: {
+    pretty?: boolean | undefined;
+  }): GeneratorFn<void> {
     if (this.rawLambdaState.lambda.body) {
       this.isConvertingLambdaToString = true;
       try {
@@ -144,7 +146,7 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
         const isolatedLambdas =
           (yield this.queryBuilderState.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
-            pretty,
+            options.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(

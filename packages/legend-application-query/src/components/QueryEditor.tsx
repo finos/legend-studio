@@ -88,10 +88,7 @@ import { QUERY_EDITOR_TEST_ID } from '../__lib__/LegendQueryTesting.js';
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
   const createQueryState = editorStore.queryCreatorState;
-  const close = (): void => {
-    createQueryState.setShowCreateModal(false);
-    createQueryState.editorStore.setExistingQueryName(undefined);
-  };
+  const close = (): void => createQueryState.close();
   const applicationStore = useApplicationStore();
   const create = (): void => {
     flowResult(createQueryState.createQuery()).catch(
@@ -267,7 +264,7 @@ const QueryEditorExistingQueryHeader = observer(
       existingEditorStore.updateState.setQueryRenamer(true);
     };
     const renameQuery = (val: string): void => {
-      if (!(queryRenameName === existingEditorStore.lightQuery.name)) {
+      if (queryRenameName !== existingEditorStore.lightQuery.name) {
         flowResult(updateState.updateQuery(val)).catch(
           applicationStore.alertUnhandledError,
         );
@@ -369,7 +366,6 @@ const QueryEditorHeaderContent = observer(
     const editorStore = useQueryEditorStore();
     const applicationStore = useLegendQueryApplicationStore();
     const isExistingQuery = editorStore instanceof ExistingQueryEditorStore;
-
     const renameQuery = (): void => {
       if (editorStore instanceof ExistingQueryEditorStore) {
         editorStore.updateState.setQueryRenamer(true);
@@ -434,7 +430,11 @@ const QueryEditorHeaderContent = observer(
     };
 
     const handleQuerySaveAs = (): void => {
-      editorStore.queryCreatorState.setShowCreateModal(true);
+      editorStore.queryCreatorState.open(
+        editorStore instanceof ExistingQueryEditorStore
+          ? editorStore.query
+          : undefined,
+      );
     };
 
     const renderQueryTitle = (): React.ReactNode => {

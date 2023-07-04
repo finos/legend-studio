@@ -207,6 +207,23 @@
       color: var(--color-light-grey-50);
     }
   }
+
+  &__advanced {
+    &__project-type__info {
+      padding-bottom: 0.5rem;
+    }
+
+    &__caution__btn {
+      @include flexCenter;
+
+      width: 20rem;
+      height: 3.4rem;
+      padding: 0 1rem;
+      background: var(--color-blue-200);
+      color: var(--color-light-grey-50);
+      cursor: pointer;
+    }
+  }
 }
 
 .project-dependency-editor {

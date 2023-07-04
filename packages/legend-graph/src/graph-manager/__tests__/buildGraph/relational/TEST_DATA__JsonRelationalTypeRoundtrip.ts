@@ -237,7 +237,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
     content: {
       _type: 'binding',
       contentType: 'application/json',
-      includedStores: [],
       modelUnit: {
         packageableElementExcludes: [],
         packageableElementIncludes: ['joinChain::model::Firm'],

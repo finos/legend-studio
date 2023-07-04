@@ -297,10 +297,10 @@ function V1_resolveClassInstanceValueElementPaths(
   } else if (spec instanceof V1_TDSColumnInformation) {
     spec.columnFn.accept_ValueSpecificationVisitor(resolver);
     return spec;
-  } else if (spec instanceof V1_TDSOlapAggregation) {
-    spec.function.accept_ValueSpecificationVisitor(resolver);
-    return spec;
-  } else if (spec instanceof V1_TDSOlapRank) {
+  } else if (
+    spec instanceof V1_TDSOlapAggregation ||
+    spec instanceof V1_TDSOlapRank
+  ) {
     spec.function.accept_ValueSpecificationVisitor(resolver);
     return spec;
   } else if (spec instanceof V1_TDSSortInformation) {

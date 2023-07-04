@@ -78,11 +78,10 @@ import {
   PrimitiveType,
   type MappingTestSuite,
   observe_MappingTestSuite,
-  type MappingQueryTestSuite,
-  type MappingQueryTest,
-  type MappingDataTestSuite,
-  type MappingDataTest,
   type StoreTestData,
+  type MappingTest,
+  type EmbeddedData,
+  observe_EmbeddedData,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -203,25 +202,29 @@ export const mapping_deleteTestSuite = action(
 );
 
 export const mappingTestable_setQuery = action(
-  (test: MappingQueryTest | MappingQueryTestSuite, value: RawLambda): void => {
+  (test: MappingTestSuite, value: RawLambda): void => {
     test.func = observe_RawLambda(value);
   },
 );
 
 export const mappingTestable_deleteStoreTestData = action(
-  (
-    dataHolder: MappingDataTestSuite | MappingDataTest,
-    val: StoreTestData,
-  ): void => {
+  (dataHolder: MappingTest, val: StoreTestData): void => {
     deleteEntry(dataHolder.storeTestData, val);
   },
 );
 
-export const mappingTestable_addStoreTestData = action(
+export const mappingTestable_setEmbeddedData = action(
   (
-    dataHolder: MappingDataTestSuite | MappingDataTest,
-    val: StoreTestData,
+    store: StoreTestData,
+    embeddedData: EmbeddedData,
+    observerContext: ObserverContext,
   ): void => {
+    store.data = observe_EmbeddedData(embeddedData, observerContext);
+  },
+);
+
+export const mappingTestable_addStoreTestData = action(
+  (dataHolder: MappingTest, val: StoreTestData): void => {
     addUniqueEntry(dataHolder.storeTestData, val);
   },
 );

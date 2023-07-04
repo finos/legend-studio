@@ -65,10 +65,10 @@ const MilestoningParameterEditor = observer(
       },
       [queryBuilderState, stereotype],
     );
-    const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       QueryBuilderVariableDragSource,
       void,
-      { isMilestoningParameterValueDragOver: boolean }
+      { isDragOver: boolean }
     >(
       () => ({
         accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
@@ -77,10 +77,8 @@ const MilestoningParameterEditor = observer(
             handleDrop(item);
           }
         },
-        collect: (
-          monitor,
-        ): { isMilestoningParameterValueDragOver: boolean } => ({
-          isMilestoningParameterValueDragOver: monitor.isOver({
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({
             shallow: true,
           }),
         }),
@@ -121,9 +119,8 @@ const MilestoningParameterEditor = observer(
     return (
       <div ref={dropConnector} className="query-builder__variable-editor">
         <PanelEntryDropZonePlaceholder
-          showPlaceholder={isMilestoningParameterValueDragOver}
+          isDragOver={isDragOver}
           label="Change Milestoning Parameter Value"
-          className="query-builder__dnd__placeholder"
         >
           <BasicValueSpecificationEditor
             valueSpecification={milestoningParameter}
@@ -271,9 +268,11 @@ export const MilestoningParametersEditor = observer(
           <ModalHeader title="Milestoning Parameters" />
           <ModalBody className="query-builder__variables__modal__body">
             <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
-            <div className="panel__content__form__section__header__label">
-              List of compatible milestoning parameters
-            </div>
+            <PanelFormSection>
+              <div className="panel__content__form__section__header__label">
+                List of compatible milestoning parameters
+              </div>
+            </PanelFormSection>
             <div className="panel__content__form__section__list__items">
               <VariableSelector
                 queryBuilderState={queryBuilderState}

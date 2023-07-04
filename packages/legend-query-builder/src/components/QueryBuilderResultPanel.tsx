@@ -68,7 +68,7 @@ import {
   prettyDuration,
   filterByType,
 } from '@finos/legend-shared';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
@@ -112,6 +112,7 @@ import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
+import { QueryUsageViewer } from './QueryUsageViewer.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -131,6 +132,7 @@ const QueryBuilderGridResultContextMenu = observer(
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
     const { data, tdsState } = props;
+
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
@@ -403,14 +405,31 @@ const QueryBuilderGridResultContextMenu = observer(
       ),
     );
 
+    const findRowFromRowIndex = (
+      rowIndex: number,
+    ): (string | number | boolean | null)[] => {
+      if (
+        !tdsState.queryBuilderState.resultState.executionResult ||
+        !(
+          tdsState.queryBuilderState.resultState.executionResult instanceof
+          TDSExecutionResult
+        )
+      ) {
+        return [''];
+      }
+      return (
+        tdsState.queryBuilderState.resultState.executionResult.result.rows[
+          rowIndex
+        ]?.values ?? ['']
+      );
+    };
+
     const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
       applicationStore.clipboardService.copyTextToClipboard(
-        tdsState.queryBuilderState.resultState
-          .findRowFromRowIndex(
-            tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
-              .rowIndex ?? 0,
-          )
-          .toString(),
+        findRowFromRowIndex(
+          tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
+            .rowIndex ?? 0,
+        ).toString(),
       ),
     );
 
@@ -479,6 +498,45 @@ const QueryResultCellRenderer = observer(
         result.coordinates.rowIndex === currentCellCoordinates.rowIndex,
     );
 
+    const findColumnFromCoordinates = (
+      colIndex: number,
+    ): string | number | boolean | null | undefined => {
+      if (
+        !resultState.executionResult ||
+        !(resultState.executionResult instanceof TDSExecutionResult)
+      ) {
+        return undefined;
+      }
+      return resultState.executionResult.result.columns[colIndex];
+    };
+
+    const findResultValueFromCoordinates = (
+      resultCoordinate: [number, number],
+    ): string | number | boolean | null | undefined => {
+      const rowIndex = resultCoordinate[0];
+      const colIndex = resultCoordinate[1];
+
+      if (
+        !resultState.executionResult ||
+        !(resultState.executionResult instanceof TDSExecutionResult)
+      ) {
+        return undefined;
+      }
+
+      return resultState.executionResult.result.rows[rowIndex]?.values[
+        colIndex
+      ];
+    };
+
+    const isCoordinatesSelected = (
+      resultCoordinate: QueryBuilderTDSResultCellCoordinate,
+    ): boolean =>
+      resultState.selectedCells.some(
+        (cell) =>
+          cell.coordinates.rowIndex === resultCoordinate.rowIndex &&
+          cell.coordinates.colIndex === resultCoordinate.colIndex,
+      );
+
     const mouseDown: React.MouseEventHandler = (event) => {
       event.preventDefault();
 
@@ -487,7 +545,7 @@ const QueryResultCellRenderer = observer(
           columnName,
           params.rowIndex,
         );
-        const actualValue = resultState.findResultValueFromCoordinates([
+        const actualValue = findResultValueFromCoordinates([
           coordinates.rowIndex,
           coordinates.colIndex,
         ]);
@@ -506,12 +564,20 @@ const QueryResultCellRenderer = observer(
           columnName,
           params.rowIndex,
         );
-        const actualValue = resultState.findResultValueFromCoordinates([
+        const actualValue = findResultValueFromCoordinates([
           coordinates.rowIndex,
           coordinates.colIndex,
         ]);
 
         const rowNode = params.api.getRowNode(params.rowIndex.toString());
+
+        resultState.setSelectedCells([
+          {
+            value: actualValue,
+            columnName: columnName,
+            coordinates: coordinates,
+          },
+        ]);
 
         if (rowNode) {
           params.api.refreshCells({
@@ -520,13 +586,40 @@ const QueryResultCellRenderer = observer(
             rowNodes: [rowNode],
           });
         }
-        resultState.setSelectedCells([
-          {
-            value: actualValue,
-            columnName: columnName,
-            coordinates: coordinates,
-          },
-        ]);
+
+        resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+      }
+
+      if (event.button === 2) {
+        const coordinates = findCoordinatesFromResultValue(
+          columnName,
+          params.rowIndex,
+        );
+        const isInSelected = isCoordinatesSelected(coordinates);
+        if (!isInSelected) {
+          const actualValue = findResultValueFromCoordinates([
+            coordinates.rowIndex,
+            coordinates.colIndex,
+          ]);
+
+          resultState.setSelectedCells([
+            {
+              value: actualValue,
+              columnName: columnName,
+              coordinates: coordinates,
+            },
+          ]);
+          const rowNode = params.api.getRowNode(params.rowIndex.toString());
+
+          if (rowNode) {
+            params.api.refreshCells({
+              force: true,
+              columns: [columnName],
+              rowNodes: [rowNode],
+            });
+          }
+          resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+        }
       }
     };
     const mouseUp: React.MouseEventHandler = (event) => {
@@ -558,14 +651,11 @@ const QueryResultCellRenderer = observer(
 
         for (let x = minRow; x <= maxRow; x++) {
           for (let y = minCol; y <= maxCol; y++) {
-            const actualValue = resultState.findResultValueFromCoordinates([
-              x,
-              y,
-            ]);
+            const actualValue = findResultValueFromCoordinates([x, y]);
 
             const valueAndColumnId = {
               value: actualValue,
-              columnName: resultState.findColumnFromCoordinates(y),
+              columnName: findColumnFromCoordinates(y),
               coordinates: {
                 rowIndex: x,
                 colIndex: y,
@@ -702,10 +792,14 @@ const QueryBuilderResultValues = observer(
         />
       );
     } else if (executionResult instanceof RawExecutionResult) {
+      const inputValue =
+        executionResult.value === null
+          ? 'null'
+          : executionResult.value.toString();
       return (
         <CodeEditor
           language={CODE_EDITOR_LANGUAGE.TEXT}
-          inputValue={executionResult.value}
+          inputValue={inputValue}
           isReadOnly={true}
         />
       );
@@ -823,13 +917,6 @@ export const QueryBuilderResultPanel = observer(
       flowResult(resultState.generatePlan(true)),
     );
 
-    const changeLimit: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      const val = event.target.value;
-      queryBuilderState.resultState.setPreviewLimit(
-        val === '' ? 0 : parseInt(val, 10),
-      );
-    };
-
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
 
     const copyExpression = (value: string): void => {
@@ -872,6 +959,37 @@ export const QueryBuilderResultPanel = observer(
     const resultDescription = executionResult
       ? getResultSetDescription(executionResult)
       : undefined;
+
+    const [previewLimitValue, setPreviewLimitValue] = useState(
+      resultState.previewLimit,
+    );
+
+    const changePreviewLimit: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setPreviewLimitValue(parseInt(event.target.value, 10));
+    };
+
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const getPreviewLimit = (): void => {
+      if (isNaN(previewLimitValue) || previewLimitValue === 0) {
+        setPreviewLimitValue(1);
+        queryBuilderState.resultState.setPreviewLimit(1);
+      } else {
+        queryBuilderState.resultState.setPreviewLimit(previewLimitValue);
+      }
+    };
+
+    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+      if (event.code === 'Enter') {
+        getPreviewLimit();
+        inputRef.current?.focus();
+      } else if (event.code === 'Escape') {
+        inputRef.current?.select();
+      }
+    };
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
@@ -951,11 +1069,14 @@ export const QueryBuilderResultPanel = observer(
                   preview limit
                 </div>
                 <input
+                  ref={inputRef}
                   className="input--dark query-builder__result__limit__input"
                   spellCheck={false}
                   type="number"
-                  value={resultState.previewLimit}
-                  onChange={changeLimit}
+                  value={previewLimitValue}
+                  onChange={changePreviewLimit}
+                  onBlur={getPreviewLimit}
+                  onKeyDown={onKeyDown}
                   disabled={!isQueryValid}
                 />
               </div>
@@ -1044,6 +1165,15 @@ export const QueryBuilderResultPanel = observer(
                       {format}
                     </MenuContentItem>
                   ))}
+                  <MenuContentItem
+                    className="query-builder__result__export__dropdown__menu__item"
+                    onClick={(): void =>
+                      resultState.setIsQueryUsageViewerOpened(true)
+                    }
+                    disabled={queryBuilderState.changeDetectionState.hasChanged}
+                  >
+                    View Query Usage...
+                  </MenuContentItem>
                 </MenuContent>
               }
               menuProps={{
@@ -1059,6 +1189,9 @@ export const QueryBuilderResultPanel = observer(
                 <CaretDownIcon />
               </div>
             </DropdownMenu>
+            {resultState.isQueryUsageViewerOpened && (
+              <QueryUsageViewer resultState={resultState} />
+            )}
           </div>
         </div>
         <PanelContent>

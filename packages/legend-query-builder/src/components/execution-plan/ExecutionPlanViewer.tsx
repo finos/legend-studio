@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import {
   type TreeNodeContainerProps,
-  type TreeData,
   Dialog,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -41,16 +40,13 @@ import {
   PanelHeader,
   Panel,
 } from '@finos/legend-art';
-import {
-  addUniqueEntry,
-  filterByType,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
   EXECUTION_PLAN_VIEW_MODE,
   type ExecutionPlanState,
+  generateExecutionNodeTreeNodeData,
 } from '../../stores/execution-plan/ExecutionPlanState.js';
 import { observer } from 'mobx-react-lite';
 import {
@@ -58,225 +54,182 @@ import {
   ExecutionNode,
   SQLExecutionNode,
   RelationalTDSInstantiationExecutionNode,
+  FunctionParametersValidationNode,
+  AllocationExecutionNode,
+  ConstantExecutionNode,
+  SequenceExecutionNode,
   type RawExecutionPlan,
 } from '@finos/legend-graph';
 import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
+import { FunctionParametersValidationNodeViewer } from './FunctionParametersValidationNodeViewer.js';
+import { AllocationExecutionNodeViewer } from './AllocationExecutionNodeViewer.js';
+import { ConstantExecutionNodeViewer } from './ConstantExecutionNodeViewer.js';
+import { SequenceExecutionNodeViewer } from './SequenceExecutionNodeViewer.js';
+import { RelationalTDSInstantiationExecutionNodeViewer } from './RelationalTDSInstantiationExecutionNodeViewer.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
+const EXECUTION_PLAN = 'Execution Plan';
 /**
  * @modularize
  * See https://github.com/finos/legend-studio/issues/65
  */
-const generateExecutionNodeLabel = (type: ExecutionNode): string => {
+export const generateExecutionNodeLabel = (type: ExecutionNode): string => {
   if (type instanceof SQLExecutionNode) {
     return `SQL Execution Node`;
   } else if (type instanceof RelationalTDSInstantiationExecutionNode) {
     return `Relational TDS Instantiation Execution Node`;
+  } else if (type instanceof FunctionParametersValidationNode) {
+    return `Function Parameters Validation Node`;
+  } else if (type instanceof AllocationExecutionNode) {
+    return `Allocation Execution Node (${type.varName})`;
+  } else if (type instanceof ConstantExecutionNode) {
+    return `Constant Execution Node`;
+  } else if (type instanceof SequenceExecutionNode) {
+    return `Sequence Execution Node`;
   } else {
     return 'Other';
   }
 };
 
-const generateExecutionNodeTreeNodeData = (
-  executionNode: ExecutionNode,
-  label: string,
-  parentNode:
-    | ExecutionNodeTreeNodeData
-    | ExecutionPlanViewTreeNodeData
-    | undefined,
-): ExecutionNodeTreeNodeData => {
-  const executionNodeTreeNode = new ExecutionNodeTreeNodeData(
-    executionNode._UUID,
-    label,
-    executionNode,
-  );
-
-  const childrenIds: string[] = [];
-
-  executionNode.executionNodes
-    .slice()
-    .filter(filterByType(ExecutionNode))
-    .forEach((childExecutionNode) => {
-      addUniqueEntry(childrenIds, childExecutionNode._UUID);
-    });
-
-  executionNodeTreeNode.childrenIds = childrenIds;
-
-  return executionNodeTreeNode;
-};
-
-const generateExecutionPlanTreeNodeData = (
-  executionPlan: ExecutionPlan,
-): ExecutionPlanViewTreeNodeData => {
-  const executionPlanNode = new ExecutionPlanViewTreeNodeData(
-    `Execution Plan`,
-    `Execution Plan`,
-    executionPlan,
-  );
-
-  const childrenIds: string[] = [];
-
-  const rootNodeId = executionPlan.rootExecutionNode._UUID;
-  addUniqueEntry(childrenIds, rootNodeId);
-  executionPlanNode.childrenIds = childrenIds;
-  return executionPlanNode;
-};
-
-const getExecutionPlanTreeData = (
-  executionPlan: ExecutionPlan,
-): TreeData<ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData> => {
-  const rootIds: string[] = [];
-  const nodes = new Map<
-    string,
-    ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData
-  >();
-  const executionPlanTreeNode =
-    generateExecutionPlanTreeNodeData(executionPlan);
-  addUniqueEntry(rootIds, executionPlanTreeNode.id);
-  nodes.set(executionPlanTreeNode.id, executionPlanTreeNode);
-  return { rootIds, nodes };
-};
-
-const ExecutionNodeElementTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<
-    ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
-    {
-      onNodeExpand: (
-        node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
-      ) => void;
-    }
-  >
-> = (props) => {
-  const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-  const { onNodeExpand } = innerProps;
-  const isExpandable = Boolean(node.childrenIds?.length);
-  const selectNode = (): void => onNodeSelect?.(node);
-  const expandNode = (): void => onNodeExpand(node);
-  const nodeExpandIcon = isExpandable ? (
-    node.isOpen ? (
-      <ChevronDownIcon />
+const ExecutionNodeElementTreeNodeContainer = observer(
+  (
+    props: TreeNodeContainerProps<
+      ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
+      {
+        onNodeExpand: (
+          node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
+        ) => void;
+      }
+    >,
+  ) => {
+    const { node, level, stepPaddingInRem, onNodeSelect } = props;
+    const isExpandable = Boolean(node.childrenIds?.length);
+    const selectNode = (): void => onNodeSelect?.(node);
+    const nodeExpandIcon = isExpandable ? (
+      node.isOpen ? (
+        <ChevronDownIcon />
+      ) : (
+        <ChevronRightIcon />
+      )
     ) : (
-      <ChevronRightIcon />
-    )
-  ) : (
-    <div />
-  );
-
-  return (
-    <div
-      className={clsx(
-        'tree-view__node__container execution-plan-viewer__explorer-tree__node__container',
-        {
-          'menu__trigger--on-menu-open': !node.isSelected,
-        },
-        {
-          'execution-plan-viewer__explorer-tree__node__container--selected':
-            node.isSelected,
-        },
-      )}
-      style={{
-        paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1)}rem`,
-      }}
-      onClick={selectNode}
-    >
-      <div className="tree-view__node__icon">
-        <div className="tree-view__node__expand-icon" onClick={expandNode}>
-          {nodeExpandIcon}
-        </div>
-      </div>
-      <button
-        className="tree-view__node__label execution-plan-viewer__explorer-tree__node__label"
-        tabIndex={-1}
-        title={node.id}
+      <div />
+    );
+    return (
+      <div
+        className={clsx(
+          'tree-view__node__container execution-plan-viewer__explorer-tree__node__container',
+          {
+            'menu__trigger--on-menu-open': !node.isSelected,
+          },
+          {
+            'execution-plan-viewer__explorer-tree__node__container--selected':
+              node.isSelected,
+          },
+        )}
+        style={{
+          paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1)}rem`,
+        }}
+        onClick={selectNode}
       >
-        {node.label}
-      </button>
-    </div>
-  );
-};
+        <div className="tree-view__node__icon">
+          <div className="tree-view__node__expand-icon">{nodeExpandIcon}</div>
+        </div>
+        <button
+          className="tree-view__node__label execution-plan-viewer__explorer-tree__node__label"
+          tabIndex={-1}
+          title={node.id}
+        >
+          {node.label}
+        </button>
+      </div>
+    );
+  },
+);
 
-export const ExecutionPlanTree: React.FC<{
-  executionPlanState: ExecutionPlanState;
-  executionPlan: ExecutionPlan;
-}> = (props) => {
-  const { executionPlanState, executionPlan } = props;
-  // NOTE: We only need to compute this once so we use lazy initial state syntax
-  // See https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
-  const [treeData, setTreeData] = useState<
-    TreeData<ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData>
-  >(() => getExecutionPlanTreeData(executionPlan));
-  const onNodeSelect = (
-    node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
-  ): void => {
-    if (node instanceof ExecutionPlanViewTreeNodeData) {
-      executionPlanState.transformMetadataToProtocolJson(node.executionPlan);
-    } else if (node instanceof ExecutionNodeTreeNodeData) {
-      executionPlanState.transformMetadataToProtocolJson(node.executionNode);
-    }
-    executionPlanState.setSelectedNode(node);
-  };
+export const ExecutionPlanTree = observer(
+  (props: {
+    executionPlanState: ExecutionPlanState;
+    executionPlan: ExecutionPlan;
+  }) => {
+    const { executionPlanState } = props;
 
-  const onNodeExpand = (
-    node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
-  ): void => {
-    if (node.childrenIds?.length) {
-      node.isOpen = !node.isOpen;
-      if (node instanceof ExecutionPlanViewTreeNodeData) {
-        const rootNode = node.executionPlan.rootExecutionNode;
-        const rootNodeTreeNode = generateExecutionNodeTreeNodeData(
-          rootNode,
-          generateExecutionNodeLabel(rootNode),
-          node,
-        );
-        treeData.nodes.set(rootNodeTreeNode.id, rootNodeTreeNode);
-      } else if (node instanceof ExecutionNodeTreeNodeData) {
-        if (node.executionNode.executionNodes.length > 0) {
-          node.executionNode.executionNodes.forEach((exen) => {
-            const executionNodeTreeNode = generateExecutionNodeTreeNodeData(
-              exen,
-              generateExecutionNodeLabel(exen),
-              node,
-            );
-
-            treeData.nodes.set(executionNodeTreeNode.id, executionNodeTreeNode);
-          });
+    const onNodeExpand = (
+      node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
+    ): void => {
+      if (node.childrenIds?.length) {
+        node.setIsOpen(!node.isOpen);
+        if (node instanceof ExecutionPlanViewTreeNodeData) {
+          const rootNode = node.executionPlan.rootExecutionNode;
+          const rootNodeTreeNode = generateExecutionNodeTreeNodeData(
+            rootNode,
+            generateExecutionNodeLabel(rootNode),
+            node,
+          );
+          executionPlanState.setTreeNode(rootNodeTreeNode.id, rootNodeTreeNode);
+        } else if (node instanceof ExecutionNodeTreeNodeData) {
+          if (node.executionNode.executionNodes.length > 0) {
+            node.executionNode.executionNodes.forEach((exen) => {
+              const executionNodeTreeNode = generateExecutionNodeTreeNodeData(
+                exen,
+                generateExecutionNodeLabel(exen),
+                node,
+              );
+              executionPlanState.setTreeNode(
+                executionNodeTreeNode.id,
+                executionNodeTreeNode,
+              );
+            });
+          }
         }
       }
-    }
 
-    setTreeData({ ...treeData });
-  };
+      executionPlanState.refreshTreeData();
+    };
 
-  const getChildNodes = (
-    node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
-  ): (ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData)[] => {
-    if (!node.childrenIds || node.childrenIds.length === 0) {
-      return [];
-    }
-    const childrenNodes = node.childrenIds
-      .map((id) => treeData.nodes.get(id))
-      .filter(isNonNullable);
+    const onNodeSelect = (
+      node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
+    ): void => {
+      if (node instanceof ExecutionPlanViewTreeNodeData) {
+        executionPlanState.transformMetadataToProtocolJson(node.executionPlan);
+      } else if (node instanceof ExecutionNodeTreeNodeData) {
+        executionPlanState.transformMetadataToProtocolJson(node.executionNode);
+      }
+      if (!(node.isOpen === true && node.isSelected === false)) {
+        onNodeExpand(node);
+      }
+      executionPlanState.setSelectedNode(node);
+    };
 
-    return childrenNodes;
-  };
-  return (
-    <TreeView
-      components={{
-        TreeNodeContainer: ExecutionNodeElementTreeNodeContainer,
-      }}
-      treeData={treeData}
-      getChildNodes={getChildNodes}
-      onNodeSelect={onNodeSelect}
-      innerProps={{
-        onNodeExpand,
-      }}
-    />
-  );
-};
+    const getChildNodes = (
+      node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
+    ): (ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData)[] => {
+      if (!node.childrenIds || node.childrenIds.length === 0) {
+        return [];
+      }
+      const childrenNodes = node.childrenIds
+        .map((id) => executionPlanState.nonNullableTreeData.nodes.get(id))
+        .filter(isNonNullable);
+      return childrenNodes;
+    };
+    return (
+      <TreeView
+        components={{
+          TreeNodeContainer: ExecutionNodeElementTreeNodeContainer,
+        }}
+        treeData={executionPlanState.nonNullableTreeData}
+        getChildNodes={getChildNodes}
+        onNodeSelect={onNodeSelect}
+        innerProps={{
+          onNodeExpand,
+        }}
+      />
+    );
+  },
+);
 
 const ExecutionNodeViewer = observer(
   (props: {
@@ -289,6 +242,50 @@ const ExecutionNodeViewer = observer(
         <SQLExecutionNodeViewer
           query={executionNode.sqlQuery}
           resultColumns={executionNode.resultColumns}
+          resultType={executionNode.resultType}
+          executionPlanState={executionPlanState}
+          viewJson={true}
+        />
+      );
+    }
+    if (executionNode instanceof RelationalTDSInstantiationExecutionNode) {
+      return (
+        <RelationalTDSInstantiationExecutionNodeViewer
+          node={executionNode}
+          executionPlanState={executionPlanState}
+        />
+      );
+    }
+    if (executionNode instanceof FunctionParametersValidationNode) {
+      return (
+        <FunctionParametersValidationNodeViewer
+          functionParameters={executionNode.functionParameters}
+          parameterValidationContext={executionNode.parameterValidationContext}
+          executionPlanState={executionPlanState}
+          resultType={executionNode.resultType}
+        />
+      );
+    }
+    if (executionNode instanceof AllocationExecutionNode) {
+      return (
+        <AllocationExecutionNodeViewer
+          node={executionNode}
+          executionPlanState={executionPlanState}
+        />
+      );
+    }
+    if (executionNode instanceof ConstantExecutionNode) {
+      return (
+        <ConstantExecutionNodeViewer
+          cnode={executionNode}
+          executionPlanState={executionPlanState}
+        />
+      );
+    }
+    if (executionNode instanceof SequenceExecutionNode) {
+      return (
+        <SequenceExecutionNodeViewer
+          node={executionNode}
           executionPlanState={executionPlanState}
         />
       );
@@ -328,6 +325,19 @@ const ExecutionPlanViewPanel = observer(
         currentElement = executionPlanState.selectedNode.executionNode;
       }
     }
+
+    useEffect(() => {
+      if (executionPlanState.selectedNode === undefined) {
+        const firstNode =
+          executionPlanState.treeData?.nodes.get(EXECUTION_PLAN);
+        if (firstNode instanceof ExecutionPlanViewTreeNodeData) {
+          executionPlanState.transformMetadataToProtocolJson(
+            firstNode.executionPlan,
+          );
+          executionPlanState.setSelectedNode(firstNode);
+        }
+      }
+    }, [executionPlanState]);
     const nativeViewModes = Object.values(EXECUTION_PLAN_VIEW_MODE);
 
     return (
@@ -485,7 +495,7 @@ export const ExecutionPlanViewer = observer(
     const { executionPlanState } = props;
     const closePlanViewer = (): void => {
       executionPlanState.setRawPlan(undefined);
-      executionPlanState.setPlan(undefined);
+      executionPlanState.initialize(undefined);
       executionPlanState.setExecutionPlanDisplayData('');
       executionPlanState.setSelectedNode(undefined);
       executionPlanState.setDebugText(undefined);

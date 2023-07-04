@@ -81,6 +81,8 @@ export const getElementTypeLabel = (
       return 'generation specification';
     case PACKAGEABLE_ELEMENT_TYPE.DATA:
       return 'data';
+    case PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION:
+      return 'local connection';
     default: {
       if (type) {
         const extraElementTypeLabelGetters = editorStore.pluginManager
@@ -436,7 +438,115 @@ const renderNewElementDriver = (
   }
 };
 
-// TODO: investigate the potential approach of VSCode to have inline input in the tree to create element quickly
+export const CreateNewLocalConnectionModal = observer(() => {
+  const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
+  const newElementState = editorStore.newElementState;
+  const selectedPackage = newElementState.selectedPackage;
+  // Name
+  const name = newElementState.name;
+  const handleNameChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => newElementState.setName(event.target.value);
+  const elementNameInputRef = useRef<HTMLInputElement>(null);
+  // Type
+  const typeOptions = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
+    .concat(editorStore.getSupportedElementTypes())
+    .filter(
+      // NOTE: we can only create package in root
+      (type) =>
+        selectedPackage !== editorStore.graphManagerState.graph.root ||
+        type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
+    )
+    .map(buildElementTypeOption);
+
+  const selectedTypeOption = buildElementTypeOption(newElementState.type);
+  const handleTypeChange = (val: ElementTypeSelectOption): void =>
+    newElementState.setElementType(val.value);
+  // Submit button
+  const closeModal = (): void => newElementState.closeModal();
+  const [packagePath, elementName] = resolvePackageAndElementName(
+    selectedPackage,
+    selectedPackage === editorStore.graphManagerState.graph.root,
+    name,
+  );
+  const resolvedPackage =
+    editorStore.graphManagerState.graph.getNullablePackage(packagePath);
+  const needsToOverride = Boolean(
+    resolvedPackage?.children.find((child) => child.name === elementName),
+  );
+  const isDisabled = !name || needsToOverride || !newElementState.isValid;
+  const save = applicationStore.guardUnhandledError(() =>
+    flowResult(newElementState.save()),
+  );
+  const handleEnter = (): void => {
+    newElementState.setName('');
+    elementNameInputRef.current?.focus();
+  };
+
+  if (!newElementState.showModal) {
+    return null;
+  }
+  return (
+    <Dialog
+      open={newElementState.showModal}
+      onClose={closeModal}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
+      classes={{ container: 'search-modal__container' }}
+      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+    >
+      <form
+        data-testid={LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
+        onSubmit={(event) => {
+          event.preventDefault();
+          save();
+        }}
+        className="modal modal--dark search-modal"
+      >
+        <div className="modal__title">
+          {`Create a New ${
+            getElementTypeLabel(editorStore, newElementState.type) ?? 'element'
+          }`}
+        </div>
+        <div>
+          {newElementState.showType && (
+            <CustomSelectorInput
+              options={typeOptions}
+              disabled={typeOptions.length === 1}
+              onChange={handleTypeChange}
+              value={selectedTypeOption}
+              isClearable={false}
+              darkMode={true}
+            />
+          )}
+          <input
+            className="input--dark explorer__new-element-modal__name-input"
+            ref={elementNameInputRef}
+            spellCheck={false}
+            value={name}
+            onChange={handleNameChange}
+            placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the ${
+              getElementTypeLabel(editorStore, newElementState.type) ??
+              'element'
+            }`}
+          />
+          {renderNewElementDriver(newElementState.type, editorStore)}
+        </div>
+        <div className="search-modal__actions">
+          <button type="button" className="btn btn--dark" onClick={closeModal}>
+            Cancel
+          </button>
+          <button className="btn btn--dark" disabled={isDisabled}>
+            Create
+          </button>
+        </div>
+      </form>
+    </Dialog>
+  );
+});
+
 export const CreateNewElementModal = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();

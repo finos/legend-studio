@@ -35,7 +35,7 @@ import {
   PanelContent,
   TrashIcon,
   PanelDnDEntry,
-  PanelDnDEntryDragHandle,
+  PanelEntryDragHandle,
   CalendarIcon,
   CalendarClockIcon,
   CustomSelectorInput,
@@ -324,17 +324,32 @@ const buildCalendarTypeOption = (
 });
 
 const QueryBuilderProjectionColumnEditor = observer(
-  (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
-    const handleRef = useRef<HTMLDivElement>(null);
+  (props: {
+    projectionColumnState: QueryBuilderProjectionColumnState;
+    isRearrangeActive: boolean;
+    currentRearrangeDraggedColumnIndex: number | undefined;
+    setCurrentRearrangeDraggedColumnIndex: (val: number | undefined) => void;
+    currentRearrangeDropGapIndex: number | undefined;
+    setCurrentRearrangeDropGapIndex: (val: number | undefined) => void;
+    columnIdx: number;
+  }) => {
+    const {
+      isRearrangeActive,
+      projectionColumnState,
+      columnIdx,
+      currentRearrangeDraggedColumnIndex,
+      setCurrentRearrangeDraggedColumnIndex,
+      currentRearrangeDropGapIndex,
+      setCurrentRearrangeDropGapIndex,
+    } = props;
+    const dragHandleRef = useRef<HTMLDivElement>(null);
     const applicationStore = useApplicationStore();
-
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
-    const { projectionColumnState } = props;
     const tdsState = projectionColumnState.tdsState;
     const isCalendarEnabled = tdsState.queryBuilderState.isCalendarEnabled;
     const isRemovalDisabled = tdsState.isColumnInUse(projectionColumnState);
@@ -403,6 +418,7 @@ const QueryBuilderProjectionColumnEditor = observer(
         aggregateColumnState?.calendarFunction?.setCalendarType(option.value);
       }
     };
+
     const defaultEndDate = observe_PrimitiveInstanceValue(
       new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(
@@ -478,6 +494,32 @@ const QueryBuilderProjectionColumnEditor = observer(
       }
     };
 
+    const handleDroppingColumn = useCallback(
+      (type: string): void => {
+        if (
+          type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE &&
+          currentRearrangeDropGapIndex !== undefined &&
+          currentRearrangeDraggedColumnIndex !== undefined
+        ) {
+          tdsState.moveColumn(
+            currentRearrangeDraggedColumnIndex,
+            currentRearrangeDropGapIndex === tdsState.projectionColumns.length
+              ? tdsState.projectionColumns.length - 1
+              : currentRearrangeDropGapIndex,
+          );
+        }
+        setCurrentRearrangeDraggedColumnIndex(undefined);
+        setCurrentRearrangeDropGapIndex(undefined);
+      },
+      [
+        tdsState,
+        currentRearrangeDropGapIndex,
+        currentRearrangeDraggedColumnIndex,
+        setCurrentRearrangeDraggedColumnIndex,
+        setCurrentRearrangeDropGapIndex,
+      ],
+    );
+
     // Drag and Drop
     const handleHover = useCallback(
       (
@@ -487,37 +529,60 @@ const QueryBuilderProjectionColumnEditor = observer(
         const dragIndex = tdsState.projectionColumns.findIndex(
           (e) => e === item.columnState,
         );
-        const hoverIndex = tdsState.projectionColumns.findIndex(
-          (e) => e === projectionColumnState,
-        );
-        if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
-          return;
+        const hoveredRectangle = ref.current?.getBoundingClientRect();
+        const hoveredRectangleMiddle =
+          hoveredRectangle?.top && hoveredRectangle.bottom
+            ? (hoveredRectangle.top + hoveredRectangle.bottom) / 2
+            : undefined;
+        const yCoordinate = monitor.getClientOffset()?.y ?? 0;
+
+        if (yCoordinate && hoveredRectangleMiddle) {
+          setCurrentRearrangeDropGapIndex(
+            yCoordinate < hoveredRectangleMiddle ? columnIdx : columnIdx + 1,
+          );
         }
+
         // move the item being hovered on when the dragged item position is beyond the its middle point
         const hoverBoundingReact = ref.current?.getBoundingClientRect();
-
         const distanceThreshold =
           ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
           2;
-        const dragDistance =
-          (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
-        if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
+        const dragDistance = yCoordinate - (hoverBoundingReact?.top ?? 0);
+
+        if (dragIndex === -1 || columnIdx === -1 || dragIndex === columnIdx) {
           return;
         }
-        if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
+
+        if (dragIndex < columnIdx && dragDistance < distanceThreshold) {
           return;
         }
-        tdsState.moveColumn(dragIndex, hoverIndex);
+        if (dragIndex > columnIdx && dragDistance > distanceThreshold) {
+          return;
+        }
+
+        setCurrentRearrangeDraggedColumnIndex(dragIndex);
       },
-      [projectionColumnState, tdsState],
+      [
+        tdsState,
+        columnIdx,
+        setCurrentRearrangeDropGapIndex,
+        setCurrentRearrangeDraggedColumnIndex,
+      ],
     );
+
     const [, dropConnector] = useDrop<QueryBuilderProjectionColumnDragSource>(
       () => ({
         accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
         hover: (item, monitor): void => handleHover(item, monitor),
+        drop: (item, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDroppingColumn(monitor.getItemType() as string);
+          }
+        },
       }),
-      [handleHover],
+      [handleHover, handleDroppingColumn],
     );
+
     const [
       { projectionColumnBeingDragged },
       dragConnector,
@@ -548,9 +613,8 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [projectionColumnState],
     );
-    const isBeingDragged =
-      projectionColumnState === projectionColumnBeingDragged;
-    dragConnector(handleRef);
+
+    dragConnector(dragHandleRef);
     dropConnector(ref);
 
     useDragPreviewLayer(dragPreviewConnector);
@@ -613,7 +677,24 @@ const QueryBuilderProjectionColumnEditor = observer(
     return (
       <PanelDnDEntry
         ref={ref}
-        showPlaceholder={isBeingDragged}
+        placeholder={
+          <div
+            className={clsx(
+              {
+                'query-builder__projection__column__placeholder--bottom':
+                  currentRearrangeDropGapIndex === columnIdx + 1 &&
+                  columnIdx === tdsState.projectionColumns.length - 1,
+              },
+              {
+                'query-builder__projection__column__placeholder--top':
+                  currentRearrangeDropGapIndex === columnIdx,
+              },
+            )}
+          />
+        }
+        showPlaceholder={
+          projectionColumnBeingDragged !== undefined && isRearrangeActive
+        }
         className="query-builder__projection__column"
       >
         <ContextMenu
@@ -637,9 +718,9 @@ const QueryBuilderProjectionColumnEditor = observer(
           onClose={onContextMenuClose}
         >
           <div className="query-builder__projection__column__container">
-            <PanelDnDEntryDragHandle
-              isBeingDragged={isBeingDragged}
-              dropTargetConnector={handleRef}
+            <PanelEntryDragHandle
+              isDragging={false}
+              dragSourceConnector={dragHandleRef}
               className="query-builder__projection__column__drag-handle__container"
             />
             <div className="query-builder__projection__column__name">
@@ -806,7 +887,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                   ref={dropTargetConnector}
                 >
                   <PanelEntryDropZonePlaceholder
-                    showPlaceholder={isDragOver}
+                    isDragOver={isDragOver}
                     label="Change Date Column"
                     className="query-builder__projection__calendar__date__column__dnd__placeholder"
                   >
@@ -855,6 +936,12 @@ export const QueryBuilderTDSPanel = observer(
     const applicationStore = useApplicationStore();
     const { tdsState } = props;
     const projectionColumns = tdsState.projectionColumns;
+    const [
+      currentRearrangeDraggedColumnIndex,
+      setCurrentRearrangeDraggedColumnIndex,
+    ] = useState<number | undefined>();
+    const [currentRearrangeDropGapIndex, setCurrentRearrangeDropGapIndex] =
+      useState<number | undefined>();
 
     // Toolbar
     const openResultSetModifierEditor = (): void =>
@@ -937,8 +1024,22 @@ export const QueryBuilderTDSPanel = observer(
       [handleDrop],
     );
 
-    const { showDroppableSuggestion } = useDragLayer((monitor) => ({
-      showDroppableSuggestion:
+    const [{ isRearrangeActive }, rearrangeColumnDropConnector] = useDrop<
+      QueryBuilderProjectionColumnDragSource,
+      void,
+      { isRearrangeActive: boolean }
+    >(
+      () => ({
+        accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
+        collect: (monitor) => ({
+          isRearrangeActive: monitor.isOver({ shallow: false }),
+        }),
+      }),
+      [],
+    );
+
+    const { isDroppable } = useDragLayer((monitor) => ({
+      isDroppable:
         monitor.isDragging() &&
         [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -989,8 +1090,7 @@ export const QueryBuilderTDSPanel = observer(
         <div className="query-builder__projection__content">
           <PanelDropZone
             isDragOver={isDragOver}
-            showDroppableSuggestion={showDroppableSuggestion}
-            className="query-builder__panel--droppable"
+            isDroppable={isDroppable}
             dropTargetConnector={dropTargetConnector}
           >
             {!projectionColumns.length && (
@@ -1004,22 +1104,38 @@ export const QueryBuilderTDSPanel = observer(
                 data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
                 className="query-builder__projection__columns"
               >
-                <DragPreviewLayer
-                  labelGetter={(
-                    item: QueryBuilderProjectionColumnDragSource,
-                  ): string =>
-                    item.columnState.columnName === ''
-                      ? '(unknown)'
-                      : item.columnState.columnName
-                  }
-                  types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
-                />
-                {projectionColumns.map((projectionColumnState) => (
-                  <QueryBuilderProjectionColumnEditor
-                    key={projectionColumnState.uuid}
-                    projectionColumnState={projectionColumnState}
+                <div ref={rearrangeColumnDropConnector}>
+                  <DragPreviewLayer
+                    labelGetter={(
+                      item: QueryBuilderProjectionColumnDragSource,
+                    ): string =>
+                      item.columnState.columnName === ''
+                        ? '(unknown)'
+                        : item.columnState.columnName
+                    }
+                    types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
                   />
-                ))}
+                  {projectionColumns.map((projectionColumnState, columnIdx) => (
+                    <QueryBuilderProjectionColumnEditor
+                      key={projectionColumnState.uuid}
+                      projectionColumnState={projectionColumnState}
+                      isRearrangeActive={isRearrangeActive}
+                      currentRearrangeDraggedColumnIndex={
+                        currentRearrangeDraggedColumnIndex
+                      }
+                      currentRearrangeDropGapIndex={
+                        currentRearrangeDropGapIndex
+                      }
+                      setCurrentRearrangeDraggedColumnIndex={
+                        setCurrentRearrangeDraggedColumnIndex
+                      }
+                      setCurrentRearrangeDropGapIndex={
+                        setCurrentRearrangeDropGapIndex
+                      }
+                      columnIdx={columnIdx}
+                    />
+                  ))}
+                </div>
               </div>
             )}
             <QueryResultModifierModal tdsState={tdsState} />
