@@ -135,6 +135,7 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
         ): void => {
           assertType(elementProtocol, V1_Persistence);
           V1_buildPersistence(elementProtocol, context);
+          console.log('2nd pass context', context);
         },
       }),
       new V1_ElementBuilder<V1_PersistenceContext>({
@@ -188,6 +189,10 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
         plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_Persistence) {
+          console.log(
+            'V1_getExtraElementProtocolSerializers value : ',
+            elementProtocol,
+          );
           return serialize(V1_persistenceModelSchema(plugins), elementProtocol);
         } else if (elementProtocol instanceof V1_PersistenceContext) {
           return serialize(
@@ -224,11 +229,15 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
         metamodel: PackageableElement,
         context: V1_GraphTransformerContext,
       ): V1_PackageableElement | undefined => {
+        console.log('Metamodel value : ', metamodel);
         if (metamodel instanceof Persistence) {
+          console.log('metamodel is instance of Persistence', metamodel);
           return V1_transformPersistence(metamodel, context);
         } else if (metamodel instanceof PersistenceContext) {
+          console.log('metamodel is instance of PersistenceContext', metamodel);
           return V1_transformPersistenceContext(metamodel, context);
         }
+        console.log('metamodel is undefined', metamodel);
         return undefined;
       },
     ];

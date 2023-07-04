@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { V1_PersistenceTarget } from './V1_DSL_Persistence_PersistentTarget.js';
-import { V1_ServiceOutput } from './V1_DSL_Persistence_ServiceOutput.js';
+import { PersistenceTarget } from './DSL_Persistence_PersistentTarget.js';
+import { ServiceOutput } from './DSL_Persistence_ServiceOutput.js';
 
-export class V1_ServiceOutputTarget implements Hashable {
-  serviceOutput!: V1_ServiceOutput;
-  persistenceTarget!: V1_PersistenceTarget;
+export class ServiceOutputTarget implements Hashable {
+  serviceOutput!: ServiceOutput;
+  persistenceTarget!: PersistenceTarget;
   get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.SERVICE_OUTPUT_TARGET,

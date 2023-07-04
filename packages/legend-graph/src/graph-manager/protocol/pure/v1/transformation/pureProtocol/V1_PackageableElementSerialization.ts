@@ -119,6 +119,7 @@ class V1_PackageableElementSerializer
   plugins: PureProtocolProcessorPlugin[];
 
   constructor(plugins: PureProtocolProcessorPlugin[]) {
+    console.log('i am hereee!');
     this.extraElementProtocolSerializers = plugins.flatMap(
       (plugin) => plugin.V1_getExtraElementProtocolSerializers?.() ?? [],
     );

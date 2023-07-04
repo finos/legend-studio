@@ -33,6 +33,8 @@ export class PersistenceContext extends PackageableElement implements Hashable {
   sinkConnection?: Connection;
 
   protected override get _elementHashCode(): string {
+    console.log('value for this.persistence', this.persistence);
+    // console.log('value for this.persistence.valueForSerialization', this.persistence.valueForSerialization);
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_CONTEXT,
       this.persistence.valueForSerialization ?? '',

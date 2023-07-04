@@ -163,6 +163,164 @@ import { V1_PersistenceTestData } from '../../../model/packageableElements/persi
 import type { ConnectionTestData } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ConnectionTestData.js';
 import { V1_ConnectionTestData } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ConnectionTestData.js';
 import { V1_PersistenceTest } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
+import { V1_ServiceOutputTarget } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ServiceOutputTarget.js';
+import { ServiceOutputTarget } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ServiceOutputTarget.js';
+import {
+  GraphFetchServiceOutput,
+  ServiceOutput,
+  TdsServiceOutput,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ServiceOutput.js';
+import {
+  V1_GraphFetchServiceOutput,
+  V1_ServiceOutput,
+  V1_TdsServiceOutput,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ServiceOutput.js';
+import {
+  DatasetType,
+  Delta,
+  Snapshot,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_DatasetType.js';
+import {
+  V1_DatasetType,
+  V1_Delta,
+  V1_Snapshot,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_DatasetType.js';
+import {
+  FieldBased,
+  FieldBasedForGraphFetch,
+  FieldBasedForTds,
+  NoPartitioning,
+  Partitioning,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Partitioning.js';
+import {
+  V1_FieldBased,
+  V1_FieldBasedForGraphFetch,
+  V1_FieldBasedForTds,
+  V1_NoPartitioning,
+  V1_Partitioning,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_Partitioning.js';
+import {
+  DeleteTargetDataset,
+  EmptyDatasetHandling,
+  NoOp,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_EmptyDatasetHandling.js';
+import {
+  V1_DeleteTargetDataset,
+  V1_EmptyDatasetHandling,
+  V1_NoOp,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_EmptyDatasetHandling.js';
+import {
+  ActionIndicatorFields,
+  DeleteIndicator,
+  DeleteIndicatorForGraphFetch,
+  DeleteIndicatorForTds,
+  NoActionIndicator,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ActionIndicatorFields.js';
+import {
+  V1_ActionIndicatorFields,
+  V1_DeleteIndicator,
+  V1_DeleteIndicatorForGraphFetch,
+  V1_DeleteIndicatorForTds,
+  V1_NoActionIndicator,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ActionIndicatorFields.js';
+import {
+  AnyVersion,
+  Deduplication,
+  MaxVersion,
+  MaxVersionForGraphFetch,
+  MaxVersionForTds,
+  NoDeduplication,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Deduplication.js';
+import {
+  V1_AnyVersion,
+  V1_Deduplication,
+  V1_MaxVersion,
+  V1_MaxVersionForGraphFetch,
+  V1_MaxVersionForTds,
+  V1_NoDeduplication,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_Deduplication.js';
+import {
+  PersistenceTarget,
+  RelationalPersistenceTarget,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistentTarget.js';
+import {
+  BiTemporal,
+  NonTemporal,
+  Temporality,
+  UniTemporal,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Temporality.js';
+import {
+  V1_BiTemporal,
+  V1_NonTemporal,
+  V1_Temporality,
+  V1_UniTemporal,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_Temporality.js';
+import {
+  AuditingDateTimeV2,
+  AuditingV2,
+  NoAuditingV2,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AuditingV2.js';
+import {
+  V1_AuditingDateTimeV2,
+  V1_AuditingV2,
+  V1_NoAuditingV2,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_AuditingV2.js';
+import {
+  AppendOnlyUpdatesHandling,
+  OverwriteUpdatesHandling,
+  UpdatesHandling,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_UpdatesHandling.js';
+import {
+  V1_AppendOnlyUpdatesHandling,
+  V1_OverwriteUpdatesHandling,
+  V1_UpdatesHandling,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_UpdatesHandling.js';
+import {
+  AllowDuplicates,
+  AppendStrategy,
+  FailOnDuplicates,
+  FilterDuplicates,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AppendStrategy.js';
+import {
+  V1_AllowDuplicates,
+  V1_AppendStrategy,
+  V1_FailOnDuplicates,
+  V1_FilterDuplicates,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_AppendStrategy.js';
+import {
+  BatchId,
+  BatchIdAndDateTime,
+  ProcessingDateTime,
+  ProcessingDimension,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ProcessingDimension.js';
+import {
+  V1_BatchId,
+  V1_BatchIdAndDateTime,
+  V1_ProcessingDateTime,
+  V1_ProcessingDimension,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ProcessingDimension.js';
+import {
+  SourceDerivedDimension,
+  SourceDerivedTime,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_SourceDerivedDimension.js';
+import {
+  V1_SourceDerivedDimension,
+  V1_SourceDerivedTime,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_SourceDerivedDimension.js';
+import {
+  SourceTimeFields,
+  SourceTimeStart,
+  SourceTimeStartAndEnd,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_SourceTimeFields.js';
+import {
+  V1_SourceTimeFields,
+  V1_SourceTimeStart,
+  V1_SourceTimeStartAndEnd,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_SourceTimeFields.js';
+import {
+  V1_PersistenceTarget,
+  V1_RelationalPersistenceTarget,
+} from '../../../model/packageableElements/persistence/V1_DSL_Persistence_PersistentTarget.js';
 
 /**********
  * trigger
@@ -568,7 +726,7 @@ export const V1_transformTargetShape = (
  **********/
 
 export const V1_transformPersister = (
-  element: Persister,
+  element: Persister | undefined,
   context: V1_GraphTransformerContext,
 ): V1_Persister => {
   if (element instanceof StreamingPersister) {
@@ -586,6 +744,373 @@ export const V1_transformPersister = (
     return protocol;
   }
   throw new UnsupportedOperationError(`Can't transform persister '${element}'`);
+};
+
+/**********
+ * service output targets
+ **********/
+
+export const V1_transformServiceOutputTargets = (
+  element: ServiceOutputTarget[] | undefined,
+  context: V1_GraphTransformerContext,
+): V1_ServiceOutputTarget[] => {
+  console.log('V1_transformServiceOutputTargets', element);
+  const protocol: V1_ServiceOutputTarget[] = [];
+  for (const v1ServiceOutputTarget of element!) {
+    const serviceOutputTarget = new V1_ServiceOutputTarget();
+    serviceOutputTarget.serviceOutput = V1_transformServiceOutput(
+      v1ServiceOutputTarget.serviceOutput,
+      context,
+    );
+    serviceOutputTarget.persistenceTarget = V1_transformPersistenceTarget(
+      v1ServiceOutputTarget.persistenceTarget,
+      context,
+    );
+    protocol.push(serviceOutputTarget);
+  }
+  return protocol;
+};
+
+export const V1_transformServiceOutput = (
+  element: ServiceOutput,
+  context: V1_GraphTransformerContext,
+): V1_ServiceOutput => {
+  console.log('transformServiceOutput element value ', element);
+  if (element instanceof GraphFetchServiceOutput) {
+    const protocol = new V1_GraphFetchServiceOutput();
+    protocol.datasetType = V1_transformDatasetType(
+      element.datasetType,
+      context,
+    );
+    protocol.deduplication = V1_transformDeduplication(
+      element.deduplication,
+      context,
+    );
+    return protocol;
+  } else if (element instanceof TdsServiceOutput) {
+    const protocol = new V1_TdsServiceOutput();
+    protocol.datasetType = V1_transformDatasetType(
+      element.datasetType,
+      context,
+    );
+    protocol.deduplication = V1_transformDeduplication(
+      element.deduplication,
+      context,
+    );
+    protocol.keys = element.keys;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(`Can't transform ServiceOutput`, element);
+};
+
+export const V1_transformDatasetType = (
+  element: DatasetType,
+  context: V1_GraphTransformerContext,
+): V1_DatasetType => {
+  if (element instanceof Snapshot) {
+    const protocol = new V1_Snapshot();
+    protocol.partitioning = V1_transformPartitioning(
+      element.partitioning,
+      context,
+    );
+    return protocol;
+  } else if (element instanceof Delta) {
+    const protocol = new V1_Delta();
+    protocol.actionIndicator = V1_transformActionIndicator(
+      element.actionIndicator,
+      context,
+    );
+    return protocol;
+  }
+  throw new UnsupportedOperationError(`Can't transform DatasetType`, element);
+};
+
+export const V1_transformPartitioning = (
+  element: Partitioning,
+  context: V1_GraphTransformerContext,
+): V1_Partitioning => {
+  if (element instanceof NoPartitioning) {
+    const protocol = new V1_NoPartitioning();
+    protocol.emptyDatasetHandling = V1_transformEmptyDatasetHandling(
+      element.emptyDatasetHandling,
+      context,
+    );
+    return protocol;
+  } else if (element instanceof FieldBased) {
+    return V1_transformFieldBasedPartitioning(element, context);
+  }
+  throw new UnsupportedOperationError(`Can't transform Partitioning`, element);
+};
+
+export const V1_transformEmptyDatasetHandling = (
+  element: EmptyDatasetHandling,
+  context: V1_GraphTransformerContext,
+): V1_EmptyDatasetHandling => {
+  if (element instanceof NoOp) {
+    return new V1_NoOp();
+  } else if (element instanceof DeleteTargetDataset) {
+    return new V1_DeleteTargetDataset();
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform EmptyDatasetHandling`,
+    element,
+  );
+};
+
+export const V1_transformFieldBasedPartitioning = (
+  protocol: FieldBased,
+  context: V1_GraphTransformerContext,
+): V1_FieldBased => {
+  if (protocol instanceof FieldBasedForGraphFetch) {
+    return new V1_FieldBasedForGraphFetch();
+  } else if (protocol instanceof FieldBasedForTds) {
+    const protocol = new V1_FieldBasedForTds();
+    protocol.partitionFields = protocol.partitionFields;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform FieldBasedPartitioning`,
+    protocol,
+  );
+};
+
+export const V1_transformActionIndicator = (
+  element: ActionIndicatorFields,
+  context: V1_GraphTransformerContext,
+): V1_ActionIndicatorFields => {
+  if (element instanceof NoActionIndicator) {
+    return new V1_NoActionIndicator();
+  } else if (element instanceof DeleteIndicator) {
+    return V1_transformDeleteIndicator(element, context);
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform ActionIndicator`,
+    element,
+  );
+};
+
+export const V1_transformDeleteIndicator = (
+  element: DeleteIndicator,
+  context: V1_GraphTransformerContext,
+): V1_DeleteIndicator => {
+  if (element instanceof DeleteIndicatorForGraphFetch) {
+    const protocol = new V1_DeleteIndicatorForGraphFetch();
+    protocol.deleteValues = element.deleteValues;
+    return protocol;
+  } else if (element instanceof DeleteIndicatorForTds) {
+    const protocol = new V1_DeleteIndicatorForTds();
+    protocol.deleteValues = element.deleteValues;
+    protocol.deleteField = element.deleteField;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform DeleteIndicator`,
+    element,
+  );
+};
+
+export const V1_transformDeduplication = (
+  element: Deduplication,
+  context: V1_GraphTransformerContext,
+): V1_Deduplication => {
+  console.log('deduplicaiton element value : ', element);
+  if (element instanceof NoDeduplication) {
+    return new V1_NoDeduplication();
+  } else if (element instanceof AnyVersion) {
+    return new V1_AnyVersion();
+  } else if (element instanceof MaxVersion) {
+    return V1_transformMaxVersion(element, context);
+  }
+  throw new UnsupportedOperationError(`Can't transform deduplication`, element);
+};
+
+export const V1_transformMaxVersion = (
+  element: MaxVersion,
+  context: V1_GraphTransformerContext,
+): V1_MaxVersion => {
+  if (element instanceof MaxVersionForGraphFetch) {
+    return new V1_MaxVersionForGraphFetch();
+  } else if (element instanceof MaxVersionForTds) {
+    const protocol = new V1_MaxVersionForTds();
+    protocol.versionField = element.versionField;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(`Can't transform MaxVersion`, element);
+};
+
+export const V1_transformPersistenceTarget = (
+  element: PersistenceTarget,
+  context: V1_GraphTransformerContext,
+): V1_PersistenceTarget => {
+  if (element instanceof RelationalPersistenceTarget) {
+    const protocol = new V1_RelationalPersistenceTarget();
+    protocol.database = element.database;
+    protocol.table = element.table;
+    protocol.temporality = V1_transformTemporality(
+      element.temporality,
+      context,
+    );
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform PersistenceTarget`,
+    element,
+  );
+};
+
+export const V1_transformTemporality = (
+  element: Temporality,
+  context: V1_GraphTransformerContext,
+): V1_Temporality => {
+  if (element instanceof NonTemporal) {
+    const protocol = new V1_NonTemporal();
+    protocol.auditing = V1_transformAuditingV2(element.auditing, context);
+    protocol.updatesHandling = V1_transformUpdatesHandling(
+      element.updatesHandling,
+      context,
+    );
+    return protocol;
+  } else if (element instanceof UniTemporal) {
+    const protocol = new V1_UniTemporal();
+    protocol.processingDimension = V1_transformProcessingDimension(
+      element.processingDimension,
+      context,
+    );
+    return protocol;
+  } else if (element instanceof BiTemporal) {
+    const protocol = new V1_BiTemporal();
+    protocol.processingDimension = V1_transformProcessingDimension(
+      element.processingDimension,
+      context,
+    );
+    protocol.sourceDerivedDimension = V1_transformSourceDerivedDimension(
+      element.sourceDerivedDimension,
+      context,
+    );
+    return protocol;
+  }
+  throw new UnsupportedOperationError(`Can't transform Temporality`, element);
+};
+
+const V1_transformAuditingV2 = (
+  element: AuditingV2,
+  context: V1_GraphTransformerContext,
+): V1_AuditingV2 => {
+  if (element instanceof NoAuditingV2) {
+    return new V1_NoAuditingV2();
+  } else if (element instanceof AuditingDateTimeV2) {
+    const protocol = new V1_AuditingDateTimeV2();
+    console.log('setting auditingDateTimeName : ', element);
+    protocol.auditingDateTimeName = element.auditingDateTimeName;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(`Can't transform AuditingV2`, element);
+};
+
+const V1_transformUpdatesHandling = (
+  element: UpdatesHandling,
+  context: V1_GraphTransformerContext,
+): V1_UpdatesHandling => {
+  if (element instanceof AppendOnlyUpdatesHandling) {
+    const protocol = new V1_AppendOnlyUpdatesHandling();
+    protocol.appendStrategy = V1_transformAppendOnlyUpdatesHandling(
+      element.appendStrategy,
+      context,
+    );
+    return protocol;
+  }
+  if (element instanceof OverwriteUpdatesHandling) {
+    return new V1_OverwriteUpdatesHandling();
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform UpdatesHandling`,
+    element,
+  );
+};
+
+const V1_transformAppendOnlyUpdatesHandling = (
+  element: AppendStrategy,
+  context: V1_GraphTransformerContext,
+): V1_AppendStrategy => {
+  if (element instanceof AllowDuplicates) {
+    return new V1_AllowDuplicates();
+  } else if (element instanceof FailOnDuplicates) {
+    return new V1_FailOnDuplicates();
+  } else if (element instanceof FilterDuplicates) {
+    return new V1_FilterDuplicates();
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform AppendOnlyUpdatesHandling`,
+    element,
+  );
+};
+
+const V1_transformProcessingDimension = (
+  element: ProcessingDimension,
+  context: V1_GraphTransformerContext,
+): V1_ProcessingDimension => {
+  if (element instanceof BatchId) {
+    const protocol = new V1_BatchId();
+    protocol.batchIdIn = element.batchIdIn;
+    protocol.batchIdOut = element.batchIdOut;
+    return protocol;
+  } else if (element instanceof ProcessingDateTime) {
+    const protocol = new V1_ProcessingDateTime();
+    protocol.timeIn = element.timeIn;
+    protocol.timeOut = element.timeOut;
+    return protocol;
+  } else if (element instanceof BatchIdAndDateTime) {
+    const protocol = new V1_BatchIdAndDateTime();
+    protocol.batchIdIn = element.batchIdIn;
+    protocol.batchIdOut = element.batchIdOut;
+    protocol.timeIn = element.timeIn;
+    protocol.timeOut = element.timeOut;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform ProcessingDimension`,
+    element,
+  );
+};
+
+const V1_transformSourceDerivedDimension = (
+  element: SourceDerivedDimension,
+  context: V1_GraphTransformerContext,
+): V1_SourceDerivedDimension => {
+  if (element instanceof SourceDerivedTime) {
+    const sourceDerivedTime = new V1_SourceDerivedTime();
+    sourceDerivedTime.timeStart = element.timeStart;
+    sourceDerivedTime.timeEnd = element.timeEnd;
+    sourceDerivedTime.sourceTimeFields = V1_transformSourceTimeFields(
+      element.sourceTimeFields,
+      context,
+    );
+    return sourceDerivedTime;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform SourceDerivedDimension`,
+    element,
+  );
+};
+
+const V1_transformSourceTimeFields = (
+  element: SourceTimeFields,
+  context: V1_GraphTransformerContext,
+): V1_SourceTimeFields => {
+  if (element instanceof SourceTimeStart) {
+    const protocol = new V1_SourceTimeStart();
+    protocol.startField = element.startField;
+    return protocol;
+  } else if (element instanceof SourceTimeStartAndEnd) {
+    const protocol = new V1_SourceTimeStartAndEnd();
+    protocol.startField = element.startField;
+    protocol.endField = element.endField;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform SourceTimeFields`,
+    element,
+  );
 };
 
 /**********
@@ -673,7 +1198,20 @@ export const V1_transformPersistence = (
   protocol.documentation = element.documentation;
   protocol.trigger = V1_transformTrigger(element.trigger, context);
   protocol.service = element.service.valueForSerialization ?? '';
-  protocol.persister = V1_transformPersister(element.persister, context);
+  // if (typeof protocol.persister !== undefined && !protocol.serviceOutputTargets?.length) {
+  //   protocol.persister = V1_transformPersister(protocol.persister, context);
+  // } else if (typeof protocol.persister === undefined && protocol.serviceOutputTargets?.length) {
+  console.log('protocol value : ', protocol);
+  protocol.serviceOutputTargets = V1_transformServiceOutputTargets(
+    element.serviceOutputTargets,
+    context,
+  );
+  // } else {
+  //   throw new UnsupportedOperationError(
+  //     `hereee ??? You can't have both Persister and ServiceOutput Target! Please use only one`,
+  //   );
+  // }
+  // protocol.persister = V1_transformPersister(element.persister, context);
   protocol.notifier = V1_transformNotifier(element.notifier, context);
   protocol.tests = element.tests.map((test) =>
     guaranteeType(V1_transformAtomicTest(test, context), V1_PersistenceTest),
