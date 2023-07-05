@@ -67,8 +67,8 @@ import type {
 } from './models/Suggestion.js';
 import { ROOT_PACKAGE_PATH } from '../stores/PureIDEConfig.js';
 
-export class PureClient {
-  private networkClient: NetworkClient;
+export class PureServerClient {
+  private readonly networkClient: NetworkClient;
 
   // Pure IDE info
   userId = 'localuser';

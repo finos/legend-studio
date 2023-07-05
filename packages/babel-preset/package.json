@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@babel/helper-plugin-utils": "7.22.5",
+    "@babel/plugin-syntax-import-attributes": "7.22.5",
     "@babel/preset-env": "7.22.5",
     "@babel/preset-react": "7.22.5",
     "@babel/preset-typescript": "7.22.5",

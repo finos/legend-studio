@@ -58,7 +58,16 @@ module.exports = declare((api, opts) => {
         },
       ],
     ].filter(Boolean),
-    plugins: [],
+    plugins: [
+      useTypescript && [
+        '@babel/plugin-syntax-import-attributes',
+        {
+          // NOTE: when import attribute is official support in Typescript, then we could move the `assert` syntax to `with`
+          // See https://github.com/microsoft/TypeScript/issues/53656
+          deprecatedAssertSyntax: true,
+        },
+      ],
+    ].filter(Boolean),
     overrides: [
       {
         test: (filename) => filename && isJSXSourceFile(filename),

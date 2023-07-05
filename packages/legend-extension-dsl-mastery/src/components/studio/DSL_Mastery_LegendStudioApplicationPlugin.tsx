@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../package.json';
+import packageJson from '../../../package.json' assert { type: 'json' };
 import { PiedPiperSquareIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {

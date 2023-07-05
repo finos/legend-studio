@@ -15,7 +15,7 @@
  */
 
 import { test, expect, beforeAll } from '@jest/globals';
-import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
+import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json' assert { type: 'json' };
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';

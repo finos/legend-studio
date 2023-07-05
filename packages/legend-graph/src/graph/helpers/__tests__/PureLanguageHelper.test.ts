@@ -15,7 +15,7 @@
  */
 
 import { jest, test, expect, afterEach } from '@jest/globals';
-import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGeneration.json';
+import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGeneration.json' assert { type: 'json' };
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
