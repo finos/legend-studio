@@ -748,7 +748,8 @@ export const V1_buildTargetShape = (
 export const V1_buildPersister = (
   protocol: V1_Persister | undefined,
   context: V1_GraphBuilderContext,
-): Persister => {
+): Persister | undefined => {
+  if (protocol === undefined) return protocol;
   if (protocol instanceof V1_StreamingPersister) {
     const persister = new StreamingPersister();
     persister.sink = V1_buildSink(protocol.sink, context);
@@ -770,7 +771,10 @@ export const V1_buildPersister = (
 export const V1_buildServiceOutputTargets = (
   protocol: V1_ServiceOutputTarget[] | undefined,
   context: V1_GraphBuilderContext,
-): ServiceOutputTarget[] => {
+): ServiceOutputTarget[] | undefined => {
+  if (protocol === undefined) {
+    return protocol;
+  }
   const serviceOutputTargets: ServiceOutputTarget[] = [];
   for (const v1ServiceOutputTarget of protocol!) {
     const serviceOutputTarget = new ServiceOutputTarget();

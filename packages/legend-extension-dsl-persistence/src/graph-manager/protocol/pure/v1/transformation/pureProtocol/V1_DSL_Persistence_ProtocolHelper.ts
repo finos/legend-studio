@@ -1701,7 +1701,7 @@ export const V1_batchIdAndDateTimeModelSchema = (
 ): ModelSchema<V1_BatchIdAndDateTime> =>
   createModelSchema(V1_BatchIdAndDateTime, {
     _type: usingConstantValueSchema(
-      V1_ProcessingDimensionType.PROCESSING_DATE_TIME,
+      V1_ProcessingDimensionType.BATCH_ID_AND_DATE_TIME,
     ),
     batchIdIn: primitive(),
     batchIdOut: primitive(),

@@ -27,7 +27,6 @@ export class V1_Snapshot extends V1_DatasetType {
   partitioning!: V1_Partitioning;
 
   override get hashCode(): string {
-    console.log('SHOW SOME MESSAGE');
     return hashArray([PERSISTENCE_HASH_STRUCTURE.SNAPSHOT, this.partitioning]);
   }
 }

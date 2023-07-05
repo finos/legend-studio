@@ -47,8 +47,8 @@ export class Persistence
       this.documentation,
       this.trigger,
       this.service.valueForSerialization ?? '',
-      this.persister ?? '',
       hashArray(this.serviceOutputTargets ?? []),
+      this.persister ?? '',
       this.notifier,
       hashArray(this.tests),
     ]);
