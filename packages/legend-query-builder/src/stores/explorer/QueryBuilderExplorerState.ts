@@ -61,7 +61,14 @@ import {
   reportGraphAnalytics,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+  toJS,
+} from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 import {
   buildNonNumericPreviewDataQuery,
@@ -134,6 +141,8 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
 export type QueryBuilderExplorerTreeNodeMappingData = {
   mapped: boolean;
   mappedEntity?: MappedEntity | undefined;
+  // used to descrive the mapped property
+  entityMappedProperty?: EntityMappedProperty | undefined;
 };
 
 export class QueryBuilderExplorerTreeRootNodeData extends QueryBuilderExplorerTreeNodeData {}
@@ -292,6 +301,8 @@ export const generatePropertyNodeMappingData = (
 ): QueryBuilderExplorerTreeNodeMappingData => {
   // If the property node's parent node does not have a mapped entity,
   // it means the owner class is not mapped, i.e. this property is not mapped.
+
+
   if (parentMappingData.mappedEntity) {
     const mappedProp = parentMappingData.mappedEntity.__PROPERTIES_INDEX.get(
       property.name,
@@ -308,6 +319,8 @@ export const generatePropertyNodeMappingData = (
               ? mappedProp.entityPath
               : (mappedProp as EnumMappedProperty).enumPath,
           ),
+          entityMappedProperty:
+            mappedProp instanceof EntityMappedProperty ? mappedProp : undefined,
         };
       }
     }
@@ -325,10 +338,11 @@ export const generateSubtypeNodeMappingData = (
   // a _deep_ subclass is mapped, for example: A extends B extends C extends D ... extends Z
   // and Z is mapped, when we build the mapping data for node A, B, C, we need to make sure
   // we are aware of the fact that Z is mapped and pass the mapping data information properly
-  // until we process the node Z.
+  // until we process the node Z
   const allCompatibleTypePaths = getAllSubclasses(subclass)
     .concat(subclass)
     .map((_class) => _class.path);
+  const subtype = parentMappingData.entityMappedProperty?.subType;
   // If the subtype node's parent node does not have a mapped entity,
   // it means the superclass is not mapped, i.e. this subtype is not mapped
   if (parentMappingData.mappedEntity) {
@@ -349,9 +363,7 @@ export const generateSubtypeNodeMappingData = (
           mappedSubtype.entityPath,
         ),
       };
-    } else if (
-      allCompatibleTypePaths.includes(parentMappingData.mappedEntity.path)
-    ) {
+    } else if (subtype && allCompatibleTypePaths.includes(subtype)) {
       // This is to handle the case where the property mapping is pointing
       // directly at the class mapping of a subtype of the type of that property
       //
