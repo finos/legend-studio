@@ -133,6 +133,10 @@ export enum V1_ExecutionNodeType {
   SEQUENCE = 'sequence',
 }
 
+const enum V1_PlatformImplementationType {
+  JAVA = 'java',
+}
+
 const relationalTDSInstantationExecutionNodeModelSchema = createModelSchema(
   V1_RelationalTDSInstantiationExecutionNode,
   {
@@ -325,6 +329,7 @@ const javaClassModelSchema = createModelSchema(V1_JavaClass, {
 const javaPlatformImplementationModelSchema = createModelSchema(
   V1_JavaPlatformImplementation,
   {
+    _type: usingConstantValueSchema(V1_PlatformImplementationType.JAVA),
     classes: list(usingModelSchema(javaClassModelSchema)),
     executionClassFullName: optional(primitive()),
     executionMethodName: optional(primitive()),

@@ -164,7 +164,7 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
           globalImplementationSupport &&
           globalImplementationSupport instanceof JavaPlatformImplementation && (
             <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={30} size={400}>
+              <ResizablePanel minSize={30} size={250}>
                 <PanelContent
                   darkMode={
                     !applicationStore.layoutService
@@ -230,7 +230,7 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
             <div className="query-builder__template--function--editor__header">
               {`AuthDependent: ${executionPlanState.plan?.authDependent.toString()}`}
             </div>
-            <div className="query-builder__template--function--editor__header2">
+            <div className="query-builder__template--function--editor__title">
               Template Functions
             </div>
             <div className="query-builder__template--function--editor__code">

@@ -1104,6 +1104,10 @@
   width: 95%;
   margin: 1% auto 0;
 
+  &__panel {
+    height: 100%;
+  }
+
   &__icon svg {
     margin-left: 0.5rem;
     color: var(--color-light-grey-400) !important;
@@ -1147,7 +1151,6 @@
       display: block;
       text-align: left;
       color: var(--color-light-grey-50);
-      font-family: monospace;
     }
 
     &--active,
@@ -1164,7 +1167,7 @@
     border: 0.1rem solid var(--color-dark-grey-300);
     border-radius: 0.3rem;
     padding: 1rem;
-    margin: 2rem 7% 2rem 6%;
+    margin: 2rem;
     line-height: 1.8rem;
 
     .decorationsOverviewRuler {
@@ -1176,14 +1179,13 @@
     }
   }
 
-  &__header2 {
-    padding: 1rem 6%;
+  &__title {
+    padding: 2.5rem;
   }
 
   &__code {
     height: 30rem;
-    width: 90%;
-    margin: 0 5% 0 3%;
+    margin-right: 2rem;
   }
 
   &__json {

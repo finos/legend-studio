@@ -24,9 +24,8 @@ import {
   type VariableExpression,
   type ParameterValidationContext,
   type ResultType,
-  getMultiplicityPrettyDescription,
+  Multiplicity,
 } from '@finos/legend-graph';
-
 import {
   PanelListItem,
   PanelDivider,
@@ -44,6 +43,27 @@ export const FunctionParametersValidationNodeViewer: React.FC<{
   const { functionParameters, resultType, executionPlanState } = props;
   const applicationStore = executionPlanState.applicationStore;
 
+  const showMultiplicity = (multiplicity: Multiplicity): string => {
+    if (multiplicity === Multiplicity.ZERO) {
+      return '[0]';
+    }
+    if (multiplicity === Multiplicity.ONE) {
+      return '[1]';
+    }
+    if (multiplicity === Multiplicity.ZERO_ONE) {
+      return '[0..1]';
+    }
+    if (
+      multiplicity === Multiplicity.ZERO_MANY ||
+      multiplicity === Multiplicity.ONE_MANY
+    ) {
+      return '[*]';
+    }
+    if (multiplicity.upperBound === undefined) {
+      return `[${multiplicity.lowerBound.toString()}.. *]`;
+    }
+    return `[${multiplicity.lowerBound.toString()}..${multiplicity.upperBound.toString()}]`;
+  };
   return (
     <PanelContent
       darkMode={
