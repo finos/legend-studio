@@ -1,0 +1,128 @@
+###Pure
+Class test::Person
+{
+  name: String[1];
+}
+
+Class test::ServiceResult
+{
+  ID: String[1];
+  AMOUNT: Integer[1];
+  SOURCE_FROM: String[1];
+  DELETED: String[1];
+}
+
+
+###Mapping
+Mapping test::Mapping
+(
+)
+
+
+###Relational
+Database test::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    AMOUNT INTEGER,
+    FROM_Z TIMESTAMP PRIMARY KEY,
+    THRU_Z TIMESTAMP,
+    BATCH_IN INTEGER PRIMARY KEY,
+    BATCH_OUT INTEGER
+  )
+)
+
+
+###Service
+Service test::Service
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: test::Person[1]|$src.name;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::Mapping
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+
+###Persistence
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: DELETED;
+          deleteValues: ['Y'];
+        }
+      }
+      deduplication: None;
+    }
+    ->
+    Relational
+    #{
+      table: personTable;
+      database: test::TestDatabase;
+      temporality: Bitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+        }
+        sourceDerivedDimension: DateTime
+        {
+          dateTimeStart: FROM_Z;
+          dateTimeEnd: THRU_Z;
+          sourceFields: Start
+          {
+            startField: SOURCE_FROM;
+          }
+        }
+      }
+    }#
+  ];
+  notifier:
+  {
+    notifyees:
+    [
+      PagerDuty
+      {
+        url: 'http://xyz.com';
+      },
+      Email
+      {
+        address: 'http://xyz.com';
+      }
+    ];
+  }
+  tests:
+  [
+
+  ]
+}
