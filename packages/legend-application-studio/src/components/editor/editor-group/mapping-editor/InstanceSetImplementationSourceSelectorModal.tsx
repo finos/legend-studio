@@ -131,9 +131,6 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const isDarkMode =
-      editorStore.applicationStore.config.options
-        .TEMPORARY__enableMappingTestableEditor;
     const options = (
       editorStore.graphManagerState.usableClasses as MappingElementSource[]
     )
@@ -212,7 +209,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
           },
         }}
       >
-        <Modal className="modal search-modal" darkMode={isDarkMode}>
+        <Modal className="modal search-modal" darkMode={true}>
           <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
             ref={sourceSelectorRef}
@@ -220,7 +217,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             onChange={changeSourceType}
             value={selectedSourceType}
             placeholder="Choose a source..."
-            darkMode={isDarkMode}
+            darkMode={true}
             isClearable={true}
             filterOption={sourceFilterOption}
             formatOptionLabel={formatSourceOptionLabel}

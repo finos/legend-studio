@@ -1,0 +1,429 @@
+[
+  {
+    "path": "model::SubPosition",
+    "content": {
+      "_type": "class",
+      "name": "SubPosition",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "subName",
+          "type": "String"
+        }
+      ],
+      "superTypes": ["model::Position"]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Firm",
+    "content": {
+      "_type": "class",
+      "name": "Firm",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Position",
+    "content": {
+      "_type": "class",
+      "name": "Position",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "rank",
+          "type": "Number"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Firm_Position",
+    "content": {
+      "_type": "association",
+      "name": "Firm_Position",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firm",
+          "type": "model::Firm"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "position",
+          "type": "model::Position"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::relationship::Association"
+  },
+  {
+    "path": "model::Test",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [
+        {
+          "name": "FirmPosition",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              },
+              {
+                "_type": "column",
+                "column": "position_id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PositionTable"
+                },
+                "tableAlias": "PositionTable"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "Test",
+      "package": "model",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "Legal_name",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "name": "FirmTable",
+              "primaryKey": ["id"]
+            },
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "position_id",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "name",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "rank",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "name": "PositionTable",
+              "primaryKey": ["id"]
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "model::MyMapping",
+    "content": {
+      "_type": "mapping",
+      "associationMappings": [
+        {
+          "_type": "relational",
+          "association": "model::Firm_Position",
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "firm"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "model::Test",
+                    "name": "FirmPosition"
+                  }
+                ]
+              },
+              "source": "pos",
+              "target": "model_Firm"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "position"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "model::Test",
+                    "name": "FirmPosition"
+                  }
+                ]
+              },
+              "source": "model_Firm",
+              "target": "pos"
+            }
+          ],
+          "stores": ["model::Test"]
+        }
+      ],
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "model::Firm",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "FirmTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "FirmTable"
+              },
+              "tableAlias": "FirmTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Firm",
+                "property": "name"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "Legal_name",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "model::SubPosition",
+          "distinct": false,
+          "id": "pos",
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "PositionTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "PositionTable"
+              },
+              "tableAlias": "PositionTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::SubPosition",
+                "property": "subName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PositionTable"
+                },
+                "tableAlias": "PositionTable"
+              },
+              "source": "pos"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::SubPosition",
+                "property": "rank"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "rank",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PositionTable"
+                },
+                "tableAlias": "PositionTable"
+              },
+              "source": "pos"
+            }
+          ],
+          "root": false
+        },
+        {
+          "_type": "relational",
+          "class": "model::SubPosition",
+          "distinct": false,
+          "id": "pos2",
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "PositionTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "PositionTable"
+              },
+              "tableAlias": "PositionTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::SubPosition",
+                "property": "subName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PositionTable"
+                },
+                "tableAlias": "PositionTable"
+              },
+              "source": "pos2"
+            }
+          ],
+          "root": false
+        },
+        {
+          "_type": "operation",
+          "class": "model::SubPosition",
+          "operation": "STORE_UNION",
+          "parameters": ["pos", "pos2"],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "MyMapping",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  }
+]

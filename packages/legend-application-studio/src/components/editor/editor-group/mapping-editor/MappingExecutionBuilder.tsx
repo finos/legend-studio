@@ -123,9 +123,6 @@ export const ClassMappingSelectorModal = observer(
     } = props;
     const editorStore = useEditorStore();
 
-    const darkMappingMode =
-      editorStore.applicationStore.config.options
-        .TEMPORARY__enableMappingTestableEditor;
     // Class mapping selector
     const classMappingSelectorRef = useRef<SelectComponent>(null);
     const filterOption = createFilter({
@@ -163,7 +160,7 @@ export const ClassMappingSelectorModal = observer(
       >
         <Modal
           className={clsx('search-modal', {
-            'modal--dark': darkMappingMode,
+            'modal--dark': true,
           })}
         >
           <ModalTitle title="Choose a class mapping" />
@@ -175,7 +172,7 @@ export const ClassMappingSelectorModal = observer(
             placeholder="Choose a class mapping..."
             filterOption={filterOption}
             isClearable={true}
-            darkMode={darkMappingMode}
+            darkMode={true}
           />
         </Modal>
       </Dialog>

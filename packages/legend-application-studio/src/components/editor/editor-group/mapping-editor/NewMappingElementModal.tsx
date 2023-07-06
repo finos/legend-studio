@@ -106,10 +106,6 @@ export const NewMappingElementModal = observer(() => {
       : '';
     setId(suggestedId && !mappingIds.includes(suggestedId) ? suggestedId : '');
   };
-
-  const darkMappingMode =
-    editorStore.applicationStore.config.options
-      .TEMPORARY__enableMappingTestableEditor;
   // Class Mapping Type
   const classMappingTypeSelectorRef = useRef<SelectComponent>(null);
   const classMappingTypeOptions = [
@@ -228,7 +224,7 @@ export const NewMappingElementModal = observer(() => {
             handleSubmit();
           }}
           className={clsx('modal search-modal new-mapping-element-modal', {
-            'modal--dark': darkMappingMode,
+            'modal--dark': true,
           })}
         >
           {titleText && <div className="modal__title">{titleText}</div>}
@@ -242,7 +238,7 @@ export const NewMappingElementModal = observer(() => {
               formatOptionLabel={getPackageableElementOptionFormatter({})}
               placeholder="Choose a target"
               isClearable={true}
-              darkMode={darkMappingMode}
+              darkMode={true}
             />
           )}
           {showId && (
@@ -252,7 +248,7 @@ export const NewMappingElementModal = observer(() => {
               <PanelDivider />
               <input
                 className={clsx('input new-mapping-element-modal__id-input', {
-                  'input--dark': darkMappingMode,
+                  'input--dark': true,
                 })}
                 ref={mappingIdInputRef}
                 spellCheck={false}
@@ -270,7 +266,7 @@ export const NewMappingElementModal = observer(() => {
                 options={classMappingTypeOptions}
                 onChange={changeClassMappingType}
                 value={classMappingType}
-                darkMode={darkMappingMode}
+                darkMode={true}
                 placeholder="Choose a class mapping type"
               />
             </>
@@ -279,7 +275,7 @@ export const NewMappingElementModal = observer(() => {
           <div className="search-modal__actions">
             <button
               className={clsx('btn btn--primary', {
-                'btn--dark': darkMappingMode,
+                'btn--dark': true,
               })}
               disabled={disableCreateButton}
             >

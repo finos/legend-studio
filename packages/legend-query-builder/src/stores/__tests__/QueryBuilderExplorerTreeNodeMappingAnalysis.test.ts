@@ -21,7 +21,8 @@ import TEST_DATA__NestedSubTypeModel from './TEST_DATA__QueryBuilder_Model_Neste
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json' assert { type: 'json' };
 import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json' assert { type: 'json' };
 import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json' assert { type: 'json' };
-import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json' assert { type: 'json' };
+import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json';
+import TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType from './TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType.json' assert { type: 'json' };
 import { type PlainObject } from '@finos/legend-shared';
 import {
   integrationTest,
@@ -32,10 +33,10 @@ import {
   Class,
   getAllClassDerivedProperties,
   getAllClassProperties,
-  type AbstractProperty,
   type GraphManagerState,
   type Mapping,
   type MappingModelCoverageAnalysisResult,
+  type AbstractProperty,
 } from '@finos/legend-graph';
 import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
 import {
@@ -53,6 +54,7 @@ import {
   TEST_DATA__MappingData__Relational_Inheritance,
   TEST_DATA__MappingData_RelationalInline,
   TEST_DATA__Mappingdata__NestedSubtype,
+  TEST_DATA__Mappingdata__MultiMappedNestedSubtype,
 } from './TEST_DATA__MappingData.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_AssociationMapping,
@@ -62,6 +64,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_RelationalInline,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance,
   TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
+  TEST_DATA__ModelCoverageAnalysisResult_MultiMappedNestedSubtype,
 } from './TEST_DATA__ModelCoverageAnalysisResult.js';
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 
@@ -160,6 +163,18 @@ const cases: TestCase[] = [
       entities: TEST_DATA__NestedSubTypeModel,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
+    },
+  ],
+  [
+    'Multi Mapped Nested Subtype',
+    {
+      mappingPath: 'model::MyMapping',
+      classPath: 'model::Firm',
+      expectedMappingData: TEST_DATA__Mappingdata__MultiMappedNestedSubtype,
+      entities: TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType,
+      maxDepth: 1,
+      rawMappingModelCoverageAnalysisResult:
+        TEST_DATA__ModelCoverageAnalysisResult_MultiMappedNestedSubtype,
     },
   ],
 ];

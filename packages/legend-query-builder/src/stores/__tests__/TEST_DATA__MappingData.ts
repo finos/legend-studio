@@ -208,3 +208,51 @@ export const TEST_DATA__Mappingdata__NestedSubtype = [
     name: 'address',
   },
 ];
+
+export const TEST_DATA__Mappingdata__MultiMappedNestedSubtype = [
+  {
+    childNodes: [
+      {
+        childNodes: [
+          {
+            childNodes: [],
+            mappingData: { mapped: true },
+            name: 'position',
+          },
+          {
+            childNodes: [],
+            mappingData: { mapped: true },
+            name: 'name',
+          },
+        ],
+        mappingData: { mapped: true },
+        name: 'firm',
+      },
+      { childNodes: [], mappingData: { mapped: true }, name: 'rank' },
+      {
+        childNodes: [
+          {
+            childNodes: [],
+            mappingData: { mapped: true },
+            name: 'firm',
+          },
+          {
+            childNodes: [],
+            mappingData: { mapped: true },
+            name: 'rank',
+          },
+          {
+            childNodes: [],
+            mappingData: { mapped: true },
+            name: 'subName',
+          },
+        ],
+        mappingData: { mapped: true },
+        name: 'model::SubPosition',
+      },
+    ],
+    mappingData: { mapped: true },
+    name: 'position',
+  },
+  { childNodes: [], mappingData: { mapped: true }, name: 'name' },
+];

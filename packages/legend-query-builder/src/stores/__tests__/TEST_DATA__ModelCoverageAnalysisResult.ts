@@ -1141,6 +1141,43 @@ export const TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype = {
   ],
 };
 
+export const TEST_DATA__ModelCoverageAnalysisResult_MultiMappedNestedSubtype = {
+  mappedEntities: [
+    {
+      path: 'model::Firm',
+      properties: [
+        { _type: 'MappedProperty', name: 'name' },
+        {
+          _type: 'entity',
+          entityPath: 'pos',
+          name: 'position',
+          subType: 'model::SubPosition',
+        },
+      ],
+    },
+    {
+      path: 'model::SubPosition',
+      properties: [
+        { _type: 'entity', entityPath: 'model::Firm', name: 'firm' },
+        { _type: 'MappedProperty', name: 'rank' },
+        { _type: 'MappedProperty', name: 'subName' },
+      ],
+    },
+    {
+      path: 'pos',
+      properties: [
+        { _type: 'entity', entityPath: 'model::Firm', name: 'firm' },
+        { _type: 'MappedProperty', name: 'rank' },
+        { _type: 'MappedProperty', name: 'subName' },
+      ],
+    },
+    {
+      path: 'pos2',
+      properties: [{ _type: 'MappedProperty', name: 'subName' }],
+    },
+  ],
+};
+
 export const TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection = {
   mappedEntities: [
     {
