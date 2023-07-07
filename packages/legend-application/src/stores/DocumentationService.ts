@@ -41,7 +41,7 @@ export type DocumentationRegistryEntry = {
    * we support the `simple` mode where the endpoint is really just a JSON
    *
    * The caveat about this mode is that the endpoint must have CORS enabled
-   * ideally, the CORS-enabled endpoint should be setup with "Access-Control-Allow-Origin", "*"
+   * ideally, and setup with "Access-Control-Allow-Origin", "*"
    * (e.g. Github Pages - See https://stackoverflow.com/questions/26416727/cross-origin-resource-sharing-on-github-pages)
    * With that, the network client used to fetch this request must also be simplified to not include credential
    * See https://stackoverflow.com/questions/19743396/cors-cannot-use-wildcard-in-access-control-allow-origin-when-credentials-flag-i

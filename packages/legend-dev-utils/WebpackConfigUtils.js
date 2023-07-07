@@ -40,7 +40,12 @@ export const getEnvInfo = (env, arg) => ({
  * This method gets the base Webpack config for bundling either top-level
  * webapp with HTML entry points or library.
  */
-const getBaseWebpackConfig = (env, arg, dirname, { babelConfigPath }) => {
+export const getBaseWebpackConfig = (
+  env,
+  arg,
+  dirname,
+  { babelConfigPath },
+) => {
   if (!dirname) {
     throw new Error(`\`dirname\` is required to build Webpack config`);
   }

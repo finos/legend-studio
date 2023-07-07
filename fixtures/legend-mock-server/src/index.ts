@@ -22,7 +22,7 @@ import { fastifyCors } from '@fastify/cors';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const getFileContent = (file: string) =>
+const getFileContent = (file: string): string =>
   readFileSync(file, { encoding: 'utf-8' });
 
 const PORT = 9999;

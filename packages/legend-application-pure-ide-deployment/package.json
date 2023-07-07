@@ -20,10 +20,10 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
+    "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
     "bundle": "yarn clean && yarn build:webpack && node ./scripts/setup.js --dir ./dist/ide",
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js --dir ./dist/ide",
-    "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
     "clean": "yarn clean:cache && rimraf \"dist\"",
     "clean:cache": "rimraf \"build\"",
     "dev": "npm-run-all --parallel dev:ts dev:webpack",

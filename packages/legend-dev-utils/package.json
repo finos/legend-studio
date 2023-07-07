@@ -26,6 +26,7 @@
     "./jest/handleUnhandledRejection": "./jest/handleUnhandledRejection.js",
     "./jest/setupDOMPolyfills": "./jest/setupDOMPolyfills.js",
     "./jest/mockCanvas": "./jest/mockCanvas.js",
+    "./jest/testUtils": "./jest/testUtils.js",
     "./mocks/fileMock": "./mocks/fileMock.js",
     "./ChangesetUtils": "./ChangesetUtils.js",
     "./ChangesetChangelogUtils": "./ChangesetChangelogUtils.cjs",

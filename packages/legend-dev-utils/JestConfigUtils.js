@@ -101,6 +101,3 @@ export const getBaseConfig = ({
       }
     : config;
 };
-
-export const unitTest = (testName) => `[UNIT] ${testName}`;
-export const integrationTest = (testName) => `[INTEGRATION] ${testName}`;
