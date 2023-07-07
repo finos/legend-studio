@@ -29,4 +29,5 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_RESULT_PANEL = 'query__builder__result__panel',
   QUERY_BUILDER_PARAMETERS = 'query-builder__parameters',
   QUERY_BUILDER_CONSTANTS = 'query-builder__constants',
+  QUERY_BUILDER_ACTIONS = 'query-builder__advanced__actions',
 }

@@ -56,6 +56,7 @@ import {
   ModalFooterButton,
   ModalHeader,
   Button,
+  CustomAutocompleteInput,
 } from '@finos/legend-art';
 import {
   type RelationalDatabaseConnection,
@@ -1121,13 +1122,13 @@ const RelationalConnectionStoreEditor = observer(
             <div className="panel__content__form__section__header__label">
               Store
             </div>
-            <CustomSelectorInput
+            <CustomAutocompleteInput
               options={options}
               onChange={onStoreChange}
               value={selectedStore}
-              darkMode={true}
               disabled={isReadOnly}
-              hasError={isStoreEmpty}
+              darkMode={true}
+              hasError={isStoreEmpty ? true : false}
             />
             <PanelDivider />
             <button
@@ -1660,7 +1661,7 @@ const RelationalConnectionGeneralEditor = observer(
                 <div className="panel__content__form__section__header__label">
                   Database Type
                 </div>
-                <CustomSelectorInput
+                <CustomAutocompleteInput
                   options={typeOptions}
                   onChange={onTypeChange}
                   value={selectedType}
@@ -1684,7 +1685,7 @@ const RelationalConnectionGeneralEditor = observer(
                   <div className="panel__content__form__section__header__label">
                     Database Type
                   </div>
-                  <CustomSelectorInput
+                  <CustomAutocompleteInput
                     options={typeOptions}
                     onChange={onTypeChange}
                     value={selectedType}

@@ -21,6 +21,7 @@ import {
   getByTitle,
   act,
   getByText,
+  type RenderResult,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -44,6 +45,58 @@ import {
   MockedMonacoEditorAPI,
 } from '@finos/legend-lego/code-editor/test';
 
+const TEST__setUpParameterPanel = (renderResult: RenderResult): void => {
+  fireEvent.click(renderResult.getByTitle('Show Advanced Menu...'));
+  const advancedQueryOptions = renderResult.getByTestId(
+    QUERY_BUILDER_TEST_ID.QUERY_BUILDER_ACTIONS,
+  );
+  fireEvent.click(getByText(advancedQueryOptions, 'Show Parameter(s)'));
+};
+
+const TEST__setUpConstantPanel = (renderResult: RenderResult): void => {
+  fireEvent.click(renderResult.getByTitle('Show Advanced Menu...'));
+  const advancedQueryOptions = renderResult.getByTestId(
+    QUERY_BUILDER_TEST_ID.QUERY_BUILDER_ACTIONS,
+  );
+  fireEvent.click(getByText(advancedQueryOptions, 'Show Constant(s)'));
+};
+
+test(
+  integrationTest('Query builder allows changing of parameter multiplicity'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+    });
+
+    TEST__setUpParameterPanel(renderResult);
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    fireEvent.click(renderResult.getByDisplayValue('[1] - Required'));
+    const multiplicityAutocomplete =
+      renderResult.getByDisplayValue('[1] - Required');
+    fireEvent.change(multiplicityAutocomplete, {
+      target: { value: '[*] - List' },
+    });
+    fireEvent.keyDown(multiplicityAutocomplete, { key: 'ArrowDown' });
+    fireEvent.keyDown(multiplicityAutocomplete, { key: 'Enter' });
+    await waitFor(() =>
+      expect(renderResult.getByDisplayValue('[*] - List')).not.toBeNull(),
+    );
+  },
+);
+
 test(
   integrationTest(
     'Query builder shows validation error for parameter name if existing duplicate constant name',
@@ -60,12 +113,9 @@ test(
       queryBuilderState.initializeWithQuery(
         create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
       );
-      // NOTE: Render result will not currently find the
-      // 'show parameter(s)' panel so we will directly force
-      // the panel to show for now
-      queryBuilderState.setShowParametersPanel(true);
-      queryBuilderState.constantState.setShowConstantPanel(true);
     });
+    TEST__setUpParameterPanel(renderResult);
+    TEST__setUpConstantPanel(renderResult);
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
@@ -122,11 +172,8 @@ test(
           TEST_DATA__simpleProjection.body,
         ),
       );
-      // NOTE: Render result will not currently find the
-      // 'show constant(s)' panel so we will directly force
-      // the panel to show for now
-      queryBuilderState.constantState.setShowConstantPanel(true);
     });
+    TEST__setUpConstantPanel(renderResult);
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
@@ -174,8 +221,8 @@ test(
           TEST_DATA__simpleProjection.body,
         ),
       );
-      queryBuilderState.constantState.setShowConstantPanel(true);
     });
+    TEST__setUpConstantPanel(renderResult);
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
@@ -389,8 +436,9 @@ test(
           TEST_DATA__simpleProjection.body,
         ),
       );
-      queryBuilderState.constantState.setShowConstantPanel(true);
     });
+
+    TEST__setUpConstantPanel(renderResult);
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
@@ -458,9 +506,9 @@ test(
       queryBuilderState.initializeWithQuery(
         create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
       );
-      queryBuilderState.setShowParametersPanel(true);
-      queryBuilderState.constantState.setShowConstantPanel(true);
     });
+    TEST__setUpConstantPanel(renderResult);
+    TEST__setUpParameterPanel(renderResult);
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),

@@ -26,6 +26,7 @@ export * from './input/Input.js';
 export * from './tree/TreeView.js';
 
 export * from './autocomplete/CustomSelectorInput.js';
+export * from './autocomplete/CustomAutocomplete.js';
 
 export * from './badge/Badge.js';
 

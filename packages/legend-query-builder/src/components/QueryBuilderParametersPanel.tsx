@@ -29,6 +29,7 @@ import {
   InfoCircleIcon,
   ModalFooterButton,
   PanelFormValidatedTextField,
+  CustomAutocompleteInput,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -204,7 +205,7 @@ const VariableExpressionEditor = observer(
                 The multiplity determines how many values a parameter can have.
                 Default is set to mandatory single vlue.
               </div>
-              <CustomSelectorInput
+              <CustomAutocompleteInput
                 placeholder="Choose a multiplicity..."
                 options={multilicityOptions}
                 onChange={changeMultiplicity}

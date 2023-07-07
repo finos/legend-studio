@@ -1,0 +1,149 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.autocomplete__options {
+  z-index: 9999;
+
+  .MuiAutocomplete-option {
+    &[aria-selected='true'] {
+      background-color: var(--color-blue-100) !important;
+      color: var(--color-white) !important;
+    }
+
+    &:hover,
+    &--is-focused:hover,
+    &--is-focused {
+      background-color: var(--color-dark-blue-shade-100);
+    }
+  }
+
+  &--dark {
+    .MuiPaper-root {
+      color: var(--color-light-grey-150);
+      background: var(--color-dark-grey-100);
+    }
+
+    .MuiAutocomplete-option {
+      color: var(--color-light-grey-200);
+
+      &[aria-selected='true'] {
+        background-color: var(--color-light-blue-450) !important;
+      }
+
+      &:hover,
+      &--is-focused:hover,
+      &--is-focused {
+        background-color: var(--color-dark-blue-shade-100);
+      }
+    }
+  }
+}
+
+.autocomplete-input {
+  border-radius: 0;
+  min-height: 2.8rem;
+  height: 2.8rem;
+
+  @include flexVCenter;
+
+  background: var(--color-input);
+  border: 0.1rem solid var(--color-input-border);
+  color: var(--color-input-text);
+
+  &:hover {
+    border: 0.1rem solid var(--color-input-border--hover);
+  }
+
+  &--is-focused,
+  &--is-focused:hover {
+    border: 0.1rem solid var(--color-input-border--focus);
+    box-shadow: none;
+  }
+
+  &--is-disabled {
+    &:hover {
+      border: 0.1rem solid var(--color-dark-grey-300) !important;
+    }
+
+    &--is-focused,
+    &--is-focused:hover {
+      border: 0.1rem solid var(--color-dark-grey-300) !important;
+    }
+
+    input {
+      cursor: not-allowed;
+      border: 0.1rem solid var(--color-dark-grey-100);
+      background: var(--color-dark-grey-100);
+      -webkit-text-fill-color: var(--color-light-grey-400) !important;
+    }
+  }
+
+  &--dark {
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-300);
+    color: var(--color-light-grey-200);
+
+    &:hover {
+      border: 0.1rem solid var(--color-blue-100);
+    }
+
+    &--is-focused,
+    &--is-focused:hover {
+      border: 0.1rem solid var(--color-blue-100);
+    }
+
+    svg {
+      color: var(--color-light-grey-150);
+    }
+
+    input {
+      color: var(--color-light-grey-150);
+    }
+  }
+
+  &--dark &--has-error {
+    background: var(--color-error-input--dark);
+    border-color: var(--color-error-input-border);
+
+    &:hover {
+      border: 0.1rem solid var(--color-error-input-border);
+    }
+  }
+
+  svg {
+    font-size: 2rem;
+  }
+
+  input {
+    font-size: 1.4rem;
+  }
+}
+
+.MuiAutocomplete-endAdornment {
+  top: unset;
+}
+
+.MuiAutocomplete-input {
+  @include flexVCenter;
+
+  padding: 0 !important;
+}
+
+.MuiFilledInput-root {
+  height: 100% !important;
+}

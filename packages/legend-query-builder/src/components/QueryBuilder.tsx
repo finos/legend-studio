@@ -385,7 +385,9 @@ export const QueryBuilder = observer(
                   className="query-builder__header__advanced-dropdown"
                   title="Show Advanced Menu..."
                   content={
-                    <MenuContent>
+                    <MenuContent
+                      data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_ACTIONS}
+                    >
                       <MenuContentItem
                         onClick={toggleShowFunctionPanel}
                         disabled={!queryBuilderState.isQuerySupported}
