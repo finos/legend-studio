@@ -17,11 +17,11 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
+    "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
+    "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-studio ./dist/studio",
     "bundle": "yarn clean && yarn build:webpack && node ./scripts/setup.js ./dist/studio",
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js ./dist/studio",
-    "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
-    "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-studio ./dist/studio",
     "clean": "yarn clean:cache && rimraf \"dist\"",
     "clean:cache": "rimraf \"build\"",
     "dev": "npm-run-all --parallel dev:ts dev:webpack",

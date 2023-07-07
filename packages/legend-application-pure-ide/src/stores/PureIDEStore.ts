@@ -79,7 +79,7 @@ import {
   uniq,
   filterByType,
 } from '@finos/legend-shared';
-import { PureClient as PureServerClient } from '../server/PureServerClient.js';
+import { PureServerClient as PureServerClient } from '../server/PureServerClient.js';
 import { PanelDisplayState } from '@finos/legend-art';
 import { DiagramEditorState } from './DiagramEditorState.js';
 import { DiagramInfo, serializeDiagram } from '../server/models/DiagramInfo.js';

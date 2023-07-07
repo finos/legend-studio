@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../package.json' assert { type: 'json' };
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSL_Mastery_PureGraphPlugin as DSL_Mastery_PureGraphPlugin } from '../graph/DSL_Mastery_PureGraphPlugin.js';
 import { DSL_Mastery_PureGraphManagerPlugin } from './DSL_Mastery_PureGraphManagerPlugin.js';

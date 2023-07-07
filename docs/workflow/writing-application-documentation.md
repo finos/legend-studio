@@ -74,7 +74,7 @@ yarn dev:mock-server
   "documentation": {
     ...
     "registry": [
-      { "url": "http://localhost:9999/studio/documentation.json" },
+      { "url": "http://localhost:9999/resource/documentation.json" },
     ],
   }
 }

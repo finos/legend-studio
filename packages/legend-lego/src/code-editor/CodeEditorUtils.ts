@@ -105,7 +105,7 @@ export const getBaseCodeEditorOptions =
       // See https://github.com/microsoft/monaco-editor/issues/3013
       'bracketPairColorization.enabled': false,
       automaticLayout: true,
-    } as monacoEditorAPI.IStandaloneEditorConstructionOptions);
+    }) as monacoEditorAPI.IStandaloneEditorConstructionOptions;
 
 export const getBaseConsoleOptions =
   (): monacoEditorAPI.IStandaloneEditorConstructionOptions => ({

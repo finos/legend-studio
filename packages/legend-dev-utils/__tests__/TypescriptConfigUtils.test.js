@@ -21,7 +21,7 @@ import {
   resolveFullTsConfig,
   resolveFullTsConfigWithoutValidation,
 } from '../TypescriptConfigUtils.js';
-import { unitTest } from '../JestConfigUtils.js';
+import { unitTest } from '../jest/testUtils.js';
 
 test(
   unitTest('Resolve full Typescript config through inheritance chain'),

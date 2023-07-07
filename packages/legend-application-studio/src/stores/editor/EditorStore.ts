@@ -507,8 +507,8 @@ export class EditorStore implements CommandRegistrar {
       /**
        * Since React `fast-refresh` will sometimes cause `Editor` to rerender, this method will be called again
        * as all hooks are recalled, as such, ONLY IN DEVELOPMENT mode we allow this to not fail-fast
-       * we also have to `undo` some of what the `cleanUp` does to this store as the cleanup part of all hooks will be triggered
-       * as well
+       * we also have to `undo` some of what the `cleanUp` does to this store as the cleanup part of all hooks
+       * will be triggered as well
        */
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {

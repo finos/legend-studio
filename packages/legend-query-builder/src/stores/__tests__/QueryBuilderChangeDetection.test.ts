@@ -29,7 +29,7 @@ import { TEST__setUpQueryBuilder } from '../../components/__test-utils__/QueryBu
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection } from './TEST_DATA__ModelCoverageAnalysisResult.js';
-import TEST_DATA__ChangeDetectionModel from './TEST_DATA__QueryBuilder_Model_ChangeDetection.json';
+import TEST_DATA__ChangeDetectionModel from './TEST_DATA__QueryBuilder_Model_ChangeDetection.json' assert { type: 'json' };
 import { TEST_DATA__TestChangeDetectionWithSimpleProject } from './TEST_DATA__QueryBuilder_TestChangeDetection.js';
 
 test(integrationTest('Test change detection'), () => {

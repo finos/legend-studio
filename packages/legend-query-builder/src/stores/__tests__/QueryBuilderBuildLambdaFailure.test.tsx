@@ -24,8 +24,8 @@ import {
   TEST_DATA_malformedFilterExpressionWithSubtype,
   TEST_DATA__malformedTodayFunction,
 } from './TEST_DATA__QueryBuilder_Failure.js';
-import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
-import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
+import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
+import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json' assert { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { create_RawLambda } from '@finos/legend-graph';

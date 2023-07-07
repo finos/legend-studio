@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../package.json' assert { type: 'json' };
 import { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import { observe_Mastery } from './action/changeDetection/DSL_Mastery_ObserverHelper.js';
 import {

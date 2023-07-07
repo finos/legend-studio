@@ -85,7 +85,7 @@ import {
   V1_serializeValueSpecification,
   V1_deserializeValueSpecification,
 } from './transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
-import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json';
+import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json' assert { type: 'json' };
 import { V1_serializePackageableElement } from './transformation/pureProtocol/V1_PackageableElementSerialization.js';
 import {
   V1_entitiesToPureModelContextData,
@@ -2928,59 +2928,59 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<FunctionActivatorConfiguration[]> {
     return (
       await Promise.all(
-        (
-          await this.engine.getAvailableFunctionActivators()
-        ).map(async (info) => {
-          try {
-            const config = new FunctionActivatorConfiguration();
-            config.name = info.name;
-            config.description = info.description;
-            config.packageableElementJSONType =
-              info.configuration.packageableElementJSONType;
+        (await this.engine.getAvailableFunctionActivators()).map(
+          async (info) => {
+            try {
+              const config = new FunctionActivatorConfiguration();
+              config.name = info.name;
+              config.description = info.description;
+              config.packageableElementJSONType =
+                info.configuration.packageableElementJSONType;
 
-            // build the mini graph for configuration
-            const graph = new PureModel(
-              coreModel,
-              systemModel,
-              this.pluginManager.getPureGraphPlugins(),
-            );
-            const _report = createGraphBuilderReport();
-            const _stopWatch = new StopWatch();
-            const _buildState = ActionState.create();
-            const data = new V1_PureModelContextData();
-            data.elements = info.configuration.model;
-            const buildInputs: V1_PureGraphBuilderInput[] = [
-              {
-                model: graph,
-                data: V1_indexPureModelContextData(
-                  _report,
-                  data,
-                  this.graphBuilderExtensions,
-                ),
-              },
-            ];
-            await this.buildGraphFromInputs(
-              graph,
-              buildInputs,
-              _report,
-              _stopWatch,
-              _buildState,
-              {},
-            );
-            config.graph = graph;
-            config.configurationType = graph.getClass(
-              info.configuration.topElement,
-            );
-            return config;
-          } catch (error) {
-            assertErrorThrown(error);
-            this.logService.warn(
-              LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
-              `Can't build function activator config: ${error.message}`,
-            );
-            return undefined;
-          }
-        }),
+              // build the mini graph for configuration
+              const graph = new PureModel(
+                coreModel,
+                systemModel,
+                this.pluginManager.getPureGraphPlugins(),
+              );
+              const _report = createGraphBuilderReport();
+              const _stopWatch = new StopWatch();
+              const _buildState = ActionState.create();
+              const data = new V1_PureModelContextData();
+              data.elements = info.configuration.model;
+              const buildInputs: V1_PureGraphBuilderInput[] = [
+                {
+                  model: graph,
+                  data: V1_indexPureModelContextData(
+                    _report,
+                    data,
+                    this.graphBuilderExtensions,
+                  ),
+                },
+              ];
+              await this.buildGraphFromInputs(
+                graph,
+                buildInputs,
+                _report,
+                _stopWatch,
+                _buildState,
+                {},
+              );
+              config.graph = graph;
+              config.configurationType = graph.getClass(
+                info.configuration.topElement,
+              );
+              return config;
+            } catch (error) {
+              assertErrorThrown(error);
+              this.logService.warn(
+                LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+                `Can't build function activator config: ${error.message}`,
+              );
+              return undefined;
+            }
+          },
+        ),
       )
     ).filter(isNonNullable);
   }

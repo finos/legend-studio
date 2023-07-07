@@ -19,7 +19,7 @@ import {
   QuerySetupActionTag,
   type QuerySetupActionConfiguration,
 } from '../stores/LegendQueryApplicationPlugin.js';
-import packageJson from '../../package.json';
+import packageJson from '../../package.json' assert { type: 'json' };
 import type { QuerySetupLandingPageStore } from '../stores/QuerySetupStore.js';
 import {
   ArrowCircleUpIcon,

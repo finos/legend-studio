@@ -68,7 +68,7 @@ const setup = (outputDir) => {
             /**
              * Use this end-point when developing documentation locally
              */
-            // { url: 'http://localhost:9999/documentation.json' },
+            // { url: 'http://localhost:9999/resource/documentation.json' },
             {
               url: 'https://legend.finos.org/resource/studio/documentation/pure-ide.json',
               simple: true,

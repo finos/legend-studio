@@ -312,7 +312,7 @@ export const createRequestHeaders = (
   return mergeRequestHeaders(baseRequestHeaders, headers);
 };
 
-interface NetworkClientConfig {
+export interface NetworkClientConfig {
   options?: PlainObject | undefined;
   baseUrl?: string | undefined;
 }

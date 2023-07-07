@@ -5,13 +5,18 @@
     // core
     { "path": "packages/legend-shared/tsconfig.build.json" },
     { "path": "packages/legend-storage/tsconfig.build.json" },
-    { "path": "packages/legend-server-sdlc/tsconfig.build.json" },
-    { "path": "packages/legend-server-depot/tsconfig.build.json" },
     { "path": "packages/legend-graph/tsconfig.build.json" },
     { "path": "packages/legend-query-builder/tsconfig.build.json" },
     { "path": "packages/legend-art/tsconfig.build.json" },
     { "path": "packages/legend-lego/tsconfig.build.json" },
     { "path": "packages/legend-application/tsconfig.build.json" },
+    // sdlc
+    { "path": "packages/legend-server-sdlc/tsconfig.build.json" },
+    // depot
+    { "path": "packages/legend-server-depot/tsconfig.build.json" },
+    // showcase
+    { "path": "packages/legend-server-showcase/tsconfig.build.json" },
+    { "path": "packages/legend-server-showcase-deployment/tsconfig.build.json" },
     // studio
     { "path": "packages/legend-application-studio/tsconfig.build.json" },
     {

@@ -35,14 +35,14 @@ import {
   TEST_DATA__simpleProjectionWithOutPreviewLimit,
   TEST_DATA__simpleProjectionWithPreviewLimit,
 } from './TEST_DATA__QueryBuilder_Generic.js';
-import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
-import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
-import TEST_DATA__M2MWithInheritance from './TEST_DATA__QueryBuilder_Model_M2MWithInheritance.json';
-import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
-import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M.json';
-import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
-import TEST_DATA__BindingM2MModel from './TEST_DATA__QueryBuilder_Model_BindingM2M.json';
-import TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M from './TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M.json';
+import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
+import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
+import TEST_DATA__M2MWithInheritance from './TEST_DATA__QueryBuilder_Model_M2MWithInheritance.json' assert { type: 'json' };
+import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json' assert { type: 'json' };
+import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M.json' assert { type: 'json' };
+import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json' assert { type: 'json' };
+import TEST_DATA__BindingM2MModel from './TEST_DATA__QueryBuilder_Model_BindingM2M.json' assert { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M from './TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M.json' assert { type: 'json' };
 import {
   TEST_DATA__lambda_simpleSingleConditionFilterWithParameter,
   TEST_DATA__lambda_enumerationOperatorFilter,
@@ -126,7 +126,7 @@ import {
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
 } from '../__test-utils__/QueryBuilderStateTestUtils.js';
-import TEST_DATA_SimpleCalendarModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Calendar.json';
+import TEST_DATA_SimpleCalendarModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Calendar.json' assert { type: 'json' };
 import {
   TEST_DATA__simpleDerivationWithCalendarAggregation,
   TEST_DATA__simpleProjectionWithCalendarAggregation,

@@ -15,13 +15,13 @@
  */
 
 import { test, expect, describe } from '@jest/globals';
-import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
-import TEST_DATA__SimpleRelationalInheritanceModel from './TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json';
-import TEST_DATA__NestedSubTypeModel from './TEST_DATA__QueryBuilder_Model_NestedSubType.json';
-import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
-import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
-import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json';
-import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json';
+import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
+import TEST_DATA__SimpleRelationalInheritanceModel from './TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json' assert { type: 'json' };
+import TEST_DATA__NestedSubTypeModel from './TEST_DATA__QueryBuilder_Model_NestedSubType.json' assert { type: 'json' };
+import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json' assert { type: 'json' };
+import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json' assert { type: 'json' };
+import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json' assert { type: 'json' };
+import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json' assert { type: 'json' };
 import { type PlainObject } from '@finos/legend-shared';
 import {
   integrationTest,
