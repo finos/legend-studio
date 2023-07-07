@@ -34,8 +34,6 @@ import { V1_ModelUnit } from '../../../model/packageableElements/externalFormat/
 
 export const V1_SCHEMA_SET_ELEMENT_PROTOCOL_TYPE = 'externalFormatSchemaSet';
 export const V1_BINDING_ELEMENT_PROTOCOL_TYPE = 'binding';
-export const V1_EXTERNAL_FORMAT_CONNECTION_ELEMENT_PROTOCOL_TYPE =
-  'ExternalFormatConnection';
 
 const V1_schemaModelSchema = createModelSchema(V1_Schema, {
   content: primitive(),

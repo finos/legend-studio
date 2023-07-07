@@ -80,8 +80,6 @@ export const EXTERNAL_FORMAT_CONNECTION = 'EXTERNAL_FORMAT_CONNECTION';
 const PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME = 'ExternalFormat';
 const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';
 const PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL = 'SchemaSet';
-const PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL =
-  'ExternalFormatConnection';
 
 export class DSL_ExternalFormat_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -108,7 +106,6 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
     return [
       PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
       PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
-      PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL,
     ];
   }
 
