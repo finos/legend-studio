@@ -49,7 +49,6 @@ export type GitlabShowcaseRegistryClientConfig = {
 //   private readonly showcaseInfoFile = 'info.md';
 //   private readonly showcaseDirectory = 'showcases';
 //   // NOTE: this token has readonly scopes, Guest role needed to make safe unauthenticated API call
-//   private readonly readonlyProjectAccessToken = 'glpat-XRLKFrqnod5H41-P1bnS';
 
 //   constructor(config: GitlabShowcaseRegistryClientConfig) {
 //     this.networkClient = new NetworkClient(config);
@@ -106,7 +105,6 @@ export type GitlabShowcaseRegistryClientConfig = {
 //         scope: 'blobs',
 //         ref: this.defaultBranch,
 //         search: text,
-//         private_token: 'glpat-XRLKFrqnod5H41-P1bnS',
 //       },
 //     );
 //   }

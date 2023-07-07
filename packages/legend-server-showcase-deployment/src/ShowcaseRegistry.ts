@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Showcase, type ShowcaseMetadata } from '@finos/legend-server-showcase';
 import { get } from 'https';
 import { readFileSync } from 'fs';
+import { Showcase, type ShowcaseMetadata } from '@finos/legend-server-showcase';
 import { type PlainObject } from '@finos/legend-shared';
 
 async function fetchExternalLinkSiteData(url: string): Promise<string> {

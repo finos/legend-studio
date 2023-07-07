@@ -31,6 +31,7 @@
     "dev:pure": "yarn workspace @finos/legend-application-pure-ide-deployment dev",
     "dev:query": "yarn workspace @finos/legend-application-query-deployment dev",
     "dev:sass": "node ./scripts/workflow/buildSassAll.js --watch",
+    "dev:showcase-server": "yarn workspace @finos/legend-server-showcase-deployment dev",
     "dev:studio": "yarn workspace @finos/legend-application-studio-deployment dev",
     "dev:ts": "tsc --build --watch",
     "dev:website": "npx http-server ./build/docs -p 3000 -a localhost -g --cors -o",

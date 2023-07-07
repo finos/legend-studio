@@ -27,7 +27,7 @@ export default (env, arg) => {
 
   const config = {
     ...baseConfig,
-    entry: { index: resolve(__dirname, './src/server.ts') },
+    entry: { index: resolve(__dirname, './lib/server.js') },
     target: 'node',
     output: {
       path: join(__dirname, `dist`),
