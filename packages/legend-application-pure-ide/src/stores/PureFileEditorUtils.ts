@@ -269,7 +269,7 @@ const constructorClassSuggestionToCompletionItem = (suggestion: {
     insertText: `${suggestion.pureName}(${suggestion.requiredClassProperties
       .map((property, idx) => `${property}=\${${idx + 1}:}`)
       .join(',')})`,
-  } as monacoLanguagesAPI.CompletionItem);
+  }) as monacoLanguagesAPI.CompletionItem;
 
 const createFunctionInvocationSnippet = (
   functionName: string,
@@ -598,7 +598,7 @@ const castingClassSuggestionToCompletionItem = (
     insertTextRules:
       monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
     insertText: suggestion.pureName,
-  } as monacoLanguagesAPI.CompletionItem);
+  }) as monacoLanguagesAPI.CompletionItem;
 
 export const getCastingClassSuggestions = async (
   position: IPosition,
@@ -634,7 +634,7 @@ const variableSuggestionToCompletionItem = (
       ? `zzzz_${suggestion.name}`
       : suggestion.name,
     insertText: suggestion.name,
-  } as monacoLanguagesAPI.CompletionItem);
+  }) as monacoLanguagesAPI.CompletionItem;
 
 const VARIABLE_SUGGESTION_SCANNING_RANGE = 10;
 

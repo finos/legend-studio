@@ -186,7 +186,7 @@ const getKeywordSuggestions = async (
         insertTextRules:
           monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
         insertText: `${keyword} `,
-      } as monacoLanguagesAPI.CompletionItem),
+      }) as monacoLanguagesAPI.CompletionItem,
   );
 
 const getDatabaseSchemaEntities = async (
@@ -206,7 +206,7 @@ const getDatabaseSchemaEntities = async (
             insertTextRules:
               monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
             insertText: `${value.label} `,
-          } as monacoLanguagesAPI.CompletionItem),
+          }) as monacoLanguagesAPI.CompletionItem,
       ),
       (val) => val.label,
     );

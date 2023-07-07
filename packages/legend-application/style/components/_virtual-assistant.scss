@@ -147,7 +147,9 @@
   border-radius: 0.2rem;
   background: var(--color-dark-grey-100);
   border: 0.1rem solid var(--color-dark-grey-200);
-  box-shadow: 0 1.1rem 1.5rem -0.7rem, var(--color-light-shade-280),
+  box-shadow:
+    0 1.1rem 1.5rem -0.7rem,
+    var(--color-light-shade-280),
     0 2.4rem 3.8rem 0.3rem var(--color-light-shade-280),
     0 0.9rem 4.6rem 0.8rem var(--color-light-shade-280);
 

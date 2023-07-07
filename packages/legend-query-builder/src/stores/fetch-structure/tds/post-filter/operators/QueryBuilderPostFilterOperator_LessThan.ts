@@ -110,9 +110,7 @@ export class QueryBuilderPostFilterOperator_LessThan
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for post-filter operator '${this.getLabel()}' when the LHS property is of type '${
-            propertyType?.path
-          }'`,
+          `Can't get default value for post-filter operator '${this.getLabel()}' when the LHS property is of type '${propertyType?.path}'`,
         );
     }
   }

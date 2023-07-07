@@ -319,7 +319,7 @@ export const getInlineSnippetSuggestions = (
               }
             : snippetSuggestion.documentation.text
           : undefined,
-      } as monacoLanguagesAPI.CompletionItem),
+      }) as monacoLanguagesAPI.CompletionItem,
   );
 };
 

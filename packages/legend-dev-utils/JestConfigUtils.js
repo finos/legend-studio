@@ -34,7 +34,7 @@ export const getBaseConfig = ({
       // We need to manually run `tsc`. Another option is to use `jest-runner-tsc`
       // which currently has certain performance limitation
       // See https://jestjs.io/docs/en/getting-started#using-typescript
-      '^.+\\.[jt]sx?$': [
+      '^.+\\.m?[jt]sx?$': [
         'babel-jest',
         {
           configFile: babelConfigPath,

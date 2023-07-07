@@ -20,7 +20,9 @@
     "**/packages/legend-art",
     "**/packages/legend-lego",
     "**/packages/legend-application-*",
-    "**/packages/legend-extension-*"
+    "**/packages/legend-extension-*",
+    "**/packages/legend-server-showcase",
+    "**/packages/legend-server-showcase-*",
   ],
   // NOTE: to be updated when we structure the doc better
   "readme": "./website/api.md",

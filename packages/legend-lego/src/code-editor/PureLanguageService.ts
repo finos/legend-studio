@@ -399,7 +399,7 @@ const generateLanguageMonarch = (
         [/'/, `${PURE_GRAMMAR_TOKEN.STRING}.invalid`],
       ],
     },
-  } as monacoLanguagesAPI.IMonarchLanguage);
+  }) as monacoLanguagesAPI.IMonarchLanguage;
 
 export function setupPureLanguageService(options?: {
   extraKeywords?: string[] | undefined;
