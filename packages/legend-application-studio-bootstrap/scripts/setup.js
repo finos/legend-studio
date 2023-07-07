@@ -95,7 +95,6 @@ export const setup = (outputDir) => {
           //     modes: ['PROD'],
           //   },
           // ],
-          TEMPORARY__enableMappingTestableEditor: false,
           TEMPORARY__enableFunctionActivatorSupport: false,
           TEMPORARY__enableRawSQLExecutor: false,
           TEMPORARY__enableLocalConnectionBuilder: false,

@@ -134,6 +134,8 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
 export type QueryBuilderExplorerTreeNodeMappingData = {
   mapped: boolean;
   mappedEntity?: MappedEntity | undefined;
+  // used to describe the mapped property
+  entityMappedProperty?: EntityMappedProperty | undefined;
 };
 
 export class QueryBuilderExplorerTreeRootNodeData extends QueryBuilderExplorerTreeNodeData {}
@@ -292,6 +294,7 @@ export const generatePropertyNodeMappingData = (
 ): QueryBuilderExplorerTreeNodeMappingData => {
   // If the property node's parent node does not have a mapped entity,
   // it means the owner class is not mapped, i.e. this property is not mapped.
+
   if (parentMappingData.mappedEntity) {
     const mappedProp = parentMappingData.mappedEntity.__PROPERTIES_INDEX.get(
       property.name,
@@ -308,6 +311,8 @@ export const generatePropertyNodeMappingData = (
               ? mappedProp.entityPath
               : (mappedProp as EnumMappedProperty).enumPath,
           ),
+          entityMappedProperty:
+            mappedProp instanceof EntityMappedProperty ? mappedProp : undefined,
         };
       }
     }
@@ -329,6 +334,7 @@ export const generateSubtypeNodeMappingData = (
   const allCompatibleTypePaths = getAllSubclasses(subclass)
     .concat(subclass)
     .map((_class) => _class.path);
+  const subtype = parentMappingData.entityMappedProperty?.subType;
   // If the subtype node's parent node does not have a mapped entity,
   // it means the superclass is not mapped, i.e. this subtype is not mapped
   if (parentMappingData.mappedEntity) {
@@ -350,7 +356,9 @@ export const generateSubtypeNodeMappingData = (
         ),
       };
     } else if (
-      allCompatibleTypePaths.includes(parentMappingData.mappedEntity.path)
+      allCompatibleTypePaths.includes(parentMappingData.mappedEntity.path) ||
+      // hanlde cases where multi class mappings for same subtype
+      (subtype && allCompatibleTypePaths.includes(subtype))
     ) {
       // This is to handle the case where the property mapping is pointing
       // directly at the class mapping of a subtype of the type of that property

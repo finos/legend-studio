@@ -93,12 +93,6 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism = false;
 
   /**
-   * Indicates whether we should render the new mapping testable editor or the deprecated legacy editor.
-   * This flag will be removed once the editor for testable editor is agreed on.
-   */
-  TEMPORARY__enableMappingTestableEditor = true;
-
-  /**
    * Provides service registration environment configs.
    *
    * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
@@ -118,7 +112,6 @@ class LegendStudioApplicationCoreOptions {
       TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
       TEMPORARY__enableRawSQLExecutor: optional(primitive()),
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
-      TEMPORARY__enableMappingTestableEditor: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),
