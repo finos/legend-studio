@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.1.6
+
+### Patch Changes
+
+- [#2405](https://github.com/finos/legend-studio/pull/2405) [`eb6f0d44c`](https://github.com/finos/legend-studio/commit/eb6f0d44c93c0cab77b108b4b397f5b649d896ed) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix a bug that fails to display subtypes if a propertyMapping of type parent directly points to a child classMapping or more than one class mapping for that subtype ([#1437](https://github.com/finos/legend-studio/issues/1437)).
+
 ## 4.1.5
 
 ## 4.1.4
