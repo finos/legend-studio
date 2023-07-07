@@ -492,8 +492,11 @@
   }
 }
 
-.query-builder__projection__calendar__date__column__dnd__placeholder
+.query-builder__projection__calendar__date__column__dnd__placeholder {
+  margin: 0.3rem;
+
   .dnd__entry-dropzone__placeholder__content {
-  border-color: var(--color-dark-grey-100);
-  border: 0.2rem dashed var(--color-dark-grey-300);
+    border: 0.2rem dashed var(--color-dark-grey-300);
+    background: var(--color-dark-grey-250);
+  }
 }

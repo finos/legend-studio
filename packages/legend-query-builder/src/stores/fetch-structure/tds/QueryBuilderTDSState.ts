@@ -147,6 +147,7 @@ export class QueryBuilderTDSState
       hasParserError: computed,
       addColumn: action,
       moveColumn: action,
+      removeAllColumns: action,
       replaceColumn: action,
       initialize: action,
       setShowPostFilterPanel: action,
