@@ -116,7 +116,7 @@ export const generateStoreTestDataFromSetImpl = (
     );
     if (_table instanceof TableAlias) {
       const relation = _table.relation.value;
-      const owner = relation.schema._OWNER;
+      const owner = _table.relation.ownerReference.value;
       const val = new RelationalCSVData();
       if (tryAndMockTable && relation instanceof Table) {
         const mockTable = new RelationalCSVDataTable();
