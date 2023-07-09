@@ -41,12 +41,11 @@ export const CustomAutocompleteInput = forwardRef<
   HTMLInputElement,
   {
     className?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    options: any;
+    options: unknown[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onChange: (val: any) => void;
+    onChange: (val: { label: string; value: any }) => void;
     hasError?: boolean;
     darkMode?: boolean;
     disabled?: boolean;
@@ -93,7 +92,6 @@ export const CustomAutocompleteInput = forwardRef<
       renderInput={(params) => (
         <TextField
           hiddenLabel={true}
-          size="small"
           className={clsx(
             'autocomplete-input',
             { 'autocomplete-input--dark ': isDarkMode },

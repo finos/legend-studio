@@ -1743,7 +1743,7 @@ const RelationalConnectionGeneralEditor = observer(
                         <div className="panel__content__form__section__header__label">
                           Authentication
                         </div>
-                        <CustomSelectorInput
+                        <CustomAutocompleteInput
                           options={authOptions}
                           onChange={onAuthStrategyChange}
                           value={selectedAuth}
