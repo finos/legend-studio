@@ -71,6 +71,7 @@ import { INTERNAL__UnknownPackageableElement } from './metamodel/pure/packageabl
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 import { INTERNAL__UnknownFunctionActivator } from './metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import { INTERNAL__UnknownStore } from './metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
+import { Binding } from './metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -133,6 +134,7 @@ export abstract class BasicModel {
     FunctionActivator
   >();
   private readonly storesIndex = new Map<string, Store>();
+  private readonly bindingsIndex = new Map<string, Binding>();
   private readonly mappingsIndex = new Map<string, Mapping>();
   private readonly connectionsIndex = new Map<string, PackageableConnection>();
   private readonly runtimesIndex = new Map<string, PackageableRuntime>();
@@ -209,6 +211,9 @@ export abstract class BasicModel {
   }
   get ownStores(): Store[] {
     return Array.from(this.storesIndex.values());
+  }
+  get ownBindings(): Binding[] {
+    return Array.from(this.bindingsIndex.values());
   }
   get ownFlatDatas(): FlatData[] {
     return Array.from(this.storesIndex.values()).filter(filterByType(FlatData));
@@ -312,6 +317,8 @@ export abstract class BasicModel {
   ): FunctionActivator | undefined => this.functionActivatorsIndex.get(path);
   getOwnNullableStore = (path: string): Store | undefined =>
     this.storesIndex.get(path);
+  getOwnNullableBinding = (path: string): Binding | undefined =>
+    this.bindingsIndex.get(path);
   getOwnNullableMapping = (path: string): Mapping | undefined =>
     this.mappingsIndex.get(path);
   getOwnNullableConnection = (
@@ -470,6 +477,9 @@ export abstract class BasicModel {
   setOwnStore(path: string, val: Store): void {
     this.storesIndex.set(path, val);
   }
+  setOwnBinding(path: string, val: Binding): void {
+    this.bindingsIndex.set(path, val);
+  }
   setOwnMapping(path: string, val: Mapping): void {
     this.mappingsIndex.set(path, val);
   }
@@ -526,6 +536,7 @@ export abstract class BasicModel {
       ...this.ownFunctions,
       ...this.ownFunctionActivators,
       ...this.ownStores,
+      ...this.ownBindings,
       ...this.ownMappings,
       ...this.ownServices,
       ...this.ownRuntimes,
@@ -576,6 +587,7 @@ export abstract class BasicModel {
       this.functionsIndex.get(path) ??
       this.functionActivatorsIndex.get(path) ??
       this.storesIndex.get(path) ??
+      this.bindingsIndex.get(path) ??
       this.mappingsIndex.get(path) ??
       this.servicesIndex.get(path) ??
       this.runtimesIndex.get(path) ??
@@ -657,6 +669,8 @@ export abstract class BasicModel {
       this.mappingsIndex.delete(element.path);
     } else if (element instanceof Store) {
       this.storesIndex.delete(element.path);
+    } else if (element instanceof Binding) {
+      this.bindingsIndex.delete(element.path);
     } else if (element instanceof Type) {
       this.typesIndex.delete(element.path);
       if (element instanceof Measure) {
@@ -792,6 +806,9 @@ export abstract class BasicModel {
     } else if (element instanceof Store) {
       this.storesIndex.delete(oldPath);
       this.storesIndex.set(newPath, element);
+    } else if (element instanceof Binding) {
+      this.bindingsIndex.delete(oldPath);
+      this.bindingsIndex.set(newPath, element);
     } else if (element instanceof Type) {
       this.typesIndex.delete(oldPath);
       this.typesIndex.set(newPath, element);

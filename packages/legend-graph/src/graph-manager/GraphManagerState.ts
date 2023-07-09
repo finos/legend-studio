@@ -45,6 +45,7 @@ import type { FileGenerationSpecification } from '../graph/metamodel/pure/packag
 import type { GenerationSpecification } from '../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import type { Type } from '../graph/metamodel/pure/packageableElements/domain/Type.js';
 import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import type { Binding } from '../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
 
 export class BasicGraphManagerState {
   readonly pluginManager: GraphManagerPluginManager;
@@ -239,6 +240,15 @@ export class GraphManagerState extends BasicGraphManagerState {
       ),
       ...this.graph.dependencyManager.stores,
       ...this.graph.ownStores,
+    ];
+  }
+  get usableBindings(): Binding[] {
+    return [
+      ...this.graphManager.collectExposedSystemElements(
+        this.graph.systemModel.ownBindings,
+      ),
+      ...this.graph.dependencyManager.bindings,
+      ...this.graph.ownBindings,
     ];
   }
   get usableDatabases(): Database[] {

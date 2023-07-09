@@ -18,21 +18,11 @@ import packageJson from '../../../package.json' assert { type: 'json' };
 import { BufferIcon, SitemapIcon } from '@finos/legend-art';
 import { SchemaSetEditor } from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
 import {
-  type Connection,
   type PackageableElement,
-  type Store,
-  PackageableElementExplicitReference,
   SchemaSet,
   Binding,
   ModelUnit,
-  ExternalFormatConnection,
-  UrlStream,
 } from '@finos/legend-graph';
-import {
-  ExternalFormatConnectionEditor,
-  ExternalFormatConnectionValueState,
-  NewExternalFormatConnectionDriver,
-} from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_ExternalFormatConnectionEditor.js';
 import { BindingEditor } from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_BindingElementEditor.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import type { ReactNode } from 'react';
@@ -53,24 +43,14 @@ import {
   type DSL_LegendStudioApplicationPlugin_Extension,
 } from '../../stores/LegendStudioApplicationPlugin.js';
 import type {
-  ConnectionEditorRenderer,
   ConnectionTypeOption,
-  ConnectionValueEditorStateBuilder,
-  DefaultConnectionValueBuilder,
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
-  NewConnectionDriverCreator,
-  PureGrammarConnectionLabeler,
-  RuntimeConnectionTooltipTextBuilder,
 } from '../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../stores/editor/EditorStore.js';
 import type { ElementEditorState } from '../../stores/editor/editor-state/element-editor-state/ElementEditorState.js';
 import { SchemaSetEditorState } from '../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { BindingEditorState } from '../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_BindingEditorState.js';
-import type { ConnectionValueState } from '../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import {
-  externalFormat_Binding_setContentType,
-  externalFormat_urlStream_setUrl,
-} from '../../stores/graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
+import { externalFormat_Binding_setContentType } from '../../stores/graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/DSL_ExternalFormat_LegendStudioDocumentation.js';
 import {
@@ -85,7 +65,6 @@ import {
   NewSchemaSetDriverEditor,
 } from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_NewSchemaSetDriver.js';
 import type {
-  NewConnectionValueDriver,
   NewElementDriver,
   NewElementState,
 } from '../../stores/editor/NewElementState.js';
@@ -101,8 +80,6 @@ export const EXTERNAL_FORMAT_CONNECTION = 'EXTERNAL_FORMAT_CONNECTION';
 const PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME = 'ExternalFormat';
 const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';
 const PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL = 'SchemaSet';
-const PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL =
-  'ExternalFormatConnection';
 
 export class DSL_ExternalFormat_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -129,18 +106,6 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
     return [
       PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
       PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
-      PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL,
-    ];
-  }
-
-  getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
-    return [
-      (connection): string | undefined => {
-        if (connection instanceof ExternalFormatConnection) {
-          return PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL;
-        }
-        return undefined;
-      },
     ];
   }
 
@@ -283,89 +248,6 @@ export class DSL_ExternalFormat_LegendStudioApplicationPlugin
     return [
       SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
       BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
-    ];
-  }
-
-  getExtraRuntimeConnectionTooltipTextBuilders(): RuntimeConnectionTooltipTextBuilder[] {
-    return [
-      (connection: Connection): string | undefined => {
-        if (connection instanceof ExternalFormatConnection) {
-          return `External format connection \u2022 store ${connection.store.value.path}`;
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  getExtraDefaultConnectionValueBuilders(): DefaultConnectionValueBuilder[] {
-    return [
-      (store: Store): Connection | undefined => {
-        if (store instanceof Binding) {
-          const externalFormatConnection = new ExternalFormatConnection(
-            PackageableElementExplicitReference.create(store),
-          );
-          const urlStream = new UrlStream();
-          externalFormat_urlStream_setUrl(urlStream, '');
-          externalFormatConnection.externalSource = urlStream;
-          return externalFormatConnection;
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  getExtraConnectionValueEditorStateBuilders(): ConnectionValueEditorStateBuilder[] {
-    return [
-      (
-        editorStore: EditorStore,
-        connection: Connection,
-      ): ConnectionValueState | undefined => {
-        if (connection instanceof ExternalFormatConnection) {
-          return new ExternalFormatConnectionValueState(
-            editorStore,
-            connection,
-          );
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  getExtraConnectionEditorRenderers(): ConnectionEditorRenderer[] {
-    return [
-      (
-        connectionValueState: ConnectionValueState,
-        isReadOnly: boolean,
-      ): React.ReactNode | undefined => {
-        if (
-          connectionValueState instanceof ExternalFormatConnectionValueState
-        ) {
-          return (
-            <ExternalFormatConnectionEditor
-              connectionValueState={connectionValueState}
-              isReadOnly={isReadOnly}
-            />
-          );
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  getExtraNewConnectionDriverCreators(): NewConnectionDriverCreator[] {
-    return [
-      (
-        editorStore: EditorStore,
-        typeOrStore: Store | string,
-      ): NewConnectionValueDriver<Connection> | undefined => {
-        if (typeOrStore instanceof Binding) {
-          return new NewExternalFormatConnectionDriver(editorStore);
-        }
-        if (typeOrStore === EXTERNAL_FORMAT_CONNECTION) {
-          return new NewExternalFormatConnectionDriver(editorStore);
-        }
-        return undefined;
-      },
     ];
   }
 

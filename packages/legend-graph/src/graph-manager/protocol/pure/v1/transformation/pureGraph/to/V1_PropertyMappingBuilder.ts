@@ -88,7 +88,7 @@ import {
 } from '../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { GraphBuilderError } from '../../../../../../../graph-manager/GraphManagerUtils.js';
 import type { AbstractProperty } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
-import { BindingTransformer } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
+import { BindingTransformer } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_BindingTransformer.js';
 import type { Mapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import { V1_resolveBinding } from './V1_DSL_ExternalFormat_GraphBuilderHelper.js';
 import { INTERNAL__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnresolvedSetImplementation.js';

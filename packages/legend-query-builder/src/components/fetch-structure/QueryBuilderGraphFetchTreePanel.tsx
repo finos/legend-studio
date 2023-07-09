@@ -77,7 +77,7 @@ import {
 import { QueryBuilderTextEditorMode } from '../../stores/QueryBuilderTextEditorState.js';
 import {
   type PackageableElement,
-  Binding,
+  type Binding,
   Package,
   getDescendantsOfPackage,
 } from '@finos/legend-graph';
@@ -456,9 +456,8 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
 
     // Retrieve all bindings whose packageableElementIncludes contain the root class of main graph fetch tree
     const compatibleBindings =
-      graphFetchState.queryBuilderState.graphManagerState.usableStores
-        .filter(filterByType(Binding))
-        .filter((b) => {
+      graphFetchState.queryBuilderState.graphManagerState.usableBindings.filter(
+        (b) => {
           const elements = b.modelUnit.packageableElementIncludes.map(
             (p) => p.value,
           );
@@ -468,7 +467,8 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
             .flat()
             .concat(elements.filter((e) => !(e instanceof Package)))
             .includes(treeData.tree.class.value);
-        });
+        },
+      );
 
     const onNodeSelect = (node: QueryBuilderGraphFetchTreeNodeData): void => {
       if (node.childrenIds.length) {
