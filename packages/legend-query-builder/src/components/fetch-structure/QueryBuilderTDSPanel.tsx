@@ -936,6 +936,7 @@ export const QueryBuilderTDSPanel = observer(
     const applicationStore = useApplicationStore();
     const { tdsState } = props;
     const projectionColumns = tdsState.projectionColumns;
+    const isEmpty = tdsState.projectionColumns.length === 0;
     const [
       currentRearrangeDraggedColumnIndex,
       setCurrentRearrangeDraggedColumnIndex,
@@ -1054,6 +1055,9 @@ export const QueryBuilderTDSPanel = observer(
       );
     }, [applicationStore, tdsState]);
 
+    const addProjectionRef = useRef<HTMLInputElement>(null);
+    dropTargetConnector(addProjectionRef);
+
     return (
       <PanelContent>
         <div className="query-builder__projection__toolbar">
@@ -1067,11 +1071,11 @@ export const QueryBuilderTDSPanel = observer(
           </button>
           <button
             className="panel__header__action"
-            disabled={tdsState.projectionColumns.length < 1}
+            disabled={isEmpty}
             onClick={clearAllProjectionColumns}
             tabIndex={-1}
             title={
-              tdsState.projectionColumns.length < 1
+              isEmpty
                 ? 'No projection columns to clear'
                 : 'Clear all projection columns'
             }
@@ -1089,8 +1093,8 @@ export const QueryBuilderTDSPanel = observer(
         </div>
         <div className="query-builder__projection__content">
           <PanelDropZone
-            isDragOver={isDragOver}
-            isDroppable={isDroppable}
+            isDragOver={isDragOver && isEmpty}
+            isDroppable={isDroppable && isEmpty}
             dropTargetConnector={dropTargetConnector}
           >
             {!projectionColumns.length && (
@@ -1136,6 +1140,21 @@ export const QueryBuilderTDSPanel = observer(
                     />
                   ))}
                 </div>
+              </div>
+            )}
+            {isDroppable && !isEmpty && (
+              <div
+                ref={addProjectionRef}
+                className="query-builder-filter-tree__free-drop-zone__container"
+              >
+                <PanelEntryDropZonePlaceholder
+                  isDragOver={isDragOver}
+                  isDroppable={isDroppable}
+                  className="query-builder-filter-tree__free-drop-zone"
+                  label="Add a projection column"
+                >
+                  <></>
+                </PanelEntryDropZonePlaceholder>
               </div>
             )}
             <QueryResultModifierModal tdsState={tdsState} />
