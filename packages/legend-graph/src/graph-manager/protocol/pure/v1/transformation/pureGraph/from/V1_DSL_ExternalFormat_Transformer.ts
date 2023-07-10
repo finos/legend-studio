@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { V1_ModelUnit } from '../../../model/packageableElements/externalFormat/binding/V1_DSL_ExternalFormat_ModelUnit.js';
-import type { ModelUnit } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_ModelUnit.js';
+import { V1_ModelUnit } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_ModelUnit.js';
+import type { ModelUnit } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import { PackageableElementReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 
 export const V1_transformModelUnit = (metamodel: ModelUnit): V1_ModelUnit => {

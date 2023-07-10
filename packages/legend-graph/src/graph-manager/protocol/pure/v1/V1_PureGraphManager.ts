@@ -256,7 +256,7 @@ import type {
 import { CompilationWarning } from '../../../action/compilation/CompilationWarning.js';
 import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
-import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_ModelUnit.js';
+import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import { V1_LambdaReturnTypeInput } from './engine/compilation/V1_LambdaReturnType.js';
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';

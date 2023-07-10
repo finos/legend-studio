@@ -78,7 +78,7 @@ import type {
   TextCompilationResult,
 } from './action/compilation/CompilationResult.js';
 import type { ParameterValue } from '../DSL_Service_Exports.js';
-import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_ModelUnit.js';
+import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import type {
   DatasetEntitlementReport,
   DatasetSpecification,

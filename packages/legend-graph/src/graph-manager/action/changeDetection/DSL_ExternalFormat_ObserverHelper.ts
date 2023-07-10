@@ -15,17 +15,22 @@
  */
 
 import { computed, makeObservable, observable, override } from 'mobx';
+import type { ExternalFormatConnection } from '../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
 import type { UrlStream } from '../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
 import type { Schema } from '../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
 import type { SchemaSet } from '../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import type { Binding } from '../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
-import type { BindingTransformer } from '../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_BindingTransformer.js';
-import type { ModelUnit } from '../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_ModelUnit.js';
+import type { Binding } from '../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+import type { BindingTransformer } from '../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
+import type { ModelUnit } from '../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import {
   observe_PackageableElementReference,
   skipObserved,
   observe_Abstract_PackageableElement,
 } from './CoreObserverHelper.js';
+import {
+  observe_Abstract_Connection,
+  observe_Abstract_Store,
+} from './DSL_Mapping_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -49,7 +54,7 @@ export const observe_ModelUnit = skipObserved(
 );
 
 export const observe_Binding = skipObserved((metamodel: Binding): Binding => {
-  observe_Abstract_PackageableElement(metamodel);
+  observe_Abstract_Store(metamodel);
 
   makeObservable<Binding, '_elementHashCode'>(metamodel, {
     schemaSet: observable,
@@ -90,6 +95,21 @@ export const observe_UrlStream = skipObserved(
       url: observable,
       hashCode: computed,
     });
+
+    return metamodel;
+  },
+);
+
+export const observe_ExternalFormatConnection = skipObserved(
+  (metamodel: ExternalFormatConnection): ExternalFormatConnection => {
+    observe_Abstract_Connection(metamodel);
+
+    makeObservable(metamodel, {
+      externalSource: observable,
+      hashCode: computed,
+    });
+
+    observe_UrlStream(metamodel.externalSource);
 
     return metamodel;
   },

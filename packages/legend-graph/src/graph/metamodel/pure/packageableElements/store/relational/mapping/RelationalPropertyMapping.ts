@@ -24,7 +24,7 @@ import {
   PropertyMapping,
 } from '../../../mapping/PropertyMapping.js';
 import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement.js';
-import type { BindingTransformer } from '../../../externalFormat/binding/DSL_ExternalFormat_BindingTransformer.js';
+import type { BindingTransformer } from '../../../externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
 import type { EnumerationMappingReference } from '../../../mapping/EnumerationMappingReference.js';
 
 export class RelationalPropertyMapping

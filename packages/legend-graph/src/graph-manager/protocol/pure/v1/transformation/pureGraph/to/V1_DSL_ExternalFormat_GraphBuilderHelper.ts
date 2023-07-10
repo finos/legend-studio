@@ -20,7 +20,7 @@ import {
 } from '../../../../../../helpers/DSL_ExternalFormat_GraphManagerHelper.js';
 import type { PackageableElementImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import type { SchemaSet } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import type { Binding } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
+import type { Binding } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
 
 export const V1_resolveSchemaSet = (

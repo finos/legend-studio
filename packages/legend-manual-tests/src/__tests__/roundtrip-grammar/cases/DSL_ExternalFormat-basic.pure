@@ -49,4 +49,21 @@ Runtime test::runtime
   [
     test::trade::SelfMapping
   ];
+  connections:
+  [
+    test::gen::TestBinding:
+    [
+      c1:
+      #{
+        ExternalFormatConnection
+        {
+          store: test::gen::TestBinding;
+          source: UrlStream
+          {
+            url: 'executor:default';
+          };
+        }
+      }#
+    ]
+  ];
 }
