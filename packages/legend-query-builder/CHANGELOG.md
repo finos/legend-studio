@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.1.8
+
+### Patch Changes
+
+- [#2415](https://github.com/finos/legend-studio/pull/2415) [`38e28d697`](https://github.com/finos/legend-studio/commit/38e28d6979fccaca4fd9b0bc8d371a110e623a49) ([@gayathrir11](https://github.com/gayathrir11)) - Fix processing of calendar function with nested date columns.
+
 ## 4.1.7
 
 ## 4.1.6
