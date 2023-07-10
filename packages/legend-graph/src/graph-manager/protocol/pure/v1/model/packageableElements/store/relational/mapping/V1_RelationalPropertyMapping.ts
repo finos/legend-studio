@@ -24,7 +24,7 @@ import {
   V1_PropertyMapping,
 } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
 import type { V1_RawRelationalOperationElement } from '../model/V1_RawRelationalOperationElement.js';
-import type { V1_BindingTransformer } from '../../../externalFormat/binding/V1_DSL_ExternalFormat_BindingTransformer.js';
+import type { V1_BindingTransformer } from '../../../externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 
 export class V1_RelationalPropertyMapping
   extends V1_PropertyMapping

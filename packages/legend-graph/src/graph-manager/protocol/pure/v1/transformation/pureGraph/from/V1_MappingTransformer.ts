@@ -146,7 +146,7 @@ import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { InstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type { SubstituteStore } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
-import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/binding/V1_DSL_ExternalFormat_BindingTransformer.js';
+import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { MergeOperationSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 import type { INTERNAL__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnresolvedSetImplementation.js';

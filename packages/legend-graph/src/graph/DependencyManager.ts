@@ -43,7 +43,6 @@ import type { DataElement } from './metamodel/pure/packageableElements/data/Data
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { LegendSDLC, type GraphDataOrigin } from './GraphDataOrigin.js';
 import type { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
-import type { Binding } from './metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
 
 const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
 export const generateDependencyRootPackageName = (
@@ -193,10 +192,6 @@ export class DependencyManager {
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableStore(path),
   );
-  getOwnNullableBinding = buildDependencyElementGetter(
-    this,
-    (dep: BasicModel, path: string) => dep.getOwnNullableBinding(path),
-  );
   getOwnNullableMapping = buildDependencyElementGetter(
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableMapping(path),
@@ -305,10 +300,6 @@ export class DependencyManager {
 
   get executionEnvironments(): ExecutionEnvironmentInstance[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownExecutionEnvironments);
-  }
-
-  get bindings(): Binding[] {
-    return this.dependencyGraphs.flatMap((dep) => dep.ownBindings);
   }
 
   getExtensionElements<T extends PackageableElement>(

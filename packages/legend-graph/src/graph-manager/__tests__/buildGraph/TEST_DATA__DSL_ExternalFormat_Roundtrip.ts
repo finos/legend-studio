@@ -64,6 +64,23 @@ export const roundtripTestData = [
     classifierPath: 'meta::external::shared::format::binding::Binding',
   },
   {
+    path: 'anything::tConn',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'ExternalFormatConnection',
+        element: 'binding1',
+        externalSource: {
+          _type: 'urlStream',
+          url: 'test',
+        },
+      },
+      name: 'tConn',
+      package: 'anything',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: '__internal__::SectionIndex',
     content: {
       _type: 'sectionIndex',
@@ -93,6 +110,12 @@ export const roundtripTestData = [
           imports: ['anything'],
           elements: ['anything::binding1'],
           parserName: 'Binding',
+        },
+        {
+          _type: 'importAware',
+          imports: ['anything'],
+          elements: ['anything::tConn'],
+          parserName: 'Connection',
         },
       ],
     },

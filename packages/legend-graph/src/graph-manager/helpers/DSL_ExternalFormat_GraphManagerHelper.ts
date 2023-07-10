@@ -18,7 +18,7 @@ import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import type { BasicModel } from '../../graph/BasicModel.js';
 import type { PureModel } from '../../graph/PureModel.js';
 import { SchemaSet } from '../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import { Binding } from '../../graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
+import { Binding } from '../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
 
 export const getSchemaSet = (path: string, graph: PureModel): SchemaSet =>
   graph.getExtensionElement(path, SchemaSet, `Can't find schema set '${path}'`);
@@ -30,15 +30,11 @@ export const getOwnSchemaSet = (path: string, graph: BasicModel): SchemaSet =>
   );
 
 export const getBinding = (path: string, graph: PureModel): Binding =>
-  guaranteeType(
-    graph.getBinding(path),
-    Binding,
-    `Can't find binding '${path}'`,
-  );
+  guaranteeType(graph.getStore(path), Binding, `Can't find binding '${path}'`);
 
 export const getOwnBinding = (path: string, graph: BasicModel): Binding =>
   guaranteeType(
-    graph.getOwnNullableBinding(path),
+    graph.getOwnNullableStore(path),
     Binding,
     `Can't find binding '${path}'`,
   );

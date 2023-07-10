@@ -60,7 +60,6 @@ import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/s
 import type { PropertyOwner } from './metamodel/pure/packageableElements/domain/AbstractProperty.js';
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
-import type { Binding } from './metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -271,15 +270,6 @@ export class PureModel extends BasicModel {
       ...this.generationModel.ownStores,
     ];
   }
-  get bindings(): Binding[] {
-    return [
-      ...this.coreModel.ownBindings,
-      ...this.systemModel.ownBindings,
-      ...this.dependencyManager.bindings,
-      ...this.ownBindings,
-      ...this.generationModel.ownBindings,
-    ];
-  }
   get databases(): Database[] {
     return [
       ...this.coreModel.ownDatabases,
@@ -456,15 +446,6 @@ export class PureModel extends BasicModel {
         this.dependencyManager.getOwnNullableStore(path) ??
         this.systemModel.getOwnNullableStore(path) ??
         this.coreModel.getOwnNullableStore(path),
-      `Can't find store '${path}'`,
-    );
-  getBinding = (path: string): Binding =>
-    guaranteeNonNullable(
-      this.getOwnNullableBinding(path) ??
-        this.generationModel.getOwnNullableBinding(path) ??
-        this.dependencyManager.getOwnNullableBinding(path) ??
-        this.systemModel.getOwnNullableBinding(path) ??
-        this.coreModel.getOwnNullableBinding(path),
       `Can't find store '${path}'`,
     );
   getFlatDataStore = (path: string): FlatData =>

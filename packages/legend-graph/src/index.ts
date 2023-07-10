@@ -394,12 +394,13 @@ export { V1_externalFormatDataModelSchema } from './graph-manager/protocol/pure/
 
 // --------------------------------------------- DSL External Format --------------------------------------------------
 
-export { Binding } from './graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_Binding.js';
-export { ModelUnit } from './graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_ModelUnit.js';
+export { Binding } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+export { ModelUnit } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 export { SchemaSet } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 export { Schema as ExternalFormatSchema } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
+export { ExternalFormatConnection } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
 export { UrlStream } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
-export { BindingTransformer } from './graph/metamodel/pure/packageableElements/externalFormat/binding/DSL_ExternalFormat_BindingTransformer.js';
+export { BindingTransformer } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
 export * from './graph-manager/extensions/DSL_ExternalFormat_PureGraphManagerPlugin.js';
 // V1 protocols
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/V1_PackageableElement.js';

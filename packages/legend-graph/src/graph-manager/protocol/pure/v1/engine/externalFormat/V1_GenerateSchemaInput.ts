@@ -24,7 +24,7 @@ import {
   serialize,
 } from 'serializr';
 import { type PlainObject, SerializationFactory } from '@finos/legend-shared';
-import type { V1_ModelUnit } from '../../model/packageableElements/externalFormat/binding/V1_DSL_ExternalFormat_ModelUnit.js';
+import type { V1_ModelUnit } from '../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_ModelUnit.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 import { V1_modelUnitModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_DSL_ExternalFormat_ProtocolHelper.js';
