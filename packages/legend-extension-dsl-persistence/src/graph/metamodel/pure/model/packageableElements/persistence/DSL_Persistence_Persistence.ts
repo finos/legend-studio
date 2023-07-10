@@ -36,8 +36,8 @@ export class Persistence
   documentation!: string;
   trigger!: Trigger;
   service!: PackageableElementReference<Service>;
-  persister: Persister | undefined;
-  serviceOutputTargets: ServiceOutputTarget[] | undefined;
+  persister?: Persister | undefined;
+  serviceOutputTargets?: ServiceOutputTarget[] | undefined;
   notifier!: Notifier;
   tests: PersistenceTest[] = [];
 

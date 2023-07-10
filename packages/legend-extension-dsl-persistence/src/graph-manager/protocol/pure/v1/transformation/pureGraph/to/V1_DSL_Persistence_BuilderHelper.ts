@@ -764,6 +764,33 @@ export const V1_buildPersister = (
   throw new UnsupportedOperationError(`Can't build persister`, protocol);
 };
 
+/*************
+ * persistence
+ *************/
+
+export const V1_buildPersistence = (
+  protocol: V1_Persistence,
+  context: V1_GraphBuilderContext,
+): void => {
+  const path = V1_buildFullPath(protocol.package, protocol.name);
+  const persistence = getOwnPersistence(path, context.currentSubGraph);
+  persistence.documentation = guaranteeNonEmptyString(
+    protocol.documentation,
+    `Persistence 'documentation' field is missing or empty`,
+  );
+  persistence.notifier = V1_buildNotifier(protocol.notifier, context);
+  persistence.persister = V1_buildPersister(protocol.persister, context);
+  persistence.service = context.resolveService(protocol.service);
+  persistence.serviceOutputTargets = V1_buildServiceOutputTargets(
+    protocol.serviceOutputTargets,
+    context,
+  );
+  persistence.tests = protocol.tests
+    .map((test) => V1_buildAtomicTest(test, context))
+    .map((e) => guaranteeType(e, PersistenceTest));
+  persistence.trigger = V1_buildTrigger(protocol.trigger, context);
+};
+
 /************************
  * service output targets
  ***********************/
@@ -778,14 +805,15 @@ export const V1_buildServiceOutputTargets = (
   const serviceOutputTargets: ServiceOutputTarget[] = [];
   for (const v1ServiceOutputTarget of protocol!) {
     const serviceOutputTarget = new ServiceOutputTarget();
-    serviceOutputTarget.serviceOutput = V1_buildServiceOutput(
-      v1ServiceOutputTarget.serviceOutput,
-      context,
-    );
     serviceOutputTarget.persistenceTarget = V1_buildPersistenceTarget(
       v1ServiceOutputTarget.persistenceTarget,
       context,
     );
+    serviceOutputTarget.serviceOutput = V1_buildServiceOutput(
+      v1ServiceOutputTarget.serviceOutput,
+      context,
+    );
+
     serviceOutputTargets.push(serviceOutputTarget);
   }
   return serviceOutputTargets;
@@ -935,8 +963,8 @@ export const V1_buildDeleteIndicator = (
     return deleteIndicatorForGraphFetch;
   } else if (protocol instanceof V1_DeleteIndicatorForTds) {
     const deleteIndicatorForTds = new DeleteIndicatorForTds();
-    deleteIndicatorForTds.deleteValues = protocol.deleteValues;
     deleteIndicatorForTds.deleteField = protocol.deleteField;
+    deleteIndicatorForTds.deleteValues = protocol.deleteValues;
     return deleteIndicatorForTds;
   }
   throw new UnsupportedOperationError(`Can't build DeleteIndicator`, protocol);
@@ -971,7 +999,11 @@ export const V1_buildMaxVersion = (
     maxVeresionForTds.versionField = protocol.versionField;
     return maxVeresionForTds;
   }
-  throw new UnsupportedOperationError(`Can't build MaxVersio`, protocol);
+  throw new UnsupportedOperationError(
+    `Can't build MaxVersion
+  `,
+    protocol,
+  );
 };
 
 /********************
@@ -1129,12 +1161,13 @@ const V1_buildSourceDerivedDimension = (
 ): SourceDerivedDimension => {
   if (protocol instanceof V1_SourceDerivedTime) {
     const sourceDerivedTime = new SourceDerivedTime();
-    sourceDerivedTime.timeStart = protocol.timeStart;
-    sourceDerivedTime.timeEnd = protocol.timeEnd;
     sourceDerivedTime.sourceTimeFields = V1_buildSourceTimeFields(
       protocol.sourceTimeFields,
       context,
     );
+    sourceDerivedTime.timeEnd = protocol.timeEnd;
+    sourceDerivedTime.timeStart = protocol.timeStart;
+
     return sourceDerivedTime;
   }
   throw new UnsupportedOperationError(
@@ -1153,8 +1186,8 @@ const V1_buildSourceTimeFields = (
     return sourceTimeStart;
   } else if (protocol instanceof V1_SourceTimeStartAndEnd) {
     const sourceTimeStartAndEnd = new SourceTimeStartAndEnd();
-    sourceTimeStartAndEnd.startField = protocol.startField;
     sourceTimeStartAndEnd.endField = protocol.endField;
+    sourceTimeStartAndEnd.startField = protocol.startField;
     return sourceTimeStartAndEnd;
   }
   throw new UnsupportedOperationError(`Can't build SourceTimeFields`, protocol);
@@ -1246,30 +1279,3 @@ export const V1_buildTestBatch = (
     );
     return testBatch;
   });
-
-/*************
- * persistence
- *************/
-
-export const V1_buildPersistence = (
-  protocol: V1_Persistence,
-  context: V1_GraphBuilderContext,
-): void => {
-  const path = V1_buildFullPath(protocol.package, protocol.name);
-  const persistence = getOwnPersistence(path, context.currentSubGraph);
-  persistence.documentation = guaranteeNonEmptyString(
-    protocol.documentation,
-    `Persistence 'documentation' field is missing or empty`,
-  );
-  persistence.trigger = V1_buildTrigger(protocol.trigger, context);
-  persistence.service = context.resolveService(protocol.service);
-  persistence.persister = V1_buildPersister(protocol.persister, context);
-  persistence.serviceOutputTargets = V1_buildServiceOutputTargets(
-    protocol.serviceOutputTargets,
-    context,
-  );
-  persistence.notifier = V1_buildNotifier(protocol.notifier, context);
-  persistence.tests = protocol.tests
-    .map((test) => V1_buildAtomicTest(test, context))
-    .map((e) => guaranteeType(e, PersistenceTest));
-};

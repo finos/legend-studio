@@ -747,6 +747,31 @@ export const V1_transformPersister = (
   throw new UnsupportedOperationError(`Can't transform persister '${element}'`);
 };
 
+/**********
+ * persistence
+ **********/
+
+export const V1_transformPersistence = (
+  element: Persistence,
+  context: V1_GraphTransformerContext,
+): V1_Persistence => {
+  const protocol = new V1_Persistence();
+  V1_initPackageableElement(protocol, element);
+  protocol.documentation = element.documentation;
+  protocol.notifier = V1_transformNotifier(element.notifier, context);
+  protocol.persister = V1_transformPersister(element.persister, context);
+  protocol.service = element.service.valueForSerialization ?? '';
+  protocol.serviceOutputTargets = V1_transformServiceOutputTargets(
+    element.serviceOutputTargets,
+    context,
+  );
+  protocol.tests = element.tests.map((test) =>
+    guaranteeType(V1_transformAtomicTest(test, context), V1_PersistenceTest),
+  );
+  protocol.trigger = V1_transformTrigger(element.trigger, context);
+  return protocol;
+};
+
 /************************
  * service output targets
  ***********************/
@@ -759,14 +784,14 @@ export const V1_transformServiceOutputTargets = (
     return element;
   }
   const protocol: V1_ServiceOutputTarget[] = [];
-  for (const v1ServiceOutputTarget of element!) {
+  for (const v1ServiceOutputTarget of element) {
     const serviceOutputTarget = new V1_ServiceOutputTarget();
-    serviceOutputTarget.serviceOutput = V1_transformServiceOutput(
-      v1ServiceOutputTarget.serviceOutput,
-      context,
-    );
     serviceOutputTarget.persistenceTarget = V1_transformPersistenceTarget(
       v1ServiceOutputTarget.persistenceTarget,
+      context,
+    );
+    serviceOutputTarget.serviceOutput = V1_transformServiceOutput(
+      v1ServiceOutputTarget.serviceOutput,
       context,
     );
     protocol.push(serviceOutputTarget);
@@ -921,8 +946,8 @@ export const V1_transformDeleteIndicator = (
     return protocol;
   } else if (element instanceof DeleteIndicatorForTds) {
     const protocol = new V1_DeleteIndicatorForTds();
-    protocol.deleteValues = element.deleteValues;
     protocol.deleteField = element.deleteField;
+    protocol.deleteValues = element.deleteValues;
     return protocol;
   }
   throw new UnsupportedOperationError(
@@ -1123,12 +1148,12 @@ const V1_transformSourceDerivedDimension = (
 ): V1_SourceDerivedDimension => {
   if (element instanceof SourceDerivedTime) {
     const sourceDerivedTime = new V1_SourceDerivedTime();
-    sourceDerivedTime.timeStart = element.timeStart;
-    sourceDerivedTime.timeEnd = element.timeEnd;
     sourceDerivedTime.sourceTimeFields = V1_transformSourceTimeFields(
       element.sourceTimeFields,
       context,
     );
+    sourceDerivedTime.timeEnd = element.timeEnd;
+    sourceDerivedTime.timeStart = element.timeStart;
     return sourceDerivedTime;
   }
   throw new UnsupportedOperationError(
@@ -1147,8 +1172,8 @@ const V1_transformSourceTimeFields = (
     return protocol;
   } else if (element instanceof SourceTimeStartAndEnd) {
     const protocol = new V1_SourceTimeStartAndEnd();
-    protocol.startField = element.startField;
     protocol.endField = element.endField;
+    protocol.startField = element.startField;
     return protocol;
   }
   throw new UnsupportedOperationError(
@@ -1227,29 +1252,4 @@ export const V1_transformPersistenceTestBatch = (
     (assertion: TestAssertion) => V1_transformTestAssertion(assertion),
   );
   return persistenceTestBatch;
-};
-
-/**********
- * persistence
- **********/
-
-export const V1_transformPersistence = (
-  element: Persistence,
-  context: V1_GraphTransformerContext,
-): V1_Persistence => {
-  const protocol = new V1_Persistence();
-  V1_initPackageableElement(protocol, element);
-  protocol.documentation = element.documentation;
-  protocol.trigger = V1_transformTrigger(element.trigger, context);
-  protocol.service = element.service.valueForSerialization ?? '';
-  protocol.persister = V1_transformPersister(element.persister, context);
-  protocol.serviceOutputTargets = V1_transformServiceOutputTargets(
-    element.serviceOutputTargets,
-    context,
-  );
-  protocol.notifier = V1_transformNotifier(element.notifier, context);
-  protocol.tests = element.tests.map((test) =>
-    guaranteeType(V1_transformAtomicTest(test, context), V1_PersistenceTest),
-  );
-  return protocol;
 };

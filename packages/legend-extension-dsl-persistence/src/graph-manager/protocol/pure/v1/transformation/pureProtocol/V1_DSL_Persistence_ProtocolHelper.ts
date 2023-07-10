@@ -970,6 +970,226 @@ export const V1_deserializeTargetShape = (
   }
 };
 
+/**********
+ * persister
+ **********/
+
+enum V1_PersisterType {
+  STREAMING_PERSISTER = 'streamingPersister',
+  BATCH_PERSISTER = 'batchPersister',
+}
+
+const V1_streamingPersisterModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_StreamingPersister> =>
+  createModelSchema(V1_StreamingPersister, {
+    _type: usingConstantValueSchema(V1_PersisterType.STREAMING_PERSISTER),
+    sink: custom(
+      (val) => V1_serializeSink(val, plugins),
+      (val) => V1_deserializeSink(val, plugins),
+    ),
+  });
+
+const V1_batchPersisterModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_BatchPersister> =>
+  createModelSchema(V1_BatchPersister, {
+    _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
+    ingestMode: custom(
+      (val) => V1_serializeIngestMode(val),
+      (val) => V1_deserializeIngestMode(val),
+    ),
+    sink: custom(
+      (val) => V1_serializeSink(val, plugins),
+      (val) => V1_deserializeSink(val, plugins),
+    ),
+    targetShape: custom(
+      (val) => V1_serializeTargetShape(val),
+      (val) => V1_deserializeTargetShape(val),
+    ),
+  });
+
+export const V1_serializePersister = (
+  protocol: V1_Persister,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Persister> => {
+  if (protocol instanceof V1_StreamingPersister) {
+    return serialize(V1_streamingPersisterModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_BatchPersister) {
+    return serialize(V1_batchPersisterModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize persister`, protocol);
+};
+
+export const V1_deserializePersister = (
+  json: PlainObject<V1_Persister>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Persister => {
+  switch (json._type) {
+    case V1_PersisterType.STREAMING_PERSISTER:
+      return deserialize(V1_streamingPersisterModelSchema(plugins), json);
+    case V1_PersisterType.BATCH_PERSISTER:
+      return deserialize(V1_batchPersisterModelSchema(plugins), json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize persister '${json._type}'`,
+      );
+  }
+};
+
+/**********
+ * trigger
+ **********/
+
+export enum V1_TriggerType {
+  MANUAL_TRIGGER = 'manualTrigger',
+  CRON_TRIGGER = 'cronTrigger',
+}
+
+export const V1_manualTriggerModelSchema = createModelSchema(V1_ManualTrigger, {
+  _type: usingConstantValueSchema(V1_TriggerType.MANUAL_TRIGGER),
+});
+
+export const V1_cronTriggerModelSchema = createModelSchema(V1_CronTrigger, {
+  _type: usingConstantValueSchema(V1_TriggerType.CRON_TRIGGER),
+  minutes: primitive(),
+  hours: primitive(),
+  dayOfMonth: primitive(),
+  month: primitive(),
+  dayOfWeek: primitive(),
+});
+
+export const V1_serializeTrigger = (
+  protocol: V1_Trigger,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Trigger> => {
+  const extraTriggerProtocolSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Persistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTriggerProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraTriggerProtocolSerializers) {
+    const triggerProtocolJson = serializer(protocol);
+    if (triggerProtocolJson) {
+      return triggerProtocolJson;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize trigger: no compatible serializer available from plugins`,
+    protocol,
+  );
+};
+
+export const V1_deserializeTrigger = (
+  json: PlainObject<V1_Trigger>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Trigger => {
+  const extraTriggerProtocolDeserializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Persistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTriggerProtocolDeserializers?.() ?? [],
+  );
+  for (const deserializer of extraTriggerProtocolDeserializers) {
+    const triggerProtocol = deserializer(json);
+    if (triggerProtocol) {
+      return triggerProtocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize trigger of type '${json._type}': no compatible deserializer available from plugins`,
+  );
+};
+
+/**********
+ * test
+ **********/
+
+export enum V1_AtomicTestType {
+  PERSISTENCE_TEST = 'test',
+}
+
+export const V1_persistenceConnectionTestDataModelSchema = createModelSchema(
+  V1_ConnectionTestData,
+  {
+    data: usingModelSchema(V1_externalFormatDataModelSchema),
+  },
+);
+
+export const V1_persistenceTestDataModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PersistenceTestData> =>
+  createModelSchema(V1_PersistenceTestData, {
+    connection: usingModelSchema(V1_persistenceConnectionTestDataModelSchema),
+  });
+
+export const V1_persistenceTestBatchModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PersistenceTestBatch> =>
+  createModelSchema(V1_PersistenceTestBatch, {
+    assertions: customList(
+      V1_serializeTestAssertion,
+      V1_deserializeTestAssertion,
+    ),
+    batchId: primitive(),
+    id: primitive(),
+    testData: usingModelSchema(V1_persistenceTestDataModelSchema(plugins)),
+  });
+
+export const V1_persistenceTestModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PersistenceTest> =>
+  createModelSchema(V1_PersistenceTest, {
+    _type: usingConstantValueSchema(V1_AtomicTestType.PERSISTENCE_TEST),
+    id: primitive(),
+    isTestDataFromServiceOutput: primitive(),
+    testBatches: customListWithSchema(
+      V1_persistenceTestBatchModelSchema(plugins),
+    ),
+  });
+
+/**********
+ * persistence
+ **********/
+
+export const V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE = 'persistence';
+
+export const V1_persistenceModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_Persistence> =>
+  createModelSchema(V1_Persistence, {
+    _type: usingConstantValueSchema(V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE),
+    documentation: primitive(),
+    name: primitive(),
+    notifier: custom(
+      (val) => serialize(V1_notifierModelSchema, val),
+      (val) => deserialize(V1_notifierModelSchema, val),
+    ),
+    package: primitive(),
+    persister: optionalCustom(
+      (val) => V1_serializePersister(val, plugins),
+      (val) => V1_deserializePersister(val, plugins),
+    ),
+    service: primitive(),
+    serviceOutputTargets: optionalCustomList(
+      (val: V1_ServiceOutputTarget) =>
+        V1_serializeServiceOutputTarget(val, plugins),
+      (val) => V1_deserializeServiceOutputTarget(val, plugins),
+    ),
+    tests: optionalCustomList(
+      (value: V1_AtomicTest) => V1_serializeAtomicTest(value, plugins),
+      (value) => V1_deserializeAtomicTest(value, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
+    trigger: custom(
+      (val) => V1_serializeTrigger(val, plugins),
+      (val) => V1_deserializeTrigger(val, plugins),
+    ),
+  });
+
 /************************
  * service output target
  ***********************/
@@ -978,13 +1198,13 @@ const V1_serviceOutputTargetModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ServiceOutputTarget> => {
   return createModelSchema(V1_ServiceOutputTarget, {
-    serviceOutput: custom(
-      (val) => V1_serializeServiceOutput(val, plugins),
-      (val) => V1_deserializeServiceOutput(val, plugins),
-    ),
     persistenceTarget: custom(
       (val) => V1_serializePersistentTarget(val, plugins),
       (val) => V1_deserializePersistentTarget(val, plugins),
+    ),
+    serviceOutput: custom(
+      (val) => V1_serializeServiceOutput(val, plugins),
+      (val) => V1_deserializeServiceOutput(val, plugins),
     ),
   });
 };
@@ -1154,8 +1374,8 @@ export const V1_deleteIndicatorForTdsModelSchema = (
     _type: usingConstantValueSchema(
       V1_ActionIndicatorType.DELETE_INDICATOR_FOR_TDS,
     ),
-    deleteValues: list(primitive()),
     deleteField: primitive(),
+    deleteValues: list(primitive()),
   });
 
 export const V1_noActionIndicatorModelSchema = (
@@ -1456,8 +1676,8 @@ export const V1_relationalPersistenceTargetModelSchema = (
     _type: usingConstantValueSchema(
       V1_PersistentTargetType.RELATIONAL_PERSISTENCE_TARGET,
     ),
-    table: primitive(),
     database: primitive(),
+    table: primitive(),
     temporality: custom(
       (val) => V1_serializeTemporality(val, plugins),
       (val) => V1_deserializeTemporality(val, plugins),
@@ -1582,12 +1802,12 @@ export const V1_sourceDerivedTimeModelSchema = (
     _type: usingConstantValueSchema(
       V1_SourceDerivedDimensionType.SOURCE_DERIVED_TIME,
     ),
-    timeStart: primitive(),
-    timeEnd: primitive(),
     sourceTimeFields: custom(
       (val) => V1_serializeSourceTimeFields(val, plugins),
       (val) => V1_deserializeSourceTimeFields(val, plugins),
     ),
+    timeEnd: primitive(),
+    timeStart: primitive(),
   });
 
 export const V1_serializeSourceDerivedDimension = (
@@ -1636,8 +1856,8 @@ export const V1_sourceTimeStartAndEndModelSchema = (
     _type: usingConstantValueSchema(
       V1_SourceTimeFieldsType.SOURCE_TIME_START_AND_END,
     ),
-    startField: primitive(),
     endField: primitive(),
+    startField: primitive(),
   });
 
 export const V1_serializeSourceTimeFields = (
@@ -1900,223 +2120,3 @@ export const V1_deserializeAuditingV2 = (
   }
   throw new UnsupportedOperationError(`Can't deserialize AuditingV2`, json);
 };
-
-/**********
- * persister
- **********/
-
-enum V1_PersisterType {
-  STREAMING_PERSISTER = 'streamingPersister',
-  BATCH_PERSISTER = 'batchPersister',
-}
-
-const V1_streamingPersisterModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_StreamingPersister> =>
-  createModelSchema(V1_StreamingPersister, {
-    _type: usingConstantValueSchema(V1_PersisterType.STREAMING_PERSISTER),
-    sink: custom(
-      (val) => V1_serializeSink(val, plugins),
-      (val) => V1_deserializeSink(val, plugins),
-    ),
-  });
-
-const V1_batchPersisterModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_BatchPersister> =>
-  createModelSchema(V1_BatchPersister, {
-    _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
-    ingestMode: custom(
-      (val) => V1_serializeIngestMode(val),
-      (val) => V1_deserializeIngestMode(val),
-    ),
-    sink: custom(
-      (val) => V1_serializeSink(val, plugins),
-      (val) => V1_deserializeSink(val, plugins),
-    ),
-    targetShape: custom(
-      (val) => V1_serializeTargetShape(val),
-      (val) => V1_deserializeTargetShape(val),
-    ),
-  });
-
-export const V1_serializePersister = (
-  protocol: V1_Persister,
-  plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_Persister> => {
-  if (protocol instanceof V1_StreamingPersister) {
-    return serialize(V1_streamingPersisterModelSchema(plugins), protocol);
-  } else if (protocol instanceof V1_BatchPersister) {
-    return serialize(V1_batchPersisterModelSchema(plugins), protocol);
-  }
-  throw new UnsupportedOperationError(`Can't serialize persister`, protocol);
-};
-
-export const V1_deserializePersister = (
-  json: PlainObject<V1_Persister>,
-  plugins: PureProtocolProcessorPlugin[],
-): V1_Persister => {
-  switch (json._type) {
-    case V1_PersisterType.STREAMING_PERSISTER:
-      return deserialize(V1_streamingPersisterModelSchema(plugins), json);
-    case V1_PersisterType.BATCH_PERSISTER:
-      return deserialize(V1_batchPersisterModelSchema(plugins), json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize persister '${json._type}'`,
-      );
-  }
-};
-
-/**********
- * trigger
- **********/
-
-export enum V1_TriggerType {
-  MANUAL_TRIGGER = 'manualTrigger',
-  CRON_TRIGGER = 'cronTrigger',
-}
-
-export const V1_manualTriggerModelSchema = createModelSchema(V1_ManualTrigger, {
-  _type: usingConstantValueSchema(V1_TriggerType.MANUAL_TRIGGER),
-});
-
-export const V1_cronTriggerModelSchema = createModelSchema(V1_CronTrigger, {
-  _type: usingConstantValueSchema(V1_TriggerType.CRON_TRIGGER),
-  minutes: primitive(),
-  hours: primitive(),
-  dayOfMonth: primitive(),
-  month: primitive(),
-  dayOfWeek: primitive(),
-});
-
-export const V1_serializeTrigger = (
-  protocol: V1_Trigger,
-  plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_Trigger> => {
-  const extraTriggerProtocolSerializers = plugins.flatMap(
-    (plugin) =>
-      (
-        plugin as DSL_Persistence_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraTriggerProtocolSerializers?.() ?? [],
-  );
-  for (const serializer of extraTriggerProtocolSerializers) {
-    const triggerProtocolJson = serializer(protocol);
-    if (triggerProtocolJson) {
-      return triggerProtocolJson;
-    }
-  }
-  throw new UnsupportedOperationError(
-    `Can't serialize trigger: no compatible serializer available from plugins`,
-    protocol,
-  );
-};
-
-export const V1_deserializeTrigger = (
-  json: PlainObject<V1_Trigger>,
-  plugins: PureProtocolProcessorPlugin[],
-): V1_Trigger => {
-  const extraTriggerProtocolDeserializers = plugins.flatMap(
-    (plugin) =>
-      (
-        plugin as DSL_Persistence_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraTriggerProtocolDeserializers?.() ?? [],
-  );
-  for (const deserializer of extraTriggerProtocolDeserializers) {
-    const triggerProtocol = deserializer(json);
-    if (triggerProtocol) {
-      return triggerProtocol;
-    }
-  }
-  throw new UnsupportedOperationError(
-    `Can't deserialize trigger of type '${json._type}': no compatible deserializer available from plugins`,
-  );
-};
-
-/**********
- * test
- **********/
-
-export enum V1_AtomicTestType {
-  PERSISTENCE_TEST = 'test',
-}
-
-export const V1_persistenceConnectionTestDataModelSchema = createModelSchema(
-  V1_ConnectionTestData,
-  {
-    data: usingModelSchema(V1_externalFormatDataModelSchema),
-  },
-);
-
-export const V1_persistenceTestDataModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_PersistenceTestData> =>
-  createModelSchema(V1_PersistenceTestData, {
-    connection: usingModelSchema(V1_persistenceConnectionTestDataModelSchema),
-  });
-
-export const V1_persistenceTestBatchModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_PersistenceTestBatch> =>
-  createModelSchema(V1_PersistenceTestBatch, {
-    assertions: customList(
-      V1_serializeTestAssertion,
-      V1_deserializeTestAssertion,
-    ),
-    batchId: primitive(),
-    id: primitive(),
-    testData: usingModelSchema(V1_persistenceTestDataModelSchema(plugins)),
-  });
-
-export const V1_persistenceTestModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_PersistenceTest> =>
-  createModelSchema(V1_PersistenceTest, {
-    _type: usingConstantValueSchema(V1_AtomicTestType.PERSISTENCE_TEST),
-    id: primitive(),
-    isTestDataFromServiceOutput: primitive(),
-    testBatches: customListWithSchema(
-      V1_persistenceTestBatchModelSchema(plugins),
-    ),
-  });
-
-/**********
- * persistence
- **********/
-
-export const V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE = 'persistence';
-
-export const V1_persistenceModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_Persistence> =>
-  createModelSchema(V1_Persistence, {
-    _type: usingConstantValueSchema(V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE),
-    documentation: primitive(),
-    name: primitive(),
-    notifier: custom(
-      (val) => serialize(V1_notifierModelSchema, val),
-      (val) => deserialize(V1_notifierModelSchema, val),
-    ),
-    package: primitive(),
-    persister: optionalCustom(
-      (val) => V1_serializePersister(val, plugins),
-      (val) => V1_deserializePersister(val, plugins),
-    ),
-    serviceOutputTargets: optionalCustomList(
-      (val: V1_ServiceOutputTarget) =>
-        V1_serializeServiceOutputTarget(val, plugins),
-      (val) => V1_deserializeServiceOutputTarget(val, plugins),
-    ),
-    service: primitive(),
-    tests: optionalCustomList(
-      (value: V1_AtomicTest) => V1_serializeAtomicTest(value, plugins),
-      (value) => V1_deserializeAtomicTest(value, plugins),
-      {
-        INTERNAL__forceReturnEmptyInTest: true,
-      },
-    ),
-    trigger: custom(
-      (val) => V1_serializeTrigger(val, plugins),
-      (val) => V1_deserializeTrigger(val, plugins),
-    ),
-  });
