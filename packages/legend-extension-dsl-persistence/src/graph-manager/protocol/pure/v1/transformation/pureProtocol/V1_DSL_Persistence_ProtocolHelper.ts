@@ -1837,8 +1837,8 @@ export const V1_deserializeSourceDerivedDimension = (
 };
 
 export enum V1_SourceTimeFieldsType {
-  SOURCE_TIME_START = 'sourceTimeStartAndEnd',
-  SOURCE_TIME_START_AND_END = 'sourceTimeStart',
+  SOURCE_TIME_START = 'sourceTimeStart',
+  SOURCE_TIME_START_AND_END = 'sourceTimeStartAndEnd',
 }
 
 export const V1_sourceTimeStartModelSchema = (
@@ -2021,8 +2021,8 @@ export const V1_deserializeUpdatesHandling = (
 
 export enum V1_AppendStrategyType {
   ALLOW_DUPLICATES = 'allowDuplicates',
-  FAIL_ON_DUPLICATES = 'FailOnDuplicates',
-  FILTER_DUPLICATES = 'FilterDuplicates',
+  FAIL_ON_DUPLICATES = 'failOnDuplicates',
+  FILTER_DUPLICATES = 'filterDuplicates',
 }
 
 export const V1_failOnDuplicatesModelSchema = (
