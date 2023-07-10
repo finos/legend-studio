@@ -1,24 +1,5 @@
 [
   {
-    "path": "test::temp",
-    "content": {
-      "_type": "class",
-      "name": "temp",
-      "package": "test",
-      "properties": [
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "id",
-          "type": "Number"
-        }
-      ]
-    },
-    "classifierPath": "meta::pure::metamodel::type::Class"
-  },
-  {
     "path": "test::Employee",
     "content": {
       "_type": "class",
@@ -72,6 +53,41 @@
           },
           "name": "endDate",
           "type": "Date"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firm",
+          "type": "test::Firm"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "test::Firm",
+    "content": {
+      "_type": "class",
+      "name": "Firm",
+      "package": "test",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Number"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "openingDate",
+          "type": "StrictDate"
         }
       ]
     },
@@ -92,7 +108,79 @@
               "parameters": [
                 {
                   "_type": "packageableElementPtr",
-                  "fullPath": "test::Employee"
+                  "fullPath": "test::Employee",
+                  "sourceInformation": {
+                    "endColumn": 17,
+                    "endLine": 104,
+                    "sourceId": "",
+                    "startColumn": 4,
+                    "startLine": 104
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 23,
+                "endLine": 104,
+                "sourceId": "",
+                "startColumn": 18,
+                "startLine": 104
+              }
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "sourceInformation": {
+                "endColumn": 3,
+                "endLine": 107,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 105
+              },
+              "values": [
+                {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "p",
+                          "sourceInformation": {
+                            "endColumn": 8,
+                            "endLine": 106,
+                            "sourceId": "",
+                            "startColumn": 7,
+                            "startLine": 106
+                          }
+                        }
+                      ],
+                      "property": "hireDate",
+                      "sourceInformation": {
+                        "endColumn": 17,
+                        "endLine": 106,
+                        "sourceId": "",
+                        "startColumn": 10,
+                        "startLine": 106
+                      }
+                    }
+                  ],
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "p"
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 17,
+                    "endLine": 106,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 106
+                  }
                 }
               ]
             },
@@ -102,35 +190,12 @@
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "values": [
-                {
-                  "_type": "lambda",
-                  "body": [
-                    {
-                      "_type": "property",
-                      "property": "hireDate",
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "name": "p"
-                        }
-                      ]
-                    }
-                  ],
-                  "parameters": [
-                    {
-                      "_type": "var",
-                      "name": "p"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "_type": "collection",
-              "multiplicity": {
-                "lowerBound": 1,
-                "upperBound": 1
+              "sourceInformation": {
+                "endColumn": 3,
+                "endLine": 117,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 108
               },
               "values": [
                 {
@@ -146,33 +211,82 @@
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "hireDate",
                               "parameters": [
                                 {
                                   "_type": "var",
-                                  "name": "p"
+                                  "name": "p",
+                                  "sourceInformation": {
+                                    "endColumn": 10,
+                                    "endLine": 110,
+                                    "sourceId": "",
+                                    "startColumn": 9,
+                                    "startLine": 110
+                                  }
                                 }
-                              ]
+                              ],
+                              "property": "hireDate",
+                              "sourceInformation": {
+                                "endColumn": 19,
+                                "endLine": 110,
+                                "sourceId": "",
+                                "startColumn": 12,
+                                "startLine": 110
+                              }
                             },
                             {
                               "_type": "string",
+                              "sourceInformation": {
+                                "endColumn": 12,
+                                "endLine": 111,
+                                "sourceId": "",
+                                "startColumn": 9,
+                                "startLine": 111
+                              },
                               "value": "NY"
                             },
                             {
                               "_type": "strictDate",
+                              "sourceInformation": {
+                                "endColumn": 19,
+                                "endLine": 112,
+                                "sourceId": "",
+                                "startColumn": 9,
+                                "startLine": 112
+                              },
                               "value": "2022-11-16"
                             },
                             {
                               "_type": "property",
-                              "property": "fteFactor",
                               "parameters": [
                                 {
                                   "_type": "var",
-                                  "name": "p"
+                                  "name": "p",
+                                  "sourceInformation": {
+                                    "endColumn": 10,
+                                    "endLine": 113,
+                                    "sourceId": "",
+                                    "startColumn": 9,
+                                    "startLine": 113
+                                  }
                                 }
-                              ]
+                              ],
+                              "property": "fteFactor",
+                              "sourceInformation": {
+                                "endColumn": 20,
+                                "endLine": 113,
+                                "sourceId": "",
+                                "startColumn": 12,
+                                "startLine": 113
+                              }
                             }
-                          ]
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 24,
+                            "endLine": 110,
+                            "sourceId": "",
+                            "startColumn": 22,
+                            "startLine": 110
+                          }
                         }
                       ],
                       "parameters": [
@@ -180,7 +294,14 @@
                           "_type": "var",
                           "name": "p"
                         }
-                      ]
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 7,
+                        "endLine": 114,
+                        "sourceId": "",
+                        "startColumn": 8,
+                        "startLine": 110
+                      }
                     },
                     {
                       "_type": "lambda",
@@ -191,9 +312,23 @@
                           "parameters": [
                             {
                               "_type": "var",
-                              "name": "y"
+                              "name": "y",
+                              "sourceInformation": {
+                                "endColumn": 10,
+                                "endLine": 115,
+                                "sourceId": "",
+                                "startColumn": 9,
+                                "startLine": 115
+                              }
                             }
-                          ]
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 15,
+                            "endLine": 115,
+                            "sourceId": "",
+                            "startColumn": 13,
+                            "startLine": 115
+                          }
                         }
                       ],
                       "parameters": [
@@ -201,9 +336,23 @@
                           "_type": "var",
                           "name": "y"
                         }
-                      ]
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 17,
+                        "endLine": 115,
+                        "sourceId": "",
+                        "startColumn": 8,
+                        "startLine": 115
+                      }
                     }
-                  ]
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 7,
+                    "endLine": 109,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 109
+                  }
                 }
               ]
             },
@@ -213,18 +362,46 @@
                 "lowerBound": 2,
                 "upperBound": 2
               },
+              "sourceInformation": {
+                "endColumn": 3,
+                "endLine": 121,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 118
+              },
               "values": [
                 {
                   "_type": "string",
+                  "sourceInformation": {
+                    "endColumn": 18,
+                    "endLine": 119,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 119
+                  },
                   "value": "includedDate"
                 },
                 {
                   "_type": "string",
+                  "sourceInformation": {
+                    "endColumn": 9,
+                    "endLine": 120,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 120
+                  },
                   "value": "ytd"
                 }
               ]
             }
-          ]
+          ],
+          "sourceInformation": {
+            "endColumn": 32,
+            "endLine": 104,
+            "sourceId": "",
+            "startColumn": 26,
+            "startLine": 104
+          }
         }
       ],
       "name": "testYtd__Any_MANY_",
@@ -336,6 +513,20 @@
                   "nullable": false,
                   "type": {
                     "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firmId",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "openingDate",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Date"
                   }
                 }
               ],
@@ -509,42 +700,108 @@
                 "tableAlias": "EmployeeTable"
               },
               "source": "emp"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Employee",
+                "property": "firm"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "test::store",
+                    "name": "JoinEmployeeToFirm"
+                  }
+                ]
+              },
+              "source": "emp",
+              "target": "test_temp"
             }
           ],
           "root": false
         },
         {
-          "_type": "pureInstance",
-          "class": "test::temp",
-          "propertyMappings": [
+          "_type": "relational",
+          "class": "test::Firm",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "test::store",
+            "mainTableDb": "test::store",
+            "schema": "default",
+            "table": "FirmTable"
+          },
+          "primaryKey": [
             {
-              "_type": "purePropertyMapping",
-              "explodeProperty": false,
-              "property": {
-                "class": "test::temp",
-                "property": "id"
+              "_type": "column",
+              "column": "firmName",
+              "table": {
+                "_type": "Table",
+                "database": "test::store",
+                "mainTableDb": "test::store",
+                "schema": "default",
+                "table": "FirmTable"
               },
-              "source": "",
-              "transform": {
-                "_type": "lambda",
-                "body": [
-                  {
-                    "_type": "property",
-                    "property": "id",
-                    "parameters": [
-                      {
-                        "_type": "var",
-                        "name": "src"
-                      }
-                    ]
-                  }
-                ],
-                "parameters": []
-              }
+              "tableAlias": "FirmTable"
+            },
+            {
+              "_type": "column",
+              "column": "employeeId",
+              "table": {
+                "_type": "Table",
+                "database": "test::store",
+                "mainTableDb": "test::store",
+                "schema": "default",
+                "table": "FirmTable"
+              },
+              "tableAlias": "FirmTable"
             }
           ],
-          "root": true,
-          "srcClass": "test::temp"
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Firm",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "firmId",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              },
+              "source": "test_Firm"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "test::Firm",
+                "property": "openingDate"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "openingDate",
+                "table": {
+                  "_type": "Table",
+                  "database": "test::store",
+                  "mainTableDb": "test::store",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              },
+              "source": "test_Firm"
+            }
+          ],
+          "root": true
         }
       ],
       "enumerationMappings": [],
@@ -608,13 +865,13 @@
                               "parameters": [
                                 {
                                   "_type": "property",
-                                  "property": "hireDate",
                                   "parameters": [
                                     {
                                       "_type": "var",
                                       "name": "x"
                                     }
-                                  ]
+                                  ],
+                                  "property": "hireDate"
                                 },
                                 {
                                   "_type": "string",
@@ -626,13 +883,13 @@
                                 },
                                 {
                                   "_type": "property",
-                                  "property": "fteFactor",
                                   "parameters": [
                                     {
                                       "_type": "var",
                                       "name": "x"
                                     }
-                                  ]
+                                  ],
+                                  "property": "fteFactor"
                                 }
                               ]
                             }

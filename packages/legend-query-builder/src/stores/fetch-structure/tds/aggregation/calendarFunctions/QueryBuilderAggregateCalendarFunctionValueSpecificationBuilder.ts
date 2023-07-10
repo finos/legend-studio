@@ -27,15 +27,18 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
   type INTERNAL__UnknownValueSpecification,
+  DerivedProperty,
 } from '@finos/legend-graph';
 import {
   guaranteeType,
   assertTrue,
   UnsupportedOperationError,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
 import { type QueryBuilderAggregateCalendarFunction } from '../QueryBuilderAggregateCalendarFunction.js';
 import { QUERY_BUILDER_CALENDAR_TYPE } from '../../../../../graph-manager/QueryBuilderConst.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 
 export const buildCalendarFunctionExpression = (
   calendarFunctionFullPath: string,
@@ -103,8 +106,39 @@ export const updateAggregateColumnState = (
         calendarFunctionFullPath,
       )}() with first parameter as property expression of type StrictDate`,
     );
+    let currentPropertyExpression: ValueSpecification = dateColumn;
+    while (currentPropertyExpression instanceof AbstractPropertyExpression) {
+      const propertyExpression = currentPropertyExpression;
+      currentPropertyExpression = guaranteeNonNullable(
+        currentPropertyExpression.parametersValues[0],
+      );
+      // here we just do a simple check to ensure that if we encounter derived properties
+      // the number of parameters and arguments provided match
+      if (propertyExpression.func.value instanceof DerivedProperty) {
+        assertTrue(
+          (Array.isArray(propertyExpression.func.value.parameters)
+            ? propertyExpression.func.value.parameters.length
+            : 0) ===
+            propertyExpression.parametersValues.length - 1,
+          `Can't process property expression: derived property '${propertyExpression.func.value.name}' expects number of provided arguments to match number of parameters`,
+        );
+      }
+      // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+      // $x.employees->subType(@Person)->subType(@Staff)
+      while (
+        currentPropertyExpression instanceof SimpleFunctionExpression &&
+        matchFunctionName(
+          currentPropertyExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+        )
+      ) {
+        currentPropertyExpression = guaranteeNonNullable(
+          currentPropertyExpression.parametersValues[0],
+        );
+      }
+    }
     const lambdaParameterName = guaranteeType(
-      dateColumn.parametersValues[0],
+      currentPropertyExpression,
       VariableExpression,
     ).name;
     calendarFunction.setLambdaParameterName(lambdaParameterName);

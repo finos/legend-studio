@@ -25,6 +25,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_Calendar,
   TEST_DATA__simpleDerivationWithCalendarAggregation,
   TEST_DATA__simpleProjectionWithCalendarAggregation,
+  TEST_DATA__simpleProjectionWithCalendarAggregationWithNestedDateColumn,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Calendar.js';
 import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
@@ -101,6 +102,81 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
         ?.func.value.name,
     ).toBe('hireDate');
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with calendar aggregation with nested date column',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA_SimpleCalendarModel,
+      stub_RawLambda(),
+      'test::mapping',
+      'test::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_Calendar,
+    );
+    const employeeClass =
+      queryBuilderState.graphManagerState.graph.getClass('test::Employee');
+    await act(async () => {
+      queryBuilderState.changeClass(employeeClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Employee'));
+    await waitFor(() => getAllByText(queryBuilderSetup, 'mapping'));
+    const treeData = guaranteeNonNullable(
+      queryBuilderState.explorerState.treeData,
+    );
+    const rootNode = guaranteeType(
+      treeData.nodes.get(treeData.rootIds[0] as string),
+      QueryBuilderExplorerTreeRootNodeData,
+    );
+
+    expect(rootNode.mappingData.mapped).toBe(true);
+
+    // simpleProjection
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithCalendarAggregationWithNestedDateColumn.parameters,
+          TEST_DATA__simpleProjectionWithCalendarAggregationWithNestedDateColumn.body,
+        ),
+      );
+    });
+
+    const tdsStateOne = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    // check calendar aggregation function
+    expect(tdsStateOne.aggregationState.columns.length).toBe(1);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction,
+    ).toBeDefined();
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
+    ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
+        QueryBuilderAggregateCalendarFunction_Ytd,
+    ).toBe(true);
+    expect(
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
+        ?.func.value.name,
+    ).toBe('openingDate');
+
+    const queryBuilderTDSPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    await waitFor(() => getAllByText(queryBuilderTDSPanel, 'Year to Date')); // check calendar function
+    await waitFor(() => getAllByText(queryBuilderTDSPanel, 'NY')); // check calendar type
+    await waitFor(() =>
+      getAllByText(queryBuilderTDSPanel, 'Firm/Opening Date'),
+    ); // check date column
   },
 );
 
