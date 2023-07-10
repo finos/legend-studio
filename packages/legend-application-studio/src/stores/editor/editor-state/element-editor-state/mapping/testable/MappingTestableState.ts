@@ -409,7 +409,7 @@ export class MappingTestSuiteState extends TestableTestSuiteEditorState {
         firstData.store.value,
       );
       storeTestData.data = firstData.data.accept_EmbeddedDataVisitor(
-        new EmbeddedDataCreatorFromEmbeddedData(),
+        new EmbeddedDataCreatorFromEmbeddedData(this.editorStore),
       );
       return storeTestData;
     } else if (targetClass) {

@@ -734,7 +734,9 @@ const StoreTestDataEditor = observer(
       if (isUsingReference) {
         const newBare = returnUndefOnError(() =>
           currentData.accept_EmbeddedDataVisitor(
-            new EmbeddedDataCreatorFromEmbeddedData(),
+            new EmbeddedDataCreatorFromEmbeddedData(
+              mappingTestState.editorStore,
+            ),
           ),
         );
         if (newBare) {

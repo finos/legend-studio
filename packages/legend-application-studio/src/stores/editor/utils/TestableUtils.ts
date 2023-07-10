@@ -59,6 +59,7 @@ import {
 import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
 import type { EditorStore } from '../EditorStore.js';
 import { createMockDataForMappingElementSource } from './MockDataUtils.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 
 export const DEFAULT_TEST_ASSERTION_ID = 'assertion_1';
 export const DEFAULT_TEST_ID = 'test_1';
@@ -127,8 +128,28 @@ export const createBareModelStoreData = (
 export class EmbeddedDataCreatorFromEmbeddedData
   implements EmbeddedDataVisitor<EmbeddedData>
 {
+  editorStore: EditorStore;
+  constructor(editorStore: EditorStore) {
+    this.editorStore = editorStore;
+  }
   visit_EmbeddedData(data: EmbeddedData): EmbeddedData {
-    throw new Error('Method not implemented.');
+    const extraEmbeddedDataCloners = this.editorStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
+          ).getExtraEmbeddedDataCloners?.() ?? [],
+      );
+    for (const creator of extraEmbeddedDataCloners) {
+      const embeddedData = creator(data);
+      if (embeddedData) {
+        return embeddedData;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Unsupported embedded data${data.toString()}`,
+    );
   }
   visit_INTERNAL__UnknownEmbeddedData(
     data: INTERNAL__UnknownEmbeddedData,
@@ -149,7 +170,7 @@ export class EmbeddedDataCreatorFromEmbeddedData
           const v = new ModelEmbeddedData();
           v.model = PackageableElementExplicitReference.create(e.model.value);
           v.data = e.data.accept_EmbeddedDataVisitor(
-            new EmbeddedDataCreatorFromEmbeddedData(),
+            new EmbeddedDataCreatorFromEmbeddedData(this.editorStore),
           );
           return v;
         }
@@ -160,7 +181,7 @@ export class EmbeddedDataCreatorFromEmbeddedData
   }
   visit_DataElementReference(data: DataElementReference): EmbeddedData {
     return data.dataElement.value.data.accept_EmbeddedDataVisitor(
-      new EmbeddedDataCreatorFromEmbeddedData(),
+      new EmbeddedDataCreatorFromEmbeddedData(this.editorStore),
     );
   }
   visit_RelationalCSVData(data: RelationalCSVData): EmbeddedData {
@@ -224,6 +245,20 @@ export class EmbeddedDataConnectionTypeVisitor
   }
 
   visit_Connection(connection: Connection): string {
+    const extraEmbeddedDataCreator = this.editorStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
+          ).getExtraEmbeddedDataTypeFromConnectionMatchers?.() ?? [],
+      );
+    for (const creator of extraEmbeddedDataCreator) {
+      const embeddedData = creator(connection);
+      if (embeddedData) {
+        return embeddedData;
+      }
+    }
     return EmbeddedDataType.EXTERNAL_FORMAT_DATA;
   }
   visit_INTERNAL__UnknownConnection(

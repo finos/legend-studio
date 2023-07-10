@@ -62,6 +62,7 @@ import {
   assertTrue,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 
 export const createGraphFetchRawLambda = (
   mainClass: Class,
@@ -135,6 +136,20 @@ export const generateStoreTestDataFromSetImpl = (
     const srcClass = setImpl.srcClass;
     if (srcClass) {
       return createStoreBareModelStoreData(srcClass.value, editorStore);
+    }
+  }
+  const extraStoreDataCreators = editorStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
+        ).getExtraStoreTestDataCreators?.() ?? [],
+    );
+  for (const creator of extraStoreDataCreators) {
+    const embeddedData = creator(setImpl);
+    if (embeddedData) {
+      return embeddedData;
     }
   }
   return undefined;

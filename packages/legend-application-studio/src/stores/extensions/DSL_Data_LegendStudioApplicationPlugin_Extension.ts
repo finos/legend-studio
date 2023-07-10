@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import type { EmbeddedData } from '@finos/legend-graph';
+import type {
+  Connection,
+  EmbeddedData,
+  SetImplementation,
+  StoreTestData,
+} from '@finos/legend-graph';
 import type { EmbeddedDataTypeOption } from '../editor/editor-state/element-editor-state/data/DataEditorState.js';
 import type { EmbeddedDataState } from '../editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { EditorStore } from '../editor/EditorStore.js';
@@ -34,6 +39,18 @@ export type EmbeddedDataEditorRenderer = (
 export type EmbeddedDataCreator = (
   embeddedDataType: string,
 ) => EmbeddedData | undefined;
+
+export type EmbeddedDataCloner = (
+  embeddedData: EmbeddedData,
+) => EmbeddedData | undefined;
+
+export type StoreTestDataCreators = (
+  setImp: SetImplementation,
+) => StoreTestData | undefined;
+
+export type EmbeddedDataTypeFromConnectionMatcher = (
+  connection: Connection,
+) => string | undefined;
 
 /**
  * NOTE: The tab-stop index of the snippet must start from 2
@@ -67,4 +84,19 @@ export interface DSL_Data_LegendStudioApplicationPlugin_Extension
    * Get the list of embedded data creators
    */
   getExtraEmbeddedDataCreators?(): EmbeddedDataCreator[];
+
+  /**
+   * Get the list of embedded data type from connection matchers
+   */
+  getExtraEmbeddedDataTypeFromConnectionMatchers?(): EmbeddedDataTypeFromConnectionMatcher[];
+
+  /**
+   * Get the list of store test data creators
+   */
+  getExtraStoreTestDataCreators?(): StoreTestDataCreators[];
+
+  /**
+   * Get the list of embedded data cloners
+   */
+  getExtraEmbeddedDataCloners?(): EmbeddedDataCloner[];
 }
