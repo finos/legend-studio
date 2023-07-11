@@ -29,8 +29,8 @@ import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/Q
 import { QueryBuilderState } from '../stores/QueryBuilderState.js';
 
 export const QueryChat = observer(
-  (props: { resultState: QueryBuilderState }) => {
-    const { resultState } = props;
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
 
     const extraQueryChatConfigurations = applicationStore.pluginManager
@@ -39,13 +39,13 @@ export const QueryChat = observer(
         (plugin) =>
           (
             plugin as QueryBuilder_LegendApplicationPlugin_Extension
-          ).getExtraQueryChatConfigurations?.() ?? [],
+          ).getExtraQueryChatRenderers?.() ?? [],
       );
 
     return (
       <Dialog
-        open={resultState.isQueryChatOpened}
-        onClose={() => resultState.setIsQueryChatOpened(false)}
+        open={queryBuilderState.isQueryChatOpened}
+        onClose={() => queryBuilderState.setIsQueryChatOpened(false)}
       >
         <Modal className="query-builder__chat-mode__modal" darkMode={true}>
           <ModalHeader title="Chat Mode" />
@@ -62,7 +62,7 @@ export const QueryChat = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              onClick={() => resultState.setIsQueryChatOpened(false)}
+              onClick={() => queryBuilderState.setIsQueryChatOpened(false)}
               text="Close"
             />
           </ModalFooter>

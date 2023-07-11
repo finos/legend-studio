@@ -122,7 +122,7 @@ const QueryBuilderStatusBar = observer(
             </>
           )}
           {queryBuilderState.isQueryChatOpened && (
-            <QueryChat resultState={queryBuilderState} />
+            <QueryChat queryBuilderState={queryBuilderState} />
           )}
           <button
             className={clsx(
@@ -130,7 +130,7 @@ const QueryBuilderStatusBar = observer(
             )}
             onClick={openQueryChat}
             tabIndex={-1}
-            title="Generate Query in Chat Mode"
+            title="Open query chat"
           >
             <ChatIcon />
           </button>

@@ -69,5 +69,5 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
   /**
    * Get the list of query chat configurations
    */
-  getExtraQueryChatConfigurations?(): QueryChatRenderer[];
+  getExtraQueryChatRenderers?(): QueryChatRenderer[];
 }
