@@ -47,16 +47,18 @@ export const AllocationExecutionNodeViewer: React.FC<{
           </PanelListItem>
           <PanelDivider />
           <div className="query-builder__allocation__container__item">
-            <div className="query-builder__allocation__container__info">
-              varName
-            </div>
-            <div className="query-builder__allocation__container__info__var-name">
-              {`: ${varName}`}
-            </div>
-            <br />
-            <div className="query-builder__allocation__container__info">
-              realizeInMemory {`: ${realizeInMemory}`}
-            </div>
+            <table className="query-builder__allocation__container__table">
+              <tbody>
+                <tr>
+                  <td>varName</td>
+                  <td>{`: ${varName}`}</td>
+                </tr>
+                <tr>
+                  <td>realizeInMemory</td>
+                  <td>{`: ${realizeInMemory}`}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

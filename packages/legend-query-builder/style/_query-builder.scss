@@ -842,7 +842,7 @@
     font-family: monospace;
     font-size: 1.3rem;
     padding: 1rem;
-    margin: 5px 0;
+    margin: 0.5rem 0;
     line-height: 1.8rem;
 
     .decorationsOverviewRuler {
@@ -893,22 +893,7 @@
   }
 
   &__table {
-    width: 100%;
-  }
-
-  &__info {
-    margin-bottom: 0.5em;
-    display: inline-block;
-
-    &__var-name {
-      display: inline-block;
-      text-indent: 5rem;
-    }
-
-    &__value {
-      display: inline-block;
-      text-indent: 7.5rem;
-    }
+    min-width: 10%;
   }
 
   &__item {
@@ -917,7 +902,7 @@
     border-radius: 0.3rem;
     font-size: 2rem;
     padding: 1rem;
-    margin: 5px;
+    margin: 0.5rem;
     line-height: 1.8rem;
 
     .decorationsOverviewRuler {
@@ -957,7 +942,7 @@
     border-radius: 0.3rem;
     font-size: 2rem;
     padding: 1rem;
-    margin: 5px;
+    margin: 0.5rem;
     line-height: 1.8rem;
 
     .decorationsOverviewRuler {
@@ -997,7 +982,7 @@
     border-radius: 0.3rem;
     font-size: 2rem;
     padding: 1rem;
-    margin: 5px;
+    margin: 0.5rem;
     line-height: 1.8rem;
 
     .decorationsOverviewRuler {
@@ -1036,7 +1021,7 @@
     border: 0.1rem solid var(--color-dark-grey-300);
     border-radius: 0.3rem;
     font-size: 2rem;
-    margin: 10px;
+    margin: 1rem 0;
     line-height: 1.8rem;
 
     .decorationsOverviewRuler {
@@ -1052,7 +1037,6 @@
       width: 100%;
       display: block;
       text-align: left;
-      font-size: large;
       padding: 1rem auto;
       text-indent: 1rem;
       color: var(--color-white);
@@ -1090,8 +1074,7 @@
     border: 0.1rem solid var(--color-dark-grey-300);
     border-radius: 0.3rem;
     font-size: 1.3rem;
-    // padding: 1rem;
-    margin: 1px 0;
+    margin: 0.1rem 0;
     line-height: 1.8rem;
 
     .decorationsOverviewRuler {
@@ -1113,6 +1096,342 @@
 
     &__tds {
       color: var(--color-light-grey-400);
+    }
+  }
+}
+
+.query-builder__java__container {
+  width: 95%;
+  margin: 1% auto 0;
+
+  &__panel {
+    height: 100%;
+  }
+
+  &__icon svg {
+    margin-left: 0.5rem;
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__icon svg:hover {
+    color: var(--color-white);
+  }
+
+  &__table {
+    min-width: 50%;
+  }
+
+  &__info {
+    margin-bottom: 0.5rem;
+  }
+
+  &__item {
+    width: 100%;
+
+    &:hover {
+      background: var(--color-dark-grey-200);
+    }
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header {
+      margin: 1.5rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &__btn {
+      height: 2rem;
+      width: 100%;
+      display: block;
+      text-align: left;
+      color: var(--color-light-grey-50);
+    }
+
+    &--active,
+    &--active svg,
+    &--active:hover {
+      background: var(--color-light-blue-450);
+      color: var(--color-light-grey-50);
+    }
+  }
+}
+
+.query-builder__template--function--editor {
+  &__header {
+    border: 0.1rem solid var(--color-dark-grey-300);
+    border-radius: 0.3rem;
+    padding: 1rem;
+    margin: 2rem;
+    line-height: 1.8rem;
+
+    .decorationsOverviewRuler {
+      display: none !important;
+    }
+
+    &__label {
+      color: var(--color-white);
+    }
+  }
+
+  &__title {
+    padding: 2.5rem;
+  }
+
+  &__code {
+    height: 30rem;
+    margin-right: 2rem;
+  }
+
+  &__json {
+    margin: 2rem 6%;
+  }
+}
+
+.query-builder__execution-plan-form--editor {
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-300) !important;
+    }
+
+    &__content {
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
+    }
+  }
+
+  &__content {
+    position: relative;
+  }
+
+  &__tabs__header {
+    padding-left: 0;
+  }
+
+  &__tabs {
+    height: 2.8rem;
+    z-index: 1;
+    display: flex;
+    overflow-x: overlay;
+    overflow-y: hidden;
+  }
+
+  &__tab {
+    @include flexCenter;
+
+    display: inline-flex;
+    height: 100%;
+    color: var(--color-light-grey-400);
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-dark-grey-80);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  &__tab--active {
+    position: relative;
+  }
+
+  &__tab--active::after {
+    content: '';
+    height: 0.2rem;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background: var(--color-yellow-200);
+  }
+
+  &__tab__hint {
+    @include flexCenter;
+
+    border-radius: 0.2rem;
+    margin-left: 1rem;
+    color: var(--color-light-grey-300);
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__general.panel__content__lists {
+    padding-left: 2rem;
+  }
+
+  &__pattern {
+    .panel__content__form__section {
+      margin-bottom: 2rem;
+    }
+
+    &__example__param {
+      color: var(--color-pink-200);
+    }
+  }
+
+  &__parameters {
+    cursor: default;
+    padding-bottom: 0.5rem;
+    margin-left: -0.3rem;
+    border-left: 0.3rem solid var(--color-pink-200);
+
+    &__list {
+      max-width: 47.7rem; // account for the border width
+    }
+
+    &__list__empty {
+      @include flexCenter;
+
+      height: 4rem;
+      width: 100%;
+      color: var(--color-dark-grey-300);
+      font-weight: 500;
+      user-select: none;
+      border: 0.2rem dashed var(--color-dark-grey-200);
+    }
+  }
+
+  &__parameter {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
+    padding-left: 0.5rem;
+    height: 2.2rem;
+    color: var(--color-dark-grey-500);
+    font-weight: 500;
+
+    &__actions {
+      height: 100%;
+      display: none;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 100%;
+      width: 2.2rem;
+
+      svg {
+        color: var(--color-dark-grey-500);
+      }
+
+      &:hover svg {
+        color: var(--color-light-grey-400);
+      }
+    }
+
+    &:hover {
+      background: var(--color-dark-grey-200);
+    }
+
+    &:hover &__actions {
+      @include flexVCenter;
+    }
+  }
+
+  &__pattern__input__group,
+  &__pattern__input,
+  &__documentation__input {
+    width: 50rem;
+    max-width: 50rem !important;
+  }
+
+  &__execution {
+    &__label {
+      &--query {
+        background: var(--color-blue-200) !important;
+      }
+
+      &--test {
+        background: var(--color-pink-500) !important;
+      }
+    }
+
+    &__sub-label {
+      &--query {
+        border-left: 0.5rem solid var(--color-blue-200);
+      }
+
+      &--test {
+        border-left: 0.5rem solid var(--color-pink-500);
+      }
+    }
+  }
+
+  &__header__hint {
+    @include flexVCenter;
+
+    cursor: help;
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  &__owner {
+    &__selector {
+      overflow-y: scroll;
+      width: 100%;
+      max-width: unset;
+      margin-right: 0.5rem;
+    }
+
+    &__action {
+      height: 2.8rem;
+    }
+
+    &__validation {
+      display: flex;
+      align-items: center;
+      cursor: help;
+
+      svg {
+        color: var(--color-red-100);
+        stroke-width: 0.4;
+        stroke: var(--color-red-100);
+      }
+    }
+
+    &__validation-label {
+      color: var(--color-red-100);
+      margin-left: 0.5rem;
     }
   }
 }

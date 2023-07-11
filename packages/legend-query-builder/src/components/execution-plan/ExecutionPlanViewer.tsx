@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   type TreeNodeContainerProps,
   Dialog,
@@ -39,8 +39,10 @@ import {
   ModalFooterButton,
   PanelHeader,
   Panel,
+  PanelDivider,
+  Button,
 } from '@finos/legend-art';
-import { isNonNullable } from '@finos/legend-shared';
+import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
@@ -59,6 +61,7 @@ import {
   ConstantExecutionNode,
   SequenceExecutionNode,
   type RawExecutionPlan,
+  JavaPlatformImplementation,
 } from '@finos/legend-graph';
 import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
 import { FunctionParametersValidationNodeViewer } from './FunctionParametersValidationNodeViewer.js';
@@ -94,6 +97,169 @@ export const generateExecutionNodeLabel = (type: ExecutionNode): string => {
     return 'Other';
   }
 };
+
+enum PLAN_TABS {
+  GENERAL = 'GENERAL',
+  GLOBAL_IMPLEMENTATION_SUPPORT = 'GLOBAL_IMPLEMENTATION_SUPPORT',
+}
+
+export const ExecutionPlanViewerPanelContent: React.FC<{
+  executionPlanState: ExecutionPlanState;
+}> = observer((props) => {
+  const { executionPlanState } = props;
+  const applicationStore = executionPlanState.applicationStore;
+  const globalImplementationSupport =
+    executionPlanState.plan?.globalImplementationSupport;
+  const templateFunctions =
+    executionPlanState.plan?.processingTemplateFunctions ?? [];
+  const [selectedTab, setSelectedTab] = useState<PLAN_TABS>(PLAN_TABS.GENERAL);
+  const [selectedJavaClass, setSelectedJavaClass] = useState<
+    string | undefined
+  >(undefined);
+
+  if (
+    globalImplementationSupport &&
+    globalImplementationSupport instanceof JavaPlatformImplementation
+  ) {
+    globalImplementationSupport.classes.sort((a, b) =>
+      (a.package + a.name).toLowerCase() > (b.package + b.name).toLowerCase()
+        ? 1
+        : -1,
+    );
+    if (
+      globalImplementationSupport.classes.length > 0 &&
+      globalImplementationSupport.classes[0] &&
+      selectedJavaClass === undefined
+    ) {
+      setSelectedJavaClass(
+        globalImplementationSupport.classes[0]?.package +
+          globalImplementationSupport.classes[0]?.name,
+      );
+    }
+  }
+
+  return (
+    <div className="query-builder__execution-plan-form--editor">
+      <div className="panel">
+        <div className="panel__header query-builder__execution-plan-form--editor__header--with-tabs">
+          <div className="uml-element-editor__tabs">
+            {Object.values(PLAN_TABS).map((tab) => (
+              <div
+                key={tab}
+                onClick={() => setSelectedTab(tab)}
+                className={clsx(
+                  'query-builder__execution-plan-form--editor__tab',
+                  {
+                    'query-builder__execution-plan-form--editor__tab--active':
+                      tab === selectedTab,
+                  },
+                )}
+              >
+                {prettyCONSTName(tab)}
+              </div>
+            ))}
+          </div>
+        </div>
+        {selectedTab === PLAN_TABS.GLOBAL_IMPLEMENTATION_SUPPORT &&
+          globalImplementationSupport &&
+          globalImplementationSupport instanceof JavaPlatformImplementation && (
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={30} size={250}>
+                <PanelContent
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                  className="query-builder__java__container__panel"
+                >
+                  <div className="query-builder__java__container">
+                    <div>
+                      {globalImplementationSupport.classes.map((cl) => (
+                        <div
+                          className={clsx(
+                            'query-builder__java__container__item',
+                            {
+                              'query-builder__java__container__item--active':
+                                `${cl.package}${cl.name}` === selectedJavaClass,
+                            },
+                          )}
+                          key={cl.package + cl.name}
+                        >
+                          <button
+                            className="query-builder__java__container__item__btn"
+                            onClick={() =>
+                              setSelectedJavaClass(cl.package + cl.name)
+                            }
+                            tabIndex={-1}
+                            title={`Go to ${cl.package}.${cl.name}`}
+                          >
+                            {`${cl.package}.${cl.name}`}
+                          </button>
+                        </div>
+                      ))}
+                      <PanelDivider />
+                    </div>
+                  </div>
+                </PanelContent>
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel>
+                {selectedJavaClass && (
+                  <CodeEditor
+                    inputValue={globalImplementationSupport.classes.reduce(
+                      (value, cl) => {
+                        if (selectedJavaClass === `${cl.package}${cl.name}`) {
+                          return cl.source;
+                        }
+                        return value;
+                      },
+                      '',
+                    )}
+                    isReadOnly={true}
+                    language={CODE_EDITOR_LANGUAGE.JAVA}
+                    hideMinimap={true}
+                  />
+                )}
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          )}
+        {selectedTab === PLAN_TABS.GENERAL && (
+          <>
+            <div className="query-builder__template--function--editor__header">
+              {`AuthDependent: ${executionPlanState.plan?.authDependent.toString()}`}
+            </div>
+            <div className="query-builder__template--function--editor__title">
+              Template Functions
+            </div>
+            <div className="query-builder__template--function--editor__code">
+              <CodeEditor
+                inputValue={templateFunctions.reduce(
+                  (total, func) => (total += `${func}\n`),
+                  '',
+                )}
+                isReadOnly={true}
+                language={CODE_EDITOR_LANGUAGE.XML}
+                hideMinimap={true}
+                hideActionBar={true}
+              />
+            </div>
+            <div className="query-builder__template--function--editor__json">
+              <Button
+                className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"
+                onClick={(): void =>
+                  executionPlanState.setViewMode(EXECUTION_PLAN_VIEW_MODE.JSON)
+                }
+                text="View JSON"
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+});
 
 const ExecutionNodeElementTreeNodeContainer = observer(
   (
@@ -405,23 +571,9 @@ const ExecutionPlanViewPanel = observer(
                     />
                   )}
                   {currentElement instanceof ExecutionPlan && (
-                    <BlankPanelContent>
-                      <div className="execution-plan-viewer__unsupported-view">
-                        <div className="execution-plan-viewer__unsupported-view__summary">
-                          {`Can't display full execution plan`}
-                        </div>
-                        <button
-                          className="btn--dark execution-plan-viewer__unsupported-view__to-text-mode__btn"
-                          onClick={(): void =>
-                            executionPlanState.setViewMode(
-                              EXECUTION_PLAN_VIEW_MODE.JSON,
-                            )
-                          }
-                        >
-                          View JSON
-                        </button>
-                      </div>
-                    </BlankPanelContent>
+                    <ExecutionPlanViewerPanelContent
+                      executionPlanState={executionPlanState}
+                    />
                   )}
                 </>
               )}

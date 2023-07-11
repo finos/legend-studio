@@ -148,6 +148,7 @@ export { ConstantExecutionNode } from './graph/metamodel/pure/executionPlan/node
 export { SequenceExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/SequenceExecutionNode.js';
 export { ResultType } from './graph/metamodel/pure/executionPlan/result/ResultType.js';
 export { TDSResultType } from './graph/metamodel/pure/executionPlan/result/TDSResultType.js';
+export { JavaPlatformImplementation } from './graph/metamodel/pure/executionPlan/nodes/JavaPlatformImplementation.js';
 export { DataTypeResultType } from './graph/metamodel/pure/executionPlan/result/DataTypeResultType.js';
 
 // --------------------------------------------- HELPER --------------------------------------------------

@@ -80,6 +80,12 @@ import { V1_INTERNAL__UnknownResultType } from '../../../model/executionPlan/res
 import { INTERNAL__UnknownResultType } from '../../../../../../../graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
 import { V1_INTERNAL__UnknownExecutionNode } from '../../../model/executionPlan/nodes/V1_INTERNAL__UnknownExecutionNode.js';
 import { INTERNAL__UnknownExecutionNode } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
+import type { PlatformImplementation } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/PlatformImplementation.js';
+import type { V1_PlatformImplementation } from '../../../model/executionPlan/nodes/V1_PlatformImplementation.js';
+import { JavaPlatformImplementation } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/JavaPlatformImplementation.js';
+import { V1_JavaPlatformImplementation } from '../../../model/executionPlan/nodes/V1_JavaPlatformImplementation.js';
+import type { V1_JavaClass } from '../../../model/executionPlan/nodes/V1_JavaClass.js';
+import { JavaClass } from '../../../../../../../graph/metamodel/pure/executionPlan/nodes/JavaClass.js';
 import { V1_buildValueSpecification } from './helpers/V1_ValueSpecificationBuilderHelper.js';
 
 export const V1_parseDataType = (val: string): RelationalDataType => {
@@ -385,6 +391,31 @@ function buildExecutionNode(
 
 // ---------------------------------------- Execution Plan ----------------------------------------
 
+function buildJavaClass(protocol: V1_JavaClass): JavaClass {
+  const metamodel = new JavaClass();
+  metamodel.name = protocol.name;
+  metamodel.package = protocol.package;
+  metamodel.source = protocol.source;
+  metamodel.byteCode = protocol.byteCode;
+  return metamodel;
+}
+
+function buildPlatformImplementation(
+  protocol: V1_PlatformImplementation,
+): PlatformImplementation {
+  if (protocol instanceof V1_JavaPlatformImplementation) {
+    const metamodel = new JavaPlatformImplementation();
+    metamodel.classes = protocol.classes.map(buildJavaClass);
+    metamodel.executionClassFullName = protocol.executionClassFullName;
+    metamodel.executionMethodName = protocol.executionMethodName;
+    return metamodel;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build platform implementation`,
+    protocol,
+  );
+}
+
 export const V1_buildExecutionPlan = (
   protocol: V1_ExecutionPlan,
   context: V1_GraphBuilderContext,
@@ -401,8 +432,11 @@ export const V1_buildExecutionPlan = (
       protocol.rootExecutionNode,
       context,
     );
-    metamodel.globalImplementationSupport =
-      protocol.globalImplementationSupport;
+    if (protocol.globalImplementationSupport) {
+      metamodel.globalImplementationSupport = buildPlatformImplementation(
+        protocol.globalImplementationSupport,
+      );
+    }
     return metamodel;
   }
   throw new UnsupportedOperationError(`Can't build execution plan`, protocol);

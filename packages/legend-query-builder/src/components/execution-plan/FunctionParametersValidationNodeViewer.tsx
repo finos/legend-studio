@@ -23,10 +23,9 @@ import {
 import {
   type VariableExpression,
   type ParameterValidationContext,
-  Multiplicity,
   type ResultType,
+  Multiplicity,
 } from '@finos/legend-graph';
-
 import {
   PanelListItem,
   PanelDivider,
