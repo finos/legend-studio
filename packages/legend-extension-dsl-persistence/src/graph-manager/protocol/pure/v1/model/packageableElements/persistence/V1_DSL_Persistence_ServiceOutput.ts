@@ -16,8 +16,8 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
-import { V1_DatasetType } from './V1_DSL_Persistence_DatasetType.js';
-import { V1_Deduplication } from './V1_DSL_Persistence_Deduplication.js';
+import type { V1_DatasetType } from './V1_DSL_Persistence_DatasetType.js';
+import type { V1_Deduplication } from './V1_DSL_Persistence_Deduplication.js';
 
 export abstract class V1_ServiceOutput implements Hashable {
   deduplication!: V1_Deduplication;

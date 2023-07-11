@@ -16,7 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
-import { EmptyDatasetHandling } from './DSL_Persistence_EmptyDatasetHandling.js';
+import type { EmptyDatasetHandling } from './DSL_Persistence_EmptyDatasetHandling.js';
 
 export abstract class Partitioning implements Hashable {
   abstract get hashCode(): string;

@@ -88,6 +88,7 @@ export const observe_PersistenceTestBatch = skipObservedWithContext(
   ): PersistenceTestBatch => {
     makeObservable(metamodel, {
       id: observable,
+      batchId: observable,
       assertions: observable,
       testData: observable,
       hashCode: computed,

@@ -16,8 +16,8 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
-import { ActionIndicatorFields } from './DSL_Persistence_ActionIndicatorFields.js';
-import { Partitioning } from './DSL_Persistence_Partitioning.js';
+import type { ActionIndicatorFields } from './DSL_Persistence_ActionIndicatorFields.js';
+import type { Partitioning } from './DSL_Persistence_Partitioning.js';
 
 export abstract class DatasetType implements Hashable {
   abstract get hashCode(): string;

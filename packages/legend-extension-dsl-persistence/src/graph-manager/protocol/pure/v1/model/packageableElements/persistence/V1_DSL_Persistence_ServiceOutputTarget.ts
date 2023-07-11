@@ -16,8 +16,8 @@
 
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { V1_PersistenceTarget } from './V1_DSL_Persistence_PersistentTarget.js';
-import { V1_ServiceOutput } from './V1_DSL_Persistence_ServiceOutput.js';
+import type { V1_PersistenceTarget } from './V1_DSL_Persistence_PersistentTarget.js';
+import type { V1_ServiceOutput } from './V1_DSL_Persistence_ServiceOutput.js';
 
 export class V1_ServiceOutputTarget implements Hashable {
   serviceOutput!: V1_ServiceOutput;

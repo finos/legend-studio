@@ -29,6 +29,7 @@ export class V1_PersistenceTestBatch implements Hashable {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_TEST_BATCH,
       this.id,
+      this.batchId,
       this.testData,
       hashArray(this.assertions),
     ]);

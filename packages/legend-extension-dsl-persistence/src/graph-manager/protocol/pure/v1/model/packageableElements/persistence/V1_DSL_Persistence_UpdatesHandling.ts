@@ -16,7 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
-import { V1_AppendStrategy } from './V1_DSL_Persistence_AppendStrategy.js';
+import type { V1_AppendStrategy } from './V1_DSL_Persistence_AppendStrategy.js';
 
 export abstract class V1_UpdatesHandling implements Hashable {
   abstract get hashCode(): string;

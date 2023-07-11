@@ -173,69 +173,69 @@ import type { V1_PersistenceTestData } from '../../../model/packageableElements/
 import { PersistenceTestData } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestData.js';
 import type { V1_ConnectionTestData } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ConnectionTestData.js';
 import { ConnectionTestData } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ConnectionTestData.js';
-import { V1_ServiceOutputTarget } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ServiceOutputTarget.js';
+import type { V1_ServiceOutputTarget } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ServiceOutputTarget.js';
 import {
   GraphFetchServiceOutput,
-  ServiceOutput,
+  type ServiceOutput,
   TdsServiceOutput,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ServiceOutput.js';
 import { ServiceOutputTarget } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ServiceOutputTarget.js';
 import {
   V1_GraphFetchServiceOutput,
-  V1_ServiceOutput,
+  type V1_ServiceOutput,
   V1_TdsServiceOutput,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ServiceOutput.js';
 import {
-  V1_DatasetType,
+  type V1_DatasetType,
   V1_Delta,
   V1_Snapshot,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_DatasetType.js';
 import {
-  DatasetType,
+  type DatasetType,
   Delta,
   Snapshot,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_DatasetType.js';
 import {
-  FieldBased,
+  type FieldBased,
   FieldBasedForGraphFetch,
   FieldBasedForTds,
   NoPartitioning,
-  Partitioning,
+  type Partitioning,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Partitioning.js';
 import {
   V1_FieldBased,
   V1_FieldBasedForGraphFetch,
   V1_FieldBasedForTds,
   V1_NoPartitioning,
-  V1_Partitioning,
+  type V1_Partitioning,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_Partitioning.js';
 import {
   V1_DeleteTargetDataset,
-  V1_EmptyDatasetHandling,
+  type V1_EmptyDatasetHandling,
   V1_NoOp,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_EmptyDatasetHandling.js';
 import {
   DeleteTargetDataset,
-  EmptyDatasetHandling,
+  type EmptyDatasetHandling,
   NoOp,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_EmptyDatasetHandling.js';
 import {
-  V1_ActionIndicatorFields,
+  type V1_ActionIndicatorFields,
   V1_DeleteIndicator,
   V1_DeleteIndicatorForGraphFetch,
   V1_DeleteIndicatorForTds,
   V1_NoActionIndicator,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ActionIndicatorFields.js';
 import {
-  ActionIndicatorFields,
-  DeleteIndicator,
+  type ActionIndicatorFields,
+  type DeleteIndicator,
   DeleteIndicatorForGraphFetch,
   DeleteIndicatorForTds,
   NoActionIndicator,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ActionIndicatorFields.js';
 import {
   V1_AnyVersion,
-  V1_Deduplication,
+  type V1_Deduplication,
   V1_MaxVersion,
   V1_MaxVersionForGraphFetch,
   V1_MaxVersionForTds,
@@ -243,61 +243,61 @@ import {
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_Deduplication.js';
 import {
   AnyVersion,
-  Deduplication,
-  MaxVersion,
+  type Deduplication,
+  type MaxVersion,
   MaxVersionForGraphFetch,
   MaxVersionForTds,
   NoDeduplication,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Deduplication.js';
 import {
-  V1_PersistenceTarget,
+  type V1_PersistenceTarget,
   V1_RelationalPersistenceTarget,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_PersistentTarget.js';
 import {
-  PersistenceTarget,
+  type PersistenceTarget,
   RelationalPersistenceTarget,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistentTarget.js';
 import {
   V1_BiTemporal,
   V1_NonTemporal,
-  V1_Temporality,
+  type V1_Temporality,
   V1_UniTemporal,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_Temporality.js';
 import {
   BiTemporal,
   NonTemporal,
-  Temporality,
+  type Temporality,
   UniTemporal,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Temporality.js';
 import {
   V1_AuditingDateTimeV2,
-  V1_AuditingV2,
+  type V1_AuditingV2,
   V1_NoAuditingV2,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_AuditingV2.js';
 import {
   AuditingDateTimeV2,
-  AuditingV2,
+  type AuditingV2,
   NoAuditingV2,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AuditingV2.js';
 import {
   V1_AppendOnlyUpdatesHandling,
   V1_OverwriteUpdatesHandling,
-  V1_UpdatesHandling,
+  type V1_UpdatesHandling,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_UpdatesHandling.js';
 import {
   AppendOnlyUpdatesHandling,
   OverwriteUpdatesHandling,
-  UpdatesHandling,
+  type UpdatesHandling,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_UpdatesHandling.js';
 import {
   V1_AllowDuplicates,
-  V1_AppendStrategy,
+  type V1_AppendStrategy,
   V1_FailOnDuplicates,
   V1_FilterDuplicates,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_AppendStrategy.js';
 import {
   AllowDuplicates,
-  AppendStrategy,
+  type AppendStrategy,
   FailOnDuplicates,
   FilterDuplicates,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_AppendStrategy.js';
@@ -305,29 +305,29 @@ import {
   V1_BatchId,
   V1_BatchIdAndDateTime,
   V1_ProcessingDateTime,
-  V1_ProcessingDimension,
+  type V1_ProcessingDimension,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ProcessingDimension.js';
 import {
   BatchId,
   BatchIdAndDateTime,
   ProcessingDateTime,
-  ProcessingDimension,
+  type ProcessingDimension,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ProcessingDimension.js';
 import {
-  V1_SourceDerivedDimension,
+  type V1_SourceDerivedDimension,
   V1_SourceDerivedTime,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_SourceDerivedDimension.js';
 import {
-  SourceDerivedDimension,
+  type SourceDerivedDimension,
   SourceDerivedTime,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_SourceDerivedDimension.js';
 import {
-  V1_SourceTimeFields,
+  type V1_SourceTimeFields,
   V1_SourceTimeStart,
   V1_SourceTimeStartAndEnd,
 } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_SourceTimeFields.js';
 import {
-  SourceTimeFields,
+  type SourceTimeFields,
   SourceTimeStart,
   SourceTimeStartAndEnd,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_SourceTimeFields.js';
@@ -749,7 +749,9 @@ export const V1_buildPersister = (
   protocol: V1_Persister | undefined,
   context: V1_GraphBuilderContext,
 ): Persister | undefined => {
-  if (protocol === undefined) return protocol;
+  if (protocol === undefined) {
+    return protocol;
+  }
   if (protocol instanceof V1_StreamingPersister) {
     const persister = new StreamingPersister();
     persister.sink = V1_buildSink(protocol.sink, context);
@@ -764,59 +766,187 @@ export const V1_buildPersister = (
   throw new UnsupportedOperationError(`Can't build persister`, protocol);
 };
 
-/*************
- * persistence
- *************/
+/**********
+ * notifier
+ **********/
 
-export const V1_buildPersistence = (
-  protocol: V1_Persistence,
+export const V1_buildNotifyee = (
+  protocol: V1_Notifyee,
   context: V1_GraphBuilderContext,
-): void => {
-  const path = V1_buildFullPath(protocol.package, protocol.name);
-  const persistence = getOwnPersistence(path, context.currentSubGraph);
-  persistence.documentation = guaranteeNonEmptyString(
-    protocol.documentation,
-    `Persistence 'documentation' field is missing or empty`,
+): Notifyee => {
+  if (protocol instanceof V1_EmailNotifyee) {
+    const notifyee = new EmailNotifyee();
+    notifyee.address = protocol.address;
+    return notifyee;
+  } else if (protocol instanceof V1_PagerDutyNotifyee) {
+    const notifyee = new PagerDutyNotifyee();
+    notifyee.url = protocol.url;
+    return notifyee;
+  }
+  throw new UnsupportedOperationError(`Can't build notifier`, protocol);
+};
+
+export const V1_buildNotifier = (
+  protocol: V1_Notifier,
+  context: V1_GraphBuilderContext,
+): Notifier => {
+  const notifier = new Notifier();
+  notifier.notifyees = protocol.notifyees.map((n) =>
+    V1_buildNotifyee(n, context),
   );
-  persistence.notifier = V1_buildNotifier(protocol.notifier, context);
-  persistence.persister = V1_buildPersister(protocol.persister, context);
-  persistence.service = context.resolveService(protocol.service);
-  persistence.serviceOutputTargets = V1_buildServiceOutputTargets(
-    protocol.serviceOutputTargets,
-    context,
-  );
-  persistence.tests = protocol.tests
-    .map((test) => V1_buildAtomicTest(test, context))
-    .map((e) => guaranteeType(e, PersistenceTest));
-  persistence.trigger = V1_buildTrigger(protocol.trigger, context);
+  return notifier;
 };
 
 /************************
- * service output targets
- ***********************/
+ * empty dataset handling
+ ************************/
 
-export const V1_buildServiceOutputTargets = (
-  protocol: V1_ServiceOutputTarget[] | undefined,
+export const V1_buildEmptyDatasetHandling = (
+  protocol: V1_EmptyDatasetHandling,
   context: V1_GraphBuilderContext,
-): ServiceOutputTarget[] | undefined => {
-  if (protocol === undefined) {
-    return protocol;
+): EmptyDatasetHandling => {
+  if (protocol instanceof V1_NoOp) {
+    return new NoOp();
+  } else if (protocol instanceof V1_DeleteTargetDataset) {
+    return new DeleteTargetDataset();
   }
-  const serviceOutputTargets: ServiceOutputTarget[] = [];
-  for (const v1ServiceOutputTarget of protocol!) {
-    const serviceOutputTarget = new ServiceOutputTarget();
-    serviceOutputTarget.persistenceTarget = V1_buildPersistenceTarget(
-      v1ServiceOutputTarget.persistenceTarget,
-      context,
-    );
-    serviceOutputTarget.serviceOutput = V1_buildServiceOutput(
-      v1ServiceOutputTarget.serviceOutput,
-      context,
-    );
+  throw new UnsupportedOperationError(
+    `Can't build EmptyDatasetHandling`,
+    protocol,
+  );
+};
 
-    serviceOutputTargets.push(serviceOutputTarget);
+/**************
+ * partitioning
+ **************/
+
+export const V1_buildFieldBasedPartitioning = (
+  protocol: V1_FieldBased,
+  context: V1_GraphBuilderContext,
+): FieldBased => {
+  if (protocol instanceof V1_FieldBasedForGraphFetch) {
+    return new FieldBasedForGraphFetch();
+  } else if (protocol instanceof V1_FieldBasedForTds) {
+    const fieldBasedForTds = new FieldBasedForTds();
+    fieldBasedForTds.partitionFields = protocol.partitionFields;
+    return fieldBasedForTds;
   }
-  return serviceOutputTargets;
+  throw new UnsupportedOperationError(
+    `Can't build FieldBasedPartitioning`,
+    protocol,
+  );
+};
+
+export const V1_buildPartitioning = (
+  protocol: V1_Partitioning,
+  context: V1_GraphBuilderContext,
+): Partitioning => {
+  if (protocol instanceof V1_NoPartitioning) {
+    const noPartitioning = new NoPartitioning();
+    noPartitioning.emptyDatasetHandling = V1_buildEmptyDatasetHandling(
+      protocol.emptyDatasetHandling,
+      context,
+    );
+    return noPartitioning;
+  } else if (protocol instanceof V1_FieldBased) {
+    return V1_buildFieldBasedPartitioning(protocol, context);
+  }
+  throw new UnsupportedOperationError(`Can't build Partitioning`, protocol);
+};
+
+/******************
+ * action indicator
+ ******************/
+
+export const V1_buildDeleteIndicator = (
+  protocol: V1_DeleteIndicator,
+  context: V1_GraphBuilderContext,
+): DeleteIndicator => {
+  if (protocol instanceof V1_DeleteIndicatorForGraphFetch) {
+    const deleteIndicatorForGraphFetch = new DeleteIndicatorForGraphFetch();
+    deleteIndicatorForGraphFetch.deleteValues = protocol.deleteValues;
+    return deleteIndicatorForGraphFetch;
+  } else if (protocol instanceof V1_DeleteIndicatorForTds) {
+    const deleteIndicatorForTds = new DeleteIndicatorForTds();
+    deleteIndicatorForTds.deleteField = protocol.deleteField;
+    deleteIndicatorForTds.deleteValues = protocol.deleteValues;
+    return deleteIndicatorForTds;
+  }
+  throw new UnsupportedOperationError(`Can't build DeleteIndicator`, protocol);
+};
+
+export const V1_buildActionIndicator = (
+  protocol: V1_ActionIndicatorFields,
+  context: V1_GraphBuilderContext,
+): ActionIndicatorFields => {
+  if (protocol instanceof V1_NoActionIndicator) {
+    return new NoActionIndicator();
+  } else if (protocol instanceof V1_DeleteIndicator) {
+    return V1_buildDeleteIndicator(protocol, context);
+  }
+  throw new UnsupportedOperationError(`Can't build ActionIndicator`, protocol);
+};
+
+/**************
+ * dataset type
+ **************/
+
+export const V1_buildDatasetType = (
+  protocol: V1_DatasetType,
+  context: V1_GraphBuilderContext,
+): DatasetType => {
+  if (protocol instanceof V1_Snapshot) {
+    const snapshot = new Snapshot();
+    snapshot.partitioning = V1_buildPartitioning(
+      protocol.partitioning,
+      context,
+    );
+    return snapshot;
+  } else if (protocol instanceof V1_Delta) {
+    const delta = new Delta();
+    delta.actionIndicator = V1_buildActionIndicator(
+      protocol.actionIndicator,
+      context,
+    );
+    return delta;
+  }
+  throw new UnsupportedOperationError(`Can't build DatasetType`, protocol);
+};
+
+/******************
+ * de-duplication
+ ******************/
+
+export const V1_buildMaxVersion = (
+  protocol: V1_MaxVersion,
+  context: V1_GraphBuilderContext,
+): MaxVersion => {
+  if (protocol instanceof V1_MaxVersionForGraphFetch) {
+    return new MaxVersionForGraphFetch();
+  } else if (protocol instanceof V1_MaxVersionForTds) {
+    const maxVeresionForTds = new MaxVersionForTds();
+    maxVeresionForTds.versionField = protocol.versionField;
+    return maxVeresionForTds;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build MaxVersion
+  `,
+    protocol,
+  );
+};
+
+export const V1_buildDeduplication = (
+  protocol: V1_Deduplication,
+  context: V1_GraphBuilderContext,
+): Deduplication => {
+  if (protocol instanceof V1_NoDeduplication) {
+    return new NoDeduplication();
+  } else if (protocol instanceof V1_AnyVersion) {
+    return new AnyVersion();
+  } else if (protocol instanceof V1_MaxVersion) {
+    return V1_buildMaxVersion(protocol, context);
+  }
+  throw new UnsupportedOperationError(`Can't build Deduplication`, protocol);
 };
 
 /****************
@@ -854,178 +984,127 @@ export const V1_buildServiceOutput = (
   throw new UnsupportedOperationError(`Can't build ServiceOutput`, protocol);
 };
 
-/**************
- * dataset type
- **************/
+/*************
+ * auditing V2
+ *************/
 
-export const V1_buildDatasetType = (
-  protocol: V1_DatasetType,
+const V1_buildAuditingV2 = (
+  protocol: V1_AuditingV2,
   context: V1_GraphBuilderContext,
-): DatasetType => {
-  if (protocol instanceof V1_Snapshot) {
-    const snapshot = new Snapshot();
-    snapshot.partitioning = V1_buildPartitioning(
-      protocol.partitioning,
-      context,
-    );
-    return snapshot;
-  } else if (protocol instanceof V1_Delta) {
-    const delta = new Delta();
-    delta.actionIndicator = V1_buildActionIndicator(
-      protocol.actionIndicator,
-      context,
-    );
-    return delta;
+): AuditingV2 => {
+  if (protocol instanceof V1_NoAuditingV2) {
+    return new NoAuditingV2();
+  } else if (protocol instanceof V1_AuditingDateTimeV2) {
+    const auditingDateTimeV2 = new AuditingDateTimeV2();
+    auditingDateTimeV2.auditingDateTimeName = protocol.auditingDateTimeName;
+    return auditingDateTimeV2;
   }
-  throw new UnsupportedOperationError(`Can't build DatasetType`, protocol);
-};
-
-/**************
- * partitioning
- **************/
-
-export const V1_buildPartitioning = (
-  protocol: V1_Partitioning,
-  context: V1_GraphBuilderContext,
-): Partitioning => {
-  if (protocol instanceof V1_NoPartitioning) {
-    const noPartitioning = new NoPartitioning();
-    noPartitioning.emptyDatasetHandling = V1_buildEmptyDatasetHandling(
-      protocol.emptyDatasetHandling,
-      context,
-    );
-    return noPartitioning;
-  } else if (protocol instanceof V1_FieldBased) {
-    return V1_buildFieldBasedPartitioning(protocol, context);
-  }
-  throw new UnsupportedOperationError(`Can't build Partitioning`, protocol);
-};
-
-export const V1_buildFieldBasedPartitioning = (
-  protocol: V1_FieldBased,
-  context: V1_GraphBuilderContext,
-): FieldBased => {
-  if (protocol instanceof V1_FieldBasedForGraphFetch) {
-    return new FieldBasedForGraphFetch();
-  } else if (protocol instanceof V1_FieldBasedForTds) {
-    const fieldBasedForTds = new FieldBasedForTds();
-    fieldBasedForTds.partitionFields = protocol.partitionFields;
-    return fieldBasedForTds;
-  }
-  throw new UnsupportedOperationError(
-    `Can't build FieldBasedPartitioning`,
-    protocol,
-  );
-};
-
-/************************
- * empty dataset handling
- ************************/
-
-export const V1_buildEmptyDatasetHandling = (
-  protocol: V1_EmptyDatasetHandling,
-  context: V1_GraphBuilderContext,
-): EmptyDatasetHandling => {
-  if (protocol instanceof V1_NoOp) {
-    return new NoOp();
-  } else if (protocol instanceof V1_DeleteTargetDataset) {
-    return new DeleteTargetDataset();
-  }
-  throw new UnsupportedOperationError(
-    `Can't build EmptyDatasetHandling`,
-    protocol,
-  );
+  throw new UnsupportedOperationError(`Can't build AuditingV2`, protocol);
 };
 
 /******************
- * action indicator
+ * updates handling
  ******************/
 
-export const V1_buildActionIndicator = (
-  protocol: V1_ActionIndicatorFields,
+const V1_buildAppendOnlyUpdatesHandling = (
+  protocol: V1_AppendStrategy,
   context: V1_GraphBuilderContext,
-): ActionIndicatorFields => {
-  if (protocol instanceof V1_NoActionIndicator) {
-    return new NoActionIndicator();
-  } else if (protocol instanceof V1_DeleteIndicator) {
-    return V1_buildDeleteIndicator(protocol, context);
-  }
-  throw new UnsupportedOperationError(`Can't build ActionIndicator`, protocol);
-};
-
-export const V1_buildDeleteIndicator = (
-  protocol: V1_DeleteIndicator,
-  context: V1_GraphBuilderContext,
-): DeleteIndicator => {
-  if (protocol instanceof V1_DeleteIndicatorForGraphFetch) {
-    const deleteIndicatorForGraphFetch = new DeleteIndicatorForGraphFetch();
-    deleteIndicatorForGraphFetch.deleteValues = protocol.deleteValues;
-    return deleteIndicatorForGraphFetch;
-  } else if (protocol instanceof V1_DeleteIndicatorForTds) {
-    const deleteIndicatorForTds = new DeleteIndicatorForTds();
-    deleteIndicatorForTds.deleteField = protocol.deleteField;
-    deleteIndicatorForTds.deleteValues = protocol.deleteValues;
-    return deleteIndicatorForTds;
-  }
-  throw new UnsupportedOperationError(`Can't build DeleteIndicator`, protocol);
-};
-
-/******************
- * de-duplication
- ******************/
-
-export const V1_buildDeduplication = (
-  protocol: V1_Deduplication,
-  context: V1_GraphBuilderContext,
-): Deduplication => {
-  if (protocol instanceof V1_NoDeduplication) {
-    return new NoDeduplication();
-  } else if (protocol instanceof V1_AnyVersion) {
-    return new AnyVersion();
-  } else if (protocol instanceof V1_MaxVersion) {
-    return V1_buildMaxVersion(protocol, context);
-  }
-  throw new UnsupportedOperationError(`Can't build Deduplication`, protocol);
-};
-
-export const V1_buildMaxVersion = (
-  protocol: V1_MaxVersion,
-  context: V1_GraphBuilderContext,
-): MaxVersion => {
-  if (protocol instanceof V1_MaxVersionForGraphFetch) {
-    return new MaxVersionForGraphFetch();
-  } else if (protocol instanceof V1_MaxVersionForTds) {
-    const maxVeresionForTds = new MaxVersionForTds();
-    maxVeresionForTds.versionField = protocol.versionField;
-    return maxVeresionForTds;
+): AppendStrategy => {
+  if (protocol instanceof V1_AllowDuplicates) {
+    return new AllowDuplicates();
+  } else if (protocol instanceof V1_FailOnDuplicates) {
+    return new FailOnDuplicates();
+  } else if (protocol instanceof V1_FilterDuplicates) {
+    return new FilterDuplicates();
   }
   throw new UnsupportedOperationError(
-    `Can't build MaxVersion
-  `,
+    `Can't build AppendOnlyUpdatesHandling`,
     protocol,
   );
 };
 
-/********************
- * persistence target
- ********************/
-
-export const V1_buildPersistenceTarget = (
-  protocol: V1_PersistenceTarget,
+const V1_buildUpdatesHandling = (
+  protocol: V1_UpdatesHandling,
   context: V1_GraphBuilderContext,
-): PersistenceTarget => {
-  if (protocol instanceof V1_RelationalPersistenceTarget) {
-    const persistentTarget = new RelationalPersistenceTarget();
-    persistentTarget.database = protocol.database;
-    persistentTarget.table = protocol.table;
-    persistentTarget.temporality = V1_buildTemporality(
-      protocol.temporality,
-      context,
-    );
-    return persistentTarget;
+): UpdatesHandling => {
+  if (protocol instanceof V1_AppendOnlyUpdatesHandling) {
+    const appendOnlyUpdatesHandling = new AppendOnlyUpdatesHandling();
+    appendOnlyUpdatesHandling.appendStrategy =
+      V1_buildAppendOnlyUpdatesHandling(protocol.appendStrategy, context);
+    return appendOnlyUpdatesHandling;
+  }
+  if (protocol instanceof V1_OverwriteUpdatesHandling) {
+    return new OverwriteUpdatesHandling();
+  }
+  throw new UnsupportedOperationError(`Can't build UpdatesHandling`, protocol);
+};
+
+/**********************
+ * processing dimension
+ **********************/
+
+const V1_buildProcessingDimension = (
+  protocol: V1_ProcessingDimension,
+  context: V1_GraphBuilderContext,
+): ProcessingDimension => {
+  if (protocol instanceof V1_BatchId) {
+    const batchId = new BatchId();
+    batchId.batchIdIn = protocol.batchIdIn;
+    batchId.batchIdOut = protocol.batchIdOut;
+    return batchId;
+  } else if (protocol instanceof V1_ProcessingDateTime) {
+    const processingDateTime = new ProcessingDateTime();
+    processingDateTime.timeIn = protocol.timeIn;
+    processingDateTime.timeOut = protocol.timeOut;
+    return processingDateTime;
+  } else if (protocol instanceof V1_BatchIdAndDateTime) {
+    const batchIdAndDateTime = new BatchIdAndDateTime();
+    batchIdAndDateTime.batchIdIn = protocol.batchIdIn;
+    batchIdAndDateTime.batchIdOut = protocol.batchIdOut;
+    batchIdAndDateTime.timeIn = protocol.timeIn;
+    batchIdAndDateTime.timeOut = protocol.timeOut;
+    return batchIdAndDateTime;
   }
   throw new UnsupportedOperationError(
-    `Can't build PersistenceTarget`,
+    `Can't build ProcessingDimension`,
+    protocol,
+  );
+};
+
+const V1_buildSourceTimeFields = (
+  protocol: V1_SourceTimeFields,
+  context: V1_GraphBuilderContext,
+): SourceTimeFields => {
+  if (protocol instanceof V1_SourceTimeStart) {
+    const sourceTimeStart = new SourceTimeStart();
+    sourceTimeStart.startField = protocol.startField;
+    return sourceTimeStart;
+  } else if (protocol instanceof V1_SourceTimeStartAndEnd) {
+    const sourceTimeStartAndEnd = new SourceTimeStartAndEnd();
+    sourceTimeStartAndEnd.endField = protocol.endField;
+    sourceTimeStartAndEnd.startField = protocol.startField;
+    return sourceTimeStartAndEnd;
+  }
+  throw new UnsupportedOperationError(`Can't build SourceTimeFields`, protocol);
+};
+
+const V1_buildSourceDerivedDimension = (
+  protocol: V1_SourceDerivedDimension,
+  context: V1_GraphBuilderContext,
+): SourceDerivedDimension => {
+  if (protocol instanceof V1_SourceDerivedTime) {
+    const sourceDerivedTime = new SourceDerivedTime();
+    sourceDerivedTime.sourceTimeFields = V1_buildSourceTimeFields(
+      protocol.sourceTimeFields,
+      context,
+    );
+    sourceDerivedTime.timeEnd = protocol.timeEnd;
+    sourceDerivedTime.timeStart = protocol.timeStart;
+
+    return sourceDerivedTime;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build SourceDerivedDimension`,
     protocol,
   );
 };
@@ -1068,160 +1147,83 @@ export const V1_buildTemporality = (
   throw new UnsupportedOperationError(`Can't build Temporality`, protocol);
 };
 
-/*************
- * auditing V2
- *************/
+/********************
+ * persistence target
+ ********************/
 
-const V1_buildAuditingV2 = (
-  protocol: V1_AuditingV2,
+export const V1_buildPersistenceTarget = (
+  protocol: V1_PersistenceTarget,
   context: V1_GraphBuilderContext,
-): AuditingV2 => {
-  if (protocol instanceof V1_NoAuditingV2) {
-    return new NoAuditingV2();
-  } else if (protocol instanceof V1_AuditingDateTimeV2) {
-    const auditingDateTimeV2 = new AuditingDateTimeV2();
-    auditingDateTimeV2.auditingDateTimeName = protocol.auditingDateTimeName;
-    return auditingDateTimeV2;
-  }
-  throw new UnsupportedOperationError(`Can't build AuditingV2`, protocol);
-};
-
-/******************
- * updates handling
- ******************/
-
-const V1_buildUpdatesHandling = (
-  protocol: V1_UpdatesHandling,
-  context: V1_GraphBuilderContext,
-): UpdatesHandling => {
-  if (protocol instanceof V1_AppendOnlyUpdatesHandling) {
-    const appendOnlyUpdatesHandling = new AppendOnlyUpdatesHandling();
-    appendOnlyUpdatesHandling.appendStrategy =
-      V1_buildAppendOnlyUpdatesHandling(protocol.appendStrategy, context);
-    return appendOnlyUpdatesHandling;
-  }
-  if (protocol instanceof V1_OverwriteUpdatesHandling) {
-    return new OverwriteUpdatesHandling();
-  }
-  throw new UnsupportedOperationError(`Can't build UpdatesHandling`, protocol);
-};
-
-const V1_buildAppendOnlyUpdatesHandling = (
-  protocol: V1_AppendStrategy,
-  context: V1_GraphBuilderContext,
-): AppendStrategy => {
-  if (protocol instanceof V1_AllowDuplicates) {
-    return new AllowDuplicates();
-  } else if (protocol instanceof V1_FailOnDuplicates) {
-    return new FailOnDuplicates();
-  } else if (protocol instanceof V1_FilterDuplicates) {
-    return new FilterDuplicates();
-  }
-  throw new UnsupportedOperationError(
-    `Can't build AppendOnlyUpdatesHandling`,
-    protocol,
-  );
-};
-
-/**********************
- * processing dimension
- **********************/
-
-const V1_buildProcessingDimension = (
-  protocol: V1_ProcessingDimension,
-  context: V1_GraphBuilderContext,
-): ProcessingDimension => {
-  if (protocol instanceof V1_BatchId) {
-    const batchId = new BatchId();
-    batchId.batchIdIn = protocol.batchIdIn;
-    batchId.batchIdOut = protocol.batchIdOut;
-    return batchId;
-  } else if (protocol instanceof V1_ProcessingDateTime) {
-    const processingDateTime = new ProcessingDateTime();
-    processingDateTime.timeIn = protocol.timeIn;
-    processingDateTime.timeOut = protocol.timeOut;
-    return processingDateTime;
-  } else if (protocol instanceof V1_BatchIdAndDateTime) {
-    const batchIdAndDateTime = new BatchIdAndDateTime();
-    batchIdAndDateTime.batchIdIn = protocol.batchIdIn;
-    batchIdAndDateTime.batchIdOut = protocol.batchIdOut;
-    batchIdAndDateTime.timeIn = protocol.timeIn;
-    batchIdAndDateTime.timeOut = protocol.timeOut;
-    return batchIdAndDateTime;
-  }
-  throw new UnsupportedOperationError(
-    `Can't build ProcessingDimension`,
-    protocol,
-  );
-};
-
-const V1_buildSourceDerivedDimension = (
-  protocol: V1_SourceDerivedDimension,
-  context: V1_GraphBuilderContext,
-): SourceDerivedDimension => {
-  if (protocol instanceof V1_SourceDerivedTime) {
-    const sourceDerivedTime = new SourceDerivedTime();
-    sourceDerivedTime.sourceTimeFields = V1_buildSourceTimeFields(
-      protocol.sourceTimeFields,
+): PersistenceTarget => {
+  if (protocol instanceof V1_RelationalPersistenceTarget) {
+    const persistentTarget = new RelationalPersistenceTarget();
+    persistentTarget.database = protocol.database;
+    persistentTarget.table = protocol.table;
+    persistentTarget.temporality = V1_buildTemporality(
+      protocol.temporality,
       context,
     );
-    sourceDerivedTime.timeEnd = protocol.timeEnd;
-    sourceDerivedTime.timeStart = protocol.timeStart;
-
-    return sourceDerivedTime;
+    return persistentTarget;
   }
   throw new UnsupportedOperationError(
-    `Can't build SourceDerivedDimension`,
+    `Can't build PersistenceTarget`,
     protocol,
   );
 };
 
-const V1_buildSourceTimeFields = (
-  protocol: V1_SourceTimeFields,
+/************************
+ * service output targets
+ ***********************/
+
+export const V1_buildServiceOutputTargets = (
+  protocol: V1_ServiceOutputTarget[] | undefined,
   context: V1_GraphBuilderContext,
-): SourceTimeFields => {
-  if (protocol instanceof V1_SourceTimeStart) {
-    const sourceTimeStart = new SourceTimeStart();
-    sourceTimeStart.startField = protocol.startField;
-    return sourceTimeStart;
-  } else if (protocol instanceof V1_SourceTimeStartAndEnd) {
-    const sourceTimeStartAndEnd = new SourceTimeStartAndEnd();
-    sourceTimeStartAndEnd.endField = protocol.endField;
-    sourceTimeStartAndEnd.startField = protocol.startField;
-    return sourceTimeStartAndEnd;
+): ServiceOutputTarget[] | undefined => {
+  if (protocol === undefined) {
+    return protocol;
   }
-  throw new UnsupportedOperationError(`Can't build SourceTimeFields`, protocol);
+  const serviceOutputTargets: ServiceOutputTarget[] = [];
+  for (const v1ServiceOutputTarget of protocol) {
+    const serviceOutputTarget = new ServiceOutputTarget();
+    serviceOutputTarget.persistenceTarget = V1_buildPersistenceTarget(
+      v1ServiceOutputTarget.persistenceTarget,
+      context,
+    );
+    serviceOutputTarget.serviceOutput = V1_buildServiceOutput(
+      v1ServiceOutputTarget.serviceOutput,
+      context,
+    );
+
+    serviceOutputTargets.push(serviceOutputTarget);
+  }
+  return serviceOutputTargets;
 };
 
-/**********
- * notifier
- **********/
+/*************
+ * persistence
+ *************/
 
-export const V1_buildNotifyee = (
-  protocol: V1_Notifyee,
+export const V1_buildPersistence = (
+  protocol: V1_Persistence,
   context: V1_GraphBuilderContext,
-): Notifyee => {
-  if (protocol instanceof V1_EmailNotifyee) {
-    const notifyee = new EmailNotifyee();
-    notifyee.address = protocol.address;
-    return notifyee;
-  } else if (protocol instanceof V1_PagerDutyNotifyee) {
-    const notifyee = new PagerDutyNotifyee();
-    notifyee.url = protocol.url;
-    return notifyee;
-  }
-  throw new UnsupportedOperationError(`Can't build notifier`, protocol);
-};
-
-export const V1_buildNotifier = (
-  protocol: V1_Notifier,
-  context: V1_GraphBuilderContext,
-): Notifier => {
-  const notifier = new Notifier();
-  notifier.notifyees = protocol.notifyees.map((n) =>
-    V1_buildNotifyee(n, context),
+): void => {
+  const path = V1_buildFullPath(protocol.package, protocol.name);
+  const persistence = getOwnPersistence(path, context.currentSubGraph);
+  persistence.documentation = guaranteeNonEmptyString(
+    protocol.documentation,
+    `Persistence 'documentation' field is missing or empty`,
   );
-  return notifier;
+  persistence.notifier = V1_buildNotifier(protocol.notifier, context);
+  persistence.persister = V1_buildPersister(protocol.persister, context);
+  persistence.service = context.resolveService(protocol.service);
+  persistence.serviceOutputTargets = V1_buildServiceOutputTargets(
+    protocol.serviceOutputTargets,
+    context,
+  );
+  persistence.tests = protocol.tests
+    .map((test) => V1_buildAtomicTest(test, context))
+    .map((e) => guaranteeType(e, PersistenceTest));
+  persistence.trigger = V1_buildTrigger(protocol.trigger, context);
 };
 
 /**********

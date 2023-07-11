@@ -16,7 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
-import { Temporality } from './DSL_Persistence_Temporality.js';
+import type { Temporality } from './DSL_Persistence_Temporality.js';
 
 export abstract class PersistenceTarget implements Hashable {
   abstract get hashCode(): string;

@@ -16,10 +16,10 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
-import { UpdatesHandling } from './DSL_Persistence_UpdatesHandling.js';
-import { ProcessingDimension } from './DSL_Persistence_ProcessingDimension.js';
-import { SourceDerivedDimension } from './DSL_Persistence_SourceDerivedDimension.js';
-import { AuditingV2 } from './DSL_Persistence_AuditingV2.js';
+import type { UpdatesHandling } from './DSL_Persistence_UpdatesHandling.js';
+import type { ProcessingDimension } from './DSL_Persistence_ProcessingDimension.js';
+import type { SourceDerivedDimension } from './DSL_Persistence_SourceDerivedDimension.js';
+import type { AuditingV2 } from './DSL_Persistence_AuditingV2.js';
 
 export abstract class Temporality implements Hashable {
   abstract get hashCode(): string;

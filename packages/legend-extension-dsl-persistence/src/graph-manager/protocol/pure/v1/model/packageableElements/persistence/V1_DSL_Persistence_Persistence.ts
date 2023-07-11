@@ -24,7 +24,7 @@ import {
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import type { V1_PersistenceTest } from './V1_DSL_Persistence_PersistenceTest.js';
-import { V1_ServiceOutputTarget as V1_ServiceOutputTarget } from './V1_DSL_Persistence_ServiceOutputTarget.js';
+import type { V1_ServiceOutputTarget as V1_ServiceOutputTarget } from './V1_DSL_Persistence_ServiceOutputTarget.js';
 
 export class V1_Persistence extends V1_PackageableElement implements Hashable {
   documentation!: string;
@@ -40,7 +40,7 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
       this.trigger,
-      this.service ?? '',
+      this.service,
       hashArray(this.serviceOutputTargets ?? []),
       this.persister ?? '',
       this.notifier,
