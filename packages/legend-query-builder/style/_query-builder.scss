@@ -1272,3 +1272,16 @@
     position: relative;
   }
 }
+
+.query-builder__chat-mode {
+  &__modal {
+    padding: 0;
+    height: 50vh;
+    width: 50vw;
+    overflow: hidden;
+  }
+
+  &__body {
+    height: calc(100% - 8.5rem);
+  }
+}

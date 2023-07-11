@@ -122,6 +122,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isEditingWatermark = false;
   isCheckingEntitlments = false;
   isCalendarEnabled = false;
+  isQueryChatOpened = false;
 
   class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -156,6 +157,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       class: observable,
       mapping: observable,
       runtimeValue: observable,
+      isQueryChatOpened: observable,
 
       sideBarClassName: computed,
       isQuerySupported: computed,
@@ -169,6 +171,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
+      setIsQueryChatOpened: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -241,6 +244,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get allVariableNames(): string[] {
     return this.allVariables.map((e) => e.name);
+  }
+
+  setIsQueryChatOpened(val: boolean): void {
+    this.isQueryChatOpened = val;
   }
 
   setShowFunctionsExplorerPanel(val: boolean): void {
