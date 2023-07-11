@@ -24,13 +24,31 @@ import {
   V1_RecordSourcePartition,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 import {
-  type PureProtocolProcessorPlugin,
-  V1_rawLambdaModelSchema,
-} from '@finos/legend-graph';
-import {
+  type PlainObject,
+  UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
+import { V1_PropertyPath } from '../../model/packageableElements/mastery/V1_DSL_Mastery_PropertyPath.js';
+import {
+  type V1_RuleScope,
+  V1_DataProviderIdScope,
+  V1_DataProviderTypeScope,
+  V1_RecordSourceScope,
+  V1_RuleScopeType,
+} from '../../model/packageableElements/mastery/V1_DSL_Mastery_RuleScope.js';
+import {
+  V1_ConditionalRule,
+  V1_CreateRule,
+  V1_DeleteRule,
+  V1_SourcePrecedenceRule,
+  type V1_PrecedenceRule,
+} from '../../model/packageableElements/mastery/V1_DSL_Mastery_PrecedenceRule.js';
+import type { DSL_Mastery_PureProtocolProcessorPlugin_Extension } from '../../../DSL_Mastery_PureProtocolProcessorPlugin_Extension.js';
+import {
+  type PureProtocolProcessorPlugin,
+  V1_rawLambdaModelSchema,
+} from '@finos/legend-graph';
 import {
   createModelSchema,
   custom,
@@ -93,6 +111,186 @@ const V1_identityResolutionSchema = createModelSchema(V1_IdentityResolution, {
 });
 
 /**********
+ * precedence rules
+ **********/
+
+const V1_propertyPathSchema = createModelSchema(V1_PropertyPath, {
+  filter: usingModelSchema(V1_rawLambdaModelSchema),
+  property: primitive(),
+});
+
+const V1_dataProviderIdScopeSchema = createModelSchema(V1_DataProviderIdScope, {
+  _type: primitive(),
+  dataProviderId: primitive(),
+});
+
+const V1_dataProviderTypeScopeSchema = createModelSchema(
+  V1_DataProviderTypeScope,
+  {
+    _type: primitive(),
+    dataProviderType: primitive(),
+  },
+);
+
+const V1_recordSourceScopeSchema = createModelSchema(V1_RecordSourceScope, {
+  _type: primitive(),
+  recordSourceId: primitive(),
+});
+
+export const V1_serializeRuleScope = (
+  protocol: V1_RuleScope,
+): PlainObject<V1_RuleScope> => {
+  switch (protocol._type) {
+    case V1_RuleScopeType.DATA_PROVIDER_ID_SCOPE:
+      return serialize(V1_dataProviderIdScopeSchema, protocol);
+    case V1_RuleScopeType.DATA_PROVIDER_TYPE_SCOPE:
+      return serialize(V1_dataProviderTypeScopeSchema, protocol);
+    case V1_RuleScopeType.RECORD_SOURCE_SCOPE:
+      return serialize(V1_recordSourceScopeSchema, protocol);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't serialize rule scope '${protocol._type}'`,
+      );
+  }
+};
+
+export const V1_deserializeRuleScope = (
+  json: PlainObject<V1_RuleScope>,
+): V1_RuleScope => {
+  switch (json._type) {
+    case V1_RuleScopeType.DATA_PROVIDER_ID_SCOPE:
+      return deserialize(V1_dataProviderIdScopeSchema, json);
+    case V1_RuleScopeType.DATA_PROVIDER_TYPE_SCOPE:
+      return deserialize(V1_dataProviderTypeScopeSchema, json);
+    case V1_RuleScopeType.RECORD_SOURCE_SCOPE:
+      return deserialize(V1_recordSourceScopeSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize rule scope '${json._type}'`,
+      );
+  }
+};
+
+export const V1_createRuleSchema = createModelSchema(V1_CreateRule, {
+  _type: primitive(),
+  masterRecordFilter: usingModelSchema(V1_rawLambdaModelSchema),
+  paths: list(
+    custom(
+      (val) => serialize(V1_propertyPathSchema, val),
+      (val) => deserialize(V1_propertyPathSchema, val),
+    ),
+  ),
+  scopes: list(
+    custom(
+      (val) => V1_serializeRuleScope(val),
+      (val) => V1_deserializeRuleScope(val),
+    ),
+  ),
+});
+
+export const V1_deleteRuleSchema = createModelSchema(V1_DeleteRule, {
+  _type: primitive(),
+  masterRecordFilter: usingModelSchema(V1_rawLambdaModelSchema),
+  paths: list(
+    custom(
+      (val) => serialize(V1_propertyPathSchema, val),
+      (val) => deserialize(V1_propertyPathSchema, val),
+    ),
+  ),
+  precedence: primitive(),
+  predicate: usingModelSchema(V1_rawLambdaModelSchema),
+  scopes: list(
+    custom(
+      (val) => V1_serializeRuleScope(val),
+      (val) => V1_deserializeRuleScope(val),
+    ),
+  ),
+});
+
+export const V1_sourcePrecedenceRuleSchema = createModelSchema(
+  V1_SourcePrecedenceRule,
+  {
+    _type: primitive(),
+    action: primitive(),
+    masterRecordFilter: usingModelSchema(V1_rawLambdaModelSchema),
+    paths: list(
+      custom(
+        (val) => serialize(V1_propertyPathSchema, val),
+        (val) => deserialize(V1_propertyPathSchema, val),
+      ),
+    ),
+    precedence: primitive(),
+    scopes: list(
+      custom(
+        (val) => V1_serializeRuleScope(val),
+        (val) => V1_deserializeRuleScope(val),
+      ),
+    ),
+  },
+);
+
+export const V1_conditionalRuleSchema = createModelSchema(V1_ConditionalRule, {
+  _type: primitive(),
+  masterRecordFilter: usingModelSchema(V1_rawLambdaModelSchema),
+  paths: list(
+    custom(
+      (val) => serialize(V1_propertyPathSchema, val),
+      (val) => deserialize(V1_propertyPathSchema, val),
+    ),
+  ),
+  predicate: usingModelSchema(V1_rawLambdaModelSchema),
+  scopes: list(
+    custom(
+      (val) => V1_serializeRuleScope(val),
+      (val) => V1_deserializeRuleScope(val),
+    ),
+  ),
+});
+
+export const V1_serializePrecedenceRule = (
+  protocol: V1_PrecedenceRule,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_PrecedenceRule> => {
+  const extraPrecedenceRuleProtocolSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraPrecedenceRuleProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraPrecedenceRuleProtocolSerializers) {
+    const precedenceRuleProtocolJson = serializer(protocol);
+    if (precedenceRuleProtocolJson) {
+      return precedenceRuleProtocolJson;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize precedence rule: no compatible serializer available from plugins`,
+    protocol,
+  );
+};
+
+export const V1_deserializePrecedenceRule = (
+  json: PlainObject<V1_PrecedenceRule>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_PrecedenceRule => {
+  const extraPrecedenceRuleProtocolDeserializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraPrecedenceRuleProtocolDeserializers?.() ?? [],
+  );
+  for (const deserializer of extraPrecedenceRuleProtocolDeserializers) {
+    const precedenceRuleProtocol = deserializer(json);
+    if (precedenceRuleProtocol) {
+      return precedenceRuleProtocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize precedence rule of type '${json._type}': no compatible deserializer available from plugins`,
+  );
+};
+
+/**********
  * master record definition
  **********/
 
@@ -112,6 +310,12 @@ export const V1_masterRecordDefinitionModelSchema = (
     modelClass: primitive(),
     name: primitive(),
     package: primitive(),
+    precedenceRules: list(
+      custom(
+        (val) => V1_serializePrecedenceRule(val, plugins),
+        (val) => V1_deserializePrecedenceRule(val, plugins),
+      ),
+    ),
     sources: list(
       custom(
         (val) => serialize(V1_recordSourceSchema, val),

@@ -18,8 +18,12 @@ import packageJson from '../../../../package.json' assert { type: 'json' };
 import { MasterRecordDefinition } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import { V1_MasterRecordDefinition } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import {
+  V1_conditionalRuleSchema,
+  V1_createRuleSchema,
+  V1_deleteRuleSchema,
   V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE,
   V1_masterRecordDefinitionModelSchema,
+  V1_sourcePrecedenceRuleSchema,
 } from './v1/transformation/pureProtocol/V1_DSL_Mastery_ProtocolHelper.js';
 import { V1_buildMasterRecordDefinition } from './v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
 import { V1_transformMasterRecordDefinition } from './v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
@@ -38,11 +42,23 @@ import {
 } from '@finos/legend-graph';
 import { assertType, type PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
+import type {
+  DSL_Mastery_PureProtocolProcessorPlugin_Extension,
+  V1_PrecedenceRuleProtocolDeserializer,
+  V1_PrecedenceRuleProtocolSerializer,
+} from './DSL_Mastery_PureProtocolProcessorPlugin_Extension.js';
+import {
+  type V1_PrecedenceRule,
+  V1_RuleType,
+} from './v1/model/packageableElements/mastery/V1_DSL_Mastery_PrecedenceRule.js';
 
 export const MASTER_RECORD_DEFINITION_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::mastery::metamodel::MasterRecordDefinition';
 
-export class DSL_Mastery_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class DSL_Mastery_PureProtocolProcessorPlugin
+  extends PureProtocolProcessorPlugin
+  implements DSL_Mastery_PureProtocolProcessorPlugin_Extension
+{
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
@@ -138,6 +154,46 @@ export class DSL_Mastery_PureProtocolProcessorPlugin extends PureProtocolProcess
           return V1_transformMasterRecordDefinition(metamodel, context);
         }
         return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraPrecedenceRuleProtocolSerializers?(): V1_PrecedenceRuleProtocolSerializer[] {
+    return [
+      (
+        protocol: V1_PrecedenceRule,
+      ): PlainObject<V1_PrecedenceRule> | undefined => {
+        switch (protocol._type) {
+          case V1_RuleType.CREATE_RULE:
+            return serialize(V1_createRuleSchema, protocol);
+          case V1_RuleType.CONDITIONAL_RULE:
+            return serialize(V1_conditionalRuleSchema, protocol);
+          case V1_RuleType.SOURCE_PRECEDENCE_RULE:
+            return serialize(V1_sourcePrecedenceRuleSchema, protocol);
+          case V1_RuleType.DELETE_RULE:
+            return serialize(V1_deleteRuleSchema, protocol);
+          default:
+            return undefined;
+        }
+      },
+    ];
+  }
+
+  V1_getExtraPrecedenceRuleProtocolDeserializers?(): V1_PrecedenceRuleProtocolDeserializer[] {
+    return [
+      (json: PlainObject<V1_PrecedenceRule>): V1_PrecedenceRule | undefined => {
+        switch (json._type) {
+          case V1_RuleType.CREATE_RULE:
+            return deserialize(V1_createRuleSchema, json);
+          case V1_RuleType.CONDITIONAL_RULE:
+            return deserialize(V1_conditionalRuleSchema, json);
+          case V1_RuleType.SOURCE_PRECEDENCE_RULE:
+            return deserialize(V1_sourcePrecedenceRuleSchema, json);
+          case V1_RuleType.DELETE_RULE:
+            return deserialize(V1_deleteRuleSchema, json);
+          default:
+            return undefined;
+        }
       },
     ];
   }

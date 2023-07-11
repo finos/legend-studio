@@ -22,6 +22,7 @@ import {
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
+import type { V1_PrecedenceRule } from './V1_DSL_Mastery_PrecedenceRule.js';
 
 export class V1_MasterRecordDefinition
   extends V1_PackageableElement
@@ -30,6 +31,7 @@ export class V1_MasterRecordDefinition
   modelClass!: string;
   identityResolution!: V1_IdentityResolution;
   sources: V1_RecordSource[] = [];
+  precedenceRules: V1_PrecedenceRule[] | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -37,6 +39,7 @@ export class V1_MasterRecordDefinition
       this.modelClass,
       this.identityResolution,
       hashArray(this.sources),
+      this.precedenceRules ? hashArray(this.precedenceRules) : '',
     ]);
   }
 
