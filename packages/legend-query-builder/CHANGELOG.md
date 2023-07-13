@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.1.9
+
+### Patch Changes
+
+- [#2428](https://github.com/finos/legend-studio/pull/2428) [`8a14acaeb`](https://github.com/finos/legend-studio/commit/8a14acaebaada77e36995d02222063cc2093a5d4) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Make links in query result panel clickable.
+
+- [#2392](https://github.com/finos/legend-studio/pull/2392) [`6024e4a17`](https://github.com/finos/legend-studio/commit/6024e4a170be9d90132bb0298914ef0b413cbdd2) ([@Paarth002](https://github.com/Paarth002)) - Added form for global implementation in execution plan
+
 ## 4.1.8
 
 ### Patch Changes
