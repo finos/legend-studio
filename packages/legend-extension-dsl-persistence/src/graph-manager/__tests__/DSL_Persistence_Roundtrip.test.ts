@@ -28,6 +28,11 @@ import {
 } from '@finos/legend-graph/test';
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
+import {
+  TEST_DATA__roundtrip_append_only_allow_duplicates,
+  TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from,
+  TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit,
+} from './TEST_DATA_DSL_PersistenceV2_Roundtrip.js';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager
@@ -48,6 +53,21 @@ test(unitTest('DSL Persistence roundtrip'), async () => {
   );
   await TEST__checkBuildingElementsRoundtrip(
     TEST_DATA__cloud__roundtrip as Entity[],
+    pluginManager,
+  );
+});
+
+test(unitTest('DSL Persistence V2 roundtrip'), async () => {
+  await TEST__checkBuildingElementsRoundtrip(
+    TEST_DATA__roundtrip_append_only_allow_duplicates as Entity[],
+    pluginManager,
+  );
+  await TEST__checkBuildingElementsRoundtrip(
+    TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from as Entity[],
+    pluginManager,
+  );
+  await TEST__checkBuildingElementsRoundtrip(
+    TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit as Entity[],
     pluginManager,
   );
 });

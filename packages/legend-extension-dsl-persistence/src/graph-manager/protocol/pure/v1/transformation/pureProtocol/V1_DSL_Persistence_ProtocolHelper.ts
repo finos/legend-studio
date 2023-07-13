@@ -98,6 +98,7 @@ import {
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
+  optionalCustom,
   optionalCustomList,
   customList,
   customListWithSchema,
@@ -117,6 +118,85 @@ import { V1_PersistenceTest } from '../../model/packageableElements/persistence/
 import { V1_PersistenceTestBatch } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestBatch.js';
 import { V1_ConnectionTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_ConnectionTestData.js';
 import { V1_PersistenceTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestData.js';
+import { V1_ServiceOutputTarget } from '../../model/packageableElements/persistence/V1_DSL_Persistence_ServiceOutputTarget.js';
+import {
+  V1_GraphFetchServiceOutput,
+  type V1_ServiceOutput,
+  V1_TdsServiceOutput,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_ServiceOutput.js';
+import {
+  type V1_PersistenceTarget,
+  V1_RelationalPersistenceTarget,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistentTarget.js';
+import {
+  V1_AnyVersion,
+  type V1_Deduplication,
+  V1_MaxVersion,
+  V1_MaxVersionForGraphFetch,
+  V1_MaxVersionForTds,
+  V1_NoDeduplication,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_Deduplication.js';
+import {
+  type V1_DatasetType,
+  V1_Delta,
+  V1_Snapshot,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_DatasetType.js';
+import {
+  V1_FieldBased,
+  V1_FieldBasedForGraphFetch,
+  V1_FieldBasedForTds,
+  V1_NoPartitioning,
+  type V1_Partitioning,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_Partitioning.js';
+import {
+  V1_DeleteTargetDataset,
+  type V1_EmptyDatasetHandling,
+  V1_NoOp,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_EmptyDatasetHandling.js';
+import {
+  type V1_ActionIndicatorFields,
+  V1_DeleteIndicator,
+  V1_DeleteIndicatorForGraphFetch,
+  V1_DeleteIndicatorForTds,
+  V1_NoActionIndicator,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_ActionIndicatorFields.js';
+import {
+  V1_BiTemporal,
+  V1_NonTemporal,
+  type V1_Temporality,
+  V1_UniTemporal,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_Temporality.js';
+import {
+  V1_AuditingDateTimeV2,
+  type V1_AuditingV2,
+  V1_NoAuditingV2,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_AuditingV2.js';
+import {
+  V1_AppendOnlyUpdatesHandling,
+  V1_OverwriteUpdatesHandling,
+  type V1_UpdatesHandling,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_UpdatesHandling.js';
+import {
+  V1_AllowDuplicates,
+  type V1_AppendStrategy,
+  V1_FailOnDuplicates,
+  V1_FilterDuplicates,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_AppendStrategy.js';
+import {
+  V1_BatchId,
+  V1_BatchIdAndDateTime,
+  V1_ProcessingDateTime,
+  type V1_ProcessingDimension,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_ProcessingDimension.js';
+import {
+  type V1_SourceDerivedDimension,
+  V1_SourceDerivedTime,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_SourceDerivedDimension.js';
+import {
+  type V1_SourceTimeFields,
+  V1_SourceTimeStart,
+  V1_SourceTimeStartAndEnd,
+} from '../../model/packageableElements/persistence/V1_DSL_Persistence_SourceTimeFields.js';
 
 /**********
  * notifier
@@ -1069,6 +1149,962 @@ export const V1_persistenceTestModelSchema = (
     ),
   });
 
+/*************
+ * AuditingV2
+ *************/
+
+export enum V1_AuditingTypeV2 {
+  DATE_TIME_AUDITING_V2 = 'auditingDateTime',
+  NO_AUDITING_V2 = 'noAuditing',
+}
+
+export const V1_auditingDateTimeV2ModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_AuditingDateTimeV2> =>
+  createModelSchema(V1_AuditingDateTimeV2, {
+    _type: usingConstantValueSchema(V1_AuditingTypeV2.DATE_TIME_AUDITING_V2),
+    auditingDateTimeName: primitive(),
+  });
+
+export const V1_noAuditingV2ModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_NoAuditingV2> =>
+  createModelSchema(V1_NoAuditingV2, {
+    _type: usingConstantValueSchema(V1_AuditingTypeV2.NO_AUDITING_V2),
+  });
+
+export const V1_serializeAuditingV2 = (
+  protocol: V1_AuditingV2,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_AuditingV2> => {
+  if (protocol instanceof V1_AuditingDateTimeV2) {
+    return serialize(V1_auditingDateTimeV2ModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_NoAuditingV2) {
+    return serialize(V1_noAuditingV2ModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize AuditingV2`, protocol);
+};
+
+export const V1_deserializeAuditingV2 = (
+  json: PlainObject<V1_AuditingV2>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_AuditingV2 => {
+  if (json._type === V1_AuditingTypeV2.DATE_TIME_AUDITING_V2) {
+    return deserialize(V1_auditingDateTimeV2ModelSchema(plugins), json);
+  } else if (json._type === V1_AuditingTypeV2.NO_AUDITING_V2) {
+    return deserialize(V1_noAuditingV2ModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(`Can't deserialize AuditingV2`, json);
+};
+
+/******************
+ * Append Strategy
+ ******************/
+
+export enum V1_AppendStrategyType {
+  ALLOW_DUPLICATES = 'allowDuplicates',
+  FAIL_ON_DUPLICATES = 'failOnDuplicates',
+  FILTER_DUPLICATES = 'filterDuplicates',
+}
+
+export const V1_failOnDuplicatesModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_FailOnDuplicates> =>
+  createModelSchema(V1_FailOnDuplicates, {
+    _type: usingConstantValueSchema(V1_AppendStrategyType.FAIL_ON_DUPLICATES),
+  });
+
+export const V1_allowDuplicatesModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_AllowDuplicates> =>
+  createModelSchema(V1_AllowDuplicates, {
+    _type: usingConstantValueSchema(V1_AppendStrategyType.ALLOW_DUPLICATES),
+  });
+
+export const V1_filterDuplicatesModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_FilterDuplicates> =>
+  createModelSchema(V1_FilterDuplicates, {
+    _type: usingConstantValueSchema(V1_AppendStrategyType.FILTER_DUPLICATES),
+  });
+
+export const V1_serializeAppendStrategy = (
+  protocol: V1_AppendStrategy,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_AppendStrategy> => {
+  if (protocol instanceof V1_AllowDuplicates) {
+    return serialize(V1_allowDuplicatesModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_FailOnDuplicates) {
+    return serialize(V1_failOnDuplicatesModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_FilterDuplicates) {
+    return serialize(V1_filterDuplicatesModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize AppendStrategy`,
+    protocol,
+  );
+};
+
+export const V1_deserializeAppendStrategy = (
+  json: PlainObject<V1_AppendStrategy>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_AppendStrategy => {
+  if (json._type === V1_AppendStrategyType.ALLOW_DUPLICATES) {
+    return deserialize(V1_allowDuplicatesModelSchema(plugins), json);
+  } else if (json._type === V1_AppendStrategyType.FAIL_ON_DUPLICATES) {
+    return deserialize(V1_failOnDuplicatesModelSchema(plugins), json);
+  } else if (json._type === V1_AppendStrategyType.FILTER_DUPLICATES) {
+    return deserialize(V1_filterDuplicatesModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(`Can't deserialize AppendStrategy`, json);
+};
+
+/******************
+ * Updates handling
+ ******************/
+
+export enum V1_UpdatesHandlingType {
+  APPEND_ONLY = 'appendOnly',
+  OVERWRITE = 'overwrite',
+}
+
+export const V1_overwriteUpdatesHandlingModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_OverwriteUpdatesHandling> =>
+  createModelSchema(V1_OverwriteUpdatesHandling, {
+    _type: usingConstantValueSchema(V1_UpdatesHandlingType.OVERWRITE),
+  });
+
+export const V1_appendOnlyUpdatesHandlingModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_AppendOnlyUpdatesHandling> =>
+  createModelSchema(V1_AppendOnlyUpdatesHandling, {
+    _type: usingConstantValueSchema(V1_UpdatesHandlingType.APPEND_ONLY),
+    appendStrategy: custom(
+      (val) => V1_serializeAppendStrategy(val, plugins),
+      (val) => V1_deserializeAppendStrategy(val, plugins),
+    ),
+  });
+
+export const V1_serializeUpdatesHandling = (
+  protocol: V1_UpdatesHandling,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_UpdatesHandling> => {
+  if (protocol instanceof V1_AppendOnlyUpdatesHandling) {
+    return serialize(
+      V1_appendOnlyUpdatesHandlingModelSchema(plugins),
+      protocol,
+    );
+  } else if (protocol instanceof V1_OverwriteUpdatesHandling) {
+    return serialize(V1_overwriteUpdatesHandlingModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize UpdatesHandling`,
+    protocol,
+  );
+};
+
+export const V1_deserializeUpdatesHandling = (
+  json: PlainObject<V1_UpdatesHandling>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_UpdatesHandling => {
+  if (json._type === V1_UpdatesHandlingType.APPEND_ONLY) {
+    return deserialize(V1_appendOnlyUpdatesHandlingModelSchema(plugins), json);
+  } else if (json._type === V1_UpdatesHandlingType.OVERWRITE) {
+    return deserialize(V1_overwriteUpdatesHandlingModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize UpdatesHandling`,
+    json,
+  );
+};
+
+/**********************
+ * Processing dimension
+ **********************/
+
+export enum V1_ProcessingDimensionType {
+  BATCH_ID = 'batchId',
+  PROCESSING_DATE_TIME = 'processingTime',
+  BATCH_ID_AND_DATE_TIME = 'batchIdAndProcessingTime',
+}
+
+export const V1_batchIdModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_BatchId> =>
+  createModelSchema(V1_BatchId, {
+    _type: usingConstantValueSchema(V1_ProcessingDimensionType.BATCH_ID),
+    batchIdIn: primitive(),
+    batchIdOut: primitive(),
+  });
+
+export const V1_processingDateTimeModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ProcessingDateTime> =>
+  createModelSchema(V1_ProcessingDateTime, {
+    _type: usingConstantValueSchema(
+      V1_ProcessingDimensionType.PROCESSING_DATE_TIME,
+    ),
+    timeIn: primitive(),
+    timeOut: primitive(),
+  });
+
+export const V1_batchIdAndDateTimeModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_BatchIdAndDateTime> =>
+  createModelSchema(V1_BatchIdAndDateTime, {
+    _type: usingConstantValueSchema(
+      V1_ProcessingDimensionType.BATCH_ID_AND_DATE_TIME,
+    ),
+    batchIdIn: primitive(),
+    batchIdOut: primitive(),
+    timeIn: primitive(),
+    timeOut: primitive(),
+  });
+
+export const V1_serializeProcessingDimension = (
+  protocol: V1_ProcessingDimension,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_ProcessingDimension> => {
+  if (protocol instanceof V1_BatchId) {
+    return serialize(V1_batchIdModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_ProcessingDateTime) {
+    return serialize(V1_processingDateTimeModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_BatchIdAndDateTime) {
+    return serialize(V1_batchIdAndDateTimeModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize ProcessingDimension`,
+    protocol,
+  );
+};
+
+export const V1_deserializeProcessingDimension = (
+  json: PlainObject<V1_ProcessingDimension>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_ProcessingDimension => {
+  if (json._type === V1_ProcessingDimensionType.BATCH_ID) {
+    return deserialize(V1_batchIdModelSchema(plugins), json);
+  } else if (json._type === V1_ProcessingDimensionType.BATCH_ID_AND_DATE_TIME) {
+    return deserialize(V1_batchIdAndDateTimeModelSchema(plugins), json);
+  } else if (json._type === V1_ProcessingDimensionType.PROCESSING_DATE_TIME) {
+    return deserialize(V1_processingDateTimeModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize ProcessingDimension`,
+    json,
+  );
+};
+
+/********************
+ * Source time fields
+ ********************/
+
+export enum V1_SourceTimeFieldsType {
+  SOURCE_TIME_START = 'sourceTimeStart',
+  SOURCE_TIME_START_AND_END = 'sourceTimeStartAndEnd',
+}
+
+export const V1_sourceTimeStartModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_SourceTimeStart> =>
+  createModelSchema(V1_SourceTimeStart, {
+    _type: usingConstantValueSchema(V1_SourceTimeFieldsType.SOURCE_TIME_START),
+    startField: primitive(),
+  });
+
+export const V1_sourceTimeStartAndEndModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_SourceTimeStartAndEnd> =>
+  createModelSchema(V1_SourceTimeStartAndEnd, {
+    _type: usingConstantValueSchema(
+      V1_SourceTimeFieldsType.SOURCE_TIME_START_AND_END,
+    ),
+    endField: primitive(),
+    startField: primitive(),
+  });
+
+export const V1_serializeSourceTimeFields = (
+  protocol: V1_SourceTimeFields,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_SourceTimeFields> => {
+  if (protocol instanceof V1_SourceTimeStart) {
+    return serialize(V1_sourceTimeStartModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_SourceTimeStartAndEnd) {
+    return serialize(V1_sourceTimeStartAndEndModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize SourceTimeFields`,
+    protocol,
+  );
+};
+
+export const V1_deserializeSourceTimeFields = (
+  json: PlainObject<V1_SourceTimeFields>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_SourceTimeFields => {
+  if (json._type === V1_SourceTimeFieldsType.SOURCE_TIME_START) {
+    return deserialize(V1_sourceTimeStartModelSchema(plugins), json);
+  } else if (json._type === V1_SourceTimeFieldsType.SOURCE_TIME_START_AND_END) {
+    return deserialize(V1_sourceTimeStartAndEndModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize SourceTimeFields`,
+    json,
+  );
+};
+
+/**************************
+ * Source derived dimension
+ **************************/
+
+export enum V1_SourceDerivedDimensionType {
+  SOURCE_DERIVED_TIME = 'sourceDerivedTime',
+}
+
+export const V1_sourceDerivedTimeModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_SourceDerivedTime> =>
+  createModelSchema(V1_SourceDerivedTime, {
+    _type: usingConstantValueSchema(
+      V1_SourceDerivedDimensionType.SOURCE_DERIVED_TIME,
+    ),
+    sourceTimeFields: custom(
+      (val) => V1_serializeSourceTimeFields(val, plugins),
+      (val) => V1_deserializeSourceTimeFields(val, plugins),
+    ),
+    timeEnd: primitive(),
+    timeStart: primitive(),
+  });
+
+export const V1_serializeSourceDerivedDimension = (
+  protocol: V1_SourceDerivedDimension,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_SourceDerivedDimension> => {
+  if (protocol instanceof V1_SourceDerivedTime) {
+    return serialize(V1_sourceDerivedTimeModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize SourceDerivedDimension`,
+    protocol,
+  );
+};
+
+export const V1_deserializeSourceDerivedDimension = (
+  json: PlainObject<V1_SourceDerivedDimension>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_SourceDerivedDimension => {
+  if (json._type === V1_SourceDerivedDimensionType.SOURCE_DERIVED_TIME) {
+    return deserialize(V1_sourceDerivedTimeModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize SourceDerivedDimension`,
+    json,
+  );
+};
+
+/*************
+ * Temporality
+ *************/
+
+export enum V1_TemporalityType {
+  NON_TEMPORAL = 'none',
+  UNI_TEMPORAL = 'unitemporalTemporality',
+  BI_TEMPORAL = 'bitemporalTemporality',
+}
+
+export const V1_nonTemporalModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_NonTemporal> =>
+  createModelSchema(V1_NonTemporal, {
+    _type: usingConstantValueSchema(V1_TemporalityType.NON_TEMPORAL),
+    auditing: custom(
+      (val) => V1_serializeAuditingV2(val, plugins),
+      (val) => V1_deserializeAuditingV2(val, plugins),
+    ),
+    updatesHandling: custom(
+      (val) => V1_serializeUpdatesHandling(val, plugins),
+      (val) => V1_deserializeUpdatesHandling(val, plugins),
+    ),
+  });
+
+export const V1_biTemporalModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_BiTemporal> =>
+  createModelSchema(V1_BiTemporal, {
+    _type: usingConstantValueSchema(V1_TemporalityType.BI_TEMPORAL),
+    processingDimension: custom(
+      (val) => V1_serializeProcessingDimension(val, plugins),
+      (val) => V1_deserializeProcessingDimension(val, plugins),
+    ),
+    sourceDerivedDimension: custom(
+      (val) => V1_serializeSourceDerivedDimension(val, plugins),
+      (val) => V1_deserializeSourceDerivedDimension(val, plugins),
+    ),
+  });
+
+export const V1_uniTemporalModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_UniTemporal> =>
+  createModelSchema(V1_UniTemporal, {
+    _type: usingConstantValueSchema(V1_TemporalityType.UNI_TEMPORAL),
+    processingDimension: custom(
+      (val) => V1_serializeProcessingDimension(val, plugins),
+      (val) => V1_deserializeProcessingDimension(val, plugins),
+    ),
+  });
+
+export const V1_serializeTemporality = (
+  protocol: V1_Temporality,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Temporality> => {
+  if (protocol instanceof V1_NonTemporal) {
+    return serialize(V1_nonTemporalModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_UniTemporal) {
+    return serialize(V1_uniTemporalModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_BiTemporal) {
+    return serialize(V1_biTemporalModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize Temporality`, protocol);
+};
+
+export const V1_deserializeTemporality = (
+  json: PlainObject<V1_Temporality>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Temporality => {
+  if (json._type === V1_TemporalityType.NON_TEMPORAL) {
+    return deserialize(V1_nonTemporalModelSchema(plugins), json);
+  } else if (json._type === V1_TemporalityType.UNI_TEMPORAL) {
+    return deserialize(V1_uniTemporalModelSchema(plugins), json);
+  } else if (json._type === V1_TemporalityType.BI_TEMPORAL) {
+    return deserialize(V1_biTemporalModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(`Can't deserialize Temporality`, json);
+};
+
+/************************
+ * persistent target type
+ ************************/
+
+export enum V1_PersistentTargetType {
+  RELATIONAL_PERSISTENCE_TARGET = 'relationalPersistenceTarget',
+}
+
+export const V1_relationalPersistenceTargetModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_RelationalPersistenceTarget> =>
+  createModelSchema(V1_RelationalPersistenceTarget, {
+    _type: usingConstantValueSchema(
+      V1_PersistentTargetType.RELATIONAL_PERSISTENCE_TARGET,
+    ),
+    database: primitive(),
+    table: primitive(),
+    temporality: custom(
+      (val) => V1_serializeTemporality(val, plugins),
+      (val) => V1_deserializeTemporality(val, plugins),
+    ),
+  });
+
+export const V1_serializePersistentTarget = (
+  protocol: V1_PersistenceTarget,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_PersistenceTarget> => {
+  if (protocol instanceof V1_RelationalPersistenceTarget) {
+    return serialize(
+      V1_relationalPersistenceTargetModelSchema(plugins),
+      protocol,
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize PersistentTarget`,
+    protocol,
+  );
+};
+
+export const V1_deserializePersistentTarget = (
+  json: PlainObject<V1_PersistenceTarget>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_PersistenceTarget => {
+  if (json._type === V1_PersistentTargetType.RELATIONAL_PERSISTENCE_TARGET) {
+    return deserialize(
+      V1_relationalPersistenceTargetModelSchema(plugins),
+      json,
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize PersistentTarget`,
+    json,
+  );
+};
+
+/************************
+ * empty dataset handling
+ ***********************/
+
+export enum V1_EmptyDatasetHandlingType {
+  NO_OP = 'noOp',
+  DELETE_TARGET_DATASET = 'deleteTargetDataset',
+}
+
+export const V1_noOpEmptyDatasetHandlingModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_NoOp> =>
+  createModelSchema(V1_NoOp, {
+    _type: usingConstantValueSchema(V1_EmptyDatasetHandlingType.NO_OP),
+  });
+
+export const V1_deleteTargetDatasetModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DeleteTargetDataset> =>
+  createModelSchema(V1_DeleteTargetDataset, {
+    _type: usingConstantValueSchema(
+      V1_EmptyDatasetHandlingType.DELETE_TARGET_DATASET,
+    ),
+  });
+
+export const V1_serializeEmptyDatasetHandling = (
+  protocol: V1_EmptyDatasetHandling,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_EmptyDatasetHandling> => {
+  if (protocol instanceof V1_NoOp) {
+    return serialize(V1_noOpEmptyDatasetHandlingModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_DeleteTargetDataset) {
+    return serialize(V1_deleteTargetDatasetModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize EmptyDataSetHandling`,
+    protocol,
+  );
+};
+
+export const V1_deserializeEmptyDatasetHandling = (
+  json: PlainObject<V1_EmptyDatasetHandling>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_EmptyDatasetHandling => {
+  if (json._type === V1_EmptyDatasetHandlingType.NO_OP) {
+    return deserialize(V1_noOpEmptyDatasetHandlingModelSchema(plugins), json);
+  } else if (json._type === V1_EmptyDatasetHandlingType.DELETE_TARGET_DATASET) {
+    return deserialize(V1_deleteTargetDatasetModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize EmptyDatasetHandling`,
+    json,
+  );
+};
+
+/**************
+ * partitioning
+ **************/
+
+export enum V1_PartitioningType {
+  NO_PARTITIONING = 'noPartitioning',
+  FIELD_BASED_FOR_GRAPH_FETCH = 'fieldBasedForGraphFetch',
+  FIELD_BASED_FOR_TDS = 'fieldBasedForTds',
+}
+
+export const V1_fieldBasedForGraphFetchModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_FieldBasedForGraphFetch> =>
+  createModelSchema(V1_FieldBasedForGraphFetch, {
+    _type: usingConstantValueSchema(
+      V1_PartitioningType.FIELD_BASED_FOR_GRAPH_FETCH,
+    ),
+  });
+
+export const V1_fieldBasedForTdsModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_FieldBasedForGraphFetch> =>
+  createModelSchema(V1_FieldBasedForGraphFetch, {
+    _type: usingConstantValueSchema(
+      V1_PartitioningType.FIELD_BASED_FOR_GRAPH_FETCH,
+    ),
+  });
+
+export const V1_noPartitioningModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_NoPartitioning> =>
+  createModelSchema(V1_NoPartitioning, {
+    _type: usingConstantValueSchema(V1_PartitioningType.NO_PARTITIONING),
+    emptyDatasetHandling: custom(
+      (val) => V1_serializeEmptyDatasetHandling(val, plugins),
+      (val) => V1_deserializeEmptyDatasetHandling(val, plugins),
+    ),
+  });
+
+export const V1_serializeFieldBased = (
+  protocol: V1_FieldBased,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_FieldBased> => {
+  if (protocol instanceof V1_FieldBasedForGraphFetch) {
+    return serialize(V1_fieldBasedForGraphFetchModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_FieldBasedForTds) {
+    return serialize(V1_fieldBasedForTdsModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize FiedlBased`, protocol);
+};
+
+export const V1_serializePartitioning = (
+  protocol: V1_Partitioning,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Partitioning> => {
+  if (protocol instanceof V1_NoPartitioning) {
+    return serialize(V1_noPartitioningModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_FieldBased) {
+    return V1_serializeFieldBased(protocol, plugins);
+  }
+  throw new UnsupportedOperationError(`Can't serialize Partitioning`, protocol);
+};
+
+export const V1_deserializePartitioning = (
+  json: PlainObject<V1_Partitioning>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Partitioning => {
+  if (json._type === V1_PartitioningType.NO_PARTITIONING) {
+    return deserialize(V1_noPartitioningModelSchema(plugins), json);
+  } else if (json._type === V1_PartitioningType.FIELD_BASED_FOR_GRAPH_FETCH) {
+    return deserialize(V1_fieldBasedForGraphFetchModelSchema(plugins), json);
+  } else if (json._type === V1_PartitioningType.FIELD_BASED_FOR_TDS) {
+    return deserialize(V1_fieldBasedForTdsModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(`Can't deserialize Partitioning`, json);
+};
+
+/*******************
+ * action indicator
+ ******************/
+
+export enum V1_ActionIndicatorType {
+  NO_ACTION_INDICATOR = 'noActionIndicator',
+  DELETE_INDICATOR_FOR_GRAPH_FETCH = 'deleteIndicatorForGraphFetch',
+  DELETE_INDICATOR_FOR_TDS = 'deleteIndicatorForTds',
+}
+
+export const V1_deleteIndicatorForGraphFetchModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DeleteIndicatorForGraphFetch> =>
+  createModelSchema(V1_DeleteIndicatorForGraphFetch, {
+    _type: usingConstantValueSchema(
+      V1_ActionIndicatorType.DELETE_INDICATOR_FOR_GRAPH_FETCH,
+    ),
+    deleteValues: list(primitive()),
+  });
+
+export const V1_deleteIndicatorForTdsModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DeleteIndicatorForTds> =>
+  createModelSchema(V1_DeleteIndicatorForTds, {
+    _type: usingConstantValueSchema(
+      V1_ActionIndicatorType.DELETE_INDICATOR_FOR_TDS,
+    ),
+    deleteField: primitive(),
+    deleteValues: list(primitive()),
+  });
+
+export const V1_noActionIndicatorModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_NoActionIndicator> =>
+  createModelSchema(V1_NoActionIndicator, {
+    _type: usingConstantValueSchema(V1_ActionIndicatorType.NO_ACTION_INDICATOR),
+  });
+
+export const V1_serializeDeleteIndicator = (
+  protocol: V1_DeleteIndicator,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_DeleteIndicator> => {
+  if (protocol instanceof V1_DeleteIndicatorForGraphFetch) {
+    return serialize(
+      V1_deleteIndicatorForGraphFetchModelSchema(plugins),
+      protocol,
+    );
+  } else if (protocol instanceof V1_DeleteIndicatorForTds) {
+    return serialize(V1_deleteIndicatorForTdsModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize DeleteIndicator`,
+    protocol,
+  );
+};
+
+export const V1_deserializeActionIndicator = (
+  json: PlainObject<V1_ActionIndicatorFields>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_ActionIndicatorFields => {
+  if (json._type === V1_ActionIndicatorType.NO_ACTION_INDICATOR) {
+    return deserialize(V1_noActionIndicatorModelSchema(plugins), json);
+  } else if (
+    json._type === V1_ActionIndicatorType.DELETE_INDICATOR_FOR_GRAPH_FETCH
+  ) {
+    return deserialize(
+      V1_deleteIndicatorForGraphFetchModelSchema(plugins),
+      json,
+    );
+  } else if (json._type === V1_ActionIndicatorType.DELETE_INDICATOR_FOR_TDS) {
+    return deserialize(V1_deleteIndicatorForTdsModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize ActionIndicator`,
+    json,
+  );
+};
+
+export const V1_serializeActionIndicator = (
+  protocol: V1_ActionIndicatorFields,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_ActionIndicatorFields> => {
+  if (protocol instanceof V1_NoActionIndicator) {
+    return serialize(V1_noActionIndicatorModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_DeleteIndicator) {
+    return V1_serializeDeleteIndicator(protocol, plugins);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize ActionIndicator`,
+    protocol,
+  );
+};
+
+/****************
+ * dataset type
+ ***************/
+
+export enum V1_DatasetTypeType {
+  SNAPSHOT = 'snapshot',
+  DELTA = 'delta',
+}
+
+export const V1_snapshotModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_Snapshot> =>
+  createModelSchema(V1_Snapshot, {
+    _type: usingConstantValueSchema(V1_DatasetTypeType.SNAPSHOT),
+    partitioning: custom(
+      (val) => V1_serializePartitioning(val, plugins),
+      (val) => V1_deserializePartitioning(val, plugins),
+    ),
+  });
+
+export const V1_deltaModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_Delta> =>
+  createModelSchema(V1_Delta, {
+    _type: usingConstantValueSchema(V1_DatasetTypeType.DELTA),
+    actionIndicator: custom(
+      (val) => V1_serializeActionIndicator(val, plugins),
+      (val) => V1_deserializeActionIndicator(val, plugins),
+    ),
+  });
+
+export const V1_serializeDatasetType = (
+  protocol: V1_DatasetType,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_DatasetType> => {
+  if (protocol instanceof V1_Snapshot) {
+    return serialize(V1_snapshotModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_Delta) {
+    return serialize(V1_deltaModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize DatasetType`, protocol);
+};
+
+export const V1_deserializeDatasetType = (
+  json: PlainObject<V1_DatasetType>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DatasetType => {
+  if (json._type === V1_DatasetTypeType.SNAPSHOT) {
+    return deserialize(V1_snapshotModelSchema(plugins), json);
+  } else if (json._type === V1_DatasetTypeType.DELTA) {
+    return deserialize(V1_deltaModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(`Can't deserialize DatasetType`, json);
+};
+
+/****************
+ * De-duplication
+ ****************/
+
+export enum V1_DeduplicationType {
+  NO_DEDUPLICATION = 'noDeduplication',
+  ANY_VERSION = 'anyVersion',
+  MAX_VERSION_FOR_GRAPH_FETCH = 'maxVersionForGraphFetch',
+  MAX_VERSION_FOR_TDS = 'maxVersionForTds',
+}
+
+export const V1_NoDeduplicationModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_NoDeduplication> =>
+  createModelSchema(V1_NoDeduplication, {
+    _type: usingConstantValueSchema(V1_DeduplicationType.NO_DEDUPLICATION),
+  });
+
+export const V1_anyVersionModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_AnyVersion> =>
+  createModelSchema(V1_AnyVersion, {
+    _type: usingConstantValueSchema(V1_DeduplicationType.ANY_VERSION),
+  });
+
+export const V1_maxVersionForGraphFetchModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_MaxVersionForGraphFetch> =>
+  createModelSchema(V1_MaxVersionForGraphFetch, {
+    _type: usingConstantValueSchema(
+      V1_DeduplicationType.MAX_VERSION_FOR_GRAPH_FETCH,
+    ),
+  });
+
+export const V1_maxVersionForTdsModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_MaxVersionForTds> =>
+  createModelSchema(V1_MaxVersionForTds, {
+    _type: usingConstantValueSchema(V1_DeduplicationType.MAX_VERSION_FOR_TDS),
+  });
+
+export const V1_serializeDeduplication = (
+  protocol: V1_Deduplication,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Deduplication> => {
+  if (protocol instanceof V1_NoDeduplication) {
+    return serialize(V1_NoDeduplicationModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_AnyVersion) {
+    return serialize(V1_anyVersionModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_MaxVersion) {
+    return serialize(V1_maxVersionForGraphFetchModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize Deduplication`,
+    protocol,
+  );
+};
+
+export const V1_deserializeDeduplication = (
+  json: PlainObject<V1_Deduplication>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Deduplication => {
+  if (json._type === V1_DeduplicationType.NO_DEDUPLICATION) {
+    return deserialize(V1_NoDeduplicationModelSchema(plugins), json);
+  } else if (json._type === V1_DeduplicationType.ANY_VERSION) {
+    return deserialize(V1_anyVersionModelSchema(plugins), json);
+  } else if (json._type === V1_DeduplicationType.MAX_VERSION_FOR_GRAPH_FETCH) {
+    return deserialize(V1_maxVersionForGraphFetchModelSchema(plugins), json);
+  } else if (json._type === V1_DeduplicationType.MAX_VERSION_FOR_TDS) {
+    return deserialize(V1_maxVersionForTdsModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(`Can't deserialize Deduplication`, json);
+};
+
+export const V1_serializeMaxVersionDeduplication = (
+  protocol: V1_MaxVersion,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_MaxVersion> => {
+  if (protocol instanceof V1_MaxVersionForGraphFetch) {
+    return serialize(V1_maxVersionForGraphFetchModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_MaxVersionForTds) {
+    return serialize(V1_maxVersionForTdsModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize MaxVersionDeduplication`,
+    protocol,
+  );
+};
+
+/****************
+ * service output
+ ***************/
+
+export enum V1_ServiceOutputType {
+  GRAPH_FETCH_SERVICE_OUTPUT = 'graphFetchServiceOutput',
+  TDS_SERVICE_OUTPUT = 'tdsServiceOutput',
+}
+
+export const V1_graphFetchServiceOutputModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_GraphFetchServiceOutput> =>
+  createModelSchema(V1_GraphFetchServiceOutput, {
+    _type: usingConstantValueSchema(
+      V1_ServiceOutputType.GRAPH_FETCH_SERVICE_OUTPUT,
+    ),
+    datasetType: custom(
+      (val) => V1_serializeDatasetType(val, plugins),
+      (val) => V1_deserializeDatasetType(val, plugins),
+    ),
+    deduplication: custom(
+      (val) => V1_serializeDeduplication(val, plugins),
+      (val) => V1_deserializeDeduplication(val, plugins),
+    ),
+  });
+
+export const V1_tdsServiceOutputModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_TdsServiceOutput> =>
+  createModelSchema(V1_TdsServiceOutput, {
+    _type: usingConstantValueSchema(V1_ServiceOutputType.TDS_SERVICE_OUTPUT),
+    datasetType: custom(
+      (val) => V1_serializeDatasetType(val, plugins),
+      (val) => V1_deserializeDatasetType(val, plugins),
+    ),
+    deduplication: custom(
+      (val) => V1_serializeDeduplication(val, plugins),
+      (val) => V1_deserializeDeduplication(val, plugins),
+    ),
+    keys: list(primitive()),
+  });
+
+export const V1_serializeServiceOutput = (
+  protocol: V1_ServiceOutput,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_ServiceOutput> => {
+  if (protocol instanceof V1_GraphFetchServiceOutput) {
+    return serialize(V1_graphFetchServiceOutputModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_TdsServiceOutput) {
+    return serialize(V1_tdsServiceOutputModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize ServiceOutput`,
+    protocol,
+  );
+};
+
+export const V1_deserializeServiceOutput = (
+  json: PlainObject<V1_ServiceOutput>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_ServiceOutput => {
+  if (json._type === V1_ServiceOutputType.GRAPH_FETCH_SERVICE_OUTPUT) {
+    return deserialize(V1_graphFetchServiceOutputModelSchema(plugins), json);
+  } else if (json._type === V1_ServiceOutputType.TDS_SERVICE_OUTPUT) {
+    return deserialize(V1_tdsServiceOutputModelSchema(plugins), json);
+  }
+  throw new UnsupportedOperationError(`Can't deserialize ServiceOutput`, json);
+};
+
+/************************
+ * service output target
+ ***********************/
+
+const V1_serviceOutputTargetModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ServiceOutputTarget> =>
+  createModelSchema(V1_ServiceOutputTarget, {
+    persistenceTarget: custom(
+      (val) => V1_serializePersistentTarget(val, plugins),
+      (val) => V1_deserializePersistentTarget(val, plugins),
+    ),
+    serviceOutput: custom(
+      (val) => V1_serializeServiceOutput(val, plugins),
+      (val) => V1_deserializeServiceOutput(val, plugins),
+    ),
+  });
+
+export const V1_serializeServiceOutputTarget = (
+  protocol: V1_ServiceOutputTarget,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_ServiceOutputTarget> =>
+  serialize(V1_serviceOutputTargetModelSchema(plugins), protocol);
+
+export const V1_deserializeServiceOutputTarget = (
+  json: PlainObject<V1_ServiceOutputTarget>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_ServiceOutputTarget =>
+  deserialize(V1_serviceOutputTargetModelSchema(plugins), json);
+
 /**********
  * persistence
  **********/
@@ -1087,11 +2123,16 @@ export const V1_persistenceModelSchema = (
       (val) => deserialize(V1_notifierModelSchema, val),
     ),
     package: primitive(),
-    persister: custom(
+    persister: optionalCustom(
       (val) => V1_serializePersister(val, plugins),
       (val) => V1_deserializePersister(val, plugins),
     ),
     service: primitive(),
+    serviceOutputTargets: optionalCustomList(
+      (val: V1_ServiceOutputTarget) =>
+        V1_serializeServiceOutputTarget(val, plugins),
+      (val) => V1_deserializeServiceOutputTarget(val, plugins),
+    ),
     tests: optionalCustomList(
       (value: V1_AtomicTest) => V1_serializeAtomicTest(value, plugins),
       (value) => V1_deserializeAtomicTest(value, plugins),

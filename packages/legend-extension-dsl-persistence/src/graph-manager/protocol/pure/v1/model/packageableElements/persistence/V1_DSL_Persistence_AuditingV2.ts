@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
-import type { PersistenceTestData } from './DSL_Persistence_PersistenceTestData.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { TestAssertion } from '@finos/legend-graph';
 
-export class PersistenceTestBatch implements Hashable {
-  testData!: PersistenceTestData;
-  id!: string;
-  batchId!: string;
-  assertions: TestAssertion[] = [];
+export abstract class V1_AuditingV2 implements Hashable {
+  abstract get hashCode(): string;
+}
 
-  get hashCode(): string {
+export class V1_AuditingDateTimeV2 extends V1_AuditingV2 {
+  auditingDateTimeName!: string;
+
+  override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_TEST_BATCH,
-      this.id,
-      this.batchId,
-      this.testData,
-      hashArray(this.assertions),
+      PERSISTENCE_HASH_STRUCTURE.AUDITING_DATE_TIME,
+      this.auditingDateTimeName,
     ]);
+  }
+}
+
+export class V1_NoAuditingV2 extends V1_AuditingV2 {
+  override get hashCode(): string {
+    return hashArray([PERSISTENCE_HASH_STRUCTURE.NO_AUDITING_V2]);
   }
 }

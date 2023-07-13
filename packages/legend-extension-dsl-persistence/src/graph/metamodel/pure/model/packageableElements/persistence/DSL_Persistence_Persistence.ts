@@ -27,6 +27,7 @@ import {
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { PersistenceTest } from './DSL_Persistence_PersistenceTest.js';
+import type { ServiceOutputTarget } from './DSL_Persistence_ServiceOutputTarget.js';
 
 export class Persistence
   extends PackageableElement
@@ -35,7 +36,8 @@ export class Persistence
   documentation!: string;
   trigger!: Trigger;
   service!: PackageableElementReference<Service>;
-  persister!: Persister;
+  persister?: Persister | undefined;
+  serviceOutputTargets?: ServiceOutputTarget[] | undefined;
   notifier!: Notifier;
   tests: PersistenceTest[] = [];
 
@@ -45,7 +47,8 @@ export class Persistence
       this.documentation,
       this.trigger,
       this.service.valueForSerialization ?? '',
-      this.persister,
+      hashArray(this.serviceOutputTargets ?? []),
+      this.persister ?? '',
       this.notifier,
       hashArray(this.tests),
     ]);

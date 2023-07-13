@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
-import type { PersistenceTestData } from './DSL_Persistence_PersistenceTestData.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { TestAssertion } from '@finos/legend-graph';
+import type { V1_PersistenceTarget } from './V1_DSL_Persistence_PersistentTarget.js';
+import type { V1_ServiceOutput } from './V1_DSL_Persistence_ServiceOutput.js';
 
-export class PersistenceTestBatch implements Hashable {
-  testData!: PersistenceTestData;
-  id!: string;
-  batchId!: string;
-  assertions: TestAssertion[] = [];
+export class V1_ServiceOutputTarget implements Hashable {
+  serviceOutput!: V1_ServiceOutput;
+  persistenceTarget!: V1_PersistenceTarget;
 
   get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_TEST_BATCH,
-      this.id,
-      this.batchId,
-      this.testData,
-      hashArray(this.assertions),
+      PERSISTENCE_HASH_STRUCTURE.SERVICE_OUTPUT_TARGET,
+      this.serviceOutput,
+      this.persistenceTarget,
     ]);
   }
 }
