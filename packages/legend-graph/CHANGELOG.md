@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 30.0.17
+
+### Patch Changes
+
+- [#2392](https://github.com/finos/legend-studio/pull/2392) [`6024e4a17`](https://github.com/finos/legend-studio/commit/6024e4a170be9d90132bb0298914ef0b413cbdd2) ([@Paarth002](https://github.com/Paarth002)) - Added Global Implementation Support in Execution Plan
+
 ## 30.0.16
 
 ## 30.0.15
