@@ -67,6 +67,7 @@ import {
   type PlainObject,
   prettyDuration,
   filterByType,
+  isValidURL,
 } from '@finos/legend-shared';
 import { forwardRef, useRef, useState } from 'react';
 import {
@@ -713,7 +714,13 @@ const QueryResultCellRenderer = observer(
           onMouseUp={(event) => mouseUp(event)}
           onMouseOver={(event) => mouseOver(event)}
         >
-          <span>{cellValue}</span>
+          {isValidURL(cellValue) ? (
+            <a href={cellValue} target="_blank" rel="noreferrer">
+              {cellValue}
+            </a>
+          ) : (
+            <span>{cellValue}</span>
+          )}
         </div>
       </ContextMenu>
     );

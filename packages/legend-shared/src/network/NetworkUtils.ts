@@ -39,6 +39,12 @@ const compressData = (data: object | string): Blob =>
   new Blob([deflate(isObject(data) ? JSON.stringify(data) : data)]);
 
 export const URL_SEPARATOR = '/';
+/**
+ *  Reference: https://uibakery.io/regex-library/url
+ */
+const URL_REGEX = new RegExp(
+  '^https?://(?:www.)?[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$',
+);
 export const HttpStatus = StatusCodes;
 export const CHARSET = 'charset=utf-8';
 
@@ -586,3 +592,5 @@ export const buildUrl = (parts: string[]): string =>
     .join(URL_SEPARATOR);
 
 export const sanitizeURL = (val: string): string => sanitizeUrl(val);
+
+export const isValidURL = (val: string): boolean => URL_REGEX.test(val);
