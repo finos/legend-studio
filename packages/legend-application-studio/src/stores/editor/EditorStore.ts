@@ -95,7 +95,10 @@ import { StandardEditorMode } from './StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
-import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
+import type {
+  LegendStudioApplicationStore,
+  ShowcaseManagerState,
+} from '../LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from '../../__lib__/LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
@@ -120,6 +123,7 @@ export class EditorStore implements CommandRegistrar {
   readonly sdlcServerClient: SDLCServerClient;
   readonly depotServerClient: DepotServerClient;
   readonly pluginManager: LegendStudioPluginManager;
+  readonly showcaseManagerState: ShowcaseManagerState;
 
   readonly initState = ActionState.create();
 
@@ -186,6 +190,7 @@ export class EditorStore implements CommandRegistrar {
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
+    showcaseManagerState: ShowcaseManagerState,
   ) {
     makeObservable<
       EditorStore,
@@ -225,6 +230,7 @@ export class EditorStore implements CommandRegistrar {
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
+    this.showcaseManagerState = showcaseManagerState;
     this.pluginManager = applicationStore.pluginManager;
 
     this.editorMode = new StandardEditorMode(this);

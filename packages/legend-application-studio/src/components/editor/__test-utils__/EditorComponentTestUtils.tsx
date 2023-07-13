@@ -65,7 +65,10 @@ import {
   createMemoryHistory,
   TEST__BrowserEnvironmentProvider,
 } from '@finos/legend-application/test';
-import type { LegendStudioApplicationStore } from '../../../stores/LegendStudioBaseStore.js';
+import {
+  ShowcaseManagerState,
+  type LegendStudioApplicationStore,
+} from '../../../stores/LegendStudioBaseStore.js';
 import { TEST__getLegendStudioApplicationConfig } from '../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
 import { Route } from '@finos/legend-application/browser';
 
@@ -153,11 +156,12 @@ export const TEST__provideMockedEditorStore = (customization?: {
       new SDLCServerClient({
         env: applicationStore.config.env,
         serverUrl: applicationStore.config.sdlcServerUrl,
-        baseHeaders: applicationStore.config.SDLCServerBaseHeaders,
+        baseHeaders: applicationStore.config.sdlcServerBaseHeaders,
       }),
       new DepotServerClient({
         serverUrl: applicationStore.config.depotServerUrl,
       }),
+      new ShowcaseManagerState(applicationStore),
     );
   const MOCK__EditorStoreProvider = require('../EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MOCK__EditorStoreProvider.useEditorStore = createMock();

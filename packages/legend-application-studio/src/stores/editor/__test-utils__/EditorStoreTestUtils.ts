@@ -20,6 +20,7 @@ import { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { ApplicationStore } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../../__test-utils__/LegendStudioApplicationTestUtils.js';
+import { ShowcaseManagerState } from '../../LegendStudioBaseStore.js';
 
 export const TEST__getTestEditorStore = (
   pluginManager = LegendStudioPluginManager.create(),
@@ -34,10 +35,11 @@ export const TEST__getTestEditorStore = (
     new SDLCServerClient({
       env: applicationStore.config.env,
       serverUrl: applicationStore.config.sdlcServerUrl,
-      baseHeaders: applicationStore.config.SDLCServerBaseHeaders,
+      baseHeaders: applicationStore.config.sdlcServerBaseHeaders,
     }),
     new DepotServerClient({
       serverUrl: applicationStore.config.depotServerUrl,
     }),
+    new ShowcaseManagerState(applicationStore),
   );
 };

@@ -131,6 +131,7 @@ export interface LegendStudioApplicationConfigurationData
     queryUrl?: string;
   };
   query?: { url: string };
+  showcase?: { url: string };
 }
 
 export class LegendStudioApplicationConfig extends LegendApplicationConfig {
@@ -140,8 +141,9 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
-  readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
-  readonly queryApplicationUrl: string | undefined;
+  readonly sdlcServerBaseHeaders?: RequestHeaders | undefined;
+  readonly queryApplicationUrl?: string | undefined;
+  readonly showcaseServerUrl?: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendStudioApplicationConfigurationData>,
@@ -188,12 +190,19 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
         `Can't configure application: 'sdlc.url' field is missing or empty`,
       ),
     );
-    this.SDLCServerBaseHeaders = input.configData.sdlc.baseHeaders;
+    this.sdlcServerBaseHeaders = input.configData.sdlc.baseHeaders;
 
     // query
     if (input.configData.query?.url) {
       this.queryApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.query.url,
+      );
+    }
+
+    // showcase
+    if (input.configData.showcase?.url) {
+      this.showcaseServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.showcase.url,
       );
     }
 

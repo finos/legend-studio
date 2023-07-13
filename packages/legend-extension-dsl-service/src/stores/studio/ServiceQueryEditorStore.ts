@@ -26,6 +26,7 @@ import {
   MINIMUM_SERVICE_OWNERS,
   generateServiceManagementUrl,
   pureExecution_setFunction,
+  ShowcaseManagerState,
 } from '@finos/legend-application-studio';
 import {
   type Service,
@@ -99,7 +100,12 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
   ) {
-    super(applicationStore, sdlcServerClient, depotServerClient);
+    super(
+      applicationStore,
+      sdlcServerClient,
+      depotServerClient,
+      new ShowcaseManagerState(applicationStore),
+    );
 
     makeObservable(this, {
       queryBuilderState: observable,
