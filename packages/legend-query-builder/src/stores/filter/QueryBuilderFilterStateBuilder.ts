@@ -16,9 +16,12 @@
 
 import {
   AbstractPropertyExpression,
+  extractElementNameFromPath,
+  LambdaFunction,
   LambdaFunctionInstanceValue,
   matchFunctionName,
   SimpleFunctionExpression,
+  type ValueSpecification,
   VariableExpression,
 } from '@finos/legend-graph';
 import {
@@ -37,7 +40,34 @@ import {
   type QueryBuilderFilterState,
   QueryBuilderFilterTreeConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
+  QueryBuilderFilterTreeExistsNodeData,
+  QueryBuilderFilterTreeOperationNodeData,
 } from './QueryBuilderFilterState.js';
+
+const getPropertyExpressionChainVariable = (
+  propertyExpression: AbstractPropertyExpression,
+): VariableExpression => {
+  let currentExpression: ValueSpecification = propertyExpression;
+  while (currentExpression instanceof AbstractPropertyExpression) {
+    currentExpression = guaranteeNonNullable(
+      currentExpression.parametersValues[0],
+    );
+    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+    // $x.employees->subType(@Person)->subType(@Staff)
+    while (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      currentExpression = guaranteeNonNullable(
+        currentExpression.parametersValues[0],
+      );
+    }
+  }
+  return guaranteeType(currentExpression, VariableExpression);
+};
 
 const processFilterTree = (
   expression: SimpleFunctionExpression,
@@ -58,6 +88,12 @@ const processFilterTree = (
       toGroupOperation(expression.functionName),
     );
     filterState.nodes.set(groupNode.id, groupNode);
+    if (parentNode) {
+      groupNode.lambdaParameterName = guaranteeType(
+        parentNode,
+        QueryBuilderFilterTreeOperationNodeData,
+      ).lambdaParameterName;
+    }
     expression.parametersValues.forEach((filterExpression) =>
       processFilterTree(
         guaranteeType(
@@ -70,6 +106,42 @@ const processFilterTree = (
       ),
     );
     filterState.addNodeFromNode(groupNode, parentNode);
+  } else if (
+    matchFunctionName(expression.functionName, [
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS,
+    ])
+  ) {
+    const propertyExpression = guaranteeType(
+      expression.parametersValues[0],
+      AbstractPropertyExpression,
+    );
+    assertTrue(
+      propertyExpression.func.value.multiplicity.upperBound === undefined ||
+        propertyExpression.func.value.multiplicity.upperBound > 1,
+      `Can't process filter expression: exists is only supported for propertyExpression with multiplicity greater than 1`,
+    );
+    const existsNode = new QueryBuilderFilterTreeExistsNodeData(
+      parentFilterNodeId,
+    );
+    const lambdaFunctionInstance = guaranteeType(
+      expression.parametersValues[1],
+      LambdaFunctionInstanceValue,
+      `Can't process filter expression: only supports exists with second paramter as LambdaFunctionInstanceValue`,
+    );
+    const lambdaFunction = guaranteeType(
+      lambdaFunctionInstance.values[0],
+      LambdaFunction,
+    );
+    const filterExpression = guaranteeType(
+      lambdaFunction.expressionSequence[0],
+      SimpleFunctionExpression,
+    );
+    existsNode.setPropertyExpression(propertyExpression);
+    existsNode.lambdaParameterName =
+      lambdaFunction.functionType.parameters[0]?.name;
+    filterState.nodes.set(existsNode.id, existsNode);
+    processFilterTree(filterExpression, filterState, existsNode.id);
+    filterState.addNodeFromNode(existsNode, parentNode);
   } else {
     const propertyExpression = expression.parametersValues[0];
     if (propertyExpression instanceof AbstractPropertyExpression) {
@@ -89,6 +161,20 @@ const processFilterTree = (
         operator.buildFilterConditionState(filterState, expression),
       );
       if (filterConditionState) {
+        const variableName = getPropertyExpressionChainVariable(
+          filterConditionState.propertyExpressionState.propertyExpression,
+        ).name;
+        const parentLambdaVariableName =
+          parentNode instanceof QueryBuilderFilterTreeOperationNodeData &&
+          parentNode.lambdaParameterName
+            ? parentNode.lambdaParameterName
+            : filterState.lambdaParameterName;
+        assertTrue(
+          parentLambdaVariableName === variableName,
+          `Can't process ${extractElementNameFromPath(
+            filterConditionState.operator.getLabel(filterConditionState),
+          )}() expression: expects variable used in lambda body '${variableName}' to match lambda parameter '${parentLambdaVariableName}'`,
+        );
         filterState.addNodeFromNode(
           new QueryBuilderFilterTreeConditionNodeData(
             undefined,

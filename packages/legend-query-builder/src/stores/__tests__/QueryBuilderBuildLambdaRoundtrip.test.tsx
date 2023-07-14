@@ -58,6 +58,10 @@ import {
 import {
   TEST_DATA__lambda_input_filterWithExists,
   lambda_output_filterWithExists,
+  TEST_DATA__lambda_filterWithSingleExists,
+  TEST_DATA__lambda_filterWithNestedExists,
+  TEST_DATA__lambda_filterWithMultipleGroupConditionsInExists,
+  TEST_DATA__lambda_filterWithTwoExistsInSingleGroupCondition,
 } from './TEST_DATA__QueryBuilder_TestFilterQueriesWithExists.js';
 import {
   TEST_DATA__lambda_input_graphFetchWithFullPathFunctions,
@@ -132,6 +136,7 @@ import {
   TEST_DATA__simpleProjectionWithCalendarAggregation,
 } from './TEST_DATA__QueryBuilder_Calendar.js';
 import { DEFAULT_LIMIT } from '../QueryBuilderResultState.js';
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 
 type RoundtripTestCase = [
   string,
@@ -184,6 +189,10 @@ const identitfyM2MCtx = {
 
 const calendarAggregationCtx = {
   entities: TEST_DATA_SimpleCalendarModel,
+};
+
+const existsCtx = {
+  entities: TEST_DATA__QueryBuilder_Model_SimpleRelational,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -619,6 +628,30 @@ const cases: RoundtripTestCase[] = [
     'Simple relational derivation column with calendar aggregation',
     calendarAggregationCtx,
     TEST_DATA__simpleDerivationWithCalendarAggregation,
+    undefined,
+  ],
+  [
+    'Simple filter with single exists()',
+    existsCtx,
+    TEST_DATA__lambda_filterWithSingleExists,
+    undefined,
+  ],
+  [
+    'Simple filter with nested exists()',
+    existsCtx,
+    TEST_DATA__lambda_filterWithNestedExists,
+    undefined,
+  ],
+  [
+    'Simple filter with multiple group conditions in exists()',
+    existsCtx,
+    TEST_DATA__lambda_filterWithMultipleGroupConditionsInExists,
+    undefined,
+  ],
+  [
+    'Simple filter with two exists() in single group condition',
+    existsCtx,
+    TEST_DATA__lambda_filterWithTwoExistsInSingleGroupCondition,
     undefined,
   ],
 ];
