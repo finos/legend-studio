@@ -41,6 +41,7 @@ import {
   BlankPanelContent,
   ModalFooterButton,
   CalendarClockIcon,
+  ChatIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -72,6 +73,7 @@ import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpre
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
+import { QueryChat } from './QueryChat.js';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -86,6 +88,8 @@ const QueryBuilderStatusBar = observer(
     );
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
+    const openQueryChat = (): void =>
+      queryBuilderState.setIsQueryChatOpened(true);
 
     return (
       <div className="query-builder__status-bar">
@@ -117,6 +121,19 @@ const QueryBuilderStatusBar = observer(
               )}
             </>
           )}
+          {queryBuilderState.isQueryChatOpened && (
+            <QueryChat queryBuilderState={queryBuilderState} />
+          )}
+          <button
+            className={clsx(
+              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+            )}
+            onClick={openQueryChat}
+            tabIndex={-1}
+            title="Open query chat"
+          >
+            <ChatIcon />
+          </button>
           <button
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__compile-btn',

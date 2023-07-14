@@ -53,6 +53,7 @@ export const CheckSquareIcon = FA.FaCheckSquare;
 export const MinusSquareIcon = FA.FaMinusSquare;
 export const HashtagIcon = FA.FaHashtag;
 export const HammerIcon = FA.FaHammer;
+export const ChatIcon = FA.FaCommentDots;
 export const ClockIcon = FA.FaClock;
 export const EmptyClockIcon = FA.FaRegClock;
 export const ToggleIcon = FA.FaToggleOn;

@@ -45,6 +45,10 @@ export type QueryExportUsageConfiguration = {
   renderer(): React.ReactNode;
 };
 
+export type QueryChatRenderer = (
+  queryBuilderState: QueryBuilderState,
+) => React.ReactNode;
+
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
   /**
@@ -61,4 +65,9 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of query usage configurations
    */
   getExtraQueryUsageConfigurations?(): QueryExportUsageConfiguration[];
+
+  /**
+   * Get the list of query chat configurations
+   */
+  getExtraQueryChatRenderers?(): QueryChatRenderer[];
 }
