@@ -49,6 +49,9 @@ import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerH
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
+import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
+import { StoreProjectData } from '@finos/legend-server-depot';
+import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
@@ -94,10 +97,10 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
 
   override getExtraExistingQueryEditorStateBuilders(): ExistingQueryEditorStateBuilder[] {
     return [
-      (
+      async (
         query: Query,
         editorStore: ExistingQueryEditorStore,
-      ): QueryBuilderState | undefined => {
+      ): Promise<QueryBuilderState | undefined> => {
         const dataSpaceTaggedValue = query.taggedValues?.find(
           (taggedValue) =>
             taggedValue.profile === QUERY_PROFILE_PATH &&
@@ -120,7 +123,29 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             // properly created from a data space, therefore, we cannot support this case
             return undefined;
           }
-          return new DataSpaceQueryBuilderState(
+          let dataSpaceAnalysisResult;
+          try {
+            const project = StoreProjectData.serialization.fromJson(
+              await editorStore.depotServerClient.getProject(
+                query.groupId,
+                query.artifactId,
+              ),
+            );
+            dataSpaceAnalysisResult =
+              await DSL_DataSpace_getGraphManagerExtension(
+                editorStore.graphManagerState.graphManager,
+              ).fetchDataSpaceAnalysisFromCache(() =>
+                retrieveAnalyticsResultCache(
+                  project,
+                  query.versionId,
+                  dataSpace.path,
+                  editorStore.depotServerClient,
+                ),
+              );
+          } catch {
+            // do nothing
+          }
+          const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
             editorStore.applicationStore,
             editorStore.graphManagerState,
             editorStore.depotServerClient,
@@ -230,7 +255,17 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                 );
               }
             },
+            dataSpaceAnalysisResult,
           );
+          const mappingModelCoverageAnalysisResult =
+            dataSpaceAnalysisResult?.executionContextsIndex.get(
+              matchingExecutionContext.name,
+            )?.mappingModelCoverageAnalysisResult;
+          if (mappingModelCoverageAnalysisResult) {
+            dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
+              mappingModelCoverageAnalysisResult;
+          }
+          return dataSpaceQueryBuilderState;
         }
         return undefined;
       },

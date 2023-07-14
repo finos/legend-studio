@@ -48,6 +48,7 @@ import type {
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import { DataSpaceAdvancedSearchState } from './DataSpaceAdvancedSearchState.js';
+import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 
 export class DataSpaceQueryBuilderState extends QueryBuilderState {
   readonly depotServerClient: DepotServerClient;
@@ -74,6 +75,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     | undefined;
   readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
   readonly onClassChange?: ((val: Class) => void) | undefined;
+  readonly dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
@@ -104,6 +106,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       entityPath: string | undefined,
     ) => Promise<void>,
     onDataSpaceChange: (val: DataSpaceInfo) => void,
+    dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined,
     onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
       | undefined,
@@ -139,6 +142,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     // NOTE: if we reuse this state in the future (e.g. in Studio), we might need
     // to turn this flag off
     this.isAdvancedDataSpaceSearchEnabled = true;
+    this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
   }
 
   override get sideBarClassName(): string | undefined {
@@ -219,6 +223,14 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   ): void {
     const mapping = executionContext.mapping.value;
     this.changeMapping(mapping);
+    const mappingModelCoverageAnalysisResult =
+      this.dataSpaceAnalysisResult?.executionContextsIndex.get(
+        executionContext.name,
+      )?.mappingModelCoverageAnalysisResult;
+    if (mappingModelCoverageAnalysisResult) {
+      this.explorerState.mappingModelCoverageAnalysisResult =
+        mappingModelCoverageAnalysisResult;
+    }
     this.changeRuntime(new RuntimePointer(executionContext.defaultRuntime));
 
     const compatibleClasses = getMappingCompatibleClasses(

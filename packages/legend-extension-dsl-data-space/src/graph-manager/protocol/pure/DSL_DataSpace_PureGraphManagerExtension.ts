@@ -33,6 +33,11 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
     cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult>;
+
+  abstract fetchDataSpaceAnalysisFromCache(
+    cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+    actionState?: ActionState,
+  ): Promise<DataSpaceAnalysisResult | undefined>;
 }
 
 export const DSL_DataSpace_getGraphManagerExtension = (

@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {
-  type Multiplicity,
-  type Mapping,
-  type PackageableRuntime,
-  type PureModel,
-  type DatasetSpecification,
+import type {
+  Multiplicity,
+  Mapping,
+  PackageableRuntime,
+  PureModel,
+  DatasetSpecification,
+  MappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
@@ -32,7 +33,7 @@ export class DataSpaceExecutionContextAnalysisResult {
   mapping!: Mapping;
   defaultRuntime!: PackageableRuntime;
   compatibleRuntimes!: PackageableRuntime[];
-  // TODO: mapping coverage analysis
+  mappingModelCoverageAnalysisResult!: MappingModelCoverageAnalysisResult;
   datasets: DatasetSpecification[] = [];
 }
 

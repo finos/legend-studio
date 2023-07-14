@@ -1004,7 +1004,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         (plugin) => plugin.getExtraExistingQueryEditorStateBuilders?.() ?? [],
       );
     for (const builder of existingQueryEditorStateBuilders) {
-      queryBuilderState = builder(query, this);
+      queryBuilderState = await builder(query, this);
       if (queryBuilderState) {
         break;
       }

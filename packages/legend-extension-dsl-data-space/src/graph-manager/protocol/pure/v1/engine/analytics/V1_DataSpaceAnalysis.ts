@@ -22,6 +22,7 @@ import {
   type PureProtocolProcessorPlugin,
   V1_deserializeDatasetSpecification,
   V1_pureModelContextDataPropSchema,
+  V1_MappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import {
   SerializationFactory,
@@ -33,6 +34,7 @@ import {
   isString,
   isNonNullable,
   optionalCustomUsingModelSchema,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -81,6 +83,7 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   mapping!: string;
   defaultRuntime!: string;
   compatibleRuntimes!: string[];
+  mappingModelCoverageAnalysisResult!: V1_MappingModelCoverageAnalysisResult;
   datasets: V1_DatasetSpecification[] = [];
 }
 
@@ -98,6 +101,9 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
     ),
     defaultRuntime: primitive(),
     description: optional(primitive()),
+    mappingModelCoverageAnalysisResult: usingModelSchema(
+      V1_MappingModelCoverageAnalysisResult.serialization.schema,
+    ),
     mapping: primitive(),
     name: primitive(),
     title: optional(primitive()),
@@ -403,6 +409,9 @@ const V1_dataSpaceAnalysisResultModelSchema = (
 
     executionContexts: customListWithSchema(
       V1_dataSpaceExecutionContextAnalysisResultModelSchema(plugins),
+    ),
+    mappingModelCoverageAnalysisResult: usingModelSchema(
+      V1_MappingModelCoverageAnalysisResult.serialization.schema,
     ),
     defaultExecutionContext: primitive(),
 

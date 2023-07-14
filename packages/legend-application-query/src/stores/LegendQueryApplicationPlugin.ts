@@ -54,7 +54,7 @@ export type QuerySetupActionConfiguration = {
 export type ExistingQueryEditorStateBuilder = (
   query: Query,
   editorStore: ExistingQueryEditorStore,
-) => QueryBuilderState | undefined;
+) => Promise<QueryBuilderState | undefined>;
 
 export type QueryEditorActionConfiguration = {
   key: string;
