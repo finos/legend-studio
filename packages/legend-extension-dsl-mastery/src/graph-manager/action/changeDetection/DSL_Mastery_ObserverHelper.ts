@@ -30,6 +30,7 @@ export const observe_Mastery = skipObserved(
       modelClass: observable,
       identityResolution: observable,
       sources: observable,
+      precedenceRules: observable,
       _elementHashCode: override,
     });
 
