@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.1.10
+
+### Patch Changes
+
+- [#2424](https://github.com/finos/legend-studio/pull/2424) [`01b2c6465`](https://github.com/finos/legend-studio/commit/01b2c64653091f065f037a5937da5bf8756272ba) ([@Humaira-Hossain](https://github.com/Humaira-Hossain)) - Add extension mechanism for query chat mode
+
 ## 4.1.9
 
 ### Patch Changes

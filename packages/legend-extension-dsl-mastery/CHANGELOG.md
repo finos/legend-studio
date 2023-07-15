@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.48
+
+### Patch Changes
+
+- [#2427](https://github.com/finos/legend-studio/pull/2427) [`58e87d525`](https://github.com/finos/legend-studio/commit/58e87d525f5403d44e4c3a8c62e7bfb954755405) ([@Oluwatobiadeoye](https://github.com/Oluwatobiadeoye)) - Support for Mastery Precedence rules
+
 ## 3.0.47
 
 ## 3.0.46

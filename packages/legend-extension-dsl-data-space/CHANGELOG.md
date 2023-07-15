@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.0.48
+
+### Patch Changes
+
+- [#2390](https://github.com/finos/legend-studio/pull/2390) [`9af0f1b3a`](https://github.com/finos/legend-studio/commit/9af0f1b3ae2a814d7250a72cb7c41c5c1cbb54b3) ([@gayathrir11](https://github.com/gayathrir11)) - Use dataspace analytics cache to get mapping model coverage analysis
+
 ## 10.0.47
 
 ## 10.0.46
