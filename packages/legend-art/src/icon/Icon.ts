@@ -266,6 +266,7 @@ export const ThinChevronDownIcon = BS.BsChevronDown;
 export const ThinChevronRightIcon = BS.BsChevronRight;
 export const ThinChevronLeftIcon = BS.BsChevronLeft;
 export const QuestionSquareIcon = BS.BsQuestionSquare;
+export const QuestionSquareFillIcon = BS.BsQuestionSquareFill;
 export const GenericTextFileIcon = BS.BsTextLeft;
 
 const BI = ReactIcons.BI;

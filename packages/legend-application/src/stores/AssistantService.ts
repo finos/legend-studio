@@ -108,7 +108,7 @@ export class AssistantService {
   panelRenderingKey = uuid();
   isHidden = true; // hide by default unless specified by the application to show
   isOpen = false;
-  selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
+  selectedTab: string = VIRTUAL_ASSISTANT_TAB.SEARCH;
   currentDocumentationEntry: VirtualAssistantDocumentationEntry | undefined;
 
   // search text
@@ -260,7 +260,7 @@ export class AssistantService {
     this.isOpen = val;
   }
 
-  setSelectedTab(val: VIRTUAL_ASSISTANT_TAB): void {
+  setSelectedTab(val: string): void {
     this.selectedTab = val;
   }
 

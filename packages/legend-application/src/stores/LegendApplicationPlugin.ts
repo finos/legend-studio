@@ -35,6 +35,15 @@ export type ApplicationPageEntry = {
   renderer: React.FC | React.ReactElement;
 };
 
+export type VirtualAssistantViewConfiguration = {
+  key: string;
+  title: string;
+  icon?: React.ReactNode | undefined;
+  renderer: (
+    applicationStore: GenericLegendApplicationStore,
+  ) => React.ReactNode | undefined;
+};
+
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
   /**
    * Get the list of setup procedures to be run when booting up the application.
@@ -93,4 +102,9 @@ export abstract class LegendApplicationPlugin extends AbstractPlugin {
    * Get the list of setting configuration entries
    */
   getExtraSettingConfigurationEntries?(): SettingConfigurationEntry[];
+
+  /**
+   * Get the list of configurations of views for virtual assistant
+   */
+  getExtraVirtualAssistantViewConfigurations?(): VirtualAssistantViewConfiguration[];
 }

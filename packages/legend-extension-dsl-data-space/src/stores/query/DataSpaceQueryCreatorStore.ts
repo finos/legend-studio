@@ -132,7 +132,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       );
       dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
-      ).fetchDataSpaceAnalysisFromCache(() =>
+      ).retrieveDataSpaceAnalysisFromCache(() =>
         retrieveAnalyticsResultCache(
           project,
           this.versionId,

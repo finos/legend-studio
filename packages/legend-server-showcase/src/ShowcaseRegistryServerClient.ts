@@ -50,6 +50,7 @@ export class ShowcaseRegistryServerClient {
     );
   }
 
+  // TODO: support search
   // search(text: string): Promise<any> {
   //   return this.networkClient.get(
   //     `${this.baseUrl}/projects/${this.projectId}/search`,
