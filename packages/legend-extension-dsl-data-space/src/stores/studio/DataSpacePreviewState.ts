@@ -61,7 +61,7 @@ export class DataSpacePreviewState extends EditorExtensionState {
 
   static retrieveState(editorStore: EditorStore): DataSpacePreviewState {
     const state = guaranteeNonNullable(
-      editorStore.editorExtensionStates.find((extensionState) => {
+      editorStore.extensionStates.find((extensionState) => {
         if (
           /**
            * In development mode, when we make changes in certain areas like `EditorStore`, the following `instanceof` check

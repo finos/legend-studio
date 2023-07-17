@@ -123,6 +123,13 @@ export class EditorStore implements CommandRegistrar {
   readonly depotServerClient: DepotServerClient;
   readonly pluginManager: LegendStudioPluginManager;
 
+  /**
+   * This is a mechanism to have the store holds references to extension states
+   * so that we can refer back to these states when needed or do cross-extensions
+   * operations
+   */
+  readonly extensionStates: EditorExtensionState[] = [];
+
   readonly initState = ActionState.create();
 
   initialEntityPath?: string | undefined;
@@ -133,8 +140,6 @@ export class EditorStore implements CommandRegistrar {
   // Instead, we will gradually move these `boolean` flags into `EditorMode`
   // See https://github.com/finos/legend-studio/issues/317
   mode = EDITOR_MODE.STANDARD;
-
-  editorExtensionStates: EditorExtensionState[] = [];
 
   // SDLC
   sdlcState: EditorSDLCState;
@@ -272,11 +277,12 @@ export class EditorStore implements CommandRegistrar {
       this,
       this.sdlcState,
     );
+
     // extensions
-    this.editorExtensionStates = this.pluginManager
+    this.extensionStates = this.pluginManager
       .getApplicationPlugins()
       .flatMap(
-        (plugin) => plugin.getExtraEditorExtensionStateCreators?.() ?? [],
+        (plugin) => plugin.getExtraEditorExtensionStateBuilders?.() ?? [],
       )
       .map((creator) => creator(this))
       .filter(isNonNullable);

@@ -435,7 +435,9 @@ export const GlobalTestRunner = observer(
 
     const extractTestRunnerTabConfigurations = editorStore.pluginManager
       .getApplicationPlugins()
-      .flatMap((plugin) => plugin.getExtraTestRunnerTabConfigurations?.() ?? [])
+      .flatMap(
+        (plugin) => plugin.getExtraTestRunnerViewConfigurations?.() ?? [],
+      )
       .filter((configuration) => configuration.renderer(editorStore));
 
     const testRunnerTabs = (Object.values(TEST_RUNNER_TABS) as string[])

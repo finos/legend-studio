@@ -23,7 +23,14 @@ import type {
 } from './DocumentationService.js';
 import type { ColorTheme } from './LayoutService.js';
 import type { SettingConfigurationEntry } from './SettingService.js';
-import type { GenericLegendApplicationStore } from './ApplicationStore.js';
+import type {
+  ApplicationExtensionState,
+  GenericLegendApplicationStore,
+} from './ApplicationStore.js';
+
+export type ApplicationExtensionStateBuilder = (
+  applicationStore: GenericLegendApplicationStore,
+) => ApplicationExtensionState | undefined;
 
 export type LegendApplicationSetup = (
   applicationStore: GenericLegendApplicationStore,
@@ -39,12 +46,19 @@ export type VirtualAssistantViewConfiguration = {
   key: string;
   title: string;
   icon?: React.ReactNode | undefined;
-  renderer: (
-    applicationStore: GenericLegendApplicationStore,
-  ) => React.ReactNode | undefined;
+  renderer: () => React.ReactNode | undefined;
 };
 
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
+  /**
+   * Get the list of extension state builders for application store.
+   *
+   * This is a mechanism to have the store holds references to extension states
+   * so that we can refer back to these states when needed or do cross-extensions
+   * operations
+   */
+  getExtraApplicationExtensionStateBuilders?(): ApplicationExtensionStateBuilder[];
+
   /**
    * Get the list of setup procedures to be run when booting up the application.
    *

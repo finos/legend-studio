@@ -49,7 +49,7 @@ export type EditorExtensionComponentRendererConfiguration = {
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 
-export type EditorExtensionStateCreator = (
+export type EditorExtensionStateBuilder = (
   editorStore: EditorStore,
 ) => EditorExtensionState | undefined;
 
@@ -77,7 +77,7 @@ export type TestableMetadataGetter = (
   editorStore: EditorStore,
 ) => TestableMetadata | undefined;
 
-export type TestRunnerTabConfiguration = {
+export type TestRunnerViewConfiguration = {
   key: string;
   title: string;
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
@@ -95,16 +95,18 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   }
 
   /**
+   * Get the list of extension state builders for editor store.
+   *
+   * This is a mechanism to have the store holds references to extension states
+   * so that we can refer back to these states when needed or do cross-extensions
+   * operations
+   */
+  getExtraEditorExtensionStateBuilders?(): EditorExtensionStateBuilder[];
+
+  /**
    * Get the list of items to be rendered in the explorer context menu.
    */
   getExtraExplorerContextMenuItemRendererConfigurations?(): ExplorerContextMenuItemRendererConfiguration[];
-
-  /**
-   * Get the list of creators for editor extension state.
-   *
-   * This is a mechanism to extend the editor store.
-   */
-  getExtraEditorExtensionStateCreators?(): EditorExtensionStateCreator[];
 
   /**
    * Get the list of configurations for the renderer of editor extension states.
@@ -127,9 +129,9 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   getExtraTestableMetadata?(): TestableMetadataGetter[];
 
   /**
-   * Get the list of configurations for the editor for a test runner tab.
+   * Get the list of view configurations for test runner.
    */
-  getExtraTestRunnerTabConfigurations?(): TestRunnerTabConfiguration[];
+  getExtraTestRunnerViewConfigurations?(): TestRunnerViewConfiguration[];
 }
 
 export type PureGrammarElementLabeler = (
