@@ -35,8 +35,9 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from 
 
 export class DataSpacePreviewState extends EditorExtensionState {
   readonly editorStore: EditorStore;
-
   readonly loadDataSpaceState = ActionState.create();
+
+  private static readonly IDENTIFIER = 'data-space-preview';
 
   dataSpace?: DataSpace | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
@@ -54,14 +55,33 @@ export class DataSpacePreviewState extends EditorExtensionState {
     this.editorStore = editorStore;
   }
 
+  override get INTERNAL__identifierKey(): string {
+    return DataSpacePreviewState.IDENTIFIER;
+  }
+
   static retrieveState(editorStore: EditorStore): DataSpacePreviewState {
-    return guaranteeNonNullable(
-      editorStore.editorExtensionStates.find(
-        (extensionState): extensionState is DataSpacePreviewState =>
-          extensionState instanceof DataSpacePreviewState,
-      ),
+    const state = guaranteeNonNullable(
+      editorStore.editorExtensionStates.find((extensionState) => {
+        if (
+          /**
+           * In development mode, when we make changes in certain areas like `EditorStore`, the following `instanceof` check
+           * will fail as if there were multiple copies of the classes with the same name, this could be caused by either
+           * React `fast-refresh` or `webpack HMR`; we didn't have time to really do a thorough debug here, as such,
+           * we will just do a simple key check to match the right state to bypass the problem for development mode.
+           */
+          // eslint-disable-next-line no-process-env
+          process.env.NODE_ENV === 'development'
+        ) {
+          return (
+            extensionState.INTERNAL__identifierKey ===
+            DataSpacePreviewState.IDENTIFIER
+          );
+        }
+        return extensionState instanceof DataSpacePreviewState;
+      }),
       `Can't find data space preview state: make sure it is added as an editor extension state`,
     );
+    return state as unknown as DataSpacePreviewState;
   }
 
   setDataSpace(val: DataSpace | undefined): void {

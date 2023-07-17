@@ -113,6 +113,8 @@ export abstract class EditorExtensionState {
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
+
+  abstract get INTERNAL__identifierKey(): string;
 }
 
 export class EditorStore implements CommandRegistrar {

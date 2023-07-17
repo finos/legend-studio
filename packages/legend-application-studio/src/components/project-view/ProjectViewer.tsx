@@ -62,7 +62,7 @@ import {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from '../LegendStudioFrameworkProvider.js';
-import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
+import { EmbeddedQueryBuilder } from '../editor/EmbeddedQueryBuilder.js';
 import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
 
