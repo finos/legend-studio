@@ -58,7 +58,6 @@ export class LegendStudioBaseStore {
   readonly applicationStore: LegendStudioApplicationStore;
   readonly sdlcServerClient: SDLCServerClient;
   readonly depotServerClient: DepotServerClient;
-  readonly showcaseManagerState: ShowcaseManagerState;
   readonly pluginManager: LegendStudioPluginManager;
 
   readonly initState = ActionState.create();
@@ -95,9 +94,6 @@ export class LegendStudioBaseStore {
       baseHeaders: this.applicationStore.config.sdlcServerBaseHeaders,
     });
     this.sdlcServerClient.setTracerService(this.applicationStore.tracerService);
-
-    // showcase
-    this.showcaseManagerState = new ShowcaseManagerState(applicationStore);
   }
 
   *initialize(): GeneratorFn<void> {
@@ -110,7 +106,13 @@ export class LegendStudioBaseStore {
     this.initState.inProgress();
 
     // initialization components asynchronously
-    Promise.all([this.showcaseManagerState.fetchShowcases()]);
+    // TODO: this is a nice non-blocking pattern for initialization
+    // we should do this for things like documentation, etc.
+    Promise.all([
+      ShowcaseManagerState.retrieveNullableState(
+        this.applicationStore,
+      )?.fetchShowcases(),
+    ]);
 
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (

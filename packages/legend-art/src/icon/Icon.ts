@@ -272,6 +272,7 @@ export const GenericTextFileIcon = BS.BsTextLeft;
 const BI = ReactIcons.BI;
 export const ShapeTriangleIcon = BI.BiShapeTriangle;
 export const AtomIcon = BI.BiAtom;
+export const CabinetIcon = BI.BiCabinet;
 
 const CG = ReactIcons.CG;
 export const OptionsIcon = CG.CgOptions;

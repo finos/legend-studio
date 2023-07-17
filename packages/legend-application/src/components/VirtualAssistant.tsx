@@ -40,6 +40,8 @@ import {
   Draggable,
   BaseRadioGroup,
   QuestionCircleIcon,
+  EmptyWindowRestoreIcon,
+  WindowMaximizeIcon,
 } from '@finos/legend-art';
 import {
   ADVANCED_FUZZY_SEARCH_MODE,
@@ -555,6 +557,8 @@ const VirtualAssistantPanel = observer(
       (config) => config.key === selectedTab,
     );
 
+    const toggleMaximize = (): void =>
+      assistantService.setIsPanelMaximized(!assistantService.isPanelMaximized);
     const selectSearch = (): void =>
       assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.SEARCH);
     const selectContextualDoc = (): void =>
@@ -602,7 +606,10 @@ const VirtualAssistantPanel = observer(
         key={assistantService.panelRenderingKey}
       >
         <div
-          className="virtual-assistant__panel"
+          className={clsx('virtual-assistant__panel', {
+            'virtual-assistant__panel--maximized':
+              assistantService.isPanelMaximized,
+          })}
           // NOTE: here we block `tabbing` (to move focus). This is to counter the effect of
           // `disableEnforceFocus={true}` set in the assistant panel popover
           // this is the poor-man focus trap for the assistant to ensure
@@ -675,8 +682,22 @@ const VirtualAssistantPanel = observer(
               <button
                 className="virtual-assistant__panel__header__action"
                 tabIndex={-1}
+                onClick={toggleMaximize}
+                title={
+                  assistantService.isPanelMaximized ? 'Minimize' : 'Maximize'
+                }
+              >
+                {assistantService.isPanelMaximized ? (
+                  <EmptyWindowRestoreIcon />
+                ) : (
+                  <WindowMaximizeIcon />
+                )}
+              </button>
+              <button
+                className="virtual-assistant__panel__header__action"
+                tabIndex={-1}
                 onClick={closeAssistantPanel}
-                title="Close panel"
+                title="Close"
               >
                 <CloseIcon className="virtual-assistant__panel__icon__close" />
               </button>
@@ -689,7 +710,7 @@ const VirtualAssistantPanel = observer(
             {selectedTab === VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT && (
               <VirtualAssistantContextualSupportPanel />
             )}
-            {currentExtensionView?.renderer(applicationStore)}
+            {currentExtensionView?.renderer()}
           </div>
         </div>
       </BasePopover>

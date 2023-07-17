@@ -40,7 +40,10 @@ export const DataSpacePreviewAction = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const dataSpacePreviewState =
-      DataSpacePreviewState.retrieveState(editorStore);
+      DataSpacePreviewState.retrieveNullableState(editorStore);
+    if (!dataSpacePreviewState) {
+      return null;
+    }
 
     const previewDataSpace = (): void => {
       flowResult(dataSpacePreviewState.previewDataSpace(dataSpace)).catch(
@@ -57,7 +60,10 @@ export const DataSpacePreviewAction = observer(
 export const DataSpacePreviewDialog = observer(() => {
   const editorStore = useEditorStore();
   const dataSpacePreviewState =
-    DataSpacePreviewState.retrieveState(editorStore);
+    DataSpacePreviewState.retrieveNullableState(editorStore);
+  if (!dataSpacePreviewState) {
+    return null;
+  }
 
   const onClose = (): void => {
     dataSpacePreviewState.setDataSpace(undefined);

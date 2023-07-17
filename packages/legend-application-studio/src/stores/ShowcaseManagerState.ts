@@ -29,16 +29,24 @@ import {
   ShowcaseRegistryServerClient,
 } from '@finos/legend-server-showcase';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
+import {
+  ApplicationExtensionState,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 
-export class ShowcaseManagerState {
+export class ShowcaseManagerState extends ApplicationExtensionState {
+  private static readonly IDENTIFIER = 'showcase-manager';
+
   readonly applicationStore: LegendStudioApplicationStore;
+  readonly fetchShowcasesState = ActionState.create();
+
   private readonly showcaseServerClient?: ShowcaseRegistryServerClient;
 
   showcases: ShowcaseMetadata[] = [];
 
-  readonly fetchShowcasesState = ActionState.create();
-
   constructor(applicationStore: LegendStudioApplicationStore) {
+    super();
+
     makeObservable(this, {
       showcases: observable,
       fetchShowcases: flow,
@@ -51,6 +59,42 @@ export class ShowcaseManagerState {
         baseUrl: this.applicationStore.config.showcaseServerUrl,
       });
     }
+  }
+
+  override get INTERNAL__identifierKey(): string {
+    return ShowcaseManagerState.IDENTIFIER;
+  }
+
+  static retrieveNullableState(
+    applicationStore: GenericLegendApplicationStore,
+  ): ShowcaseManagerState | undefined {
+    return applicationStore.extensionStates.find((extensionState) => {
+      if (
+        /**
+         * In development mode, when we make changes in certain areas like utils or base states, the following `instanceof`
+         * check will fail as if there were multiple copies of the classes with the same name, this could be caused by either
+         * React `fast-refresh` or `webpack HMR`; we didn't have time to really do a thorough debug here, as such,
+         * we will just do a simple key check to match the right state to bypass the problem for development mode.
+         */
+        // eslint-disable-next-line no-process-env
+        process.env.NODE_ENV === 'development'
+      ) {
+        return (
+          extensionState.INTERNAL__identifierKey ===
+          ShowcaseManagerState.IDENTIFIER
+        );
+      }
+      return extensionState instanceof ShowcaseManagerState;
+    }) as ShowcaseManagerState;
+  }
+
+  static retrieveState(
+    applicationStore: GenericLegendApplicationStore,
+  ): ShowcaseManagerState {
+    return guaranteeNonNullable(
+      ShowcaseManagerState.retrieveNullableState(applicationStore),
+      `Can't find showcase manager state: make sure it is added as an editor extension state`,
+    );
   }
 
   get isEnabled(): boolean {

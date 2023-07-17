@@ -157,6 +157,11 @@
   // on the container of the panel so we could interact with the panel
   pointer-events: all;
 
+  &--maximized {
+    height: max(95vh, 40rem);
+    width: max(40vw, 30rem);
+  }
+
   &__container {
     // NOTE: we must take into account of UI component libraries, such as MUI
     // See https://mui.com/material-ui/customization/z-index/

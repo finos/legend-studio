@@ -605,8 +605,6 @@ export class XTerm extends Terminal {
    * NOTE: negative number means backward deleting (i.e. backspace)
    */
   private deleteFromCommand(val: number): void {
-    // console.log(val);
-
     const range = this.getCommandRange();
 
     const maxDistance =

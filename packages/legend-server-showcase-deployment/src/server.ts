@@ -20,6 +20,8 @@ import { fastifyCors } from '@fastify/cors';
 import { configureShowcaseRegistryServer } from './ShowcaseRegistryServer.js';
 import type { ShowcaseRegistryConfig } from './ShowcaseRegistry.js';
 
+const API_BASE_URL = '/api';
+
 const configFilePath = process.argv[2] ?? './config.json';
 if (!existsSync(configFilePath)) {
   throw new Error(`Can't find config file at path '${configFilePath}'`);
@@ -36,7 +38,7 @@ const server = fastify({
 server.register(fastifyCors, {});
 
 await configureShowcaseRegistryServer(server, {
-  apiBaseUrl: '/api',
+  apiBaseUrl: API_BASE_URL,
   datasources: (config as ShowcaseRegistryConfig).datasources.map(
     (datasource) => {
       if (datasource.path) {

@@ -34,10 +34,10 @@ import { type Class, InMemoryGraphData } from '@finos/legend-graph';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from '../../__lib__/DSL_DataSpace_LegendApplicationNavigation.js';
 
 export class DataSpacePreviewState extends EditorExtensionState {
+  private static readonly IDENTIFIER = 'data-space-preview';
+
   readonly editorStore: EditorStore;
   readonly loadDataSpaceState = ActionState.create();
-
-  private static readonly IDENTIFIER = 'data-space-preview';
 
   dataSpace?: DataSpace | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
@@ -59,29 +59,34 @@ export class DataSpacePreviewState extends EditorExtensionState {
     return DataSpacePreviewState.IDENTIFIER;
   }
 
+  static retrieveNullableState(
+    editorStore: EditorStore,
+  ): DataSpacePreviewState | undefined {
+    return editorStore.extensionStates.find((extensionState) => {
+      if (
+        /**
+         * In development mode, when we make changes in certain areas like utils or base states, the following `instanceof`
+         * check will fail as if there were multiple copies of the classes with the same name, this could be caused by either
+         * React `fast-refresh` or `webpack HMR`; we didn't have time to really do a thorough debug here, as such,
+         * we will just do a simple key check to match the right state to bypass the problem for development mode.
+         */
+        // eslint-disable-next-line no-process-env
+        process.env.NODE_ENV === 'development'
+      ) {
+        return (
+          extensionState.INTERNAL__identifierKey ===
+          DataSpacePreviewState.IDENTIFIER
+        );
+      }
+      return extensionState instanceof DataSpacePreviewState;
+    }) as DataSpacePreviewState;
+  }
+
   static retrieveState(editorStore: EditorStore): DataSpacePreviewState {
-    const state = guaranteeNonNullable(
-      editorStore.extensionStates.find((extensionState) => {
-        if (
-          /**
-           * In development mode, when we make changes in certain areas like `EditorStore`, the following `instanceof` check
-           * will fail as if there were multiple copies of the classes with the same name, this could be caused by either
-           * React `fast-refresh` or `webpack HMR`; we didn't have time to really do a thorough debug here, as such,
-           * we will just do a simple key check to match the right state to bypass the problem for development mode.
-           */
-          // eslint-disable-next-line no-process-env
-          process.env.NODE_ENV === 'development'
-        ) {
-          return (
-            extensionState.INTERNAL__identifierKey ===
-            DataSpacePreviewState.IDENTIFIER
-          );
-        }
-        return extensionState instanceof DataSpacePreviewState;
-      }),
+    return guaranteeNonNullable(
+      DataSpacePreviewState.retrieveNullableState(editorStore),
       `Can't find data space preview state: make sure it is added as an editor extension state`,
     );
-    return state as unknown as DataSpacePreviewState;
   }
 
   setDataSpace(val: DataSpace | undefined): void {
