@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.48
+
+### Patch Changes
+
+- [#2404](https://github.com/finos/legend-studio/pull/2404) [`757f5ae37`](https://github.com/finos/legend-studio/commit/757f5ae37d07104c1b47cc0b5acc4255ea9420ec) ([@ankitamritraj](https://github.com/ankitamritraj)) - Added persistence V2 spec
+
 ## 5.0.47
 
 ## 5.0.46
