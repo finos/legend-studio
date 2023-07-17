@@ -34,7 +34,6 @@ import {
   promisify,
   StopWatch,
   isNonNullable,
-  uniq,
   filterByType,
   isString,
 } from '@finos/legend-shared';
@@ -284,7 +283,6 @@ import {
 } from '../../../GraphData.js';
 import type { DEPRECATED__MappingTest } from '../../../../graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 import { DEPRECATED__validate_MappingTest } from '../../../action/validation/DSL_Mapping_ValidationHelper.js';
-import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 import { V1_INTERNAL__UnknownPackageableElement } from './model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { SourceInformation } from '../../../action/SourceInformation.js';
 import type { V1_SourceInformation } from './model/V1_SourceInformation.js';
@@ -304,7 +302,6 @@ import {
   V1_ArtifactGenerationExtensionInput,
   V1_buildArtifactsByExtensionElement,
 } from './engine/generation/V1_ArtifactGenerationExtensionApi.js';
-import { V1_SchemaSet } from './model/packageableElements/externalFormat/schemaSet/V1_DSL_ExternalFormat_SchemaSet.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -510,9 +507,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     storeSubtypes: [],
     functionActivatorSubtypes: [],
   };
-  private TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism?:
-    | boolean
-    | undefined;
 
   // Pure Client Version represent the version of the pure protocol.
   // Most Engine APIs will interrupt an undefined pure client version to mean
@@ -546,13 +540,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
-      TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism?:
-        | boolean
-        | undefined;
     },
   ): Promise<void> {
-    this.TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism =
-      options?.TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism;
     this.engine = new V1_Engine(config.clientConfig, this.logService);
     this.engine
       .getEngineServerClient()
@@ -3028,28 +3017,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     switch (executionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE: {
-        if (
-          this.TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism
-        ) {
-          const data = this.getFullGraphModelData(graph);
-          const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
-          sdlcInfo.packageableElementPointers = [
-            new V1_PackageableElementPointer(
-              PackageableElementPointerType.SERVICE,
-              service.path,
-            ),
-          ];
-          data.origin = new V1_PureModelContextPointer(protocol, sdlcInfo);
-          input = data;
-        } else {
-          const data = this.TEMPORARY__pruneServicesFromGraphForRegistration(
-            graph,
-            this.getFullGraphModelData(graph),
-          );
-          data.elements.push(this.elementToProtocol<V1_Service>(service));
-          data.origin = new V1_PureModelContextPointer(protocol);
-          input = data;
-        }
+        const data = this.getFullGraphModelData(graph);
+        const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
+        sdlcInfo.packageableElementPointers = [
+          new V1_PackageableElementPointer(
+            PackageableElementPointerType.SERVICE,
+            service.path,
+          ),
+        ];
+        data.origin = new V1_PureModelContextPointer(protocol, sdlcInfo);
+        input = data;
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
@@ -3153,33 +3130,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const graphData = this.getFullGraphModelData(graph);
 
         services.forEach((service) => {
-          if (
-            this.TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism
-          ) {
-            const pmcd = new V1_PureModelContextData();
-            pmcd.serializer = graphData.serializer;
-            pmcd.INTERNAL__rawDependencyEntities =
-              graphData.INTERNAL__rawDependencyEntities;
-            pmcd.elements = graphData.elements;
-            const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
-            sdlcInfo.packageableElementPointers = [
-              new V1_PackageableElementPointer(
-                PackageableElementPointerType.SERVICE,
-                service.path,
-              ),
-            ];
-            inputs.push({ service: service, context: pmcd });
-          } else {
-            const prunedGraphData =
-              this.TEMPORARY__pruneServicesFromGraphForRegistration(
-                graph,
-                graphData,
-              );
-            prunedGraphData.elements.push(
-              this.elementToProtocol<V1_Service>(service),
-            );
-            inputs.push({ service: service, context: prunedGraphData });
-          }
+          const pmcd = new V1_PureModelContextData();
+          pmcd.serializer = graphData.serializer;
+          pmcd.INTERNAL__rawDependencyEntities =
+            graphData.INTERNAL__rawDependencyEntities;
+          pmcd.elements = graphData.elements;
+          const sdlcInfo = new V1_LegendSDLC(groupId, artifactId, version);
+          sdlcInfo.packageableElementPointers = [
+            new V1_PackageableElementPointer(
+              PackageableElementPointerType.SERVICE,
+              service.path,
+            ),
+          ];
+          inputs.push({ service: service, context: pmcd });
         });
         break;
       }
@@ -3300,47 +3263,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       serviceStorage.getGenerationId(),
     );
   }
-
-  // NOTE: We almost should never be poking into dependency entities. However for service registration the input
-  // expects only one service in the graph data. Perhaps, the service registration API should be modified to accept
-  // service as a parameter outside the model
-  // TODO: this is temporary and to be removed when we use the new registration mechanism
-  private TEMPORARY__pruneServicesFromGraphForRegistration = (
-    graph: PureModel,
-    graphData: V1_PureModelContextData,
-  ): V1_PureModelContextData => {
-    const prunedGraphData = this.prunePureModelContextData(
-      graphData,
-      (element) =>
-        element instanceof V1_Class ||
-        element instanceof V1_Enumeration ||
-        element instanceof V1_Profile ||
-        element instanceof V1_Association ||
-        element instanceof V1_ConcreteFunctionDefinition ||
-        element instanceof V1_FunctionActivator ||
-        element instanceof V1_Measure ||
-        element instanceof V1_SchemaSet ||
-        element instanceof V1_Store ||
-        element instanceof V1_PackageableConnection ||
-        element instanceof V1_PackageableRuntime ||
-        element instanceof V1_Mapping,
-      (entity: Entity) => {
-        const content = entity.content as { _type: string };
-        return content._type !== V1_SERVICE_ELEMENT_PROTOCOL_TYPE;
-      },
-    );
-    const extraExecutionElements = this.pluginManager
-      .getPureProtocolProcessorPlugins()
-      .flatMap(
-        (element) => element.V1_getExtraExecutionInputCollectors?.() ?? [],
-      )
-      .flatMap((getter) => getter(graph, graphData));
-    prunedGraphData.elements = uniq([
-      ...prunedGraphData.elements,
-      ...extraExecutionElements,
-    ]);
-    return prunedGraphData;
-  };
 
   // --------------------------------------------- Change Detection ---------------------------------------------
 
