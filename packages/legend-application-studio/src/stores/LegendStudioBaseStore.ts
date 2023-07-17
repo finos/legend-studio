@@ -23,7 +23,6 @@ import {
   LogEvent,
   assertErrorThrown,
   NetworkClient,
-  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   type ApplicationStore,
@@ -48,70 +47,12 @@ import type { LegendStudioPluginManager } from '../application/LegendStudioPlugi
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LegendStudioEventHelper } from '../__lib__/LegendStudioEventHelper.js';
 import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from '../__lib__/LegendStudioNavigation.js';
-import {
-  type Showcase,
-  type ShowcaseMetadata,
-  ShowcaseRegistryServerClient,
-} from '@finos/legend-server-showcase';
+import { ShowcaseManagerState } from './ShowcaseManagerState.js';
 
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,
   LegendStudioPluginManager
 >;
-
-export class ShowcaseManagerState {
-  readonly applicationStore: LegendStudioApplicationStore;
-  private readonly showcaseServerClient?: ShowcaseRegistryServerClient;
-
-  showcases: ShowcaseMetadata[] = [];
-
-  readonly fetchShowcasesState = ActionState.create();
-
-  constructor(applicationStore: LegendStudioApplicationStore) {
-    makeObservable(this, {
-      showcases: observable,
-      fetchShowcases: flow,
-    });
-
-    this.applicationStore = applicationStore;
-
-    if (this.applicationStore.config.showcaseServerUrl) {
-      this.showcaseServerClient = new ShowcaseRegistryServerClient({
-        baseUrl: this.applicationStore.config.showcaseServerUrl,
-      });
-    }
-  }
-
-  get isEnabled(): boolean {
-    return Boolean(this.showcaseServerClient);
-  }
-
-  private get client(): ShowcaseRegistryServerClient {
-    return guaranteeNonNullable(
-      this.showcaseServerClient,
-      `Showcase registry server client is not configured`,
-    );
-  }
-
-  *fetchShowcases(): GeneratorFn<void> {
-    if (!this.isEnabled || this.fetchShowcasesState.isInProgress) {
-      return;
-    }
-
-    try {
-      this.fetchShowcasesState.inProgress();
-      this.showcases = (yield this.client.getShowcases()) as Showcase[];
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_FAILURE),
-        error,
-      );
-    } finally {
-      this.fetchShowcasesState.complete();
-    }
-  }
-}
 
 export class LegendStudioBaseStore {
   readonly applicationStore: LegendStudioApplicationStore;
@@ -167,6 +108,9 @@ export class LegendStudioBaseStore {
       return;
     }
     this.initState.inProgress();
+
+    // initialization components asynchronously
+    Promise.all([this.showcaseManagerState.fetchShowcases()]);
 
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (

@@ -36,7 +36,6 @@ export const EditorStoreProvider: React.FC<{
         applicationStore,
         baseStore.sdlcServerClient,
         baseStore.depotServerClient,
-        baseStore.showcaseManagerState,
       ),
   );
   return (
