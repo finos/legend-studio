@@ -189,13 +189,6 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   V1_getExtraFunctionExpressionBuilders?(): V1_FunctionExpressionBuilder[];
 
   /**
-   * Get the list of collectors of graph elements to build execution input.
-   *
-   * In particular, these collectors are used to produce the minimal graph that is needed for such execution.
-   */
-  V1_getExtraExecutionInputCollectors?(): V1_ExecutionInputCollector[];
-
-  /**
    * Get the list of type inferrers for property expression.
    */
   V1_getExtraPropertyExpressionTypeInferrers?(): V1_PropertyExpressionTypeInferrer[];

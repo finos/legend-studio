@@ -204,9 +204,6 @@ export abstract class AbstractPureGraphManager {
     config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
-      TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism?:
-        | boolean
-        | undefined;
     },
   ): Promise<void>;
 

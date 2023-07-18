@@ -88,11 +88,6 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__enableRawSQLExecutor = false;
 
   /**
-   * This flag can be removed when the support the new service registration input collector mechanism is official
-   */
-  TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism = false;
-
-  /**
    * Provides service registration environment configs.
    *
    * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
