@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 27.1.11
+
+### Patch Changes
+
+- [#2432](https://github.com/finos/legend-studio/pull/2432) [`e87dea1d2`](https://github.com/finos/legend-studio/commit/e87dea1d2ce3315c58a362420854919d7158057c) ([@gayathrir11](https://github.com/gayathrir11)) - Remove `TEMPORARY__enableNewServiceRegistrationInputCollectorMechanism` from the studio config.
+
 ## 27.1.10
 
 ## 27.1.9
