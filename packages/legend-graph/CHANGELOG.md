@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.0.0
+
+### Major Changes
+
+- [#2432](https://github.com/finos/legend-studio/pull/2432) [`e87dea1d2`](https://github.com/finos/legend-studio/commit/e87dea1d2ce3315c58a362420854919d7158057c) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Removed `V1_getExtraExecutionInputCollectors` from PureProtocolProcessorPlugin.
+
 ## 30.0.18
 
 ## 30.0.17
