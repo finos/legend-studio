@@ -70,6 +70,14 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
           enableCrossOsArchive: true
+        # NOTE: for windows runner, to avoid OOM issue, we set swap space
+        # See https://github.com/actions/runner/issues/1051
+        # See https://github.com/al-cheb/configure-pagefile-action
+      - name: configure Pagefile
+        if: matrix.os == 'windows-latest'
+        uses: al-cheb/configure-pagefile-action@v1.3
+        with:
+          minimum-size: 8GB
       - name: Setup Node
         uses: actions/setup-node@v3.7.0
         with:
