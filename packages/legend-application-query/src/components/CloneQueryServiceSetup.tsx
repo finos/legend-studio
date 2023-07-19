@@ -140,14 +140,12 @@ const CloneQueryServiceSetupContent = observer(() => {
       querySetupState.setCurrentProjectVersions([]);
       try {
         fetchSelectedProjectVersionsStatus.inProgress();
-        const v = (await flowResult(
-          depotServerClient.getVersions(
-            guaranteeNonNullable(option?.value.groupId),
-            guaranteeNonNullable(option?.value.artifactId),
-            true,
-          ),
-        )) as string[];
-        querySetupState.setCurrentProjectVersions(v);
+        const versions = await depotServerClient.getVersions(
+          guaranteeNonNullable(option?.value.groupId),
+          guaranteeNonNullable(option?.value.artifactId),
+          true,
+        );
+        querySetupState.setCurrentProjectVersions(versions);
       } catch (error) {
         assertErrorThrown(error);
         applicationStore.notificationService.notifyError(error);

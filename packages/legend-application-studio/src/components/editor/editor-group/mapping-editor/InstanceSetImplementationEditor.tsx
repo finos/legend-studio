@@ -118,7 +118,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const [
       sourceElementForSourceSelectorModal,
       setSourceElementForSourceSelectorModal,
-    ] = useState<MappingElementSource | undefined | null>();
+    ] = useState<MappingElementSource>();
     const CHANGING_SOURCE_ON_EMBEDDED =
       'Changing source on mapping with embedded children will delete all its children';
     const showSourceSelectorModal = (): void => {

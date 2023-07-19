@@ -40,6 +40,7 @@ import {
   TEST_DATA__dependencyMainGraphEntities2,
   TEST_DATA__projectsData,
 } from './TEST_DATA__ProjectDependencyManager.js';
+import { flowResult } from 'mobx';
 
 const testDependingOnDifferentProjectVersions = [
   {
@@ -443,9 +444,11 @@ test(
     getClassProperty(firm, 'mainPerson');
     getClassProperty(person, 'mainFirm');
     // load association 1/2
-    await editorStore.graphState.loadEntityChangesToGraph(
-      [],
-      TEST_DATA__dependencyMainGraphEntities2 as Entity[],
+    await flowResult(
+      editorStore.graphState.loadEntityChangesToGraph(
+        [],
+        TEST_DATA__dependencyMainGraphEntities2 as Entity[],
+      ),
     );
     expect(firm.propertiesFromAssociations.length).toBe(2);
     expect(person.propertiesFromAssociations.length).toBe(2);
@@ -466,7 +469,7 @@ test(
     getClassProperty(firm, 'mainPerson2');
     getClassProperty(person, 'mainFirm2');
     // clear current graph
-    await editorStore.graphState.loadEntityChangesToGraph([], []);
+    await flowResult(editorStore.graphState.loadEntityChangesToGraph([], []));
     expect(editorStore.graphManagerState.graph.allOwnElements.length).toBe(0);
     expect(firm.propertiesFromAssociations.length).toBe(0);
     expect(person.propertiesFromAssociations.length).toBe(0);

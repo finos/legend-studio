@@ -319,7 +319,7 @@ const GenerationStringPropertyEditor = observer(
     property: GenerationProperty;
     isReadOnly: boolean;
     update: (property: GenerationProperty, newValue: PlainObject) => void;
-    getConfigValue: (name: string) => unknown | undefined;
+    getConfigValue: (name: string) => unknown;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     // If there is no default value the string will be 'null'. We will treat it as an empty string
@@ -354,7 +354,7 @@ const GenerationIntegerPropertyEditor = observer(
     property: GenerationProperty;
     isReadOnly: boolean;
     update: (property: GenerationProperty, newValue: PlainObject) => void;
-    getConfigValue: (name: string) => unknown | undefined;
+    getConfigValue: (name: string) => unknown;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     const defaultValue = JSON.parse(property.defaultValue) as
@@ -390,7 +390,7 @@ const GenerationBooleanPropertyEditor = observer(
     property: GenerationProperty;
     isReadOnly: boolean;
     update: (property: GenerationProperty, newValue: PlainObject) => void;
-    getConfigValue: (name: string) => unknown | undefined;
+    getConfigValue: (name: string) => unknown;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     const defaultValue = JSON.parse(property.defaultValue) as
@@ -417,7 +417,7 @@ const GenerationEnumPropertyEditor = observer(
     property: GenerationProperty;
     isReadOnly: boolean;
     update: (property: GenerationProperty, newValue: PlainObject) => void;
-    getConfigValue: (name: string) => unknown | undefined;
+    getConfigValue: (name: string) => unknown;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     const getEnumLabel = (_enum: string): string =>
@@ -464,7 +464,7 @@ const GenerationArrayPropertyEditor = observer(
     property: GenerationProperty;
     isReadOnly: boolean;
     update: (property: GenerationProperty, newValue: object) => void;
-    getConfigValue: (name: string) => unknown | undefined;
+    getConfigValue: (name: string) => unknown;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     let defaultValue: string[] = [];
@@ -654,7 +654,7 @@ const GenerationMapPropertyEditor = observer(
     property: GenerationProperty;
     isReadOnly: boolean;
     update: (property: GenerationProperty, newValue: object) => void;
-    getConfigValue: (name: string) => unknown | undefined;
+    getConfigValue: (name: string) => unknown;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     // Right now, always assume this is a map between STRING and STRING (might need to support STRING - INTEGER and STRING - BOOLEAN)
@@ -884,7 +884,7 @@ const GenerationMapPropertyEditor = observer(
 export const GenerationPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
-    getConfigValue: (name: string) => unknown | undefined;
+    getConfigValue: (name: string) => unknown;
     isReadOnly: boolean;
     update: (property: GenerationProperty, newValue: object) => void;
   }) => {
@@ -1039,7 +1039,7 @@ export const FileGenerationConfigurationEditor = observer(
       [handleDrop],
     );
 
-    const getConfigValue = (name: string): unknown | undefined =>
+    const getConfigValue = (name: string): unknown =>
       getNullableFileGenerationConfig(fileGeneration, name)?.value;
 
     return (

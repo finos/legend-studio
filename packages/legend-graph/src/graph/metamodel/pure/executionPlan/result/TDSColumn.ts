@@ -23,5 +23,5 @@ export class TDSColumn {
   type?: PackageableElementReference<DataType> | undefined;
   enumMappingId?: string | undefined;
   documentation?: string | undefined;
-  sourceDataType?: unknown | undefined;
+  sourceDataType?: unknown;
 }

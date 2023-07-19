@@ -75,7 +75,7 @@ export const generateServiceURL = (
 const ServiceRegisterModal = observer(
   (props: {
     editorStore: QueryEditorStore;
-    onClose(): void;
+    onClose: () => void;
     queryBuilderState: QueryBuilderState;
   }) => {
     const { editorStore, onClose, queryBuilderState } = props;

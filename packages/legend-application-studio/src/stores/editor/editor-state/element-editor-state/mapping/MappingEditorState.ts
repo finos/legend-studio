@@ -274,7 +274,7 @@ export const getMappingElementLabel = (
 export const getMappingElementSource = (
   mappingElement: MappingElement,
   plugins: LegendStudioApplicationPlugin[],
-): MappingElementSource | undefined => {
+): MappingElementSource => {
   if (mappingElement instanceof INTERNAL__UnknownSetImplementation) {
     return undefined;
   } else if (mappingElement instanceof OperationSetImplementation) {
@@ -941,7 +941,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *changeClassMappingSourceDriver(
     setImplementation: InstanceSetImplementation,
-    newSource: MappingElementSource | undefined,
+    newSource: MappingElementSource,
   ): GeneratorFn<void> {
     const currentSource = getMappingElementSource(
       setImplementation,

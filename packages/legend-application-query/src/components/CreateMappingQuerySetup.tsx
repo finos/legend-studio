@@ -146,14 +146,12 @@ const CreateMappingQuerySetupContent = observer(() => {
       setupStore.setCurrentProjectVersions([]);
       try {
         fetchSelectedProjectVersionsStatus.inProgress();
-        const v = (await flowResult(
-          depotServerClient.getVersions(
-            guaranteeNonNullable(option?.value.groupId),
-            guaranteeNonNullable(option?.value.artifactId),
-            true,
-          ),
-        )) as string[];
-        setupStore.setCurrentProjectVersions(v);
+        const versions = await depotServerClient.getVersions(
+          guaranteeNonNullable(option?.value.groupId),
+          guaranteeNonNullable(option?.value.artifactId),
+          true,
+        );
+        setupStore.setCurrentProjectVersions(versions);
       } catch (error) {
         assertErrorThrown(error);
         applicationStore.notificationService.notifyError(error);

@@ -77,7 +77,7 @@ export const SchemaSetModelGenerationEditor = observer(
     const resetProperties = (): void => {
       modelGenerationState.setConfigurationProperty([]);
     };
-    const getConfigValue = (name: string): unknown | undefined =>
+    const getConfigValue = (name: string): unknown =>
       modelGenerationState.getConfigValue(name);
     const targetBindingPathValidationMessage =
       Boolean(modelGenerationState.targetBinding) &&

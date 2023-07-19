@@ -34,7 +34,7 @@ export enum PURE_GRAMMAR_TOKEN {
   MULTIPLICITY = 'multiplicity',
   GENERICS = 'generics',
   PROPERTY = 'property',
-  PARAMETER = 'property',
+  PARAMETER = 'parameter',
   VARIABLE = 'variable',
   TYPE = 'type',
 

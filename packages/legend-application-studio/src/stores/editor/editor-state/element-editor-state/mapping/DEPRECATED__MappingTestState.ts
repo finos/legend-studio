@@ -576,7 +576,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
   }
 
   setInputDataStateBasedOnSource(
-    source: MappingElementSource | undefined,
+    source: MappingElementSource,
     populateWithMockData: boolean,
   ): void {
     if (source === undefined || source instanceof Class) {

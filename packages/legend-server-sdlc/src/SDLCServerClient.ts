@@ -67,7 +67,7 @@ enum SDLC_ACTIVITY_TRACE {
   PERFORM_ENTITY_CHANGES = 'perform entity changes',
   UPDATE_ENTITIES = 'update entities',
   CREATE_REVIEW = 'create review',
-  COMMIT_REVIEW = 'update entities',
+  COMMIT_REVIEW = 'commit review',
 }
 
 export interface SDLCServerClientConfig {

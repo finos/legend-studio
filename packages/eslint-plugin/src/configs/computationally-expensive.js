@@ -33,7 +33,14 @@ const TYPESCRIPT_RULES = {
     ERROR,
     { fixMixedExportsWithInlineTypeSpecifier: true },
   ],
-  '@typescript-eslint/prefer-nullish-coalescing': ERROR,
+  '@typescript-eslint/prefer-nullish-coalescing': [
+    ERROR,
+    {
+      ignoreConditionalTests: true,
+      ignoreTernaryTests: true,
+      ignoreMixedLogicalExpressions: true,
+    },
+  ],
   '@typescript-eslint/prefer-optional-chain': ERROR,
   '@typescript-eslint/no-unnecessary-condition': ERROR,
   '@typescript-eslint/no-unnecessary-type-assertion': ERROR,

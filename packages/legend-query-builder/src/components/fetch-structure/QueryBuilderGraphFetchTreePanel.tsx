@@ -495,8 +495,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
       if (
         serializationState instanceof
           GraphFetchExternalFormatSerializationState &&
-        serializationState.treeData &&
-        serializationState.treeData.nodes.get(node.id)
+        serializationState.treeData?.nodes.get(node.id)
       ) {
         removeNodeRecursively(
           serializationState.treeData,

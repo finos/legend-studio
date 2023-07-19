@@ -25,6 +25,7 @@ import {
   addUniqueEntry,
   guaranteeNonNullable,
   isNonNullable,
+  noop,
   uuid,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
@@ -343,36 +344,40 @@ export class QueryFunctionsExplorerState {
   };
 
   initializeTreeData(): void {
-    this.initializeDisplayablePackagesSet().finally(() => {
-      this.setTreeData(
-        getFunctionsExplorerTreeData(
-          [this.queryBuilderState.graphManagerState.graph.root],
-          this.queryBuilderState,
-        ),
-      );
-      this.functionExplorerStates =
-        this.queryBuilderState.graphManagerState.graph.ownFunctions.map(
-          (f) => new QueryFunctionExplorerState(this, f),
+    this.initializeDisplayablePackagesSet()
+      .catch(noop())
+      .finally(() => {
+        this.setTreeData(
+          getFunctionsExplorerTreeData(
+            [this.queryBuilderState.graphManagerState.graph.root],
+            this.queryBuilderState,
+          ),
         );
-    });
+        this.functionExplorerStates =
+          this.queryBuilderState.graphManagerState.graph.ownFunctions.map(
+            (f) => new QueryFunctionExplorerState(this, f),
+          );
+      });
     if (
       this.queryBuilderState.graphManagerState.graph.dependencyManager
         .hasDependencies
     ) {
-      this.initializeDependencyDisplayablePackagesSet().finally(() => {
-        this.setDependencyTreeData(
-          getFunctionsExplorerTreeData(
-            this.queryBuilderState.graphManagerState.graph.dependencyManager
-              .roots,
-            this.queryBuilderState,
-            ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT,
-          ),
-        );
-        this.dependencyFunctionExplorerStates =
-          this.queryBuilderState.graphManagerState.graph.dependencyManager.functions.map(
-            (f) => new QueryFunctionExplorerState(this, f),
+      this.initializeDependencyDisplayablePackagesSet()
+        .catch(noop())
+        .finally(() => {
+          this.setDependencyTreeData(
+            getFunctionsExplorerTreeData(
+              this.queryBuilderState.graphManagerState.graph.dependencyManager
+                .roots,
+              this.queryBuilderState,
+              ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT,
+            ),
           );
-      });
+          this.dependencyFunctionExplorerStates =
+            this.queryBuilderState.graphManagerState.graph.dependencyManager.functions.map(
+              (f) => new QueryFunctionExplorerState(this, f),
+            );
+        });
     }
   }
 }

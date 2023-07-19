@@ -662,13 +662,11 @@ export const ProjectConfigurationEditor = observer(() => {
             const dependencyToAdd = new ProjectDependency(
               projectToAdd.coordinates,
             );
-            const versions = (await flowResult(
-              editorStore.depotServerClient.getVersions(
-                projectToAdd.groupId,
-                projectToAdd.artifactId,
-                true,
-              ),
-            )) as string[];
+            const versions = await editorStore.depotServerClient.getVersions(
+              projectToAdd.groupId,
+              projectToAdd.artifactId,
+              true,
+            );
             configState.versions.set(dependencyToAdd.projectId, versions);
             dependencyToAdd.setVersionId(versions[0] ?? '');
             currentProjectConfiguration.addProjectDependency(dependencyToAdd);
