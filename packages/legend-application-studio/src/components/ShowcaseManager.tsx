@@ -27,6 +27,7 @@ import {
   GenericTextFileIcon,
   FolderIcon,
   FolderOpenIcon,
+  HomeIcon,
 } from '@finos/legend-art';
 import {
   SHOWCASE_MANAGER_VIEW,
@@ -35,6 +36,11 @@ import {
 } from '../stores/ShowcaseManagerState.js';
 import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import type { Showcase } from '@finos/legend-server-showcase';
+import {
+  CODE_EDITOR_LANGUAGE,
+  CodeEditor,
+} from '@finos/legend-lego/code-editor';
 
 const ShowcasesExplorerTreeNodeContainer = observer(
   (
@@ -95,7 +101,15 @@ const ShowcasesExplorerTreeNodeContainer = observer(
         </div>
         <div
           className="tree-view__node__label showcase-manager__explorer__node__label"
-          title={node.metadata ? 'Click to open showcase' : undefined}
+          title={
+            node.metadata
+              ? `${
+                  node.metadata.description
+                    ? `${node.metadata.description}\n\n`
+                    : ''
+                }Click to open showcase`
+              : undefined
+          }
         >
           {node.label}
         </div>
@@ -112,12 +126,10 @@ const ShowcaseManagerExplorer = observer(
       node: ShowcasesExplorerTreeNodeData,
     ): ShowcasesExplorerTreeNodeData[] => {
       if (treeData) {
-        return (
-          node.childrenIds
-            ?.map((id) => treeData.nodes.get(id))
-            .filter(isNonNullable)
-            .sort((a, b) => a.label.localeCompare(b.label)) ?? []
-        );
+        return node.childrenIds
+          .map((id) => treeData.nodes.get(id))
+          .filter(isNonNullable)
+          .sort((a, b) => a.label.localeCompare(b.label));
       }
       return [];
     };
@@ -132,7 +144,22 @@ const ShowcaseManagerExplorer = observer(
       <div className="showcase-manager__view">
         <div className="showcase-manager__view__header">
           <div className="showcase-manager__view__breadcrumbs">
-            TODO / TODO / TODO
+            <div className="showcase-manager__view__breadcrumb">
+              <div className="showcase-manager__view__breadcrumb__icon">
+                <HomeIcon />
+              </div>
+              <div className="showcase-manager__view__breadcrumb__text">
+                Showcaces
+              </div>
+            </div>
+            <div className="showcase-manager__view__breadcrumb__arrow">
+              <ChevronRightIcon />
+            </div>
+            <div className="showcase-manager__view__breadcrumb">
+              <div className="showcase-manager__view__breadcrumb__text">
+                Explorer
+              </div>
+            </div>
           </div>
         </div>
         <div className="showcase-manager__view__content">
@@ -155,6 +182,60 @@ const ShowcaseManagerExplorer = observer(
   },
 );
 
+const ShowcaseViewer = observer(
+  (props: {
+    showcaseManagerState: ShowcaseManagerState;
+    showcase: Showcase;
+  }) => {
+    const { showcaseManagerState, showcase } = props;
+
+    return (
+      <div className="showcase-manager__view">
+        <div className="showcase-manager__view__header">
+          <div className="showcase-manager__view__breadcrumbs">
+            <div
+              className="showcase-manager__view__breadcrumb"
+              onClick={() => {
+                showcaseManagerState.closeShowcase();
+                showcaseManagerState.setCurrentView(
+                  SHOWCASE_MANAGER_VIEW.EXPLORER,
+                );
+              }}
+            >
+              <div className="showcase-manager__view__breadcrumb__icon">
+                <HomeIcon />
+              </div>
+              <div className="showcase-manager__view__breadcrumb__text">
+                Showcaces
+              </div>
+            </div>
+            <div className="showcase-manager__view__breadcrumb__arrow">
+              <ChevronRightIcon />
+            </div>
+            <div className="showcase-manager__view__breadcrumb">
+              <div className="showcase-manager__view__breadcrumb__icon">
+                <GenericTextFileIcon />
+              </div>
+              <div className="showcase-manager__view__breadcrumb__text">
+                {showcase.title}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="showcase-manager__view__content">
+          <div className="showcase-manager__view__code">
+            <CodeEditor
+              language={CODE_EDITOR_LANGUAGE.PURE}
+              inputValue={showcase.code}
+              isReadOnly={true}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 const ShowcaseManagerContent = observer(
   (props: { showcaseManagerState: ShowcaseManagerState }) => {
     const { showcaseManagerState } = props;
@@ -163,7 +244,12 @@ const ShowcaseManagerContent = observer(
 
     return (
       <div className="showcase-manager">
-        {currentShowcase && <>TODO 1</>}
+        {currentShowcase && (
+          <ShowcaseViewer
+            showcaseManagerState={showcaseManagerState}
+            showcase={currentShowcase}
+          />
+        )}
         {!currentShowcase && (
           <>
             {currentView === SHOWCASE_MANAGER_VIEW.EXPLORER && (

@@ -669,7 +669,12 @@ const VirtualAssistantPanel = observer(
                     'virtual-assistant__panel__header__tab--active':
                       selectedTab === config.key,
                   })}
-                  onClick={() => assistantService.setSelectedTab(config.key)}
+                  onClick={() => {
+                    assistantService.setSelectedTab(config.key);
+                    if (config.autoExpandOnOpen) {
+                      assistantService.setIsPanelMaximized(true);
+                    }
+                  }}
                   title={config.title}
                 >
                   <div className="virtual-assistant__panel__header__tab__content">

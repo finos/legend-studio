@@ -34,6 +34,7 @@
     height: 2.8rem;
     background: var(--color-dark-grey-50);
     border-bottom: 0.1rem solid var(--color-dark-grey-80);
+    border-radius: 0.2rem 0.2rem 0 0;
   }
 
   &__header__action {
@@ -70,11 +71,15 @@
     border-radius: 0.2rem;
   }
 
+  &__content--padding &__body {
+    border-radius: 0.2rem;
+  }
+
   &__content--with__header {
     height: calc(100% - 2.8rem);
   }
 
-  &__content--padding &__body {
-    border-radius: 0.2rem;
+  &__content--with__header &__body {
+    border-radius: 0 0 0.2rem 0.2rem;
   }
 }

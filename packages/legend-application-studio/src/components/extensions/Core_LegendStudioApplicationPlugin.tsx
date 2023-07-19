@@ -173,6 +173,7 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
         key: 'showcase',
         title: 'Showcases',
         icon: <CabinetIcon />,
+        autoExpandOnOpen: true,
         renderer: () => <ShowcaseManager />,
       },
     ];

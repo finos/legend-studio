@@ -20,10 +20,6 @@
   height: 100%;
   width: 100%;
 
-  &__content {
-    padding: 0.5rem;
-  }
-
   &__explorer {
     height: 100%;
     width: 100%;
@@ -59,6 +55,64 @@
       color: var(--color-light-grey-400);
       user-select: none;
       margin-left: 0.5rem;
+    }
+  }
+
+  &__view {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-250);
+    }
+
+    &__breadcrumbs {
+      @include flexVCenter;
+
+      padding: 0.5rem;
+    }
+
+    &__breadcrumb {
+      @include flexVCenter;
+
+      color: var(--color-dark-grey-500);
+
+      &__icon {
+        @include flexVCenter;
+      }
+
+      &__text {
+        @include flexVCenter;
+
+        user-select: none;
+        margin: 0 0.5rem;
+        font-size: 1.2rem;
+        font-family: 'Roboto Mono', monospace;
+      }
+
+      &:hover {
+        color: var(--color-light-grey-400);
+        cursor: pointer;
+      }
+
+      &__arrow {
+        @include flexCenter;
+
+        color: var(--color-dark-grey-500);
+      }
+    }
+
+    &__content {
+      height: calc(100% - 2.8rem);
+      padding: 0.5rem;
+    }
+
+    &__code {
+      height: 100%;
+      width: 100%;
     }
   }
 }

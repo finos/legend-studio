@@ -46,6 +46,7 @@ export type VirtualAssistantViewConfiguration = {
   key: string;
   title: string;
   icon?: React.ReactNode | undefined;
+  autoExpandOnOpen?: boolean | undefined;
   renderer: () => React.ReactNode | undefined;
 };
 
