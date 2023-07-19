@@ -109,9 +109,36 @@
       height: calc(100% - 2.8rem);
       padding: 0.5rem;
     }
+  }
+
+  &__viewer {
+    &__content {
+      padding: 1rem;
+    }
+
+    &__title {
+      @include ellipsisTextOverflow;
+
+      height: 3.4rem;
+      line-height: 3.4rem;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--color-light-grey-150);
+      user-select: none;
+    }
+
+    &__path {
+      height: 1.6rem;
+      line-height: 1.6rem;
+      font-size: 1.1rem;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--color-dark-grey-300);
+      user-select: none;
+      margin-bottom: 1rem;
+    }
 
     &__code {
-      height: 100%;
+      height: calc(100% - 6rem);
       width: 100%;
     }
   }

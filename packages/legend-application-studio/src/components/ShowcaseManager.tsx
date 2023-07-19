@@ -188,6 +188,7 @@ const ShowcaseViewer = observer(
     showcase: Showcase;
   }) => {
     const { showcaseManagerState, showcase } = props;
+    const prettyPath = showcase.path.replaceAll(/\s*\/\s*/g, ' / ');
 
     return (
       <div className="showcase-manager__view">
@@ -222,8 +223,12 @@ const ShowcaseViewer = observer(
             </div>
           </div>
         </div>
-        <div className="showcase-manager__view__content">
-          <div className="showcase-manager__view__code">
+        <div className="showcase-manager__view__content showcase-manager__viewer__content">
+          <div className="showcase-manager__viewer__title">
+            {showcase.title}
+          </div>
+          <div className="showcase-manager__viewer__path">{prettyPath}</div>
+          <div className="showcase-manager__viewer__code">
             <CodeEditor
               language={CODE_EDITOR_LANGUAGE.PURE}
               inputValue={showcase.code}
