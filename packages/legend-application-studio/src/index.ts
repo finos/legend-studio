@@ -29,7 +29,7 @@ export {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
 } from './components/LegendStudioFrameworkProvider.js';
-export type { LegendStudioApplicationStore } from './stores/LegendStudioBaseStore.js';
+export { type LegendStudioApplicationStore } from './stores/LegendStudioBaseStore.js';
 
 // stores
 export * from './stores/LegendStudioApplicationPlugin.js';

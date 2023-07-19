@@ -15,4 +15,4 @@
  */
 
 export * from './Showcase.js';
-// export * from './ShowcaseRegistryServerClient.js';
+export * from './ShowcaseRegistryServerClient.js';

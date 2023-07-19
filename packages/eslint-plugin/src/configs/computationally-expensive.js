@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-const OFF = 2;
 const WARN = 1;
 const ERROR = 2;
 

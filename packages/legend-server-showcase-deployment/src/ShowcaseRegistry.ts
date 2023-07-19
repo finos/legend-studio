@@ -42,7 +42,7 @@ const fetchShowcasesData = async (datasource: {
 }): Promise<PlainObject<Showcase>[]> => {
   let content: unknown;
   if (datasource.url) {
-    content = await fetchExternalLinkSiteData(datasource.url);
+    content = JSON.parse(await fetchExternalLinkSiteData(datasource.url));
   } else if (datasource.path) {
     content = JSON.parse(readFileSync(datasource.path, { encoding: 'utf-8' }));
   }
@@ -101,7 +101,7 @@ export class ShowcaseRegistry {
     return this.RAW__metadata;
   }
 
-  getShowcase(path: string): PlainObject<ShowcaseMetadata> | undefined {
+  getShowcase(path: string): PlainObject<Showcase> | undefined {
     return this.RAW__showcaseIndex.get(path);
   }
 }

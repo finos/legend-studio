@@ -53,6 +53,9 @@ export const setup = (outputDir) => {
         query: {
           url: 'http://localhost:9001/query',
         },
+        showcase: {
+          url: 'http://localhost:9003/api',
+        },
         documentation: {
           url: 'https://legend.finos.org',
           registry: [

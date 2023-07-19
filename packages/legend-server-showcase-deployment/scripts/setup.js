@@ -34,13 +34,14 @@ writeFileSync(
   JSON.stringify(
     {
       port: 9003,
-      datasources: isEnvProduction
-        ? []
-        : [
-            {
-              path: './data/metadata.json',
-            },
-          ],
+      datasources:
+        // NOTE: if you want to test with local source, use this
+        // {
+        //   path: './data/metadata.json',
+        // },
+        {
+          url: 'https://legend.finos.org/showcases/data.json',
+        },
     },
     undefined,
     2,

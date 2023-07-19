@@ -34,7 +34,7 @@ export const TEST__getTestEditorStore = (
     new SDLCServerClient({
       env: applicationStore.config.env,
       serverUrl: applicationStore.config.sdlcServerUrl,
-      baseHeaders: applicationStore.config.SDLCServerBaseHeaders,
+      baseHeaders: applicationStore.config.sdlcServerBaseHeaders,
     }),
     new DepotServerClient({
       serverUrl: applicationStore.config.depotServerUrl,

@@ -134,7 +134,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             dataSpaceAnalysisResult =
               await DSL_DataSpace_getGraphManagerExtension(
                 editorStore.graphManagerState.graphManager,
-              ).fetchDataSpaceAnalysisFromCache(() =>
+              ).retrieveDataSpaceAnalysisFromCache(() =>
                 retrieveAnalyticsResultCache(
                   project,
                   query.versionId,

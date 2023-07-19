@@ -34,8 +34,9 @@ import { type Class, InMemoryGraphData } from '@finos/legend-graph';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from '../../__lib__/DSL_DataSpace_LegendApplicationNavigation.js';
 
 export class DataSpacePreviewState extends EditorExtensionState {
-  readonly editorStore: EditorStore;
+  private static readonly IDENTIFIER = 'data-space-preview';
 
+  readonly editorStore: EditorStore;
   readonly loadDataSpaceState = ActionState.create();
 
   dataSpace?: DataSpace | undefined;
@@ -54,12 +55,36 @@ export class DataSpacePreviewState extends EditorExtensionState {
     this.editorStore = editorStore;
   }
 
+  override get INTERNAL__identifierKey(): string {
+    return DataSpacePreviewState.IDENTIFIER;
+  }
+
+  static retrieveNullableState(
+    editorStore: EditorStore,
+  ): DataSpacePreviewState | undefined {
+    return editorStore.extensionStates.find((extensionState) => {
+      if (
+        /**
+         * In development mode, when we make changes in certain areas like utils or base states, the following `instanceof`
+         * check will fail as if there were multiple copies of the classes with the same name, this could be caused by either
+         * React `fast-refresh` or `webpack HMR`; we didn't have time to really do a thorough debug here, as such,
+         * we will just do a simple key check to match the right state to bypass the problem for development mode.
+         */
+        // eslint-disable-next-line no-process-env
+        process.env.NODE_ENV === 'development'
+      ) {
+        return (
+          extensionState.INTERNAL__identifierKey ===
+          DataSpacePreviewState.IDENTIFIER
+        );
+      }
+      return extensionState instanceof DataSpacePreviewState;
+    }) as DataSpacePreviewState;
+  }
+
   static retrieveState(editorStore: EditorStore): DataSpacePreviewState {
     return guaranteeNonNullable(
-      editorStore.editorExtensionStates.find(
-        (extensionState): extensionState is DataSpacePreviewState =>
-          extensionState instanceof DataSpacePreviewState,
-      ),
+      DataSpacePreviewState.retrieveNullableState(editorStore),
       `Can't find data space preview state: make sure it is added as an editor extension state`,
     );
   }

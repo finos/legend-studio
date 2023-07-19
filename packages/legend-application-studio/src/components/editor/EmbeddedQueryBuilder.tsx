@@ -34,9 +34,9 @@ import {
   QueryBuilder,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/LegendStudioApplicationNavigationContext.js';
-import { useEditorStore } from './editor/EditorStoreProvider.js';
-import type { EmbeddedQueryBuilderState } from '../stores/editor/EmbeddedQueryBuilderState.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { useEditorStore } from './EditorStoreProvider.js';
+import type { EmbeddedQueryBuilderState } from '../../stores/editor/EmbeddedQueryBuilderState.js';
 
 /**
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
@@ -94,6 +94,7 @@ const QueryBuilderDialog = observer(
                 className="query-builder__dialog__header__action"
                 tabIndex={-1}
                 onClick={toggleMaximize}
+                title={isMaximized ? 'Minimize' : 'Maximize'}
               >
                 {isMaximized ? (
                   <EmptyWindowRestoreIcon />
@@ -105,6 +106,7 @@ const QueryBuilderDialog = observer(
                 className="query-builder__dialog__header__action"
                 tabIndex={-1}
                 onClick={confirmCloseQueryBuilder}
+                title="Close"
               >
                 <TimesIcon />
               </button>

@@ -103,7 +103,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult> {
     const cacheResult = cacheRetriever
-      ? await this.fetchDataSpaceAnalyticsFromCache(cacheRetriever, actionState)
+      ? await this.fetchDataSpaceAnalysisFromCache(cacheRetriever, actionState)
       : undefined;
     const engineClient = this.graphManager.engine.getEngineServerClient();
     let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
@@ -138,11 +138,11 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     );
   }
 
-  async fetchDataSpaceAnalysisFromCache(
+  async retrieveDataSpaceAnalysisFromCache(
     cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult | undefined> {
-    const cacheResult = await this.fetchDataSpaceAnalyticsFromCache(
+    const cacheResult = await this.fetchDataSpaceAnalysisFromCache(
       cacheRetriever,
       actionState,
     );
@@ -154,7 +154,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       : undefined;
   }
 
-  private async fetchDataSpaceAnalyticsFromCache(
+  private async fetchDataSpaceAnalysisFromCache(
     cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
   ): Promise<PlainObject<V1_DataSpaceAnalysisResult> | undefined> {

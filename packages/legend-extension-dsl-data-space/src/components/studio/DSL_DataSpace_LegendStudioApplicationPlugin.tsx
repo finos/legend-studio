@@ -32,7 +32,7 @@ import {
   UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
   type ExplorerContextMenuItemRendererConfiguration,
-  type EditorExtensionStateCreator,
+  type EditorExtensionStateBuilder,
   type EditorExtensionComponentRendererConfiguration,
 } from '@finos/legend-application-studio';
 import {
@@ -92,7 +92,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
     ];
   }
 
-  override getExtraEditorExtensionStateCreators(): EditorExtensionStateCreator[] {
+  override getExtraEditorExtensionStateBuilders(): EditorExtensionStateBuilder[] {
     return [(editorStore) => new DataSpacePreviewState(editorStore)];
   }
 

@@ -108,7 +108,8 @@ export class AssistantService {
   panelRenderingKey = uuid();
   isHidden = true; // hide by default unless specified by the application to show
   isOpen = false;
-  selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
+  isPanelMaximized = false;
+  selectedTab: string = VIRTUAL_ASSISTANT_TAB.SEARCH;
   currentDocumentationEntry: VirtualAssistantDocumentationEntry | undefined;
 
   // search text
@@ -124,6 +125,7 @@ export class AssistantService {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
+      isPanelMaximized: observable,
       panelRenderingKey: observable,
       isOverSearchLimit: observable,
       selectedTab: observable,
@@ -134,6 +136,7 @@ export class AssistantService {
       currentContextualDocumentationEntry: computed,
       setIsHidden: action,
       setIsOpen: action,
+      setIsPanelMaximized: action,
       setSelectedTab: action,
       setSearchText: action,
       resetSearch: action,
@@ -242,6 +245,10 @@ export class AssistantService {
     this.isHidden = val;
   }
 
+  setIsPanelMaximized(val: boolean): void {
+    this.isPanelMaximized = val;
+  }
+
   hideAssistant(): void {
     this.setIsHidden(true);
     this.setIsOpen(false);
@@ -260,7 +267,7 @@ export class AssistantService {
     this.isOpen = val;
   }
 
-  setSelectedTab(val: VIRTUAL_ASSISTANT_TAB): void {
+  setSelectedTab(val: string): void {
     this.selectedTab = val;
   }
 

@@ -266,11 +266,13 @@ export const ThinChevronDownIcon = BS.BsChevronDown;
 export const ThinChevronRightIcon = BS.BsChevronRight;
 export const ThinChevronLeftIcon = BS.BsChevronLeft;
 export const QuestionSquareIcon = BS.BsQuestionSquare;
+export const QuestionSquareFillIcon = BS.BsQuestionSquareFill;
 export const GenericTextFileIcon = BS.BsTextLeft;
 
 const BI = ReactIcons.BI;
 export const ShapeTriangleIcon = BI.BiShapeTriangle;
 export const AtomIcon = BI.BiAtom;
+export const CabinetIcon = BI.BiCabinet;
 
 const CG = ReactIcons.CG;
 export const OptionsIcon = CG.CgOptions;

@@ -22,6 +22,8 @@ import {
   type SettingConfigurationEntry,
   collectSettingConfigurationEntriesFromConfig,
   type LegendApplicationSetup,
+  type VirtualAssistantViewConfiguration,
+  type ApplicationExtensionStateBuilder,
 } from '@finos/legend-application';
 import packageJson from '../../../package.json' assert { type: 'json' };
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -40,12 +42,27 @@ import {
   setupPureLanguageService,
 } from '@finos/legend-lego/code-editor';
 import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/STO_Relational_LegendStudioCommand.js';
+import { ShowcaseManager } from '../ShowcaseManager.js';
+import { CabinetIcon } from '@finos/legend-art';
+import { ShowcaseManagerState } from '../../stores/ShowcaseManagerState.js';
+import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
+
+export const SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY = 'showcase-manager';
 
 export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   static NAME = packageJson.extensions.applicationStudioPlugin;
 
   constructor() {
     super(Core_LegendStudioApplicationPlugin.NAME, packageJson.version);
+  }
+
+  override getExtraApplicationExtensionStateBuilders(): ApplicationExtensionStateBuilder[] {
+    return [
+      (applicationStore) =>
+        new ShowcaseManagerState(
+          applicationStore as LegendStudioApplicationStore,
+        ),
+    ];
   }
 
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
@@ -150,5 +167,17 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
     return collectSettingConfigurationEntriesFromConfig(
       LEGEND_STUDIO_SETTING_CONFIG,
     );
+  }
+
+  override getExtraVirtualAssistantViewConfigurations(): VirtualAssistantViewConfiguration[] {
+    return [
+      {
+        key: SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY,
+        title: 'Showcases',
+        icon: <CabinetIcon />,
+        autoExpandOnOpen: true,
+        renderer: () => <ShowcaseManager />,
+      },
+    ];
   }
 }
