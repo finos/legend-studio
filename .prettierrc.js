@@ -43,7 +43,7 @@
  * We are waiting for `prettier-ignore-start/end` syntax to be supported.
  * See https://github.com/prettier/prettier/issues/5287
  */
-module.exports = {
+export default {
   singleQuote: true,
   trailingComma: 'all',
 };
