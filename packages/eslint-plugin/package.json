@@ -30,8 +30,8 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/core": "7.22.8",
-    "@babel/eslint-parser": "7.22.7",
+    "@babel/core": "7.22.9",
+    "@babel/eslint-parser": "7.22.9",
     "@typescript-eslint/eslint-plugin": "6.1.0",
     "@typescript-eslint/parser": "6.1.0",
     "eslint-config-prettier": "8.8.0",
