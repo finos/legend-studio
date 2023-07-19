@@ -16,6 +16,7 @@
 
 const COMPUTATIONALLY_EXPENSIVE_RULES =
   require('./computationally-expensive.js').rules;
+const RECOMMENDED_RULES = require('./recommended.js').recommendedRules;
 
 const OFF = 0;
 
@@ -30,9 +31,12 @@ const config = {
         'no-process-env': OFF,
         'no-process-exit': OFF,
         'import/no-default-export': OFF, // export default from script so we can use `require()` syntax
-        '@typescript-eslint/explicit-function-return-type': OFF,
-        '@typescript-eslint/explicit-module-boundary-types': OFF,
-        ...Object.keys(COMPUTATIONALLY_EXPENSIVE_RULES).reduce((acc, val) => {
+        ...[
+          ...Object.keys(RECOMMENDED_RULES.react),
+          ...Object.keys(RECOMMENDED_RULES.studio),
+          ...Object.keys(RECOMMENDED_RULES.typescript),
+          ...Object.keys(COMPUTATIONALLY_EXPENSIVE_RULES),
+        ].reduce((acc, val) => {
           acc[val] = OFF;
           return acc;
         }, {}),

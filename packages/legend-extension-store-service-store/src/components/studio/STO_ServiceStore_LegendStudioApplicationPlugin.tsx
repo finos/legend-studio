@@ -241,7 +241,7 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
 
   getExtraMappingElementSourceExtractors(): MappingElementSourceExtractor[] {
     return [
-      (mappingElement: MappingElement): MappingElementSource | undefined => {
+      (mappingElement: MappingElement): MappingElementSource => {
         if (mappingElement instanceof RootServiceInstanceSetImplementation) {
           return mappingElement.class.value;
         }

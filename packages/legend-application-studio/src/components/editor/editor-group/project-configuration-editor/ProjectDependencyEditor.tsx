@@ -785,17 +785,15 @@ const ProjectVersionDependencyEditor = observer(
         if (val) {
           try {
             fetchSelectedProjectVersionsStatus.inProgress();
-            const v = (await flowResult(
-              editorStore.depotServerClient.getVersions(
-                guaranteeNonNullable(projectDependency.groupId),
-                guaranteeNonNullable(projectDependency.artifactId),
-                true,
-              ),
-            )) as string[];
-            configState.versions.set(val.value.coordinates, v);
-            if (v.length) {
+            const _versions = await editorStore.depotServerClient.getVersions(
+              guaranteeNonNullable(projectDependency.groupId),
+              guaranteeNonNullable(projectDependency.artifactId),
+              true,
+            );
+            configState.versions.set(val.value.coordinates, _versions);
+            if (_versions.length) {
               projectDependency.setVersionId(
-                guaranteeNonNullable(v[v.length - 1]),
+                guaranteeNonNullable(_versions[_versions.length - 1]),
               );
               flowResult(dependencyEditorState.fetchDependencyReport()).catch(
                 applicationStore.alertUnhandledError,

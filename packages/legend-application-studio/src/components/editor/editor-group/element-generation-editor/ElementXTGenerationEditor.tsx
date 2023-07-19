@@ -79,7 +79,7 @@ export const ExternalFormatGeneratioConfigEditor = observer(
       debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
     };
 
-    const getConfigValue = (name: string): unknown | undefined =>
+    const getConfigValue = (name: string): unknown =>
       xtState.xtGenerationState.configSpecification.configurationProperties.find(
         (e) => e.name === name,
       )?.value;

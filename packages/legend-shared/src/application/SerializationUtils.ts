@@ -100,9 +100,7 @@ export const serializeMap = <T>(
   return result;
 };
 
-export const usingConstantValueSchema = (
-  value: unknown | typeof SKIP,
-): PropSchema =>
+export const usingConstantValueSchema = (value: unknown): PropSchema =>
   custom(
     () => value,
     () => value,

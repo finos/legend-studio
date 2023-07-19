@@ -70,9 +70,7 @@ export interface MappingElementSourceSelectOption {
   value: unknown;
 }
 
-export const getSourceElementLabel = (
-  srcElement: unknown | undefined,
-): string => {
+export const getSourceElementLabel = (srcElement: unknown): string => {
   let sourceLabel = '(none)';
   if (srcElement instanceof Class) {
     sourceLabel = srcElement.name;
@@ -90,7 +88,7 @@ export const getSourceElementLabel = (
 
 // TODO: add more visual cue to the type of source (class vs. flat-data vs. db)
 export const buildMappingElementSourceOption = (
-  source: MappingElementSource | undefined,
+  source: MappingElementSource,
 ): MappingElementSourceSelectOption | null => {
   if (source instanceof Class) {
     return buildElementOption(source) as MappingElementSourceSelectOption;
@@ -120,7 +118,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
      * Pass in `null` when we want to open the modal using the existing source.
      * Pass any other to open the source modal using that value as the initial state of the modal.
      */
-    sourceElementToSelect: MappingElementSource | null;
+    sourceElementToSelect: MappingElementSource;
     closeModal: () => void;
   }) => {
     const {

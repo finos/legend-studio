@@ -52,7 +52,7 @@ export class Expression extends ValueSpecification implements Hashable {
 export class FunctionExpression extends Expression implements Hashable {
   functionName: string;
   parametersValues: ValueSpecification[] = [];
-  func?: unknown | undefined;
+  func?: unknown;
 
   constructor(functionName: string) {
     super(Multiplicity.ONE, undefined);

@@ -64,7 +64,7 @@ export type SetImplementationMappingElementLabelInfoBuilder = (
 
 export type MappingElementSourceExtractor = (
   mappingElement: MappingElement,
-) => MappingElementSource | undefined;
+) => MappingElementSource;
 
 export type MappingElementStateCreator = (
   mappingElement: MappingElement | undefined,
@@ -106,7 +106,7 @@ export type NewConnectionSnippetSuggestion = PureGrammarTextSuggestion;
  */
 export type InstanceSetImplementationSourceUpdater = (
   setImplementation: InstanceSetImplementation,
-  newSource: unknown | undefined,
+  newSource: unknown,
 ) => boolean;
 
 export type MappingSourceTypeInfoGetter = (

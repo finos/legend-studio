@@ -46,6 +46,7 @@ import {
   IllegalStateError,
   isMatchingKeyCombination,
   LogEvent,
+  noop,
   prettyCONSTName,
   uniqBy,
 } from '@finos/legend-shared';
@@ -338,6 +339,7 @@ export class XTerm extends Terminal {
                 command,
                 text,
               )
+              .catch(noop())
               .finally(() => {
                 this.isRunningCommand = false;
                 if (!this.isFlushed) {

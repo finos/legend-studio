@@ -144,7 +144,6 @@ const TYPESCRIPT_RULES = {
     WARN,
     { allowExpressions: true, allowTypedFunctionExpressions: true },
   ],
-  '@typescript-eslint/func-call-spacing': ERROR,
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],
   '@typescript-eslint/no-redeclare': [ERROR, { ignoreDeclarationMerge: true }],
   '@typescript-eslint/no-var-requires': OFF,
@@ -152,6 +151,8 @@ const TYPESCRIPT_RULES = {
     WARN,
     { args: 'none', ignoreRestSiblings: true },
   ],
+
+  // NOTE: the following rules are stylisticc only
   '@typescript-eslint/no-extra-semi': WARN,
   '@typescript-eslint/no-shadow': WARN,
   // NOTE: since functions are hoisted in ES6, it is then advisable to enable this rule so that we can have functions that depend on each other and not causing
@@ -159,13 +160,6 @@ const TYPESCRIPT_RULES = {
   // See https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-use-before-define.md#options
   '@typescript-eslint/no-use-before-define': [ERROR, { functions: false }],
   '@typescript-eslint/no-useless-constructor': WARN,
-  '@typescript-eslint/type-annotation-spacing': WARN,
-  // NOTE: we turn off indentation rule as it clashes with `prettier`
-  // and also, it could be computationally expensive
-  // See https://github.com/eslint/eslint/issues/10930
-  // See https://github.com/typescript-eslint/typescript-eslint/issues/372
-  // See https://github.com/typescript-eslint/typescript-eslint/issues/1161
-  '@typescript-eslint/indent': OFF,
 };
 
 const REACT_RULES = {
@@ -231,9 +225,20 @@ const config = {
     ...IMPORT_RULES,
     ...REACT_RULES,
     ...STUDIO_RULES,
+    '@typescript-eslint/no-unsafe-argument': OFF,
+    '@typescript-eslint/no-unsafe-member-access': OFF,
+    '@typescript-eslint/no-unsafe-enum-comparison': OFF, // we compare enum with strings a lot for valid reasons so this rule should be disabled
+    '@typescript-eslint/no-unsafe-return': OFF, // we use `any` return type a lot for valid reasons so this rule should be disabled
   },
+};
+
+const recommendedRules = {
+  typescript: TYPESCRIPT_RULES,
+  studio: STUDIO_RULES,
+  react: REACT_RULES,
 };
 
 module.exports = {
   config,
+  recommendedRules,
 };

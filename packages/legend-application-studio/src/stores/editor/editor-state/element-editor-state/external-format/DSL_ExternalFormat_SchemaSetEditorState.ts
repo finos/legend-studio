@@ -129,7 +129,7 @@ export class SchemaSetModelGenerationState {
     this.targetBinding = val;
   }
 
-  getConfigValue(name: string): unknown | undefined {
+  getConfigValue(name: string): unknown {
     return this.getConfig(name)?.value;
   }
 

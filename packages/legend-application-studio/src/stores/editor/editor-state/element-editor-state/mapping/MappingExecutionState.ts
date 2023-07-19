@@ -594,7 +594,7 @@ export class MappingExecutionState extends MappingEditorTabState {
   }
 
   setInputDataStateBasedOnSource(
-    source: unknown | undefined,
+    source: unknown,
     populateWithMockData: boolean,
   ): void {
     if (source instanceof Class) {

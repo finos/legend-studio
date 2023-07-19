@@ -77,12 +77,12 @@ export type V1_ClassInstanceValueBuilder = (
   protocol: unknown,
   type: string,
   context: V1_GraphBuilderContext,
-) => unknown | undefined;
+) => unknown;
 
 export type V1_ClassInstanceValueTransformer = (
   metamodel: unknown,
   context: V1_GraphTransformerContext,
-) => unknown | undefined;
+) => unknown;
 
 export type V1_ClassInstanceValueProtocolSerializer = (
   protocol: unknown,
@@ -93,7 +93,7 @@ export type V1_ClassInstanceValueProtocolDeserializer = (
   json: PlainObject,
   type: string,
   plugins: PureProtocolProcessorPlugin[],
-) => unknown | undefined;
+) => unknown;
 
 export type V1_DatasetSpecificationSerializer = (
   protocol: V1_DatasetSpecification,
