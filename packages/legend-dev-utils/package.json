@@ -81,20 +81,20 @@
     "jsonc-parser": "3.2.0",
     "micromatch": "4.0.5",
     "mini-css-extract-plugin": "2.7.6",
-    "monaco-editor": "0.39.0",
-    "monaco-editor-webpack-plugin": "7.0.1",
-    "postcss": "8.4.25",
+    "monaco-editor": "0.40.0",
+    "monaco-editor-webpack-plugin": "7.1.0",
+    "postcss": "8.4.26",
     "postcss-loader": "7.3.3",
     "react-refresh": "0.14.0",
     "resolve": "1.22.2",
     "sass": "1.63.6",
     "sass-loader": "13.3.2",
     "typescript": "5.1.6",
-    "webpack": "5.88.1"
+    "webpack": "5.88.2"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.44.0",
+    "eslint": "8.45.0",
     "rimraf": "5.0.1"
   },
   "publishConfig": {
