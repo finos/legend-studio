@@ -36,9 +36,9 @@ export class ShowcaseRegistryServerClient {
 
   async getShowcases(): Promise<ShowcaseMetadata[]> {
     return (
-      (await this.networkClient.get(
+      await this.networkClient.get<PlainObject<ShowcaseMetadata>[]>(
         `${this.baseUrl}/showcases`,
-      )) as PlainObject<ShowcaseMetadata>[]
+      )
     ).map((showcase) => ShowcaseMetadata.serialization.fromJson(showcase));
   }
 

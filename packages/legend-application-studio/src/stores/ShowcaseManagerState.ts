@@ -21,7 +21,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { flow, makeObservable, observable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../__lib__/LegendStudioEvent.js';
 import {
   type Showcase,
@@ -33,23 +33,136 @@ import {
   ApplicationExtensionState,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
+import type { TreeData, TreeNodeData } from '@finos/legend-art';
+import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
+
+export enum SHOWCASE_MANAGER_VIEW {
+  EXPLORER = 'EXPLORER',
+  SEARCH = 'SEARCH',
+}
+
+export class ShowcasesExplorerTreeNodeData implements TreeNodeData {
+  isOpen?: boolean | undefined;
+  id: string;
+  label: string;
+  parentId?: string | undefined;
+  childrenIds: string[] = [];
+  metadata?: ShowcaseMetadata | undefined;
+
+  constructor(
+    id: string,
+    label: string,
+    parentId: string | undefined,
+    metadata?: ShowcaseMetadata | undefined,
+  ) {
+    this.id = id;
+    this.label = label;
+    this.parentId = parentId;
+    this.metadata = metadata;
+  }
+}
+
+const buildShowcasesExplorerTreeNode = (
+  showcase: ShowcaseMetadata,
+  path: string,
+  parentId: string | undefined,
+  nodes: Map<string, ShowcasesExplorerTreeNodeData>,
+  rootIds: string[],
+): ShowcasesExplorerTreeNodeData => {
+  let node: ShowcasesExplorerTreeNodeData;
+  const idx = path.indexOf(DIRECTORY_PATH_DELIMITER);
+  if (idx === -1) {
+    // showcase node
+    node = new ShowcasesExplorerTreeNodeData(
+      `${parentId ? `${parentId}${DIRECTORY_PATH_DELIMITER}` : ''}${path}`,
+      path,
+      parentId,
+      showcase,
+    );
+  } else {
+    // directory node
+    const directoryName = path.substring(0, idx);
+    const directoryNodeId = `${
+      parentId ? `${parentId}${DIRECTORY_PATH_DELIMITER}` : ''
+    }${directoryName}`;
+    node =
+      nodes.get(directoryNodeId) ??
+      new ShowcasesExplorerTreeNodeData(
+        directoryNodeId,
+        directoryName,
+        undefined,
+        undefined,
+      );
+  }
+  nodes.set(node.id, node);
+  if (!parentId && !rootIds.includes(node.id)) {
+    rootIds.push(node.id);
+  }
+  if (parentId) {
+    const parentNode = nodes.get(parentId);
+    if (parentNode) {
+      if (!parentNode.childrenIds.includes(node.id)) {
+        parentNode.childrenIds.push(node.id);
+      }
+    }
+  }
+  if (idx !== -1) {
+    buildShowcasesExplorerTreeNode(
+      showcase,
+      path.substring(idx + 1),
+      node.id,
+      nodes,
+      rootIds,
+    );
+  }
+  return node;
+};
+
+const buildShowcasesExplorerTreeData = (
+  showcases: ShowcaseMetadata[],
+): TreeData<ShowcasesExplorerTreeNodeData> => {
+  const rootIds: string[] = [];
+  const nodes = new Map<string, ShowcasesExplorerTreeNodeData>();
+  showcases.forEach((showcase) =>
+    buildShowcasesExplorerTreeNode(
+      showcase,
+      showcase.path,
+      undefined,
+      nodes,
+      rootIds,
+    ),
+  );
+  return { rootIds, nodes };
+};
 
 export class ShowcaseManagerState extends ApplicationExtensionState {
   private static readonly IDENTIFIER = 'showcase-manager';
 
   readonly applicationStore: LegendStudioApplicationStore;
-  readonly fetchShowcasesState = ActionState.create();
+  readonly initState = ActionState.create();
+  readonly fetchShowcaseState = ActionState.create();
 
   private readonly showcaseServerClient?: ShowcaseRegistryServerClient;
 
   showcases: ShowcaseMetadata[] = [];
+  currentShowcase?: Showcase | undefined;
+
+  currentView = SHOWCASE_MANAGER_VIEW.EXPLORER;
+  explorerTreeData?: TreeData<ShowcasesExplorerTreeNodeData> | undefined;
 
   constructor(applicationStore: LegendStudioApplicationStore) {
     super();
 
     makeObservable(this, {
       showcases: observable,
-      fetchShowcases: flow,
+      currentShowcase: observable,
+      currentView: observable,
+      explorerTreeData: observable.ref,
+      initialize: flow,
+      setCurrentView: action,
+      closeShowcase: action,
+      openShowcase: flow,
+      setExplorerTreeData: action,
     });
 
     this.applicationStore = applicationStore;
@@ -108,22 +221,55 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     );
   }
 
-  *fetchShowcases(): GeneratorFn<void> {
-    if (!this.isEnabled || this.fetchShowcasesState.isInProgress) {
-      return;
-    }
+  setCurrentView(val: SHOWCASE_MANAGER_VIEW): void {
+    this.currentView = val;
+  }
+
+  *openShowcase(metadata: ShowcaseMetadata): GeneratorFn<void> {
+    this.fetchShowcaseState.inProgress();
 
     try {
-      this.fetchShowcasesState.inProgress();
-      this.showcases = (yield this.client.getShowcases()) as Showcase[];
+      this.currentShowcase = (yield this.client.getShowcase(
+        metadata.path,
+      )) as Showcase;
+
+      this.fetchShowcaseState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_FAILURE),
         error,
       );
-    } finally {
-      this.fetchShowcasesState.complete();
+      this.fetchShowcaseState.fail();
+    }
+  }
+
+  closeShowcase(): void {
+    this.currentShowcase = undefined;
+  }
+
+  setExplorerTreeData(val: TreeData<ShowcasesExplorerTreeNodeData>): void {
+    this.explorerTreeData = val;
+  }
+
+  *initialize(): GeneratorFn<void> {
+    if (!this.isEnabled || this.initState.isInProgress) {
+      return;
+    }
+    this.initState.inProgress();
+
+    try {
+      this.showcases = (yield this.client.getShowcases()) as Showcase[];
+      this.explorerTreeData = buildShowcasesExplorerTreeData(this.showcases);
+
+      this.initState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_FAILURE),
+        error,
+      );
+      this.initState.fail();
     }
   }
 }

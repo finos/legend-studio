@@ -20,13 +20,170 @@ import {
   BlankPanelContent,
   Panel,
   PanelLoadingIndicator,
+  TreeView,
+  type TreeNodeContainerProps,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  GenericTextFileIcon,
+  FolderIcon,
+  FolderOpenIcon,
 } from '@finos/legend-art';
-import { ShowcaseManagerState } from '../stores/ShowcaseManagerState.js';
+import {
+  SHOWCASE_MANAGER_VIEW,
+  ShowcaseManagerState,
+  type ShowcasesExplorerTreeNodeData,
+} from '../stores/ShowcaseManagerState.js';
+import { isNonNullable } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
+
+const ShowcasesExplorerTreeNodeContainer = observer(
+  (
+    props: TreeNodeContainerProps<
+      ShowcasesExplorerTreeNodeData,
+      {
+        showcaseManagerState: ShowcaseManagerState;
+        toggleExpandNode: (node: ShowcasesExplorerTreeNodeData) => void;
+      }
+    >,
+  ) => {
+    const { node, level, innerProps } = props;
+    const { toggleExpandNode, showcaseManagerState } = innerProps;
+    const applicationStore = useApplicationStore();
+
+    const expandIcon = !node.metadata ? (
+      node.isOpen ? (
+        <ChevronDownIcon />
+      ) : (
+        <ChevronRightIcon />
+      )
+    ) : (
+      <div />
+    );
+    const nodeIcon = !node.metadata ? (
+      node.isOpen ? (
+        <FolderOpenIcon />
+      ) : (
+        <FolderIcon />
+      )
+    ) : (
+      <GenericTextFileIcon />
+    );
+    const onNodeClick = (): void => {
+      if (!node.metadata) {
+        toggleExpandNode(node);
+      } else {
+        flowResult(showcaseManagerState.openShowcase(node.metadata)).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
+    };
+
+    return (
+      <div
+        className="tree-view__node__container showcase-manager__explorer__node__container"
+        style={{
+          paddingLeft: `${(level - 1) * 1.4}rem`,
+          display: 'flex',
+        }}
+        onClick={onNodeClick}
+      >
+        <div className="showcase-manager__explorer__node__expand-icon">
+          {expandIcon}
+        </div>
+        <div className="showcase-manager__explorer__node__type-icon">
+          {nodeIcon}
+        </div>
+        <div
+          className="tree-view__node__label showcase-manager__explorer__node__label"
+          title={node.metadata ? 'Click to open showcase' : undefined}
+        >
+          {node.label}
+        </div>
+      </div>
+    );
+  },
+);
+
+const ShowcaseManagerExplorer = observer(
+  (props: { showcaseManagerState: ShowcaseManagerState }) => {
+    const { showcaseManagerState } = props;
+    const treeData = showcaseManagerState.explorerTreeData;
+    const getChildNodes = (
+      node: ShowcasesExplorerTreeNodeData,
+    ): ShowcasesExplorerTreeNodeData[] => {
+      if (treeData) {
+        return (
+          node.childrenIds
+            ?.map((id) => treeData.nodes.get(id))
+            .filter(isNonNullable)
+            .sort((a, b) => a.label.localeCompare(b.label)) ?? []
+        );
+      }
+      return [];
+    };
+    const toggleExpandNode = (node: ShowcasesExplorerTreeNodeData): void => {
+      if (treeData) {
+        node.isOpen = !node.isOpen;
+        showcaseManagerState.setExplorerTreeData({ ...treeData });
+      }
+    };
+
+    return (
+      <div className="showcase-manager__view">
+        <div className="showcase-manager__view__header">
+          <div className="showcase-manager__view__breadcrumbs">
+            TODO / TODO / TODO
+          </div>
+        </div>
+        <div className="showcase-manager__view__content">
+          {showcaseManagerState.explorerTreeData && (
+            <TreeView
+              components={{
+                TreeNodeContainer: ShowcasesExplorerTreeNodeContainer,
+              }}
+              treeData={showcaseManagerState.explorerTreeData}
+              getChildNodes={getChildNodes}
+              innerProps={{
+                toggleExpandNode,
+                showcaseManagerState,
+              }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+const ShowcaseManagerContent = observer(
+  (props: { showcaseManagerState: ShowcaseManagerState }) => {
+    const { showcaseManagerState } = props;
+    const currentShowcase = showcaseManagerState.currentShowcase;
+    const currentView = showcaseManagerState.currentView;
+
+    return (
+      <div className="showcase-manager">
+        {currentShowcase && <>TODO 1</>}
+        {!currentShowcase && (
+          <>
+            {currentView === SHOWCASE_MANAGER_VIEW.EXPLORER && (
+              <ShowcaseManagerExplorer
+                showcaseManagerState={showcaseManagerState}
+              />
+            )}
+            {currentView === SHOWCASE_MANAGER_VIEW.SEARCH && <>TODO: Search</>}
+          </>
+        )}
+      </div>
+    );
+  },
+);
 
 export const ShowcaseManager = observer(() => {
   const applicationStore = useApplicationStore();
   const showcaseManagerState =
     ShowcaseManagerState.retrieveNullableState(applicationStore);
+
   if (!showcaseManagerState) {
     return null;
   }
@@ -34,13 +191,16 @@ export const ShowcaseManager = observer(() => {
   return (
     <Panel>
       <PanelLoadingIndicator
-        isLoading={showcaseManagerState.fetchShowcasesState.isInProgress}
+        isLoading={showcaseManagerState.initState.isInProgress}
       />
-      {showcaseManagerState.fetchShowcasesState.isInProgress && (
-        <BlankPanelContent>Fetch showcases metadata...</BlankPanelContent>
+      {showcaseManagerState.initState.isInProgress && (
+        <BlankPanelContent>Initializing...</BlankPanelContent>
       )}
-      {!showcaseManagerState.fetchShowcasesState.isInProgress && (
-        <BlankPanelContent>TODO :)</BlankPanelContent>
+      {showcaseManagerState.initState.hasFailed && (
+        <BlankPanelContent>Failed to initialize</BlankPanelContent>
+      )}
+      {showcaseManagerState.initState.hasSucceeded && (
+        <ShowcaseManagerContent showcaseManagerState={showcaseManagerState} />
       )}
     </Panel>
   );

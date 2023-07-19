@@ -111,8 +111,10 @@ export class LegendStudioBaseStore {
     Promise.all([
       ShowcaseManagerState.retrieveNullableState(
         this.applicationStore,
-      )?.fetchShowcases(),
-    ]);
+      )?.initialize(),
+    ]).catch((error) => {
+      // do nothing
+    });
 
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (
