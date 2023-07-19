@@ -47,6 +47,8 @@ import { CabinetIcon } from '@finos/legend-art';
 import { ShowcaseManagerState } from '../../stores/ShowcaseManagerState.js';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
 
+export const SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY = 'showcase-manager';
+
 export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   static NAME = packageJson.extensions.applicationStudioPlugin;
 
@@ -170,7 +172,7 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
   override getExtraVirtualAssistantViewConfigurations(): VirtualAssistantViewConfiguration[] {
     return [
       {
-        key: 'showcase',
+        key: SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY,
         title: 'Showcases',
         icon: <CabinetIcon />,
         autoExpandOnOpen: true,

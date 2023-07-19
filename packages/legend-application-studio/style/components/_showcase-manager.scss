@@ -72,25 +72,32 @@
     &__breadcrumbs {
       @include flexVCenter;
 
-      padding: 0.5rem;
+      padding: 0 0.5rem;
+      overflow-x: overlay;
+      overflow-y: hidden;
     }
 
     &__breadcrumb {
       @include flexVCenter;
 
+      height: 100%;
       color: var(--color-dark-grey-500);
 
       &__icon {
         @include flexVCenter;
+
+        height: 100%;
       }
 
       &__text {
         @include flexVCenter;
 
+        height: 100%;
         user-select: none;
         margin: 0 0.5rem;
         font-size: 1.2rem;
         font-family: 'Roboto Mono', monospace;
+        white-space: nowrap;
       }
 
       &:hover {

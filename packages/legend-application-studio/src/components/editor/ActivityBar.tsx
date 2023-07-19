@@ -47,6 +47,8 @@ import {
   ActivityBarItemExperimentalBadge,
   type ActivityBarItemConfig,
 } from '@finos/legend-lego/application';
+import { ShowcaseManagerState } from '../../stores/ShowcaseManagerState.js';
+import { SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY } from '../extensions/Core_LegendStudioApplicationPlugin.js';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
@@ -98,6 +100,19 @@ export const ActivityBarMenu: React.FC = () => {
       VIRTUAL_ASSISTANT_TAB.SEARCH,
     );
   };
+  // showcases
+  const showcaseManagerState =
+    ShowcaseManagerState.retrieveNullableState(applicationStore);
+  const openShowcaseManager = (): void => {
+    if (showcaseManagerState?.isEnabled) {
+      applicationStore.assistantService.setIsHidden(false);
+      applicationStore.assistantService.setIsOpen(true);
+      applicationStore.assistantService.setIsPanelMaximized(true);
+      applicationStore.assistantService.setSelectedTab(
+        SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY,
+      );
+    }
+  };
 
   return (
     <>
@@ -112,7 +127,11 @@ export const ActivityBarMenu: React.FC = () => {
           content={
             <MenuContent>
               <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
-              <MenuContentItem onClick={openHelp}>Help...</MenuContentItem>
+              {showcaseManagerState?.isEnabled && (
+                <MenuContentItem onClick={openShowcaseManager}>
+                  See Showcases
+                </MenuContentItem>
+              )}
               <MenuContentItem
                 disabled={!appDocUrl}
                 onClick={goToDocumentation}
@@ -127,6 +146,7 @@ export const ActivityBarMenu: React.FC = () => {
                   {entry.label}
                 </MenuContentItem>
               ))}
+              <MenuContentItem onClick={openHelp}>Help...</MenuContentItem>
               <MenuContentDivider />
               <MenuContentItem onClick={goToWorkspaceSetup}>
                 Back to workspace setup
