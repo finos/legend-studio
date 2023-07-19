@@ -73,7 +73,7 @@ jobs:
         # NOTE: for windows runner, to avoid OOM issue, we set swap space
         # See https://github.com/actions/runner/issues/1051
         # See https://github.com/al-cheb/configure-pagefile-action
-      - name: configure Pagefile
+      - name: Configure Pagefile (Windows)
         if: matrix.os == 'windows-latest'
         uses: al-cheb/configure-pagefile-action@v1.3
         with:

@@ -52,7 +52,7 @@
     "@fontsource/roboto": "5.0.5",
     "@fontsource/roboto-condensed": "5.0.5",
     "@fontsource/roboto-mono": "5.0.5",
-    "@mui/material": "5.14.0",
+    "@mui/material": "5.14.1",
     "@types/react": "18.2.15",
     "@types/react-select": "4.0.18",
     "@types/react-window": "1.8.5",

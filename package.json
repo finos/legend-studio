@@ -112,7 +112,7 @@
     "sass": "1.63.6",
     "semver": "7.5.4",
     "sort-package-json": "2.5.1",
-    "stylelint": "15.10.1",
+    "stylelint": "15.10.2",
     "typedoc": "0.24.8",
     "typescript": "5.1.6",
     "yargs": "17.7.2"
