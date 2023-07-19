@@ -29,6 +29,11 @@ const ERROR = 2;
 const enableFastMode =
   process.env.NODE_ENV === undefined || // IDE ESLint process runs without setting a NODE environment
   process.env.NODE_ENV === 'development';
+const isSingleRun = process.env.NODE_ENV !== undefined;
+
+// For debugging
+// console.log(`Environment: ${process.env.NODE_ENV}`);
+// console.log(`Single Run Mode: ${isSingleRun}`);
 
 /**
  * NOTE: this config is supposed to be used for both the IDE ESLint process
@@ -44,12 +49,28 @@ const enableFastMode =
 module.exports = {
   root: true, // tell ESLint to stop looking further up in directory tree to resolve for parent configs
   parserOptions: {
+    sourceType: 'module',
     // `parserOptions.project` is required for generating parser service to run specific rules like
     // `prefer-nullish-coalescing`, and `prefer-optional-chain`
     project: ['./packages/*/tsconfig.json', './fixtures/*/tsconfig.json'],
+    /**
+     * ESLint (and therefore typescript-eslint) is used in both "single run"/one-time contexts,
+     * such as an ESLint CLI invocation, and long-running sessions (such as continuous feedback
+     * on a file in an IDE).
+     *
+     * When typescript-eslint handles TypeScript Program management behind the scenes, this distinction
+     * is important because there is significant overhead to managing the so called Watch Programs
+     * needed for the long-running use-case.
+     *
+     * When allowAutomaticSingleRunInference is enabled, we will use common heuristics to infer
+     * whether or not ESLint is being used as part of a single run.
+     */
+    allowAutomaticSingleRunInference: isSingleRun,
     // Use this experimental flag to improve memory usage while using Typescript project reference
+    // NOTE: Causes TS to use the source files for referenced projects instead of the compiled .d.ts files.
+    // This feature is not yet optimized, and is likely to cause OOMs for medium to large projects.
     // See https://github.com/typescript-eslint/typescript-eslint/issues/2094
-    EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
+    EXPERIMENTAL_useSourceOfProjectReferenceRedirect: false,
   },
   plugins: ['@finos/legend-studio'],
   extends: [
