@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.0.0
+
+### Major Changes
+
+- [#2433](https://github.com/finos/legend-studio/pull/2433) [`ee14b1c3a`](https://github.com/finos/legend-studio/commit/ee14b1c3adae154e8d6e9701a24b9c7d08d029a9) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `getExtraEditorExtensionStateCreators()` and `EditorExtensionStateCreator` to `getExtraEditorExtensionStateBuilders()` and `EditorExtensionStateBuilder` respectively. Renamed `getExtraTestRunnerTabConfigurations()` and `TestRunnerTabConfiguration` to `getExtraTestRunnerViewConfigurations()` and `TestRunnerViewConfiguration` respectively.
+
 ## 27.1.11
 
 ### Patch Changes
