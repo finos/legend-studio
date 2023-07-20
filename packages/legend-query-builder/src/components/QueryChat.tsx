@@ -56,7 +56,7 @@ export const QueryChat = observer(
                   Chat Mode is not available
                 </BlankPanelContent>
               ) : (
-                <></>
+                extraQueryChatConfigurations[0]
               )}
             </>
           </ModalBody>
