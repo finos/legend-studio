@@ -26,14 +26,11 @@ const ERROR = 2;
  *  - For `production` mode (to produce bundled code): ENABLE
  *  - For `linting` process (to check code quality in CI): ENABLE
  */
-const enableFastMode =
-  process.env.NODE_ENV === undefined || // IDE ESLint process runs without setting a NODE environment
-  process.env.NODE_ENV === 'development';
-const isSingleRun = process.env.NODE_ENV !== undefined;
+const isIDE = process.env.NODE_ENV === undefined;
 
 // For debugging
 // console.log(`Environment: ${process.env.NODE_ENV}`);
-// console.log(`Single Run Mode: ${isSingleRun}`);
+// console.log(`IDE (mode): ${isIDE}`);
 
 /**
  * NOTE: this config is supposed to be used for both the IDE ESLint process
@@ -45,14 +42,16 @@ const isSingleRun = process.env.NODE_ENV !== undefined;
  *
  * See https://github.com/typescript-eslint/typescript-eslint/issues/1192
  */
-
 module.exports = {
   root: true, // tell ESLint to stop looking further up in directory tree to resolve for parent configs
   parserOptions: {
-    sourceType: 'module',
     // `parserOptions.project` is required for generating parser service to run specific rules like
     // `prefer-nullish-coalescing`, and `prefer-optional-chain`
-    project: ['./packages/*/tsconfig.json', './fixtures/*/tsconfig.json'],
+    project: !isIDE
+      ? ['./packages/*/tsconfig.json', './fixtures/*/tsconfig.json']
+      : // this is required for VSCode ESLint extension to work properly
+        true,
+    tsconfigRootDir: !isIDE ? undefined : __dirname,
     /**
      * ESLint (and therefore typescript-eslint) is used in both "single run"/one-time contexts,
      * such as an ESLint CLI invocation, and long-running sessions (such as continuous feedback
@@ -65,7 +64,7 @@ module.exports = {
      * When allowAutomaticSingleRunInference is enabled, we will use common heuristics to infer
      * whether or not ESLint is being used as part of a single run.
      */
-    allowAutomaticSingleRunInference: isSingleRun,
+    allowAutomaticSingleRunInference: !isIDE,
     // Use this experimental flag to improve memory usage while using Typescript project reference
     // NOTE: Causes TS to use the source files for referenced projects instead of the compiled .d.ts files.
     // This feature is not yet optimized, and is likely to cause OOMs for medium to large projects.
@@ -75,11 +74,11 @@ module.exports = {
   plugins: ['@finos/legend-studio'],
   extends: [
     'plugin:@finos/legend-studio/recommended',
-    !enableFastMode && 'plugin:@finos/legend-studio/computationally-expensive',
+    !isIDE && 'plugin:@finos/legend-studio/computationally-expensive',
     'plugin:@finos/legend-studio/scripts-override', // must be called last to turn off rules which are not applicable for scripts
   ].filter(Boolean),
   rules: {
     // turn off the prettier format check when running this in CI (i.e. production environment) to speed up pipeline
-    'prettier/prettier': process.env.NODE_ENV === 'production' ? OFF : ERROR,
+    'prettier/prettier': !isIDE ? OFF : ERROR,
   },
 };
