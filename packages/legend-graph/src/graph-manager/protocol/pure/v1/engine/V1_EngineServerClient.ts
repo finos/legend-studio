@@ -77,10 +77,13 @@ import type {
   V1_ArtifactGenerationExtensionInput,
   V1_ArtifactGenerationExtensionOutput,
 } from './generation/V1_ArtifactGenerationExtensionApi.js';
+import type { V1_DatabaseToModelGenerationInput } from './relational/V1_DatabaseToModelGenerationInput.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
   JSON_TO_GRAMMAR = 'transform protocol to Pure code',
+
+  DATABASE_TO_MODELS = 'generate models from database',
 
   EXTERNAL_FORMAT_TO_PROTOCOL = 'transform external format code to protocol',
   GENERATE_FILE = 'generate file',
@@ -771,6 +774,20 @@ export class V1_EngineServerClient extends AbstractServerClient {
         input,
         CORE_ENGINE_ACTIVITY_TRACE.PUBLISH_FUNCTION_ACTIVATOR_TO_SANDBOX,
       ),
+    );
+  }
+
+  // ------------------------------------------- Relational ---------------------------------------
+
+  _relationalElement = (): string => `${this._pure()}/relational`;
+
+  generateModelsFromDatabaseSpecification(
+    input: PlainObject<V1_DatabaseToModelGenerationInput>,
+  ): Promise<PlainObject<V1_PureModelContextData>> {
+    return this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DATABASE_TO_MODELS),
+      `${this._relationalElement()}/generateModelsFromDatabaseSpecification`,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.DATABASE_TO_MODELS),
     );
   }
 
