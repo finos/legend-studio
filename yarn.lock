@@ -2114,7 +2114,7 @@ __metadata:
     eslint-config-prettier: 8.8.0
     eslint-plugin-import: 2.27.5
     eslint-plugin-prettier: 5.0.0
-    eslint-plugin-react: 7.32.2
+    eslint-plugin-react: 7.33.0
     eslint-plugin-react-hooks: 4.6.0
     micromatch: 4.0.5
     prettier: 3.0.0
@@ -2172,7 +2172,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2205,7 +2205,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     typescript: 5.1.6
   languageName: unknown
   linkType: soft
@@ -2255,7 +2255,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2288,7 +2288,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     typescript: 5.1.6
   languageName: unknown
   linkType: soft
@@ -2345,7 +2345,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
     yaml: 2.3.1
@@ -2379,7 +2379,7 @@ __metadata:
     react-router: 5.3.4
     react-router-dom: 5.3.4
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
     xterm: 5.2.1
@@ -2430,7 +2430,7 @@ __metadata:
     react-window: 1.8.9
     remark-gfm: 3.0.1
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     typescript: 5.1.6
   peerDependencies:
     react: ^18.0.0
@@ -2476,12 +2476,12 @@ __metadata:
     mini-css-extract-plugin: 2.7.6
     monaco-editor: 0.40.0
     monaco-editor-webpack-plugin: 7.1.0
-    postcss: 8.4.26
+    postcss: 8.4.27
     postcss-loader: 7.3.3
     react-refresh: 0.14.0
     resolve: 1.22.2
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     sass-loader: 13.3.2
     typescript: 5.1.6
     webpack: 5.88.2
@@ -2509,7 +2509,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2544,7 +2544,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2577,7 +2577,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2606,7 +2606,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2635,7 +2635,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2670,7 +2670,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2700,7 +2700,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2729,7 +2729,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2758,7 +2758,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2788,7 +2788,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     typescript: 5.1.6
   peerDependencies:
@@ -2891,7 +2891,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     typescript: 5.1.6
   peerDependencies:
     react: ^18.0.0
@@ -2957,7 +2957,7 @@ __metadata:
     react-dnd: 16.0.1
     react-dom: 18.2.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     serializr: 3.0.2
     sql-formatter: 12.2.3
     typescript: 5.1.6
@@ -3107,7 +3107,7 @@ __metadata:
   dependencies:
     cross-env: 7.0.3
     eslint: 8.45.0
-    postcss: 8.4.26
+    postcss: 8.4.27
     postcss-scss: 4.0.6
     rimraf: 5.0.1
     stylelint-config-standard: 34.0.0
@@ -7678,9 +7678,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react@npm:7.32.2":
-  version: 7.32.2
-  resolution: "eslint-plugin-react@npm:7.32.2"
+"eslint-plugin-react@npm:7.33.0":
+  version: 7.33.0
+  resolution: "eslint-plugin-react@npm:7.33.0"
   dependencies:
     array-includes: ^3.1.6
     array.prototype.flatmap: ^1.3.1
@@ -7695,11 +7695,11 @@ __metadata:
     object.values: ^1.1.6
     prop-types: ^15.8.1
     resolve: ^2.0.0-next.4
-    semver: ^6.3.0
+    semver: ^6.3.1
     string.prototype.matchall: ^4.0.8
   peerDependencies:
     eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
-  checksum: 2232b3b8945aa50b7773919c15cd96892acf35d2f82503667a79e2f55def90f728ed4f0e496f0f157acbe1bd4397c5615b676ae7428fe84488a544ca53feb944
+  checksum: f3ce2978322efd3c698b802dabfad070109dd1935c4e468545992b82b5fb8257ea3ad56732330bb46643182a09560129a259b436952b3e2aa426947d3abd2b1a
   languageName: node
   linkType: hard
 
@@ -10643,7 +10643,7 @@ __metadata:
     npm-run-all: 4.1.5
     prettier: 3.0.0
     rimraf: 5.0.1
-    sass: 1.63.6
+    sass: 1.64.0
     semver: 7.5.4
     sort-package-json: 2.5.1
     stylelint: 15.10.2
@@ -13365,7 +13365,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.4.26, postcss@npm:^8.4.21, postcss@npm:^8.4.25":
+"postcss@npm:8.4.27":
+  version: 8.4.27
+  resolution: "postcss@npm:8.4.27"
+  dependencies:
+    nanoid: ^3.3.6
+    picocolors: ^1.0.0
+    source-map-js: ^1.0.2
+  checksum: 1cdd0c298849df6cd65f7e646a3ba36870a37b65f55fd59d1a165539c263e9b4872a402bf4ed1ca1bc31f58b68b2835545e33ea1a23b161a1f8aa6d5ded81e78
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.4.21, postcss@npm:^8.4.25":
   version: 8.4.26
   resolution: "postcss@npm:8.4.26"
   dependencies:
@@ -14587,16 +14598,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.63.6":
-  version: 1.63.6
-  resolution: "sass@npm:1.63.6"
+"sass@npm:1.64.0":
+  version: 1.64.0
+  resolution: "sass@npm:1.64.0"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
     immutable: ^4.0.0
     source-map-js: ">=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: 3372319904658eeafaf78a09a6fcb3368a68e6d76fe3c43c2d009f4f72e475ab22b82ef483ef5c00fcda3ab00066846c0bd88c36b42771b855f6ab80c7eda541
+  checksum: b4eb9b1bdeb1c00e76427d7fe3e5f80d831327178cdee657aa4e014edfc64ebbfe43177147403da1e04d76a24f4093f5a9b1c8d9d80c94579937d8adc5a6ef66
   languageName: node
   linkType: hard
 
