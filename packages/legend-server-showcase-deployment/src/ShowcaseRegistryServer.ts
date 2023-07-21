@@ -64,7 +64,7 @@ export const configureShowcaseRegistryServer = async (
     async (request, reply) => {
       const { searchText } = request.query;
 
-      await reply.send(registry.search(searchText));
+      await reply.send(await registry.search(searchText));
     },
   );
 };

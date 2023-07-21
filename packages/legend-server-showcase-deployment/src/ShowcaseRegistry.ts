@@ -20,6 +20,7 @@ import { Showcase, type ShowcaseMetadata } from '@finos/legend-server-showcase';
 import {
   ESM__FuzzySearchEngine,
   FuzzySearchEngine,
+  promisify,
   type PlainObject,
 } from '@finos/legend-shared';
 
@@ -173,46 +174,53 @@ export class ShowcaseRegistry {
     return this.RAW__showcaseIndex.get(path);
   }
 
-  search(searchText: string): TextSearchResult {
+  async search(searchText: string): Promise<TextSearchResult> {
     const textMatches: TextMatch[] = [];
     // NOTE: for text search, we only support case-insensitive search now
     const lowerCaseSearchText = searchText.toLowerCase();
-    for (const showcase of this.showcasesIndex.values()) {
-      const code = showcase.code;
-      const lines = code.split('\n');
-      lines.forEach((line, lineIdx) => {
-        const lowerCaseLine = line.toLowerCase();
-        let fromIdx = 0;
-        let currentMatchIdx = lowerCaseLine.indexOf(
-          lowerCaseSearchText,
-          fromIdx,
-        );
-        while (currentMatchIdx !== -1) {
-          const previewTextStartLineIdx = Math.max(
-            lineIdx - PREVIEW_LINE_RANGE,
-            0,
-          );
-          const previewTextEndLineIdx = Math.min(
-            lineIdx + 1 + PREVIEW_LINE_RANGE,
-            lines.length - 1,
-          );
-          const previewText = lines
-            .slice(previewTextStartLineIdx, previewTextEndLineIdx)
-            .join('\n');
-          const match: TextMatch = {
-            path: showcase.path,
-            line: lineIdx + 1,
-            startColumn: currentMatchIdx + 1,
-            endColumn: currentMatchIdx + 1 + lowerCaseSearchText.length,
-            previewStartLine: previewTextStartLineIdx + 1,
-            previewText,
-          };
-          fromIdx = currentMatchIdx + lowerCaseSearchText.length;
-          currentMatchIdx = lowerCaseLine.indexOf(lowerCaseSearchText, fromIdx);
-          textMatches.push(match);
-        }
-      });
-    }
+    await Promise.all(
+      Array.from(this.showcasesIndex.values()).map((showcase) =>
+        promisify(() => {
+          const code = showcase.code;
+          const lines = code.split('\n');
+          lines.forEach((line, lineIdx) => {
+            const lowerCaseLine = line.toLowerCase();
+            let fromIdx = 0;
+            let currentMatchIdx = lowerCaseLine.indexOf(
+              lowerCaseSearchText,
+              fromIdx,
+            );
+            while (currentMatchIdx !== -1) {
+              const previewTextStartLineIdx = Math.max(
+                lineIdx - PREVIEW_LINE_RANGE,
+                0,
+              );
+              const previewTextEndLineIdx = Math.min(
+                lineIdx + 1 + PREVIEW_LINE_RANGE,
+                lines.length - 1,
+              );
+              const previewText = lines
+                .slice(previewTextStartLineIdx, previewTextEndLineIdx)
+                .join('\n');
+              const match: TextMatch = {
+                path: showcase.path,
+                line: lineIdx + 1,
+                startColumn: currentMatchIdx + 1,
+                endColumn: currentMatchIdx + 1 + lowerCaseSearchText.length,
+                previewStartLine: previewTextStartLineIdx + 1,
+                previewText,
+              };
+              fromIdx = currentMatchIdx + lowerCaseSearchText.length;
+              currentMatchIdx = lowerCaseLine.indexOf(
+                lowerCaseSearchText,
+                fromIdx,
+              );
+              textMatches.push(match);
+            }
+          });
+        }),
+      ),
+    );
     return {
       showcases: Array.from(
         this.showcaseSearchEngine.search(searchText).values(),
