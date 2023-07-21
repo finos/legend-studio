@@ -29,5 +29,10 @@ import Fuse from './CJS__Fuse.cjs';
 import type { default as FuseType } from 'fuse.js';
 
 export const FuzzySearchEngine = Fuse.Fuse.default;
+// NOTE: due to the way we export the constructor of `FuzzySearchEngine`, when we run this with ESM
+// we can remove this workaround once Fuse supports ESM
+// See https://github.com/krisk/Fuse/pull/727
+export const ESM__FuzzySearchEngine =
+  Fuse.Fuse as unknown as typeof FuzzySearchEngine;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type FuzzySearchEngine<T> = FuseType.default<T>;
