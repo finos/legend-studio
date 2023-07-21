@@ -291,6 +291,7 @@ import { FunctionActivatorConfiguration } from '../../../action/functionActivato
 import { V1_FunctionActivatorInput } from './engine/functionActivator/V1_FunctionActivatorInput.js';
 import { V1_FunctionActivator } from './model/packageableElements/function/V1_FunctionActivator.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from './model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+import { V1_DatabaseToModelGenerationInput } from './engine/relational/V1_DatabaseToModelGenerationInput.js';
 import type { RelationalDatabaseConnection } from '../../../../STO_Relational_Exports.js';
 import { V1_RawSQLExecuteInput } from './engine/execution/V1_RawSQLExecuteInput.js';
 import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
@@ -2994,6 +2995,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     input.functionActivator = functionActivator.path;
     input.model = this.prepareExecutionContextGraphData(graphData);
     await this.engine.publishFunctionActivatorToSandbox(input);
+  }
+
+  // --------------------------------------------- Relational ---------------------------------------------
+
+  async generateModelFromDatabase(
+    databasePath: string,
+    graph: PureModel,
+  ): Promise<Entity[]> {
+    const graphData = this.graphToPureModelContextData(graph);
+    const input = new V1_DatabaseToModelGenerationInput();
+    input.databasePath = databasePath;
+    input.modelData = graphData;
+    const generatedModel = await this.engine.generateModelFromDatabase(input);
+    return this.pureModelContextDataToEntities(generatedModel);
   }
 
   // --------------------------------------------- Service ---------------------------------------------

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, observable, makeObservable } from 'mobx';
+import { action, observable, makeObservable, flow, flowResult } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import {
   LogEvent,
@@ -23,6 +23,9 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
   ActionState,
+  type GeneratorFn,
+  assertErrorThrown,
+  guaranteeType,
 } from '@finos/legend-shared';
 import {
   getDependenciesPackableElementTreeData,
@@ -49,9 +52,14 @@ import {
   isDependencyElement,
   type Class,
   type RelationalDatabaseConnection,
+  Database,
+  PureModel,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { DatabaseBuilderWizardState } from './editor-state/element-editor-state/connection/DatabaseBuilderWizardState.js';
+import type { Entity } from '@finos/legend-storage';
+import { TextLocalChangesState } from './sidebar-state/LocalChangesState.js';
+import { EntityChangeType, type EntityChange } from '@finos/legend-server-sdlc';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',
@@ -107,6 +115,7 @@ export class ExplorerTreeState {
       setDatabaseBuilderState: action,
       onTreeNodeSelect: action,
       openNode: action,
+      generateModelFromDatabase: flow,
     });
 
     this.editorStore = editorStore;
@@ -187,6 +196,38 @@ export class ExplorerTreeState {
     );
     dbBuilderState.setShowModal(true);
     this.setDatabaseBuilderState(dbBuilderState);
+  }
+
+  *generateModelFromDatabase(
+    databasePath: string,
+    graph: PureModel,
+  ): GeneratorFn<void> {
+    try {
+      const entities =
+        (yield this.editorStore.graphManagerState.graphManager.generateModelFromDatabase(
+          databasePath,
+          graph,
+        )) as Entity[];
+      const newEntities: EntityChange[] = entities.map((e) => ({
+        type: EntityChangeType.CREATE,
+        entityPath: e.path,
+        content: e.content,
+      }));
+      yield flowResult(
+        this.editorStore.graphState.loadEntityChangesToGraph(
+          newEntities,
+          undefined,
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      throw error;
+    }
   }
 
   setSelectedNode(node: PackageTreeNodeData | undefined): void {

@@ -111,6 +111,7 @@ import {
   guaranteeRelationalDatabaseConnection,
   extractDependencyGACoordinateFromRootPackageName,
   type FunctionActivatorConfiguration,
+  Database,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -452,6 +453,9 @@ const isRelationalDatabaseConnection = (
   val instanceof PackageableConnection &&
   val.connectionValue instanceof RelationalDatabaseConnection;
 
+const isRelationalDatabase = (val: PackageableElement | undefined): boolean =>
+  val instanceof Database;
+
 const ExplorerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
@@ -523,6 +527,15 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const generateModelFromDatabase =
+      editorStore.applicationStore.guardUnhandledError(async () => {
+        if (isRelationalDatabase(node?.packageableElement)) {
+          editorStore.explorerTreeState.generateModelFromDatabase(
+            guaranteeNonEmptyString(node?.packageableElement.path),
+            editorStore.graphManagerState.graph,
+          );
+        }
+      });
     const openSQLPlayground = (): void => {
       if (isRelationalDatabaseConnection(node?.packageableElement)) {
         editorStore.panelGroupDisplayState.open();
@@ -808,6 +821,14 @@ const ExplorerContextMenu = observer(
             )}
             <MenuContentItem onClick={buildDatabase}>
               Build Database...
+            </MenuContentItem>
+            <MenuContentDivider />
+          </>
+        )}
+        {isRelationalDatabase(node.packageableElement) && (
+          <>
+            <MenuContentItem onClick={generateModelFromDatabase}>
+              Generate Models
             </MenuContentItem>
             <MenuContentDivider />
           </>
