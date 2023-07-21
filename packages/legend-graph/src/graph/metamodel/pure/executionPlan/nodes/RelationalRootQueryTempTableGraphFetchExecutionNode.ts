@@ -18,5 +18,5 @@ import { RelationalClassQueryTempTableGraphFetchExecutionNode } from './Relation
 
 export class RelationalRootQueryTempTableGraphFetchExecutionNode extends RelationalClassQueryTempTableGraphFetchExecutionNode {
   batchSize?: number | undefined;
-  checked?: boolean | undefined;
+  checked!: boolean;
 }

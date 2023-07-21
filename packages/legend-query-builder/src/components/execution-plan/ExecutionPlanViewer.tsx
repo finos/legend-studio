@@ -87,7 +87,6 @@ import {
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { RelationalRootQueryTempTableGraphFetchExecutionNodeViewer } from './RelationalRootQueryTempTableGraphFetchExecutionNodeViewer.js';
 import { RelationalClassQueryTempTableGraphFetchExecutionNodeViewer } from './RelationalClassQueryTempTableGraphFetchExecutionNodeViewer.js';
-import { PureExpressionPlatformExecutionNodeViewer } from './PureExpressionPlatformExecutionViewer.js';
 import { RelationalCrossRootQueryTempTableGraphFetchExecutionNodeViewer } from './RelationalCrossRootQueryTempTableGraphFetchExecutionNodeViewer.js';
 
 const EXECUTION_PLAN = 'Execution Plan';
@@ -622,14 +621,6 @@ export const ExecutionNodeViewer = observer(
     ) {
       return (
         <RelationalClassQueryTempTableGraphFetchExecutionNodeViewer
-          node={executionNode}
-          executionPlanState={executionPlanState}
-        />
-      );
-    }
-    if (executionNode instanceof PureExpressionPlatformExecutionNode) {
-      return (
-        <PureExpressionPlatformExecutionNodeViewer
           node={executionNode}
           executionPlanState={executionPlanState}
         />

@@ -19,7 +19,7 @@ import type { V1_XStorePropertyFetchDetails } from '../../packageableElements/ma
 import { type PlainObject } from '@finos/legend-shared';
 
 export class V1_StoreMappingGlobalGraphFetchExecutionNode extends V1_GlobalGraphFetchExecutionNode {
-  store?: string | undefined;
+  store!: string;
   xStorePropertyMapping?: PlainObject | undefined;
   xStorePropertyFetchDetails?: V1_XStorePropertyFetchDetails | undefined;
 }

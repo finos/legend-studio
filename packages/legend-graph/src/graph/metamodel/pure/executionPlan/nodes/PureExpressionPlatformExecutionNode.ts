@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { ValueSpecification } from '../../valueSpecification/ValueSpecification.js';
+import type { PlainObject } from '@finos/legend-shared';
 import { ExecutionNode } from './ExecutionNode.js';
 
 export class PureExpressionPlatformExecutionNode extends ExecutionNode {
-  pure!: ValueSpecification;
+  pure!: PlainObject;
 }

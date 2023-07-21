@@ -18,5 +18,5 @@ import { V1_RelationalClassQueryTempTableGraphFetchExecutionNode } from './V1_Re
 
 export class V1_RelationalRootQueryTempTableGraphFetchExecutionNode extends V1_RelationalClassQueryTempTableGraphFetchExecutionNode {
   batchSize?: number | undefined;
-  checked?: boolean | undefined;
+  checked!: boolean;
 }

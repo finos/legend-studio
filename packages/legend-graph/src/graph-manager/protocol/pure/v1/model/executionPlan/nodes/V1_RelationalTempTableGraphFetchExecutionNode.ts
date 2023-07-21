@@ -19,7 +19,7 @@ import type { V1_SQLResultColumn } from './V1_SQLResultColumn.js';
 import type { V1_TempTableStrategy } from './V1_TempTableStrategy.js';
 
 export class V1_RelationalTempTableGraphFetchExecutionNode extends V1_RelationalGraphFetchExecutionNode {
-  tempTableName?: string | undefined;
+  tempTableName!: string;
   processedTempTableName?: string | undefined;
   columns: V1_SQLResultColumn[] = [];
   tempTableStrategy?: V1_TempTableStrategy | undefined;

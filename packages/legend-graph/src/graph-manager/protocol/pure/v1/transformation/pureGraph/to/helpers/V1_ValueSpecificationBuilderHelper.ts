@@ -121,15 +121,18 @@ export class V1_ValueSpecificationBuilder
   context: V1_GraphBuilderContext;
   processingContext: V1_ProcessingContext;
   openVariables: string[] = [];
+  checkFunctionName?: boolean | undefined;
 
   constructor(
     context: V1_GraphBuilderContext,
     processingContext: V1_ProcessingContext,
     openVariables: string[],
+    checkFunctionName?: boolean | undefined,
   ) {
     this.context = context;
     this.processingContext = processingContext;
     this.openVariables = openVariables;
+    this.checkFunctionName = checkFunctionName;
   }
 
   visit_INTERNAL__UnknownValueSpecfication(
@@ -247,6 +250,7 @@ export class V1_ValueSpecificationBuilder
       this.openVariables,
       this.context,
       this.processingContext,
+      this.checkFunctionName,
     );
     this.processingContext.pop();
 
@@ -629,7 +633,19 @@ export function V1_buildFunctionExpression(
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
+  // We don't want to throw error when we build valuespecification outside
+  // query context (for ex: while building execution plan)
+  checkFunctionName?: boolean | undefined,
 ): SimpleFunctionExpression {
+  if (checkFunctionName === false) {
+    return V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+  }
   if (matchFunctionName(functionName, Object.values(SUPPORTED_FUNCTIONS))) {
     // NOTE: this is a catch-all builder that is only meant for basic function expression
     // such as and(), or(), etc. It will fail when type-inferencing/function-matching is required

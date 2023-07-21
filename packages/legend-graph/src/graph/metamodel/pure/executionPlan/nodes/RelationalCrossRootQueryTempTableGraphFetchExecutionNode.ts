@@ -20,7 +20,7 @@ import type { TempTableStrategy } from './TempTableStrategy.js';
 
 export class RelationalCrossRootQueryTempTableGraphFetchExecutionNode extends RelationalClassQueryTempTableGraphFetchExecutionNode {
   parentTempTableStrategy?: TempTableStrategy | undefined;
-  parentTempTableName?: string | undefined;
+  parentTempTableName!: string;
   processedParentTempTableName?: string | undefined;
   parentTempTableColumns: SQLResultColumn[] = [];
 }

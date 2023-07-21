@@ -112,7 +112,7 @@ export const RelationalRootQueryTempTableGraphFetchExecutionNodeViewer: React.FC
                       <td className="table__cell--left">{node.batchSize}</td>
                     </tr>
                   )}
-                  {node.checked !== undefined && (
+                  {node.checked && (
                     <tr>
                       <td className="table__cell--left">Checked</td>
                       <td className="table__cell--left">
@@ -138,7 +138,7 @@ export const RelationalRootQueryTempTableGraphFetchExecutionNodeViewer: React.FC
                       </td>
                     </tr>
                   )}
-                  {node.tempTableName !== undefined && (
+                  {node.tempTableName && (
                     <tr>
                       <td className="table__cell--left">tempTableName</td>
                       <td className="table__cell--left">

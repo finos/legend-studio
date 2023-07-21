@@ -291,6 +291,7 @@ const buildPropertiesWithParameters = (
         context,
         new V1_ProcessingContext(''),
         [],
+        false,
       ),
     ),
   );
@@ -721,9 +722,7 @@ const buildPureExpressionPlatformExecutionNode = (
 ): PureExpressionPlatformExecutionNode => {
   const metamodel = new PureExpressionPlatformExecutionNode();
   buildBaseExecutionNode(metamodel, protocol, context);
-  metamodel.pure = protocol.pure.accept_ValueSpecificationVisitor(
-    new V1_ValueSpecificationBuilder(context, new V1_ProcessingContext(''), []),
-  );
+  metamodel.pure = protocol.pure;
   return metamodel;
 };
 

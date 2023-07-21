@@ -18,5 +18,5 @@ import { V1_ExecutionNode } from './V1_ExecutionNode.js';
 
 export class V1_AllocationExecutionNode extends V1_ExecutionNode {
   varName!: string;
-  realizeInMemory!: boolean;
+  realizeInMemory?: boolean | undefined;
 }

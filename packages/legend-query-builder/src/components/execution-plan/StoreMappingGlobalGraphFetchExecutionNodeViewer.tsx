@@ -132,7 +132,7 @@ export const StoreMappingGlobalGraphFetchExecutionNodeViewer: React.FC<{
                 </td>
               </tr>
             )}
-            {storeMappingNode.store !== undefined && (
+            {storeMappingNode.store && (
               <tr>
                 <td className="table__cell--left">Store</td>
                 <td className="table__cell--left">{storeMappingNode.store}</td>

@@ -582,7 +582,7 @@ const transformPureExpressionPlatformExecutionNode = (
 ): V1_PureExpressionPlatformExecutionNode => {
   const protocol = new V1_PureExpressionPlatformExecutionNode();
   transformBaseExecutionNode(metamodel, protocol, context);
-  protocol.pure = V1_transformRootValueSpecification(metamodel.pure);
+  protocol.pure = metamodel.pure;
   return protocol;
 };
 

@@ -482,6 +482,12 @@ const propertyGraphFetchTreeModelSchema = (
         (val) => V1_deserializeGraphFetchTree(val, plugins),
       ),
     ),
+    subTypeTrees: list(
+      custom(
+        (val) => V1_serializeGraphFetchTree(val, plugins),
+        (val) => V1_deserializeGraphFetchTree(val, plugins),
+      ),
+    ),
     subType: optional(primitive()),
   });
 

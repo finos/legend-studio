@@ -64,6 +64,7 @@ export const FunctionParametersValidationNodeViewer: React.FC<{
     }
     return `[${multiplicity.lowerBound.toString()}..${multiplicity.upperBound.toString()}]`;
   };
+
   return (
     <PanelContent
       darkMode={

@@ -47,12 +47,14 @@ export const TEST_DATA__lambda_Externalize_externalize_graphFetch = {
                   {
                     _type: 'propertyGraphFetchTree',
                     subTrees: [],
+                    subTypeTrees: [],
                     property: 'const',
                     parameters: [],
                   },
                   {
                     _type: 'propertyGraphFetchTree',
                     subTrees: [],
+                    subTypeTrees: [],
                     property: 'fullName',
                     parameters: [],
                   },
@@ -80,12 +82,14 @@ export const TEST_DATA__lambda_Externalize_externalize_graphFetch = {
               {
                 _type: 'propertyGraphFetchTree',
                 subTrees: [],
+                subTypeTrees: [],
                 property: 'const',
                 parameters: [],
               },
               {
                 _type: 'propertyGraphFetchTree',
                 subTrees: [],
+                subTypeTrees: [],
                 property: 'fullName',
                 parameters: [],
               },
@@ -135,18 +139,21 @@ export const TEST_DATA__lambda_Externalize_externalize_graphFetch_with_different
                     {
                       _type: 'propertyGraphFetchTree',
                       subTrees: [],
+                      subTypeTrees: [],
                       property: 'const',
                       parameters: [],
                     },
                     {
                       _type: 'propertyGraphFetchTree',
                       subTrees: [],
+                      subTypeTrees: [],
                       property: 'fullName',
                       parameters: [],
                     },
                     {
                       _type: 'propertyGraphFetchTree',
                       subTrees: [],
+                      subTypeTrees: [],
                       property: 'age',
                       parameters: [],
                     },
@@ -174,12 +181,14 @@ export const TEST_DATA__lambda_Externalize_externalize_graphFetch_with_different
                 {
                   _type: 'propertyGraphFetchTree',
                   subTrees: [],
+                  subTypeTrees: [],
                   property: 'const',
                   parameters: [],
                 },
                 {
                   _type: 'propertyGraphFetchTree',
                   subTrees: [],
+                  subTypeTrees: [],
                   property: 'age',
                   parameters: [],
                 },
@@ -228,12 +237,14 @@ export const TEST_DATA__lambda_Externalize_externalize_graphFetchChecked = {
                   {
                     _type: 'propertyGraphFetchTree',
                     subTrees: [],
+                    subTypeTrees: [],
                     property: 'const',
                     parameters: [],
                   },
                   {
                     _type: 'propertyGraphFetchTree',
                     subTrees: [],
+                    subTypeTrees: [],
                     property: 'fullName',
                     parameters: [],
                   },
@@ -261,12 +272,14 @@ export const TEST_DATA__lambda_Externalize_externalize_graphFetchChecked = {
               {
                 _type: 'propertyGraphFetchTree',
                 subTrees: [],
+                subTypeTrees: [],
                 property: 'const',
                 parameters: [],
               },
               {
                 _type: 'propertyGraphFetchTree',
                 subTrees: [],
+                subTypeTrees: [],
                 property: 'fullName',
                 parameters: [],
               },

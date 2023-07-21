@@ -33,6 +33,7 @@ import {
   usingConstantValueSchema,
   UnsupportedOperationError,
   customList,
+  optionalCustomList,
 } from '@finos/legend-shared';
 import type { V1_ExecutionPlan } from '../../../../model/executionPlan/V1_ExecutionPlan.js';
 import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan.js';
@@ -83,6 +84,7 @@ import { V1_LoadFromSubQueryTempTableStrategy } from '../../../../model/executio
 import { V1_LoadFromTempFileTempTableStrategy } from '../../../../model/executionPlan/nodes/V1_LoadFromTempFileTempTableStrategy.js';
 import { V1_RelationalCrossRootQueryTempTableGraphFetchExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalCrossRootQueryTempTableGraphFetchExecutionNode.js';
 import { V1_XStorePropertyFetchDetails } from '../../../../model/packageableElements/mapping/xStore/V1_XStorePropertyFetchDetails.js';
+import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 
@@ -128,11 +130,13 @@ const propertyWithParametersModelSchema = createModelSchema(
   V1_PropertyWithParameters,
   {
     property: optional(primitive()),
-    parameters: list(
-      custom(
-        (val) => V1_serializeValueSpecification(val, []),
-        (val) => V1_deserializeValueSpecification(val, []),
-      ),
+    parameters: optionalCustomList(
+      (value: V1_ValueSpecification) =>
+        V1_serializeValueSpecification(value, []),
+      (value) => V1_deserializeValueSpecification(value, []),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
     ),
   },
 );
@@ -225,6 +229,7 @@ const relationalTDSInstantationExecutionNodeModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_ExecutionNodeType.RELATIONAL_TDS_INSTANTIATION,
     ),
+    authDependent: optional(primitive()),
     executionNodes: list(
       custom(V1_serializeExecutionNode, V1_deserializeExecutionNode),
     ),
@@ -239,17 +244,23 @@ const SQLResultColumnModelSchema = createModelSchema(V1_SQLResultColumn, {
 });
 
 const javaClassModelSchema = createModelSchema(V1_JavaClass, {
-  package: primitive(),
-  name: primitive(),
-  source: primitive(),
   byteCode: optional(primitive()),
+  name: primitive(),
+  package: primitive(),
+  source: primitive(),
 });
 
 const javaPlatformImplementationModelSchema = createModelSchema(
   V1_JavaPlatformImplementation,
   {
     _type: usingConstantValueSchema(V1_PlatformImplementationType.JAVA),
-    classes: list(usingModelSchema(javaClassModelSchema)),
+    classes: optionalCustomList(
+      (value: V1_JavaClass) => serialize(javaClassModelSchema, value),
+      (value) => deserialize(javaClassModelSchema, value),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
     executionClassFullName: optional(primitive()),
     executionMethodName: optional(primitive()),
   },
@@ -305,8 +316,8 @@ const globalGraphFetchExecutionNodeModelSchema = createModelSchema(
     ),
     parentIndex: optional(primitive()),
     localTreeIndices: list(primitive()),
-    dependencyIndices: list(primitive()),
-    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    dependencyIndices: optional(list(primitive())),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
@@ -355,10 +366,10 @@ const storeMappingGlobalGraphFetchExecutionNodeModelSchema = createModelSchema(
     ),
     parentIndex: optional(primitive()),
     localTreeIndices: list(primitive()),
-    dependencyIndices: list(primitive()),
+    dependencyIndices: optional(list(primitive())),
     resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
-    store: optional(primitive()),
+    store: primitive(),
     xStorePropertyFetchDetails: optional(
       usingModelSchema(xStorePropertyFetchDetailsModelSchema),
     ),
@@ -484,8 +495,8 @@ const V1_deserializeTempTableStrategy = (
 const parameterValidationContextSchema = createModelSchema(
   V1_EnumValidationContext,
   {
-    varName: primitive(),
     validEnumValues: list(primitive()),
+    varName: primitive(),
   },
 );
 
@@ -507,6 +518,7 @@ const functionParametersValidationNodeModelSchema = createModelSchema(
     parameterValidationContext: list(
       usingModelSchema(parameterValidationContextSchema),
     ),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
@@ -523,8 +535,8 @@ const allocationExecutionNodeModelSchema = createModelSchema(
     implementation: optional(
       usingModelSchema(javaPlatformImplementationModelSchema),
     ),
-    realizeInMemory: primitive(),
-    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    realizeInMemory: optional(primitive()),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
     varName: primitive(),
   },
@@ -542,6 +554,7 @@ const constantExecutionNodeModelSchema = createModelSchema(
     implementation: optional(
       usingModelSchema(javaPlatformImplementationModelSchema),
     ),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
     values: raw(),
   },
@@ -591,7 +604,7 @@ const relationalClassQueryTempTableGraphFetchExecutionNodeModelSchema =
     parentIndex: optional(primitive()),
     resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
-    tempTableName: optional(primitive()),
+    tempTableName: primitive(),
     tempTableStrategy: optionalCustom(
       V1_serializeTempTableStrategy,
       V1_deserializeTempTableStrategy,
@@ -605,7 +618,7 @@ const relationalRootQueryTempTableGraphFetchExecutionNodeModelSchema =
     ),
     authDependent: optional(primitive()),
     batchSize: optional(primitive()),
-    checked: optional(primitive()),
+    checked: primitive(),
     children: customList(
       V1_serializeExecutionNode,
       V1_deserializeExecutionNode,
@@ -625,9 +638,9 @@ const relationalRootQueryTempTableGraphFetchExecutionNodeModelSchema =
     nodeIndex: primitive(),
     processedTempTableName: optional(primitive()),
     parentIndex: optional(primitive()),
-    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
-    tempTableName: optional(primitive()),
+    tempTableName: primitive(),
     tempTableStrategy: optionalCustom(
       V1_serializeTempTableStrategy,
       V1_deserializeTempTableStrategy,
@@ -646,7 +659,7 @@ const relationalCrossRootQueryTempTableGraphFetchExecutionNodeModelSchema =
         V1_serializeTempTableStrategy,
         V1_deserializeTempTableStrategy,
       ),
-      parentTempTableName: optional(primitive()),
+      parentTempTableName: primitive(),
       processedParentTempTableName: optional(primitive()),
       parentTempTableColumns: list(
         usingModelSchema(SQLResultColumnModelSchema),
@@ -672,7 +685,7 @@ const relationalCrossRootQueryTempTableGraphFetchExecutionNodeModelSchema =
       parentIndex: optional(primitive()),
       resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
       resultType: custom(V1_serializeResultType, V1_deserializeResultType),
-      tempTableName: optional(primitive()),
+      tempTableName: primitive(),
       tempTableStrategy: optionalCustom(
         V1_serializeTempTableStrategy,
         V1_deserializeTempTableStrategy,
@@ -686,6 +699,7 @@ const pureExpressionPlatformExecutionNodeModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_ExecutionNodeType.PURE_EXPRESSION_PLATFORM,
     ),
+    authDependent: optional(primitive()),
     executionNodes: customList(
       V1_serializeExecutionNode,
       V1_deserializeExecutionNode,
@@ -693,11 +707,8 @@ const pureExpressionPlatformExecutionNodeModelSchema = createModelSchema(
     implementation: optional(
       usingModelSchema(javaPlatformImplementationModelSchema),
     ),
-    pure: custom(
-      (val) => V1_serializeValueSpecification(val, []),
-      (val) => V1_deserializeValueSpecification(val, []),
-    ),
-    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    pure: raw(),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
@@ -708,6 +719,7 @@ const inMemoryPropertyGraphFetchExecutionNodeModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_ExecutionNodeType.IN_MEMORY_PROPERTY_GRAPH_FETCH,
     ),
+    authDependent: optional(primitive()),
     executionNodes: customList(
       V1_serializeExecutionNode,
       V1_deserializeExecutionNode,
@@ -725,7 +737,7 @@ const inMemoryPropertyGraphFetchExecutionNodeModelSchema = createModelSchema(
       V1_serializeExecutionNode,
       V1_deserializeExecutionNode,
     ),
-    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
@@ -736,6 +748,7 @@ const inMemoryRootGraphFetchExecutionNodeModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_ExecutionNodeType.IN_MEMORY_ROOT_GRAPH_FETCH,
     ),
+    authDependent: optional(primitive()),
     executionNodes: customList(
       V1_serializeExecutionNode,
       V1_deserializeExecutionNode,
@@ -756,7 +769,7 @@ const inMemoryRootGraphFetchExecutionNodeModelSchema = createModelSchema(
     batchSize: optional(primitive()),
     checked: optional(primitive()),
     filter: optional(primitive()),
-    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
@@ -829,12 +842,13 @@ export function V1_serializeExecutionNode(
 const V1_INTERNAL__UnknownExecutionNodeModelSchema = createModelSchema(
   V1_INTERNAL__UnknownExecutionNode,
   {
+    authDependent: optional(primitive()),
     executionNodes: customList(
       V1_serializeExecutionNode,
       V1_deserializeExecutionNode,
     ),
     implementation: raw(),
-    resultSizeRange: usingModelSchema(V1_multiplicityModelSchema),
+    resultSizeRange: optional(usingModelSchema(V1_multiplicityModelSchema)),
     resultType: custom(V1_serializeResultType, V1_deserializeResultType),
   },
 );
@@ -912,7 +926,7 @@ const SimpleExecutionPlanModelSchema = createModelSchema(
   V1_SimpleExecutionPlan,
   {
     _type: usingConstantValueSchema(V1_ExecutionPlanType.SINGLE),
-    authDependent: primitive(),
+    authDependent: optional(primitive()),
     globalImplementationSupport: optional(
       usingModelSchema(javaPlatformImplementationModelSchema),
     ),

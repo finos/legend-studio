@@ -100,13 +100,13 @@ export const RelationalClassQueryTempTableGraphFetchExecutionNodeViewer: React.F
                     <td className="table__cell--left"> NodeIndex</td>
                     <td className="table__cell--left">{node.nodeIndex}</td>
                   </tr>
-                  {node.parentIndex !== undefined && (
+                  {node.parentIndex && (
                     <tr>
                       <td className="table__cell--left">ParentIndex</td>
                       <td className="table__cell--left">{node.parentIndex}</td>
                     </tr>
                   )}
-                  {node.authDependent !== undefined && (
+                  {node.authDependent && (
                     <tr>
                       <td className="table__cell--left">AuthDependent</td>
                       <td className="table__cell--left">
@@ -114,7 +114,7 @@ export const RelationalClassQueryTempTableGraphFetchExecutionNodeViewer: React.F
                       </td>
                     </tr>
                   )}
-                  {node.processedTempTableName !== undefined && (
+                  {node.processedTempTableName && (
                     <tr>
                       <td className="table__cell--left">
                         processedTempTableName
@@ -124,7 +124,7 @@ export const RelationalClassQueryTempTableGraphFetchExecutionNodeViewer: React.F
                       </td>
                     </tr>
                   )}
-                  {node.tempTableName !== undefined && (
+                  {node.tempTableName && (
                     <tr>
                       <td className="table__cell--left">tempTableName</td>
                       <td className="table__cell--left">

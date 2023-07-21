@@ -19,7 +19,7 @@ import type { SQLResultColumn } from './SQLResultColumn.js';
 import type { TempTableStrategy } from './TempTableStrategy.js';
 
 export class RelationalTempTableGraphFetchExecutionNode extends RelationalGraphFetchExecutionNode {
-  tempTableName?: string | undefined;
+  tempTableName!: string;
   processedTempTableName?: string | undefined;
   columns: SQLResultColumn[] = [];
   tempTableStrategy?: TempTableStrategy | undefined;

@@ -67,7 +67,7 @@ export const ImplementationViewer: React.FC<{
               title={`Go to Java class: ${node.implementation.executionClassFullName}`}
               className="query-builder__implementation__container__item__java-btn"
             >
-              {`executionClassFullName: ${node.implementation.executionClassFullName}`}
+              {node.implementation.executionClassFullName}
             </button>
           </div>
         )}

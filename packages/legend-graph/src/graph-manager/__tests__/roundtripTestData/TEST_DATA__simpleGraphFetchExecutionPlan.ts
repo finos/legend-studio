@@ -91,8 +91,8 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
           _type: 'storeMappingGlobalGraphFetchExecutionNode',
           authDependent: false,
           checked: false,
+          dependencyIndices: [],
           enableConstraints: true,
-          executionNodes: [],
           graphFetchTree: {
             _type: 'rootGraphFetchTree',
             class: 'model::Firm',
@@ -146,6 +146,7 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                       authenticationStrategy: {
                         _type: 'h2Default',
                       },
+                      databaseType: 'H2',
                       datasourceSpecification: {
                         _type: 'h2Local',
                         testDataSetupSqls: [
@@ -153,11 +154,8 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                         ],
                       },
                       element: 'store::TestDB',
-                      postProcessorWithParameter: [],
-                      postProcessors: [],
                       type: 'H2',
                     },
-                    executionNodes: [],
                     resultColumns: [
                       {
                         dataType: 'INTEGER',
@@ -176,7 +174,6 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                       _type: 'dataType',
                       dataType: 'meta::pure::metamodel::type::Any',
                     },
-                    sqlComment: '-- "executionTraceID" : "${execID}"',
                     sqlQuery:
                       'select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "persontable_0".id as "pk_0", "persontable_0".firstName as "firstName" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join FirmTable as "root" on ("temp_table_node_0_0".pk_0 = "root".id) left outer join PersonTable as "persontable_0" on ("persontable_0".firm_id = "root".id) where "persontable_0".id is not null',
                   },
@@ -250,6 +247,7 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                   authenticationStrategy: {
                     _type: 'h2Default',
                   },
+                  databaseType: 'H2',
                   datasourceSpecification: {
                     _type: 'h2Local',
                     testDataSetupSqls: [
@@ -257,11 +255,8 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                     ],
                   },
                   element: 'store::TestDB',
-                  postProcessorWithParameter: [],
-                  postProcessors: [],
                   type: 'H2',
                 },
-                executionNodes: [],
                 resultColumns: [
                   {
                     dataType: 'INTEGER',
@@ -276,7 +271,6 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                   _type: 'dataType',
                   dataType: 'meta::pure::metamodel::type::Any',
                 },
-                sqlComment: '-- "executionTraceID" : "${execID}"',
                 sqlQuery:
                   'select "root".id as "pk_0", "root".legal_name as "legalName" from FirmTable as "root"',
               },
@@ -357,6 +351,7 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                       authenticationStrategy: {
                         _type: 'h2Default',
                       },
+                      databaseType: 'H2',
                       datasourceSpecification: {
                         _type: 'h2Local',
                         testDataSetupSqls: [
@@ -364,11 +359,8 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                         ],
                       },
                       element: 'store::TestDB',
-                      postProcessorWithParameter: [],
-                      postProcessors: [],
                       type: 'H2',
                     },
-                    executionNodes: [],
                     resultColumns: [],
                     resultType: {
                       _type: 'void',
@@ -393,6 +385,7 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                       authenticationStrategy: {
                         _type: 'h2Default',
                       },
+                      databaseType: 'H2',
                       datasourceSpecification: {
                         _type: 'h2Local',
                         testDataSetupSqls: [
@@ -400,11 +393,8 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                         ],
                       },
                       element: 'store::TestDB',
-                      postProcessorWithParameter: [],
-                      postProcessors: [],
                       type: 'H2',
                     },
-                    executionNodes: [],
                     resultColumns: [],
                     resultType: {
                       _type: 'void',
@@ -428,6 +418,7 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                       authenticationStrategy: {
                         _type: 'h2Default',
                       },
+                      databaseType: 'H2',
                       datasourceSpecification: {
                         _type: 'h2Local',
                         testDataSetupSqls: [
@@ -435,11 +426,8 @@ export const TEST_DATA__simpleGraphFetchExecutionPlan = {
                         ],
                       },
                       element: 'store::TestDB',
-                      postProcessorWithParameter: [],
-                      postProcessors: [],
                       type: 'H2',
                     },
-                    executionNodes: [],
                     resultColumns: [],
                     resultType: {
                       _type: 'void',

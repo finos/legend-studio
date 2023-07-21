@@ -102,7 +102,6 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
               _type: 'storeMappingGlobalGraphFetchExecutionNode',
               authDependent: false,
               dependencyIndices: [6],
-              executionNodes: [],
               graphFetchTree: {
                 _type: 'propertyGraphFetchTree',
                 parameters: [],
@@ -143,15 +142,13 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                       authenticationStrategy: {
                         _type: 'h2Default',
                       },
+                      databaseType: 'H2',
                       datasourceSpecification: {
                         _type: 'h2Local',
                       },
                       element: 'entity::store::LegalEntityDatabase',
-                      postProcessorWithParameter: [],
-                      postProcessors: [],
                       type: 'H2',
                     },
-                    executionNodes: [],
                     resultColumns: [
                       {
                         dataType: 'BIT',
@@ -178,7 +175,6 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                       _type: 'dataType',
                       dataType: 'meta::pure::metamodel::type::Any',
                     },
-                    sqlComment: '-- "executionTraceID" : "${execID}"',
                     sqlQuery:
                       'select distinct "cross_temp_table_node_0_0".clientIdentifier = "root".LEGAL_ENTITY_ID as "cross_join_op$", "root".LEGAL_ENTITY_ID as "pk_0", "root".LEGAL_ENTITY_ID as "identifier", "root".LEGAL_NAME as "legalName", "cross_temp_table_node_0_0".clientIdentifier as "parent_cross_key_0" from (select * from (${cross_temp_table_node_0}) as "root") as "cross_temp_table_node_0_0" inner join LEGAL_ENTITY_SCHEMA.LEGAL_ENTITY_TABLE as "root" on (1 = 1) where "cross_temp_table_node_0_0".clientIdentifier = "root".LEGAL_ENTITY_ID',
                   },
@@ -233,15 +229,13 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                           authenticationStrategy: {
                             _type: 'h2Default',
                           },
+                          databaseType: 'H2',
                           datasourceSpecification: {
                             _type: 'h2Local',
                           },
                           element: 'entity::store::LegalEntityDatabase',
-                          postProcessorWithParameter: [],
-                          postProcessors: [],
                           type: 'H2',
                         },
-                        executionNodes: [],
                         resultColumns: [],
                         resultType: {
                           _type: 'void',
@@ -266,15 +260,13 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                           authenticationStrategy: {
                             _type: 'h2Default',
                           },
+                          databaseType: 'H2',
                           datasourceSpecification: {
                             _type: 'h2Local',
                           },
                           element: 'entity::store::LegalEntityDatabase',
-                          postProcessorWithParameter: [],
-                          postProcessors: [],
                           type: 'H2',
                         },
-                        executionNodes: [],
                         resultColumns: [],
                         resultType: {
                           _type: 'void',
@@ -299,15 +291,13 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                           authenticationStrategy: {
                             _type: 'h2Default',
                           },
+                          databaseType: 'H2',
                           datasourceSpecification: {
                             _type: 'h2Local',
                           },
                           element: 'entity::store::LegalEntityDatabase',
-                          postProcessorWithParameter: [],
-                          postProcessors: [],
                           type: 'H2',
                         },
-                        executionNodes: [],
                         resultColumns: [],
                         resultType: {
                           _type: 'void',
@@ -459,8 +449,8 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
               },
             },
           ],
+          dependencyIndices: [],
           enableConstraints: true,
-          executionNodes: [],
           graphFetchTree: {
             _type: 'rootGraphFetchTree',
             class: 'trade::model::Trade',
@@ -539,15 +529,13 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                   authenticationStrategy: {
                     _type: 'h2Default',
                   },
+                  databaseType: 'H2',
                   datasourceSpecification: {
                     _type: 'h2Local',
                   },
                   element: 'trade::store::TradeDatabase',
-                  postProcessorWithParameter: [],
-                  postProcessors: [],
                   type: 'H2',
                 },
-                executionNodes: [],
                 resultColumns: [
                   {
                     dataType: 'VARCHAR(100)',
@@ -578,7 +566,6 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                   _type: 'dataType',
                   dataType: 'meta::pure::metamodel::type::Any',
                 },
-                sqlComment: '-- "executionTraceID" : "${execID}"',
                 sqlQuery:
                   'select "root".TICKER as "pk_0", "root".QUANTITY as "pk_1", "root".CLIENT_IDENTIFIER as "pk_2", "root".TICKER as "ticker", "root".QUANTITY as "quantity", "root".CLIENT_IDENTIFIER as "clientIdentifier" from TRADE_SCHEMA.TRADE_TABLE as "root"',
               },

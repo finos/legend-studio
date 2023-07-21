@@ -126,7 +126,7 @@ export const RelationalCrossRootQueryTempTableGraphFetchExecutionNodeViewer: Rea
                       </td>
                     </tr>
                   )}
-                  {node.tempTableName !== undefined && (
+                  {node.tempTableName && (
                     <tr>
                       <td className="table__cell--left">tempTableName</td>
                       <td className="table__cell--left">
@@ -144,7 +144,7 @@ export const RelationalCrossRootQueryTempTableGraphFetchExecutionNodeViewer: Rea
                       </td>
                     </tr>
                   )}
-                  {node.parentTempTableName !== undefined && (
+                  {node.parentTempTableName && (
                     <tr>
                       <td className="table__cell--left">parentTempTableName</td>
                       <td className="table__cell--left">
