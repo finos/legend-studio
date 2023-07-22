@@ -25,6 +25,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
+    padding: 0.5rem;
 
     &__node__container {
       display: flex;
@@ -66,13 +67,33 @@
       @include flexVCenter;
 
       height: 2.8rem;
+      width: 100%;
       border-bottom: 0.1rem solid var(--color-dark-grey-250);
+    }
+
+    &__search-action {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      width: 2.8rem;
+      height: 2.8rem;
+      color: var(--color-dark-grey-500);
+      cursor: pointer;
+
+      svg {
+        font-size: 1.2rem;
+      }
+
+      &:hover {
+        color: var(--color-light-grey-400);
+      }
     }
 
     &__breadcrumbs {
       @include flexVCenter;
 
       padding: 0 0.5rem;
+      width: calc(100% - 2.8rem);
       overflow-x: overlay;
       overflow-y: hidden;
     }
@@ -82,6 +103,7 @@
 
       height: 100%;
       color: var(--color-dark-grey-500);
+      cursor: pointer;
 
       &__icon {
         @include flexVCenter;
@@ -102,7 +124,6 @@
 
       &:hover {
         color: var(--color-light-grey-400);
-        cursor: pointer;
       }
 
       &__arrow {
@@ -114,7 +135,246 @@
 
     &__content {
       height: calc(100% - 2.8rem);
-      padding: 0.5rem;
+    }
+  }
+
+  &__search {
+    &__header {
+      @include flexCenter;
+
+      padding: 0.3rem;
+      border-bottom: 0.1rem solid var(--color-dark-grey-250);
+      height: 3.4rem;
+      position: relative;
+    }
+
+    &__input {
+      font-size: 1.3rem;
+      height: 2.8rem;
+      padding-right: 2.8rem;
+      padding-left: 0.5rem;
+      width: 100%;
+      background: var(--color-dark-grey-85);
+      border-radius: 0.2rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+
+      &__search__icon {
+        @include flexCenter;
+
+        position: absolute;
+        right: 0.3rem;
+        height: 2.8rem;
+        width: 2.8rem;
+
+        svg {
+          color: var(--color-light-shade-100);
+        }
+      }
+
+      &__clear-btn {
+        @include flexCenter;
+
+        position: absolute;
+        right: 0.3rem;
+        height: 2.8rem;
+        width: 2.8rem;
+
+        svg {
+          color: var(--color-dark-grey-400);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-grey-500);
+        }
+      }
+    }
+
+    &__results {
+      display: flex;
+      height: calc(100% - 3.4rem);
+
+      &__categories {
+        width: 15rem;
+        height: 100%;
+        border-right: 0.1rem solid var(--color-dark-grey-200);
+        padding: 0.5rem 0;
+      }
+
+      &__category {
+        @include flexVCenter;
+
+        justify-content: space-between;
+        height: 2.2rem;
+        user-select: none;
+        border-radius: 0.2rem;
+        border-left: 0.2rem solid transparent;
+        color: var(--color-dark-grey-400);
+        font-family: 'Roboto Mono', monospace;
+        font-size: 1.2rem;
+        padding: 0 0.5rem;
+        margin: 0 0.2rem;
+        cursor: pointer;
+
+        &__content {
+          @include flexVCenter;
+
+          width: 100%;
+        }
+
+        &__icon {
+          @include flexVCenter;
+        }
+
+        &__label {
+          @include flexVCenter;
+
+          font-size: 1.2rem;
+          margin: 0 0.4rem;
+        }
+
+        &__counter {
+          @include flexVCenter;
+
+          height: 1.4rem;
+          font-size: 0.9rem;
+          background: var(--color-dark-grey-280);
+          border-radius: 0.6rem;
+          font-weight: 700;
+          padding: 0 0.5rem;
+        }
+
+        &:hover {
+          background: var(--color-dark-grey-200);
+        }
+
+        &--active,
+        &--active:hover {
+          border-color: var(--color-yellow-300);
+          background: var(--color-dark-grey-85);
+          color: var(--color-dark-grey-500);
+        }
+      }
+
+      &__list {
+        width: calc(100% - 15rem);
+        overflow: overlay;
+      }
+    }
+
+    &__showcase-result {
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem;
+      background: var(--color-dark-grey-250);
+      border-left: 0.5rem solid transparent;
+
+      &__title,
+      &__description {
+        @include ellipsisTextOverflow;
+
+        height: 2.2rem;
+        line-height: 2.2rem;
+        user-select: none;
+        color: var(--color-light-grey-400);
+        cursor: pointer;
+      }
+
+      &__title {
+        font-weight: 700;
+        color: var(--color-light-grey-0);
+      }
+
+      &:hover {
+        border-left: 0.5rem solid var(--color-yellow-300);
+        background: var(--color-dark-grey-280);
+      }
+    }
+
+    &__code-result {
+      margin: 1rem;
+
+      &__header {
+        padding: 0 0.5rem;
+        display: flex;
+        height: 2.2rem;
+        width: 100%;
+        cursor: pointer;
+        border-radius: 0.5rem 0.5rem 0 0;
+        background: var(--color-dark-grey-250);
+        color: var(--color-light-grey-400);
+
+        &__icon {
+          @include flexCenter;
+
+          width: 2.2rem;
+          height: 100%;
+        }
+
+        &__title {
+          @include ellipsisTextOverflow;
+
+          height: 2.2rem;
+          line-height: 2.2rem;
+          user-select: none;
+          font-size: 1.2rem;
+        }
+
+        &:hover {
+          color: var(--color-light-grey-0);
+        }
+      }
+
+      &__content {
+        border: 0.1rem solid var(--color-dark-grey-250);
+        background: var(--color-dark-grey-85);
+        border-radius: 0 0 0.5rem 0.5rem;
+        overflow-x: overlay;
+
+        &__line {
+          display: flex;
+          height: 2.2rem;
+          cursor: pointer;
+
+          &__gutter {
+            @include flexVCenter;
+            @include flexConstantDimension;
+
+            justify-content: flex-end;
+            padding: 0 0.5rem;
+            font-size: 1.2rem;
+            width: 5rem;
+            color: var(--color-dark-grey-400);
+            font-weight: 500;
+
+            &--highlighted {
+              color: var(--color-light-grey-400);
+            }
+          }
+
+          &__text {
+            height: 2.2rem;
+            line-height: 2.2rem;
+            white-space: pre;
+            font-size: 1.2rem;
+            font-family: 'Roboto Mono', monospace;
+            color: var(--color-light-grey-400);
+            padding: 0 1rem;
+
+            &--highlighted {
+              background: var(--color-yellow-80);
+              font-size: 1.2rem;
+              font-family: 'Roboto Mono', monospace;
+              font-weight: 500;
+              border-radius: 0.2rem;
+              color: var(--color-dark-grey-280);
+            }
+          }
+
+          &:hover {
+            background: var(--color-dark-grey-50);
+          }
+        }
+      }
     }
   }
 

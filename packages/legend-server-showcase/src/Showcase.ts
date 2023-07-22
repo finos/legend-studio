@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import { SerializationFactory } from '@finos/legend-shared';
+import { SerializationFactory, uuid } from '@finos/legend-shared';
 import { createModelSchema, optional, primitive } from 'serializr';
 
 export class ShowcaseMetadata {
+  readonly uuid = uuid();
+
   title!: string;
   path!: string;
   description?: string | undefined;

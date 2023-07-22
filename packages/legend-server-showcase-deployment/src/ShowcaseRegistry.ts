@@ -16,12 +16,18 @@
 
 import { get } from 'https';
 import { readFileSync } from 'fs';
-import { Showcase, type ShowcaseMetadata } from '@finos/legend-server-showcase';
+import {
+  Showcase,
+  type ShowcaseMetadata,
+  type ShowcaseTextSearchMatch,
+  type ShowcaseTextSearchResult,
+} from '@finos/legend-server-showcase';
 import {
   ESM__FuzzySearchEngine,
   FuzzySearchEngine,
   promisify,
   type PlainObject,
+  getNonNullableEntry,
 } from '@finos/legend-shared';
 
 async function fetchExternalLinkSiteData(url: string): Promise<string> {
@@ -60,23 +66,6 @@ export type ShowcaseRegistryConfig = {
     path?: string;
   }[];
 };
-
-type TextMatch = {
-  path: string;
-  // NOTE: we don't allow doing multi-line text search
-  line: number;
-  startColumn: number;
-  endColumn: number;
-  previewStartLine: number;
-  previewText: string;
-};
-
-type TextSearchResult = {
-  showcases: string[];
-  textMatches: TextMatch[];
-};
-
-const PREVIEW_LINE_RANGE = 2;
 
 export class ShowcaseRegistry {
   // NOTE: maintain these to improve performance
@@ -174,13 +163,19 @@ export class ShowcaseRegistry {
     return this.RAW__showcaseIndex.get(path);
   }
 
-  async search(searchText: string): Promise<TextSearchResult> {
-    const textMatches: TextMatch[] = [];
+  async search(searchText: string): Promise<ShowcaseTextSearchResult> {
+    const matches: ShowcaseTextSearchMatch[] = [];
     // NOTE: for text search, we only support case-insensitive search now
     const lowerCaseSearchText = searchText.toLowerCase();
     await Promise.all(
       Array.from(this.showcasesIndex.values()).map((showcase) =>
         promisify(() => {
+          const result: ShowcaseTextSearchMatch = {
+            path: showcase.path,
+            matches: [],
+            preview: [],
+          };
+          const previewLines = new Map<number, string>();
           const code = showcase.code;
           const lines = code.split('\n');
           lines.forEach((line, lineIdx) => {
@@ -191,33 +186,42 @@ export class ShowcaseRegistry {
               fromIdx,
             );
             while (currentMatchIdx !== -1) {
-              const previewTextStartLineIdx = Math.max(
-                lineIdx - PREVIEW_LINE_RANGE,
-                0,
+              const previewTextStartLineIdx = Math.max(lineIdx - 1, 0);
+              previewLines.set(
+                previewTextStartLineIdx + 1,
+                getNonNullableEntry(lines, previewTextStartLineIdx),
+              );
+              previewLines.set(
+                lineIdx + 1,
+                getNonNullableEntry(lines, lineIdx),
               );
               const previewTextEndLineIdx = Math.min(
-                lineIdx + 1 + PREVIEW_LINE_RANGE,
+                lineIdx + 1,
                 lines.length - 1,
               );
-              const previewText = lines
-                .slice(previewTextStartLineIdx, previewTextEndLineIdx)
-                .join('\n');
-              const match: TextMatch = {
-                path: showcase.path,
+              previewLines.set(
+                previewTextEndLineIdx + 1,
+                getNonNullableEntry(lines, previewTextEndLineIdx),
+              );
+              result.matches.push({
                 line: lineIdx + 1,
                 startColumn: currentMatchIdx + 1,
                 endColumn: currentMatchIdx + 1 + lowerCaseSearchText.length,
-                previewStartLine: previewTextStartLineIdx + 1,
-                previewText,
-              };
+              });
               fromIdx = currentMatchIdx + lowerCaseSearchText.length;
               currentMatchIdx = lowerCaseLine.indexOf(
                 lowerCaseSearchText,
                 fromIdx,
               );
-              textMatches.push(match);
             }
           });
+          if (!result.matches.length) {
+            return;
+          }
+          result.preview = Array.from(previewLines.entries())
+            .map(([line, text]) => ({ line, text }))
+            .sort((a, b) => a.line - b.line);
+          matches.push(result);
         }),
       ),
     );
@@ -225,7 +229,7 @@ export class ShowcaseRegistry {
       showcases: Array.from(
         this.showcaseSearchEngine.search(searchText).values(),
       ).map((result) => result.item.path),
-      textMatches,
+      textMatches: matches,
     };
   }
 }

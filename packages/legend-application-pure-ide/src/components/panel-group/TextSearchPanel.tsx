@@ -279,7 +279,9 @@ export const TextSearchPanel = observer(() => {
       debouncedSearch();
     }
   };
-  const onSearch: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+  const onSearchKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
     if (event.code === 'Enter') {
       debouncedSearch.cancel();
       if (searchState.text) {
@@ -322,7 +324,7 @@ export const TextSearchPanel = observer(() => {
             autoFocus={true}
             className="text-search-panel__searcher__input input--dark"
             onChange={onSearchTextChange}
-            onKeyDown={onSearch}
+            onKeyDown={onSearchKeyDown}
             value={searchState.text}
             placeholder="Search"
           />
