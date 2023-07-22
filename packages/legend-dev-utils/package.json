@@ -87,7 +87,7 @@
     "postcss-loader": "7.3.3",
     "react-refresh": "0.14.0",
     "resolve": "1.22.2",
-    "sass": "1.64.0",
+    "sass": "1.64.1",
     "sass-loader": "13.3.2",
     "typescript": "5.1.6",
     "webpack": "5.88.2"
