@@ -16,6 +16,7 @@
 
 import { NetworkClient, type PlainObject } from '@finos/legend-shared';
 import { Showcase, ShowcaseMetadata } from './Showcase.js';
+import type { ShowcaseTextSearchResult } from './ShowcaseSearchResult.js';
 
 export class ShowcaseRegistryServerClient {
   private readonly networkClient: NetworkClient;
@@ -50,18 +51,14 @@ export class ShowcaseRegistryServerClient {
     );
   }
 
-  // TODO: support search
-  // search(text: string): Promise<any> {
-  //   return this.networkClient.get(
-  //     `${this.baseUrl}/projects/${this.projectId}/search`,
-  //     {
-  //     },
-  //     {},
-  //     {
-  //       scope: 'blobs',
-  //       ref: this.defaultBranch,
-  //       search: text,
-  //     },
-  //   );
-  // }
+  search(searchText: string): Promise<ShowcaseTextSearchResult> {
+    return this.networkClient.get(
+      `${this.baseUrl}/showcases/search`,
+      {},
+      {},
+      {
+        searchText: encodeURIComponent(searchText),
+      },
+    );
+  }
 }

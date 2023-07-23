@@ -28,19 +28,26 @@ import {
   FolderIcon,
   FolderOpenIcon,
   HomeIcon,
+  SearchIcon,
+  TimesIcon,
+  CodeIcon,
+  clsx,
 } from '@finos/legend-art';
 import {
+  SHOWCASE_MANAGER_SEARCH_CATEGORY,
   SHOWCASE_MANAGER_VIEW,
   ShowcaseManagerState,
+  type ShowcaseTextSearchMatchResult,
   type ShowcasesExplorerTreeNodeData,
 } from '../stores/ShowcaseManagerState.js';
-import { isNonNullable } from '@finos/legend-shared';
+import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { Showcase } from '@finos/legend-server-showcase';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 const ShowcasesExplorerTreeNodeContainer = observer(
   (
@@ -161,21 +168,361 @@ const ShowcaseManagerExplorer = observer(
               </div>
             </div>
           </div>
+          <button
+            className="showcase-manager__view__search-action"
+            tabIndex={-1}
+            title="Search"
+            onClick={() => {
+              showcaseManagerState.closeShowcase();
+              showcaseManagerState.setCurrentView(SHOWCASE_MANAGER_VIEW.SEARCH);
+            }}
+          >
+            <SearchIcon />
+          </button>
         </div>
         <div className="showcase-manager__view__content">
-          {showcaseManagerState.explorerTreeData && (
-            <TreeView
-              components={{
-                TreeNodeContainer: ShowcasesExplorerTreeNodeContainer,
+          <div className="showcase-manager__explorer">
+            {showcaseManagerState.explorerTreeData && (
+              <TreeView
+                components={{
+                  TreeNodeContainer: ShowcasesExplorerTreeNodeContainer,
+                }}
+                treeData={showcaseManagerState.explorerTreeData}
+                getChildNodes={getChildNodes}
+                innerProps={{
+                  toggleExpandNode,
+                  showcaseManagerState,
+                }}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+const renderPreviewLine = (
+  line: number,
+  text: string,
+  result: ShowcaseTextSearchMatchResult,
+): React.ReactNode => {
+  const lineMatches = result.match.matches
+    .filter((match) => match.line === line)
+    .sort((a, b) => a.startColumn - b.startColumn);
+  const chunks: React.ReactNode[] = [];
+  let currentIdx = 0;
+  lineMatches.forEach((match, idx) => {
+    if (currentIdx < match.startColumn - 1) {
+      chunks.push(text.substring(currentIdx, match.startColumn - 1));
+    }
+    chunks.push(
+      <span className="showcase-manager__search__code-result__content__line__text--highlighted">
+        {text.substring(match.startColumn - 1, match.endColumn - 1)}
+      </span>,
+    );
+    currentIdx = match.endColumn - 1;
+  });
+  if (currentIdx < text.length) {
+    chunks.push(text.substring(currentIdx, text.length));
+  }
+  return (
+    <>
+      {chunks.map((chunk, idx) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <React.Fragment key={idx}>{chunk}</React.Fragment>
+      ))}
+    </>
+  );
+};
+
+const ShowcaseManagerCodeSearchResult = observer(
+  (props: {
+    showcaseManagerState: ShowcaseManagerState;
+    result: ShowcaseTextSearchMatchResult;
+  }) => {
+    const { showcaseManagerState, result } = props;
+    const applicationStore = useApplicationStore();
+
+    return (
+      <div className="showcase-manager__search__code-result">
+        <div
+          className="showcase-manager__search__code-result__header"
+          title={`Showcase: ${result.showcase.title}\n\n${
+            result.showcase.description ?? '(no description)'
+          }\n\nClick to open showcase`}
+          onClick={() => {
+            flowResult(
+              showcaseManagerState.openShowcase(result.showcase),
+            ).catch(applicationStore.alertUnhandledError);
+          }}
+        >
+          <div className="showcase-manager__search__code-result__header__icon">
+            <GenericTextFileIcon />
+          </div>
+          <div className="showcase-manager__search__code-result__header__title">
+            {result.showcase.path}
+          </div>
+        </div>
+        <div className="showcase-manager__search__code-result__content">
+          {result.match.preview.map((entry) => (
+            <div
+              key={entry.line}
+              className="showcase-manager__search__code-result__content__line"
+              onClick={() => {
+                flowResult(
+                  showcaseManagerState.openShowcase(
+                    result.showcase,
+                    entry.line,
+                  ),
+                ).catch(applicationStore.alertUnhandledError);
               }}
-              treeData={showcaseManagerState.explorerTreeData}
-              getChildNodes={getChildNodes}
-              innerProps={{
-                toggleExpandNode,
-                showcaseManagerState,
+            >
+              <div
+                className={clsx(
+                  'showcase-manager__search__code-result__content__line__gutter',
+                  {
+                    'showcase-manager__search__code-result__content__line__gutter--highlighted':
+                      Boolean(
+                        result.match.matches.find(
+                          (match) => match.line === entry.line,
+                        ),
+                      ),
+                  },
+                )}
+              >
+                {entry.line}
+              </div>
+              <div className="showcase-manager__search__code-result__content__line__text">
+                {renderPreviewLine(entry.line, entry.text, result)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  },
+);
+
+const ShowcaseManagerSearchPanel = observer(
+  (props: { showcaseManagerState: ShowcaseManagerState }) => {
+    const { showcaseManagerState } = props;
+    const applicationStore = useApplicationStore();
+    const searchTextInpurRef = useRef<HTMLInputElement>(null);
+    const debouncedSearch = useMemo(
+      () =>
+        debounce(
+          () =>
+            flowResult(showcaseManagerState.search()).catch(
+              applicationStore.alertUnhandledError,
+            ),
+          300,
+        ),
+      [applicationStore, showcaseManagerState],
+    );
+    const clearSearchText = (): void => {
+      debouncedSearch.cancel();
+      showcaseManagerState.resetSearch();
+    };
+    const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ): void => {
+      const value = event.target.value;
+      showcaseManagerState.setSearchText(value);
+      debouncedSearch.cancel();
+      if (!value) {
+        showcaseManagerState.resetSearch();
+      } else {
+        debouncedSearch()?.catch(applicationStore.alertUnhandledError);
+      }
+    };
+    const onSearchKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      if (event.code === 'Enter') {
+        debouncedSearch.cancel();
+        if (showcaseManagerState.searchText) {
+          debouncedSearch()?.catch(applicationStore.alertUnhandledError);
+        }
+      } else if (event.code === 'Escape') {
+        searchTextInpurRef.current?.select();
+      }
+    };
+
+    useEffect(() => {
+      searchTextInpurRef.current?.select();
+      searchTextInpurRef.current?.focus();
+    }, []);
+
+    return (
+      <div className="showcase-manager__view">
+        <div className="showcase-manager__view__header">
+          <div className="showcase-manager__view__breadcrumbs">
+            <div
+              className="showcase-manager__view__breadcrumb"
+              onClick={() => {
+                showcaseManagerState.closeShowcase();
+                showcaseManagerState.setCurrentView(
+                  SHOWCASE_MANAGER_VIEW.EXPLORER,
+                );
               }}
+            >
+              <div className="showcase-manager__view__breadcrumb__icon">
+                <HomeIcon />
+              </div>
+              <div className="showcase-manager__view__breadcrumb__text">
+                Showcaces
+              </div>
+            </div>
+            <div className="showcase-manager__view__breadcrumb__arrow">
+              <ChevronRightIcon />
+            </div>
+            <div className="showcase-manager__view__breadcrumb">
+              <div className="showcase-manager__view__breadcrumb__text">
+                Search
+              </div>
+            </div>
+          </div>
+          <button
+            className="showcase-manager__view__search-action"
+            tabIndex={-1}
+            title="Search"
+            onClick={() => {
+              // since we're already on the search tab, clicking this will just focus the search input
+              searchTextInpurRef.current?.select();
+            }}
+          >
+            <SearchIcon />
+          </button>
+        </div>
+        <div className="showcase-manager__view__content">
+          <div className="showcase-manager__search__header">
+            <input
+              ref={searchTextInpurRef}
+              className="showcase-manager__search__input input--dark"
+              spellCheck={false}
+              placeholder="Search for showcase, code, etc."
+              value={showcaseManagerState.searchText}
+              onChange={onSearchTextChange}
+              onKeyDown={onSearchKeyDown}
             />
-          )}
+            {!showcaseManagerState.searchText ? (
+              <div className="showcase-manager__search__input__search__icon">
+                <SearchIcon />
+              </div>
+            ) : (
+              <button
+                className="showcase-manager__search__input__clear-btn"
+                tabIndex={-1}
+                onClick={clearSearchText}
+                title="Clear"
+              >
+                <TimesIcon />
+              </button>
+            )}
+          </div>
+          <div className="showcase-manager__search__results">
+            <div className="showcase-manager__search__results__categories">
+              <div
+                className={clsx('showcase-manager__search__results__category', {
+                  'showcase-manager__search__results__category--active':
+                    showcaseManagerState.currentSearchCaterogy ===
+                    SHOWCASE_MANAGER_SEARCH_CATEGORY.SHOWCASE,
+                })}
+                onClick={() =>
+                  showcaseManagerState.setCurrentSearchCategory(
+                    SHOWCASE_MANAGER_SEARCH_CATEGORY.SHOWCASE,
+                  )
+                }
+                title="Click to select category"
+              >
+                <div className="showcase-manager__search__results__category__content">
+                  <div className="showcase-manager__search__results__category__icon">
+                    <GenericTextFileIcon />
+                  </div>
+                  <div className="showcase-manager__search__results__category__label">
+                    Showcases
+                  </div>
+                </div>
+                <div className="showcase-manager__search__results__category__counter">
+                  {showcaseManagerState.showcaseSearchResults?.length ?? 0}
+                </div>
+              </div>
+              <div
+                className={clsx('showcase-manager__search__results__category', {
+                  'showcase-manager__search__results__category--active':
+                    showcaseManagerState.currentSearchCaterogy ===
+                    SHOWCASE_MANAGER_SEARCH_CATEGORY.CODE,
+                })}
+                onClick={() =>
+                  showcaseManagerState.setCurrentSearchCategory(
+                    SHOWCASE_MANAGER_SEARCH_CATEGORY.CODE,
+                  )
+                }
+                title="Click to select category"
+              >
+                <div className="showcase-manager__search__results__category__content">
+                  <div className="showcase-manager__search__results__category__icon">
+                    <CodeIcon />
+                  </div>
+                  <div className="showcase-manager__search__results__category__label">
+                    Code
+                  </div>
+                </div>
+                <div className="showcase-manager__search__results__category__counter">
+                  {showcaseManagerState.textSearchResults?.length ?? 0}
+                </div>
+              </div>
+            </div>
+            <div className="showcase-manager__search__results__list">
+              {showcaseManagerState.currentSearchCaterogy ===
+                SHOWCASE_MANAGER_SEARCH_CATEGORY.SHOWCASE && (
+                <>
+                  {!showcaseManagerState.showcaseSearchResults && (
+                    <BlankPanelContent>No results</BlankPanelContent>
+                  )}
+                  {showcaseManagerState.showcaseSearchResults?.map(
+                    (showcase) => (
+                      <div
+                        key={showcase.uuid}
+                        className="showcase-manager__search__showcase-result"
+                        title={`Showcase: ${showcase.title}\n\n${
+                          showcase.description ?? '(no description)'
+                        }\n\nClick to open showcase`}
+                        onClick={() => {
+                          flowResult(
+                            showcaseManagerState.openShowcase(showcase),
+                          ).catch(applicationStore.alertUnhandledError);
+                        }}
+                      >
+                        <div className="showcase-manager__search__showcase-result__title">
+                          {showcase.title}
+                        </div>
+                        <div className="showcase-manager__search__showcase-result__description">
+                          {showcase.description ?? '(no description)'}
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </>
+              )}
+              {showcaseManagerState.currentSearchCaterogy ===
+                SHOWCASE_MANAGER_SEARCH_CATEGORY.CODE && (
+                <>
+                  {!showcaseManagerState.textSearchResults && (
+                    <BlankPanelContent>No results</BlankPanelContent>
+                  )}
+                  {showcaseManagerState.textSearchResults?.map((result) => (
+                    <ShowcaseManagerCodeSearchResult
+                      key={result.showcase.uuid}
+                      showcaseManagerState={showcaseManagerState}
+                      result={result}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -222,6 +569,17 @@ const ShowcaseViewer = observer(
               </div>
             </div>
           </div>
+          <button
+            className="showcase-manager__view__search-action"
+            tabIndex={-1}
+            title="Search"
+            onClick={() => {
+              showcaseManagerState.closeShowcase();
+              showcaseManagerState.setCurrentView(SHOWCASE_MANAGER_VIEW.SEARCH);
+            }}
+          >
+            <SearchIcon />
+          </button>
         </div>
         <div className="showcase-manager__view__content showcase-manager__viewer__content">
           <div className="showcase-manager__viewer__title">
@@ -233,6 +591,7 @@ const ShowcaseViewer = observer(
               language={CODE_EDITOR_LANGUAGE.PURE}
               inputValue={showcase.code}
               isReadOnly={true}
+              lineToScroll={showcaseManagerState.showcaseLineToScroll}
             />
           </div>
         </div>
@@ -262,7 +621,11 @@ const ShowcaseManagerContent = observer(
                 showcaseManagerState={showcaseManagerState}
               />
             )}
-            {currentView === SHOWCASE_MANAGER_VIEW.SEARCH && <>TODO: Search</>}
+            {currentView === SHOWCASE_MANAGER_VIEW.SEARCH && (
+              <ShowcaseManagerSearchPanel
+                showcaseManagerState={showcaseManagerState}
+              />
+            )}
           </>
         )}
       </div>

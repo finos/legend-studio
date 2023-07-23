@@ -36,12 +36,14 @@ writeFileSync(
       port: 9003,
       datasources:
         // NOTE: if you want to test with local source, use this
-        // {
+        // [{
         //   path: './data/metadata.json',
-        // },
-        {
-          url: 'https://legend.finos.org/showcases/data.json',
-        },
+        // }],
+        [
+          {
+            url: 'https://legend.finos.org/showcases/data.json',
+          },
+        ],
     },
     undefined,
     2,

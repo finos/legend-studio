@@ -14,6 +14,21 @@
  * limitations under the License.
  */
 
-export * from './Showcase.js';
-export * from './ShowcaseSearchResult.js';
-export * from './ShowcaseRegistryServerClient.js';
+// NOTE: we don't allow doing multi-line text search
+export type ShowcaseTextSearchMatch = {
+  path: string;
+  matches: {
+    line: number;
+    startColumn: number;
+    endColumn: number;
+  }[];
+  preview: {
+    line: number;
+    text: string;
+  }[];
+};
+
+export type ShowcaseTextSearchResult = {
+  showcases: string[];
+  textMatches: ShowcaseTextSearchMatch[];
+};

@@ -20,6 +20,7 @@ import {
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../__lib__/LegendStudioEvent.js';
@@ -27,10 +28,13 @@ import {
   type Showcase,
   type ShowcaseMetadata,
   ShowcaseRegistryServerClient,
+  type ShowcaseTextSearchMatch,
+  type ShowcaseTextSearchResult,
 } from '@finos/legend-server-showcase';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import {
   ApplicationExtensionState,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
@@ -39,6 +43,11 @@ import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
 export enum SHOWCASE_MANAGER_VIEW {
   EXPLORER = 'EXPLORER',
   SEARCH = 'SEARCH',
+}
+
+export enum SHOWCASE_MANAGER_SEARCH_CATEGORY {
+  SHOWCASE = 'SHOWCASE',
+  CODE = 'CODE',
 }
 
 export class ShowcasesExplorerTreeNodeData implements TreeNodeData {
@@ -75,7 +84,7 @@ const buildShowcasesExplorerTreeNode = (
     // showcase node
     node = new ShowcasesExplorerTreeNodeData(
       `${parentId ? `${parentId}${DIRECTORY_PATH_DELIMITER}` : ''}${path}`,
-      path,
+      showcase.title,
       parentId,
       showcase,
     );
@@ -135,20 +144,32 @@ const buildShowcasesExplorerTreeData = (
   return { rootIds, nodes };
 };
 
+export type ShowcaseTextSearchMatchResult = {
+  match: ShowcaseTextSearchMatch;
+  showcase: ShowcaseMetadata;
+};
+
 export class ShowcaseManagerState extends ApplicationExtensionState {
   private static readonly IDENTIFIER = 'showcase-manager';
 
   readonly applicationStore: LegendStudioApplicationStore;
   readonly initState = ActionState.create();
   readonly fetchShowcaseState = ActionState.create();
+  readonly textSearchState = ActionState.create();
 
   private readonly showcaseServerClient?: ShowcaseRegistryServerClient;
 
   showcases: ShowcaseMetadata[] = [];
   currentShowcase?: Showcase | undefined;
+  showcaseLineToScroll?: number | undefined;
 
   currentView = SHOWCASE_MANAGER_VIEW.EXPLORER;
   explorerTreeData?: TreeData<ShowcasesExplorerTreeNodeData> | undefined;
+
+  searchText = '';
+  showcaseSearchResults?: ShowcaseMetadata[] | undefined;
+  textSearchResults?: ShowcaseTextSearchMatchResult[] | undefined;
+  currentSearchCaterogy = SHOWCASE_MANAGER_SEARCH_CATEGORY.SHOWCASE;
 
   constructor(applicationStore: LegendStudioApplicationStore) {
     super();
@@ -158,11 +179,20 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
       currentShowcase: observable,
       currentView: observable,
       explorerTreeData: observable.ref,
-      initialize: flow,
+      searchText: observable,
+      textSearchResults: observable.ref,
+      showcaseSearchResults: observable.ref,
+      currentSearchCaterogy: observable,
+      showcaseLineToScroll: observable,
       setCurrentView: action,
       closeShowcase: action,
-      openShowcase: flow,
       setExplorerTreeData: action,
+      setSearchText: action,
+      resetSearch: action,
+      setCurrentSearchCategory: action,
+      search: flow,
+      initialize: flow,
+      openShowcase: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -225,14 +255,17 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     this.currentView = val;
   }
 
-  *openShowcase(metadata: ShowcaseMetadata): GeneratorFn<void> {
+  *openShowcase(
+    metadata: ShowcaseMetadata,
+    showcaseLineToScroll?: number | undefined,
+  ): GeneratorFn<void> {
     this.fetchShowcaseState.inProgress();
 
     try {
       this.currentShowcase = (yield this.client.getShowcase(
         metadata.path,
       )) as Showcase;
-
+      this.showcaseLineToScroll = showcaseLineToScroll;
       this.fetchShowcaseState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -246,10 +279,25 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
 
   closeShowcase(): void {
     this.currentShowcase = undefined;
+    this.showcaseLineToScroll = undefined;
   }
 
   setExplorerTreeData(val: TreeData<ShowcasesExplorerTreeNodeData>): void {
     this.explorerTreeData = val;
+  }
+
+  setSearchText(val: string): void {
+    this.searchText = val;
+  }
+
+  resetSearch(): void {
+    this.searchText = '';
+    this.textSearchResults = undefined;
+    this.showcaseSearchResults = undefined;
+  }
+
+  setCurrentSearchCategory(val: SHOWCASE_MANAGER_SEARCH_CATEGORY): void {
+    this.currentSearchCaterogy = val;
   }
 
   *initialize(): GeneratorFn<void> {
@@ -259,8 +307,16 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     this.initState.inProgress();
 
     try {
-      this.showcases = (yield this.client.getShowcases()) as Showcase[];
+      this.showcases = (yield this.client.getShowcases()) as ShowcaseMetadata[];
       this.explorerTreeData = buildShowcasesExplorerTreeData(this.showcases);
+      // expand all the root nodes by default
+      this.explorerTreeData.rootIds.forEach((rootId) => {
+        const rootNode = this.explorerTreeData?.nodes.get(rootId);
+        if (rootNode) {
+          rootNode.isOpen = true;
+        }
+      });
+      this.setExplorerTreeData({ ...this.explorerTreeData });
 
       this.initState.pass();
     } catch (error) {
@@ -270,6 +326,49 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
         error,
       );
       this.initState.fail();
+    }
+  }
+
+  *search(): GeneratorFn<void> {
+    if (
+      this.textSearchState.isInProgress ||
+      this.searchText.length <= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
+    ) {
+      return;
+    }
+    this.textSearchState.inProgress();
+
+    try {
+      const result = (yield this.client.search(
+        this.searchText,
+      )) as ShowcaseTextSearchResult;
+      this.textSearchResults = result.textMatches
+        .map((match) => {
+          const matchingShowcase = this.showcases.find(
+            (showcase) => showcase.path === match.path,
+          );
+          if (matchingShowcase) {
+            return {
+              showcase: matchingShowcase,
+              match,
+            };
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      this.showcaseSearchResults = result.showcases
+        .map((showcasePath) =>
+          this.showcases.find((showcase) => showcase.path === showcasePath),
+        )
+        .filter(isNonNullable);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_FAILURE),
+        error,
+      );
+    } finally {
+      this.textSearchState.complete();
     }
   }
 }

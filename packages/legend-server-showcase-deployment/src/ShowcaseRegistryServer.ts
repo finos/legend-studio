@@ -26,6 +26,12 @@ interface GetShowcaseRequest extends RequestGenericInterface {
   };
 }
 
+interface TextSearchRequest extends RequestGenericInterface {
+  Querystring: {
+    searchText: string;
+  };
+}
+
 export const configureShowcaseRegistryServer = async (
   server: FastifyInstance,
   config: ShowcaseRegistryConfig & {
@@ -53,7 +59,12 @@ export const configureShowcaseRegistryServer = async (
     },
   );
 
-  server.get(`${baseUrl}/showcase/search`, async (request, reply) => {
-    // do nothing
-  });
+  server.get<TextSearchRequest>(
+    `${baseUrl}/showcases/search`,
+    async (request, reply) => {
+      const { searchText } = request.query;
+
+      await reply.send(await registry.search(searchText));
+    },
+  );
 };
