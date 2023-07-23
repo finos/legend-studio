@@ -271,7 +271,10 @@ const ShowcaseManagerCodeSearchResult = observer(
               className="showcase-manager__search__code-result__content__line"
               onClick={() => {
                 flowResult(
-                  showcaseManagerState.openShowcase(result.showcase),
+                  showcaseManagerState.openShowcase(
+                    result.showcase,
+                    entry.line,
+                  ),
                 ).catch(applicationStore.alertUnhandledError);
               }}
             >
@@ -330,7 +333,7 @@ const ShowcaseManagerSearchPanel = observer(
       if (!value) {
         showcaseManagerState.resetSearch();
       } else {
-        debouncedSearch();
+        debouncedSearch()?.catch(applicationStore.alertUnhandledError);
       }
     };
     const onSearchKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (
@@ -339,7 +342,7 @@ const ShowcaseManagerSearchPanel = observer(
       if (event.code === 'Enter') {
         debouncedSearch.cancel();
         if (showcaseManagerState.searchText) {
-          debouncedSearch();
+          debouncedSearch()?.catch(applicationStore.alertUnhandledError);
         }
       } else if (event.code === 'Escape') {
         searchTextInpurRef.current?.select();
@@ -478,30 +481,29 @@ const ShowcaseManagerSearchPanel = observer(
                   {!showcaseManagerState.showcaseSearchResults && (
                     <BlankPanelContent>No results</BlankPanelContent>
                   )}
-                  {showcaseManagerState.showcaseSearchResults &&
-                    showcaseManagerState.showcaseSearchResults.map(
-                      (showcase) => (
-                        <div
-                          key={showcase.uuid}
-                          className="showcase-manager__search__showcase-result"
-                          title={`Showcase: ${showcase.title}\n\n${
-                            showcase.description ?? '(no description)'
-                          }\n\nClick to open showcase`}
-                          onClick={() => {
-                            flowResult(
-                              showcaseManagerState.openShowcase(showcase),
-                            ).catch(applicationStore.alertUnhandledError);
-                          }}
-                        >
-                          <div className="showcase-manager__search__showcase-result__title">
-                            {showcase.title}
-                          </div>
-                          <div className="showcase-manager__search__showcase-result__description">
-                            {showcase.description ?? '(no description)'}
-                          </div>
+                  {showcaseManagerState.showcaseSearchResults?.map(
+                    (showcase) => (
+                      <div
+                        key={showcase.uuid}
+                        className="showcase-manager__search__showcase-result"
+                        title={`Showcase: ${showcase.title}\n\n${
+                          showcase.description ?? '(no description)'
+                        }\n\nClick to open showcase`}
+                        onClick={() => {
+                          flowResult(
+                            showcaseManagerState.openShowcase(showcase),
+                          ).catch(applicationStore.alertUnhandledError);
+                        }}
+                      >
+                        <div className="showcase-manager__search__showcase-result__title">
+                          {showcase.title}
                         </div>
-                      ),
-                    )}
+                        <div className="showcase-manager__search__showcase-result__description">
+                          {showcase.description ?? '(no description)'}
+                        </div>
+                      </div>
+                    ),
+                  )}
                 </>
               )}
               {showcaseManagerState.currentSearchCaterogy ===
@@ -510,14 +512,13 @@ const ShowcaseManagerSearchPanel = observer(
                   {!showcaseManagerState.textSearchResults && (
                     <BlankPanelContent>No results</BlankPanelContent>
                   )}
-                  {showcaseManagerState.textSearchResults &&
-                    showcaseManagerState.textSearchResults.map((result) => (
-                      <ShowcaseManagerCodeSearchResult
-                        key={result.showcase.uuid}
-                        showcaseManagerState={showcaseManagerState}
-                        result={result}
-                      />
-                    ))}
+                  {showcaseManagerState.textSearchResults?.map((result) => (
+                    <ShowcaseManagerCodeSearchResult
+                      key={result.showcase.uuid}
+                      showcaseManagerState={showcaseManagerState}
+                      result={result}
+                    />
+                  ))}
                 </>
               )}
             </div>
@@ -590,6 +591,7 @@ const ShowcaseViewer = observer(
               language={CODE_EDITOR_LANGUAGE.PURE}
               inputValue={showcase.code}
               isReadOnly={true}
+              lineToScroll={showcaseManagerState.showcaseLineToScroll}
             />
           </div>
         </div>

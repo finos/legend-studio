@@ -161,6 +161,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
 
   showcases: ShowcaseMetadata[] = [];
   currentShowcase?: Showcase | undefined;
+  showcaseLineToScroll?: number | undefined;
 
   currentView = SHOWCASE_MANAGER_VIEW.EXPLORER;
   explorerTreeData?: TreeData<ShowcasesExplorerTreeNodeData> | undefined;
@@ -182,6 +183,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
       textSearchResults: observable.ref,
       showcaseSearchResults: observable.ref,
       currentSearchCaterogy: observable,
+      showcaseLineToScroll: observable,
       setCurrentView: action,
       closeShowcase: action,
       setExplorerTreeData: action,
@@ -253,13 +255,17 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     this.currentView = val;
   }
 
-  *openShowcase(metadata: ShowcaseMetadata): GeneratorFn<void> {
+  *openShowcase(
+    metadata: ShowcaseMetadata,
+    showcaseLineToScroll?: number | undefined,
+  ): GeneratorFn<void> {
     this.fetchShowcaseState.inProgress();
 
     try {
       this.currentShowcase = (yield this.client.getShowcase(
         metadata.path,
       )) as Showcase;
+      this.showcaseLineToScroll = showcaseLineToScroll;
       this.fetchShowcaseState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -273,6 +279,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
 
   closeShowcase(): void {
     this.currentShowcase = undefined;
+    this.showcaseLineToScroll = undefined;
   }
 
   setExplorerTreeData(val: TreeData<ShowcasesExplorerTreeNodeData>): void {

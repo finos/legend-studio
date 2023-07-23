@@ -40,10 +40,11 @@ export const CodeEditor: React.FC<{
   hideGutter?: boolean | undefined;
   hidePadding?: boolean | undefined;
   hideActionBar?: boolean | undefined;
+  updateInput?: ((val: string) => void) | undefined;
+  lineToScroll?: number | undefined;
   extraEditorOptions?:
     | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
     | undefined;
-  updateInput?: ((val: string) => void) | undefined;
 }> = (props) => {
   const {
     inputValue,
@@ -55,6 +56,7 @@ export const CodeEditor: React.FC<{
     hideGutter,
     hidePadding,
     hideActionBar,
+    lineToScroll,
     extraEditorOptions,
   } = props;
   const applicationStore = useApplicationStore();
@@ -115,6 +117,12 @@ export const CodeEditor: React.FC<{
       }
     }
   }, [editor, language]);
+
+  useEffect(() => {
+    if (editor && lineToScroll !== undefined) {
+      editor.revealLineInCenter(lineToScroll);
+    }
+  }, [editor, lineToScroll]);
 
   if (editor) {
     // dispose the old editor content setter in case the `updateInput` handler changes
