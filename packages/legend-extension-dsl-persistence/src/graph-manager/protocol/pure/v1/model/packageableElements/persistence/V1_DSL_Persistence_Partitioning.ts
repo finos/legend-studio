@@ -17,6 +17,7 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import type { V1_EmptyDatasetHandling } from './V1_DSL_Persistence_EmptyDatasetHandling.js';
+import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 
 export abstract class V1_Partitioning implements Hashable {
   abstract get hashCode(): string;
@@ -36,8 +37,13 @@ export class V1_NoPartitioning extends V1_Partitioning {
 export abstract class V1_FieldBased extends V1_Partitioning {}
 
 export class V1_FieldBasedForGraphFetch extends V1_FieldBased {
+  partitionFieldPaths!: object[];
+
   override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.FIELD_BASED_FOR_GRAPH_FETCH]);
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.FIELD_BASED_FOR_GRAPH_FETCH,
+      hashObjectWithoutSourceInformation(this.partitionFieldPaths),
+    ]);
   }
 }
 

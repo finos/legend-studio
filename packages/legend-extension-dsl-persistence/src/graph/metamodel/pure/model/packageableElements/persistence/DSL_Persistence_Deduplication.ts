@@ -16,6 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
+import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 
 export abstract class Deduplication implements Hashable {
   abstract get hashCode(): string;
@@ -36,8 +37,12 @@ export class AnyVersion extends Deduplication {
 export abstract class MaxVersion extends Deduplication {}
 
 export class MaxVersionForGraphFetch extends MaxVersion {
+  versionFieldPath!: object;
   override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.MAX_VERSION_FOR_GRAPH_FETCH]);
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.MAX_VERSION_FOR_GRAPH_FETCH,
+      hashObjectWithoutSourceInformation(this.versionFieldPath),
+    ]);
   }
 }
 

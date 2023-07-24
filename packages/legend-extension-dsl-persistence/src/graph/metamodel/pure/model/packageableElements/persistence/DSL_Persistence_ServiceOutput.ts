@@ -18,6 +18,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
 import type { DatasetType } from './DSL_Persistence_DatasetType.js';
 import type { Deduplication } from './DSL_Persistence_Deduplication.js';
+import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 
 export abstract class ServiceOutput implements Hashable {
   deduplication!: Deduplication;
@@ -27,11 +28,15 @@ export abstract class ServiceOutput implements Hashable {
 }
 
 export class GraphFetchServiceOutput extends ServiceOutput {
+  keys!: object[];
+  path!: object;
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.GRAPH_FETCH_SERVICE_OUTPUT,
       this.deduplication,
       this.datasetType,
+      hashObjectWithoutSourceInformation(this.keys),
+      hashObjectWithoutSourceInformation(this.path),
     ]);
   }
 }

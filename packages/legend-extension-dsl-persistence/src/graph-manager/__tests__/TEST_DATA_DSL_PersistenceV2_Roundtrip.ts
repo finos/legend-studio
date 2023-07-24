@@ -851,3 +851,756 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
     classifierPath: 'meta::pure::persistence::metamodel::Persistence',
   },
 ];
+
+export const TEST_DATA__roundtrip_graph_fetch_basic = [
+  {
+    path: 'test::model::Firm',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      package: 'test::model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+          },
+          name: 'employees',
+          type: 'test::model::Person',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'legalName',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::model::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'test::model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firstName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'lastName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'isDeleted',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::store::S_Firm',
+    content: {
+      _type: 'class',
+      name: 'S_Firm',
+      package: 'test::store',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+          },
+          name: 'employees',
+          type: 'test::store::S_Person',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'legalName',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::store::S_Person',
+    content: {
+      _type: 'class',
+      name: 'S_Person',
+      package: 'test::store',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firstName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'lastName',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::myDatabase',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [],
+      name: 'myDatabase',
+      package: 'test',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'NAME',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+                {
+                  name: 'startTime',
+                  nullable: true,
+                  type: {
+                    _type: 'Timestamp',
+                  },
+                },
+                {
+                  name: 'endTime',
+                  nullable: true,
+                  type: {
+                    _type: 'Timestamp',
+                  },
+                },
+                {
+                  name: 'batchIdIn',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'batchIdOut',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+              ],
+              name: 'bitempPersonTable',
+              primaryKey: ['ID'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'test::mapping::FirmMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'pureInstance',
+          class: 'test::model::Firm',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::model::Firm',
+                property: 'legalName',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'legalName',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::model::Firm',
+                property: 'employees',
+              },
+              source: '',
+              target: 'test_model_Person',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'employees',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: true,
+          srcClass: 'test::store::S_Firm',
+        },
+        {
+          _type: 'pureInstance',
+          class: 'test::model::Person',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::model::Person',
+                property: 'firstName',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'firstName',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'test::model::Person',
+                property: 'lastName',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                    ],
+                    property: 'lastName',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: true,
+          srcClass: 'test::store::S_Person',
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'FirmMapping',
+      package: 'test::mapping',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'test::service::FirmService',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'serialize',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'graphFetch',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'filter',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'getAll',
+                          parameters: [
+                            {
+                              _type: 'packageableElementPtr',
+                              fullPath: 'test::model::Firm',
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'lambda',
+                          body: [
+                            {
+                              _type: 'func',
+                              function: 'equal',
+                              parameters: [
+                                {
+                                  _type: 'property',
+                                  parameters: [
+                                    {
+                                      _type: 'var',
+                                      name: 'f',
+                                    },
+                                  ],
+                                  property: 'legalName',
+                                },
+                                {
+                                  _type: 'var',
+                                  name: 'name',
+                                },
+                              ],
+                            },
+                          ],
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'f',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'classInstance',
+                      type: 'rootGraphFetchTree',
+                      value: {
+                        _type: 'rootGraphFetchTree',
+                        class: 'test::model::Firm',
+                        subTrees: [
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'employees',
+                            subTrees: [
+                              {
+                                _type: 'propertyGraphFetchTree',
+                                parameters: [],
+                                property: 'firstName',
+                                subTrees: [],
+                                subTypeTrees: [],
+                              },
+                              {
+                                _type: 'propertyGraphFetchTree',
+                                parameters: [],
+                                property: 'lastName',
+                                subTrees: [],
+                                subTypeTrees: [],
+                              },
+                            ],
+                            subTypeTrees: [],
+                          },
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'legalName',
+                            subTrees: [],
+                            subTypeTrees: [],
+                          },
+                        ],
+                        subTypeTrees: [],
+                      },
+                    },
+                  ],
+                },
+                {
+                  _type: 'classInstance',
+                  type: 'rootGraphFetchTree',
+                  value: {
+                    _type: 'rootGraphFetchTree',
+                    class: 'test::model::Firm',
+                    subTrees: [
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'employees',
+                        subTrees: [
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'firstName',
+                            subTrees: [],
+                            subTypeTrees: [],
+                          },
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'lastName',
+                            subTrees: [],
+                            subTypeTrees: [],
+                          },
+                        ],
+                        subTypeTrees: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'legalName',
+                        subTrees: [],
+                        subTypeTrees: [],
+                      },
+                    ],
+                    subTypeTrees: [],
+                  },
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              class: 'String',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              name: 'name',
+            },
+          ],
+        },
+        mapping: 'test::mapping::FirmMapping',
+        runtime: {
+          _type: 'runtimePointer',
+          runtime: 'test::runtime::SFirmRuntime',
+        },
+      },
+      name: 'FirmService',
+      owners: ['owner1', 'owner2'],
+      package: 'test::service',
+      pattern: '/testFirmService',
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
+  },
+  {
+    path: 'test::runtime::SFirmRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'SFirmRuntime',
+      package: 'test::runtime',
+      runtimeValue: {
+        _type: 'engineRuntime',
+        connections: [
+          {
+            store: {
+              path: 'ModelStore',
+              type: 'STORE',
+            },
+            storeConnections: [
+              {
+                connection: {
+                  _type: 'connectionPointer',
+                  connection: 'test::runtime::SFirmConnection',
+                },
+                id: 'connection1',
+              },
+            ],
+          },
+        ],
+        mappings: [
+          {
+            path: 'test::mapping::FirmMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: 'test::runtime::SFirmAndSPersonRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'SFirmAndSPersonRuntime',
+      package: 'test::runtime',
+      runtimeValue: {
+        _type: 'engineRuntime',
+        connections: [
+          {
+            store: {
+              path: 'ModelStore',
+              type: 'STORE',
+            },
+            storeConnections: [
+              {
+                connection: {
+                  _type: 'connectionPointer',
+                  connection: 'test::runtime::SFirmConnection',
+                },
+                id: 'connection1',
+              },
+              {
+                connection: {
+                  _type: 'connectionPointer',
+                  connection: 'test::runtime::SPersonConnection',
+                },
+                id: 'connection2',
+              },
+            ],
+          },
+        ],
+        mappings: [
+          {
+            path: 'test::mapping::FirmMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: 'test::runtime::SFirmConnection',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'JsonModelConnection',
+        class: 'test::store::S_Firm',
+        element: 'ModelStore',
+        url: 'executor:default',
+      },
+      name: 'SFirmConnection',
+      package: 'test::runtime',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
+    path: 'test::runtime::SPersonConnection',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'JsonModelConnection',
+        class: 'test::store::S_Person',
+        element: 'ModelStore',
+        url: 'executor:default',
+      },
+      name: 'SPersonConnection',
+      package: 'test::runtime',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
+    path: 'test::TestPersistence',
+    content: {
+      _type: 'persistence',
+      documentation: 'This is test documentation.',
+      name: 'TestPersistence',
+      notifier: {},
+      package: 'test',
+      service: 'test::service::FirmService',
+      serviceOutputTargets: [
+        {
+          persistenceTarget: {
+            _type: 'relationalPersistenceTarget',
+            database: 'test::myDatabase',
+            table: 'bitempPersonTable',
+            temporality: {
+              _type: 'bitemporalTemporality',
+              processingDimension: {
+                _type: 'batchId',
+                batchIdIn: 'batchIdIn',
+                batchIdOut: 'batchIdOut',
+              },
+              sourceDerivedDimension: {
+                _type: 'sourceDerivedTime',
+                sourceTimeFields: {
+                  _type: 'sourceTimeStartAndEnd',
+                  endField: 'timeThru',
+                  startField: 'timeFrom',
+                },
+                timeEnd: 'endTime',
+                timeStart: 'startTime',
+              },
+            },
+          },
+          serviceOutput: {
+            _type: 'graphFetchServiceOutput',
+            datasetType: {
+              _type: 'delta',
+              actionIndicator: {
+                _type: 'deleteIndicatorForGraphFetch',
+                deleteFieldPath: {
+                  path: [
+                    {
+                      _type: 'propertyPath',
+                      parameters: [],
+                      property: 'employees',
+                      sourceInformation: {
+                        endColumn: 91,
+                        endLine: 19,
+                        sourceId: '',
+                        startColumn: 82,
+                        startLine: 19,
+                      },
+                    },
+                    {
+                      _type: 'propertyPath',
+                      parameters: [],
+                      property: 'isDeleted',
+                      sourceInformation: {
+                        endColumn: 101,
+                        endLine: 19,
+                        sourceId: '',
+                        startColumn: 92,
+                        startLine: 19,
+                      },
+                    },
+                  ],
+                  sourceInformation: {
+                    endColumn: 106,
+                    endLine: 19,
+                    sourceId: '',
+                    startColumn: 64,
+                    startLine: 19,
+                  },
+                  startType: 'test::model::Firm',
+                },
+                deleteValues: ['Yes', 'true', '1'],
+              },
+            },
+            deduplication: {
+              _type: 'noDeduplication',
+            },
+            keys: [
+              {
+                path: [
+                  {
+                    _type: 'propertyPath',
+                    parameters: [],
+                    property: 'employees',
+                    sourceInformation: {
+                      endColumn: 75,
+                      endLine: 13,
+                      sourceId: '',
+                      startColumn: 66,
+                      startLine: 13,
+                    },
+                  },
+                  {
+                    _type: 'propertyPath',
+                    parameters: [],
+                    property: 'lastName',
+                    sourceInformation: {
+                      endColumn: 84,
+                      endLine: 13,
+                      sourceId: '',
+                      startColumn: 76,
+                      startLine: 13,
+                    },
+                  },
+                ],
+                sourceInformation: {
+                  endColumn: 89,
+                  endLine: 13,
+                  sourceId: '',
+                  startColumn: 48,
+                  startLine: 13,
+                },
+                startType: 'test::model::Firm',
+              },
+            ],
+            path: {
+              path: [
+                {
+                  _type: 'propertyPath',
+                  parameters: [],
+                  property: 'employees',
+                  sourceInformation: {
+                    endColumn: 62,
+                    endLine: 9,
+                    sourceId: '',
+                    startColumn: 53,
+                    startLine: 9,
+                  },
+                },
+              ],
+              sourceInformation: {
+                endColumn: 67,
+                endLine: 9,
+                sourceId: '',
+                startColumn: 35,
+                startLine: 9,
+              },
+              startType: 'test::model::Firm',
+            },
+          },
+        },
+      ],
+      trigger: {
+        _type: 'manualTrigger',
+      },
+    },
+    classifierPath: 'meta::pure::persistence::metamodel::Persistence',
+  },
+];

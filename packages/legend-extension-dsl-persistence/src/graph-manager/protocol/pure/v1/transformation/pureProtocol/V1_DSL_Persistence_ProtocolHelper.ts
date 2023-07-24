@@ -113,6 +113,7 @@ import {
   primitive,
   serialize,
   SKIP,
+  raw,
 } from 'serializr';
 import { V1_PersistenceTest } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
 import { V1_PersistenceTestBatch } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestBatch.js';
@@ -1709,15 +1710,15 @@ export const V1_fieldBasedForGraphFetchModelSchema = (
     _type: usingConstantValueSchema(
       V1_PartitioningType.FIELD_BASED_FOR_GRAPH_FETCH,
     ),
+    partitionFieldPaths: raw(),
   });
 
 export const V1_fieldBasedForTdsModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_FieldBasedForGraphFetch> =>
-  createModelSchema(V1_FieldBasedForGraphFetch, {
-    _type: usingConstantValueSchema(
-      V1_PartitioningType.FIELD_BASED_FOR_GRAPH_FETCH,
-    ),
+): ModelSchema<V1_FieldBasedForTds> =>
+  createModelSchema(V1_FieldBasedForTds, {
+    _type: usingConstantValueSchema(V1_PartitioningType.FIELD_BASED_FOR_TDS),
+    partitionFields: list(primitive()),
   });
 
 export const V1_noPartitioningModelSchema = (
@@ -1786,6 +1787,7 @@ export const V1_deleteIndicatorForGraphFetchModelSchema = (
     _type: usingConstantValueSchema(
       V1_ActionIndicatorType.DELETE_INDICATOR_FOR_GRAPH_FETCH,
     ),
+    deleteFieldPath: raw(),
     deleteValues: list(primitive()),
   });
 
@@ -1949,6 +1951,7 @@ export const V1_maxVersionForGraphFetchModelSchema = (
     _type: usingConstantValueSchema(
       V1_DeduplicationType.MAX_VERSION_FOR_GRAPH_FETCH,
     ),
+    versionFieldPath: raw(),
   });
 
 export const V1_maxVersionForTdsModelSchema = (
@@ -2030,6 +2033,8 @@ export const V1_graphFetchServiceOutputModelSchema = (
       (val) => V1_serializeDeduplication(val, plugins),
       (val) => V1_deserializeDeduplication(val, plugins),
     ),
+    keys: list(raw()),
+    path: raw(),
   });
 
 export const V1_tdsServiceOutputModelSchema = (
