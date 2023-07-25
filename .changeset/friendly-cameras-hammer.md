@@ -2,4 +2,4 @@
 '@finos/legend-graph': patch
 ---
 
-update origin in pmcd to contain sdlc info for full interactive services
+Fix a problem with full-interactive service registration not working in bulk-mode.
