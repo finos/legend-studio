@@ -26,7 +26,7 @@ import {
 } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
-import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import { QueryBuilderState } from '../stores/QueryBuilderState.js';
 
 export const QueryChat = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -56,7 +56,7 @@ export const QueryChat = observer(
                   Chat Mode is not available
                 </BlankPanelContent>
               ) : (
-                extraQueryChatConfigurations[0]
+                extraQueryChatConfigurations[0]?.(queryBuilderState)
               )}
             </>
           </ModalBody>
