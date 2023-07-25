@@ -3142,6 +3142,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               service.path,
             ),
           ];
+          pmcd.origin = new V1_PureModelContextPointer(protocol, sdlcInfo);
           inputs.push({ service: service, context: pmcd });
         });
         break;
