@@ -1970,7 +1970,7 @@ export const V1_serializeDeduplication = (
   } else if (protocol instanceof V1_AnyVersion) {
     return serialize(V1_anyVersionModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_MaxVersion) {
-    return serialize(V1_maxVersionForGraphFetchModelSchema(plugins), protocol);
+    return V1_serializeMaxVersionDeduplication(protocol, plugins);
   }
   throw new UnsupportedOperationError(
     `Can't serialize Deduplication`,
