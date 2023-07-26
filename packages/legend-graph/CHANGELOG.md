@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.0.3
+
+### Patch Changes
+
+- [#2453](https://github.com/finos/legend-studio/pull/2453) [`eda5de1df`](https://github.com/finos/legend-studio/commit/eda5de1dfb302e27deedde0b97bb0c549d13d909) ([@janeenyamak1](https://github.com/janeenyamak1)) - Fix a problem with full-interactive service registration not working in bulk-mode.
+
 ## 31.0.2
 
 ## 31.0.1

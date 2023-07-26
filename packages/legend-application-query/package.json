@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-query",
-  "version": "13.0.40",
+  "version": "13.0.41",
   "description": "Legend Query application core",
   "keywords": [
     "legend",
@@ -52,7 +52,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@testing-library/react": "14.0.0",
-    "@types/react": "18.2.15",
+    "@types/react": "18.2.16",
     "@types/react-dom": "18.2.7",
     "mobx": "6.10.0",
     "mobx-react-lite": "3.4.3",

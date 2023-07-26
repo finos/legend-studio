@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-data-space",
-  "version": "10.0.51",
+  "version": "10.0.52",
   "description": "Legend extension for Data Space DSL",
   "keywords": [
     "legend",
@@ -55,7 +55,7 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@types/react": "18.2.15",
+    "@types/react": "18.2.16",
     "mobx": "6.10.0",
     "mobx-react-lite": "3.4.3",
     "react": "18.2.0",
