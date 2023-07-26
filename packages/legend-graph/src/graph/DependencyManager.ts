@@ -37,7 +37,7 @@ import type { FileGenerationSpecification } from '../graph/metamodel/pure/packag
 import type { GenerationSpecification } from '../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import type { Measure } from '../graph/metamodel/pure/packageableElements/domain/Measure.js';
 import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
-import { type EntitiesWithOrigin } from '@finos/legend-storage';
+import { type EntitiesWithOrigin, GAV_DELIMITER } from '@finos/legend-storage';
 import type { Database } from './metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { DataElement } from './metamodel/pure/packageableElements/data/DataElement.js';
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
@@ -58,7 +58,7 @@ export const extractDependencyGACoordinateFromRootPackageName = (
   return packageName.substring(DEPENDENCY_ROOT_PACKAGE_PREFIX.length);
 };
 
-class DependencyModel extends BasicModel {
+export class DependencyModel extends BasicModel {
   constructor(
     extensionElementClasses: Clazz<PackageableElement>[],
     root: Package,
@@ -325,5 +325,14 @@ export class DependencyManager {
       Boolean(dep.getOwnNullableElement(path, includePackage)),
     );
     return model?.getOwnNullableElement(path, includePackage);
+  }
+
+  getElementOrigin(element: PackageableElement): string | undefined {
+    const model = this.dependencyGraphs.find((dep) =>
+      Boolean(dep.getOwnNullableElement(element.path)),
+    );
+    return model?.origin instanceof LegendSDLC
+      ? `${model.origin.groupId}${GAV_DELIMITER}${model.origin.artifactId}`
+      : undefined;
   }
 }
