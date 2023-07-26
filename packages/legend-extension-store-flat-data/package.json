@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-store-flat-data",
-  "version": "0.0.123",
+  "version": "0.0.124",
   "description": "Legend extension for Flat-data store",
   "keywords": [
     "legend",
@@ -49,7 +49,7 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@types/react": "18.2.15",
+    "@types/react": "18.2.16",
     "mobx": "6.10.0",
     "mobx-react-lite": "3.4.3",
     "react": "18.2.0",
