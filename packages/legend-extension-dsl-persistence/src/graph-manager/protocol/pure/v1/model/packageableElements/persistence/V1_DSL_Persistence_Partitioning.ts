@@ -37,6 +37,11 @@ export class V1_NoPartitioning extends V1_Partitioning {
 export abstract class V1_FieldBased extends V1_Partitioning {}
 
 export class V1_FieldBasedForGraphFetch extends V1_FieldBased {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   partitionFieldPaths!: object[];
 
   override get hashCode(): string {

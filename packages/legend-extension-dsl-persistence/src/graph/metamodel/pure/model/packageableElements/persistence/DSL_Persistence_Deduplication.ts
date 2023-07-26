@@ -37,7 +37,13 @@ export class AnyVersion extends Deduplication {
 export abstract class MaxVersion extends Deduplication {}
 
 export class MaxVersionForGraphFetch extends MaxVersion {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   versionFieldPath!: object;
+
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.MAX_VERSION_FOR_GRAPH_FETCH,

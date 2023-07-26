@@ -33,7 +33,13 @@ export abstract class DeleteIndicator extends ActionIndicatorFields {
 }
 
 export class DeleteIndicatorForGraphFetch extends DeleteIndicator {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   deleteFieldPath!: object;
+
   get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DELETE_INDICATOR_FOR_GRAPH_FETCH,

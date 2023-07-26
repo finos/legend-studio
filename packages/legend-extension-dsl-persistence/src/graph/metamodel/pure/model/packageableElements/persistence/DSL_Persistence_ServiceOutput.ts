@@ -28,8 +28,19 @@ export abstract class ServiceOutput implements Hashable {
 }
 
 export class GraphFetchServiceOutput extends ServiceOutput {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   keys!: object[];
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   path!: object;
+
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.GRAPH_FETCH_SERVICE_OUTPUT,

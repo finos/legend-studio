@@ -1961,6 +1961,21 @@ export const V1_maxVersionForTdsModelSchema = (
     _type: usingConstantValueSchema(V1_DeduplicationType.MAX_VERSION_FOR_TDS),
   });
 
+export const V1_serializeMaxVersionDeduplication = (
+  protocol: V1_MaxVersion,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_MaxVersion> => {
+  if (protocol instanceof V1_MaxVersionForGraphFetch) {
+    return serialize(V1_maxVersionForGraphFetchModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_MaxVersionForTds) {
+    return serialize(V1_maxVersionForTdsModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize MaxVersionDeduplication`,
+    protocol,
+  );
+};
+
 export const V1_serializeDeduplication = (
   protocol: V1_Deduplication,
   plugins: PureProtocolProcessorPlugin[],
@@ -1992,21 +2007,6 @@ export const V1_deserializeDeduplication = (
     return deserialize(V1_maxVersionForTdsModelSchema(plugins), json);
   }
   throw new UnsupportedOperationError(`Can't deserialize Deduplication`, json);
-};
-
-export const V1_serializeMaxVersionDeduplication = (
-  protocol: V1_MaxVersion,
-  plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_MaxVersion> => {
-  if (protocol instanceof V1_MaxVersionForGraphFetch) {
-    return serialize(V1_maxVersionForGraphFetchModelSchema(plugins), protocol);
-  } else if (protocol instanceof V1_MaxVersionForTds) {
-    return serialize(V1_maxVersionForTdsModelSchema(plugins), protocol);
-  }
-  throw new UnsupportedOperationError(
-    `Can't serialize MaxVersionDeduplication`,
-    protocol,
-  );
 };
 
 /****************
