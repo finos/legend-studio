@@ -825,7 +825,9 @@ export const V1_buildFieldBasedPartitioning = (
   context: V1_GraphBuilderContext,
 ): FieldBased => {
   if (protocol instanceof V1_FieldBasedForGraphFetch) {
-    return new FieldBasedForGraphFetch();
+    const fieldBasedForGraphFetch = new FieldBasedForGraphFetch();
+    fieldBasedForGraphFetch.partitionFieldPaths = protocol.partitionFieldPaths;
+    return fieldBasedForGraphFetch;
   } else if (protocol instanceof V1_FieldBasedForTds) {
     const fieldBasedForTds = new FieldBasedForTds();
     fieldBasedForTds.partitionFields = protocol.partitionFields;
@@ -864,6 +866,7 @@ export const V1_buildDeleteIndicator = (
 ): DeleteIndicator => {
   if (protocol instanceof V1_DeleteIndicatorForGraphFetch) {
     const deleteIndicatorForGraphFetch = new DeleteIndicatorForGraphFetch();
+    deleteIndicatorForGraphFetch.deleteFieldPath = protocol.deleteFieldPath;
     deleteIndicatorForGraphFetch.deleteValues = protocol.deleteValues;
     return deleteIndicatorForGraphFetch;
   } else if (protocol instanceof V1_DeleteIndicatorForTds) {
@@ -922,7 +925,9 @@ export const V1_buildMaxVersion = (
   context: V1_GraphBuilderContext,
 ): MaxVersion => {
   if (protocol instanceof V1_MaxVersionForGraphFetch) {
-    return new MaxVersionForGraphFetch();
+    const maxVersionForGraphFetch = new MaxVersionForGraphFetch();
+    maxVersionForGraphFetch.versionFieldPath = protocol.versionFieldPath;
+    return maxVersionForGraphFetch;
   } else if (protocol instanceof V1_MaxVersionForTds) {
     const maxVeresionForTds = new MaxVersionForTds();
     maxVeresionForTds.versionField = protocol.versionField;
@@ -967,6 +972,8 @@ export const V1_buildServiceOutput = (
       protocol.deduplication,
       context,
     );
+    serviceOutput.keys = protocol.keys;
+    serviceOutput.path = protocol.path;
     return serviceOutput;
   } else if (protocol instanceof V1_TdsServiceOutput) {
     const serviceOutput = new TdsServiceOutput();

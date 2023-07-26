@@ -16,6 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
+import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 
 export abstract class ActionIndicatorFields implements Hashable {
   abstract get hashCode(): string;
@@ -32,9 +33,17 @@ export abstract class DeleteIndicator extends ActionIndicatorFields {
 }
 
 export class DeleteIndicatorForGraphFetch extends DeleteIndicator {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  deleteFieldPath!: object;
+
   get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DELETE_INDICATOR_FOR_GRAPH_FETCH,
+      hashObjectWithoutSourceInformation(this.deleteFieldPath),
     ]);
   }
 }
