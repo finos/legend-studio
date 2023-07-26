@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.1.14
+
+### Patch Changes
+
+- [#2452](https://github.com/finos/legend-studio/pull/2452) [`f2103ffea`](https://github.com/finos/legend-studio/commit/f2103ffead542f83f1444b6fd1b0c699592f6860) ([@Humaira-Hossain](https://github.com/Humaira-Hossain)) - Patch query extension mechanism.
+
 ## 4.1.13
 
 ## 4.1.12
