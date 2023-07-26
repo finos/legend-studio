@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.53
+
+### Patch Changes
+
+- [#2451](https://github.com/finos/legend-studio/pull/2451) [`a9ac3cdd6`](https://github.com/finos/legend-studio/commit/a9ac3cdd686e5c4c9b10e7a2c3b4933714331aac) ([@ankitamritraj](https://github.com/ankitamritraj)) - Added Path variables in GraphFetch persistence model spec
+
 ## 5.0.52
 
 ## 5.0.51
