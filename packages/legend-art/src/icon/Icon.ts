@@ -244,6 +244,7 @@ export const StatisticsIcon = IO.IoStatsChart;
 export const SupportIcon = IO.IoHelpBuoy;
 export const CloudDownloadIcon = IO.IoCloudDownloadOutline;
 export const CloudUploadIcon = IO.IoCloudUploadOutline;
+export const QuestionThinIcon = IO.IoHelp;
 
 const BS = ReactIcons.BS;
 export const DisplayIcon = BS.BsDisplayFill;

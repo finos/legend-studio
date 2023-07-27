@@ -66,9 +66,15 @@
     }
 
     &__circle {
-      font-size: 2.2rem;
+      font-size: 2rem;
       color: var(--color-dark-grey-80);
       animation: opacity-pulse 1.2s infinite ease-in-out alternate-reverse;
+    }
+
+    &__help {
+      font-size: 2.4rem;
+      color: var(--color-dark-shade-800);
+      animation: opacity-pulse-2 1s infinite ease-in-out alternate-reverse;
     }
 
     @keyframes opacity-pulse {
@@ -78,6 +84,16 @@
 
       to {
         opacity: 0.3;
+      }
+    }
+
+    @keyframes opacity-pulse-2 {
+      from {
+        opacity: 0.9;
+      }
+
+      to {
+        opacity: 0.55;
       }
     }
   }
