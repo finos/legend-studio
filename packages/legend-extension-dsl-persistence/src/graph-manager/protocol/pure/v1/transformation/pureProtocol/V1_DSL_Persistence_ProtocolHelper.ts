@@ -1959,6 +1959,7 @@ export const V1_maxVersionForTdsModelSchema = (
 ): ModelSchema<V1_MaxVersionForTds> =>
   createModelSchema(V1_MaxVersionForTds, {
     _type: usingConstantValueSchema(V1_DeduplicationType.MAX_VERSION_FOR_TDS),
+    versionField: primitive(),
   });
 
 export const V1_serializeMaxVersionDeduplication = (
