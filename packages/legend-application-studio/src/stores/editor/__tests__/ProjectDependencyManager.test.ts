@@ -127,7 +127,7 @@ const PROJECT_CONFIG = {
   artifactId: 'string',
   projectDependencies: [
     {
-      projectId: 'PROD_1',
+      projectId: 'groupId:my-artifact',
       versionId: '1.0.0',
     },
     {
@@ -146,25 +146,6 @@ const PROJECT_DATA = [
     artifactId: 'my-artifact',
     versions: ['1.0.0'],
     latestVersion: '1.0.0',
-  },
-];
-
-const MULTI_PROJECT_DATA = [
-  {
-    id: '1',
-    projectId: 'PROD_1',
-    groupId: 'org.finos.legend',
-    artifactId: 'my-artifact',
-    versions: ['1.0.0'],
-    latestVersion: '1.0.0',
-  },
-  {
-    id: '2',
-    projectId: 'PROD_1',
-    groupId: 'org.finos.legend',
-    artifactId: 'my-artifact-diff',
-    versions: ['1.0.0', '2.0.0'],
-    latestVersion: '2.0.0',
   },
 ];
 
@@ -216,12 +197,6 @@ const testDependencyElements = async (
     guaranteeNonNullable(editorStore.depotServerClient),
     'collectDependencyEntities',
   ).mockResolvedValue(dependencyEntities);
-  if (projectsData) {
-    createSpy(
-      guaranteeNonNullable(editorStore.depotServerClient),
-      'getProjectById',
-    ).mockResolvedValue(projectsData);
-  }
   if (dependencyInfo) {
     createSpy(
       guaranteeNonNullable(editorStore.depotServerClient),
@@ -346,22 +321,6 @@ test(
       testDependingOnMoreThanOneproject,
       PROJECT_DATA,
       true,
-    );
-  },
-);
-
-test(
-  unitTest('Legacy project not returning singular project from depot'),
-  async () => {
-    await expect(
-      testDependencyElements(
-        [] as Entity[],
-        testDependingOnDifferentProjectVersions,
-        MULTI_PROJECT_DATA,
-        true,
-      ),
-    ).rejects.toThrowError(
-      "Expected 1 project for project ID 'PROD_1'. Got 2 projects with coordinates 'org.finos.legend:my-artifact', 'org.finos.legend:my-artifact-diff'.",
     );
   },
 );

@@ -33,7 +33,6 @@ import {
 } from '../../__test-utils__/EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
-import type { ProjectDependency } from '@finos/legend-server-sdlc';
 import { TEST_DATA__ProjectDependencyReport } from './TEST_DATA__ProjectDependencyReport.js';
 import {
   RawProjectDependencyReport,
@@ -49,7 +48,7 @@ const TEST_DATA__ProjectConfiguration = {
   artifactId: 'dependency-test',
   projectDependencies: [
     {
-      projectId: 'PROD-1',
+      projectId: 'org.finos.legend:prod-1',
       versionId: '2.0.0',
     },
     {
@@ -59,17 +58,6 @@ const TEST_DATA__ProjectConfiguration = {
   ],
   metamodelDependencies: [],
 };
-
-const TEST_DATA__ProjectData = [
-  {
-    id: 'PROD-1',
-    projectId: 'PROD-1',
-    groupId: 'org.finos.legend',
-    artifactId: 'prod-1',
-    versions: ['1.0.0', '2.0.0'],
-    latestVersion: '2.0.0',
-  },
-];
 
 const TEST_DATA__Projects = [
   {
@@ -127,7 +115,6 @@ beforeEach(async () => {
     projectConfiguration: TEST_DATA__ProjectConfiguration,
     latestProjectStructureVersion: TEST_DATA__latestProjectStructure,
     projects: TEST_DATA__Projects,
-    projectData: TEST_DATA__ProjectData,
     projectDependency: TEST_DATA__DependencyEntities,
     projectDependencyVersions: TEST_DATA__Versions,
     projectDependencyReport: TEST_DATA__ProjectDependencyReport,
@@ -145,9 +132,7 @@ test(integrationTest('Test Project Dependency Editor'), async () => {
   const editorGroup = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
   );
-  const updateButton = getByText(editorGroup, 'Update');
   fireEvent.click(getByText(editorGroup, 'Project Dependencies'));
-  const configState = MOCK__editorStore.projectConfigurationEditorState;
 
   // dependency 1
   await waitFor(() => getByText(editorGroup, 'PROD-1'));
@@ -158,30 +143,6 @@ test(integrationTest('Test Project Dependency Editor'), async () => {
   await waitFor(() => getByText(editorGroup, 'PROD-2'));
   await waitFor(() => getByText(editorGroup, 'org.finos.legend:prod-2'));
   await waitFor(() => getByText(editorGroup, '3.0.0'));
-
-  const projectDependenciesToAdd =
-    configState.currentProjectConfiguration.projectDependencies.filter(
-      (dep) =>
-        !configState.originalConfig.projectDependencies.find(
-          (originalProjDep) => originalProjDep.hashCode === dep.hashCode,
-        ),
-    );
-  const projectDependenciesToRemove =
-    configState.originalConfig.projectDependencies.filter(
-      (originalProjDep) =>
-        !configState.currentProjectConfiguration.projectDependencies.find(
-          (dep) => dep.hashCode === originalProjDep.hashCode,
-        ),
-    );
-  expect(updateButton.getAttribute('disabled')).toBeNull();
-  expect(projectDependenciesToAdd).toHaveLength(1);
-  expect(projectDependenciesToRemove).toHaveLength(1);
-  expect((projectDependenciesToAdd[0] as ProjectDependency).projectId).toBe(
-    'org.finos.legend:prod-1',
-  );
-  expect((projectDependenciesToRemove[0] as ProjectDependency).projectId).toBe(
-    'PROD-1',
-  );
 });
 
 test(integrationTest('Test Project Report'), async () => {

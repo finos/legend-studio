@@ -58,21 +58,11 @@ export class ProjectDependency implements Hashable {
     this.versionId = id;
   }
 
-  get isLegacyDependency(): boolean {
-    return !this.projectId.includes(GAV_DELIMITER);
-  }
-
   get groupId(): string | undefined {
-    if (this.isLegacyDependency) {
-      return undefined;
-    }
     return this.projectId.split(GAV_DELIMITER)[0];
   }
 
   get artifactId(): string | undefined {
-    if (this.isLegacyDependency) {
-      return undefined;
-    }
     return this.projectId.split(GAV_DELIMITER)[1];
   }
 

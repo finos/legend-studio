@@ -653,7 +653,7 @@ const ExplorerContextMenu = observer(
         editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
           (dep) => dep.projectId === node?.packageableElement.name,
         );
-      if (projectDependency && !projectDependency.isLegacyDependency) {
+      if (projectDependency) {
         applicationStore.navigationService.navigator.visitAddress(
           applicationStore.navigationService.navigator.generateAddress(
             generateViewProjectByGAVRoute(
