@@ -164,6 +164,10 @@ export class ShowcaseRegistry {
   }
 
   async search(searchText: string): Promise<ShowcaseTextSearchResult> {
+    // short-circuit when the text search length is too short, else we would end up putting strain on the server
+    if (searchText.length <= 2) {
+      return { showcases: [], textMatches: [] };
+    }
     const matches: ShowcaseTextSearchMatch[] = [];
     // NOTE: for text search, we only support case-insensitive search now
     const lowerCaseSearchText = searchText.toLowerCase();
