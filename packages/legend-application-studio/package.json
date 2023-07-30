@@ -58,7 +58,7 @@
     "@testing-library/react": "14.0.0",
     "@types/react": "18.2.17",
     "@types/react-dom": "18.2.7",
-    "fast-xml-parser": "4.2.6",
+    "fast-xml-parser": "4.2.7",
     "mobx": "6.10.0",
     "mobx-react-lite": "3.4.3",
     "mobx-utils": "6.0.8",

@@ -102,7 +102,7 @@
     "eslint": "8.46.0",
     "fs-extra": "11.1.1",
     "husky": "8.0.3",
-    "inquirer": "9.2.8",
+    "inquirer": "9.2.9",
     "jest": "29.6.2",
     "lint-staged": "13.2.3",
     "micromatch": "4.0.5",
