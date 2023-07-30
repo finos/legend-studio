@@ -28,6 +28,7 @@ import {
   promisify,
   type PlainObject,
   getNonNullableEntry,
+  ActionState,
 } from '@finos/legend-shared';
 
 async function fetchExternalLinkSiteData(url: string): Promise<string> {
@@ -68,15 +69,16 @@ export type ShowcaseRegistryConfig = {
 };
 
 export class ShowcaseRegistry {
-  // NOTE: maintain these to improve performance
-  private readonly RAW__metadata: PlainObject<ShowcaseMetadata>[] = [];
-  private readonly RAW__showcaseIndex = new Map<
-    string,
-    PlainObject<Showcase>
-  >();
+  private config?: ShowcaseRegistryConfig;
 
-  private readonly showcasesIndex = new Map<string, Showcase>();
-  private readonly showcaseSearchEngine: FuzzySearchEngine<Showcase>;
+  // NOTE: maintain these to improve performance
+  private RAW__metadata: PlainObject<ShowcaseMetadata>[] = [];
+  private RAW__showcaseIndex = new Map<string, PlainObject<Showcase>>();
+
+  private showcasesIndex = new Map<string, Showcase>();
+  private showcaseSearchEngine: FuzzySearchEngine<Showcase>;
+
+  readonly fetchDataState = ActionState.create();
 
   // private constructor to enforce singleton
   private constructor() {
@@ -128,30 +130,8 @@ export class ShowcaseRegistry {
     config: ShowcaseRegistryConfig,
   ): Promise<ShowcaseRegistry> {
     const registry = new ShowcaseRegistry();
-
-    await Promise.all(
-      config.datasources.map(async (datasource) => {
-        const content = await fetchShowcasesData(datasource);
-        content.forEach((showcaseContent) => {
-          const showcase = Showcase.serialization.fromJson(showcaseContent);
-          // NOTE: do not allow override
-          if (!registry.showcasesIndex.has(showcase.path)) {
-            registry.showcasesIndex.set(showcase.path, showcase);
-            registry.RAW__showcaseIndex.set(showcase.path, showcaseContent);
-            registry.RAW__metadata.push({
-              title: showcase.title,
-              path: showcase.path,
-              description: showcase.description,
-            });
-          }
-        });
-      }),
-    );
-
-    registry.showcaseSearchEngine.setCollection(
-      Array.from(registry.showcasesIndex.values()),
-    );
-
+    registry.config = config;
+    await registry.fetchData();
     return registry;
   }
 
@@ -161,6 +141,50 @@ export class ShowcaseRegistry {
 
   getShowcase(path: string): PlainObject<Showcase> | undefined {
     return this.RAW__showcaseIndex.get(path);
+  }
+
+  async fetchData(): Promise<void> {
+    if (this.fetchDataState.isInProgress) {
+      return;
+    }
+
+    try {
+      this.fetchDataState.inProgress();
+
+      const RAW__metadata: PlainObject<ShowcaseMetadata>[] = [];
+      const RAW__showcaseIndex = new Map<string, PlainObject<Showcase>>();
+      const showcasesIndex = new Map<string, Showcase>();
+
+      await Promise.all(
+        this.config?.datasources.map(async (datasource) => {
+          const content = await fetchShowcasesData(datasource);
+          content.forEach((showcaseContent) => {
+            const showcase = Showcase.serialization.fromJson(showcaseContent);
+            // NOTE: do not allow override
+            if (!showcasesIndex.has(showcase.path)) {
+              showcasesIndex.set(showcase.path, showcase);
+              RAW__showcaseIndex.set(showcase.path, showcaseContent);
+              RAW__metadata.push({
+                title: showcase.title,
+                path: showcase.path,
+                description: showcase.description,
+              });
+            }
+          });
+        }) ?? [],
+      );
+
+      // update in one go
+      this.RAW__metadata = RAW__metadata;
+      this.RAW__showcaseIndex = RAW__showcaseIndex;
+      this.showcasesIndex = showcasesIndex;
+      this.showcaseSearchEngine.remove(() => true);
+      this.showcaseSearchEngine.setCollection(
+        Array.from(this.showcasesIndex.values()),
+      );
+    } finally {
+      this.fetchDataState.complete();
+    }
   }
 
   async search(searchText: string): Promise<ShowcaseTextSearchResult> {
