@@ -478,9 +478,7 @@ const ShowcaseManagerSearchPanel = observer(
               {showcaseManagerState.currentSearchCaterogy ===
                 SHOWCASE_MANAGER_SEARCH_CATEGORY.SHOWCASE && (
                 <>
-                  {(!showcaseManagerState.showcaseSearchResults ||
-                    (showcaseManagerState.showcaseSearchResults &&
-                      !showcaseManagerState.showcaseSearchResults.length)) && (
+                  {!showcaseManagerState.showcaseSearchResults?.length && (
                     <BlankPanelContent>No results</BlankPanelContent>
                   )}
                   {showcaseManagerState.showcaseSearchResults?.map(
@@ -511,9 +509,7 @@ const ShowcaseManagerSearchPanel = observer(
               {showcaseManagerState.currentSearchCaterogy ===
                 SHOWCASE_MANAGER_SEARCH_CATEGORY.CODE && (
                 <>
-                  {(!showcaseManagerState.textSearchResults ||
-                    (showcaseManagerState.textSearchResults &&
-                      !showcaseManagerState.textSearchResults.length)) && (
+                  {!showcaseManagerState.textSearchResults?.length && (
                     <BlankPanelContent>No results</BlankPanelContent>
                   )}
                   {showcaseManagerState.textSearchResults?.map((result) => (
