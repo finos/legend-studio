@@ -538,7 +538,7 @@ const ExplorerContextMenu = observer(
           const databasePath: string = guaranteeNonEmptyString(
             node?.packageableElement.path,
           );
-          const graph: PureModel = editorStore.graphManagerState.graph;
+          const graph = editorStore.graphManagerState.graph;
           if (graph.getDatabase(databasePath).joins.length === 0) {
             applicationStore.alertService.setActionAlertInfo({
               message:
