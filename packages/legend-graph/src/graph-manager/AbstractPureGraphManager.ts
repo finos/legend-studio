@@ -570,6 +570,13 @@ export abstract class AbstractPureGraphManager {
     graphData: GraphData,
   ): Promise<void>;
 
+  // --------------------------------------------- Relational ---------------------------------------------
+
+  abstract generateModelsFromDatabaseSpecification(
+    databasePath: string,
+    graph: PureModel,
+  ): Promise<Entity[]>;
+
   // ------------------------------------------- Service -------------------------------------------
   /**
    * @modularize

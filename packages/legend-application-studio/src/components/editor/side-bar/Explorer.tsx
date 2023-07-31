@@ -111,8 +111,13 @@ import {
   guaranteeRelationalDatabaseConnection,
   extractDependencyGACoordinateFromRootPackageName,
   type FunctionActivatorConfiguration,
+  Database,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
@@ -452,6 +457,9 @@ const isRelationalDatabaseConnection = (
   val instanceof PackageableConnection &&
   val.connectionValue instanceof RelationalDatabaseConnection;
 
+const isRelationalDatabase = (val: PackageableElement | undefined): boolean =>
+  val instanceof Database;
+
 const ExplorerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
@@ -523,6 +531,46 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const generateModelsFromDatabaseSpecification =
+      editorStore.applicationStore.guardUnhandledError(async () => {
+        if (isRelationalDatabase(node?.packageableElement)) {
+          const databasePath = guaranteeNonEmptyString(
+            node?.packageableElement.path,
+          );
+          const graph = editorStore.graphManagerState.graph;
+          if (graph.getDatabase(databasePath).joins.length === 0) {
+            applicationStore.alertService.setActionAlertInfo({
+              message:
+                'You are attempting to generate models but have defined no joins. Are you sure you wish to proceed?',
+              type: ActionAlertType.CAUTION,
+              actions: [
+                {
+                  label: 'Proceed',
+                  type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                  handler: () => {
+                    flowResult(
+                      editorStore.explorerTreeState.generateModelsFromDatabaseSpecification(
+                        databasePath,
+                        graph,
+                      ),
+                    ).catch(applicationStore.alertUnhandledError);
+                  },
+                },
+                {
+                  label: 'Abort',
+                  type: ActionAlertActionType.PROCEED,
+                  default: true,
+                },
+              ],
+            });
+          } else {
+            editorStore.explorerTreeState.generateModelsFromDatabaseSpecification(
+              databasePath,
+              graph,
+            );
+          }
+        }
+      });
     const openSQLPlayground = (): void => {
       if (isRelationalDatabaseConnection(node?.packageableElement)) {
         editorStore.panelGroupDisplayState.open();
@@ -808,6 +856,14 @@ const ExplorerContextMenu = observer(
             )}
             <MenuContentItem onClick={buildDatabase}>
               Build Database...
+            </MenuContentItem>
+            <MenuContentDivider />
+          </>
+        )}
+        {isRelationalDatabase(node.packageableElement) && (
+          <>
+            <MenuContentItem onClick={generateModelsFromDatabaseSpecification}>
+              Generate Models
             </MenuContentItem>
             <MenuContentDivider />
           </>
