@@ -111,7 +111,7 @@ import {
   guaranteeRelationalDatabaseConnection,
   extractDependencyGACoordinateFromRootPackageName,
   type FunctionActivatorConfiguration,
- Database,
+  Database,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
