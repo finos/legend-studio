@@ -535,7 +535,7 @@ const ExplorerContextMenu = observer(
     const generateModelsFromDatabaseSpecification =
       editorStore.applicationStore.guardUnhandledError(async () => {
         if (isRelationalDatabase(node?.packageableElement)) {
-          const databasePath: string = guaranteeNonEmptyString(
+          const databasePath = guaranteeNonEmptyString(
             node?.packageableElement.path,
           );
           const graph = editorStore.graphManagerState.graph;
