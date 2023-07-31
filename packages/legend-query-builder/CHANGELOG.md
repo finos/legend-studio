@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.2.0
+
+### Minor Changes
+
+- [#2430](https://github.com/finos/legend-studio/pull/2430) [`9b53ade77`](https://github.com/finos/legend-studio/commit/9b53ade77460a97fd3c197bd097671cc7a87d453) ([@gayathrir11](https://github.com/gayathrir11)) - Handle exists logic correctly in query
+
 ## 4.1.15
 
 ## 4.1.14
