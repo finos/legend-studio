@@ -1,6 +1,5 @@
 ---
-'@finos/legend-application-studio': patch
-'@finos/legend-graph': patch
+'@finos/legend-application-studio': minor
+'@finos/legend-graph': minor
 ---
-
-Add Generate Models button to enable autogeneration of classes, associations, and mapping feature for relational databases
+Support generating models from relational database. 
