@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.54
+
+### Patch Changes
+
+- [#2460](https://github.com/finos/legend-studio/pull/2460) [`91fdb8eb1`](https://github.com/finos/legend-studio/commit/91fdb8eb1a2efdec239a58ed144b90d8689671fa) ([@ankitamritraj](https://github.com/ankitamritraj)) - Persistence V2 : Added missing versionField attribute in MaxVersion
+
 ## 5.0.53
 
 ### Patch Changes
