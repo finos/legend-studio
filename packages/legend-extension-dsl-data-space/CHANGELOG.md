@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.0
+
+### Minor Changes
+
+- [#2469](https://github.com/finos/legend-studio/pull/2469) [`2503ccb8e`](https://github.com/finos/legend-studio/commit/2503ccb8e55544d1940bb0cab5e52172be89ddd2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use dataSpace `elements` to filter on explorer classes.
+
 ## 10.0.55
 
 ## 10.0.54

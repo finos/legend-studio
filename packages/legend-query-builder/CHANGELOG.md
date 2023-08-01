@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.2.1
+
+### Patch Changes
+
+- [#2466](https://github.com/finos/legend-studio/pull/2466) [`addc5fc07`](https://github.com/finos/legend-studio/commit/addc5fc0712c9e2e088567054adc33e638c8ae42) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where failing to generate default value for service test parameter of type Byte.
+
 ## 4.2.0
 
 ### Minor Changes

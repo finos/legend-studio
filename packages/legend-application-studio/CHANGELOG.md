@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.1.0
+
+### Minor Changes
+
+- [#2455](https://github.com/finos/legend-studio/pull/2455) [`05fa748a4`](https://github.com/finos/legend-studio/commit/05fa748a49d0a4dc76a441f14c570b05a2927099) ([@jake-kim1](https://github.com/jake-kim1)) - Support generating models from relational database.
+
 ## 28.0.5
 
 ## 28.0.4
