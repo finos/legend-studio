@@ -22,6 +22,7 @@ import {
   getByTitle,
   queryByText,
   getAllByTitle,
+  getAllByPlaceholderText,
 } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -233,6 +234,12 @@ test(
     );
     await waitFor(() =>
       getAllByTitle(serviceTestSetupEditor, 'Open in a popup...'),
+    );
+
+    // Test click `generate` button to generate an empty string as a default value
+    fireEvent.click(getByText(serviceTestEditor, 'Generate'));
+    await waitFor(() =>
+      getAllByPlaceholderText(serviceTestSetupEditor, '(empty)'),
     );
   },
 );

@@ -224,7 +224,17 @@ export const generateVariableExpressionMockValue = (
 ): ValueSpecification | undefined => {
   const varType = parameter.genericType?.value.rawType;
   const multiplicity = parameter.multiplicity;
-  if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
+  /**
+   *  Studio doesn't handle byte[*] as a CollectionInstanceValue but as a
+   *  PrimitiveValueSpecification of type PrimitiveType.BYTE.
+   *  Engine sends a Base64String transformed from byte[] by Jackson to Studio, then
+   *  Studio stores this Base64String as the value of V1_CByteArray.
+   */
+  if (
+    (!multiplicity.upperBound || multiplicity.upperBound > 1) &&
+    varType &&
+    varType !== PrimitiveType.BYTE
+  ) {
     return new CollectionInstanceValue(
       multiplicity,
       GenericTypeExplicitReference.create(new GenericType(varType)),
