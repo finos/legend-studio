@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 31.1.0
+
+### Minor Changes
+
+- [#2455](https://github.com/finos/legend-studio/pull/2455) [`05fa748a4`](https://github.com/finos/legend-studio/commit/05fa748a49d0a4dc76a441f14c570b05a2927099) ([@jake-kim1](https://github.com/jake-kim1)) - Support generating models from relational database.
+
+### Patch Changes
+
+- [#2469](https://github.com/finos/legend-studio/pull/2469) [`2503ccb8e`](https://github.com/finos/legend-studio/commit/2503ccb8e55544d1940bb0cab5e52172be89ddd2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Change ordering of usable elements to own, system, dependency except for types/profiles.
+
 ## 31.0.4
 
 ## 31.0.3
