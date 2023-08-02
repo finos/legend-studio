@@ -217,6 +217,7 @@ export const generateDefaultValueForPrimitiveType = (
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.FLOAT:
     case PRIMITIVE_TYPE.INTEGER:
+      return 0;
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
       return formatDate(new Date(Date.now()), DATE_FORMAT);
