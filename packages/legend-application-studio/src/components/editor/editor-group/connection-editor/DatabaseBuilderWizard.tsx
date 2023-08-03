@@ -33,6 +33,7 @@ import {
   BlankPanelContent,
   PanelHeader,
   Panel,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
 import { noop } from '@finos/legend-shared';
@@ -56,10 +57,24 @@ export const DatabaseBuilderWizard = observer(
   }) => {
     const { databaseBuilderState, isReadOnly } = props;
     const schemaExplorerState = databaseBuilderState.schemaExplorerState;
+    const isCreatingNewDatabase = schemaExplorerState.isCreatingNewDatabase;
+    const elementAlreadyExistsMessage =
+      isCreatingNewDatabase &&
+      databaseBuilderState.editorStore.graphManagerState.graph.allElements
+        .map((s) => s.path)
+        .includes(schemaExplorerState.targetDatabasePath)
+        ? 'Element with same path already exists'
+        : undefined;
+
     const applicationStore = useApplicationStore();
     const preview = applicationStore.guardUnhandledError(() =>
       flowResult(databaseBuilderState.previewDatabaseModel()),
     );
+    const onTargetPathChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      schemaExplorerState.setTargetDatabasePath(event.target.value);
+    };
     const updateDatabase = applicationStore.guardUnhandledError(() =>
       flowResult(databaseBuilderState.updateDatabase()),
     );
@@ -131,18 +146,23 @@ export const DatabaseBuilderWizard = observer(
               <ResizablePanel>
                 <Panel className="database-builder__model">
                   <PanelHeader title="database model" />
-
                   <PanelContent>
                     <div className="database-builder__modeller">
                       <div className="panel__content__form__section database-builder__modeller__path">
                         <div className="panel__content__form__section__header__label">
                           Target Database Path
                         </div>
-                        <input
+                        <InputWithInlineValidation
                           className="panel__content__form__section__input"
                           spellCheck={false}
-                          disabled={true}
-                          value={schemaExplorerState.database.path}
+                          onChange={onTargetPathChange}
+                          disabled={!isCreatingNewDatabase}
+                          value={
+                            isCreatingNewDatabase
+                              ? schemaExplorerState.targetDatabasePath
+                              : schemaExplorerState.database.path
+                          }
+                          error={elementAlreadyExistsMessage}
                         />
                       </div>
                       <div className="database-builder__modeller__preview">
@@ -178,7 +198,11 @@ export const DatabaseBuilderWizard = observer(
             </ModalFooterButton>
             <ModalFooterButton
               className="database-builder__action--btn"
-              disabled={isReadOnly || isExecutingAction}
+              disabled={
+                isReadOnly ||
+                isExecutingAction ||
+                Boolean(elementAlreadyExistsMessage)
+              }
               onClick={updateDatabase}
             >
               Update Database

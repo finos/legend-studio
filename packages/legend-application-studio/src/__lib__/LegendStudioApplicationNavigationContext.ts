@@ -52,6 +52,7 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
 
   CONNECTION_EDITOR = 'studio.editor.connection-editor',
   DATABASE_BUILDER = 'studio.editor.connection-editor.database-builder',
+  DATABASE_MODEL_BUILDER = 'studio.editor.database-editor.model-builder',
 
   SERVICE_EDITOR = 'studio.editor.service-editor',
   SERVICE_EDITOR_EXECUTION = 'studio.editor.service-editor.execution',

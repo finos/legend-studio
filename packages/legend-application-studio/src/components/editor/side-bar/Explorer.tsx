@@ -140,6 +140,7 @@ import {
 } from '@finos/legend-lego/code-editor';
 import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
 import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
+import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -457,8 +458,9 @@ const isRelationalDatabaseConnection = (
   val instanceof PackageableConnection &&
   val.connectionValue instanceof RelationalDatabaseConnection;
 
-const isRelationalDatabase = (val: PackageableElement | undefined): boolean =>
-  val instanceof Database;
+const isRelationalDatabase = (
+  val: PackageableElement | undefined,
+): Database | undefined => (val instanceof Database ? val : undefined);
 
 const ExplorerContextMenu = observer(
   forwardRef<
@@ -533,27 +535,22 @@ const ExplorerContextMenu = observer(
     );
     const generateModelsFromDatabaseSpecification =
       editorStore.applicationStore.guardUnhandledError(async () => {
-        if (isRelationalDatabase(node?.packageableElement)) {
-          const databasePath = guaranteeNonEmptyString(
-            node?.packageableElement.path,
-          );
-          const graph = editorStore.graphManagerState.graph;
-          if (graph.getDatabase(databasePath).joins.length === 0) {
+        const database = isRelationalDatabase(node?.packageableElement);
+        if (database) {
+          if (database.joins.length === 0) {
             applicationStore.alertService.setActionAlertInfo({
               message:
-                'You are attempting to generate models but have defined no joins. Are you sure you wish to proceed?',
+                'You are attempting to build models but have defined no joins. Are you sure you wish to proceed?',
               type: ActionAlertType.CAUTION,
               actions: [
                 {
                   label: 'Proceed',
                   type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                   handler: () => {
-                    flowResult(
-                      editorStore.explorerTreeState.generateModelsFromDatabaseSpecification(
-                        databasePath,
-                        graph,
-                      ),
-                    ).catch(applicationStore.alertUnhandledError);
+                    editorStore.explorerTreeState.buildDatabaseModels(
+                      database,
+                      editorStore.isInViewerMode,
+                    );
                   },
                 },
                 {
@@ -564,9 +561,9 @@ const ExplorerContextMenu = observer(
               ],
             });
           } else {
-            editorStore.explorerTreeState.generateModelsFromDatabaseSpecification(
-              databasePath,
-              graph,
+            editorStore.explorerTreeState.buildDatabaseModels(
+              database,
+              editorStore.isInViewerMode,
             );
           }
         }
@@ -863,7 +860,7 @@ const ExplorerContextMenu = observer(
         {isRelationalDatabase(node.packageableElement) && (
           <>
             <MenuContentItem onClick={generateModelsFromDatabaseSpecification}>
-              Generate Models
+              Build Models
             </MenuContentItem>
             <MenuContentDivider />
           </>
@@ -1157,7 +1154,6 @@ const ExplorerTrees = observer(() => {
     getTreeChildNodes(editorStore, node, dependencyTreeData, true);
   const showPackageTrees =
     treeData.nodes.size || graph.dependencyManager.hasDependencies;
-
   return (
     <ContextMenu
       className="explorer__content"
@@ -1187,6 +1183,14 @@ const ExplorerTrees = observer(() => {
                 <DatabaseBuilderWizard
                   databaseBuilderState={
                     editorStore.explorerTreeState.databaseBuilderState
+                  }
+                  isReadOnly={false}
+                />
+              )}
+              {editorStore.explorerTreeState.databaseModelBuilderState && (
+                <DatabaseModelBuilder
+                  databaseModelBuilderState={
+                    editorStore.explorerTreeState.databaseModelBuilderState
                   }
                   isReadOnly={false}
                 />
