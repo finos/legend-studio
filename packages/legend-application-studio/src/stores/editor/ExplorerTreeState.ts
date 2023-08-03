@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, observable, makeObservable, flow, flowResult } from 'mobx';
+import { action, observable, makeObservable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import {
   LogEvent,
@@ -23,8 +23,6 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
   ActionState,
-  type GeneratorFn,
-  assertErrorThrown,
 } from '@finos/legend-shared';
 import {
   getDependenciesPackableElementTreeData,
@@ -51,12 +49,11 @@ import {
   isDependencyElement,
   type Class,
   type RelationalDatabaseConnection,
-  type PureModel,
+  type Database,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { DatabaseBuilderWizardState } from './editor-state/element-editor-state/connection/DatabaseBuilderWizardState.js';
-import type { Entity } from '@finos/legend-storage';
-import { EntityChangeType, type EntityChange } from '@finos/legend-server-sdlc';
+import { DatabaseModelBuilderState } from './editor-state/element-editor-state/connection/DatabaseModelBuilderState.js';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',
@@ -81,6 +78,7 @@ export class ExplorerTreeState {
   elementToRename?: PackageableElement | undefined;
   classToGenerateSampleData?: Class | undefined;
   databaseBuilderState: DatabaseBuilderWizardState | undefined;
+  databaseModelBuilderState: DatabaseModelBuilderState | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -94,6 +92,7 @@ export class ExplorerTreeState {
       elementToRename: observable,
       classToGenerateSampleData: observable,
       databaseBuilderState: observable,
+      databaseModelBuilderState: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -106,13 +105,13 @@ export class ExplorerTreeState {
       build: action,
       buildImmutableModelTrees: action,
       buildTreeInTextMode: action,
+      buildDatabaseModels: action,
       openExplorerTreeNodes: action,
       reprocess: action,
       buildDatabase: action,
       setDatabaseBuilderState: action,
       onTreeNodeSelect: action,
       openNode: action,
-      generateModelsFromDatabaseSpecification: flow,
     });
 
     this.editorStore = editorStore;
@@ -194,49 +193,19 @@ export class ExplorerTreeState {
     dbBuilderState.setShowModal(true);
     this.setDatabaseBuilderState(dbBuilderState);
   }
-
-  *generateModelsFromDatabaseSpecification(
-    databasePath: string,
-    graph: PureModel,
-  ): GeneratorFn<void> {
-    try {
-      const entities =
-        (yield this.editorStore.graphManagerState.graphManager.generateModelsFromDatabaseSpecification(
-          databasePath,
-          graph,
-        )) as Entity[];
-      const newEntities: EntityChange[] = [];
-      for (const entity of entities) {
-        let entityChangeType: EntityChangeType;
-        if (graph.getNullableElement(entity.path) === undefined) {
-          entityChangeType = EntityChangeType.CREATE;
-        } else {
-          entityChangeType = EntityChangeType.MODIFY;
-        }
-        newEntities.push({
-          type: entityChangeType,
-          entityPath: entity.path,
-          content: entity.content,
-        });
-      }
-      yield flowResult(
-        this.editorStore.graphState.loadEntityChangesToGraph(
-          newEntities,
-          undefined,
-        ),
-      );
-      this.editorStore.applicationStore.notificationService.notifySuccess(
-        'Generated models successfully!',
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      throw error;
-    }
+  setDatabaseModelBuilderState(
+    val: DatabaseModelBuilderState | undefined,
+  ): void {
+    this.databaseModelBuilderState = val;
+  }
+  buildDatabaseModels(val: Database, isReadOnly: boolean): void {
+    const dbBuilderState = new DatabaseModelBuilderState(
+      this.editorStore,
+      val,
+      isReadOnly,
+    );
+    dbBuilderState.setShowModal(true);
+    this.setDatabaseModelBuilderState(dbBuilderState);
   }
 
   setSelectedNode(node: PackageTreeNodeData | undefined): void {

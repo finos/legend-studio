@@ -28,8 +28,17 @@ import {
   ActionState,
   getNonNullableEntry,
   guaranteeType,
+  assertNonEmptyString,
+  assertTrue,
 } from '@finos/legend-shared';
-import { observable, action, makeObservable, flow, flowResult } from 'mobx';
+import {
+  observable,
+  action,
+  makeObservable,
+  flow,
+  flowResult,
+  computed,
+} from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -45,8 +54,12 @@ import {
   getSchema,
   getNullableSchema,
   getNullableTable,
+  isStubbed_PackageableElement,
+  isValidFullPath,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { GraphEditFormModeState } from '../../../GraphEditFormModeState.js';
+import { connection_setStore } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 
 export abstract class DatabaseSchemaExplorerTreeNodeData
   implements TreeNodeData
@@ -114,10 +127,13 @@ export interface DatabaseExplorerTreeData
   database: Database;
 }
 
+const DEFAULT_DATABASE_PATH = 'store::MyDatabase';
+
 export class DatabaseSchemaExplorerState {
   readonly editorStore: EditorStore;
   readonly connection: RelationalDatabaseConnection;
   readonly database: Database;
+  targetDatabasePath: string;
 
   isGeneratingDatabase = false;
   isUpdatingDatabase = false;
@@ -131,7 +147,11 @@ export class DatabaseSchemaExplorerState {
       isGeneratingDatabase: observable,
       isUpdatingDatabase: observable,
       treeData: observable,
+      targetDatabasePath: observable,
+      isCreatingNewDatabase: computed,
+      resolveDatabasePackageAndName: computed,
       setTreeData: action,
+      setTargetDatabasePath: action,
       onNodeSelect: flow,
       fetchDatabaseMetadata: flow,
       fetchSchemaMetadata: flow,
@@ -143,6 +163,33 @@ export class DatabaseSchemaExplorerState {
     this.connection = connection;
     this.database = guaranteeType(connection.store.value, Database);
     this.editorStore = editorStore;
+    this.targetDatabasePath = DEFAULT_DATABASE_PATH;
+  }
+
+  get isCreatingNewDatabase(): boolean {
+    return isStubbed_PackageableElement(this.connection.store.value);
+  }
+
+  get resolveDatabasePackageAndName(): [string, string] {
+    if (!this.isCreatingNewDatabase) {
+      return [
+        guaranteeNonNullable(this.database.package).path,
+        this.database.name,
+      ];
+    }
+    assertNonEmptyString(this.targetDatabasePath, 'Must specify database path');
+    assertTrue(
+      isValidFullPath(this.targetDatabasePath),
+      'Invalid database path',
+    );
+    return resolvePackagePathAndElementName(
+      this.targetDatabasePath,
+      this.targetDatabasePath,
+    );
+  }
+
+  setTargetDatabasePath(val: string): void {
+    this.targetDatabasePath = val;
   }
 
   setTreeData(builderTreeData?: DatabaseExplorerTreeData): void {
@@ -208,9 +255,10 @@ export class DatabaseSchemaExplorerState {
     try {
       this.isGeneratingDatabase = true;
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const [packagePath, name] = this.resolveDatabasePackageAndName;
       databaseBuilderInput.targetDatabase = new TargetDatabase(
-        guaranteeNonNullable(this.database.package).path,
-        this.database.name,
+        packagePath,
+        name,
       );
       databaseBuilderInput.config.maxTables = undefined;
       databaseBuilderInput.config.enrichTables = false;
@@ -266,9 +314,10 @@ export class DatabaseSchemaExplorerState {
 
       const schema = schemaNode.schema;
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const [packagePath, name] = this.resolveDatabasePackageAndName;
       databaseBuilderInput.targetDatabase = new TargetDatabase(
-        guaranteeNonNullable(this.database.package).path,
-        this.database.name,
+        packagePath,
+        name,
       );
       databaseBuilderInput.config.maxTables = undefined;
       databaseBuilderInput.config.enrichTables = true;
@@ -328,9 +377,7 @@ export class DatabaseSchemaExplorerState {
       this.isGeneratingDatabase = true;
 
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
-      const [packagePath, name] = resolvePackagePathAndElementName(
-        this.database.path,
-      );
+      const [packagePath, name] = this.resolveDatabasePackageAndName;
       databaseBuilderInput.targetDatabase = new TargetDatabase(
         packagePath,
         name,
@@ -414,9 +461,10 @@ export class DatabaseSchemaExplorerState {
 
       const treeData = guaranteeNonNullable(this.treeData);
       const databaseBuilderInput = new DatabaseBuilderInput(this.connection);
+      const [packagePath, name] = this.resolveDatabasePackageAndName;
       databaseBuilderInput.targetDatabase = new TargetDatabase(
-        guaranteeNonNullable(this.database.package).path,
-        this.database.name,
+        packagePath,
+        name,
       );
       const config = databaseBuilderInput.config;
       config.maxTables = undefined;
@@ -472,7 +520,11 @@ export class DatabaseSchemaExplorerState {
 
     try {
       this.isUpdatingDatabase = true;
-
+      const createDatabase =
+        this.isCreatingNewDatabase &&
+        !this.editorStore.graphManagerState.graph.databases.includes(
+          this.database,
+        );
       const graph = this.editorStore.graphManagerState.createNewGraph();
       (yield this.editorStore.graphManagerState.graphManager.buildGraph(
         graph,
@@ -516,7 +568,23 @@ export class DatabaseSchemaExplorerState {
           this.database.schemas.push(schema);
         }
       });
-
+      if (createDatabase) {
+        connection_setStore(
+          this.connection,
+          PackageableElementExplicitReference.create(database),
+        );
+        const packagePath = guaranteeNonNullable(
+          database.package?.name,
+          'Database package is missing',
+        );
+        yield flowResult(
+          this.editorStore.graphEditorMode.addElement(
+            database,
+            packagePath,
+            false,
+          ),
+        );
+      }
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Database successfully updated`,
       );
