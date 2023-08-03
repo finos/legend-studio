@@ -393,16 +393,16 @@ export abstract class QueryEditorStore {
         'Query builder state required to build query to edit',
       );
       assertNonNullable(
-        this.queryBuilderState.mapping,
+        this.queryBuilderState.executionContextState.mapping,
         'Query required mapping to update',
       );
       const runtimeValue = guaranteeType(
-        this.queryBuilderState.runtimeValue,
+        this.queryBuilderState.executionContextState.runtimeValue,
         RuntimePointer,
         'Query runtime must be of type runtime pointer',
       );
       query.mapping = PackageableElementExplicitReference.create(
-        this.queryBuilderState.mapping,
+        this.queryBuilderState.executionContextState.mapping,
       );
       query.runtime = runtimeValue.packageableRuntime;
       query.content =
@@ -672,8 +672,10 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
             this.artifactId,
             this.versionId,
             val.path,
-            guaranteeType(queryBuilderState.runtimeValue, RuntimePointer)
-              .packageableRuntime.value.path,
+            guaranteeType(
+              queryBuilderState.executionContextState.runtimeValue,
+              RuntimePointer,
+            ).packageableRuntime.value.path,
           ),
         );
       },
@@ -683,7 +685,10 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
             this.groupId,
             this.artifactId,
             this.versionId,
-            guaranteeType(queryBuilderState.mapping, Mapping).path,
+            guaranteeType(
+              queryBuilderState.executionContextState.mapping,
+              Mapping,
+            ).path,
             guaranteeType(val, RuntimePointer).packageableRuntime.value.path,
           ),
         );
@@ -1015,8 +1020,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       queryBuilderState ??
       new ClassQueryBuilderState(this.applicationStore, this.graphManagerState);
 
-    queryBuilderState.setMapping(query.mapping.value);
-    queryBuilderState.setRuntimeValue(
+    queryBuilderState.executionContextState.setMapping(query.mapping.value);
+    queryBuilderState.executionContextState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(query.runtime.value),
       ),

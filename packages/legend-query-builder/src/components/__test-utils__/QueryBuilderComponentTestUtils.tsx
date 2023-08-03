@@ -84,8 +84,8 @@ export const TEST__setUpQueryBuilder = async (
     graphManagerState,
   );
   const mapping = graphManagerState.graph.getMapping(mappingPath);
-  queryBuilderState.setMapping(mapping);
-  queryBuilderState.setRuntimeValue(
+  queryBuilderState.executionContextState.setMapping(mapping);
+  queryBuilderState.executionContextState.setRuntimeValue(
     new RuntimePointer(
       PackageableElementExplicitReference.create(
         graphManagerState.graph.getRuntime(runtimePath),

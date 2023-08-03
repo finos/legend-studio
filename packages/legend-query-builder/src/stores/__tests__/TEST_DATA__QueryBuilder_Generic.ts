@@ -722,6 +722,111 @@ export const TEST_DATA__simpleProjectionWithSubtype = {
   parameters: [],
 };
 
+export const TEST_DATA__simpleFromFunction = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'from',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::pure::tests::model::simple::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'age',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'firstName',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Age',
+                },
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'model::relational::tests::simpleRelationalMapping',
+        },
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'model::MyRuntime',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__projectionWithChainedProperty = {
   _type: 'lambda',
   body: [

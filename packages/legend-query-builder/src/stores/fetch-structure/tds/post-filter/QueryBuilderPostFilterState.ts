@@ -380,10 +380,12 @@ export class PostFilterConditionState implements Hashable {
               this.value,
             ),
             guaranteeNonNullable(
-              this.postFilterState.tdsState.queryBuilderState.mapping,
+              this.postFilterState.tdsState.queryBuilderState
+                .executionContextState.mapping,
             ),
             guaranteeNonNullable(
-              this.postFilterState.tdsState.queryBuilderState.runtimeValue,
+              this.postFilterState.tdsState.queryBuilderState
+                .executionContextState.runtimeValue,
             ),
             this.postFilterState.tdsState.queryBuilderState.graphManagerState
               .graph,

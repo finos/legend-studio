@@ -452,7 +452,7 @@ export class QueryBuilderTDSState
       new QueryBuilderDerivationProjectionColumnState(
         this,
         guaranteeType(
-          this.queryBuilderState.graphManagerState.graphManager.buildRawValueSpecification(
+          this.queryBuilderState.graphManagerState.graphManager.transformValueSpecToRawValueSpec(
             columnColumnLambda,
             this.queryBuilderState.graphManagerState.graph,
           ),

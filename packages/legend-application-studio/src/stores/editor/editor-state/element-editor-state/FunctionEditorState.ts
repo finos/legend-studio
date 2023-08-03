@@ -32,6 +32,7 @@ import {
   assertType,
   StopWatch,
   filterByType,
+  assertTrue,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState.js';
 import {
@@ -51,6 +52,7 @@ import {
   VariableExpression,
   observe_ValueSpecification,
   generateFunctionPrettyName,
+  RawVariableExpression,
 } from '@finos/legend-graph';
 import {
   ExecutionPlanState,
@@ -271,6 +273,7 @@ export class FunctionEditorState extends ElementEditorState {
       generatePlan: flow,
       handleRunFunc: flow,
       cancelFuncRun: flow,
+      updateFunctionWithQuery: flow,
     });
 
     assertType(
@@ -333,6 +336,32 @@ export class FunctionEditorState extends ElementEditorState {
 
   override clearCompilationError(): void {
     this.functionDefinitionEditorState.setCompilationError(undefined);
+  }
+
+  *updateFunctionWithQuery(val: RawLambda): GeneratorFn<void> {
+    const lambdaParam = val.parameters ? (val.parameters as object[]) : [];
+    const parameters = lambdaParam
+      .map((param) =>
+        this.editorStore.graphManagerState.graphManager.buildRawValueSpecification(
+          param,
+          this.editorStore.graphManagerState.graph,
+        ),
+      )
+      .map((rawValueSpec) =>
+        guaranteeType(rawValueSpec, RawVariableExpression),
+      );
+    assertTrue(
+      Array.isArray(val.body),
+      `Query body expected to be a list of expressions`,
+    );
+    this.functionElement.expressionSequence = val.body as object[];
+    this.functionElement.parameters = parameters;
+    yield flowResult(
+      this.functionDefinitionEditorState.convertLambdaObjectToGrammarString({
+        pretty: true,
+        firstLoad: true,
+      }),
+    );
   }
 
   reprocess(

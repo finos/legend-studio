@@ -372,8 +372,12 @@ export abstract class AbstractPureGraphManager {
   abstract serializeValueSpecification(
     valueSpecification: ValueSpecification,
   ): PlainObject;
-  abstract buildRawValueSpecification(
+  abstract transformValueSpecToRawValueSpec(
     valueSpecification: ValueSpecification,
+    graph: PureModel,
+  ): RawValueSpecification;
+  abstract buildRawValueSpecification(
+    valuSpec: object,
     graph: PureModel,
   ): RawValueSpecification;
   abstract serializeRawValueSpecification(

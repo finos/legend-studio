@@ -180,7 +180,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       (ec: DataSpaceExecutionContext) => {
         // runtime should already be set
         const runtimePointer = guaranteeType(
-          queryBuilderState.runtimeValue,
+          queryBuilderState.executionContextState.runtimeValue,
           RuntimePointer,
         );
         this.applicationStore.navigationService.navigator.updateCurrentLocation(
@@ -218,7 +218,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       (_class: Class) => {
         // runtime should already be set
         const runtimePointer = guaranteeType(
-          queryBuilderState.runtimeValue,
+          queryBuilderState.executionContextState.runtimeValue,
           RuntimePointer,
         );
         queryBuilderState.applicationStore.navigationService.navigator.updateCurrentLocation(

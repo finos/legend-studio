@@ -47,6 +47,7 @@ const buildExecutionContextOption = (
  *
  * See details on propagation/cascading in {@link ServiceQueryBuilderState}
  */
+// TODO: add mapping/runtime for `from` queries
 const ServiceQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: ServiceQueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -87,9 +88,9 @@ const ServiceQueryBuilderSetupPanelContent = observer(
     };
 
     // class
-    const classes = queryBuilderState.mapping
+    const classes = queryBuilderState.executionContextState.mapping
       ? getMappingCompatibleClasses(
-          queryBuilderState.mapping,
+          queryBuilderState.executionContextState.mapping,
           queryBuilderState.graphManagerState.usableClasses,
         )
       : [];

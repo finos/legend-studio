@@ -217,11 +217,16 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
       .map(buildRuntimeValueOption);
-    const selectedRuntimeOption = queryBuilderState.runtimeValue
-      ? buildRuntimeValueOption(queryBuilderState.runtimeValue)
+    const selectedRuntimeOption = queryBuilderState.executionContextState
+      .runtimeValue
+      ? buildRuntimeValueOption(
+          queryBuilderState.executionContextState.runtimeValue,
+        )
       : null;
     const changeRuntime = (option: { value: Runtime }): void => {
-      if (option.value === queryBuilderState.runtimeValue) {
+      if (
+        option.value === queryBuilderState.executionContextState.runtimeValue
+      ) {
         return;
       }
       queryBuilderState.changeRuntime(option.value);

@@ -34,6 +34,7 @@ import {
   TEST_DATA__filterQueryWithSubtypeWithExistsChain,
   TEST_DATA__simpleProjectionWithOutPreviewLimit,
   TEST_DATA__simpleProjectionWithPreviewLimit,
+  TEST_DATA__simpleFromFunction,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
@@ -202,6 +203,12 @@ const cases: RoundtripTestCase[] = [
     'Simple projection with subType',
     projectionCtx,
     TEST_DATA__simpleProjectionWithSubtype,
+    undefined,
+  ],
+  [
+    'Simple TDS function with from() function',
+    projectionCtx,
+    TEST_DATA__simpleFromFunction,
     undefined,
   ],
   [

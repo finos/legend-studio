@@ -68,11 +68,11 @@ const promoteQueryToService = async (
   const applicationStore = editorStore.applicationStore;
   try {
     const mapping = guaranteeNonNullable(
-      queryBuilderState.mapping,
+      queryBuilderState.executionContextState.mapping,
       'Mapping is required to create service execution',
     );
     const runtime = guaranteeNonNullable(
-      queryBuilderState.runtimeValue,
+      queryBuilderState.executionContextState.runtimeValue,
       'Runtime is required to create service execution',
     );
     const query = queryBuilderState.buildQuery();
@@ -269,15 +269,15 @@ const PromoteToServiceQueryBuilderAction = observer(
       setPromoteQueryType(type);
     const closeNewServiceModal = (): void => setPromoteQueryType(undefined);
     const allowPromotion = Boolean(
-      queryBuilderState.mapping &&
-        queryBuilderState.runtimeValue &&
+      queryBuilderState.executionContextState.mapping &&
+        queryBuilderState.executionContextState.runtimeValue &&
         !queryBuilderState.allValidationIssues.length,
     );
 
     const renderSaveAsModal = (): React.ReactNode => {
       if (
         promoteQueryModal === PROMOTE_QUERY_TYPE.SERVICE &&
-        queryBuilderState.mapping
+        queryBuilderState.executionContextState.mapping
       ) {
         const promoteToService = async (
           packagePath: string,
@@ -295,7 +295,7 @@ const PromoteToServiceQueryBuilderAction = observer(
 
         return (
           <NewServiceModal
-            mapping={queryBuilderState.mapping}
+            mapping={queryBuilderState.executionContextState.mapping}
             close={closeNewServiceModal}
             showModal={true}
             promoteToService={promoteToService}

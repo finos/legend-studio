@@ -78,12 +78,8 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
     this.onExecutionContextChange = onExecutionContextChange;
 
     if (service.execution instanceof PureSingleExecution) {
-      assertTrue(
-        Boolean(service.execution.mapping && service.execution.runtime),
-        'Service queries without runtime/mapping are not supported',
-      );
-      this.mapping = service.execution.mapping?.value;
-      this.runtimeValue = service.execution.runtime;
+      this.executionContextState.mapping = service.execution.mapping?.value;
+      this.executionContextState.runtimeValue = service.execution.runtime;
     } else if (service.execution instanceof PureMultiExecution) {
       this.executionContexts = service.execution.executionParameters.map(
         (ep) => ({
@@ -92,7 +88,6 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
           runtimeValue: ep.runtime,
         }),
       );
-
       let selectedExecutionContext: ServiceExecutionContext;
       if (executionContextKey) {
         const matchingExecutionContext = this.executionContexts.find(
@@ -115,8 +110,9 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
       }
 
       this.setSelectedExecutionContext(selectedExecutionContext);
-      this.mapping = selectedExecutionContext.mapping;
-      this.runtimeValue = selectedExecutionContext.runtimeValue;
+      this.executionContextState.mapping = selectedExecutionContext.mapping;
+      this.executionContextState.runtimeValue =
+        selectedExecutionContext.runtimeValue;
     }
   }
 
@@ -131,11 +127,11 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
   }
 
   override get isMappingReadOnly(): boolean {
-    return true;
+    return !this.executionContextState.specifiedInQuery;
   }
 
   override get isRuntimeReadOnly(): boolean {
-    return true;
+    return !this.executionContextState.specifiedInQuery;
   }
 
   /**
