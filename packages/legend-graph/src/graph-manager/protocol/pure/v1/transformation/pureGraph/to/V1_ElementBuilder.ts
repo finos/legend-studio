@@ -17,20 +17,29 @@
 import {
   type GenericClazz,
   assertNonEmptyString,
-  assertTrue,
   AssertionError,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
+import type { BasicModel } from '../../../../../../../graph/BasicModel.js';
+import { DependencyModel } from '../../../../../../../graph/DependencyManager.js';
+import { LegendSDLC } from '../../../../../../../graph/GraphDataOrigin.js';
 import {
   addElementToPackage,
+  getElementOrigin,
   getOrCreateGraphPackage,
 } from '../../../../../../../graph/helpers/DomainHelper.js';
 import type { Package } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import type { PackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
+import {
+  GenerationModel,
+  SystemModel,
+} from '../../../../../../../graph/PureModel.js';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
 } from './V1_GraphBuilderContext.js';
+import { GAV_DELIMITER } from '@finos/legend-storage';
 
 export type V1_ElementBuilderPass = (
   elementProtocol: V1_PackageableElement,
@@ -46,6 +55,20 @@ export type V1_ElementThirdPassBuilder = V1_ElementBuilderPass;
 export type V1_ElementFourthPassBuilder = V1_ElementBuilderPass;
 export type V1_ElementFifthPassBuilder = V1_ElementBuilderPass;
 
+const currentSubGraphOrigin = (graph: BasicModel): string => {
+  if (graph instanceof SystemModel) {
+    return 'System elements';
+  } else if (graph instanceof GenerationModel) {
+    return 'Generation elements';
+  } else if (
+    graph instanceof DependencyModel &&
+    graph.origin instanceof LegendSDLC
+  ) {
+    return `Project dependency ${graph.origin.groupId}${GAV_DELIMITER}${graph.origin.artifactId} `;
+  }
+  return '';
+};
+
 export const V1_checkDuplicatedElement = (
   path: string,
   context: V1_GraphBuilderContext,
@@ -53,15 +76,29 @@ export const V1_checkDuplicatedElement = (
 ): void => {
   if (cache) {
     if (cache.has(path)) {
-      throw new AssertionError(`Element '${path}' already exists`);
+      const element = context.graph.getNullableElement(path);
+      const _origin = getElementOrigin(
+        guaranteeNonNullable(element),
+        context.graph,
+      );
+      throw new AssertionError(
+        `${currentSubGraphOrigin(
+          context.currentSubGraph,
+        )}Element '${path}' already exists${_origin ? ` in ${_origin}` : ''}`,
+      );
     } else {
       cache.add(path);
     }
   } else {
-    assertTrue(
-      !context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    const element = context.graph.getNullableElement(path);
+    if (element) {
+      const _origin = getElementOrigin(element, context.graph);
+      throw new AssertionError(
+        `${currentSubGraphOrigin(
+          context.currentSubGraph,
+        )}Element '${path}' already exists${_origin ? ` in ${_origin}` : ''}`,
+      );
+    }
   }
 };
 
