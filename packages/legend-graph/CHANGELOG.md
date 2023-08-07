@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.1.1
+
+### Patch Changes
+
+- [#2454](https://github.com/finos/legend-studio/pull/2454) [`04977ac84`](https://github.com/finos/legend-studio/commit/04977ac8438db126db2ad8c259e52a9786272d13) ([@gayathrir11](https://github.com/gayathrir11)) - Fix error message being shown for duplicated elements
+
 ## 31.1.0
 
 ### Minor Changes
