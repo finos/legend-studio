@@ -132,9 +132,7 @@ const QueryBuilderStatusBar = observer(
                   queryBuilderState.isQueryChatOpened === true,
               },
             )}
-            onClick={(): void => {
-              openQueryChat;
-            }}
+            onClick={openQueryChat}
             tabIndex={-1}
             title="Open Query Chat"
           >
