@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.0.24
+
+### Patch Changes
+
+- [#2444](https://github.com/finos/legend-studio/pull/2444) [`7f4c5c03d`](https://github.com/finos/legend-studio/commit/7f4c5c03db01e2f5adaa529926c46eb1129825cd) ([@gayathrir11](https://github.com/gayathrir11)) - Remove deprecated depot api that fetches project by id.
+
 ## 6.0.23
 
 ## 6.0.22

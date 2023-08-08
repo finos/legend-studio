@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.5
+
+### Patch Changes
+
+- [#2445](https://github.com/finos/legend-studio/pull/2445) [`1e84302f9`](https://github.com/finos/legend-studio/commit/1e84302f9cee4c1139ac9601b7977115eec27d6f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support service with multi execution in Dataspace Quick Start
+
 ## 10.1.4
 
 ## 10.1.3
