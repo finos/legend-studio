@@ -36,6 +36,6 @@ export default {
   devServerOptions: {
     // NOTE: for development from within a Docker container, it's best to update this to 0.0.0.0
     host: 'localhost',
-    port: 9001,
+    port: 9005,
   },
 };
