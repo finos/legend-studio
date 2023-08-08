@@ -1143,6 +1143,7 @@ export const V1_persistenceTestModelSchema = (
 ): ModelSchema<V1_PersistenceTest> =>
   createModelSchema(V1_PersistenceTest, {
     _type: usingConstantValueSchema(V1_AtomicTestType.PERSISTENCE_TEST),
+    graphFetchPath: raw(),
     id: primitive(),
     isTestDataFromServiceOutput: primitive(),
     testBatches: customListWithSchema(

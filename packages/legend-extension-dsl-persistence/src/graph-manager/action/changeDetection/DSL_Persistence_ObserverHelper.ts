@@ -107,6 +107,7 @@ export const observe_PersistenceTest = skipObservedWithContext(
   (metamodel: PersistenceTest, context: ObserverContext): PersistenceTest => {
     makeObservable(metamodel, {
       id: observable,
+      graphFetchPath: observable,
       testBatches: observable,
       isTestDataFromServiceOutput: observable,
       hashCode: computed,

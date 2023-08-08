@@ -286,6 +286,7 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
       ): AtomicTest | undefined => {
         if (protocol instanceof V1_PersistenceTest) {
           const test = new PersistenceTest();
+          test.graphFetchPath = protocol.graphFetchPath;
           test.id = protocol.id;
           test.isTestDataFromServiceOutput =
             protocol.isTestDataFromServiceOutput;
@@ -309,6 +310,7 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
       ): V1_AtomicTest | undefined => {
         if (metamodel instanceof PersistenceTest) {
           const persistenceTest = new V1_PersistenceTest();
+          persistenceTest.graphFetchPath = metamodel.graphFetchPath;
           persistenceTest.id = metamodel.id;
           persistenceTest.isTestDataFromServiceOutput =
             metamodel.isTestDataFromServiceOutput;
