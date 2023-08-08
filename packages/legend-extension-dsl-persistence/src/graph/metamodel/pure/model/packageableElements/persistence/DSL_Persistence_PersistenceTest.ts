@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import { AtomicTest } from '@finos/legend-graph';
+import {
+  AtomicTest,
+  hashObjectWithoutSourceInformation,
+} from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
 import type { PersistenceTestBatch } from './DSL_Persistence_PersistenceTestBatch.js';
-import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 
 export class PersistenceTest extends AtomicTest implements Hashable {
   testBatches: PersistenceTestBatch[] = [];
