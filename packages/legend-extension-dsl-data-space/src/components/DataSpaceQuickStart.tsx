@@ -34,6 +34,7 @@ import {
   type DataSpaceExecutableAnalysisResult,
   type DataSpaceExecutableTDSResultColumn,
   DataSpaceServiceExecutableInfo,
+  DataSpaceMultiExecutionServiceExecutableInfo,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
@@ -115,7 +116,10 @@ const DataSpaceExecutableTDSResultView = observer(
 
     const openServiceQuery = (): void => {
       if (
-        executableAnalysisResult.info instanceof DataSpaceServiceExecutableInfo
+        executableAnalysisResult.info instanceof
+          DataSpaceServiceExecutableInfo ||
+        executableAnalysisResult.info instanceof
+          DataSpaceMultiExecutionServiceExecutableInfo
       ) {
         dataSpaceViewerState.openServiceQuery(
           executableAnalysisResult.executable,

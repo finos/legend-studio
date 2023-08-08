@@ -249,32 +249,93 @@ export abstract class V1_DataSpaceExecutableInfo {
 }
 
 const V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE = 'service';
+const V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE =
+  'multiExecutionService';
 
 export class V1_DataSpaceServiceExecutableInfo extends V1_DataSpaceExecutableInfo {
   pattern!: string;
   mapping?: string | undefined;
   runtime?: string | undefined;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_DataSpaceServiceExecutableInfo, {
-      _type: usingConstantValueSchema(
-        V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE,
-      ),
-      mapping: optional(primitive()),
-      pattern: primitive(),
-      query: primitive(),
-      runtime: optional(primitive()),
-    }),
-  );
+  datasets: V1_DatasetSpecification[] = [];
 }
 
+const V1_dataSpaceServiceExecutableInfoModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataSpaceServiceExecutableInfo> =>
+  createModelSchema(V1_DataSpaceServiceExecutableInfo, {
+    _type: usingConstantValueSchema(V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE),
+    datasets: list(
+      custom(
+        () => SKIP,
+        (val: PlainObject<V1_DatasetSpecification>) =>
+          V1_deserializeDatasetSpecification(val, plugins),
+      ),
+    ),
+    mapping: optional(primitive()),
+    pattern: primitive(),
+    query: primitive(),
+    runtime: optional(primitive()),
+  });
+
+export class V1_DataSpaceMultiExecutionServiceKeyedExecutableInfo {
+  key!: string;
+  mapping?: string | undefined;
+  runtime?: string | undefined;
+  datasets: V1_DatasetSpecification[] = [];
+}
+
+const V1_dataSpaceMultiExecutionServiceKeyedExecutableInfoModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataSpaceMultiExecutionServiceKeyedExecutableInfo> =>
+  createModelSchema(V1_DataSpaceMultiExecutionServiceKeyedExecutableInfo, {
+    datasets: list(
+      custom(
+        () => SKIP,
+        (val: PlainObject<V1_DatasetSpecification>) =>
+          V1_deserializeDatasetSpecification(val, plugins),
+      ),
+    ),
+    key: primitive(),
+    mapping: optional(primitive()),
+    runtime: optional(primitive()),
+  });
+
+export class V1_DataSpaceMultiExecutionServiceExecutableInfo extends V1_DataSpaceExecutableInfo {
+  pattern!: string;
+  keyedExecutableInfos: V1_DataSpaceMultiExecutionServiceKeyedExecutableInfo[] =
+    [];
+}
+
+const V1_dataSpaceMultiExecutionServiceExecutableInfoModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataSpaceMultiExecutionServiceExecutableInfo> =>
+  createModelSchema(V1_DataSpaceMultiExecutionServiceExecutableInfo, {
+    _type: usingConstantValueSchema(
+      V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE,
+    ),
+    keyedExecutableInfoList: list(
+      usingModelSchema(
+        V1_dataSpaceMultiExecutionServiceKeyedExecutableInfoModelSchema(
+          plugins,
+        ),
+      ),
+    ),
+    pattern: primitive(),
+  });
+
 const V1_deserializeDataSpaceExecutableInfo = (
+  plugins: PureProtocolProcessorPlugin[],
   json: PlainObject<V1_DataSpaceExecutableInfo>,
 ): V1_DataSpaceExecutableInfo => {
   switch (json._type) {
     case V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE:
       return deserialize(
-        V1_DataSpaceServiceExecutableInfo.serialization.schema,
+        V1_dataSpaceServiceExecutableInfoModelSchema(plugins),
+        json,
+      );
+    case V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE:
+      return deserialize(
+        V1_dataSpaceMultiExecutionServiceExecutableInfoModelSchema(plugins),
         json,
       );
     default:
@@ -341,23 +402,19 @@ export class V1_DataSpaceExecutableAnalysisResult {
   executable!: string;
   info?: V1_DataSpaceExecutableInfo | undefined;
   result!: V1_DataSpaceExecutableResult;
-  datasets: V1_DatasetSpecification[] = [];
 }
 
 const V1_dataSpaceExecutableAnalysisResultModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataSpaceExecutableAnalysisResult> =>
   createModelSchema(V1_DataSpaceExecutableAnalysisResult, {
-    datasets: list(
-      custom(
-        () => SKIP,
-        (val: PlainObject<V1_DatasetSpecification>) =>
-          V1_deserializeDatasetSpecification(val, plugins),
-      ),
-    ),
     executable: primitive(),
     description: optional(primitive()),
-    info: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableInfo),
+    info: optionalCustom(
+      () => SKIP,
+      (val: PlainObject<V1_DataSpaceExecutableInfo>) =>
+        V1_deserializeDataSpaceExecutableInfo(plugins, val),
+    ),
     result: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
     title: primitive(),
   });
