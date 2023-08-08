@@ -53,8 +53,6 @@ export class DepotServerClient extends AbstractServerClient {
     `${this._projects()}/${encodeURIComponent(groupId)}/${encodeURIComponent(
       artifactId,
     )}`;
-  private _projectById = (projectId: string): string =>
-    `${this._projects()}/${encodeURIComponent(projectId)}`;
 
   getProjects = (): Promise<PlainObject<StoreProjectData>[]> =>
     this.get(this._projectConfigurations());
@@ -68,11 +66,6 @@ export class DepotServerClient extends AbstractServerClient {
         groupId,
       )}/${encodeURIComponent(artifactId)}`,
     );
-
-  getProjectById = (
-    projectId: string,
-  ): Promise<PlainObject<StoreProjectData>[]> =>
-    this.get(this._projectById(projectId));
 
   // ------------------------------------------- Entities -------------------------------------------
 

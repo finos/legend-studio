@@ -850,19 +850,17 @@ const ProjectVersionDependencyEditor = observer(
       }
     };
     const viewProject = (): void => {
-      if (!projectDependency.isLegacyDependency) {
-        applicationStore.navigationService.navigator.visitAddress(
-          applicationStore.navigationService.navigator.generateAddress(
-            generateViewProjectByGAVRoute(
-              guaranteeNonNullable(projectDependency.groupId),
-              guaranteeNonNullable(projectDependency.artifactId),
-              projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
-                ? SNAPSHOT_VERSION_ALIAS
-                : projectDependency.versionId,
-            ),
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
+          generateViewProjectByGAVRoute(
+            guaranteeNonNullable(projectDependency.groupId),
+            guaranteeNonNullable(projectDependency.artifactId),
+            projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
+              ? SNAPSHOT_VERSION_ALIAS
+              : projectDependency.versionId,
           ),
-        );
-      }
+        ),
+      );
     };
     // NOTE: This assumes that the dependant project is in the same studio instance as the current project
     // In the future, the studio instance may be part of the project data
@@ -927,11 +925,7 @@ const ProjectVersionDependencyEditor = observer(
           content={
             <MenuContent>
               <MenuContentItem
-                disabled={
-                  projectDependency.isLegacyDependency ||
-                  !selectedProject ||
-                  !selectedVersionOption
-                }
+                disabled={!selectedProject || !selectedVersionOption}
                 onClick={viewProject}
                 title="View project"
               >
@@ -940,7 +934,6 @@ const ProjectVersionDependencyEditor = observer(
               <MenuContentItem
                 title="View SDLC project"
                 disabled={
-                  projectDependency.isLegacyDependency ||
                   !selectedProject ||
                   !selectedVersionOption ||
                   !projectDependencyData

@@ -221,7 +221,6 @@ export const TEST__setUpEditor = async (
     latestProjectStructureVersion: PlainObject<ProjectStructureVersion>;
     availableGenerationDescriptions: GenerationConfigurationDescription[];
     projects: PlainObject<StoreProjectData>[];
-    projectData: PlainObject<StoreProjectData>[];
     projectDependency: PlainObject<ProjectVersionEntities>[];
     projectDependencyVersions: string[];
     projectDependencyReport: PlainObject<RawProjectDependencyReport>;
@@ -236,7 +235,6 @@ export const TEST__setUpEditor = async (
     entities,
     latestProjectStructureVersion,
     availableGenerationDescriptions,
-    projectData,
     projects,
     projectDependency,
     projectDependencyVersions,
@@ -295,10 +293,6 @@ export const TEST__setUpEditor = async (
     MOCK__editorStore.depotServerClient,
     'getVersions',
   ).mockResolvedValue(projectDependencyVersions);
-  createSpy(
-    MOCK__editorStore.depotServerClient,
-    'getProjectById',
-  ).mockResolvedValue(projectData);
   createSpy(
     MOCK__editorStore.depotServerClient,
     'collectDependencyEntities',
@@ -417,7 +411,6 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
       ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
     ],
     projects: [],
-    projectData: [],
     projectDependency: [],
     projectDependencyVersions: [],
     projectDependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,
