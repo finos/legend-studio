@@ -32,11 +32,13 @@ import {
   CollectionInstanceValue,
   getClassProperty,
   PrimitiveType,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   assertIsBoolean,
   assertIsString,
   assertTrue,
+  assertType,
   guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
@@ -45,7 +47,7 @@ import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../../graph/QueryBuilderMetaModelConst.js';
-import type { QueryBuilderState } from '../../QueryBuilderState.js';
+import { type QueryBuilderState } from '../../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../QueryBuilderStateBuilder.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../QueryBuilderFetchStructureImplementationState.js';
 import {
@@ -56,6 +58,7 @@ import {
 } from './QueryBuilderGraphFetchTreeState.js';
 import { buildGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil.js';
 import {} from 'mobx';
+import { QueryBuilderInternalizeState } from '../../QueryBuilderInternalizeState.js';
 
 export const processGraphFetchExpression = (
   expression: SimpleFunctionExpression,
@@ -103,6 +106,65 @@ export const processGraphFetchExpression = (
       ),
     );
   }
+};
+
+export const processInternalizeExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  // update fetch-structure
+  queryBuilderState.fetchStructureState.changeImplementation(
+    FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH,
+  );
+  const functionName = expression.functionName;
+  // check parameters
+  assertTrue(
+    expression.parametersValues.length === 3,
+    `Can't process ${functionName}() expression: ${functionName}() expects 2 argument`,
+  );
+
+  // first param classs
+  const classVal = expression.parametersValues[0];
+  const _class = classVal?.genericType?.value.rawType;
+  assertType(
+    _class,
+    Class,
+    `Can't process internalize() expression: internalize() return type is missing`,
+  );
+
+  queryBuilderState.setClass(_class);
+  queryBuilderState.milestoningState.clearMilestoningDates();
+  queryBuilderState.explorerState.refreshTreeData();
+
+  // binding
+  const instanceExpression = guaranteeType(
+    expression.parametersValues[1],
+    InstanceValue,
+    `Can't process internalize() expression: only support internalize() with 1st parameter as instance value`,
+  );
+  const binding = guaranteeType(
+    guaranteeType(
+      instanceExpression.values[0],
+      PackageableElementReference,
+      `Can't process internalize() expression: only support internalize() with 1st parameter as packagableElement value`,
+    ).value,
+    Binding,
+    `Can't process internalize() expression: only support internalize() with 1st parameter as binding value`,
+  );
+
+  const variableExpression = guaranteeType(
+    expression.parametersValues[2],
+    VariableExpression,
+  );
+
+  const inernalize = new QueryBuilderInternalizeState(
+    binding,
+    variableExpression,
+    queryBuilderState,
+  );
+
+  queryBuilderState.setInternalize(inernalize);
 };
 
 type PropertyValue = object | string | number | boolean;
@@ -327,6 +389,7 @@ export const processGraphFetchExternalizeExpression = (
     matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.INTERNALIZE,
     ]),
     `Can't process externalize() expression: only support externalize() in graph-fetch expression`,
   );
@@ -373,7 +436,6 @@ export const processGraphFetchExternalizeExpression = (
       Binding,
       `Can't process externalize() expression: only support externalize() with 1st parameter as binding value`,
     );
-
     const externalizeState = new GraphFetchExternalFormatSerializationState(
       graphFetchTreeState,
       binding,

@@ -134,9 +134,12 @@ export class FilterConditionState implements Hashable {
               this.propertyExpressionState.propertyExpression,
               this.value,
             ),
-            guaranteeNonNullable(this.filterState.queryBuilderState.mapping),
             guaranteeNonNullable(
-              this.filterState.queryBuilderState.runtimeValue,
+              this.filterState.queryBuilderState.executionContextState.mapping,
+            ),
+            guaranteeNonNullable(
+              this.filterState.queryBuilderState.executionContextState
+                .runtimeValue,
             ),
             this.filterState.queryBuilderState.graphManagerState.graph,
           )) as ExecutionResult;

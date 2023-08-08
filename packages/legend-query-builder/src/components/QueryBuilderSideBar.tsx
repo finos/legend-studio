@@ -212,6 +212,206 @@ export const QueryBuilderClassSelector = observer(
   },
 );
 
+export const QueryBuilderMappingSelector = observer(
+  (props: {
+    queryBuilderState: QueryBuilderState;
+    classes: Class[];
+    onClassChange?: ((val: Class) => void) | undefined;
+    noMatchMessage?: string | undefined;
+  }) => {
+    const { queryBuilderState, classes, onClassChange, noMatchMessage } = props;
+    const milestoningState = queryBuilderState.milestoningState;
+    const applicationStore = useApplicationStore();
+
+    // class
+    const elementFilterOption = createFilter({
+      ignoreCase: true,
+      ignoreAccents: false,
+      stringify: (option: PackageableElementOption<Class>): string =>
+        option.value.path,
+    });
+
+    const classOptions = classes.map((_class) => ({
+      value: _class,
+      label: generateClassLabel(_class, queryBuilderState),
+    }));
+    const selectedClassOption = queryBuilderState.class
+      ? {
+          value: queryBuilderState.class,
+          label: generateClassLabel(queryBuilderState.class, queryBuilderState),
+        }
+      : null;
+    const changeClass = (val: PackageableElementOption<Class>): void => {
+      if (val.value === queryBuilderState.class) {
+        return;
+      }
+      queryBuilderState.changeClass(val.value);
+      onClassChange?.(val.value);
+    };
+
+    // milestoning
+    const showMilestoningEditor = (): void =>
+      milestoningState.setShowMilestoningEditor(true);
+
+    return (
+      <div className="query-builder__setup__config-group query-builder__setup__config-group--class">
+        <div className="query-builder__setup__config-group__content">
+          <div className="query-builder__setup__config-group__item ">
+            <div
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="class"
+            >
+              <PURE_ClassIcon />
+            </div>
+            <CustomSelectorInput
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector query-builder__setup__config-group__item__selector__milestoned"
+              placeholder={
+                classOptions.length
+                  ? 'Choose a class...'
+                  : noMatchMessage ?? 'No class found'
+              }
+              disabled={
+                classOptions.length < 1 ||
+                (classOptions.length === 1 && Boolean(selectedClassOption))
+              }
+              noMatchMessage={noMatchMessage}
+              options={classOptions}
+              onChange={changeClass}
+              value={selectedClassOption}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              filterOption={elementFilterOption}
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled,
+              })}
+            />
+            {queryBuilderState.isQuerySupported && (
+              <button
+                className="btn--dark btn__icon--dark query-builder__setup__milestoning"
+                tabIndex={-1}
+                onClick={showMilestoningEditor}
+                disabled={!milestoningState.isMilestonedQuery}
+                title="Edit Milestoning Parameters"
+              >
+                <ClockIcon />
+              </button>
+            )}
+            {milestoningState.isMilestonedQuery && (
+              <MilestoningParametersEditor
+                queryBuilderState={queryBuilderState}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+export const QueryBuilderFunction = observer(
+  (props: {
+    queryBuilderState: QueryBuilderState;
+    classes: Class[];
+    onClassChange?: ((val: Class) => void) | undefined;
+    noMatchMessage?: string | undefined;
+  }) => {
+    const { queryBuilderState, classes, onClassChange, noMatchMessage } = props;
+    const milestoningState = queryBuilderState.milestoningState;
+    const applicationStore = useApplicationStore();
+
+    // class
+    const elementFilterOption = createFilter({
+      ignoreCase: true,
+      ignoreAccents: false,
+      stringify: (option: PackageableElementOption<Class>): string =>
+        option.value.path,
+    });
+
+    const classOptions = classes.map((_class) => ({
+      value: _class,
+      label: generateClassLabel(_class, queryBuilderState),
+    }));
+    const selectedClassOption = queryBuilderState.class
+      ? {
+          value: queryBuilderState.class,
+          label: generateClassLabel(queryBuilderState.class, queryBuilderState),
+        }
+      : null;
+    const changeClass = (val: PackageableElementOption<Class>): void => {
+      if (val.value === queryBuilderState.class) {
+        return;
+      }
+      queryBuilderState.changeClass(val.value);
+      onClassChange?.(val.value);
+    };
+
+    // milestoning
+    const showMilestoningEditor = (): void =>
+      milestoningState.setShowMilestoningEditor(true);
+
+    return (
+      <div className="query-builder__setup__config-group query-builder__setup__config-group--class">
+        <div className="query-builder__setup__config-group__content">
+          <div className="query-builder__setup__config-group__item ">
+            <div
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="class"
+            >
+              <PURE_ClassIcon />
+            </div>
+            <CustomSelectorInput
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector query-builder__setup__config-group__item__selector__milestoned"
+              placeholder={
+                classOptions.length
+                  ? 'Choose a class...'
+                  : noMatchMessage ?? 'No class found'
+              }
+              disabled={
+                classOptions.length < 1 ||
+                (classOptions.length === 1 && Boolean(selectedClassOption))
+              }
+              noMatchMessage={noMatchMessage}
+              options={classOptions}
+              onChange={changeClass}
+              value={selectedClassOption}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              filterOption={elementFilterOption}
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled,
+              })}
+            />
+            {queryBuilderState.isQuerySupported && (
+              <button
+                className="btn--dark btn__icon--dark query-builder__setup__milestoning"
+                tabIndex={-1}
+                onClick={showMilestoningEditor}
+                disabled={!milestoningState.isMilestonedQuery}
+                title="Edit Milestoning Parameters"
+              >
+                <ClockIcon />
+              </button>
+            )}
+            {milestoningState.isMilestonedQuery && (
+              <MilestoningParametersEditor
+                queryBuilderState={queryBuilderState}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 export const buildRuntimeValueOption = (
   runtimeValue: Runtime,
 ): { label: string; value: Runtime } => ({
@@ -257,13 +457,14 @@ const BasicQueryBuilderSetup = observer(
       queryBuilderState.graphManagerState.usableMappings.map(
         buildElementOption,
       );
-    const selectedMappingOption = queryBuilderState.mapping
-      ? buildElementOption(queryBuilderState.mapping)
+    const selectedMappingOption = queryBuilderState.executionContextState
+      .mapping
+      ? buildElementOption(queryBuilderState.executionContextState.mapping)
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
       if (
         !queryBuilderState.class ||
-        val.value === queryBuilderState.mapping ||
+        val.value === queryBuilderState.executionContextState.mapping ||
         queryBuilderState.isMappingReadOnly
       ) {
         return;
@@ -284,12 +485,15 @@ const BasicQueryBuilderSetup = observer(
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
       .map(buildRuntimeValueOption);
-    const selectedRuntimeOption = queryBuilderState.runtimeValue
-      ? buildRuntimeValueOption(queryBuilderState.runtimeValue)
+    const selectedRuntimeOption = queryBuilderState.executionContextState
+      .runtimeValue
+      ? buildRuntimeValueOption(
+          queryBuilderState.executionContextState.runtimeValue,
+        )
       : null;
     const changeRuntime = (val: { value: Runtime }): void => {
       if (
-        val.value === queryBuilderState.runtimeValue ||
+        val.value === queryBuilderState.executionContextState.runtimeValue ||
         queryBuilderState.isRuntimeReadOnly
       ) {
         return;
@@ -368,7 +572,7 @@ const BasicQueryBuilderSetup = observer(
                 disabled={
                   queryBuilderState.isRuntimeReadOnly ||
                   !queryBuilderState.class ||
-                  !queryBuilderState.mapping
+                  !queryBuilderState.executionContextState.mapping
                 }
                 options={runtimeOptions}
                 onChange={changeRuntime}

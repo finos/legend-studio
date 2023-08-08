@@ -148,8 +148,11 @@ const ServiceRegisterModal = observer(
           !servicePattern ||
           !isServiceUrlPatternValid ||
           !selectedEnvOption ||
-          !queryBuilderState.mapping ||
-          !(queryBuilderState.runtimeValue instanceof RuntimePointer)
+          !queryBuilderState.executionContextState.mapping ||
+          !(
+            queryBuilderState.executionContextState.runtimeValue instanceof
+            RuntimePointer
+          )
         ) {
           return;
         }
@@ -164,8 +167,9 @@ const ServiceRegisterModal = observer(
             servicePattern,
             owners.map((o) => o.value),
             queryBuilderState.buildQuery(),
-            queryBuilderState.mapping.path,
-            queryBuilderState.runtimeValue.packageableRuntime.value.path,
+            queryBuilderState.executionContextState.mapping.path,
+            queryBuilderState.executionContextState.runtimeValue
+              .packageableRuntime.value.path,
             editorStore.graphManagerState,
           );
 

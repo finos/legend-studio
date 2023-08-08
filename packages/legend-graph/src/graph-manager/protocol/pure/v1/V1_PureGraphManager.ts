@@ -303,6 +303,7 @@ import {
   V1_ArtifactGenerationExtensionInput,
   V1_buildArtifactsByExtensionElement,
 } from './engine/generation/V1_ArtifactGenerationExtensionApi.js';
+import type { V1_RawValueSpecification } from './model/rawValueSpecification/V1_RawValueSpecification.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2136,14 +2137,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  buildRawValueSpecification(
+  transformValueSpecToRawValueSpec(
     valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification {
     // converts value spec to json
     const json = this.serializeValueSpecification(valueSpecification);
-    // deserialize json and builds metamodal raw value spec
-    const rawValueSpecification = V1_deserializeRawValueSpecification(json);
+    return this.buildRawValueSpecification(json, graph);
+  }
+
+  buildRawValueSpecification(
+    json: object,
+    graph: PureModel,
+  ): RawValueSpecification {
+    const rawValueSpecification = V1_deserializeRawValueSpecification(
+      json as PlainObject<V1_RawValueSpecification>,
+    );
     return rawValueSpecification.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationBuilder(
         new V1_GraphBuilderContextBuilder(

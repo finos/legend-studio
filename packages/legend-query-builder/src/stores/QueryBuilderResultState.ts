@@ -217,8 +217,8 @@ export class QueryBuilderResultState {
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
           query,
-          this.queryBuilderState.mapping,
-          this.queryBuilderState.runtimeValue,
+          this.queryBuilderState.executionContextState.mapping,
+          this.queryBuilderState.executionContextState.runtimeValue,
           this.queryBuilderState.graphManagerState.graph,
           {
             serializationFormat,
@@ -260,11 +260,11 @@ export class QueryBuilderResultState {
       this.setIsRunningQuery(true);
       const currentHashCode = this.queryBuilderState.hashCode;
       const mapping = guaranteeNonNullable(
-        this.queryBuilderState.mapping,
+        this.queryBuilderState.executionContextState.mapping,
         'Mapping is required to execute query',
       );
       const runtime = guaranteeNonNullable(
-        this.queryBuilderState.runtimeValue,
+        this.queryBuilderState.executionContextState.runtimeValue,
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
@@ -350,11 +350,11 @@ export class QueryBuilderResultState {
     try {
       this.isGeneratingPlan = true;
       const mapping = guaranteeNonNullable(
-        this.queryBuilderState.mapping,
+        this.queryBuilderState.executionContextState.mapping,
         'Mapping is required to execute query',
       );
       const runtime = guaranteeNonNullable(
-        this.queryBuilderState.runtimeValue,
+        this.queryBuilderState.executionContextState.runtimeValue,
         `Runtime is required to execute query`,
       );
       const query = this.queryBuilderState.buildQuery();

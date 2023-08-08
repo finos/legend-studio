@@ -42,6 +42,7 @@ import {
   getValueSpecificationReturnType,
   type Type,
   resolveServiceQueryRawLambda,
+  PureExecution,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
@@ -132,10 +133,13 @@ export class ServiceEditorState extends ElementEditorState {
         editorStore.sdlcServerClient.features.canCreateVersion,
     );
     this.testableState = new ServiceTestableState(editorStore, this);
-    const query = this.executionState.serviceExecutionParameters?.query;
+    const executionQuery =
+      this.service.execution instanceof PureExecution
+        ? this.service.execution.func
+        : undefined;
     // default to execution tab if query is defined
     this.selectedTab =
-      query && !isStubbed_RawLambda(query)
+      executionQuery && !isStubbed_RawLambda(executionQuery)
         ? SERVICE_TAB.EXECUTION
         : SERVICE_TAB.GENERAL;
     this.postValidationState = new ServicePostValidationsState(this);

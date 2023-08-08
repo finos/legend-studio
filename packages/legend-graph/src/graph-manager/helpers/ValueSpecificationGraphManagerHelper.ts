@@ -41,7 +41,7 @@ export const buildRawLambdaFromLambdaFunction = (
   const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue();
   lambdaFunctionInstanceValue.values = [lambdaFunction];
   return guaranteeType(
-    graphManagerState.graphManager.buildRawValueSpecification(
+    graphManagerState.graphManager.transformValueSpecToRawValueSpec(
       lambdaFunctionInstanceValue,
       graphManagerState.graph,
     ),

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   FunctionEditorState,
@@ -27,6 +27,7 @@ import {
 } from '../../../stores/editor/utils/DnDUtils.js';
 import {
   assertErrorThrown,
+  assertTrue,
   prettyCONSTName,
   returnUndefOnError,
   UnsupportedOperationError,
@@ -61,6 +62,7 @@ import {
   PauseCircleIcon,
   PlayIcon,
   PanelLoadingIndicator,
+  PencilIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import {
@@ -98,6 +100,7 @@ import {
   getClassProperty,
   RawExecutionResult,
   extractExecutionResultValues,
+  RawLambda,
 } from '@finos/legend-graph';
 import {
   type ApplicationStore,
@@ -131,7 +134,9 @@ import {
 } from '../../../stores/graph-modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import {
+  type QueryBuilderState,
   ExecutionPlanViewer,
+  FunctionQueryBuilderState,
   LambdaEditor,
   LambdaParameterValuesEditor,
 } from '@finos/legend-query-builder';
@@ -1055,7 +1060,7 @@ export const FunctionEditor = observer(() => {
   const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
     flowResult(functionEditorState.generatePlan(true)),
   );
-
+  const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
   useEffect(() => {
     flowResult(
       functionEditorState.functionDefinitionEditorState.convertLambdaObjectToGrammarString(
@@ -1070,6 +1075,88 @@ export const FunctionEditor = observer(() => {
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.FUNCTION_EDITOR,
   );
+
+  const editWithQueryBuilder = (): (() => void) =>
+    applicationStore.guardUnhandledError(async () => {
+      try {
+        const functionQueryBuilderState = new FunctionQueryBuilderState(
+          embeddedQueryBuilderState.editorStore.applicationStore,
+          embeddedQueryBuilderState.editorStore.graphManagerState,
+          functionEditorState.functionElement,
+        );
+        functionQueryBuilderState.initializeWithQuery(
+          new RawLambda(
+            functionEditorState.functionElement.parameters.map((_param) =>
+              functionEditorState.editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+                _param,
+              ),
+            ),
+            functionEditorState.functionElement.expressionSequence,
+          ),
+        );
+        assertTrue(
+          Boolean(
+            functionQueryBuilderState.isQuerySupported &&
+              functionQueryBuilderState.executionContextState.mapping &&
+              functionQueryBuilderState.executionContextState.runtimeValue,
+          ),
+          `Only functions returning TDS/graph fetch using the from() function can be edited via query builder`,
+        );
+        await flowResult(
+          embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+            setupQueryBuilderState: (): QueryBuilderState =>
+              functionQueryBuilderState,
+            actionConfigs: [
+              {
+                key: 'save-query-btn',
+                renderer: (
+                  queryBuilderState: QueryBuilderState,
+                ): React.ReactNode => {
+                  const save = applicationStore.guardUnhandledError(
+                    async () => {
+                      try {
+                        const rawLambda = queryBuilderState.buildQuery();
+                        await flowResult(
+                          functionEditorState.updateFunctionWithQuery(
+                            rawLambda,
+                          ),
+                        );
+                        applicationStore.notificationService.notifySuccess(
+                          `Function query is updated`,
+                        );
+                        embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+                          undefined,
+                        );
+                      } catch (error) {
+                        assertErrorThrown(error);
+                        applicationStore.notificationService.notifyError(
+                          `Can't save query: ${error.message}`,
+                        );
+                      }
+                    },
+                  );
+                  return (
+                    <button
+                      className="query-builder__dialog__header__custom-action"
+                      tabIndex={-1}
+                      disabled={isReadOnly}
+                      onClick={save}
+                    >
+                      Save Query
+                    </button>
+                  );
+                },
+              },
+            ],
+          }),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        applicationStore.notificationService.notifyError(
+          `Unable to edit via query builder: ${error.message}`,
+        );
+      }
+    });
 
   return (
     <div className="function-editor uml-editor uml-editor--dark">
@@ -1102,6 +1189,17 @@ export const FunctionEditor = observer(() => {
             ))}
           </div>
           <div className="panel__header__actions">
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              <button
+                className="btn__dropdown-combo__label"
+                onClick={editWithQueryBuilder()}
+                title="Edit Query"
+                tabIndex={-1}
+              >
+                <PencilIcon className="btn__dropdown-combo__label__icon" />
+                <div className="btn__dropdown-combo__label__title">Edit</div>
+              </button>
+            </div>
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               {functionEditorState.isRunningFunc ? (
                 <button
