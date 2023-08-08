@@ -30,7 +30,7 @@ import {
   type FunctionExpression,
   type GraphFetchTreeInstanceValue,
   type ValueSpecificationVisitor,
-  type InstanceValue,
+  InstanceValue,
   type INTERNAL__UnknownValueSpecification,
   type LambdaFunction,
   type KeyExpressionInstanceValue,
@@ -47,6 +47,11 @@ import {
   type ValueSpecification,
   SUPPORTED_FUNCTIONS,
   isSuperType,
+  PackageableElementReference,
+  Mapping,
+  PackageableRuntime,
+  RuntimePointer,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
@@ -58,6 +63,7 @@ import {
   processGraphFetchExpression,
   processGraphFetchExternalizeExpression,
   processGraphFetchSerializeExpression,
+  processInternalizeExpression,
 } from './fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeStateBuilder.js';
 import {
   processTDSDistinctExpression,
@@ -78,6 +84,7 @@ import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkSta
 import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 import { checkIfEquivalent } from './milestoning/QueryBuilderMilestoningHelper.js';
 import type { QueryBuilderParameterValue } from './QueryBuilderParametersState.js';
+import { QueryBuilderEmbeddedFromExecutionContextState } from './QueryBuilderExecutionContextState.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -144,6 +151,51 @@ const processLetExpression = (
   );
   queryBuilderState.constantState.setShowConstantPanel(true);
   queryBuilderState.constantState.addConstant(constantExpression);
+};
+
+const processFromFunction = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  // mapping
+  const mappingInstanceExpression = guaranteeType(
+    expression.parametersValues[1],
+    InstanceValue,
+    `Can't process from() expression: only support from() with 1st parameter as instance value`,
+  );
+  const mapping = guaranteeType(
+    guaranteeType(
+      mappingInstanceExpression.values[0],
+      PackageableElementReference,
+      `Can't process from() expression: only support from() with 1st parameter as packagableElement value`,
+    ).value,
+    Mapping,
+    `Can't process from() expression: only support from() with 1st parameter as mapping value`,
+  );
+  // runtime
+  const runtimeInstanceExpression = guaranteeType(
+    expression.parametersValues[2],
+    InstanceValue,
+    `Can't process from() expression: only support from() with 2nd parameter as instance value`,
+  );
+  const runtimeVal = guaranteeType(
+    guaranteeType(
+      runtimeInstanceExpression.values[0],
+      PackageableElementReference,
+      `Can't process from() expression: only support from() with 2nd parameter as packagableElement value`,
+    ).value,
+    PackageableRuntime,
+    `Can't process from() expression: only support from() with 2nd parameter as runtime value`,
+  );
+  const fromContext = new QueryBuilderEmbeddedFromExecutionContextState(
+    queryBuilderState,
+  );
+  fromContext.setMapping(mapping);
+  fromContext.setRuntimeValue(
+    new RuntimePointer(PackageableElementExplicitReference.create(runtimeVal)),
+  );
+  queryBuilderState.setExecutionContextState(fromContext);
+  return;
 };
 
 /**
@@ -320,6 +372,18 @@ export class QueryBuilderValueSpecificationProcessor
       matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL)
     ) {
       processGetAllExpression(valueSpecification, this.queryBuilderState);
+      return;
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.INTERNALIZE,
+      )
+    ) {
+      processInternalizeExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
       return;
     } else if (
       matchFunctionName(functionName, [
@@ -543,6 +607,20 @@ export class QueryBuilderValueSpecificationProcessor
         valueSpecification,
         this.queryBuilderState,
         this.parentLambda,
+      );
+      return;
+    } else if (matchFunctionName(functionName, [SUPPORTED_FUNCTIONS.FROM])) {
+      const parameters = valueSpecification.parametersValues;
+      assertTrue(
+        parameters.length === 3,
+        'From function expects 2 parameters (mapping and runtime)',
+      );
+      processFromFunction(valueSpecification, this.queryBuilderState);
+      QueryBuilderValueSpecificationProcessor.processChild(
+        guaranteeNonNullable(parameters[0]),
+        valueSpecification,
+        this.parentLambda,
+        this.queryBuilderState,
       );
       return;
     } else if (

@@ -135,6 +135,7 @@ import {
   V1_ArtifactGenerationExtensionOutput,
   V1_ArtifactGenerationExtensionInput,
 } from './generation/V1_ArtifactGenerationExtensionApi.js';
+import { V1_DatabaseToModelGenerationInput } from './relational/V1_DatabaseToModelGenerationInput.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -1011,6 +1012,33 @@ export class V1_Engine {
           .map((error) => `- ${error.message}`)
           .join('\n')}`,
       );
+    }
+  }
+
+  // ------------------------------------------- Relational -------------------------------------------
+
+  async generateModelsFromDatabaseSpecification(
+    input: V1_DatabaseToModelGenerationInput,
+  ): Promise<V1_PureModelContextData> {
+    try {
+      const json =
+        await this.engineServerClient.generateModelsFromDatabaseSpecification(
+          V1_DatabaseToModelGenerationInput.serialization.toJson(input),
+        );
+      return V1_deserializePureModelContextData(json);
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
     }
   }
 }

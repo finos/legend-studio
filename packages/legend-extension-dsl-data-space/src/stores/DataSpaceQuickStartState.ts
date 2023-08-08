@@ -20,7 +20,9 @@ import { DataAccessState } from '@finos/legend-query-builder';
 import {
   DataSpaceServiceExecutableInfo,
   type DataSpaceExecutableAnalysisResult,
+  DataSpaceMultiExecutionServiceExecutableInfo,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
+import type { DatasetSpecification } from '@finos/legend-graph';
 
 export class DataSpaceQuickStartState {
   readonly dataSpaceViewerState: DataSpaceViewerState;
@@ -39,19 +41,27 @@ export class DataSpaceQuickStartState {
     dataSpaceViewerState.dataSpaceAnalysisResult.executables.forEach(
       (executable) => {
         let dataAccessState: DataAccessState | undefined;
-
-        if (
-          executable.info instanceof DataSpaceServiceExecutableInfo &&
-          executable.info.mapping &&
-          executable.info.runtime
+        let mapping: string | undefined;
+        let runtime: string | undefined;
+        let datasets: DatasetSpecification[] | undefined;
+        if (executable.info instanceof DataSpaceServiceExecutableInfo) {
+          mapping = executable.info.mapping;
+          runtime = executable.info.runtime;
+          datasets = executable.info.datasets;
+        } else if (
+          executable.info instanceof
+          DataSpaceMultiExecutionServiceExecutableInfo
         ) {
-          const mapping = executable.info.mapping;
-          const runtime = executable.info.runtime;
+          mapping = executable.info.keyedExecutableInfos.at(0)?.mapping;
+          runtime = executable.info.keyedExecutableInfos.at(0)?.runtime;
+          datasets = executable.info.keyedExecutableInfos.at(0)?.datasets;
+        }
+        if (mapping && runtime) {
           dataAccessState = new DataAccessState(
             this.dataSpaceViewerState.applicationStore,
             this.dataSpaceViewerState.graphManagerState,
             {
-              initialDatasets: executable.datasets,
+              initialDatasets: datasets,
               mapping,
               runtime,
               graphData: this.dataSpaceViewerState.retrieveGraphData(),
@@ -68,7 +78,6 @@ export class DataSpaceQuickStartState {
             },
           );
         }
-
         if (dataAccessState) {
           this.dataAccessStateIndex.set(executable, dataAccessState);
         }

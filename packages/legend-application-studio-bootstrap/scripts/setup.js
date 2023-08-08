@@ -83,24 +83,26 @@ export const setup = (outputDir) => {
             },
           ],
         },
-        core: {
-          // TEMPORARY__serviceRegistrationConfig: [
-          //   {
-          //     env: 'dev',
-          //     executionUrl: 'http://localhost.com:9999',
-          //     managementUrl: 'http://localhost.com:9999/services/#',
-          //     modes: ['FULL_INTERACTIVE', 'SEMI_INTERACTIVE', 'PROD'],
-          //   },
-          //   {
-          //     env: 'prod',
-          //     executionUrl: 'http://localhost.com:9999',
-          //     managementUrl: 'http://localhost.com:9999/services/#',
-          //     modes: ['PROD'],
-          //   },
-          // ],
-          TEMPORARY__enableFunctionActivatorSupport: false,
-          TEMPORARY__enableRawSQLExecutor: false,
-          TEMPORARY__enableLocalConnectionBuilder: false,
+        extensions: {
+          core: {
+            // TEMPORARY__serviceRegistrationConfig: [
+            //   {
+            //     env: 'dev',
+            //     executionUrl: 'http://localhost.com:9999',
+            //     managementUrl: 'http://localhost.com:9999/services/#',
+            //     modes: ['FULL_INTERACTIVE', 'SEMI_INTERACTIVE', 'PROD'],
+            //   },
+            //   {
+            //     env: 'prod',
+            //     executionUrl: 'http://localhost.com:9999',
+            //     managementUrl: 'http://localhost.com:9999/services/#',
+            //     modes: ['PROD'],
+            //   },
+            // ],
+            TEMPORARY__enableFunctionActivatorSupport: false,
+            TEMPORARY__enableRawSQLExecutor: false,
+            TEMPORARY__enableLocalConnectionBuilder: false,
+          },
         },
       },
       undefined,

@@ -55,6 +55,9 @@ import {
   QueryBuilderFilterTreeConditionNodeData,
   QueryBuilderFilterTreeBlankConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
+  QueryBuilderFilterTreeExistsNodeData,
+  QueryBuilderFilterTreeOperationNodeData,
+  type QueryBuilderFilterState,
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { useDrag, useDragLayer, useDrop } from 'react-dnd';
 import {
@@ -67,12 +70,29 @@ import { QueryBuilderPropertyExpressionBadge } from '../QueryBuilderPropertyExpr
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import {
   assertErrorThrown,
+  assertTrue,
   debounce,
+  generateEnumerableNameFromToken,
+  getNullableFirstEntry,
+  guaranteeNonNullable,
+  guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { useApplicationStore } from '@finos/legend-application';
-import type { ValueSpecification } from '@finos/legend-graph';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
+import {
+  AbstractPropertyExpression,
+  extractElementNameFromPath,
+  matchFunctionName,
+  Multiplicity,
+  SimpleFunctionExpression,
+  type ValueSpecification,
+  VariableExpression,
+} from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
   QueryBuilderSimpleProjectionColumnState,
@@ -87,6 +107,282 @@ import {
   QUERY_BUILDER_VARIABLE_DND_TYPE,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
+import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+
+const isCollectionProperty = (
+  propertyExpression: AbstractPropertyExpression,
+): boolean => {
+  let currentExpression: ValueSpecification | undefined = propertyExpression;
+  while (currentExpression instanceof AbstractPropertyExpression) {
+    // Check if the property chain can results in column that have multiple values
+    if (
+      currentExpression.func.value.multiplicity.upperBound === undefined ||
+      currentExpression.func.value.multiplicity.upperBound > 1
+    ) {
+      return true;
+    }
+    currentExpression = getNullableFirstEntry(
+      currentExpression.parametersValues,
+    );
+    // Take care of chains of subtype
+    while (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      currentExpression = getNullableFirstEntry(
+        currentExpression.parametersValues,
+      );
+    }
+  }
+  return false;
+};
+
+/**
+ * This function updates the filter state when we DnD a property that can accept multiple values.
+ */
+export const buildFilterTreeWithExists = (
+  propertyExpression: AbstractPropertyExpression,
+  filterState: QueryBuilderFilterState,
+  targetDropNode?: QueryBuilderFilterTreeOperationNodeData,
+): void => {
+  // 1. Decompose property expression
+  const expressions: (AbstractPropertyExpression | SimpleFunctionExpression)[] =
+    [];
+  let currentPropertyExpression: ValueSpecification = propertyExpression;
+  while (
+    currentPropertyExpression instanceof AbstractPropertyExpression ||
+    (currentPropertyExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentPropertyExpression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+      ))
+  ) {
+    let exp: AbstractPropertyExpression | SimpleFunctionExpression;
+    if (currentPropertyExpression instanceof SimpleFunctionExpression) {
+      exp = new SimpleFunctionExpression(
+        extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
+      );
+    } else {
+      exp = new AbstractPropertyExpression('');
+      exp.func = currentPropertyExpression.func;
+    }
+    // NOTE: we must retain the rest of the parameters as those are derived property parameters
+    exp.parametersValues =
+      currentPropertyExpression.parametersValues.length > 1
+        ? currentPropertyExpression.parametersValues.slice(1)
+        : [];
+    expressions.push(exp);
+    currentPropertyExpression = guaranteeNonNullable(
+      currentPropertyExpression.parametersValues[0],
+    );
+  }
+  const rootVariable = guaranteeType(
+    currentPropertyExpression,
+    VariableExpression,
+  );
+
+  // 2. Traverse the list of decomposed property expression backward, every time we encounter a property of
+  // multiplicity many, create a new property expression and keep track of it to later form the lambda chain
+  let existsLambdaParamNames: string[] = [];
+  let existsLambdaPropertyChains: ValueSpecification[] = [rootVariable];
+  let currentParamNameIndex = 0;
+
+  for (let i = expressions.length - 1; i >= 0; --i) {
+    const exp = expressions[i] as
+      | AbstractPropertyExpression
+      | SimpleFunctionExpression;
+    // just keep adding to the property chain
+    exp.parametersValues.unshift(
+      existsLambdaPropertyChains[
+        existsLambdaPropertyChains.length - 1
+      ] as ValueSpecification,
+    );
+    existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1] = exp;
+    // ... but if the property is of multiplicity multiple, start a new property chain
+    if (
+      exp instanceof AbstractPropertyExpression &&
+      (exp.func.value.multiplicity.upperBound === undefined ||
+        exp.func.value.multiplicity.upperBound > 1)
+    ) {
+      // NOTE: we need to find/generate the property chain variable name
+      if (currentParamNameIndex > existsLambdaParamNames.length - 1) {
+        existsLambdaParamNames.push(
+          generateEnumerableNameFromToken(
+            existsLambdaParamNames,
+            filterState.lambdaParameterName,
+          ),
+        );
+        assertTrue(currentParamNameIndex === existsLambdaParamNames.length - 1);
+      }
+      existsLambdaPropertyChains.push(
+        new VariableExpression(
+          existsLambdaParamNames[currentParamNameIndex] as string,
+          Multiplicity.ONE,
+        ),
+      );
+      currentParamNameIndex++;
+    }
+  }
+  let parentNode: QueryBuilderFilterTreeOperationNodeData | undefined =
+    undefined;
+  if (targetDropNode) {
+    if (targetDropNode instanceof QueryBuilderFilterTreeExistsNodeData) {
+      // Here we check if the target drop node is an exists tree node, if it is
+      // then we try to check in the lambda property chains that it contains the
+      // property expression of the target drop node. If we find any lambda property
+      // chain we just create exists filter for the rest of the property and add it to the
+      // target drop exists node, otherwise we just create exists for all the property chains.
+      // For example if we find property chain we create
+      // employees->exists($x.name == 'Bob' && $x.id == '1') instead of creating
+      // employess->exists($x.name == 'Bob) && employess->exists($x.id == '1')
+      const parentPropertyChainIndex = existsLambdaPropertyChains.findIndex(
+        (p) =>
+          p instanceof AbstractPropertyExpression &&
+          p.func.value === targetDropNode.propertyExpression.func.value &&
+          p.func.ownerReference.value.path ===
+            targetDropNode.propertyExpression.func.ownerReference.value.path,
+      );
+      if (parentPropertyChainIndex >= 0) {
+        parentNode = targetDropNode;
+        existsLambdaPropertyChains = existsLambdaPropertyChains.slice(
+          parentPropertyChainIndex + 1,
+        );
+        existsLambdaParamNames = existsLambdaParamNames.slice(
+          parentPropertyChainIndex + 1,
+        );
+      }
+    } else {
+      // Here the target drop node is a group operation tree node. So we try to find if there is
+      // any exists tree parent node of the target drop node. If there is any exists parent node,
+      // we try to check in the lambda property chains that it contains the
+      // property expression of the target drop node. If we find any lambda property
+      // chain we just create exists filter for the rest of the property and add it to the
+      // target drop exists node, otherwise we just create exists for all the property chains.
+      // For example if we find property chain we create
+      // employees->exists($x.name == 'Bob' && $x.id == '1' && $x.age == '30) instead of creating
+      // employess->exists($x.name == 'Bob) && employess->exists($x.id == '1') && employess->exists($x.age == '30')
+      let cn: QueryBuilderFilterTreeNodeData | undefined = targetDropNode;
+      let parentId = targetDropNode.parentId;
+      while (
+        parentId &&
+        !(cn instanceof QueryBuilderFilterTreeExistsNodeData)
+      ) {
+        cn = filterState.nodes.get(parentId);
+        parentId = cn?.parentId;
+      }
+      if (cn instanceof QueryBuilderFilterTreeExistsNodeData) {
+        const parentPropertyChainIndex = existsLambdaPropertyChains.findIndex(
+          (p) =>
+            p instanceof AbstractPropertyExpression &&
+            cn instanceof QueryBuilderFilterTreeExistsNodeData &&
+            p.func.value ===
+              guaranteeType(cn, QueryBuilderFilterTreeExistsNodeData)
+                .propertyExpression.func.value &&
+            p.func.ownerReference.value.path ===
+              cn.propertyExpression.func.ownerReference.value.path,
+        );
+        if (parentPropertyChainIndex >= 0) {
+          parentNode = targetDropNode;
+          existsLambdaPropertyChains = existsLambdaPropertyChains.slice(
+            parentPropertyChainIndex + 1,
+          );
+          existsLambdaParamNames = existsLambdaParamNames.slice(
+            parentPropertyChainIndex + 1,
+          );
+        }
+      } else if (!parentId) {
+        parentNode = targetDropNode;
+      }
+    }
+  }
+  // 3. Create exists tree node for all the property chains and add them to the filter tree
+  for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
+    const existsNode: QueryBuilderFilterTreeExistsNodeData =
+      new QueryBuilderFilterTreeExistsNodeData(parentNode?.id);
+    existsNode.setPropertyExpression(
+      existsLambdaPropertyChains[i] as AbstractPropertyExpression,
+    );
+    existsNode.lambdaParameterName = existsLambdaParamNames[i];
+    filterState.nodes.set(existsNode.id, existsNode);
+    filterState.addNodeFromNode(existsNode, parentNode);
+    parentNode = existsNode;
+  }
+
+  // create the filter condition tree node data
+  const filterConditionState = new FilterConditionState(
+    filterState,
+    existsLambdaPropertyChains[
+      existsLambdaPropertyChains.length - 1
+    ] as AbstractPropertyExpression,
+  );
+  const treeNode = new QueryBuilderFilterTreeConditionNodeData(
+    undefined,
+    filterConditionState,
+  );
+  filterState.addNodeFromNode(treeNode, parentNode);
+};
+
+/**
+ * This function builds the filter tree when we DnD a node to the filter panel.
+ */
+const buildFilterTree = (
+  propertyExpression: AbstractPropertyExpression,
+  filterState: QueryBuilderFilterState,
+  targetDropNode?: QueryBuilderFilterTreeOperationNodeData | undefined,
+): void => {
+  if (isCollectionProperty(propertyExpression)) {
+    const propertyChainName = getPropertyChainName(
+      propertyExpression,
+      filterState.queryBuilderState.explorerState.humanizePropertyName,
+    );
+    filterState.queryBuilderState.applicationStore.alertService.setActionAlertInfo(
+      {
+        message: `The property '${propertyChainName}' is a collection. As you are trying to filter on a collection, the filter created will be an exist filter. e.g. There exists at least one '${propertyChainName}' where 'Type' is the value specified.
+         If you are looking to create the filter where all values in this collection equal the value specified, rather than at least one value, consider creating post filter instead.`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            default: true,
+          },
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED,
+            handler:
+              filterState.queryBuilderState.applicationStore.guardUnhandledError(
+                async () =>
+                  buildFilterTreeWithExists(
+                    propertyExpression,
+                    filterState,
+                    targetDropNode,
+                  ),
+              ),
+          },
+        ],
+      },
+    );
+  } else {
+    const filterConditionState = new FilterConditionState(
+      filterState,
+      propertyExpression,
+    );
+    const treeNode = new QueryBuilderFilterTreeConditionNodeData(
+      undefined,
+      filterConditionState,
+    );
+    filterState.addNodeFromNode(
+      treeNode,
+      targetDropNode instanceof QueryBuilderFilterTreeGroupNodeData
+        ? targetDropNode
+        : undefined,
+    );
+  }
+};
 
 export const IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
@@ -145,6 +441,42 @@ const QueryBuilderFilterGroupConditionEditor = observer(
             <button className="query-builder-filter-tree__group-node__action">
               <FilledTriangleIcon />
             </button>
+          </div>
+        </PanelEntryDropZonePlaceholder>
+      </div>
+    );
+  },
+);
+
+const QueryBuilderFilterExistsConditionEditor = observer(
+  (props: {
+    node: QueryBuilderFilterTreeExistsNodeData;
+    humanizePropertyName: boolean;
+    isDragOver: boolean;
+    isDroppable: boolean;
+  }) => {
+    const { node, humanizePropertyName, isDragOver, isDroppable } = props;
+
+    return (
+      <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
+        <PanelEntryDropZonePlaceholder
+          isDragOver={isDragOver}
+          isDroppable={isDroppable}
+          label={`Add to Exists Group`}
+        >
+          <div
+            className="query-builder-filter-tree__exists-node"
+            title="This is an exists filter on the collection property"
+          >
+            <div className="query-builder-filter-tree__exists-node__label">
+              {getPropertyChainName(
+                node.propertyExpression,
+                humanizePropertyName,
+              )}
+            </div>
+            <div className="query-builder-filter-tree__exists-node__exists--label">
+              exists
+            </div>
           </div>
         </PanelEntryDropZonePlaceholder>
       </div>
@@ -401,7 +733,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       useState(false);
     const applicationStore = useApplicationStore();
     const filterState = queryBuilderState.filterState;
-    const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
+    const isExpandable =
+      node instanceof QueryBuilderFilterTreeOperationNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
@@ -469,12 +802,10 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             applicationStore.notificationService.notifyWarning(error.message);
             return;
           }
-          if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
-            filterState.addNodeFromNode(
-              new QueryBuilderFilterTreeConditionNodeData(
-                undefined,
-                filterConditionState,
-              ),
+          if (node instanceof QueryBuilderFilterTreeOperationNodeData) {
+            buildFilterTree(
+              filterConditionState.propertyExpressionState.propertyExpression,
+              filterState,
               node,
             );
           } else if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
@@ -609,6 +940,17 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                   isDragOver={isDragOver}
                 />
               )}
+              {node instanceof QueryBuilderFilterTreeExistsNodeData && (
+                <QueryBuilderFilterExistsConditionEditor
+                  node={node}
+                  humanizePropertyName={
+                    filterState.queryBuilderState.explorerState
+                      .humanizePropertyName
+                  }
+                  isDroppable={isDroppable}
+                  isDragOver={isDragOver}
+                />
+              )}
               {node instanceof QueryBuilderFilterTreeConditionNodeData && (
                 <QueryBuilderFilterConditionEditor
                   node={node}
@@ -697,7 +1039,7 @@ const QueryBuilderFilterTree = observer(
     const getChildNodes = (
       node: QueryBuilderFilterTreeNodeData,
     ): QueryBuilderFilterTreeNodeData[] =>
-      node instanceof QueryBuilderFilterTreeGroupNodeData
+      node instanceof QueryBuilderFilterTreeOperationNodeData
         ? node.childrenIds.map((id) => filterState.getNode(id))
         : [];
     return (
@@ -801,7 +1143,6 @@ export const QueryBuilderFilterPanel = observer(
     // Drag and Drop
     const handleDrop = useCallback(
       (item: QueryBuilderFilterDropTarget, type: string): void => {
-        let filterConditionState: FilterConditionState;
         try {
           let propertyExpression;
           if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
@@ -825,24 +1166,14 @@ export const QueryBuilderFilterPanel = observer(
                 filterState.queryBuilderState.explorerState,
               );
           }
-          filterConditionState = new FilterConditionState(
-            filterState,
-            propertyExpression,
-          );
+          // NOTE: unfocus the current node when DnD a new node to the tree
+          filterState.setSelectedNode(undefined);
+          buildFilterTree(propertyExpression, filterState);
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.notificationService.notifyWarning(error.message);
           return;
         }
-        // NOTE: unfocus the current node when DnD a new node to the tree
-        filterState.setSelectedNode(undefined);
-        filterState.addNodeFromNode(
-          new QueryBuilderFilterTreeConditionNodeData(
-            undefined,
-            filterConditionState,
-          ),
-          undefined,
-        );
       },
       [applicationStore, filterState],
     );

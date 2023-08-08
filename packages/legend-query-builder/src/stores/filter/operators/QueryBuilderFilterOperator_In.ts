@@ -135,10 +135,12 @@ export class QueryBuilderFilterOperator_In
 
   buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.IN,
+      lambdaParameterName,
     );
   }
 
@@ -166,9 +168,13 @@ export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator
 
   override buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildNotExpression(
-      super.buildFilterConditionExpression(filterConditionState),
+      super.buildFilterConditionExpression(
+        filterConditionState,
+        lambdaParameterName,
+      ),
     );
   }
 

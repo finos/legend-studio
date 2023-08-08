@@ -49,9 +49,11 @@ import {
   isDependencyElement,
   type Class,
   type RelationalDatabaseConnection,
+  type Database,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { DatabaseBuilderWizardState } from './editor-state/element-editor-state/connection/DatabaseBuilderWizardState.js';
+import { DatabaseModelBuilderState } from './editor-state/element-editor-state/connection/DatabaseModelBuilderState.js';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',
@@ -76,6 +78,7 @@ export class ExplorerTreeState {
   elementToRename?: PackageableElement | undefined;
   classToGenerateSampleData?: Class | undefined;
   databaseBuilderState: DatabaseBuilderWizardState | undefined;
+  databaseModelBuilderState: DatabaseModelBuilderState | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -89,6 +92,7 @@ export class ExplorerTreeState {
       elementToRename: observable,
       classToGenerateSampleData: observable,
       databaseBuilderState: observable,
+      databaseModelBuilderState: observable,
       setTreeData: action,
       setGenerationTreeData: action,
       setSystemTreeData: action,
@@ -101,6 +105,7 @@ export class ExplorerTreeState {
       build: action,
       buildImmutableModelTrees: action,
       buildTreeInTextMode: action,
+      buildDatabaseModels: action,
       openExplorerTreeNodes: action,
       reprocess: action,
       buildDatabase: action,
@@ -187,6 +192,20 @@ export class ExplorerTreeState {
     );
     dbBuilderState.setShowModal(true);
     this.setDatabaseBuilderState(dbBuilderState);
+  }
+  setDatabaseModelBuilderState(
+    val: DatabaseModelBuilderState | undefined,
+  ): void {
+    this.databaseModelBuilderState = val;
+  }
+  buildDatabaseModels(val: Database, isReadOnly: boolean): void {
+    const dbBuilderState = new DatabaseModelBuilderState(
+      this.editorStore,
+      val,
+      isReadOnly,
+    );
+    dbBuilderState.setShowModal(true);
+    this.setDatabaseModelBuilderState(dbBuilderState);
   }
 
   setSelectedNode(node: PackageTreeNodeData | undefined): void {

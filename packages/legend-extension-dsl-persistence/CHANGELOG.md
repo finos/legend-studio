@@ -1,5 +1,31 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.60
+
+## 5.0.59
+
+## 5.0.58
+
+## 5.0.57
+
+## 5.0.56
+
+## 5.0.55
+
+## 5.0.54
+
+### Patch Changes
+
+- [#2460](https://github.com/finos/legend-studio/pull/2460) [`91fdb8eb1`](https://github.com/finos/legend-studio/commit/91fdb8eb1a2efdec239a58ed144b90d8689671fa) ([@ankitamritraj](https://github.com/ankitamritraj)) - Persistence V2 : Added missing versionField attribute in MaxVersion
+
+## 5.0.53
+
+### Patch Changes
+
+- [#2451](https://github.com/finos/legend-studio/pull/2451) [`a9ac3cdd6`](https://github.com/finos/legend-studio/commit/a9ac3cdd686e5c4c9b10e7a2c3b4933714331aac) ([@ankitamritraj](https://github.com/ankitamritraj)) - Added Path variables in GraphFetch persistence model spec
+
+## 5.0.52
+
 ## 5.0.51
 
 ## 5.0.50

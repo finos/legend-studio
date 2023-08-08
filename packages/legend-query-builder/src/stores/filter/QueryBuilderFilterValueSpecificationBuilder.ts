@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { isNonNullable, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  isNonNullable,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
 import {
   type ValueSpecification,
   type LambdaFunction,
@@ -28,16 +32,26 @@ import {
   QueryBuilderFilterTreeConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
   type QueryBuilderFilterTreeNodeData,
+  QueryBuilderFilterTreeExistsNodeData,
+  QueryBuilderFilterTreeOperationNodeData,
 } from './QueryBuilderFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 
 const buildFilterConditionExpression = (
   filterState: QueryBuilderFilterState,
   node: QueryBuilderFilterTreeNodeData,
 ): ValueSpecification | undefined => {
   if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+    const parentNode = node.parentId
+      ? guaranteeType(
+          filterState.nodes.get(node.parentId),
+          QueryBuilderFilterTreeOperationNodeData,
+        )
+      : undefined;
     return node.condition.operator.buildFilterConditionExpression(
       node.condition,
+      parentNode?.lambdaParameterName,
     );
   } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
     const func = new SimpleFunctionExpression(
@@ -75,6 +89,85 @@ const buildFilterConditionExpression = (
       func.parametersValues = clauses;
     }
     return func.parametersValues.length ? func : undefined;
+  } else if (node instanceof QueryBuilderFilterTreeExistsNodeData) {
+    const func = new SimpleFunctionExpression(
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS),
+    );
+    let parentNode = node.parentId
+      ? guaranteeType(
+          filterState.nodes.get(guaranteeNonNullable(node.parentId)),
+          QueryBuilderFilterTreeOperationNodeData,
+        )
+      : undefined;
+    while (
+      parentNode &&
+      !(parentNode instanceof QueryBuilderFilterTreeGroupNodeData)
+    ) {
+      parentNode = parentNode.parentId
+        ? guaranteeType(
+            filterState.nodes.get(guaranteeNonNullable(parentNode.parentId)),
+            QueryBuilderFilterTreeOperationNodeData,
+          )
+        : undefined;
+    }
+    const propertyExpression = guaranteeNonNullable(node.propertyExpression);
+    const clauses = node.childrenIds
+      .map((e) => filterState.nodes.get(e))
+      .filter(isNonNullable)
+      .map((e) => buildFilterConditionExpression(filterState, e))
+      .filter(isNonNullable);
+    /**
+     * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
+     * like and/or do not take more than 2 parameters, as such, if we have more than 2, we need
+     * to create a chain of this operation to accomondate.
+     *
+     * This means that in the read direction, we might need to flatten the chains down to group with
+     * multiple clauses. This means user's intended grouping will not be kept.
+     */
+    let parametersValues;
+    if (clauses.length > 2) {
+      const firstClause = clauses[0] as ValueSpecification;
+      let currentClause: ValueSpecification = clauses[
+        clauses.length - 1
+      ] as ValueSpecification;
+      for (let i = clauses.length - 2; i > 0; --i) {
+        const clause1 = clauses[i] as ValueSpecification;
+        const clause2 = currentClause;
+        const groupClause = new SimpleFunctionExpression(
+          guaranteeNonNullable(parentNode).groupOperation,
+        );
+        groupClause.parametersValues = [clause1, clause2];
+        currentClause = groupClause;
+      }
+      parametersValues = [firstClause, currentClause];
+    } else if (clauses.length === 1) {
+      const lambdaFunctionInstanceValue =
+        buildGenericLambdaFunctionInstanceValue(
+          node.lambdaParameterName ?? DEFAULT_LAMBDA_VARIABLE_NAME,
+          clauses,
+          filterState.queryBuilderState.graphManagerState.graph,
+        );
+      func.parametersValues = [propertyExpression, lambdaFunctionInstanceValue];
+      return func;
+    } else {
+      parametersValues = clauses;
+    }
+    if (!parametersValues.length) {
+      return undefined;
+    }
+    const simp = new SimpleFunctionExpression(
+      extractElementNameFromPath(
+        fromGroupOperation(guaranteeNonNullable(parentNode).groupOperation),
+      ),
+    );
+    simp.parametersValues = parametersValues;
+    const lambdaFunctionInstanceValue = buildGenericLambdaFunctionInstanceValue(
+      node.lambdaParameterName ?? DEFAULT_LAMBDA_VARIABLE_NAME,
+      [simp],
+      filterState.queryBuilderState.graphManagerState.graph,
+    );
+    func.parametersValues = [propertyExpression, lambdaFunctionInstanceValue];
+    return func;
   }
   return undefined;
 };

@@ -71,11 +71,15 @@ const ClassQueryBuilderSetupPanelContent = observer(
           )
         : []
     ).map(buildElementOption);
-    const selectedMappingOption = queryBuilderState.mapping
-      ? buildElementOption(queryBuilderState.mapping)
+    const selectedMappingOption = queryBuilderState.executionContextState
+      .mapping
+      ? buildElementOption(queryBuilderState.executionContextState.mapping)
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
-      if (!queryBuilderState.class || val.value === queryBuilderState.mapping) {
+      if (
+        !queryBuilderState.class ||
+        val.value === queryBuilderState.executionContextState.mapping
+      ) {
         return;
       }
       queryBuilderState.changeMapping(val.value);
@@ -90,9 +94,9 @@ const ClassQueryBuilderSetupPanelContent = observer(
 
     // runtime
     const runtimeOptions = (
-      queryBuilderState.mapping
+      queryBuilderState.executionContextState.mapping
         ? getMappingCompatibleRuntimes(
-            queryBuilderState.mapping,
+            queryBuilderState.executionContextState.mapping,
             queryBuilderState.graphManagerState.usableRuntimes,
           )
         : []
@@ -102,11 +106,14 @@ const ClassQueryBuilderSetupPanelContent = observer(
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
       .map(buildRuntimeValueOption);
-    const selectedRuntimeOption = queryBuilderState.runtimeValue
-      ? buildRuntimeValueOption(queryBuilderState.runtimeValue)
+    const selectedRuntimeOption = queryBuilderState.executionContextState
+      .runtimeValue
+      ? buildRuntimeValueOption(
+          queryBuilderState.executionContextState.runtimeValue,
+        )
       : null;
     const changeRuntime = (val: { value: Runtime }): void => {
-      if (val.value === queryBuilderState.runtimeValue) {
+      if (val.value === queryBuilderState.executionContextState.runtimeValue) {
         return;
       }
       queryBuilderState.changeRuntime(val.value);
@@ -177,7 +184,8 @@ const ClassQueryBuilderSetupPanelContent = observer(
                 placeholder="Choose a runtime..."
                 noMatchMessage="No compatible runtime found for specified mapping"
                 disabled={
-                  !queryBuilderState.class || !queryBuilderState.mapping
+                  !queryBuilderState.class ||
+                  !queryBuilderState.executionContextState.mapping
                 }
                 options={runtimeOptions}
                 onChange={changeRuntime}

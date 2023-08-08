@@ -165,6 +165,7 @@ export class QueryBuilderFilterOperator_Equal
 
   buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
@@ -174,6 +175,7 @@ export class QueryBuilderFilterOperator_Equal
           PRIMITIVE_TYPE.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
+      lambdaParameterName,
     );
   }
 
@@ -208,9 +210,13 @@ export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOpera
 
   override buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildNotExpression(
-      super.buildFilterConditionExpression(filterConditionState),
+      super.buildFilterConditionExpression(
+        filterConditionState,
+        lambdaParameterName,
+      ),
     );
   }
 

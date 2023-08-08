@@ -111,8 +111,13 @@ import {
   guaranteeRelationalDatabaseConnection,
   extractDependencyGACoordinateFromRootPackageName,
   type FunctionActivatorConfiguration,
+  Database,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
@@ -135,6 +140,7 @@ import {
 } from '@finos/legend-lego/code-editor';
 import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
 import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
+import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -452,6 +458,10 @@ const isRelationalDatabaseConnection = (
   val instanceof PackageableConnection &&
   val.connectionValue instanceof RelationalDatabaseConnection;
 
+const isRelationalDatabase = (
+  val: PackageableElement | undefined,
+): Database | undefined => (val instanceof Database ? val : undefined);
+
 const ExplorerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
@@ -523,6 +533,41 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const generateModelsFromDatabaseSpecification =
+      editorStore.applicationStore.guardUnhandledError(async () => {
+        const database = isRelationalDatabase(node?.packageableElement);
+        if (database) {
+          if (database.joins.length === 0) {
+            applicationStore.alertService.setActionAlertInfo({
+              message:
+                'You are attempting to build models but have defined no joins. Are you sure you wish to proceed?',
+              type: ActionAlertType.CAUTION,
+              actions: [
+                {
+                  label: 'Proceed',
+                  type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                  handler: () => {
+                    editorStore.explorerTreeState.buildDatabaseModels(
+                      database,
+                      editorStore.isInViewerMode,
+                    );
+                  },
+                },
+                {
+                  label: 'Abort',
+                  type: ActionAlertActionType.PROCEED,
+                  default: true,
+                },
+              ],
+            });
+          } else {
+            editorStore.explorerTreeState.buildDatabaseModels(
+              database,
+              editorStore.isInViewerMode,
+            );
+          }
+        }
+      });
     const openSQLPlayground = (): void => {
       if (isRelationalDatabaseConnection(node?.packageableElement)) {
         editorStore.panelGroupDisplayState.open();
@@ -653,7 +698,7 @@ const ExplorerContextMenu = observer(
         editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
           (dep) => dep.projectId === node?.packageableElement.name,
         );
-      if (projectDependency && !projectDependency.isLegacyDependency) {
+      if (projectDependency) {
         applicationStore.navigationService.navigator.visitAddress(
           applicationStore.navigationService.navigator.generateAddress(
             generateViewProjectByGAVRoute(
@@ -808,6 +853,14 @@ const ExplorerContextMenu = observer(
             )}
             <MenuContentItem onClick={buildDatabase}>
               Build Database...
+            </MenuContentItem>
+            <MenuContentDivider />
+          </>
+        )}
+        {isRelationalDatabase(node.packageableElement) && (
+          <>
+            <MenuContentItem onClick={generateModelsFromDatabaseSpecification}>
+              Build Models
             </MenuContentItem>
             <MenuContentDivider />
           </>
@@ -1101,7 +1154,6 @@ const ExplorerTrees = observer(() => {
     getTreeChildNodes(editorStore, node, dependencyTreeData, true);
   const showPackageTrees =
     treeData.nodes.size || graph.dependencyManager.hasDependencies;
-
   return (
     <ContextMenu
       className="explorer__content"
@@ -1131,6 +1183,14 @@ const ExplorerTrees = observer(() => {
                 <DatabaseBuilderWizard
                   databaseBuilderState={
                     editorStore.explorerTreeState.databaseBuilderState
+                  }
+                  isReadOnly={false}
+                />
+              )}
+              {editorStore.explorerTreeState.databaseModelBuilderState && (
+                <DatabaseModelBuilder
+                  databaseModelBuilderState={
+                    editorStore.explorerTreeState.databaseModelBuilderState
                   }
                   isReadOnly={false}
                 />

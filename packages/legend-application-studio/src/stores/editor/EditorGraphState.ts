@@ -42,11 +42,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
 import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from './editor-state/ModelImporterState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
-import {
-  type Entity,
-  EntitiesWithOrigin,
-  generateGAVCoordinates,
-} from '@finos/legend-storage';
+import { type Entity, EntitiesWithOrigin } from '@finos/legend-storage';
 import {
   type EntityChange,
   type ProjectDependency,
@@ -59,7 +55,6 @@ import {
   ProjectDependencyCoordinates,
   RawProjectDependencyReport,
   buildDependencyReport,
-  StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
   GRAPH_MANAGER_EVENT,
@@ -752,53 +747,15 @@ export class EditorGraphState {
     projectDependencies: ProjectDependency[],
   ): Promise<ProjectDependencyCoordinates[]> {
     return Promise.all(
-      projectDependencies.map(async (dep) => {
-        /**
-         * We expect current dependency ids to be in the format of {groupId}:{artifactId}.
-         * For the legacy dependency we must fetch the corresponding coordinates (group, artifact ids) from the depot server
-         *
-         * @backwardCompatibility
-         */
-        if (dep.isLegacyDependency) {
-          return this.editorStore.depotServerClient
-            .getProjectById(dep.projectId)
-            .then((projects) => {
-              const projectsData = projects.map((p) =>
-                StoreProjectData.serialization.fromJson(p),
-              );
-              if (projectsData.length !== 1) {
-                throw new Error(
-                  `Expected 1 project for project ID '${dep.projectId}'. Got ${
-                    projectsData.length
-                  } projects with coordinates ${projectsData
-                    .map(
-                      (i) =>
-                        `'${generateGAVCoordinates(
-                          i.groupId,
-                          i.artifactId,
-                          undefined,
-                        )}'`,
-                    )
-                    .join(', ')}.`,
-                );
-              }
-              const project = projectsData[0] as StoreProjectData;
-              return new ProjectDependencyCoordinates(
-                project.groupId,
-                project.artifactId,
-                dep.versionId,
-              );
-            });
-        } else {
-          return Promise.resolve(
-            new ProjectDependencyCoordinates(
-              guaranteeNonNullable(dep.groupId),
-              guaranteeNonNullable(dep.artifactId),
-              dep.versionId,
-            ),
-          );
-        }
-      }),
+      projectDependencies.map(async (dep) =>
+        Promise.resolve(
+          new ProjectDependencyCoordinates(
+            guaranteeNonNullable(dep.groupId),
+            guaranteeNonNullable(dep.artifactId),
+            dep.versionId,
+          ),
+        ),
+      ),
     );
   }
 

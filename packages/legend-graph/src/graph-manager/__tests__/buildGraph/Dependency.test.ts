@@ -100,6 +100,33 @@ const secondDependencyEntities = {
   ],
 };
 
+const thirdDependencyEntities = {
+  groupId: 'group-3',
+  artifactId: 'artifact-3',
+  versionId: '1.0.0',
+  entities: [
+    {
+      path: 'model::ClassC',
+      content: {
+        _type: 'class',
+        name: 'ClassC',
+        package: 'model',
+        properties: [
+          {
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            name: 'prop',
+            type: 'String',
+          },
+        ],
+      },
+      classifierPath: 'meta::pure::metamodel::type::Class',
+    },
+  ],
+};
+
 test(
   unitTest('Dependent entities are taken into account when building graph'),
   async () => {
@@ -181,6 +208,39 @@ test(
         firstDependencyEntities.entities,
         graphManagerState.graphBuildState,
       ),
-    ).rejects.toThrowError(`Element 'model::ClassB' already exists`);
+    ).rejects.toThrowError(
+      `Element 'model::ClassB' already exists in project dependency group-1:artifact-1`,
+    );
+  },
+);
+
+test(
+  unitTest('Duplicates from dependencies will make building graph fail'),
+  async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+
+    await graphManagerState.initializeSystem();
+    const dependencyManager = new DependencyManager([]);
+    const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
+    dependencyEntitiesIndex.set(
+      'group-2:artifact-2:1.0.0',
+      secondDependencyEntities,
+    );
+    dependencyEntitiesIndex.set(
+      'group-3:artifact-3:1.0.0',
+      thirdDependencyEntities,
+    );
+    graphManagerState.graph.dependencyManager = dependencyManager;
+    await expect(() =>
+      graphManagerState.graphManager.buildDependencies(
+        graphManagerState.coreModel,
+        graphManagerState.systemModel,
+        dependencyManager,
+        dependencyEntitiesIndex,
+        graphManagerState.dependenciesBuildState,
+      ),
+    ).rejects.toThrowError(
+      `Project dependency group-3:artifact-3 Element 'model::ClassC' already exists in project dependency group-2:artifact-2`,
+    );
   },
 );

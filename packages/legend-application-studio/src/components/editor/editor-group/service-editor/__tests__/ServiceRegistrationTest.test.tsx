@@ -113,7 +113,6 @@ const setup = async (
       ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
     ],
     projects: [],
-    projectData: projectData ?? [],
     projectDependency: [],
     projectDependencyVersions: projectDependencyVersions ?? [],
     projectDependencyReport: TEST_DATA__DefaultDepotReport.dependencyReport,

@@ -200,22 +200,6 @@ export class ProjectConfigurationEditorState extends EditorState {
         .map((v) => StoreProjectData.serialization.fromJson(v))
         .forEach((project) => this.projects.set(project.coordinates, project));
 
-      // Update the legacy dependency to newer format (using group ID and artifact ID instead of just project ID)
-      this.projectConfiguration?.projectDependencies.forEach(
-        (dependency): void => {
-          if (!dependency.isLegacyDependency) {
-            return;
-          }
-          const project = Array.from(this.projects.values()).find(
-            (e) => e.projectId === dependency.projectId,
-          );
-          // re-write to new format
-          if (project) {
-            dependency.setProjectId(project.coordinates);
-          }
-        },
-      );
-
       // fetch the versions for the dependency projects
       for (const dep of this.projectConfiguration?.projectDependencies ?? []) {
         const project = this.projects.get(dep.projectId);

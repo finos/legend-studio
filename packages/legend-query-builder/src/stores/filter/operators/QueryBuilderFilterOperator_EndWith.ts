@@ -98,10 +98,12 @@ export class QueryBuilderFilterOperator_EndWith
 
   buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.ENDS_WITH,
+      lambdaParameterName,
     );
   }
 
@@ -131,9 +133,13 @@ export class QueryBuilderFilterOperator_NotEndWith extends QueryBuilderFilterOpe
 
   override buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildNotExpression(
-      super.buildFilterConditionExpression(filterConditionState),
+      super.buildFilterConditionExpression(
+        filterConditionState,
+        lambdaParameterName,
+      ),
     );
   }
 

@@ -80,10 +80,12 @@ export class QueryBuilderFilterOperator_IsEmpty
 
   buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_EMPTY,
+      lambdaParameterName,
     );
   }
 
@@ -114,9 +116,13 @@ export class QueryBuilderFilterOperator_IsNotEmpty extends QueryBuilderFilterOpe
 
   override buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildNotExpression(
-      super.buildFilterConditionExpression(filterConditionState),
+      super.buildFilterConditionExpression(
+        filterConditionState,
+        lambdaParameterName,
+      ),
     );
   }
 

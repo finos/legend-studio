@@ -23,8 +23,8 @@ import {
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../../../EditorStore.js';
-import { type RelationalDatabaseConnection } from '@finos/legend-graph';
 import { DatabaseSchemaExplorerState } from './DatabaseBuilderState.js';
+import type { RelationalDatabaseConnection } from '@finos/legend-graph';
 
 export class DatabaseBuilderWizardState {
   readonly editorStore: EditorStore;
@@ -70,7 +70,6 @@ export class DatabaseBuilderWizardState {
     if (!this.schemaExplorerState.treeData) {
       return;
     }
-
     try {
       this.setDatabaseGrammarCode(
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(

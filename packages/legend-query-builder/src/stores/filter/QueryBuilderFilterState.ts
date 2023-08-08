@@ -134,9 +134,12 @@ export class FilterConditionState implements Hashable {
               this.propertyExpressionState.propertyExpression,
               this.value,
             ),
-            guaranteeNonNullable(this.filterState.queryBuilderState.mapping),
             guaranteeNonNullable(
-              this.filterState.queryBuilderState.runtimeValue,
+              this.filterState.queryBuilderState.executionContextState.mapping,
+            ),
+            guaranteeNonNullable(
+              this.filterState.queryBuilderState.executionContextState
+                .runtimeValue,
             ),
             this.filterState.queryBuilderState.graphManagerState.graph,
           )) as ExecutionResult;
@@ -257,12 +260,50 @@ export abstract class QueryBuilderFilterTreeNodeData
   abstract get hashCode(): string;
 }
 
-export class QueryBuilderFilterTreeGroupNodeData
+export abstract class QueryBuilderFilterTreeOperationNodeData
   extends QueryBuilderFilterTreeNodeData
   implements Hashable
 {
-  groupOperation: QUERY_BUILDER_GROUP_OPERATION;
   childrenIds: string[] = [];
+  lambdaParameterName?: string | undefined;
+
+  constructor(parentId: string | undefined) {
+    super(parentId);
+
+    makeObservable(this, {
+      childrenIds: observable,
+      addChildNode: action,
+      removeChildNode: action,
+      dragPreviewLabel: computed,
+    });
+
+    this.isOpen = true;
+  }
+
+  addChildNode(node: QueryBuilderFilterTreeNodeData): void {
+    addUniqueEntry(this.childrenIds, node.id);
+    node.setParentId(this.id);
+  }
+
+  removeChildNode(node: QueryBuilderFilterTreeNodeData): void {
+    deleteEntry(this.childrenIds, node.id);
+    node.setParentId(undefined);
+  }
+
+  addChildNodeAt(node: QueryBuilderFilterTreeNodeData, idx: number): void {
+    if (!this.childrenIds.find((childId) => childId === node.id)) {
+      idx = Math.max(0, Math.min(idx, this.childrenIds.length - 1));
+      this.childrenIds.splice(idx, 0, node.id);
+      node.setParentId(this.id);
+    }
+  }
+}
+
+export class QueryBuilderFilterTreeGroupNodeData
+  extends QueryBuilderFilterTreeOperationNodeData
+  implements Hashable
+{
+  groupOperation: QUERY_BUILDER_GROUP_OPERATION;
 
   constructor(
     parentId: string | undefined,
@@ -272,11 +313,7 @@ export class QueryBuilderFilterTreeGroupNodeData
 
     makeObservable(this, {
       groupOperation: observable,
-      childrenIds: observable,
       setGroupOperation: action,
-      addChildNode: action,
-      removeChildNode: action,
-      dragPreviewLabel: computed,
     });
 
     this.groupOperation = groupOperation;
@@ -290,21 +327,6 @@ export class QueryBuilderFilterTreeGroupNodeData
   setGroupOperation(val: QUERY_BUILDER_GROUP_OPERATION): void {
     this.groupOperation = val;
   }
-  addChildNode(node: QueryBuilderFilterTreeNodeData): void {
-    addUniqueEntry(this.childrenIds, node.id);
-    node.setParentId(this.id);
-  }
-  removeChildNode(node: QueryBuilderFilterTreeNodeData): void {
-    deleteEntry(this.childrenIds, node.id);
-    node.setParentId(undefined);
-  }
-  addChildNodeAt(node: QueryBuilderFilterTreeNodeData, idx: number): void {
-    if (!this.childrenIds.find((childId) => childId === node.id)) {
-      idx = Math.max(0, Math.min(idx, this.childrenIds.length - 1));
-      this.childrenIds.splice(idx, 0, node.id);
-      node.setParentId(this.id);
-    }
-  }
 
   get hashCode(): string {
     return hashArray([
@@ -312,6 +334,43 @@ export class QueryBuilderFilterTreeGroupNodeData
       this.parentId ?? '',
       hashArray(this.childrenIds),
       this.groupOperation,
+      this.lambdaParameterName ?? '',
+    ]);
+  }
+}
+
+export class QueryBuilderFilterTreeExistsNodeData
+  extends QueryBuilderFilterTreeOperationNodeData
+  implements Hashable
+{
+  propertyExpression!: AbstractPropertyExpression;
+
+  constructor(parentId: string | undefined) {
+    super(parentId);
+
+    makeObservable(this, {
+      propertyExpression: observable,
+      setPropertyExpression: action,
+    });
+
+    this.isOpen = true;
+  }
+
+  get dragPreviewLabel(): string {
+    return `exists`;
+  }
+
+  setPropertyExpression(val: AbstractPropertyExpression): void {
+    this.propertyExpression = val;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_TREE_EXISTS_NODE_DATA,
+      this.parentId ?? '',
+      hashArray(this.childrenIds),
+      this.propertyExpression,
+      this.lambdaParameterName ?? '',
     ]);
   }
 }
@@ -449,11 +508,11 @@ export class QueryBuilderFilterState
 
   private getParentNode(
     node: QueryBuilderFilterTreeNodeData,
-  ): QueryBuilderFilterTreeGroupNodeData | undefined {
+  ): QueryBuilderFilterTreeOperationNodeData | undefined {
     return node.parentId
       ? guaranteeType(
           this.nodes.get(node.parentId),
-          QueryBuilderFilterTreeGroupNodeData,
+          QueryBuilderFilterTreeOperationNodeData,
         )
       : undefined;
   }
@@ -465,7 +524,8 @@ export class QueryBuilderFilterState
       rootNode.addChildNode(node);
     } else if (
       rootNode instanceof QueryBuilderFilterTreeConditionNodeData ||
-      rootNode instanceof QueryBuilderFilterTreeBlankConditionNodeData
+      rootNode instanceof QueryBuilderFilterTreeBlankConditionNodeData ||
+      rootNode instanceof QueryBuilderFilterTreeExistsNodeData
     ) {
       // if the root node is condition node, form a group between the root node and the new node and nominate the group node as the new root
       const groupNode = new QueryBuilderFilterTreeGroupNodeData(
@@ -489,6 +549,31 @@ export class QueryBuilderFilterState
     if (fromNode instanceof QueryBuilderFilterTreeGroupNodeData) {
       this.nodes.set(node.id, node);
       fromNode.addChildNode(node);
+    } else if (fromNode instanceof QueryBuilderFilterTreeExistsNodeData) {
+      // Here we check if there are any child nodes for exists node. The rationale
+      // behind doing this check is if there are no childs we can just add a child
+      // node to this otherwise we need to add a group condition for the existing
+      // child node and the node we are trying to add.
+      if (!fromNode.childrenIds.length) {
+        this.nodes.set(node.id, node);
+        fromNode.addChildNode(node);
+      } else {
+        this.nodes.set(node.id, node);
+        const groupNode = new QueryBuilderFilterTreeGroupNodeData(
+          undefined,
+          QUERY_BUILDER_GROUP_OPERATION.AND,
+        );
+        groupNode.addChildNode(
+          guaranteeNonNullable(
+            this.nodes.get(guaranteeNonNullable(fromNode.childrenIds[0])),
+          ),
+        );
+        groupNode.addChildNode(node);
+        groupNode.lambdaParameterName = fromNode.lambdaParameterName;
+        this.nodes.set(groupNode.id, groupNode);
+        fromNode.childrenIds = [];
+        fromNode.addChildNode(groupNode);
+      }
     } else if (
       fromNode instanceof QueryBuilderFilterTreeConditionNodeData ||
       fromNode instanceof QueryBuilderFilterTreeBlankConditionNodeData
@@ -563,6 +648,7 @@ export class QueryBuilderFilterState
         this.nodes.set(newGroupNode.id, newGroupNode);
         newGroupNode.addChildNode(fromNode);
         newGroupNode.addChildNode(newNode);
+        newGroupNode.lambdaParameterName = fromNodeParent.lambdaParameterName;
         fromNodeParent.addChildNodeAt(newGroupNode, fromNodeIdx);
       } else {
         this.addRootNode(newNode);
@@ -573,7 +659,7 @@ export class QueryBuilderFilterState
   private removeNode(node: QueryBuilderFilterTreeNodeData): void {
     this.nodes.delete(node.id);
     // remove relationship with children nodes
-    if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
+    if (node instanceof QueryBuilderFilterTreeOperationNodeData) {
       // NOTE: we are deleting child node, i.e. modifying `childrenIds` as we iterate
       [...node.childrenIds].forEach((childId) =>
         node.removeChildNode(this.getNode(childId)),
@@ -644,9 +730,13 @@ export class QueryBuilderFilterState
     // squash parent node after the current node is deleted
     if (parentNode) {
       parentNode.removeChildNode(node);
-      let currentParentNode: QueryBuilderFilterTreeGroupNodeData | undefined =
-        parentNode;
-      while (currentParentNode) {
+      let currentParentNode:
+        | QueryBuilderFilterTreeOperationNodeData
+        | undefined = parentNode;
+      while (
+        currentParentNode &&
+        currentParentNode instanceof QueryBuilderFilterTreeGroupNodeData
+      ) {
         if (currentParentNode.childrenIds.length >= 2) {
           break;
         }
@@ -724,11 +814,12 @@ export class QueryBuilderFilterState
           if (!node.parentId || !this.nodes.has(node.parentId)) {
             return false;
           }
-          const parentGroupNode = guaranteeType(
-            this.nodes.get(node.parentId),
-            QueryBuilderFilterTreeGroupNodeData,
+          const parentGroupNode = this.nodes.get(node.parentId);
+
+          return (
+            parentGroupNode instanceof QueryBuilderFilterTreeGroupNodeData &&
+            parentGroupNode.groupOperation === node.groupOperation
           );
-          return parentGroupNode.groupOperation === node.groupOperation;
         });
     // Squash these unnecessary group nodes
     let nodesToProcess = getUnnecessaryNodes();
