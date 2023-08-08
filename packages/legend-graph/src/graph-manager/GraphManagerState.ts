@@ -159,7 +159,11 @@ export class GraphManagerState extends BasicGraphManagerState {
       this.pluginManager.getPureGraphPlugins(),
     );
   }
-
+  /**
+   * NOTE: for all elements the ordering of usable elements will be own elements, system elements, dependency elements.
+   * Exception is made for types and profiles where we will show primitive and system elements first as those will be
+   * leveraged most by users
+   */
   get usableClassPropertyTypes(): Type[] {
     return [
       ...this.graph.primitiveTypes.filter(
@@ -179,147 +183,147 @@ export class GraphManagerState extends BasicGraphManagerState {
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownProfiles,
       ),
-      ...this.graph.dependencyManager.profiles,
       ...this.graph.ownProfiles,
+      ...this.graph.dependencyManager.profiles,
     ];
   }
   get usableEnumerations(): Enumeration[] {
     return [
+      ...this.graph.ownEnumerations,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownEnumerations,
       ),
       ...this.graph.dependencyManager.enumerations,
-      ...this.graph.ownEnumerations,
     ];
   }
   get usableMeasures(): Measure[] {
     return [
+      ...this.graph.ownMeasures,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownMeasures,
       ),
       ...this.graph.dependencyManager.measures,
-      ...this.graph.ownMeasures,
     ];
   }
   get usableClasses(): Class[] {
     return [
+      ...this.graph.ownClasses,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownClasses,
       ),
       ...this.graph.dependencyManager.classes,
-      ...this.graph.ownClasses,
     ];
   }
   get usableAssociationPropertyClasses(): Class[] {
-    return [...this.graph.dependencyManager.classes, ...this.graph.ownClasses];
+    return [...this.graph.ownClasses, ...this.graph.dependencyManager.classes];
   }
 
   get usableAssociations(): Association[] {
     return [
+      ...this.graph.ownAssociations,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownAssociations,
       ),
       ...this.graph.dependencyManager.associations,
-      ...this.graph.ownAssociations,
     ];
   }
   get usableFunctions(): ConcreteFunctionDefinition[] {
     return [
+      ...this.graph.ownFunctions,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownFunctions,
       ),
       ...this.graph.dependencyManager.functions,
-      ...this.graph.ownFunctions,
     ];
   }
   get usableStores(): Store[] {
     return [
+      ...this.graph.ownStores,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownStores,
       ),
       ...this.graph.dependencyManager.stores,
-      ...this.graph.ownStores,
     ];
   }
   get usableDatabases(): Database[] {
     return [
+      ...this.graph.ownDatabases,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownDatabases,
       ),
       ...this.graph.dependencyManager.databases,
-      ...this.graph.ownDatabases,
     ];
   }
   get usableMappings(): Mapping[] {
     return [
+      ...this.graph.ownMappings,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownMappings,
       ),
       ...this.graph.dependencyManager.mappings,
-      ...this.graph.ownMappings,
     ];
   }
   get usableServices(): Service[] {
     return [
+      ...this.graph.ownServices,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownServices,
       ),
       ...this.graph.dependencyManager.services,
-      ...this.graph.ownServices,
     ];
   }
   get usableRuntimes(): PackageableRuntime[] {
     return [
+      ...this.graph.ownRuntimes,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownRuntimes,
       ),
       ...this.graph.dependencyManager.runtimes,
-      ...this.graph.ownRuntimes,
     ];
   }
   get usableConnections(): PackageableConnection[] {
     return [
+      ...this.graph.ownConnections,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownConnections,
       ),
       ...this.graph.dependencyManager.connections,
-      ...this.graph.ownConnections,
     ];
   }
   get usableDataElements(): DataElement[] {
     return [
+      ...this.graph.ownDataElements,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownDataElements,
       ),
       ...this.graph.dependencyManager.dataElements,
-      ...this.graph.ownDataElements,
     ];
   }
   get usableGenerationSpecifications(): GenerationSpecification[] {
     return [
+      ...this.graph.ownGenerationSpecifications,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownGenerationSpecifications,
       ),
       ...this.graph.dependencyManager.generationSpecifications,
-      ...this.graph.ownGenerationSpecifications,
     ];
   }
   get usableFileGenerations(): FileGenerationSpecification[] {
     return [
+      ...this.graph.ownFileGenerations,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.ownFileGenerations,
       ),
       ...this.graph.dependencyManager.fileGenerations,
-      ...this.graph.ownFileGenerations,
     ];
   }
   get usableElements(): PackageableElement[] {
     return [
+      ...this.graph.ownMeasures,
       ...this.graphManager.collectExposedSystemElements(
         this.graph.systemModel.allOwnElements,
       ),
       ...this.graph.dependencyManager.allOwnElements,
-      ...this.graph.ownMeasures,
     ];
   }
 }

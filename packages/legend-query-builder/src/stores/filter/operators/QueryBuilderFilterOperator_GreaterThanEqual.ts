@@ -123,6 +123,7 @@ export class QueryBuilderFilterOperator_GreaterThanEqual
 
   buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
@@ -132,6 +133,7 @@ export class QueryBuilderFilterOperator_GreaterThanEqual
           PRIMITIVE_TYPE.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
+      lambdaParameterName,
     );
   }
 

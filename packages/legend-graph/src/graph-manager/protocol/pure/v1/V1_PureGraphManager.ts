@@ -291,6 +291,7 @@ import { FunctionActivatorConfiguration } from '../../../action/functionActivato
 import { V1_FunctionActivatorInput } from './engine/functionActivator/V1_FunctionActivatorInput.js';
 import { V1_FunctionActivator } from './model/packageableElements/function/V1_FunctionActivator.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from './model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+import { V1_DatabaseToModelGenerationInput } from './engine/relational/V1_DatabaseToModelGenerationInput.js';
 import type { RelationalDatabaseConnection } from '../../../../STO_Relational_Exports.js';
 import { V1_RawSQLExecuteInput } from './engine/execution/V1_RawSQLExecuteInput.js';
 import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
@@ -302,6 +303,7 @@ import {
   V1_ArtifactGenerationExtensionInput,
   V1_buildArtifactsByExtensionElement,
 } from './engine/generation/V1_ArtifactGenerationExtensionApi.js';
+import type { V1_RawValueSpecification } from './model/rawValueSpecification/V1_RawValueSpecification.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2135,14 +2137,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  buildRawValueSpecification(
+  transformValueSpecToRawValueSpec(
     valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification {
     // converts value spec to json
     const json = this.serializeValueSpecification(valueSpecification);
-    // deserialize json and builds metamodal raw value spec
-    const rawValueSpecification = V1_deserializeRawValueSpecification(json);
+    return this.buildRawValueSpecification(json, graph);
+  }
+
+  buildRawValueSpecification(
+    json: object,
+    graph: PureModel,
+  ): RawValueSpecification {
+    const rawValueSpecification = V1_deserializeRawValueSpecification(
+      json as PlainObject<V1_RawValueSpecification>,
+    );
     return rawValueSpecification.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationBuilder(
         new V1_GraphBuilderContextBuilder(
@@ -2996,6 +3006,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.engine.publishFunctionActivatorToSandbox(input);
   }
 
+  // --------------------------------------------- Relational ---------------------------------------------
+
+  async generateModelsFromDatabaseSpecification(
+    databasePath: string,
+    graph: PureModel,
+  ): Promise<Entity[]> {
+    const graphData = this.graphToPureModelContextData(graph);
+    const input = new V1_DatabaseToModelGenerationInput();
+    input.databasePath = databasePath;
+    input.modelData = graphData;
+    const generatedModel =
+      await this.engine.generateModelsFromDatabaseSpecification(input);
+    return this.pureModelContextDataToEntities(generatedModel);
+  }
+
   // --------------------------------------------- Service ---------------------------------------------
 
   async registerService(
@@ -3142,6 +3167,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               service.path,
             ),
           ];
+          pmcd.origin = new V1_PureModelContextPointer(protocol, sdlcInfo);
           inputs.push({ service: service, context: pmcd });
         });
         break;

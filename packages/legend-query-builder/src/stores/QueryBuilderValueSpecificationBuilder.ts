@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
   type Class,
   Multiplicity,
@@ -31,6 +31,7 @@ import {
   PrimitiveInstanceValue,
   PrimitiveType,
   SUPPORTED_FUNCTIONS,
+  RuntimePointer,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
@@ -40,6 +41,10 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaMode
 import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValueSpecificationBuilder.js';
 import { buildExecutionQueryFromLambdaFunction } from './shared/LambdaParameterState.js';
 import type { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
+import {
+  QueryBuilderEmbeddedFromExecutionContextState,
+  type QueryBuilderExecutionContextState,
+} from './QueryBuilderExecutionContextState.js';
 
 export const buildGetAllFunction = (
   _class: Class,
@@ -89,6 +94,45 @@ const buildLetExpression = (
   );
   letFunc.parametersValues = [leftSide, value];
   return letFunc;
+};
+
+const buildExecutionContextState = (
+  executionState: QueryBuilderExecutionContextState,
+  lambdaFunction: LambdaFunction,
+): LambdaFunction => {
+  if (executionState instanceof QueryBuilderEmbeddedFromExecutionContextState) {
+    const precedingExpression = guaranteeNonNullable(
+      lambdaFunction.expressionSequence[0],
+      `Can't build from() expression: preceding expression is not defined`,
+    );
+    const fromFunc = new SimpleFunctionExpression(
+      extractElementNameFromPath(SUPPORTED_FUNCTIONS.FROM),
+    );
+    // 1st param
+    const mapping = guaranteeNonNullable(
+      executionState.mapping,
+      'Mapping required for building from() expression',
+    );
+    const mappingInstance = new InstanceValue(Multiplicity.ONE, undefined);
+    mappingInstance.values = [
+      PackageableElementExplicitReference.create(mapping),
+    ];
+    // 2nd parameter
+    const runtime = guaranteeType(
+      executionState.runtimeValue,
+      RuntimePointer,
+      'Runtime Pointer required for building from() expression',
+    );
+    const runtimeInstance = new InstanceValue(Multiplicity.ONE, undefined);
+    runtimeInstance.values = [runtime.packageableRuntime];
+    fromFunc.parametersValues = [
+      precedingExpression,
+      mappingInstance,
+      runtimeInstance,
+    ];
+    lambdaFunction.expressionSequence[0] = fromFunc;
+  }
+  return lambdaFunction;
 };
 
 const buildFetchStructure = (
@@ -156,6 +200,11 @@ export const buildLambdaFunction = (
     queryBuilderState.fetchStructureState,
     lambdaFunction,
     options,
+  );
+  // build execution-state
+  buildExecutionContextState(
+    queryBuilderState.executionContextState,
+    lambdaFunction,
   );
 
   // build variable expressions

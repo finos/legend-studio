@@ -68,6 +68,8 @@ import {
   DataSpaceEnumerationDocumentationEntry,
   DataSpaceBasicDocumentationEntry,
   DataSpaceAssociationDocumentationEntry,
+  DataSpaceMultiExecutionServiceExecutableInfo,
+  DataSpaceMultiExecutionServiceKeyedExecutableInfo,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
 import {
@@ -78,6 +80,7 @@ import {
   V1_DataSpaceExecutableTDSResult,
   V1_DataSpaceServiceExecutableInfo,
   V1_deserializeDataSpaceAnalysisResult,
+  V1_DataSpaceMultiExecutionServiceExecutableInfo,
 } from './engine/analytics/V1_DataSpaceAnalysis.js';
 import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 
@@ -484,9 +487,6 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         executable.title = executableProtocol.title;
         executable.description = executableProtocol.description;
         executable.executable = executableProtocol.executable;
-        executable.datasets = executableProtocol.datasets.map((dataset) =>
-          V1_buildDatasetSpecification(dataset, plugins),
-        );
         if (
           executableProtocol.info instanceof V1_DataSpaceServiceExecutableInfo
         ) {
@@ -496,6 +496,32 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           serviceExecutableInfo.mapping = executableProtocol.info.mapping;
           serviceExecutableInfo.runtime = executableProtocol.info.runtime;
           executable.info = serviceExecutableInfo;
+          serviceExecutableInfo.datasets = serviceExecutableInfo.datasets.map(
+            (dataset) => V1_buildDatasetSpecification(dataset, plugins),
+          );
+        } else if (
+          executableProtocol.info instanceof
+          V1_DataSpaceMultiExecutionServiceExecutableInfo
+        ) {
+          const multiExecutionServiceExecutableInfo =
+            new DataSpaceMultiExecutionServiceExecutableInfo();
+          multiExecutionServiceExecutableInfo.keyedExecutableInfos =
+            executableProtocol.info.keyedExecutableInfos.map((info) => {
+              const keyedExecutableInfo =
+                new DataSpaceMultiExecutionServiceKeyedExecutableInfo();
+              keyedExecutableInfo.key = info.key;
+              keyedExecutableInfo.mapping = info.mapping;
+              keyedExecutableInfo.runtime = info.runtime;
+              keyedExecutableInfo.datasets = info.datasets.map((dataset) =>
+                V1_buildDatasetSpecification(dataset, plugins),
+              );
+              return keyedExecutableInfo;
+            });
+          multiExecutionServiceExecutableInfo.query =
+            executableProtocol.info.query;
+          multiExecutionServiceExecutableInfo.pattern =
+            executableProtocol.info.pattern;
+          executable.info = multiExecutionServiceExecutableInfo;
         }
         if (
           executableProtocol.result instanceof V1_DataSpaceExecutableTDSResult

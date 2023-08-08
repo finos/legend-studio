@@ -133,6 +133,20 @@ export class DataSpaceServiceExecutableInfo extends DataSpaceExecutableInfo {
   pattern!: string;
   mapping?: string | undefined;
   runtime?: string | undefined;
+  datasets: DatasetSpecification[] = [];
+}
+
+export class DataSpaceMultiExecutionServiceExecutableInfo extends DataSpaceExecutableInfo {
+  pattern!: string;
+  keyedExecutableInfos: DataSpaceMultiExecutionServiceKeyedExecutableInfo[] =
+    [];
+}
+
+export class DataSpaceMultiExecutionServiceKeyedExecutableInfo {
+  key!: string;
+  mapping?: string | undefined;
+  runtime?: string | undefined;
+  datasets: DatasetSpecification[] = [];
 }
 
 export abstract class DataSpaceExecutableResult {}
@@ -162,7 +176,6 @@ export class DataSpaceExecutableAnalysisResult {
   executable!: string;
   info?: DataSpaceExecutableInfo | undefined;
   result!: DataSpaceExecutableResult;
-  datasets: DatasetSpecification[] = [];
 }
 
 export class DataSpaceAnalysisResult {

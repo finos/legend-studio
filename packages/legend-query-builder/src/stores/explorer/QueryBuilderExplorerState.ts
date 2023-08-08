@@ -660,7 +660,7 @@ export class QueryBuilderExplorerState {
 
   refreshTreeData(): void {
     const _class = this.queryBuilderState.class;
-    const _mapping = this.queryBuilderState.mapping;
+    const _mapping = this.queryBuilderState.executionContextState.mapping;
     this.setTreeData(
       _class && _mapping && this.mappingModelCoverageAnalysisResult
         ? getQueryBuilderTreeData(
@@ -675,9 +675,9 @@ export class QueryBuilderExplorerState {
     // We will only refetch if the analysis result's mapping has changed.
     // This makes the assumption that the mapping has not been edited, which is a valid assumption since query is not for editing mappings
     if (
-      this.queryBuilderState.mapping &&
-      this.queryBuilderState.mapping.path !==
-        this.mappingModelCoverageAnalysisResult?.mapping.path
+      this.queryBuilderState.executionContextState.mapping &&
+      this.queryBuilderState.executionContextState.mapping !==
+        this.mappingModelCoverageAnalysisResult?.mapping
     ) {
       this.mappingModelCoverageAnalysisState.inProgress();
       QueryBuilderTelemetryHelper.logEvent_QueryMappingModelCoverageAnalysisLaunched(
@@ -692,7 +692,7 @@ export class QueryBuilderExplorerState {
       try {
         this.mappingModelCoverageAnalysisResult = (yield flowResult(
           this.queryBuilderState.graphManagerState.graphManager.analyzeMappingModelCoverage(
-            this.queryBuilderState.mapping,
+            this.queryBuilderState.executionContextState.mapping,
             this.queryBuilderState.graphManagerState.graph,
           ),
         )) as MappingModelCoverageAnalysisResult;
@@ -720,7 +720,7 @@ export class QueryBuilderExplorerState {
   *previewData(
     node: QueryBuilderExplorerTreePropertyNodeData,
   ): GeneratorFn<void> {
-    const runtime = this.queryBuilderState.runtimeValue;
+    const runtime = this.queryBuilderState.executionContextState.runtimeValue;
     if (!runtime) {
       this.queryBuilderState.applicationStore.notificationService.notifyWarning(
         `Can't preview data for property '${node.property.name}': runtime is not specified`,
@@ -730,7 +730,7 @@ export class QueryBuilderExplorerState {
     if (
       !node.mappingData.mapped ||
       !this.queryBuilderState.class ||
-      !this.queryBuilderState.mapping
+      !this.queryBuilderState.executionContextState.mapping
     ) {
       return;
     }
@@ -759,7 +759,7 @@ export class QueryBuilderExplorerState {
                 this.queryBuilderState,
                 propertyExpression,
               ),
-              this.queryBuilderState.mapping,
+              this.queryBuilderState.executionContextState.mapping,
               runtime,
               this.queryBuilderState.graphManagerState.graph,
             )) as ExecutionResult;
@@ -796,7 +796,7 @@ export class QueryBuilderExplorerState {
                 this.queryBuilderState,
                 propertyExpression,
               ),
-              this.queryBuilderState.mapping,
+              this.queryBuilderState.executionContextState.mapping,
               runtime,
               this.queryBuilderState.graphManagerState.graph,
             )) as ExecutionResult;

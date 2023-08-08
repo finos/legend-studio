@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-query-bootstrap",
-  "version": "10.1.0",
+  "version": "10.10.0",
   "description": "Legend Query application bootstrap",
   "keywords": [
     "legend",
@@ -58,13 +58,13 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "18.2.15",
+    "@types/react": "18.2.17",
     "react": "18.2.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.45.0",
+    "eslint": "8.46.0",
     "npm-run-all": "4.1.5",
     "rimraf": "5.0.1",
     "sass": "1.64.1",

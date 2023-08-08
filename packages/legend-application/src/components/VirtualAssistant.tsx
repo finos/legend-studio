@@ -32,7 +32,6 @@ import {
   WizardHatIcon,
   FaceLaughWinkIcon,
   ThinVerticalDragHandleIcon,
-  CircleIcon,
   PanelLoadingIndicator,
   BasePopover,
   FaceSadTearIcon,
@@ -42,6 +41,8 @@ import {
   QuestionCircleIcon,
   EmptyWindowRestoreIcon,
   WindowMaximizeIcon,
+  QuestionThinIcon,
+  LightBulbIcon,
 } from '@finos/legend-art';
 import {
   ADVANCED_FUZZY_SEARCH_MODE,
@@ -800,14 +801,16 @@ export const VirtualAssistant = observer(() => {
                     currentContextualDocumentationEntry
                       ? 'Contextual support available.\n'
                       : ''
-                  }Click to open assistant panel...`
+                  }Click to open Assistant...`
             }
           >
             {assistantService.isOpen ? (
               <CloseIcon className="virtual-assistant__station__trigger__close" />
             ) : currentContextualDocumentationEntry ? (
-              <CircleIcon className="virtual-assistant__station__trigger__circle" />
-            ) : null}
+              <LightBulbIcon className="virtual-assistant__station__trigger__circle" />
+            ) : (
+              <QuestionThinIcon className="virtual-assistant__station__trigger__help" />
+            )}
           </button>
 
           <ContextMenu

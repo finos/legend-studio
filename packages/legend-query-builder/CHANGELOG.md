@@ -1,5 +1,31 @@
 # @finos/legend-query-builder
 
+## 4.2.4
+
+## 4.2.3
+
+## 4.2.2
+
+## 4.2.1
+
+### Patch Changes
+
+- [#2466](https://github.com/finos/legend-studio/pull/2466) [`addc5fc07`](https://github.com/finos/legend-studio/commit/addc5fc0712c9e2e088567054adc33e638c8ae42) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where failing to generate default value for service test parameter of type Byte.
+
+## 4.2.0
+
+### Minor Changes
+
+- [#2430](https://github.com/finos/legend-studio/pull/2430) [`9b53ade77`](https://github.com/finos/legend-studio/commit/9b53ade77460a97fd3c197bd097671cc7a87d453) ([@gayathrir11](https://github.com/gayathrir11)) - Handle exists logic correctly in query
+
+## 4.1.15
+
+## 4.1.14
+
+### Patch Changes
+
+- [#2452](https://github.com/finos/legend-studio/pull/2452) [`f2103ffea`](https://github.com/finos/legend-studio/commit/f2103ffead542f83f1444b6fd1b0c699592f6860) ([@Humaira-Hossain](https://github.com/Humaira-Hossain)) - Patch query extension mechanism.
+
 ## 4.1.13
 
 ## 4.1.12

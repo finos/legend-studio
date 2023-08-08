@@ -34,6 +34,7 @@ import {
   TEST_DATA__filterQueryWithSubtypeWithExistsChain,
   TEST_DATA__simpleProjectionWithOutPreviewLimit,
   TEST_DATA__simpleProjectionWithPreviewLimit,
+  TEST_DATA__simpleFromFunction,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
@@ -58,6 +59,10 @@ import {
 import {
   TEST_DATA__lambda_input_filterWithExists,
   lambda_output_filterWithExists,
+  TEST_DATA__lambda_filterWithSingleExists,
+  TEST_DATA__lambda_filterWithNestedExists,
+  TEST_DATA__lambda_filterWithMultipleGroupConditionsInExists,
+  TEST_DATA__lambda_filterWithTwoExistsInSingleGroupCondition,
 } from './TEST_DATA__QueryBuilder_TestFilterQueriesWithExists.js';
 import {
   TEST_DATA__lambda_input_graphFetchWithFullPathFunctions,
@@ -132,6 +137,7 @@ import {
   TEST_DATA__simpleProjectionWithCalendarAggregation,
 } from './TEST_DATA__QueryBuilder_Calendar.js';
 import { DEFAULT_LIMIT } from '../QueryBuilderResultState.js';
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 
 type RoundtripTestCase = [
   string,
@@ -186,6 +192,10 @@ const calendarAggregationCtx = {
   entities: TEST_DATA_SimpleCalendarModel,
 };
 
+const existsCtx = {
+  entities: TEST_DATA__QueryBuilder_Model_SimpleRelational,
+};
+
 const cases: RoundtripTestCase[] = [
   // projection
   ['Simple projection', projectionCtx, TEST_DATA__simpleProjection, undefined],
@@ -193,6 +203,12 @@ const cases: RoundtripTestCase[] = [
     'Simple projection with subType',
     projectionCtx,
     TEST_DATA__simpleProjectionWithSubtype,
+    undefined,
+  ],
+  [
+    'Simple TDS function with from() function',
+    projectionCtx,
+    TEST_DATA__simpleFromFunction,
     undefined,
   ],
   [
@@ -619,6 +635,30 @@ const cases: RoundtripTestCase[] = [
     'Simple relational derivation column with calendar aggregation',
     calendarAggregationCtx,
     TEST_DATA__simpleDerivationWithCalendarAggregation,
+    undefined,
+  ],
+  [
+    'Simple filter with single exists()',
+    existsCtx,
+    TEST_DATA__lambda_filterWithSingleExists,
+    undefined,
+  ],
+  [
+    'Simple filter with nested exists()',
+    existsCtx,
+    TEST_DATA__lambda_filterWithNestedExists,
+    undefined,
+  ],
+  [
+    'Simple filter with multiple group conditions in exists()',
+    existsCtx,
+    TEST_DATA__lambda_filterWithMultipleGroupConditionsInExists,
+    undefined,
+  ],
+  [
+    'Simple filter with two exists() in single group condition',
+    existsCtx,
+    TEST_DATA__lambda_filterWithTwoExistsInSingleGroupCondition,
     undefined,
   ],
 ];

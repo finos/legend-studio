@@ -41,7 +41,7 @@ const TEST_DATA__ProjectConfiguration = {
   artifactId: 'dependency-test',
   projectDependencies: [
     {
-      projectId: 'PROD-1',
+      projectId: 'org.finos.legend:prod-1',
       versionId: '2.0.0',
     },
     {
@@ -51,17 +51,6 @@ const TEST_DATA__ProjectConfiguration = {
   ],
   metamodelDependencies: [],
 };
-
-const TEST_DATA__ProjectData = [
-  {
-    id: 'PROD-1',
-    projectId: 'PROD-1',
-    groupId: 'org.finos.legend',
-    artifactId: 'prod-1',
-    versions: ['1.0.0', '2.0.0'],
-    latestVersion: '2.0.0',
-  },
-];
 
 const TEST_DATA__Projects = [
   {
@@ -157,7 +146,6 @@ beforeEach(async () => {
     projectConfiguration: TEST_DATA__ProjectConfiguration,
     latestProjectStructureVersion: TEST_DATA__latestProjectStructure,
     projects: TEST_DATA__Projects,
-    projectData: TEST_DATA__ProjectData,
     projectDependency: TEST_DATA__DependencyEntities,
     projectDependencyReport: TEST_DATA__ProjectDependencyReport,
   });

@@ -19,6 +19,7 @@ import {
   ShowcaseRegistry,
   type ShowcaseRegistryConfig,
 } from './ShowcaseRegistry.js';
+import { HttpStatus } from '@finos/legend-shared';
 
 interface GetShowcaseRequest extends RequestGenericInterface {
   Params: {
@@ -67,4 +68,9 @@ export const configureShowcaseRegistryServer = async (
       await reply.send(await registry.search(searchText));
     },
   );
+
+  server.get(`${baseUrl}/showcases/refresh`, async (request, reply) => {
+    await registry.fetchData();
+    await reply.status(HttpStatus.NO_CONTENT).send();
+  });
 };

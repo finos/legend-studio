@@ -36,7 +36,6 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  isStubbed_PackageableElement,
   isStubbed_RawLambda,
   KeyedExecutionParameter,
 } from '@finos/legend-graph';
@@ -115,91 +114,78 @@ export const ServiceExecutionQueryEditor = observer(
       applicationStore.guardUnhandledError(async () => {
         const selectedExecutionState =
           executionState.selectedExecutionContextState;
-        if (selectedExecutionState?.executionContext.mapping === undefined) {
-          applicationStore.notificationService.notifyError(
-            'Editing query without runtime and mapping is unsupported via query builder, please leverage the text mode to edit query',
-          );
-          executionState.setOpeningQueryEditor(false);
-        } else {
-          const mapping = selectedExecutionState.executionContext.mapping.value;
-          if (!isStubbed_PackageableElement(mapping)) {
-            await flowResult(
-              embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-                setupQueryBuilderState: (): QueryBuilderState => {
-                  const queryBuilderState = new ServiceQueryBuilderState(
-                    embeddedQueryBuilderState.editorStore.applicationStore,
-                    embeddedQueryBuilderState.editorStore.graphManagerState,
-                    service,
-                    undefined,
-                    selectedExecutionState.executionContext instanceof
-                    KeyedExecutionParameter
-                      ? selectedExecutionState.executionContext.key
-                      : undefined,
-                  );
-                  queryBuilderState.initializeWithQuery(
-                    executionState.execution.func,
-                  );
-                  if (openInTextMode) {
-                    queryBuilderState.textEditorState.openModal(
-                      QueryBuilderTextEditorMode.TEXT,
-                    );
-                  }
-                  return queryBuilderState;
-                },
-                actionConfigs: [
-                  {
-                    key: 'save-query-btn',
-                    renderer: (
-                      queryBuilderState: QueryBuilderState,
-                    ): React.ReactNode => {
-                      const save = applicationStore.guardUnhandledError(
-                        async () => {
-                          try {
-                            const rawLambda = queryBuilderState.buildQuery();
-                            await flowResult(
-                              executionState.queryState.updateLamba(rawLambda),
-                            );
-                            applicationStore.notificationService.notifySuccess(
-                              `Service query is updated`,
-                            );
-                            embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
-                              undefined,
-                            );
-                          } catch (error) {
-                            assertErrorThrown(error);
-                            applicationStore.notificationService.notifyError(
-                              `Can't save query: ${error.message}`,
-                            );
-                          }
-                        },
-                      );
 
-                      return (
-                        <button
-                          className="query-builder__dialog__header__custom-action"
-                          tabIndex={-1}
-                          disabled={isReadOnly}
-                          onClick={save}
-                        >
-                          Save Query
-                        </button>
-                      );
+        await flowResult(
+          embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+            setupQueryBuilderState: (): QueryBuilderState => {
+              const queryBuilderState = new ServiceQueryBuilderState(
+                embeddedQueryBuilderState.editorStore.applicationStore,
+                embeddedQueryBuilderState.editorStore.graphManagerState,
+                service,
+                undefined,
+                selectedExecutionState?.executionContext instanceof
+                KeyedExecutionParameter
+                  ? selectedExecutionState.executionContext.key
+                  : undefined,
+              );
+              queryBuilderState.initializeWithQuery(
+                executionState.execution.func,
+              );
+              if (openInTextMode) {
+                queryBuilderState.textEditorState.openModal(
+                  QueryBuilderTextEditorMode.TEXT,
+                );
+              }
+              return queryBuilderState;
+            },
+            actionConfigs: [
+              {
+                key: 'save-query-btn',
+                renderer: (
+                  queryBuilderState: QueryBuilderState,
+                ): React.ReactNode => {
+                  const save = applicationStore.guardUnhandledError(
+                    async () => {
+                      try {
+                        const rawLambda = queryBuilderState.buildQuery();
+                        await flowResult(
+                          executionState.queryState.updateLamba(rawLambda),
+                        );
+                        applicationStore.notificationService.notifySuccess(
+                          `Service query is updated`,
+                        );
+                        embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+                          undefined,
+                        );
+                      } catch (error) {
+                        assertErrorThrown(error);
+                        applicationStore.notificationService.notifyError(
+                          `Can't save query: ${error.message}`,
+                        );
+                      }
                     },
-                  },
-                ],
-                disableCompile: isStubbed_RawLambda(
-                  executionState.queryState.query,
-                ),
-              }),
-            );
-            executionState.setOpeningQueryEditor(false);
-            return;
-          }
-          applicationStore.notificationService.notifyWarning(
-            'Please specify a mapping and a runtime for the execution context to edit with query builder',
-          );
-          executionState.setOpeningQueryEditor(false);
-        }
+                  );
+
+                  return (
+                    <button
+                      className="query-builder__dialog__header__custom-action"
+                      tabIndex={-1}
+                      disabled={isReadOnly}
+                      onClick={save}
+                    >
+                      Save Query
+                    </button>
+                  );
+                },
+              },
+            ],
+            disableCompile: isStubbed_RawLambda(
+              executionState.queryState.query,
+            ),
+          }),
+        );
+        executionState.setOpeningQueryEditor(false);
+        return;
       });
 
     const importQuery = (): void =>

@@ -164,6 +164,46 @@
     }
   }
 
+  &__exists-node {
+    @include flexVCenter;
+
+    height: 2.2rem;
+    border-radius: 0.2rem;
+    background: var(--color-purple-200);
+
+    &__label {
+      @include ellipsisTextOverflow;
+
+      max-width: 15rem;
+      min-width: 4.5rem;
+      height: 2rem;
+      line-height: 2rem;
+      padding: 0 0.5rem;
+      color: var(--color-light-grey-50);
+    }
+
+    &__class--icon {
+      @include flexCenter;
+
+      width: 1.7rem;
+      height: 1.4rem;
+      padding-left: 0.5rem;
+    }
+
+    &__exists--label {
+      @include flexVCenter;
+
+      background: var(--color-dark-grey-400);
+      color: var(--color-light-grey-200);
+      margin-right: 0.5rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      padding: 0 0.25rem;
+      height: 1.6rem;
+      font-weight: 500;
+    }
+  }
+
   &__blank-node {
     @include flexCenter;
 

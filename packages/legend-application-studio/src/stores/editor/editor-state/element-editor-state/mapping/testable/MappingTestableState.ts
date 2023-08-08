@@ -646,10 +646,12 @@ export class MappingTestableState {
   }
 
   init(): void {
-    const suite = this.mapping.tests[0];
-    this.selectedTestSuite = suite
-      ? this.buildTestSuiteState(suite)
-      : undefined;
+    if (!this.selectedTestSuite) {
+      const suite = this.mapping.tests[0];
+      this.selectedTestSuite = suite
+        ? this.buildTestSuiteState(suite)
+        : undefined;
+    }
   }
 
   openCreateModal(): void {

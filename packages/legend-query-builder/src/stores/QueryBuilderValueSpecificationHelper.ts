@@ -211,11 +211,12 @@ export const generateDefaultValueForPrimitiveType = (
       return '';
     case PRIMITIVE_TYPE.BOOLEAN:
       return false;
+    case PRIMITIVE_TYPE.BYTE:
+      return btoa('');
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.FLOAT:
     case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.BYTE:
     case PRIMITIVE_TYPE.BINARY:
       return 0;
     case PRIMITIVE_TYPE.DATE:

@@ -113,6 +113,7 @@ import {
   primitive,
   serialize,
   SKIP,
+  raw,
 } from 'serializr';
 import { V1_PersistenceTest } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
 import { V1_PersistenceTestBatch } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestBatch.js';
@@ -1709,15 +1710,15 @@ export const V1_fieldBasedForGraphFetchModelSchema = (
     _type: usingConstantValueSchema(
       V1_PartitioningType.FIELD_BASED_FOR_GRAPH_FETCH,
     ),
+    partitionFieldPaths: raw(),
   });
 
 export const V1_fieldBasedForTdsModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_FieldBasedForGraphFetch> =>
-  createModelSchema(V1_FieldBasedForGraphFetch, {
-    _type: usingConstantValueSchema(
-      V1_PartitioningType.FIELD_BASED_FOR_GRAPH_FETCH,
-    ),
+): ModelSchema<V1_FieldBasedForTds> =>
+  createModelSchema(V1_FieldBasedForTds, {
+    _type: usingConstantValueSchema(V1_PartitioningType.FIELD_BASED_FOR_TDS),
+    partitionFields: list(primitive()),
   });
 
 export const V1_noPartitioningModelSchema = (
@@ -1786,6 +1787,7 @@ export const V1_deleteIndicatorForGraphFetchModelSchema = (
     _type: usingConstantValueSchema(
       V1_ActionIndicatorType.DELETE_INDICATOR_FOR_GRAPH_FETCH,
     ),
+    deleteFieldPath: raw(),
     deleteValues: list(primitive()),
   });
 
@@ -1949,6 +1951,7 @@ export const V1_maxVersionForGraphFetchModelSchema = (
     _type: usingConstantValueSchema(
       V1_DeduplicationType.MAX_VERSION_FOR_GRAPH_FETCH,
     ),
+    versionFieldPath: raw(),
   });
 
 export const V1_maxVersionForTdsModelSchema = (
@@ -1956,7 +1959,23 @@ export const V1_maxVersionForTdsModelSchema = (
 ): ModelSchema<V1_MaxVersionForTds> =>
   createModelSchema(V1_MaxVersionForTds, {
     _type: usingConstantValueSchema(V1_DeduplicationType.MAX_VERSION_FOR_TDS),
+    versionField: primitive(),
   });
+
+export const V1_serializeMaxVersionDeduplication = (
+  protocol: V1_MaxVersion,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_MaxVersion> => {
+  if (protocol instanceof V1_MaxVersionForGraphFetch) {
+    return serialize(V1_maxVersionForGraphFetchModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_MaxVersionForTds) {
+    return serialize(V1_maxVersionForTdsModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize MaxVersionDeduplication`,
+    protocol,
+  );
+};
 
 export const V1_serializeDeduplication = (
   protocol: V1_Deduplication,
@@ -1967,7 +1986,7 @@ export const V1_serializeDeduplication = (
   } else if (protocol instanceof V1_AnyVersion) {
     return serialize(V1_anyVersionModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_MaxVersion) {
-    return serialize(V1_maxVersionForGraphFetchModelSchema(plugins), protocol);
+    return V1_serializeMaxVersionDeduplication(protocol, plugins);
   }
   throw new UnsupportedOperationError(
     `Can't serialize Deduplication`,
@@ -1989,21 +2008,6 @@ export const V1_deserializeDeduplication = (
     return deserialize(V1_maxVersionForTdsModelSchema(plugins), json);
   }
   throw new UnsupportedOperationError(`Can't deserialize Deduplication`, json);
-};
-
-export const V1_serializeMaxVersionDeduplication = (
-  protocol: V1_MaxVersion,
-  plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_MaxVersion> => {
-  if (protocol instanceof V1_MaxVersionForGraphFetch) {
-    return serialize(V1_maxVersionForGraphFetchModelSchema(plugins), protocol);
-  } else if (protocol instanceof V1_MaxVersionForTds) {
-    return serialize(V1_maxVersionForTdsModelSchema(plugins), protocol);
-  }
-  throw new UnsupportedOperationError(
-    `Can't serialize MaxVersionDeduplication`,
-    protocol,
-  );
 };
 
 /****************
@@ -2030,6 +2034,8 @@ export const V1_graphFetchServiceOutputModelSchema = (
       (val) => V1_serializeDeduplication(val, plugins),
       (val) => V1_deserializeDeduplication(val, plugins),
     ),
+    keys: list(raw()),
+    path: raw(),
   });
 
 export const V1_tdsServiceOutputModelSchema = (

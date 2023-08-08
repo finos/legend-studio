@@ -81,7 +81,10 @@ Persistence test::TestPersistence
           deleteValues: ['Y'];
         }
       }
-      deduplication: None;
+      deduplication: MaxVersion
+      {
+        versionField: fieldName;
+      }
     }
     ->
     Relational

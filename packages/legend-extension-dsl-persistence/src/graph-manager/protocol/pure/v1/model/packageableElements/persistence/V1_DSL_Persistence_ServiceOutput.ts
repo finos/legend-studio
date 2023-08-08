@@ -18,6 +18,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import type { V1_DatasetType } from './V1_DSL_Persistence_DatasetType.js';
 import type { V1_Deduplication } from './V1_DSL_Persistence_Deduplication.js';
+import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 
 export abstract class V1_ServiceOutput implements Hashable {
   deduplication!: V1_Deduplication;
@@ -27,11 +28,26 @@ export abstract class V1_ServiceOutput implements Hashable {
 }
 
 export class V1_GraphFetchServiceOutput extends V1_ServiceOutput {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  keys!: object[];
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  path!: object;
+
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.GRAPH_FETCH_SERVICE_OUTPUT,
       this.deduplication,
       this.datasetType,
+      hashObjectWithoutSourceInformation(this.keys),
+      hashObjectWithoutSourceInformation(this.path),
     ]);
   }
 }

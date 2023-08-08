@@ -71,8 +71,6 @@ import {
   uuid,
   LogEvent,
   guaranteeNonNullable,
-  assertTrue,
-  AssertionError,
 } from '@finos/legend-shared';
 import { type Entity, generateGAVCoordinates } from '@finos/legend-storage';
 import {
@@ -90,17 +88,12 @@ import {
 
 const projectDependencyToProjectCoordinates = (
   projectDependency: ProjectDependency,
-): ProjectDependencyCoordinates => {
-  assertTrue(
-    !projectDependency.isLegacyDependency,
-    `Legacy dependency is not supported`,
-  );
-  return new ProjectDependencyCoordinates(
+): ProjectDependencyCoordinates =>
+  new ProjectDependencyCoordinates(
     guaranteeNonNullable(projectDependency.groupId),
     guaranteeNonNullable(projectDependency.artifactId),
     projectDependency.versionId,
   );
-};
 
 export const createServiceElement = async (
   servicePath: string,
@@ -589,15 +582,6 @@ export class QueryProductionizerStore {
         showLoading: true,
       });
 
-      if (
-        currentProjectConfiguration.projectDependencies.some(
-          (p) => p.isLegacyDependency,
-        )
-      ) {
-        throw new AssertionError(
-          `Can't productionize query: selected project '${project.name}' (${project.projectId}) contains legacy dependencies. Please update the project and try again.`,
-        );
-      }
       const dependencyEntities = (
         await this.depotServerClient.collectDependencyEntities(
           [

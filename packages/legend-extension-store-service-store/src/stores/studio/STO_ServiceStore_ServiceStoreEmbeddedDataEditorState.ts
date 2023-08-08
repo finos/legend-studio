@@ -36,9 +36,8 @@ export enum SERVICE_REQUEST_PATTERN_TAB_TYPE {
 export class ServiceStubMappingState {
   serviceStubMapping?: ServiceStubMapping | undefined;
   selectedTab = SERVICE_STUB_MAPPING_TAB_TYPE.SERVICE_REQUEST_PATTERN;
-  selectedServiceRequestPatternTab?:
-    | SERVICE_REQUEST_PATTERN_TAB_TYPE
-    | undefined;
+  selectedServiceRequestPatternTab =
+    SERVICE_REQUEST_PATTERN_TAB_TYPE.HEADER_PARAMS;
   urlPath: string;
 
   constructor(
@@ -70,7 +69,7 @@ export class ServiceStubMappingState {
   }
 
   setSelectedServiceRequestPatternTab(
-    val: SERVICE_REQUEST_PATTERN_TAB_TYPE | undefined,
+    val: SERVICE_REQUEST_PATTERN_TAB_TYPE,
   ): void {
     this.selectedServiceRequestPatternTab = val;
   }

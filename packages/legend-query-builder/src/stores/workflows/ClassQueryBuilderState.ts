@@ -44,7 +44,8 @@ export class ClassQueryBuilderState extends QueryBuilderState {
     );
     // cascading
     const isCurrentMappingCompatible =
-      this.mapping && compatibleMappings.includes(this.mapping);
+      this.executionContextState.mapping &&
+      compatibleMappings.includes(this.executionContextState.mapping);
     if (this.isMappingReadOnly || isCurrentMappingCompatible) {
       return;
     }

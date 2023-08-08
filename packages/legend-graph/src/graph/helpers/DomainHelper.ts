@@ -754,3 +754,20 @@ export const classHasCycle = (
     excludedPaths?: Map<string, string[]> | undefined;
   },
 ): boolean => _classHasCycle(_class, new Set<string>(), options);
+
+export const getElementOrigin = (
+  element: PackageableElement,
+  graph: PureModel,
+): string => {
+  if (isSystemElement(element)) {
+    return 'system elements';
+  } else if (isGeneratedElement(element)) {
+    return 'generation elements';
+  } else if (isDependencyElement(element)) {
+    const name = graph.dependencyManager.getElementOrigin(element);
+    if (name) {
+      return `project dependency ${name}`;
+    }
+  }
+  return '';
+};

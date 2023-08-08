@@ -758,7 +758,9 @@ export const V1_transformMaxVersion = (
   context: V1_GraphTransformerContext,
 ): V1_MaxVersion => {
   if (element instanceof MaxVersionForGraphFetch) {
-    return new V1_MaxVersionForGraphFetch();
+    const protocol = new V1_MaxVersionForGraphFetch();
+    protocol.versionFieldPath = element.versionFieldPath;
+    return protocol;
   } else if (element instanceof MaxVersionForTds) {
     const protocol = new V1_MaxVersionForTds();
     protocol.versionField = element.versionField;
@@ -1058,6 +1060,7 @@ export const V1_transformDeleteIndicator = (
 ): V1_DeleteIndicator => {
   if (element instanceof DeleteIndicatorForGraphFetch) {
     const protocol = new V1_DeleteIndicatorForGraphFetch();
+    protocol.deleteFieldPath = element.deleteFieldPath;
     protocol.deleteValues = element.deleteValues;
     return protocol;
   } else if (element instanceof DeleteIndicatorForTds) {
@@ -1111,19 +1114,21 @@ export const V1_transformEmptyDatasetHandling = (
  **************/
 
 export const V1_transformFieldBasedPartitioning = (
-  protocol: FieldBased,
+  element: FieldBased,
   context: V1_GraphTransformerContext,
 ): V1_FieldBased => {
-  if (protocol instanceof FieldBasedForGraphFetch) {
-    return new V1_FieldBasedForGraphFetch();
-  } else if (protocol instanceof FieldBasedForTds) {
+  if (element instanceof FieldBasedForGraphFetch) {
+    const fieldBasedForGraphFetch = new V1_FieldBasedForGraphFetch();
+    fieldBasedForGraphFetch.partitionFieldPaths = element.partitionFieldPaths;
+    return fieldBasedForGraphFetch;
+  } else if (element instanceof FieldBasedForTds) {
     const fieldBasedForTds = new V1_FieldBasedForTds();
-    fieldBasedForTds.partitionFields = protocol.partitionFields;
+    fieldBasedForTds.partitionFields = element.partitionFields;
     return fieldBasedForTds;
   }
   throw new UnsupportedOperationError(
     `Can't transform FieldBasedPartitioning`,
-    protocol,
+    element,
   );
 };
 
@@ -1188,6 +1193,8 @@ export const V1_transformServiceOutput = (
       element.deduplication,
       context,
     );
+    protocol.keys = element.keys;
+    protocol.path = element.path;
     return protocol;
   } else if (element instanceof TdsServiceOutput) {
     const protocol = new V1_TdsServiceOutput();

@@ -37,6 +37,7 @@ import {
   TEST_DATA__temporalModel,
   TEST_DATA__personWithSubType,
   TEST_DATA_dateCompabilityForFilterAndPostFilter,
+  TEST_DATA__fromWithPersonProject,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip.js';
 import TEST_DATA__BindingM2MModel from './TEST_DATA__QueryBuilder_Model_BindingM2M.json' assert { type: 'json' };
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json' assert { type: 'json' };
@@ -191,6 +192,11 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__personWithParameter,
   ],
   [
+    'Simple TDS function with from() function',
+    relationalCtx,
+    TEST_DATA__fromWithPersonProject,
+  ],
+  [
     'Date compability for Filter and Post-filter',
     postFilterCtx,
     TEST_DATA_dateCompabilityForFilterAndPostFilter,
@@ -246,7 +252,7 @@ describe(unitTest('Lambda processing roundtrip'), () => {
       );
       const _lambdaJson =
         graphManagerState.graphManager.serializeRawValueSpecification(
-          graphManagerState.graphManager.buildRawValueSpecification(
+          graphManagerState.graphManager.transformValueSpecToRawValueSpec(
             lambda,
             graphManagerState.graph,
           ),

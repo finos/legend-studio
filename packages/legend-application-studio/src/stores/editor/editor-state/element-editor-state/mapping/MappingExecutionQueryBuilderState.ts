@@ -31,9 +31,8 @@ export class MappingExecutionQueryBuilderState extends QueryBuilderState {
     mapping: Mapping,
   ) {
     super(applicationStore, graphManagerState);
-
     this.executionMapping = mapping;
-    this.mapping = mapping;
+    this.executionContextState.mapping = mapping;
   }
 
   override get isMappingReadOnly(): boolean {

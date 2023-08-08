@@ -138,9 +138,11 @@ export const TEST__setUpQueryBuilderState = async (
   if (executionContext) {
     const graph = queryBuilderState.graphManagerState.graph;
     queryBuilderState.class = graph.getClass(executionContext._class);
-    queryBuilderState.mapping = graph.getMapping(executionContext.mapping);
+    queryBuilderState.executionContextState.mapping = graph.getMapping(
+      executionContext.mapping,
+    );
     if (executionContext.runtime) {
-      queryBuilderState.runtimeValue = graph.getRuntime(
+      queryBuilderState.executionContextState.runtimeValue = graph.getRuntime(
         executionContext.runtime,
       );
     }

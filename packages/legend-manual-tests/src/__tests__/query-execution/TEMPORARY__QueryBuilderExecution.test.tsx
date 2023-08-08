@@ -128,9 +128,9 @@ test(integrationTest('test query execution with parameters'), async () => {
     queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
   ).createExecutionInput(
     queryBuilderState.graphManagerState.graph,
-    guaranteeNonNullable(queryBuilderState.mapping),
+    guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
     queryBuilderState.resultState.buildExecutionRawLambda(),
-    guaranteeNonNullable(queryBuilderState.runtimeValue),
+    guaranteeNonNullable(queryBuilderState.executionContextState.runtimeValue),
     V1_PureGraphManager.DEV_PROTOCOL_VERSION,
     parameterValues,
   );

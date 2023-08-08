@@ -43,6 +43,7 @@ export abstract class QueryBuilderFilterOperator implements Hashable {
 
   abstract buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
+    lambdaParameterName?: string | undefined,
   ): ValueSpecification;
 
   abstract buildFilterConditionState(

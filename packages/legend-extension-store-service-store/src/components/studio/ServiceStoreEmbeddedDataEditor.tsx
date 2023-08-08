@@ -23,6 +23,9 @@ import {
   LockIcon,
   MenuContent,
   MenuContentItem,
+  Panel,
+  PanelContent,
+  PanelHeader,
   PlusIcon,
   ResizablePanel,
   ResizablePanelGroup,
@@ -952,37 +955,29 @@ export const ServiceStoreEmbeddedDataEditor = observer(
           <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
         </ResizablePanelSplitter>
         <ResizablePanel>
-          <div className="service-store-embedded-data-editor">
-            <div className="service-store-embedded-data-editor__header">
-              <div className="service-store-embedded-data-editor__header__title">
-                {isReadOnly && (
-                  <div className="service-store-embedded-data-editor__header__lock">
-                    <LockIcon />
-                  </div>
+          <Panel>
+            <PanelHeader
+              title={
+                currentServiceStubMapping !== undefined
+                  ? `ServiceStubMapping${
+                      getIndex(currentServiceStubMapping) + 1
+                    }`
+                  : ''
+              }
+            />
+
+            <PanelContent>
+              {serviceStoreEmbeddedDataState.currentServiceStubMappingState &&
+                currentServiceStubMapping !== undefined && (
+                  <ServiceStubMappingEditor
+                    serviceStubMappingState={
+                      serviceStoreEmbeddedDataState.currentServiceStubMappingState
+                    }
+                    isReadOnly={isReadOnly}
+                  />
                 )}
-                <div className="service-store-embedded-data-editor__header__title__content">
-                  {currentServiceStubMapping !== undefined
-                    ? `ServiceStubMapping${
-                        getIndex(currentServiceStubMapping) + 1
-                      }`
-                    : ''}
-                </div>
-              </div>
-            </div>
-            <div className="service-store-embedded-data-editor__content">
-              <div className="service-store-embedded-data-editor__content__lists">
-                {serviceStoreEmbeddedDataState.currentServiceStubMappingState &&
-                  currentServiceStubMapping !== undefined && (
-                    <ServiceStubMappingEditor
-                      serviceStubMappingState={
-                        serviceStoreEmbeddedDataState.currentServiceStubMappingState
-                      }
-                      isReadOnly={isReadOnly}
-                    />
-                  )}
-              </div>
-            </div>
-          </div>
+            </PanelContent>
+          </Panel>
         </ResizablePanel>
       </ResizablePanelGroup>
     );

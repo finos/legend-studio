@@ -37,6 +37,7 @@ export {
   getRuntimeOptionFormatter,
 } from './components/QueryBuilderSideBar.js';
 export { ClassQueryBuilderState } from './stores/workflows/ClassQueryBuilderState.js';
+export { FunctionQueryBuilderState } from './stores/workflows/FunctionQueryBuilderState.js';
 export { MappingQueryBuilderState } from './stores/workflows/MappingQueryBuilderState.js';
 export {
   type ServiceExecutionContext,
