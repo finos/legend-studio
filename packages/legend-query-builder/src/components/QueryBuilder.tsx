@@ -127,10 +127,16 @@ const QueryBuilderStatusBar = observer(
           <button
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+              {
+                'query-builder__status-bar__action__toggler--toggled':
+                  queryBuilderState.isQueryChatOpened === true,
+              },
             )}
-            onClick={openQueryChat}
+            onClick={(): void => {
+              openQueryChat;
+            }}
             tabIndex={-1}
-            title="Open query chat"
+            title="Open Query Chat"
           >
             <ChatIcon />
           </button>
