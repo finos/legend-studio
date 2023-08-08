@@ -62,8 +62,9 @@ export const QueryChat = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
+              className="btn--caution"
               onClick={() => queryBuilderState.setIsQueryChatOpened(false)}
-              text="Close"
+              text="Discard and Close"
             />
           </ModalFooter>
         </Modal>
