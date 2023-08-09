@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.2.0
+
+### Minor Changes
+
+- [#2444](https://github.com/finos/legend-studio/pull/2444) [`7f4c5c03d`](https://github.com/finos/legend-studio/commit/7f4c5c03db01e2f5adaa529926c46eb1129825cd) ([@gayathrir11](https://github.com/gayathrir11)) - Remove handling of legacy dependencies
+
+- [#2417](https://github.com/finos/legend-studio/pull/2417) [`e788d13e9`](https://github.com/finos/legend-studio/commit/e788d13e97d4f0e620a70ad4fbac88378df11f30) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Edit supported lambdas (from() lambdas) in function editor via embedded query builder.
+
 ## 28.1.4
 
 ## 28.1.3

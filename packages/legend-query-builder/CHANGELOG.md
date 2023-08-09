@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.3.0
+
+### Minor Changes
+
+- [#2417](https://github.com/finos/legend-studio/pull/2417) [`e788d13e9`](https://github.com/finos/legend-studio/commit/e788d13e97d4f0e620a70ad4fbac88378df11f30) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support editing queries with `mapping` and `runtime` defined inline using `from()` function.
+
+### Patch Changes
+
+- [#2486](https://github.com/finos/legend-studio/pull/2486) [`a376e4c47`](https://github.com/finos/legend-studio/commit/a376e4c476040ef1041b5dac33b555a269dc2206) ([@Humaira-Hossain](https://github.com/Humaira-Hossain)) - Change modal footer button and chat button colour changed when toggled.
+
 ## 4.2.4
 
 ## 4.2.3

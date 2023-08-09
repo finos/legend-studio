@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-deployment
 
+## 10.11.0
+
 ## 10.10.0
 
 ## 10.9.0
