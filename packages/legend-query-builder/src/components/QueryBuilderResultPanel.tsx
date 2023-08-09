@@ -53,6 +53,7 @@ import {
   EnumValueInstanceValue,
   EnumValueExplicitReference,
   RelationalExecutionActivities,
+  getTDSRowRankByColumnInAsc,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -523,10 +524,19 @@ const QueryResultCellRenderer = observer(
       ) {
         return undefined;
       }
-
-      return resultState.executionResult.result.rows[rowIndex]?.values[
-        colIndex
+      const sortedExecutionResult = [
+        ...resultState.executionResult.result.rows,
       ];
+      if (params.columnApi.getColumnState()[colIndex]?.sort === 'asc') {
+        sortedExecutionResult.sort((a, b) =>
+          getTDSRowRankByColumnInAsc(a, b, colIndex),
+        );
+      } else if (params.columnApi.getColumnState()[colIndex]?.sort === 'desc') {
+        sortedExecutionResult.sort((a, b) =>
+          getTDSRowRankByColumnInAsc(b, a, colIndex),
+        );
+      }
+      return sortedExecutionResult[rowIndex]?.values[colIndex];
     };
 
     const isCoordinatesSelected = (

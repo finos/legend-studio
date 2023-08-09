@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-shared';
+import { guaranteeNonNullable, uuid } from '@finos/legend-shared';
 
 // Core
 export enum BuilderType {
@@ -138,3 +138,19 @@ export class ClassExecutionResult extends ExecutionResult {
   override builder = new ClassBuilder(BuilderType.CLASS_BUILDER);
   objects!: object;
 }
+
+export const getTDSRowRankByColumnInAsc = (
+  a: TDSRow,
+  b: TDSRow,
+  colIndex: number,
+): number => {
+  const a1 =
+    a.values[colIndex] === null || a.values[colIndex] === undefined
+      ? -Infinity
+      : a.values[colIndex];
+  const b1 =
+    b.values[colIndex] === null || b.values[colIndex] === undefined
+      ? -Infinity
+      : b.values[colIndex];
+  return Number(guaranteeNonNullable(a1)) - Number(guaranteeNonNullable(b1));
+};
