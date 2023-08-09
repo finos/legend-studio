@@ -296,4 +296,8 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
           : undefined,
     ];
   }
+
+  getAutoFoldingCandidateToken(): string[] {
+    return [PURE_GRAMMAR_DIAGRAM_PARSER_NAME];
+  }
 }
