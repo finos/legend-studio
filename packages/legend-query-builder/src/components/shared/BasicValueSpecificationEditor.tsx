@@ -617,6 +617,30 @@ const setCollectionValue = (
           .filter(isNonNullable);
         break;
       }
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.DATETIME:
+      case PRIMITIVE_TYPE.STRICTDATE: {
+        result = uniq(
+          parseData
+            .filter((val) => !isNaN(Date.parse(val)))
+            .map((val) => val.trim()),
+        )
+          .map((item): PrimitiveInstanceValue | undefined => {
+            const primitiveInstanceValue = new PrimitiveInstanceValue(
+              GenericTypeExplicitReference.create(
+                new GenericType(expectedType),
+              ),
+            );
+            instanceValue_setValues(
+              primitiveInstanceValue,
+              [item],
+              obseverContext,
+            );
+            return primitiveInstanceValue;
+          })
+          .filter(isNonNullable);
+        break;
+      }
       default:
         // unsupported expected type, just escape
         return;

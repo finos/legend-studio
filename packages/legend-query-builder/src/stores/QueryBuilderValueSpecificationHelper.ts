@@ -96,6 +96,15 @@ export const getCollectionValueSpecificationType = (
         case PRIMITIVE_TYPE.NUMBER:
           addUniqueEntry(valuePrimitiveTypes, PrimitiveType.NUMBER);
           break;
+        case PRIMITIVE_TYPE.DATE:
+          addUniqueEntry(valuePrimitiveTypes, PrimitiveType.DATE);
+          break;
+        case PRIMITIVE_TYPE.STRICTDATE:
+          addUniqueEntry(valuePrimitiveTypes, PrimitiveType.STRICTDATE);
+          break;
+        case PRIMITIVE_TYPE.DATETIME:
+          addUniqueEntry(valuePrimitiveTypes, PrimitiveType.DATETIME);
+          break;
         default:
           valuePrimitiveTypes.push(undefined);
           break;
