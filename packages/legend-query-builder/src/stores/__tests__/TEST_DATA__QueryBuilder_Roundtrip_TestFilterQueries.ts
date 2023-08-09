@@ -1215,3 +1215,70 @@ export const TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__lambda_isOperatorFilterForDate = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'test::Employee',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'in',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'hireDate',
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 2,
+                    upperBound: 2,
+                  },
+                  values: [
+                    {
+                      _type: 'strictDate',
+                      value: '2021-11-12',
+                    },
+                    {
+                      _type: 'strictDate',
+                      value: '2021-11-10',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
