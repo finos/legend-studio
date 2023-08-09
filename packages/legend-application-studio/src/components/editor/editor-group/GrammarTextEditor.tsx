@@ -18,6 +18,7 @@ import { useEffect, useState, useRef, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type IDisposable,
+  Range as monacoRange,
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
@@ -26,6 +27,8 @@ import {
   clsx,
   WordWrapIcon,
   MoreHorizontalIcon,
+  CollapseHorizontalIcon,
+  ExpandHorizontalIcon,
   PanelContent,
   MenuContent,
   MenuContentItem,
@@ -686,12 +689,22 @@ export const GrammarTextEditor = observer(() => {
     GraphEditGrammarModeState,
   ).grammarTextEditorState;
   const error = editorStore.graphState.error;
-
   const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
   const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
   const suggestionProviderDisposer = useRef<IDisposable | undefined>(undefined);
+  const foldedDecs = useRef<monacoEditorAPI.IModelDeltaDecoration[]>([]);
+  const unfoldedDecs = useRef<monacoEditorAPI.IModelDeltaDecoration[]>([]);
+  const decorations = useRef<monacoEditorAPI.IEditorDecorationsCollection[]>(
+    [],
+  );
+  const inlineFoldingRanges = useRef<monacoRange[]>([]);
+  const isInlineFolded = useRef<boolean[]>([]);
+  const [inlineFoldAll, setInlineFoldAll] = useState(false);
+  const remakeDecTimer = useRef<NodeJS.Timeout>();
+  const doubleClickTimer = useRef<NodeJS.Timeout>();
+  const clickCounter = useRef<number>(0);
 
   const leaveTextMode = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
@@ -974,6 +987,200 @@ export const GrammarTextEditor = observer(() => {
       );
   }
 
+  //clear all inline folding decorations
+  function clearDecorations(): void {
+    for (let i = 0; i < decorations.current.length; i++) {
+      decorations.current[i]?.clear();
+    }
+    decorations.current = [];
+    foldedDecs.current = [];
+    unfoldedDecs.current = [];
+    inlineFoldingRanges.current = [];
+    isInlineFolded.current = [];
+  }
+
+  //find paths and create inline folding decorations, automatically folded by default
+  const makeDecorations = useCallback(
+    (editingLine?: number) => {
+      if (editor) {
+        const pathRegex = /(?<token>\w+::)+/;
+        const fullPathRegex = /(?<token>\w+::)+\w+/;
+        const lines = editor.getModel()?.getLinesContent();
+        if (lines) {
+          for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+            const lineText = lines[lineNum];
+            const importStmt = lineText?.indexOf('import') === 0;
+            if (lineText && lineNum + 1 !== editingLine && !importStmt) {
+              let foundPath = pathRegex.exec(lineText);
+              let startPointer = 0;
+              //possible there are multiple paths within one line, loop to find all
+              while (foundPath) {
+                const startIndex = startPointer + foundPath.index;
+                const endIndex = startIndex + foundPath[0].length;
+                const thisRange = new monacoRange(
+                  lineNum + 1,
+                  startIndex + 1,
+                  lineNum + 1,
+                  endIndex + 1,
+                );
+                inlineFoldingRanges.current.push(thisRange);
+                //create decorations for this range
+                let thisFoldedDec;
+                const fullPathHover = fullPathRegex.exec(
+                  foundPath.input.toString(),
+                );
+                if (
+                  editorStore.applicationStore.config.options
+                    .TEMPORARY__setInlineFoldingDecoratorToEmpty &&
+                  fullPathHover
+                ) {
+                  //true, add decorator
+                  thisFoldedDec = {
+                    range: thisRange,
+                    options: {
+                      isWholeLine: false,
+                      before: {
+                        content: '◦◦◦',
+                        inlineClassName: 'decoration-display',
+                      },
+                      hoverMessage: {
+                        value: fullPathHover[0],
+                      },
+                      inlineClassName: 'hide-string',
+                    },
+                  };
+                } else if (fullPathHover) {
+                  thisFoldedDec = {
+                    range: thisRange,
+                    options: {
+                      isWholeLine: false,
+                      hoverMessage: {
+                        value: fullPathHover[0],
+                      },
+                      inlineClassName: 'hide-string',
+                    },
+                  };
+                } else {
+                  break;
+                }
+                const thisUnfoldedDec = {
+                  range: thisRange,
+                  options: {
+                    hoverMessage: { value: 'Double click to fold' },
+                  },
+                };
+                foldedDecs.current.push(thisFoldedDec);
+                unfoldedDecs.current.push(thisUnfoldedDec);
+
+                const currColl = editor.createDecorationsCollection([
+                  thisFoldedDec,
+                ]);
+                decorations.current.push(currColl);
+                isInlineFolded.current.push(true);
+
+                startPointer = endIndex;
+                foundPath = pathRegex.exec(lineText.substring(startPointer));
+              }
+            }
+          }
+          setInlineFoldAll(false);
+        }
+      }
+    },
+    [
+      editor,
+      editorStore.applicationStore.config.options
+        .TEMPORARY__setInlineFoldingDecoratorToEmpty,
+    ],
+  );
+
+  //handle folding/unfolding of individual decorations
+  function individualInlineFolding(index: number): void {
+    if (
+      decorations.current[index] &&
+      unfoldedDecs.current[index] &&
+      isInlineFolded.current[index]
+    ) {
+      decorations.current[index]!.set([unfoldedDecs.current[index]!]);
+      isInlineFolded.current[index] = false;
+      setInlineFoldAll(true);
+    } else if (
+      decorations.current[index] &&
+      foldedDecs.current[index] &&
+      !isInlineFolded.current[index]
+    ) {
+      decorations.current[index]!.set([foldedDecs.current[index]!]);
+      isInlineFolded.current[index] = true;
+      setInlineFoldAll(isInlineFolded.current.includes(false));
+    }
+  }
+
+  //triggered when button is pushed; toggles folding/unfolding of entire document
+  function inlineFoldingButton(): void {
+    const foldAllAction = isInlineFolded.current.includes(false);
+    for (let i = 0; i < decorations.current.length + 1; i++) {
+      if (!foldAllAction && unfoldedDecs.current[i]) {
+        decorations.current[i]?.set([unfoldedDecs.current[i]!]);
+        isInlineFolded.current[i] = false;
+        setInlineFoldAll(true);
+      } else if (foldedDecs.current[i]) {
+        decorations.current[i]?.set([foldedDecs.current[i]!]);
+        isInlineFolded.current[i] = true;
+        setInlineFoldAll(false);
+      }
+    }
+  }
+
+  //when user makes an edit, update decorations (defaulted to folded)
+  editor?.onDidChangeModelContent(() => {
+    clearTimeout(remakeDecTimer.current);
+    remakeDecTimer.current = setTimeout(() => {
+      clearDecorations();
+      makeDecorations(editor.getPosition()?.lineNumber);
+    }, 1);
+  }, [editor]);
+
+  //find paths to fold and initialize decorations
+  useEffect(() => {
+    if (editor) {
+      clearDecorations();
+      makeDecorations();
+    }
+  }, [editor, makeDecorations]);
+
+  //track user clicks; check for double clicks
+  useEffect(() => {
+    if (editor) {
+      editor.onMouseDown((e) => {
+        clickCounter.current++;
+        if (clickCounter.current === 1) {
+          doubleClickTimer.current = setTimeout(() => {
+            clickCounter.current = 0;
+          }, 300);
+        } else if (clickCounter.current === 2) {
+          clearTimeout(doubleClickTimer.current);
+          clickCounter.current = 0;
+
+          const clickedPosition = e.target.position;
+          if (clickedPosition) {
+            //check if double click was in a foldable range
+            let index = 0;
+            const emptyRange = new monacoRange(0, 0, 0, 0);
+            while (index < inlineFoldingRanges.current.length) {
+              const checkRange: monacoRange =
+                inlineFoldingRanges.current[index] ?? emptyRange;
+              if (checkRange.containsPosition(clickedPosition)) {
+                break;
+              }
+              index++;
+            }
+            individualInlineFolding(index);
+          }
+        }
+      });
+    }
+  }, [editor]);
+
   useEffect(() => {
     if (editor && forcedCursorPosition) {
       moveCursorToPosition(editor, forcedCursorPosition);
@@ -1023,6 +1230,20 @@ export const GrammarTextEditor = observer(() => {
           </ContextMenu>
         </div>
         <div className="editor-group__header__actions">
+          <button
+            className="editor-group__header__action"
+            onClick={inlineFoldingButton}
+            tabIndex={-1}
+            title={`Click to ${
+              inlineFoldAll ? 'fold' : 'unfold'
+            } all inline paths`}
+          >
+            {inlineFoldAll ? (
+              <CollapseHorizontalIcon />
+            ) : (
+              <ExpandHorizontalIcon />
+            )}
+          </button>
           <button
             className={clsx('editor-group__header__action', {
               'editor-group__header__action--active':

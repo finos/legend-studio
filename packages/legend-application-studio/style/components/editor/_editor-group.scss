@@ -278,3 +278,17 @@
     }
   }
 }
+
+.hide-string {
+  display: none;
+}
+
+.decoration-display {
+  color: #808080 !important;
+  background-color: #2a2a2a;
+  border-radius: 9px;
+  -webkit-text-stroke-width: 1.5px;
+  width: auto;
+  height: auto;
+  padding: 1px 4px;
+}

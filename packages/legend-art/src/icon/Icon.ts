@@ -274,6 +274,8 @@ const BI = ReactIcons.BI;
 export const ShapeTriangleIcon = BI.BiShapeTriangle;
 export const AtomIcon = BI.BiAtom;
 export const CabinetIcon = BI.BiCabinet;
+export const CollapseHorizontalIcon = BI.BiCollapseHorizontal; //to be reviewed
+export const ExpandHorizontalIcon = BI.BiExpandHorizontal; //to be reviewed
 
 const CG = ReactIcons.CG;
 export const OptionsIcon = CG.CgOptions;

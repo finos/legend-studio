@@ -99,6 +99,13 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
+  /**
+   * This flag determines how inline folding looks in the editor
+   * When set to false, paths are completely hidden
+   * When set to true, paths are replaced by an ellipses as an indicator
+   */
+  TEMPORARY__setInlineFoldingDecoratorToEmpty = false;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
@@ -110,6 +117,7 @@ class LegendStudioApplicationCoreOptions {
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),
+      TEMPORARY__setInlineFoldingDecoratorToEmpty: optional(primitive()),
     }),
   );
 
