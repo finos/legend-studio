@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.2.1
+
+### Patch Changes
+
+- [#2487](https://github.com/finos/legend-studio/pull/2487) [`246fa969e`](https://github.com/finos/legend-studio/commit/246fa969e5a540d66939f81a557a3cc9a9ab98c6) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - support generating schemas/tables from query without authentication
+
 ## 28.2.0
 
 ### Minor Changes

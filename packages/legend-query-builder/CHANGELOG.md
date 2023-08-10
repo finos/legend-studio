@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.3.1
+
+### Patch Changes
+
+- [#2483](https://github.com/finos/legend-studio/pull/2483) [`61ee843e5`](https://github.com/finos/legend-studio/commit/61ee843e57de8793c70ff5d3fd97884ff89146f2) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where failing to start filtering by current value after the column results are re-ordered
+
 ## 4.3.0
 
 ### Minor Changes

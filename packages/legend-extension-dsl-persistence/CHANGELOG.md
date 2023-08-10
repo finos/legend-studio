@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.62
+
+### Patch Changes
+
+- [#2488](https://github.com/finos/legend-studio/pull/2488) [`ade5e5742`](https://github.com/finos/legend-studio/commit/ade5e57423c7042af66e44c628070d03a85f7c4e) ([@ankitamritraj](https://github.com/ankitamritraj)) - Added optional graphFetchPath attribute in PersistenceTestSpec
+
 ## 5.0.61
 
 ## 5.0.60
