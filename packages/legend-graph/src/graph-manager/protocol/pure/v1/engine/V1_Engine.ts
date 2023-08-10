@@ -136,6 +136,11 @@ import {
   V1_ArtifactGenerationExtensionInput,
 } from './generation/V1_ArtifactGenerationExtensionApi.js';
 import { V1_DatabaseToModelGenerationInput } from './relational/V1_DatabaseToModelGenerationInput.js';
+import { V1_TestDataGenerationInput } from './service/V1_TestDataGenerationInput.js';
+import {
+  type V1_TestDataGenerationResult,
+  V1_testDataGenerationResultModelSchema,
+} from './service/V1_TestDataGenerationResult.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -715,6 +720,20 @@ export class V1_Engine {
     return V1_ArtifactGenerationExtensionOutput.serialization.fromJson(
       await this.engineServerClient.generateAritfacts(
         V1_ArtifactGenerationExtensionInput.serialization.toJson(input),
+      ),
+    );
+  }
+
+  // --------------------------------------------- Test Data Generation ---------------------------------------------
+
+  async generateTestData(
+    input: V1_TestDataGenerationInput,
+    plugins: PureProtocolProcessorPlugin[],
+  ): Promise<V1_TestDataGenerationResult> {
+    return deserialize(
+      V1_testDataGenerationResultModelSchema(plugins),
+      await this.engineServerClient.generateTestData(
+        V1_TestDataGenerationInput.serialization.toJson(input),
       ),
     );
   }

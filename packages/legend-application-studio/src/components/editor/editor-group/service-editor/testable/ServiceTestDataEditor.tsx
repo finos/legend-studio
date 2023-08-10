@@ -16,10 +16,12 @@
 
 import {
   BlankPanelPlaceholder,
+  CaretDownIcon,
   clsx,
   ContextMenu,
   CustomSelectorInput,
   Dialog,
+  DropdownMenu,
   InfoCircleIcon,
   MaskIcon,
   MenuContent,
@@ -199,6 +201,12 @@ export const ConnectionTestDataEditor = observer(
       }
     };
 
+    const generateQuerySchemas = (): void => {
+      flowResult(connectionTestDataState.generateQuerySchemas()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+
     return (
       <div className="service-test-data-editor">
         <div className="service-test-suite-editor__header">
@@ -231,22 +239,45 @@ export const ConnectionTestDataEditor = observer(
                 <MaskIcon />
               </button>
             </div>
-            <button
-              className="panel__header__action service-execution-editor__test-data__generate-btn"
-              onClick={generateTestData}
-              title="Generate test data if possible"
-              disabled={
-                connectionTestDataState.generatingTestDataState.isInProgress
-              }
-              tabIndex={-1}
-            >
-              <div className="service-execution-editor__test-data__generate-btn__label">
-                <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" />
-                <div className="service-execution-editor__test-data__generate-btn__label__title">
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              <button
+                className="btn__dropdown-combo__label"
+                onClick={generateTestData}
+                title="Generate test data if possible"
+                disabled={
+                  connectionTestDataState.generatingTestDataState.isInProgress
+                }
+                tabIndex={-1}
+              >
+                <RefreshIcon className="btn__dropdown-combo__label__icon" />
+                <div className="btn__dropdown-combo__label__title">
                   Generate
                 </div>
-              </div>
-            </button>
+              </button>
+              <DropdownMenu
+                className="btn__dropdown-combo__dropdown-btn"
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="btn__dropdown-combo__option"
+                      onClick={generateQuerySchemas}
+                      disabled={
+                        connectionTestDataState.generateSchemaQueryState
+                          .isInProgress
+                      }
+                    >
+                      Generate Query Schemas
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <CaretDownIcon />
+              </DropdownMenu>
+            </div>
             <button
               className="panel__header__action service-execution-editor__test-data__generate-btn"
               onClick={openShared}
@@ -631,10 +662,16 @@ export const ServiceTestDataEditor = observer(
               </ResizablePanelSplitter>
               <ResizablePanel minSize={600}>
                 <PanelLoadingIndicator
-                  isLoading={Boolean(
-                    testDataState.selectedDataState?.generatingTestDataState
-                      .isInProgress,
-                  )}
+                  isLoading={
+                    Boolean(
+                      testDataState.selectedDataState?.generatingTestDataState
+                        .isInProgress,
+                    ) ||
+                    Boolean(
+                      testDataState.selectedDataState?.generateSchemaQueryState
+                        .isInProgress,
+                    )
+                  }
                 />
                 {testDataState.selectedDataState && (
                   <ConnectionTestDataEditor
