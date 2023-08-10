@@ -78,12 +78,15 @@ import type {
   V1_ArtifactGenerationExtensionOutput,
 } from './generation/V1_ArtifactGenerationExtensionApi.js';
 import type { V1_DatabaseToModelGenerationInput } from './relational/V1_DatabaseToModelGenerationInput.js';
+import type { V1_TestDataGenerationInput } from './service/V1_TestDataGenerationInput.js';
+import type { V1_TestDataGenerationResult } from './service/V1_TestDataGenerationResult.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
   JSON_TO_GRAMMAR = 'transform protocol to Pure code',
 
   DATABASE_TO_MODELS = 'generate models from database',
+  TEST_DATA_GENERATION = 'generate test data',
 
   EXTERNAL_FORMAT_TO_PROTOCOL = 'transform external format code to protocol',
   GENERATE_FILE = 'generate file',
@@ -501,6 +504,20 @@ export class V1_EngineServerClient extends AbstractServerClient {
   getAvailableSchemaGenerationDescriptions = (): Promise<
     PlainObject<V1_GenerationConfigurationDescription>[]
   > => this.get(`${this._pure()}/schemaGeneration/availableGenerations`);
+
+  // --------------------------------------------- Test Data Generation ---------------------------------------------
+
+  _testDataGeneration = (): string => `${this._pure()}/testData/generation`;
+
+  generateTestData(
+    input: PlainObject<V1_TestDataGenerationInput>,
+  ): Promise<PlainObject<V1_TestDataGenerationResult>> {
+    return this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.TEST_DATA_GENERATION),
+      `${this._testDataGeneration()}/DONOTUSE_generateTestData`,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.TEST_DATA_GENERATION),
+    );
+  }
 
   // ------------------------------------------- Compile -------------------------------------------
 

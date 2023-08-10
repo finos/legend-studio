@@ -70,6 +70,7 @@ export {
   TagExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/TagReference.js';
 export * from './graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
+export { TestDataGenerationResult } from './graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 export { FunctionActivator } from './graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 

@@ -23,6 +23,7 @@ import {
   type RawLambda,
   type DataElement,
   type Mapping,
+  type TestDataGenerationResult,
   ConnectionTestData,
   PureSingleExecution,
   PureMultiExecution,
@@ -37,6 +38,7 @@ import {
   getAllIdentifiedConnectionsFromRuntime,
   getAllIdentifiedServiceConnections,
   Database,
+  RuntimePointer,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -47,6 +49,8 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
   getNullableFirstEntry,
+  assertType,
+  assertTrue,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -156,6 +160,7 @@ export class ConnectionTestDataState {
   readonly connectionData: ConnectionTestData;
   readonly parametersState: ServiceTestDataParametersState;
   readonly generatingTestDataState = ActionState.create();
+  readonly generateSchemaQueryState = ActionState.create();
   useSharedModal = false;
 
   embeddedEditorState: EmbeddedDataEditorState;
@@ -167,6 +172,7 @@ export class ConnectionTestDataState {
   ) {
     makeObservable(this, {
       generatingTestDataState: observable,
+      generateSchemaQueryState: observable,
       embeddedEditorState: observable,
       useSharedModal: observable,
       anonymizeGeneratedData: observable,
@@ -175,6 +181,7 @@ export class ConnectionTestDataState {
       buildEmbeddedEditorState: action,
       generateTestData: flow,
       generateTestDataForDatabaseConnection: flow,
+      generateQuerySchemas: flow,
     });
     this.testDataState = testDataState;
     this.editorStore = testDataState.editorStore;
@@ -323,6 +330,60 @@ export class ConnectionTestDataState {
       this.generatingTestDataState.fail();
     } finally {
       this.generatingTestDataState.complete();
+    }
+  }
+
+  *generateQuerySchemas(): GeneratorFn<void> {
+    try {
+      this.generateSchemaQueryState.inProgress();
+      const connection = guaranteeNonNullable(
+        this.resolveConnectionValue(this.connectionData.connectionId),
+        `Unable to resolve connection ID '${this.connectionData.connectionId}`,
+      );
+      if (connection instanceof DatabaseConnection) {
+        const serviceExecutionParameters = guaranteeNonNullable(
+          this.testDataState.testSuiteState.testableState.serviceEditorState
+            .executionState.serviceExecutionParameters,
+        );
+        assertType(
+          serviceExecutionParameters.runtime,
+          RuntimePointer,
+          'Expected runtime type to be RuntimePointer',
+        );
+        const testDataGenerationResult =
+          (yield this.editorStore.graphManagerState.graphManager.generateTestData(
+            getExecutionQueryFromRawLambda(
+              serviceExecutionParameters.query,
+              this.parametersState.parameterStates,
+              this.editorStore.graphManagerState,
+            ),
+            serviceExecutionParameters.mapping.path,
+            serviceExecutionParameters.runtime.packageableRuntime.value.path,
+            this.editorStore.graphManagerState.graph,
+          )) as TestDataGenerationResult;
+        assertTrue(
+          testDataGenerationResult.data.length >= 1,
+          'Expected generated data to at least have one data',
+        );
+        service_setConnectionTestDataEmbeddedData(
+          this.connectionData,
+          guaranteeNonNullable(testDataGenerationResult.data[0]),
+          this.editorStore.changeDetectionState.observerContext,
+        );
+        this.embeddedEditorState = new EmbeddedDataEditorState(
+          this.testDataState.editorStore,
+          this.connectionData.testData,
+        );
+      }
+      this.generateSchemaQueryState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to generate query schemas: ${error.message}`,
+      );
+      this.generateSchemaQueryState.fail();
+    } finally {
+      this.generateSchemaQueryState.complete();
     }
   }
 

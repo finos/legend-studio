@@ -101,6 +101,7 @@ import type { FunctionActivatorConfiguration } from './action/functionActivator/
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
 import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
+import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -411,6 +412,15 @@ export abstract class AbstractPureGraphManager {
     generationElement: PackageableElement,
     graph: PureModel,
   ): Promise<Entity[]>;
+
+  // --------------------------------------------- Test Data Generation ---------------------------------------------
+
+  abstract generateTestData(
+    query: RawLambda,
+    mapping: string,
+    runtime: string,
+    graph: PureModel,
+  ): Promise<TestDataGenerationResult>;
 
   // ------------------------------------------- External Format ----------------------------------
 

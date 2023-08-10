@@ -304,6 +304,9 @@ import {
   V1_buildArtifactsByExtensionElement,
 } from './engine/generation/V1_ArtifactGenerationExtensionApi.js';
 import type { V1_RawValueSpecification } from './model/rawValueSpecification/V1_RawValueSpecification.js';
+import { V1_TestDataGenerationInput } from './engine/service/V1_TestDataGenerationInput.js';
+import type { TestDataGenerationResult } from '../../../../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
+import { V1_buildTestDataGenerationResult } from './engine/service/V1_TestDataGenerationResult.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2058,6 +2061,37 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
     }
     return this.pureModelContextDataToEntities(generatedModel);
+  }
+
+  // --------------------------------------------- Test Data Generation ---------------------------------------------
+
+  async generateTestData(
+    query: RawLambda,
+    mapping: string,
+    runtime: string,
+    graph: PureModel,
+  ): Promise<TestDataGenerationResult> {
+    const testDataGenerationInput = new V1_TestDataGenerationInput();
+    testDataGenerationInput.query = V1_transformRawLambda(
+      query,
+      new V1_GraphTransformerContextBuilder(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+    testDataGenerationInput.mapping = mapping;
+    testDataGenerationInput.runtime = runtime;
+    const graphData = this.getFullGraphModelContext(
+      graph,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    testDataGenerationInput.model = graphData;
+    return V1_buildTestDataGenerationResult(
+      await this.engine.generateTestData(
+        testDataGenerationInput,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
+      this.getBuilderContext(graph, graph, new V1_Mapping()), // use a dummy V1_PackageableElement to generate V1_GraphBuilderContext which is used in V1_buildEmbeddedData()
+    );
   }
 
   // ------------------------------------------- Test  -------------------------------------------
