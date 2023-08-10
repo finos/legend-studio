@@ -363,7 +363,7 @@ export class ConnectionTestDataState {
           )) as TestDataGenerationResult;
         assertTrue(
           testDataGenerationResult.data.length >= 1,
-          'Expected generated data to be of size 1',
+          'Expected generated data to at least have one data',
         );
         service_setConnectionTestDataEmbeddedData(
           this.connectionData,
