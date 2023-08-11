@@ -354,13 +354,24 @@ export class ConnectionTestDataState {
           RuntimePointer,
           'Expected runtime type to be RuntimePointer',
         );
+        const parameters = (serviceExecutionParameters.query.parameters ??
+          []) as object[];
+        let parameterStates;
+        if (parameters.length > 0) {
+          parameterStates = this.parametersState.build(
+            serviceExecutionParameters.query,
+          );
+        } else {
+          parameterStates = this.parametersState.parameterStates;
+        }
+        const executableQuery = this.createExecutableQuery(
+          serviceExecutionParameters.query,
+          parameterStates,
+          this.editorStore.graphManagerState,
+        );
         const testDataGenerationResult =
           (yield this.editorStore.graphManagerState.graphManager.generateTestData(
-            this.createExecutableQuery(
-              serviceExecutionParameters.query,
-              this.parametersState.parameterStates,
-              this.editorStore.graphManagerState,
-            ),
+            executableQuery,
             serviceExecutionParameters.mapping.path,
             serviceExecutionParameters.runtime.packageableRuntime.value.path,
             this.editorStore.graphManagerState.graph,
