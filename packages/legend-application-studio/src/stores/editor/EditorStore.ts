@@ -79,7 +79,11 @@ import {
   WorkspaceType,
   type SDLCServerClient,
 } from '@finos/legend-server-sdlc';
-import { GraphManagerState, GRAPH_MANAGER_EVENT } from '@finos/legend-graph';
+import {
+  GraphManagerState,
+  GRAPH_MANAGER_EVENT,
+  type SourceInformation,
+} from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
 import {
@@ -106,6 +110,7 @@ import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
 import type { QuickInputState } from './QuickInputState.js';
+import { type CodeFixSuggestion } from './CodeFixSuggestion.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -162,6 +167,8 @@ export class EditorStore implements CommandRegistrar {
   globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
   devToolState: DevToolPanelState;
   sqlPlaygroundState: SQLPlaygroundPanelState;
+  codeFixSuggestion?: CodeFixSuggestion | undefined;
+  selectedCandidate?: SourceInformation | undefined;
 
   modelImporterState: ModelImporterState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
@@ -205,6 +212,11 @@ export class EditorStore implements CommandRegistrar {
       graphEditorMode: observable,
       showSearchElementCommand: observable,
       quickInputState: observable,
+
+      codeFixSuggestion: observable,
+      setCodeFixSuggestion: action,
+      selectedCandidate: observable,
+      setSelectedCandidate: action,
 
       isInViewerMode: computed,
       isInConflictResolutionMode: computed,
@@ -334,6 +346,14 @@ export class EditorStore implements CommandRegistrar {
 
   setQuickInputState<T>(val: QuickInputState<T> | undefined): void {
     this.quickInputState = val as QuickInputState<unknown> | undefined;
+  }
+
+  setCodeFixSuggestion(val: CodeFixSuggestion | undefined): void {
+    this.codeFixSuggestion = val;
+  }
+
+  setSelectedCandidate(val: SourceInformation | undefined): void {
+    this.selectedCandidate = val;
   }
 
   cleanUp(): void {

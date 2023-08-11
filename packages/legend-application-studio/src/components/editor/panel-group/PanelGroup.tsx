@@ -27,6 +27,7 @@ import {
   PanelHeaderActions,
   PanelHeaderActionItem,
   SparkleIcon,
+  WandIcon,
 } from '@finos/legend-art';
 import { ConsolePanel } from './ConsolePanel.js';
 import { PANEL_MODE } from '../../../stores/editor/EditorConfig.js';
@@ -35,6 +36,7 @@ import { DevToolPanel } from './DevToolPanel.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { ProblemsPanel } from './ProblemsPanel.js';
 import { SQLPlaygroundPanel } from './SQLPlaygroundPanel.js';
+import { CodeFixSuggestionsPanel } from './CodeFixSuggestionsPanel.js';
 import { GraphEditFormModeState } from '../../../stores/editor/GraphEditFormModeState.js';
 
 export const PanelGroupItemExperimentalBadge: React.FC = () => (
@@ -92,6 +94,13 @@ export const PanelGroup = observer(() => {
       icon: undefined,
       isVisible: editorStore.graphEditorMode instanceof GraphEditFormModeState,
       experimental: true,
+    },
+    [PANEL_MODE.CODE_FIX_SUGGESTION]: {
+      mode: PANEL_MODE.CODE_FIX_SUGGESTION,
+      name: 'SUGGESTIONS',
+      icon: <WandIcon className="panel-group__header__tab__icon--suggestion" />,
+      isVisible: Boolean(editorStore.codeFixSuggestion),
+      experimental: false,
     },
   };
 
@@ -187,6 +196,11 @@ export const PanelGroup = observer(() => {
         {isTabVisible(PANEL_MODE.SQL_PLAYGROUND) && (
           <div className="panel-group__content__tab">
             <SQLPlaygroundPanel />
+          </div>
+        )}
+        {isTabVisible(PANEL_MODE.CODE_FIX_SUGGESTION) && (
+          <div className="panel-group__content__tab">
+            <CodeFixSuggestionsPanel />
           </div>
         )}
       </PanelContent>

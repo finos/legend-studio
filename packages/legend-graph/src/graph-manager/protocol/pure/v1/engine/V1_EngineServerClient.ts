@@ -530,7 +530,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.COMPILE),
       {},
       undefined,
-      undefined,
+      { returnCodeFixSuggestion: true },
       { enableCompression: true },
     );
 

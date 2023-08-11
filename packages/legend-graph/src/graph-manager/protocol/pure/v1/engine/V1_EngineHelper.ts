@@ -432,6 +432,8 @@ export const V1_buildCompilationError = (
   metamodel.sourceInformation = protocol.sourceInformation
     ? V1_buildSourceInformation(protocol.sourceInformation)
     : undefined;
+  metamodel.isCodeFixSuggestion = protocol.isCodeFixSuggestion;
+  metamodel.candidates = protocol.candidates;
   return metamodel;
 };
 

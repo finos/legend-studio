@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { PackageableElement } from '@finos/legend-graph';
+import type {
+  PackageableElement,
+  SourceInformation,
+} from '@finos/legend-graph';
 import type { GeneratorFn } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import { makeObservable, flow, action } from 'mobx';
@@ -64,6 +67,7 @@ export abstract class GraphEditorMode {
   abstract updateGraphAndApplication(entities: Entity[]): GeneratorFn<void>;
   abstract get mode(): GRAPH_EDITOR_MODE;
   abstract goToProblem(problem: Problem): void;
+  abstract goToSource(sourceInformation: SourceInformation): void;
   abstract onLeave(fallbackOptions?: {
     isCompilationFailure?: boolean;
     isGraphBuildFailure?: boolean;

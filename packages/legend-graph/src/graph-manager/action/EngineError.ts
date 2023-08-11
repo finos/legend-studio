@@ -25,6 +25,9 @@ export class EngineError extends ApplicationError {
 export class ParserError extends EngineError {}
 
 export class CompilationError extends EngineError {
+  isCodeFixSuggestion!: boolean;
+  candidates: SourceInformation[] = [];
+
   constructor(message: string | undefined) {
     super(message);
     makeObservable(this, {

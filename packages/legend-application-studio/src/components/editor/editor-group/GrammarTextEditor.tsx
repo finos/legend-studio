@@ -975,6 +975,42 @@ export const GrammarTextEditor = observer(() => {
   }
 
   useEffect(() => {
+    if (
+      editor &&
+      editorStore.selectedCandidate &&
+      editorStore.codeFixSuggestion
+    ) {
+      const candidate = editorStore.selectedCandidate;
+      const errorLocation =
+        editorStore.codeFixSuggestion.result.sourceInformation;
+      const packageString = candidate.sourceId;
+      const model = editor.getModel();
+      if (editor && model && errorLocation) {
+        let line = model.getLineContent(errorLocation.startLine);
+        line = packageString + line.slice(errorLocation.endColumn);
+        const id = { major: 1, minor: 1 };
+        const op = {
+          identifier: id,
+          range: {
+            startLineNumber: errorLocation.startLine,
+            startColumn: errorLocation.startColumn,
+            endLineNumber: errorLocation.endLine,
+            endColumn: errorLocation.endColumn + line.length,
+          },
+          text: line,
+          forceMoveMarkers: true,
+        };
+        editor.executeEdits('code-fix-suggestion', [op]);
+        editorStore.setCodeFixSuggestion(undefined);
+        editorStore.setSelectedCandidate(undefined);
+        editorStore.applicationStore.notificationService.notifySuccess(
+          `Element package qualified successfully!`,
+        );
+      }
+    }
+  }, [editor, editorStore, editorStore.selectedCandidate]);
+
+  useEffect(() => {
     if (editor && forcedCursorPosition) {
       moveCursorToPosition(editor, forcedCursorPosition);
     }

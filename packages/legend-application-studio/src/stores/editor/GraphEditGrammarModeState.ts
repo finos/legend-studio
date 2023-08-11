@@ -27,6 +27,7 @@ import {
   type GraphManagerOperationReport,
   reportGraphAnalytics,
   type SourceInformation,
+  CompilationError,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -48,6 +49,7 @@ import { graph_dispose } from '../graph-modifier/GraphModifierHelper.js';
 import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
+import { CodeFixSuggestion } from './CodeFixSuggestion.js';
 
 export class GraphEditGrammarModeState extends GraphEditorMode {
   grammarTextEditorState: GrammarTextEditorState;
@@ -285,6 +287,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     try {
       this.editorStore.graphState.isRunningGlobalCompile = true;
       this.editorStore.graphState.clearProblems();
+      this.editorStore.setCodeFixSuggestion(undefined);
       if (options?.openConsole) {
         this.editorStore.setActivePanelMode(PANEL_MODE.CONSOLE);
       }
@@ -306,7 +309,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       if (!options?.disableNotificationOnSuccess) {
         if (this.editorStore.graphState.warnings.length) {
           this.editorStore.applicationStore.notificationService.notifyWarning(
-            `Compilation suceeded with warnings`,
+            `Compilation succeeded with warnings`,
           );
         } else {
           if (!options?.disableNotificationOnSuccess) {
@@ -357,6 +360,13 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
             column: error.sourceInformation.startColumn,
           });
         }
+        if (error instanceof CompilationError && error.isCodeFixSuggestion) {
+          this.editorStore.setCodeFixSuggestion(
+            new CodeFixSuggestion(this.editorStore, error),
+          );
+          this.editorStore.setActivePanelMode(PANEL_MODE.CODE_FIX_SUGGESTION);
+          this.editorStore.panelGroupDisplayState.open();
+        }
       }
       if (
         !this.editorStore.applicationStore.notificationService.notification ||
@@ -382,6 +392,13 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
         column: problem.sourceInformation.startColumn,
       });
     }
+  }
+
+  goToSource(sourceInformation: SourceInformation): void {
+    this.grammarTextEditorState.setForcedCursorPosition({
+      lineNumber: sourceInformation.startLine,
+      column: sourceInformation.startColumn,
+    });
   }
 
   *onLeave(fallbackOptions?: {
