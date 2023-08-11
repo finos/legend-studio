@@ -24,6 +24,7 @@ import {
   type DataElement,
   type Mapping,
   type TestDataGenerationResult,
+  type GraphManagerState,
   ConnectionTestData,
   PureSingleExecution,
   PureMultiExecution,
@@ -39,6 +40,7 @@ import {
   getAllIdentifiedServiceConnections,
   Database,
   RuntimePointer,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -79,6 +81,7 @@ import {
   LambdaParametersState,
   PARAMETER_SUBMIT_ACTION,
   buildExecutionParameterValues,
+  buildParametersLetLambdaFunc,
   getExecutionQueryFromRawLambda,
 } from '@finos/legend-query-builder';
 
@@ -179,6 +182,7 @@ export class ConnectionTestDataState {
       setAnonymizeGeneratedData: action,
       changeEmbeddedData: action,
       buildEmbeddedEditorState: action,
+      createExecutableQuery: action,
       generateTestData: flow,
       generateTestDataForDatabaseConnection: flow,
       generateQuerySchemas: flow,
@@ -352,7 +356,7 @@ export class ConnectionTestDataState {
         );
         const testDataGenerationResult =
           (yield this.editorStore.graphManagerState.graphManager.generateTestData(
-            getExecutionQueryFromRawLambda(
+            this.createExecutableQuery(
               serviceExecutionParameters.query,
               this.parametersState.parameterStates,
               this.editorStore.graphManagerState,
@@ -385,6 +389,32 @@ export class ConnectionTestDataState {
     } finally {
       this.generateSchemaQueryState.complete();
     }
+  }
+
+  createExecutableQuery(
+    rawLambda: RawLambda,
+    parameterStates: LambdaParameterState[],
+    graphManagerState: GraphManagerState,
+  ): RawLambda {
+    if (parameterStates.length > 0) {
+      const execLambdaFunction = buildParametersLetLambdaFunc(
+        graphManagerState.graph,
+        parameterStates,
+      );
+      const execQuery = buildRawLambdaFromLambdaFunction(
+        execLambdaFunction,
+        graphManagerState,
+      );
+      //reset Parameters
+      if (Array.isArray(rawLambda.body) && Array.isArray(execQuery.body)) {
+        execQuery.body = [
+          ...(execQuery.body as object[]),
+          ...(rawLambda.body as object[]),
+        ];
+        return execQuery;
+      }
+    }
+    return rawLambda;
   }
 
   changeEmbeddedData(val: EmbeddedData): void {
