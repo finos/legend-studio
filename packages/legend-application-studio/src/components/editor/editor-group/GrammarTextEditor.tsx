@@ -975,6 +975,69 @@ export const GrammarTextEditor = observer(() => {
   }
 
   useEffect(() => {
+    if (editor && editorStore.selectedCandidate) {
+      const startPosition = {
+        lineNumber:
+          editorStore.codeFixSuggestion?.result.sourceInformation?.startLine ??
+          1,
+        column:
+          editorStore.codeFixSuggestion?.result.sourceInformation
+            ?.startColumn ?? 1,
+      };
+      if (editor.getModel()) {
+        const candidate = editorStore.selectedCandidate.sourceId;
+        const importPackage = `import ${candidate.slice(
+          0,
+          candidate.lastIndexOf('::') || undefined,
+        )}::*;`;
+        const parserRegex = '^\\s*###\\w+';
+        const match = editor
+          .getModel()
+          ?.findPreviousMatch(
+            parserRegex,
+            startPosition,
+            true,
+            false,
+            null,
+            true,
+          );
+        const firstSection =
+          match && match.range.startLineNumber > startPosition.lineNumber;
+        const importStatement =
+          match?.matches && !firstSection
+            ? `${match.matches[0]}\n${importPackage}`
+            : `${importPackage}\n`;
+        const insertRange = {
+          startLineNumber: firstSection ? 1 : match?.range.startLineNumber ?? 1,
+          startColumn: firstSection ? 1 : match?.range.startColumn ?? 1,
+          endLineNumber: firstSection ? 1 : match?.range.endLineNumber ?? 1,
+          endColumn: firstSection ? 1 : match?.range.endColumn ?? 1,
+        };
+        const id = { major: 1, minor: 1 };
+        const op = {
+          identifier: id,
+          range: insertRange,
+          text: importStatement,
+          forceMoveMarkers: true,
+        };
+        editor.executeEdits('code-fix-suggestion', [op]);
+        editorStore.setCodeFixSuggestion(undefined);
+        editorStore.setSelectedCandidate(undefined);
+        editorStore.applicationStore.notificationService.notifySuccess(
+          `Suggested import added successfully!`,
+        );
+      }
+    }
+  }, [editor, editorStore, editorStore.selectedCandidate]);
+
+  editor?.onDidChangeModelContent(() => {
+    if (editorStore.codeFixSuggestion) {
+      editorStore.setCodeFixSuggestion(undefined);
+      editorStore.setSelectedCandidate(undefined);
+    }
+  }, [editor]);
+
+  useEffect(() => {
     if (editor && forcedCursorPosition) {
       moveCursorToPosition(editor, forcedCursorPosition);
     }

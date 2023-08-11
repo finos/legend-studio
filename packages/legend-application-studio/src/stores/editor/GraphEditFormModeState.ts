@@ -25,6 +25,7 @@ import {
   CompilationError,
   extractSourceInformationCoordinates,
   reportGraphAnalytics,
+  type SourceInformation,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -573,6 +574,10 @@ export class GraphEditFormModeState extends GraphEditorMode {
   }
 
   goToProblem(problem: Problem): void {
+    return;
+  }
+
+  goToSource(sourceInformation: SourceInformation): void {
     return;
   }
 
