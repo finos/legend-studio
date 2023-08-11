@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.2.3
+
+### Patch Changes
+
+- [#2498](https://github.com/finos/legend-studio/pull/2498) [`1021a6ccb`](https://github.com/finos/legend-studio/commit/1021a6ccbea7ef9ef00a54d17d648182a0512ce3) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - pass in executable query to the TestDataGeneration API
+
 ## 28.2.2
 
 ### Patch Changes
