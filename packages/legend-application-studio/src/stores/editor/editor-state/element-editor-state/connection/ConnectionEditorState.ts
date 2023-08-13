@@ -20,7 +20,6 @@ import {
   guaranteeType,
   uuid,
   UnsupportedOperationError,
-  prettyCONSTName,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
@@ -69,7 +68,6 @@ import {
   MapperPostProcessorEditorState,
   type PostProcessorEditorState,
 } from './PostProcessorEditorState.js';
-import { type DatabaseTypeConfiguration } from '../../../RelationalConnectionConfigurationState.js';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -125,9 +123,6 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   localMode = false;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   postProcessorState: PostProcessorEditorState | undefined;
-  dbTypeToDataSourceAndAuthMap:
-    | Map<string, DatabaseTypeConfiguration>
-    | undefined = undefined;
   constructor(
     editorStore: EditorStore,
     connection: RelationalDatabaseConnection,
@@ -137,18 +132,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       localMode: observable,
       selectedTab: observable,
       postProcessorState: observable,
-      dbTypeToDataSourceAndAuthMap: observable,
-      stringRepresentationOfDbTypeToDatSourceAndAuthMap: computed,
-      selectedValidAuthenticationStrategies: computed,
       selectedValidDatasources: computed,
       connection: observable,
       setLocalMode: action,
       setSelectedTab: action,
       selectPostProcessor: action,
     });
-
-    this.dbTypeToDataSourceAndAuthMap =
-      editorStore.relationalConnectionConfigurationState.dbTypeToDataSourceAndAuthMap;
     this.connection = connection;
   }
 
@@ -240,73 +229,39 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   }
 
   get selectedValidDatasources(): string[] {
-    return this.dbTypeToDataSourceAndAuthMap !== undefined &&
-      this.dbTypeToDataSourceAndAuthMap.has(this.connection.type)
-      ? (this.dbTypeToDataSourceAndAuthMap.get(this.connection.type)
-          ?.compatibleDataSources as string[])
-      : (Object.values(CORE_DATASOURCE_SPEC_TYPE) as string[]).concat(
-          this.editorStore.pluginManager
-            .getApplicationPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
-                ).getExtraDatasourceSpecificationTypes?.() ?? [],
-            ),
-        );
+    return (
+      this.editorStore.graphState.findRelationalDatabaseTypeConfiguration(
+        this.connection.type,
+      )?.compatibleDataSources ??
+      (Object.values(CORE_DATASOURCE_SPEC_TYPE) as string[]).concat(
+        this.editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
+              ).getExtraDatasourceSpecificationTypes?.() ?? [],
+          ),
+      )
+    );
   }
 
   get selectedValidAuthenticationStrategies(): string[] {
-    return this.dbTypeToDataSourceAndAuthMap !== undefined &&
-      this.dbTypeToDataSourceAndAuthMap.has(this.connection.type)
-      ? (this.dbTypeToDataSourceAndAuthMap.get(this.connection.type)
-          ?.compatibleAuthStragies as string[])
-      : (Object.values(CORE_AUTHENTICATION_STRATEGY_TYPE) as string[]).concat(
-          this.editorStore.pluginManager
-            .getApplicationPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
-                ).getExtraAuthenticationStrategyTypes?.() ?? [],
-            ),
-        );
-  }
-
-  get validationMessage(): string {
-    let warning = '';
-    if (
-      this.dbTypeToDataSourceAndAuthMap !== undefined &&
-      this.dbTypeToDataSourceAndAuthMap.size > 0
-    ) {
-      const dbType = this.connection.type;
-      const dataSource =
-        this.selectedDatasourceSpecificationType(
-          this.connection.datasourceSpecification,
-        ) ?? '';
-      const auth =
-        this.selectedAuthenticationStrategyType(
-          this.connection.authenticationStrategy,
-        ) ?? '';
-      const dbTypeToDataSourceAndAuthMap = this.dbTypeToDataSourceAndAuthMap;
-      if (
-        dbTypeToDataSourceAndAuthMap.has(dbType) &&
-        (!dbTypeToDataSourceAndAuthMap
-          .get(dbType)
-          ?.compatibleDataSources.includes(dataSource) ||
-          !dbTypeToDataSourceAndAuthMap
-            .get(dbType)
-            ?.compatibleAuthStragies.includes(auth))
-      ) {
-        warning = `Database Type: ${dbType}, Datasource: ${prettyCONSTName(
-          dataSource,
-        )}, and Authentication: ${prettyCONSTName(
-          auth,
-        )} do not form a valid Database Authentication Flow. List of valid flows:`;
-        warning += this.stringRepresentationOfDbTypeToDatSourceAndAuthMap;
-      }
-    }
-    return warning;
+    return (
+      this.editorStore.graphState.findRelationalDatabaseTypeConfiguration(
+        this.connection.type,
+      )?.compatibleAuthStrategies ??
+      (Object.values(CORE_AUTHENTICATION_STRATEGY_TYPE) as string[]).concat(
+        this.editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
+              ).getExtraAuthenticationStrategyTypes?.() ?? [],
+          ),
+      )
+    );
   }
 
   changeDatasourceSpec(type: string): void {
@@ -527,25 +482,6 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       authStrategy,
       observerContext,
     );
-  }
-
-  get stringRepresentationOfDbTypeToDatSourceAndAuthMap(): string {
-    let stringRepresentation = '';
-    if (this.dbTypeToDataSourceAndAuthMap !== undefined) {
-      for (const [
-        type,
-        dataSourceAndAuth,
-      ] of this.dbTypeToDataSourceAndAuthMap.entries()) {
-        for (const dataSource of dataSourceAndAuth.compatibleDataSources) {
-          for (const auth of dataSourceAndAuth.compatibleAuthStragies) {
-            stringRepresentation += `{Database Type: ${type}, Datasource: ${prettyCONSTName(
-              dataSource,
-            )}, Authentication: ${prettyCONSTName(auth)}}, `;
-          }
-        }
-      }
-    }
-    return stringRepresentation.slice(0, -2);
   }
 }
 

@@ -52,4 +52,5 @@ export enum GRAPH_MANAGER_EVENT {
   PARSING_FAILURE = 'graph-manager.grammar.parsing.failure',
   GRAPH_MANAGER_FAILURE = 'graph-manager.failure',
   CACHE_MANAGER_FAILURE = 'graph-manager.cache.failure',
+  RELATIONAL_CONNECTION = 'graph-manager.relational.connection.failure',
 }
