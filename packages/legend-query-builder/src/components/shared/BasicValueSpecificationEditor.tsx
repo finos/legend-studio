@@ -618,11 +618,38 @@ const setCollectionValue = (
         break;
       }
       case PRIMITIVE_TYPE.DATE:
-      case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.STRICTDATE: {
         result = uniq(
           parseData
             .filter((val) => !isNaN(Date.parse(val)))
+            .map((val) => val.trim()),
+        )
+          .map((item): PrimitiveInstanceValue | undefined => {
+            const primitiveInstanceValue = new PrimitiveInstanceValue(
+              GenericTypeExplicitReference.create(
+                new GenericType(expectedType),
+              ),
+            );
+            instanceValue_setValues(
+              primitiveInstanceValue,
+              [item],
+              obseverContext,
+            );
+            return primitiveInstanceValue;
+          })
+          .filter(isNonNullable);
+        break;
+      }
+      case PRIMITIVE_TYPE.DATETIME: {
+        result = uniq(
+          parseData
+            .filter(
+              (val) =>
+                (!isNaN(Date.parse(val)) && new Date(val).getTime()) ||
+                (val.includes('%') &&
+                  !isNaN(Date.parse(val.slice(1))) &&
+                  new Date(val.slice(1)).getTime()),
+            )
             .map((val) => val.trim()),
         )
           .map((item): PrimitiveInstanceValue | undefined => {
@@ -670,6 +697,21 @@ const setCollectionValue = (
 };
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
+
+const getPlaceHolder = (expectedType: Type): string => {
+  if (expectedType instanceof PrimitiveType) {
+    switch (expectedType.path) {
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE:
+        return 'yyyy-mm-dd';
+      case PRIMITIVE_TYPE.DATETIME:
+        return 'yyyy-mm-ddThh:mm:ss';
+      default:
+        return '(empty)';
+    }
+  }
+  return '(empty)';
+};
 
 const CollectionValueInstanceValueEditor = observer(
   (props: {
@@ -729,6 +771,8 @@ const CollectionValueInstanceValueEditor = observer(
       setText(event.target.value);
     };
 
+    const placeholder = text === '' ? getPlaceHolder(expectedType) : undefined;
+
     // focus the input box when edit is enabled
     useEffect(() => {
       if (editable) {
@@ -749,7 +793,7 @@ const CollectionValueInstanceValueEditor = observer(
                 className="panel__content__form__section__input value-spec-editor__list-editor__textarea"
                 spellCheck={false}
                 value={text}
-                placeholder={text === '' ? '(empty)' : undefined}
+                placeholder={placeholder}
                 onChange={changeValueTextArea}
                 onKeyDown={(event): void => {
                   if (event.key === 'Enter' && !event.shiftKey) {
@@ -772,7 +816,7 @@ const CollectionValueInstanceValueEditor = observer(
               )}
               spellCheck={false}
               value={text}
-              placeholder={text === '' ? '(empty)' : undefined}
+              placeholder={placeholder}
               onChange={changeValueTextArea}
               onKeyDown={(event): void => {
                 if (event.key === 'Enter' && !event.shiftKey) {
