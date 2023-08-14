@@ -615,10 +615,24 @@ export const ServiceTestDataEditor = observer(
               tooltipText="Click to add connection test data"
             />
           )}
+          <PanelLoadingIndicator
+            isLoading={
+              Boolean(
+                testDataState.selectedDataState?.generatingTestDataState
+                  .isInProgress,
+              ) ||
+              Boolean(
+                testDataState.selectedDataState?.generateSchemaQueryState
+                  .isInProgress,
+              )
+            }
+          />
           {hideExplorer && selectedDataState ? (
-            <ConnectionTestDataEditor
-              connectionTestDataState={selectedDataState}
-            />
+            <>
+              <ConnectionTestDataEditor
+                connectionTestDataState={selectedDataState}
+              />
+            </>
           ) : (
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={100}>
@@ -661,18 +675,6 @@ export const ServiceTestDataEditor = observer(
                 <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
               </ResizablePanelSplitter>
               <ResizablePanel minSize={600}>
-                <PanelLoadingIndicator
-                  isLoading={
-                    Boolean(
-                      testDataState.selectedDataState?.generatingTestDataState
-                        .isInProgress,
-                    ) ||
-                    Boolean(
-                      testDataState.selectedDataState?.generateSchemaQueryState
-                        .isInProgress,
-                    )
-                  }
-                />
                 {testDataState.selectedDataState && (
                   <ConnectionTestDataEditor
                     connectionTestDataState={testDataState.selectedDataState}
