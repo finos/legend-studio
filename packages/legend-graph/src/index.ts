@@ -218,7 +218,8 @@ export * from './__lib__/GraphManagerEvent.js';
 export {
   RelationalExecutionActivities,
   ExecutionResult,
-  TDSExecutionResult as TDSExecutionResult,
+  TDSExecutionResult,
+  TDSRow,
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
   getTDSRowRankByColumnInAsc,

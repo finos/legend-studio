@@ -53,7 +53,6 @@ import {
   EnumValueInstanceValue,
   EnumValueExplicitReference,
   RelationalExecutionActivities,
-  getTDSRowRankByColumnInAsc,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -131,9 +130,10 @@ const QueryBuilderGridResultContextMenu = observer(
     {
       data: QueryBuilderTDSResultCellData | null;
       tdsState: QueryBuilderTDSState;
+      queryRendererParamsWithGridType: IQueryRendererParamsWithGridType;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { data, tdsState } = props;
+    const { data, tdsState, queryRendererParamsWithGridType } = props;
 
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
@@ -409,6 +409,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const findRowFromRowIndex = (
       rowIndex: number,
+      colIndex: number,
     ): (string | number | boolean | null)[] => {
       if (
         !tdsState.queryBuilderState.resultState.executionResult ||
@@ -420,9 +421,11 @@ const QueryBuilderGridResultContextMenu = observer(
         return [''];
       }
       return (
-        tdsState.queryBuilderState.resultState.executionResult.result.rows[
-          rowIndex
-        ]?.values ?? ['']
+        tdsState.queryBuilderState.resultState.getSortedExecutionResult(
+          colIndex,
+          queryRendererParamsWithGridType.columnApi.getColumnState()[colIndex]
+            ?.sort,
+        )[rowIndex]?.values ?? ['']
       );
     };
 
@@ -431,6 +434,8 @@ const QueryBuilderGridResultContextMenu = observer(
         findRowFromRowIndex(
           tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
             .rowIndex ?? 0,
+          tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
+            .colIndex ?? 0,
         ).toString(),
       ),
     );
@@ -524,19 +529,10 @@ const QueryResultCellRenderer = observer(
       ) {
         return undefined;
       }
-      const sortedExecutionResult = [
-        ...resultState.executionResult.result.rows,
-      ];
-      if (params.columnApi.getColumnState()[colIndex]?.sort === 'asc') {
-        sortedExecutionResult.sort((a, b) =>
-          getTDSRowRankByColumnInAsc(a, b, colIndex),
-        );
-      } else if (params.columnApi.getColumnState()[colIndex]?.sort === 'desc') {
-        sortedExecutionResult.sort((a, b) =>
-          getTDSRowRankByColumnInAsc(b, a, colIndex),
-        );
-      }
-      return sortedExecutionResult[rowIndex]?.values[colIndex];
+      return resultState.getSortedExecutionResult(
+        colIndex,
+        params.columnApi.getColumnState()[colIndex]?.sort,
+      )[rowIndex]?.values[colIndex];
     };
 
     const isCoordinatesSelected = (
@@ -700,6 +696,7 @@ const QueryResultCellRenderer = observer(
             <QueryBuilderGridResultContextMenu
               data={resultState.mousedOverCell}
               tdsState={fetchStructureImplementation}
+              queryRendererParamsWithGridType={params}
             />
           ) : null
         }

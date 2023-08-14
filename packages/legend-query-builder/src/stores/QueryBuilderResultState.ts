@@ -25,6 +25,8 @@ import {
   ActionState,
   StopWatch,
   getContentTypeFileExtension,
+  assertNonNullable,
+  assertType,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -32,11 +34,14 @@ import {
   type ExecutionResult,
   type RawLambda,
   type EXECUTION_SERIALIZATION_FORMAT,
+  type TDSRow,
   GRAPH_MANAGER_EVENT,
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   extractExecutionResultValues,
+  TDSExecutionResult,
+  getTDSRowRankByColumnInAsc,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -201,6 +206,32 @@ export class QueryBuilderResultState {
     }
     return query;
   }
+
+  getSortedExecutionResult = (
+    colIndex: number,
+    sortOrder: string | null | undefined,
+  ): TDSRow[] => {
+    assertNonNullable(
+      this.executionResult,
+      'executionResult can`t be null or undefined',
+    );
+    assertType(
+      this.executionResult,
+      TDSExecutionResult,
+      'executionResult has to be type of TDSExecutionResult',
+    );
+    const sortedExecutionResult = [...this.executionResult.result.rows];
+    if (sortOrder === 'asc') {
+      sortedExecutionResult.sort((a, b) =>
+        getTDSRowRankByColumnInAsc(a, b, colIndex),
+      );
+    } else if (sortOrder === 'desc') {
+      sortedExecutionResult.sort((a, b) =>
+        getTDSRowRankByColumnInAsc(b, a, colIndex),
+      );
+    }
+    return sortedExecutionResult;
+  };
 
   *exportData(format: string): GeneratorFn<void> {
     try {
