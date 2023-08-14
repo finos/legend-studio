@@ -809,7 +809,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
   }
 
-  getDbTypeDataSourceAuthCombinations = (): Promise<
+  getAvailableRelationalDatabaseTypeConfigurations = (): Promise<
     PlainObject<V1_RelationalConnectionBuilder>[]
   > =>
     this.get(

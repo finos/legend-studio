@@ -86,6 +86,7 @@ import {
   createGraphBuilderReport,
   ExecutionEnvironmentInstance,
   type FunctionActivatorConfiguration,
+  type RelationalDatabaseTypeConfiguration,
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
@@ -126,6 +127,9 @@ export class EditorGraphState {
   isUpdatingApplication = false; // including graph update and async operations such as change detection
 
   functionActivatorConfigurations: FunctionActivatorConfiguration[] = [];
+  relationalDatabseTypeConfigurations:
+    | RelationalDatabaseTypeConfiguration[]
+    | undefined;
 
   warnings: CompilationWarning[] = [];
   error: EngineError | undefined;
@@ -151,12 +155,14 @@ export class EditorGraphState {
       warnings: observable,
       error: observable,
       enableStrictMode: observable,
+      relationalDatabseTypeConfigurations: observable,
       problems: computed,
       areProblemsStale: computed,
       isApplicationUpdateOperationIsRunning: computed,
       clearProblems: action,
       setEnableStrictMode: action,
       setMostRecentCompilationGraphHash: action,
+      fetchAvailableRelationalDatabseTypeConfigurations: flow,
       fetchAvailableFunctionActivatorConfigurations: flow,
       buildGraph: flow,
       loadEntityChangesToGraph: flow,
@@ -287,6 +293,30 @@ export class EditorGraphState {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     }
+  }
+
+  *fetchAvailableRelationalDatabseTypeConfigurations(): GeneratorFn<void> {
+    try {
+      this.relationalDatabseTypeConfigurations =
+        (yield this.editorStore.graphManagerState.graphManager.getAvailableRelationalDatabaseTypeConfigurations()) as
+          | RelationalDatabaseTypeConfiguration[]
+          | undefined;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERIC_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    }
+  }
+
+  findRelationalDatabaseTypeConfiguration(
+    type: string,
+  ): RelationalDatabaseTypeConfiguration | undefined {
+    return this.relationalDatabseTypeConfigurations?.find(
+      (aFlow) => aFlow.type === type,
+    );
   }
 
   *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderResult> {

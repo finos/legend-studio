@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export class RelationalConnectionConfiguration {
-  dbType!: string;
-  authStrategy!: string;
-  dataSource!: string;
+export class RelationalDatabaseTypeConfiguration {
+  type!: string;
+  compatibleAuthStrategies: string[] = [];
+  compatibleDataSources: string[] = [];
 }

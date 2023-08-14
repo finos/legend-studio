@@ -106,7 +106,6 @@ import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
 import type { QuickInputState } from './QuickInputState.js';
-import { RelationalConnectionConfigurationState } from './RelationalConnectionConfigurationState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -175,8 +174,6 @@ export class EditorStore implements CommandRegistrar {
   elementGenerationStates: ElementFileGenerationState[] = [];
   showSearchElementCommand = false;
   quickInputState?: QuickInputState<unknown> | undefined;
-
-  relationalConnectionConfigurationState: RelationalConnectionConfigurationState;
 
   activePanelMode: PANEL_MODE = PANEL_MODE.CONSOLE;
   readonly panelGroupDisplayState = new PanelDisplayState({
@@ -280,9 +277,6 @@ export class EditorStore implements CommandRegistrar {
       this,
       this.sdlcState,
     );
-    this.relationalConnectionConfigurationState =
-      new RelationalConnectionConfigurationState(this);
-
     // extensions
     this.extensionStates = this.pluginManager
       .getApplicationPlugins()
@@ -732,7 +726,7 @@ export class EditorStore implements CommandRegistrar {
       this.graphState.graphGenerationState.globalFileGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
       this.graphState.fetchAvailableFunctionActivatorConfigurations(),
-      this.relationalConnectionConfigurationState.fetchAvailableDbAuthenticationFlows(),
+      this.graphState.fetchAvailableRelationalDatabseTypeConfigurations(),
       this.sdlcState.fetchProjectVersions(),
       this.sdlcState.fetchPublishedProjectVersions(),
     ]);
@@ -774,7 +768,7 @@ export class EditorStore implements CommandRegistrar {
       this.graphState.graphGenerationState.globalFileGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
       this.graphState.fetchAvailableFunctionActivatorConfigurations(),
-      this.relationalConnectionConfigurationState.fetchAvailableDbAuthenticationFlows(),
+      this.graphState.fetchAvailableRelationalDatabseTypeConfigurations(),
       this.sdlcState.fetchProjectVersions(),
       this.sdlcState.fetchPublishedProjectVersions(),
     ]);

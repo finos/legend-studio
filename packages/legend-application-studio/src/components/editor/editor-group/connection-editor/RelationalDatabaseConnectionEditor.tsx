@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   type RelationalDatabaseConnectionValueState,
   RELATIONAL_DATABASE_TAB_TYPE,
@@ -54,7 +54,6 @@ import {
   ModalFooterButton,
   ModalHeader,
   Button,
-  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import {
   type RelationalDatabaseConnection,
@@ -166,7 +165,7 @@ import {
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
-import { prettyCONSTName } from '@finos/legend-shared';
+import { prettyCONSTName, uniq } from '@finos/legend-shared';
 
 const LocalH2DatasourceSpecificationEditor = observer(
   (props: {
@@ -1577,27 +1576,20 @@ const RelationalConnectionGeneralEditor = observer(
     const connection = connectionValueState.connection;
     const editorStore = useEditorStore();
     const plugins = editorStore.pluginManager.getApplicationPlugins();
-    const availableDbTypes = Object.values(DatabaseType) as string[];
+    const databseTypeConfigs =
+      connectionValueState.editorStore.graphState
+        .relationalDatabseTypeConfigurations;
+    const availableDbTypes = databseTypeConfigs
+      ? // Currently H2 Flow is not returned in relational configs. We will remove this once it is properly returned as a supported flow in engine
+        uniq([DatabaseType.H2, ...databseTypeConfigs.map((e) => e.type)])
+      : Object.values(DatabaseType);
 
-    const typeOptions = (
-      connectionValueState.dbTypeToDataSourceAndAuthMap !== undefined &&
-      connectionValueState.dbTypeToDataSourceAndAuthMap.size > 0
-        ? Array.from(
-            new Set(
-              Array.from(
-                connectionValueState.dbTypeToDataSourceAndAuthMap.keys(),
-              ).concat(DatabaseType.H2),
-            ),
-          )
-        : availableDbTypes
-    )
-      .filter((dbType) => availableDbTypes.includes(dbType))
-      .map((dbType) => ({
-        value: dbType,
-        label: dbType,
-      }));
+    const dbTypes = availableDbTypes.map((dbType) => ({
+      value: dbType,
+      label: dbType,
+    }));
 
-    const selectedType = {
+    const selectedDbType = {
       value: connection.type,
       label: connection.type,
     };
@@ -1683,9 +1675,9 @@ const RelationalConnectionGeneralEditor = observer(
                   Database Type
                 </div>
                 <CustomSelectorInput
-                  options={typeOptions}
+                  options={dbTypes}
                   onChange={onTypeChange}
-                  value={selectedType}
+                  value={selectedDbType}
                   darkMode={true}
                 />
               </PanelFormSection>
@@ -1694,17 +1686,6 @@ const RelationalConnectionGeneralEditor = observer(
         </div>
       );
     }
-
-    useEffect(() => {
-      if (connectionValueState.validationMessage !== '') {
-        editorStore.applicationStore.notificationService.notifyWarning(
-          connectionValueState.validationMessage,
-        );
-      }
-    }, [
-      editorStore.applicationStore.notificationService,
-      connectionValueState.validationMessage,
-    ]);
 
     return (
       <div className="relational-connection-editor">
@@ -1718,9 +1699,9 @@ const RelationalConnectionGeneralEditor = observer(
                     Database Type
                   </div>
                   <CustomSelectorInput
-                    options={typeOptions}
+                    options={dbTypes}
                     onChange={onTypeChange}
-                    value={selectedType}
+                    value={selectedDbType}
                     darkMode={true}
                   />
                 </PanelFormSection>
@@ -1752,15 +1733,6 @@ const RelationalConnectionGeneralEditor = observer(
                           >
                             Datasource
                           </div>
-                          {connectionValueState.validationMessage !== '' && (
-                            <ExclamationTriangleIcon
-                              style={{
-                                display: 'inline-block',
-                                width: '160px',
-                              }}
-                              className="input--with-validation__caution__indicator"
-                            />
-                          )}
                         </div>
                         <CustomSelectorInput
                           options={sourceSpecOptions}
@@ -1795,15 +1767,6 @@ const RelationalConnectionGeneralEditor = observer(
                           >
                             Authentication
                           </div>
-                          {connectionValueState.validationMessage !== '' && (
-                            <ExclamationTriangleIcon
-                              style={{
-                                display: 'inline-block',
-                                width: '200px',
-                              }}
-                              className="input--with-validation__caution__indicator"
-                            />
-                          )}
                         </div>
                         <CustomSelectorInput
                           options={authOptions}
