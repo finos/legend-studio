@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.2.4
+
+### Patch Changes
+
+- [#2497](https://github.com/finos/legend-studio/pull/2497) [`fe3cda274`](https://github.com/finos/legend-studio/commit/fe3cda274192425c45373e96d79351b250bbc769) ([@yash0024](https://github.com/yash0024)) - Added support to fetch valid Database Authentication Flows from the backend, displaying a warning on selecting invalid Database Authentication Flows in Text mode
+
 ## 28.2.3
 
 ### Patch Changes
