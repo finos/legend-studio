@@ -65,6 +65,9 @@ export class QueryBuilderFilterOperator_In
           PRIMITIVE_TYPE.INTEGER,
           PRIMITIVE_TYPE.DECIMAL,
           PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
         ] as string[]
       ).includes(propertyType.path) ||
       // TODO: do we care if the enumeration type has no value (like in the case of `==` operator)?
@@ -98,6 +101,9 @@ export class QueryBuilderFilterOperator_In
             PRIMITIVE_TYPE.INTEGER,
             PRIMITIVE_TYPE.DECIMAL,
             PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
           ] as string[]
         ).includes(propertyType.path)
       ) {
@@ -107,6 +113,9 @@ export class QueryBuilderFilterOperator_In
             PRIMITIVE_TYPE.INTEGER,
             PRIMITIVE_TYPE.DECIMAL,
             PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
           ] as string[]
         ).includes(collectionType.path);
       }

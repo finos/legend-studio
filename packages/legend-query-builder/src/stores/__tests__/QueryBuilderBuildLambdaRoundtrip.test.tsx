@@ -55,6 +55,7 @@ import {
   TEST_DATA__lambda_setOperatorFilter,
   TEST_DATA__lambda_simpleSingleConditionFilter,
   TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday,
+  TEST_DATA__lambda_isOperatorFilterForDate,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import {
   TEST_DATA__lambda_input_filterWithExists,
@@ -659,6 +660,12 @@ const cases: RoundtripTestCase[] = [
     'Simple filter with two exists() in single group condition',
     existsCtx,
     TEST_DATA__lambda_filterWithTwoExistsInSingleGroupCondition,
+    undefined,
+  ],
+  [
+    'Simple filter with in operator for date primitive type',
+    calendarAggregationCtx,
+    TEST_DATA__lambda_isOperatorFilterForDate,
     undefined,
   ],
 ];
