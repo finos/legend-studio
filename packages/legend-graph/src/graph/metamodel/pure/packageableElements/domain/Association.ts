@@ -32,7 +32,6 @@ import { Class } from './Class.js';
 import { Multiplicity } from './Multiplicity.js';
 import { GenericTypeExplicitReference } from './GenericTypeReference.js';
 import { GenericType } from './GenericType.js';
-import { INTERNAL__PseudoClass } from './INTERNAL__PseudoClass.js';
 
 /**
  * Assocation needs exactly 2 properties (for 2 classes, not enumeration, not primitive), e.g.
@@ -71,18 +70,14 @@ export class Association extends PackageableElement implements Hashable {
       new Property(
         '',
         Multiplicity.ONE,
-        GenericTypeExplicitReference.create(
-          new GenericType(INTERNAL__PseudoClass.INSTANCE),
-        ),
-        INTERNAL__PseudoClass.INSTANCE,
+        GenericTypeExplicitReference.create(new GenericType(new Class(''))),
+        new Class(''),
       ),
       new Property(
         '',
         Multiplicity.ONE,
-        GenericTypeExplicitReference.create(
-          new GenericType(INTERNAL__PseudoClass.INSTANCE),
-        ),
-        INTERNAL__PseudoClass.INSTANCE,
+        GenericTypeExplicitReference.create(new GenericType(new Class(''))),
+        new Class(''),
       ),
     ];
     (properties[0] as Writable<Property>)._OWNER = this;
