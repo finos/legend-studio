@@ -24,6 +24,7 @@ import {
   resolvePackagePathAndElementName,
   ELEMENT_PATH_DELIMITER,
   RawVariableExpression,
+  getFunctionSignature,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderState,
@@ -115,7 +116,7 @@ export const promoteQueryToFunction = async (
     const query = queryBuilderState.buildFromQuery();
     const returnType = queryBuilderState.getQueryReturnType();
     const _function = new ConcreteFunctionDefinition(
-      functionName,
+      functionName, // use functionName for now and it will be reset after composing _function.parameters and _function.returnType
       PackageableElementExplicitReference.create(returnType),
       Multiplicity.ONE,
     );
@@ -133,6 +134,8 @@ export const promoteQueryToFunction = async (
             ),
           ),
       );
+    // reset function name to be function signature
+    _function.name = functionName + getFunctionSignature(_function);
     await flowResult(
       editorStore.graphEditorMode.addElement(_function, packagePath, true),
     );
