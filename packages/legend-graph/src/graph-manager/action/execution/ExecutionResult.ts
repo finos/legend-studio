@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable, uuid } from '@finos/legend-shared';
+import { guaranteeNonNullable, isString, uuid } from '@finos/legend-shared';
 
 // Core
 export enum BuilderType {
@@ -144,13 +144,17 @@ export const getTDSRowRankByColumnInAsc = (
   b: TDSRow,
   colIndex: number,
 ): number => {
-  const a1 =
-    a.values[colIndex] === null || a.values[colIndex] === undefined
-      ? -Infinity
-      : a.values[colIndex];
-  const b1 =
-    b.values[colIndex] === null || b.values[colIndex] === undefined
-      ? -Infinity
-      : b.values[colIndex];
-  return Number(guaranteeNonNullable(a1)) - Number(guaranteeNonNullable(b1));
+  const a1 = a.values[colIndex];
+  const b1 = b.values[colIndex];
+  if (a1 === null || a1 === undefined) {
+    return -1;
+  }
+  if (b1 === null || b1 === undefined) {
+    return 1;
+  }
+  if (isString(a1) && isString(b1)) {
+    return a1.localeCompare(b1);
+  } else {
+    return Number(guaranteeNonNullable(a1)) - Number(guaranteeNonNullable(b1));
+  }
 };

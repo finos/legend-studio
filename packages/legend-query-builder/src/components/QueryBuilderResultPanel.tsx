@@ -524,19 +524,18 @@ const QueryResultCellRenderer = observer(
       ) {
         return undefined;
       }
-      const sortedExecutionResult = [
-        ...resultState.executionResult.result.rows,
-      ];
       if (params.columnApi.getColumnState()[colIndex]?.sort === 'asc') {
-        sortedExecutionResult.sort((a, b) =>
+        resultState.executionResult.result.rows.sort((a, b) =>
           getTDSRowRankByColumnInAsc(a, b, colIndex),
         );
       } else if (params.columnApi.getColumnState()[colIndex]?.sort === 'desc') {
-        sortedExecutionResult.sort((a, b) =>
+        resultState.executionResult.result.rows.sort((a, b) =>
           getTDSRowRankByColumnInAsc(b, a, colIndex),
         );
       }
-      return sortedExecutionResult[rowIndex]?.values[colIndex];
+      return resultState.executionResult.result.rows[rowIndex]?.values[
+        colIndex
+      ];
     };
 
     const isCoordinatesSelected = (
