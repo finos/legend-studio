@@ -22,7 +22,7 @@ import {
   getByText,
   findByText,
 } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared/test';
+import { createMock, integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
@@ -152,6 +152,7 @@ beforeEach(async () => {
 });
 
 test(integrationTest('Test navigation of dependency tree'), async () => {
+  window.open = createMock();
   const explorerTree = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
@@ -185,4 +186,22 @@ test(integrationTest('Test navigation of dependency tree'), async () => {
   expect(
     dependencyTreeDataKeys.includes('@dependency__org.finos.legend:prod-2'),
   ).toBe(true);
+
+  fireEvent.contextMenu(
+    await findByText(explorerTree, 'org.finos.legend:prod-1'),
+  );
+
+  const explorerContextMenu = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
+  );
+
+  const viewProject = await waitFor(() =>
+    getByText(explorerContextMenu, 'View Project'),
+  );
+  fireEvent.click(viewProject);
+  expect(window.open).toHaveBeenCalledWith(
+    'http://localhost/view/archive/org.finos.legend:prod-1:2.0.0',
+    '_blank',
+  );
+  fireEvent.click(viewProject);
 });

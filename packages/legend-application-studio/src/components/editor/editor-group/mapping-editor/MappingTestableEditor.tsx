@@ -872,9 +872,12 @@ const MappingTestEditor = observer(
                       <textarea
                         className="panel__content__form__section__textarea mapping-testable-editor__doc__textarea"
                         spellCheck={false}
-                        value={mappingTest.doc}
+                        value={mappingTest.doc ?? ''}
                         onChange={(event) => {
-                          atomicTest_setDoc(mappingTest, event.target.value);
+                          atomicTest_setDoc(
+                            mappingTest,
+                            event.target.value ? event.target.value : undefined,
+                          );
                         }}
                       />
                     </div>

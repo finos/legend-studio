@@ -428,6 +428,7 @@ export class MappingTestSuiteState extends TestableTestSuiteEditorState {
     const test = createBareMappingTest(
       id,
       this.createStoreTestData(_class),
+      this.editorStore.changeDetectionState.observerContext,
       this.suite,
     );
     testSuite_addTest(
@@ -521,7 +522,13 @@ export class CreateSuiteState {
         ? generateStoreTestDataFromSetImpl(rootSetImpl, this.editorStore)
         : undefined;
 
-      createBareMappingTest(testName, storeTestData, mappingTestSuite);
+      createBareMappingTest(
+        testName,
+        storeTestData,
+
+        this.editorStore.changeDetectionState.observerContext,
+        mappingTestSuite,
+      );
       // set test suite
       mapping_addTestSuite(
         this.mappingTestableState.mapping,
