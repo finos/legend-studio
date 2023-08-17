@@ -369,7 +369,6 @@ export class TestAssertionEditorState {
       if (generated) {
         this.setSelectedTab(TEST_ASSERTION_TAB.EXPECTED);
       }
-      this.generatingExpectedAction.complete();
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Expected results generated!`,
       );
@@ -380,6 +379,8 @@ export class TestAssertionEditorState {
       );
       this.setSelectedTab(TEST_ASSERTION_TAB.EXPECTED);
       this.generatingExpectedAction.fail();
+    } finally {
+      this.generatingExpectedAction.complete();
     }
   }
 
