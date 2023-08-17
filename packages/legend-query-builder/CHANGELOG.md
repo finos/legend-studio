@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.3.4
+
+### Patch Changes
+
+- [#2518](https://github.com/finos/legend-studio/pull/2518) [`537783603`](https://github.com/finos/legend-studio/commit/537783603ab2425a7be3db46ba14134862efa72d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the sort algorithm for sorting the query execution result by column
+
 ## 4.3.3
 
 ### Patch Changes
