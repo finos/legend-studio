@@ -803,6 +803,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     buildState: ActionState,
     options?: GraphBuilderOptions,
     _report?: GraphManagerOperationReport,
+    buildRequiredGraph?: boolean | undefined,
   ): Promise<void> {
     const stopWatch = new StopWatch();
     const report = _report ?? createGraphBuilderReport();
@@ -836,14 +837,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ];
 
       // build
-      await this.buildGraphFromInputs(
-        graph,
-        buildInputs,
-        report,
-        stopWatch,
-        buildState,
-        options,
-      );
+      if (!buildRequiredGraph) {
+        await this.buildGraphFromInputs(
+          graph,
+          buildInputs,
+          report,
+          stopWatch,
+          buildState,
+          options,
+        );
+      } else {
+        await this.buildRequiredGraphFromInputs(
+          graph,
+          buildInputs,
+          report,
+          stopWatch,
+          buildState,
+          options,
+        );
+      }
 
       /**
        * For now, we delete the section index. We are able to read both resolved and unresolved element paths
@@ -1125,6 +1137,32 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildFileGenerations(graph, inputs, options);
     await this.buildGenerationSpecifications(graph, inputs, options);
     await this.buildOtherElements(graph, inputs, options);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_OTHER_ELEMENTS__SUCCESS,
+    );
+  }
+
+  private async buildRequiredGraphFromInputs(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    report: GraphManagerOperationReport,
+    stopWatch: StopWatch,
+    graphBuilderState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    // index
+    graphBuilderState.setMessage(
+      `Indexing ${report.elementCount.total} elements...`,
+    );
+    await this.initializeAndIndexElements(graph, inputs, options);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_INDEX_ELEMENTS__SUCCESS);
+    // build types
+    graphBuilderState.setMessage(`Building domain models...`);
+    await this.buildTypes(graph, inputs, options);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DOMAIN_MODELS__SUCCESS,
+    );
+
     stopWatch.record(
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_OTHER_ELEMENTS__SUCCESS,
     );
@@ -2962,6 +3000,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       : this.getFullGraphModelData(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
+      this,
       mapping,
     );
   }
@@ -2975,6 +3014,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_MappingModelCoverageAnalysisResult,
         input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
       ),
+      this,
       mapping,
     );
   }

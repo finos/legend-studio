@@ -31,8 +31,11 @@ import {
   V1_buildDatasetSpecification,
   type PureProtocolProcessorPlugin,
   V1_buildModelCoverageAnalysisResult,
+  type V1_PureModelContextData,
+  type GraphManagerOperationReport,
+  LegendSDLC,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
+import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   ActionState,
   assertErrorThrown,
@@ -73,7 +76,7 @@ import {
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
 import {
-  type V1_DataSpaceAnalysisResult,
+  V1_DataSpaceAnalysisResult,
   V1_DataSpaceAssociationDocumentationEntry,
   V1_DataSpaceClassDocumentationEntry,
   V1_DataSpaceEnumerationDocumentationEntry,
@@ -83,6 +86,7 @@ import {
   V1_DataSpaceMultiExecutionServiceExecutableInfo,
 } from './engine/analytics/V1_DataSpaceAnalysis.js';
 import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
+import { resolveVersion } from '@finos/legend-server-depot';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
 const TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER = '-- e.g.';
@@ -141,20 +145,54 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     );
   }
 
-  async retrieveDataSpaceAnalysisFromCache(
-    cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+  async analyzeDataSpaceCoverage(
+    dataSpacePath: string,
+    entitiesRetriever: () => Promise<Entity[]>,
+    cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
-  ): Promise<DataSpaceAnalysisResult | undefined> {
-    const cacheResult = await this.fetchDataSpaceAnalysisFromCache(
-      cacheRetriever,
-      actionState,
-    );
-    return cacheResult
-      ? this.buildDataSpaceAnalytics(
-          cacheResult,
-          this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
-        )
+  ): Promise<V1_DataSpaceAnalysisResult> {
+    const cacheResult = cacheRetriever
+      ? await this.fetchDataSpaceAnalysisFromCache(cacheRetriever, actionState)
       : undefined;
+    const engineClient = this.graphManager.engine.getEngineServerClient();
+    let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
+    if (
+      cacheResult &&
+      V1_deserializeDataSpaceAnalysisResult(
+        cacheResult,
+        this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+      ).executionContexts.every(
+        (e) => e.mappingModelCoverageAnalysisResult.model !== undefined,
+      )
+    ) {
+      analysisResult = cacheResult;
+    } else {
+      actionState?.setMessage('Fetching project entities and dependencies...');
+      const entities = await entitiesRetriever();
+      actionState?.setMessage('Analyzing data space...');
+      analysisResult = await engineClient.postWithTracing<
+        PlainObject<V1_DataSpaceAnalysisResult>
+      >(
+        engineClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
+        `${engineClient._pure()}/analytics/dataSpace/coverage`,
+        {
+          clientVersion: V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+          dataSpace: dataSpacePath,
+          model: {
+            _type: V1_PureModelContextType.DATA,
+            elements: entities.map((entity) => entity.content),
+          },
+        },
+        {},
+        undefined,
+        undefined,
+        { enableCompression: true },
+      );
+    }
+    return V1_deserializeDataSpaceAnalysisResult(
+      analysisResult,
+      this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+    );
   }
 
   private async fetchDataSpaceAnalysisFromCache(
@@ -177,11 +215,25 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     return cacheResult;
   }
 
-  private async buildDataSpaceAnalytics(
-    json: PlainObject<V1_DataSpaceAnalysisResult>,
+  async buildDataSpaceAnalytics(
+    analytics:
+      | PlainObject<V1_DataSpaceAnalysisResult>
+      | V1_DataSpaceAnalysisResult,
     plugins: PureProtocolProcessorPlugin[],
+    graphReport?: GraphManagerOperationReport | undefined,
+    pureGraph?: PureModel | undefined,
+    pmcd?: V1_PureModelContextData | undefined,
+    projectInfo?: ProjectGAVCoordinates,
   ): Promise<DataSpaceAnalysisResult> {
-    const analysisResult = V1_deserializeDataSpaceAnalysisResult(json, plugins);
+    let analysisResult: V1_DataSpaceAnalysisResult;
+    if (analytics instanceof V1_DataSpaceAnalysisResult) {
+      analysisResult = analytics;
+    } else {
+      analysisResult = V1_deserializeDataSpaceAnalysisResult(
+        analytics,
+        plugins,
+      );
+    }
     const result = new DataSpaceAnalysisResult();
     result.name = analysisResult.name;
     result.package = analysisResult.package;
@@ -228,25 +280,32 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       // NOTE: we will relax the check and not throw here for unknown support info type
     }
 
-    // create an empty graph
-    const extensionElementClasses = this.graphManager.pluginManager
-      .getPureGraphPlugins()
-      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
-    const systemModel = new SystemModel(extensionElementClasses);
-    const coreModel = new CoreModel(extensionElementClasses);
-    await this.graphManager.buildSystem(
-      coreModel,
-      systemModel,
-      ActionState.create(),
-      {},
-    );
-    systemModel.initializeAutoImports();
-    const graph = new PureModel(
-      coreModel,
-      systemModel,
-      this.graphManager.pluginManager.getPureGraphPlugins(),
-    );
-
+    let graphEntities;
+    let graph: PureModel;
+    if (pureGraph) {
+      graph = pureGraph;
+    } else {
+      // create an empty graph
+      const extensionElementClasses = this.graphManager.pluginManager
+        .getPureGraphPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+        );
+      const systemModel = new SystemModel(extensionElementClasses);
+      const coreModel = new CoreModel(extensionElementClasses);
+      await this.graphManager.buildSystem(
+        coreModel,
+        systemModel,
+        ActionState.create(),
+        {},
+      );
+      systemModel.initializeAutoImports();
+      graph = new PureModel(
+        coreModel,
+        systemModel,
+        this.graphManager.pluginManager.getPureGraphPlugins(),
+      );
+    }
     // Create dummy mappings and runtimes
     // TODO?: these stubbed mappings and runtimes are not really useful that useful, so either we should
     // simplify the model here or potentially refactor the backend analytics endpoint to return these as model
@@ -275,56 +334,79 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       runtime.runtimeValue = new V1_EngineRuntime();
       return runtime;
     });
-
-    // prepare the model context data
-    const graphEntities = analysisResult.model.elements
-      // NOTE: this is a temporary hack to fix a problem with data space analytics
-      // where the classes for properties are not properly surveyed
-      // We need to wait for the actual fix in backend to be merged and released
-      // See https://github.com/finos/legend-engine/pull/836
-      .concat(
-        uniq(
-          analysisResult.model.elements.flatMap((element) => {
-            if (element instanceof V1_Class) {
-              return element.derivedProperties
-                .map((prop) => prop.returnType)
-                .concat(element.properties.map((prop) => prop.type));
-            }
-            return [];
-          }),
-        )
-          // make sure to not include types already returned by the analysis
-          .filter(
-            (path) =>
-              !analysisResult.model.elements
-                .map((el) => el.path)
-                .includes(path),
+    if (pmcd && projectInfo) {
+      graphEntities = pmcd.elements
+        .concat(mappingModels)
+        .concat(runtimeModels)
+        // NOTE: if an element could be found in the graph already it means it comes from system
+        // so we could rid of it
+        .filter((el) => !graph.getNullableElement(el.path, false))
+        .map((el) => this.graphManager.elementProtocolToEntity(el));
+      await this.graphManager.buildGraph(
+        graph,
+        graphEntities,
+        ActionState.create(),
+        {
+          origin: new LegendSDLC(
+            projectInfo.groupId,
+            projectInfo.artifactId,
+            resolveVersion(projectInfo.versionId),
+          ),
+        },
+        graphReport,
+        true,
+      );
+    } else {
+      // prepare the model context data
+      graphEntities = analysisResult.model.elements
+        // NOTE: this is a temporary hack to fix a problem with data space analytics
+        // where the classes for properties are not properly surveyed
+        // We need to wait for the actual fix in backend to be merged and released
+        // See https://github.com/finos/legend-engine/pull/836
+        .concat(
+          uniq(
+            analysisResult.model.elements.flatMap((element) => {
+              if (element instanceof V1_Class) {
+                return element.derivedProperties
+                  .map((prop) => prop.returnType)
+                  .concat(element.properties.map((prop) => prop.type));
+              }
+              return [];
+            }),
           )
-          .map((path) => {
-            const [pkgPath, name] = resolvePackagePathAndElementName(path);
-            if (!pkgPath) {
-              // exclude package-less elements (i.e. primitive types)
-              return undefined;
-            }
-            const _class = new V1_Class();
-            _class.name = name;
-            _class.package = pkgPath;
-            return _class;
-          })
-          .filter(isNonNullable),
-      )
-      .concat(mappingModels)
-      .concat(runtimeModels)
-      // NOTE: if an element could be found in the graph already it means it comes from system
-      // so we could rid of it
-      .filter((el) => !graph.getNullableElement(el.path, false))
-      .map((el) => this.graphManager.elementProtocolToEntity(el));
+            // make sure to not include types already returned by the analysis
+            .filter(
+              (path) =>
+                !analysisResult.model.elements
+                  .map((el) => el.path)
+                  .includes(path),
+            )
+            .map((path) => {
+              const [pkgPath, name] = resolvePackagePathAndElementName(path);
+              if (!pkgPath) {
+                // exclude package-less elements (i.e. primitive types)
+                return undefined;
+              }
+              const _class = new V1_Class();
+              _class.name = name;
+              _class.package = pkgPath;
+              return _class;
+            })
+            .filter(isNonNullable),
+        )
+        .concat(mappingModels)
+        .concat(runtimeModels)
+        // NOTE: if an element could be found in the graph already it means it comes from system
+        // so we could rid of it
+        .filter((el) => !graph.getNullableElement(el.path, false))
+        .map((el) => this.graphManager.elementProtocolToEntity(el));
 
-    await this.graphManager.buildGraph(
-      graph,
-      graphEntities,
-      ActionState.create(),
-    );
+      await this.graphManager.buildGraph(
+        graph,
+        graphEntities,
+        ActionState.create(),
+      );
+    }
 
     // execution context
     result.executionContextsIndex = new Map<
@@ -344,6 +426,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       contextAnalysisResult.mappingModelCoverageAnalysisResult =
         V1_buildModelCoverageAnalysisResult(
           context.mappingModelCoverageAnalysisResult,
+          this.graphManager,
           contextAnalysisResult.mapping,
         );
       contextAnalysisResult.compatibleRuntimes = context.compatibleRuntimes.map(

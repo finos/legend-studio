@@ -15,7 +15,6 @@
  */
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
-import type { Query } from '@finos/legend-graph';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
@@ -52,9 +51,12 @@ export type QuerySetupActionConfiguration = {
 };
 
 export type ExistingQueryEditorStateBuilder = (
-  query: Query,
   editorStore: ExistingQueryEditorStore,
 ) => Promise<QueryBuilderState | undefined>;
+
+export type ExistingQueryGraphBuilderChecker = (
+  editorStore: ExistingQueryEditorStore,
+) => boolean | undefined;
 
 export type QueryEditorActionConfiguration = {
   key: string;
@@ -97,6 +99,11 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
    * Get the list of existing query editor state builders.
    */
   getExtraExistingQueryEditorStateBuilders?(): ExistingQueryEditorStateBuilder[];
+
+  /**
+   * Get the list of existing query graph builder checkers
+   */
+  getExtraExistingQueryGraphBuilderCheckers?(): ExistingQueryGraphBuilderChecker[];
 
   /**
    * Get the list of query editor action renderer configurations.

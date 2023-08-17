@@ -87,6 +87,8 @@ export class V1_LightQuery {
   artifactId!: string;
   versionId!: string;
   lastUpdatedAt?: number | undefined;
+  mapping?: string | undefined;
+  taggedValues?: V1_TaggedValue[] | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
@@ -94,8 +96,10 @@ export class V1_LightQuery {
       id: primitive(),
       groupId: primitive(),
       lastUpdatedAt: optional(primitive()),
+      mapping: optional(primitive()),
       name: primitive(),
       owner: optional(primitive()),
+      taggedValues: optional(list(usingModelSchema(V1_taggedValueModelSchema))),
       versionId: primitive(),
     }),
     {

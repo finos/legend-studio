@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@finos/legend-storage';
 import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 
 export type RawMappingModelCoverageAnalysisResult = object;
@@ -22,10 +23,12 @@ export class MappedEntity {
   readonly __PROPERTIES_INDEX = new Map<string, MappedProperty>();
 
   path: string;
+  classPath: string;
   properties: MappedProperty[];
 
-  constructor(path: string, properties: MappedProperty[]) {
+  constructor(path: string, classPath: string, properties: MappedProperty[]) {
     this.path = path;
+    this.classPath = classPath;
     this.properties = properties;
     properties.forEach((property) =>
       this.__PROPERTIES_INDEX.set(property.name, property),
@@ -73,12 +76,18 @@ export class MappingModelCoverageAnalysisResult {
   readonly mapping: Mapping;
 
   mappedEntities: MappedEntity[];
+  entities?: Entity[] | undefined;
 
-  constructor(mappedEntities: MappedEntity[], mapping: Mapping) {
+  constructor(
+    mappedEntities: MappedEntity[],
+    mapping: Mapping,
+    entities?: Entity[] | undefined,
+  ) {
     this.mappedEntities = mappedEntities;
     this.mapping = mapping;
     mappedEntities.forEach((entity) =>
       this.__ENTITIES_INDEX.set(entity.path, entity),
     );
+    this.entities = entities;
   }
 }

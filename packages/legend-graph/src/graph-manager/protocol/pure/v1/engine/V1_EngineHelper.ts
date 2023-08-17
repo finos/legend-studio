@@ -97,10 +97,29 @@ export const V1_buildLightQuery = (
     protocol.artifactId,
     `Query 'artifactId' field is missing`,
   );
+  metamodel.mapping = protocol.mapping;
   metamodel.owner = protocol.owner;
   metamodel.lastUpdatedAt = protocol.lastUpdatedAt;
   metamodel.isCurrentUserQuery =
     currentUserId !== undefined && protocol.owner === currentUserId;
+  // NOTE: we don't properly process tagged values and stereotypes for query
+  // because these profiles/tags/stereotypes can come from external systems.
+  metamodel.taggedValues = protocol.taggedValues?.map((taggedValueProtocol) => {
+    const taggedValue = new QueryTaggedValue();
+    taggedValue.profile = guaranteeNonEmptyString(
+      taggedValueProtocol.tag.profile,
+      `Tagged value 'tag.profile' field is missing or empty`,
+    );
+    taggedValue.tag = guaranteeNonEmptyString(
+      taggedValueProtocol.tag.value,
+      `Tagged value 'tag.value' field is missing or empty`,
+    );
+    taggedValue.value = guaranteeNonEmptyString(
+      taggedValueProtocol.value,
+      `Tagged value 'value' field is missing or empty`,
+    );
+    return taggedValue;
+  });
   return metamodel;
 };
 

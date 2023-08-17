@@ -67,6 +67,8 @@ export class LightQuery {
   artifactId!: string;
   owner?: string | undefined;
   lastUpdatedAt?: number | undefined;
+  mapping?: string | PackageableElementReference<Mapping> | undefined;
+  taggedValues?: QueryTaggedValue[] | undefined;
 
   isCurrentUserQuery = false;
 }
@@ -80,6 +82,8 @@ export const toLightQuery = (query: Query): LightQuery => {
   lightQuery.versionId = query.versionId;
   lightQuery.owner = query.owner;
   lightQuery.isCurrentUserQuery = query.isCurrentUserQuery;
+  lightQuery.mapping = query.mapping.value.path;
+  lightQuery.taggedValues = query.taggedValues;
   return lightQuery;
 };
 

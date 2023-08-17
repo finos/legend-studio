@@ -23,6 +23,9 @@ import {
   type Runtime,
   type Class,
   type RawLambda,
+  type V1_PureModelContextData,
+  createGraphBuilderReport,
+  GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
@@ -30,14 +33,18 @@ import {
   type LegendQueryApplicationStore,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
+  LEGEND_QUERY_APP_EVENT,
 } from '@finos/legend-application-query';
 import {
   type DepotServerClient,
   StoreProjectData,
+  retrieveProjectEntitiesWithDependencies,
 } from '@finos/legend-server-depot';
 import {
   guaranteeNonNullable,
   guaranteeType,
+  LogEvent,
+  StopWatch,
   uuid,
 } from '@finos/legend-shared';
 import {
@@ -117,7 +124,97 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     };
   }
 
+  override requiresGraphBuilding(): boolean {
+    return false;
+  }
+
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
+    let dataSpaceAnalysisResult;
+    let dataSpaceAnalysisResultMetaModel;
+    let isLightGraphEnabled = true;
+    try {
+      const stopWatch = new StopWatch();
+      const project = StoreProjectData.serialization.fromJson(
+        await this.depotServerClient.getProject(this.groupId, this.artifactId),
+      );
+      this.initState.setMessage('Fetching dataspace analysis result');
+      dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
+        this.graphManagerState.graphManager,
+      ).analyzeDataSpaceCoverage(
+        this.dataSpacePath,
+        () =>
+          retrieveProjectEntitiesWithDependencies(
+            project,
+            this.versionId,
+            this.depotServerClient,
+          ),
+        () =>
+          retrieveAnalyticsResultCache(
+            project,
+            this.versionId,
+            this.dataSpacePath,
+            this.depotServerClient,
+          ),
+      );
+      const mappingPath = dataSpaceAnalysisResult?.executionContexts.find(
+        (e) => e.name === this.executionContext,
+      )?.mapping;
+      if (dataSpaceAnalysisResult && mappingPath) {
+        // initialize system
+        stopWatch.record();
+        await this.graphManagerState.initializeSystem();
+        stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS);
+
+        // build graph
+        let pmcd: V1_PureModelContextData | undefined = undefined;
+        if (dataSpaceAnalysisResult) {
+          const mappingModelCoverageAnalysisResult =
+            dataSpaceAnalysisResult?.executionContexts.find(
+              (value) => value.mapping === mappingPath,
+            )?.mappingModelCoverageAnalysisResult;
+          pmcd = mappingModelCoverageAnalysisResult?.model;
+        }
+        const graph_buildReport = createGraphBuilderReport();
+        dataSpaceAnalysisResultMetaModel =
+          await DSL_DataSpace_getGraphManagerExtension(
+            this.graphManagerState.graphManager,
+          ).buildDataSpaceAnalytics(
+            dataSpaceAnalysisResult,
+            this.graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+            graph_buildReport,
+            this.graphManagerState.graph,
+            pmcd,
+            this.getProjectInfo(),
+          );
+        const dependency_buildReport = createGraphBuilderReport();
+        // report
+        stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
+        const graphBuilderReportData = {
+          timings:
+            this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
+          dependencies: dependency_buildReport,
+          dependenciesCount:
+            this.graphManagerState.graph.dependencyManager.numberOfDependencies,
+          graph: graph_buildReport,
+        };
+        this.applicationStore.logService.info(
+          LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
+          graphBuilderReportData,
+        );
+      } else {
+        isLightGraphEnabled = false;
+        this.graphManagerState.graph = this.graphManagerState.createNewGraph();
+        await this.buildGraph();
+      }
+    } catch (error) {
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+        error,
+      );
+      this.graphManagerState.graph = this.graphManagerState.createNewGraph();
+      isLightGraphEnabled = false;
+      await this.buildGraph();
+    }
     const dataSpace = getDataSpace(
       this.dataSpacePath,
       this.graphManagerState.graph,
@@ -128,24 +225,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       ),
       `Can't find execution context '${this.executionContext}'`,
     );
-    let dataSpaceAnalysisResult;
-    try {
-      const project = StoreProjectData.serialization.fromJson(
-        await this.depotServerClient.getProject(this.groupId, this.artifactId),
-      );
-      dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
-        this.graphManagerState.graphManager,
-      ).retrieveDataSpaceAnalysisFromCache(() =>
-        retrieveAnalyticsResultCache(
-          project,
-          this.versionId,
-          dataSpace.path,
-          this.depotServerClient,
-        ),
-      );
-    } catch {
-      // do nothing
-    }
     const projectInfo = new DataSpaceProjectInfo(
       this.groupId,
       this.artifactId,
@@ -162,6 +241,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       this.depotServerClient,
       dataSpace,
       executionContext,
+      isLightGraphEnabled,
       (dataSpaceInfo: DataSpaceInfo) => {
         if (dataSpaceInfo.defaultExecutionContext) {
           this.applicationStore.navigationService.navigator.goToLocation(
@@ -182,7 +262,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         }
       },
       true,
-      dataSpaceAnalysisResult,
+      dataSpaceAnalysisResultMetaModel,
       (ec: DataSpaceExecutionContext) => {
         // runtime should already be set
         const runtimePointer = guaranteeType(
@@ -245,7 +325,11 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       projectInfo,
     );
     queryBuilderState.setExecutionContext(executionContext);
-    queryBuilderState.propagateExecutionContextChange(executionContext);
+    queryBuilderState.propagateExecutionContextChange(
+      executionContext,
+      this,
+      true,
+    );
 
     // set runtime if already chosen
     if (this.runtimePath) {
