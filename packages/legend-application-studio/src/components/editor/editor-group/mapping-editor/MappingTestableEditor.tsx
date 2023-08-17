@@ -876,7 +876,7 @@ const MappingTestEditor = observer(
                         onChange={(event) => {
                           atomicTest_setDoc(
                             mappingTest,
-                            event.target.value ?? undefined,
+                            event.target.value ? event.target.value : undefined,
                           );
                         }}
                       />

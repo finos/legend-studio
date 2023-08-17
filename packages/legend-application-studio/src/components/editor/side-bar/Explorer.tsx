@@ -112,6 +112,7 @@ import {
   extractDependencyGACoordinateFromRootPackageName,
   type FunctionActivatorConfiguration,
   Database,
+  DEPENDENCY_ROOT_PACKAGE_PREFIX,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -617,7 +618,7 @@ const ExplorerContextMenu = observer(
         const dependency =
           editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
             (dep) =>
-              dep.projectId ===
+              DEPENDENCY_ROOT_PACKAGE_PREFIX + dep.projectId ===
               getElementRootPackage(node.packageableElement).name,
           );
         if (dependency) {
@@ -659,7 +660,7 @@ const ExplorerContextMenu = observer(
         const dependency =
           editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
             (dep) =>
-              dep.projectId ===
+              DEPENDENCY_ROOT_PACKAGE_PREFIX + dep.projectId ===
               getElementRootPackage(node.packageableElement).name,
           );
         if (dependency) {
@@ -696,7 +697,9 @@ const ExplorerContextMenu = observer(
     const viewProject = (): void => {
       const projectDependency =
         editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
-          (dep) => dep.projectId === node?.packageableElement.name,
+          (dep) =>
+            DEPENDENCY_ROOT_PACKAGE_PREFIX + dep.projectId ===
+            node?.packageableElement.name,
         );
       if (projectDependency) {
         applicationStore.navigationService.navigator.visitAddress(
@@ -715,7 +718,9 @@ const ExplorerContextMenu = observer(
     const viewSDLCProject = (): void => {
       const dependency =
         editorStore.projectConfigurationEditorState.projectConfiguration?.projectDependencies.find(
-          (dep) => dep.projectId === node?.packageableElement.name,
+          (dep) =>
+            DEPENDENCY_ROOT_PACKAGE_PREFIX + dep.projectId ===
+            node?.packageableElement.name,
         );
       if (dependency) {
         createViewSDLCProjectHandler(

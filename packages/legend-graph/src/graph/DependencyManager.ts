@@ -44,7 +44,7 @@ import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableE
 import { LegendSDLC, type GraphDataOrigin } from './GraphDataOrigin.js';
 import type { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 
-const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
+export const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
 export const generateDependencyRootPackageName = (
   dependencyKey: string,
 ): string => `${DEPENDENCY_ROOT_PACKAGE_PREFIX}${dependencyKey}`;

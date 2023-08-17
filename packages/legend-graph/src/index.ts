@@ -181,6 +181,7 @@ export * from './graph-manager/helpers/ValueSpecificationGraphManagerHelper.js';
 // --------------------------------------------- GRAPH --------------------------------------------------
 
 export {
+  DEPENDENCY_ROOT_PACKAGE_PREFIX,
   DependencyManager,
   generateDependencyRootPackageName,
   extractDependencyGACoordinateFromRootPackageName,
