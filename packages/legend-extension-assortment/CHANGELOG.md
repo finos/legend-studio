@@ -1,5 +1,7 @@
 # @finos/legend-extension-assortment
 
+## 0.0.44
+
 ## 0.0.43
 
 ## 0.0.42

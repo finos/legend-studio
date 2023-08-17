@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.3.3
+
+### Patch Changes
+
+- [#2489](https://github.com/finos/legend-studio/pull/2489) [`acda3c2e5`](https://github.com/finos/legend-studio/commit/acda3c2e52f79f1b390fe3afccfd94477ca07ba2) ([@gayathrir11](https://github.com/gayathrir11)) - Support `in` filter operator for date primitive type.
+
 ## 4.3.2
 
 ## 4.3.1

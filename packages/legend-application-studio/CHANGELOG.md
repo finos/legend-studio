@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.2.5
+
+### Patch Changes
+
+- [#2515](https://github.com/finos/legend-studio/pull/2515) [`e1eb01b25`](https://github.com/finos/legend-studio/commit/e1eb01b25026f4a5543ca1a4a83a804af7e07a3c) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where failing to generate function signature as the name of ConcreteFunctionDefinition after saving query as a function
+
 ## 28.2.4
 
 ### Patch Changes
