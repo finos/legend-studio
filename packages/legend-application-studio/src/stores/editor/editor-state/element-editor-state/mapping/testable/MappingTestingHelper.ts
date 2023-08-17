@@ -44,6 +44,7 @@ import {
   getAllClassDerivedProperties,
   PropertyGraphFetchTree,
   PropertyExplicitReference,
+  type ObserverContext,
 } from '@finos/legend-graph';
 import {
   buildGetAllFunction,
@@ -63,6 +64,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
 
 export const createGraphFetchRawLambda = (
   mainClass: Class,
@@ -158,6 +160,7 @@ export const generateStoreTestDataFromSetImpl = (
 export const createBareMappingTest = (
   id: string,
   storeTestData: StoreTestData | undefined,
+  observerContext: ObserverContext,
   suite?: MappingTestSuite | undefined,
 ): MappingTest => {
   const mappingTest = new MappingTest();
@@ -168,7 +171,7 @@ export const createBareMappingTest = (
   ];
   if (suite) {
     mappingTest.__parent = suite;
-    suite.tests.push(mappingTest);
+    testSuite_addTest(suite, mappingTest, observerContext);
   }
   const assertion = createDefaultEqualToJSONTestAssertion(`expectedAssertion`);
   mappingTest.assertions = [assertion];
