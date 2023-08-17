@@ -255,6 +255,9 @@ const EqualToJsonAssertFailViewer = observer(
     const { equalToJsonAssertFailState } = props;
     const open = (): void => equalToJsonAssertFailState.setDiffModal(true);
     const close = (): void => equalToJsonAssertFailState.setDiffModal(false);
+    const expected = equalToJsonAssertFailState.status.expected;
+    const actual = equalToJsonAssertFailState.status.actual;
+
     return (
       <>
         <div className="equal-to-json-editor__message" onClick={open}>
@@ -285,10 +288,7 @@ const EqualToJsonAssertFailViewer = observer(
                 </div>
               </ModalHeader>
               <ModalBody>
-                <JSONDiffView
-                  from={equalToJsonAssertFailState.status.expected}
-                  to={equalToJsonAssertFailState.status.actual}
-                />
+                <JSONDiffView from={expected} to={actual} lossless={true} />
               </ModalBody>
               <ModalFooter>
                 <ModalFooterButton text="Close" onClick={close} />
