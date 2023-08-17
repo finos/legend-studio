@@ -93,7 +93,10 @@ import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import type { EditorMode } from './EditorMode.js';
 import { StandardEditorMode } from './StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
+import {
+  PACKAGEABLE_ELEMENT_TYPE,
+  PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
+} from './utils/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
@@ -188,6 +191,7 @@ export class EditorStore implements CommandRegistrar {
     snap: 150,
   });
   readonly tabManagerState = new EditorTabManagerState(this);
+  supportedElementTypesWithCategory: Map<string, string[]>;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -285,6 +289,8 @@ export class EditorStore implements CommandRegistrar {
       )
       .map((creator) => creator(this))
       .filter(isNonNullable);
+    this.supportedElementTypesWithCategory =
+      this.getSupportedElementTypesWithCategory();
   }
 
   get isInitialized(): boolean {
@@ -924,6 +930,133 @@ export class EditorStore implements CommandRegistrar {
         'Editor only support form mode and text mode at the moment',
       );
     }
+  }
+
+  getSupportedElementTypesWithCategory(): Map<string, string[]> {
+    const elementTypesWithCategoryMap = new Map<string, string[]>();
+    Object.values(PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY).forEach((value) => {
+      switch (value) {
+        case PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.MODEL: {
+          const elements = [
+            PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
+            PACKAGEABLE_ELEMENT_TYPE.CLASS,
+            PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION,
+            PACKAGEABLE_ELEMENT_TYPE.ENUMERATION,
+            PACKAGEABLE_ELEMENT_TYPE.PROFILE,
+            PACKAGEABLE_ELEMENT_TYPE.FUNCTION,
+            PACKAGEABLE_ELEMENT_TYPE.MEASURE,
+            PACKAGEABLE_ELEMENT_TYPE.DATA,
+          ] as string[];
+          elementTypesWithCategoryMap.set(
+            PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.MODEL,
+            elements,
+          );
+          break;
+        }
+        case PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.STORE: {
+          const elements = [
+            PACKAGEABLE_ELEMENT_TYPE.DATABASE,
+            PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
+          ] as string[];
+          elementTypesWithCategoryMap.set(
+            PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.STORE,
+            elements,
+          );
+          break;
+        }
+        case PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.QUERY: {
+          const elements = [
+            PACKAGEABLE_ELEMENT_TYPE.CONNECTION,
+            PACKAGEABLE_ELEMENT_TYPE.RUNTIME,
+            PACKAGEABLE_ELEMENT_TYPE.MAPPING,
+            PACKAGEABLE_ELEMENT_TYPE.SERVICE,
+            this.applicationStore.config.options
+              .TEMPORARY__enableLocalConnectionBuilder
+              ? PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION
+              : undefined,
+          ] as (string | undefined)[];
+          elementTypesWithCategoryMap.set(
+            PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.QUERY,
+            elements.filter(isNonNullable),
+          );
+          break;
+        }
+        // for displaying categories in order
+        case PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.EXTERNAL_FORMAT: {
+          elementTypesWithCategoryMap.set(
+            PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.EXTERNAL_FORMAT,
+            [],
+          );
+          break;
+        }
+        case PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.GENERATION: {
+          const elements = [
+            PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
+            PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION,
+          ] as string[];
+          elementTypesWithCategoryMap.set(
+            PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.GENERATION,
+            elements,
+          );
+          break;
+        }
+        // for displaying categories in order
+        case PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.OTHER: {
+          elementTypesWithCategoryMap.set(
+            PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.OTHER,
+            [],
+          );
+          break;
+        }
+        default:
+          break;
+      }
+    });
+    const extensions = this.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
+          ).getExtraSupportedElementTypesWithCategory?.() ??
+          new Map<string, string[]>(),
+      );
+    const elementTypesWithCategoryMapFromExtensions = new Map<
+      string,
+      string[]
+    >();
+    extensions.forEach((typeCategoryMap) => {
+      Array.from(typeCategoryMap.entries()).forEach((entry) => {
+        const [key, value] = entry;
+        elementTypesWithCategoryMapFromExtensions.set(
+          key,
+          elementTypesWithCategoryMapFromExtensions.get(key) === undefined
+            ? [...value]
+            : [
+                ...guaranteeNonNullable(
+                  elementTypesWithCategoryMapFromExtensions.get(key),
+                ),
+                ...value,
+              ],
+        );
+      });
+    });
+    // sort extensions alphabetically and insert extensions into the base elementTypesWithCategoryMap
+    Array.from(elementTypesWithCategoryMapFromExtensions.entries()).forEach(
+      (entry) => {
+        const [key, value] = entry;
+        value.sort((a, b) => a.localeCompare(b));
+        const existingValues = elementTypesWithCategoryMap.get(key);
+        elementTypesWithCategoryMap.set(
+          key,
+          existingValues === undefined
+            ? [...value]
+            : [...guaranteeNonNullable(existingValues), ...value],
+        );
+      },
+    );
+
+    return elementTypesWithCategoryMap;
   }
 
   getSupportedElementTypes(): string[] {

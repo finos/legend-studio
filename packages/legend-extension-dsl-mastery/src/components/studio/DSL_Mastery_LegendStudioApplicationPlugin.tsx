@@ -31,6 +31,7 @@ import {
   type ElementTypeLabelGetter,
   LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
+  PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
 } from '@finos/legend-application-studio';
 import { MasterRecordDefinition } from '../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from '../../__lib__/studio/DSL_Mastery_LegendStudioCodeSnippet.js';
@@ -57,6 +58,15 @@ export class DSL_Mastery_LegendStudioApplicationPlugin
 
   getExtraSupportedElementTypes(): string[] {
     return [MASTERY_ELEMENT_TYPE];
+  }
+
+  getExtraSupportedElementTypesWithCategory?(): Map<string, string[]> {
+    const elementTypesWithCategoryMap = new Map<string, string[]>();
+    elementTypesWithCategoryMap.set(
+      PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.GENERATION,
+      [MASTERY_ELEMENT_TYPE],
+    );
+    return elementTypesWithCategoryMap;
   }
 
   getExtraElementClassifiers(): ElementClassifier[] {

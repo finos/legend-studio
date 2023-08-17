@@ -98,6 +98,7 @@ export { generateServiceManagementUrl } from './stores/editor/editor-state/eleme
 export { ServicePureExecutionState } from './stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 export { NewServiceModal } from './components/editor/editor-group/service-editor/NewServiceModal.js';
 export { FileSystem_File as GenerationFile } from './stores/editor/utils/FileSystemTreeUtils.js';
+export { PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY } from './stores/editor/utils/ModelClassifierUtils.js';
 export {
   FileGenerationState,
   GeneratedFileStructureState,
