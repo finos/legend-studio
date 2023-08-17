@@ -676,8 +676,8 @@ export class QueryBuilderExplorerState {
     // This makes the assumption that the mapping has not been edited, which is a valid assumption since query is not for editing mappings
     if (
       this.queryBuilderState.executionContextState.mapping &&
-      this.queryBuilderState.executionContextState.mapping !==
-        this.mappingModelCoverageAnalysisResult?.mapping
+      this.queryBuilderState.executionContextState.mapping.path !==
+        this.mappingModelCoverageAnalysisResult?.mapping.path
     ) {
       this.mappingModelCoverageAnalysisState.inProgress();
       QueryBuilderTelemetryHelper.logEvent_QueryMappingModelCoverageAnalysisLaunched(
