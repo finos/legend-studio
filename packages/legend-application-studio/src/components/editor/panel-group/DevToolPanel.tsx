@@ -20,10 +20,19 @@ import {
   Panel,
   PanelFormTextField,
   PanelForm,
+  CloudDownloadIcon,
+  PanelFormListItems,
 } from '@finos/legend-art';
-import { isValidUrl } from '@finos/legend-shared';
+import {
+  ContentType,
+  downloadFileUsingDataURI,
+  getContentTypeFileExtension,
+  isValidUrl,
+} from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
+import { flowResult } from 'mobx';
+import type { PureModel } from '@finos/legend-graph';
 
 export const DevToolPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -55,6 +64,52 @@ export const DevToolPanel = observer(() => {
   const toggleArtifactGeneration = (): void => {
     editorStore.graphState.graphGenerationState.setEnableArtifactGeneration(
       !editorStore.graphState.graphGenerationState.enableArtifactGeneration,
+    );
+  };
+
+  const downloadDependencyProjectGrammars = async (): Promise<string> => {
+    const dependencyGrammars = await Promise.all(
+      Array.from(
+        editorStore.graphManagerState.graph.dependencyManager
+          .projectDependencyModelsIndex,
+      ).map(
+        (graph) =>
+          flowResult(
+            editorStore.graphManagerState.graphManager.graphToPureCode(
+              graph[1] as PureModel,
+              {
+                pretty: true,
+              },
+            ),
+          ) as string,
+      ),
+    );
+    return dependencyGrammars.join('\n');
+  };
+
+  const downloadProjectGrammar = async (
+    withDependency: boolean,
+  ): Promise<void> => {
+    const graphGrammar = (await Promise.all([
+      flowResult(
+        editorStore.graphManagerState.graphManager.graphToPureCode(
+          editorStore.graphManagerState.graph,
+          { pretty: true },
+        ),
+      ),
+    ])) as unknown as string;
+    const dependencyGrammars = withDependency
+      ? ((await Promise.all([
+          flowResult(downloadDependencyProjectGrammars()),
+        ])) as unknown as string)
+      : '';
+    const fileName = `grammar.${getContentTypeFileExtension(
+      ContentType.TEXT_PLAIN,
+    )}`;
+    downloadFileUsingDataURI(
+      fileName,
+      `${graphGrammar}\n${dependencyGrammars}`,
+      ContentType.TEXT_PLAIN,
     );
   };
 
@@ -130,6 +185,44 @@ export const DevToolPanel = observer(() => {
           isReadOnly={false}
           update={toggleArtifactGeneration}
         />
+        <PanelFormListItems title="Download Project Grammar">
+          <div className="developer-tools__action-groups">
+            <div className="developer-tools__action-group">
+              <button
+                className="developer-tools__action-group__btn"
+                onClick={() => {
+                  downloadProjectGrammar(false).catch(
+                    editorStore.applicationStore.alertUnhandledError,
+                  );
+                }}
+                tabIndex={-1}
+                title="Download Project Grammar"
+              >
+                <CloudDownloadIcon />
+              </button>
+              <div className="developer-tools__action-group__prompt">
+                download grammar without dependency
+              </div>
+            </div>
+            <div className="developer-tools__action-group">
+              <button
+                className="developer-tools__action-group__btn"
+                onClick={() => {
+                  downloadProjectGrammar(true).catch(
+                    editorStore.applicationStore.alertUnhandledError,
+                  );
+                }}
+                tabIndex={-1}
+                title="Download Project Grammar with Dependency"
+              >
+                <CloudDownloadIcon />
+              </button>
+              <div className="developer-tools__action-group__prompt">
+                download grammar with dependency
+              </div>
+            </div>
+          </div>
+        </PanelFormListItems>
       </PanelForm>
     </Panel>
   );

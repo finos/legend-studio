@@ -13,11 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use 'mixins' as *;
 
-@forward 'components/not-found-screen';
-@forward 'components/workspace-setup';
-@forward 'components/editor';
-@forward 'components/project-view';
-@forward 'components/review';
-@forward 'components/showcase-manager';
-@forward 'components/dev-tool-panel';
+.developer-tools {
+  &__action-group {
+    @include flexVCenter;
+
+    &__btn {
+      align-self: flex-start;
+      padding-top: 0.2rem;
+
+      svg {
+        font-size: 2rem;
+        color: var(--color-dark-grey-250);
+      }
+
+      &--loading svg {
+        animation: jiggle 0.3s infinite ease;
+      }
+    }
+
+    &__prompt {
+      @include flexCenter;
+
+      word-break: break-word;
+      margin-left: 0.8rem;
+      color: var(--color-light-grey-400);
+      line-height: 2rem;
+      user-select: none;
+      cursor: pointer;
+
+      svg {
+        margin-left: 0.5rem;
+      }
+    }
+  }
+}
