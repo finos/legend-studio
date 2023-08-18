@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.2.7
+
+### Patch Changes
+
+- [#2524](https://github.com/finos/legend-studio/pull/2524) [`6ca491d29`](https://github.com/finos/legend-studio/commit/6ca491d2953a1aea6c5a8bbab8fbd2b1b66d9d09) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add a button in dev-tools tab to download project grammar with/without dependency projects
+
 ## 28.2.6
 
 ## 28.2.5
