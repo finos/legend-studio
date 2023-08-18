@@ -201,7 +201,7 @@ export const DevToolPanel = observer(() => {
                 <CloudDownloadIcon />
               </button>
               <div className="developer-tools__action-group__prompt">
-                downloand grammar without dependency
+                download grammar without dependency
               </div>
             </div>
             <div className="developer-tools__action-group">
@@ -218,7 +218,7 @@ export const DevToolPanel = observer(() => {
                 <CloudDownloadIcon />
               </button>
               <div className="developer-tools__action-group__prompt">
-                downloand grammar with dependency
+                download grammar with dependency
               </div>
             </div>
           </div>
