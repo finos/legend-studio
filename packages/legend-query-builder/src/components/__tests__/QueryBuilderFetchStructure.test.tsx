@@ -664,13 +664,8 @@ test(
     //Should support same actions in expanded window
     fireEvent.click(getByDisplayValue(filterPanel, 'List(3): 4,9,1'));
     const thirdInputEl = getByDisplayValue(filterPanel, '4,9,1');
-    await waitFor(() =>
-      fireEvent.click(getByTitle(filterPanel, 'Expand window...')),
-    );
-
     fireEvent.change(thirdInputEl, { target: { value: '0\n1\n' } });
     fireEvent.keyDown(thirdInputEl, { key: 'Enter' });
-
     expect(
       (filterConditionValue.values[0] as PrimitiveInstanceValue).values[0],
     ).toEqual(0);

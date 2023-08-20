@@ -753,22 +753,36 @@ const CollectionValueInstanceValueEditor = observer(
     }`;
     const enableEdit = (): void => setEditable(true);
     const saveEdit = (): void => {
-      setEditable(false);
-      setShowAdvancedEditorPopover(false);
-      setCollectionValue(
-        valueSpecification,
-        expectedType,
-        text,
-        obseverContext,
-      );
-      setText(stringifyValue(valueSpecification.values));
-      setValueSpecification(valueSpecification);
+      if (editable) {
+        setEditable(false);
+        setShowAdvancedEditorPopover(false);
+        setCollectionValue(
+          valueSpecification,
+          expectedType,
+          text,
+          obseverContext,
+        );
+        setText(stringifyValue(valueSpecification.values));
+        setValueSpecification(valueSpecification);
+      }
     };
 
     const changeValueTextArea: React.ChangeEventHandler<HTMLTextAreaElement> = (
       event,
     ) => {
       setText(event.target.value);
+    };
+    const expandButtonName = `${valueSpecification.hashCode}ExpandButton`;
+    const handleOnBlur: React.FocusEventHandler<HTMLTextAreaElement> = (
+      event,
+    ) => {
+      // disable save if target is expand button
+      if (
+        (event.relatedTarget as HTMLButtonElement | undefined)?.name !==
+        expandButtonName
+      ) {
+        saveEdit();
+      }
     };
 
     const placeholder = text === '' ? getPlaceHolder(expectedType) : undefined;
@@ -823,11 +837,13 @@ const CollectionValueInstanceValueEditor = observer(
                   saveEdit();
                 }
               }}
+              onBlur={handleOnBlur}
             />
             <button
               className="value-spec-editor__list-editor__expand-button btn--dark"
               onClick={() => setShowAdvancedEditorPopover(true)}
               tabIndex={-1}
+              name={expandButtonName}
               title="Expand window..."
             >
               <FilledWindowMaximizeIcon />
