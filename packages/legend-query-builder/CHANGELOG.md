@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.3.5
+
+### Patch Changes
+
+- [#2522](https://github.com/finos/legend-studio/pull/2522) [`aee202542`](https://github.com/finos/legend-studio/commit/aee20254247f30db5688f839a8609bc833529296) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Save value spec collection values on click away.
+
 ## 4.3.4
 
 ### Patch Changes
