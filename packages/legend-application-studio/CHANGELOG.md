@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.3.0
+
+### Minor Changes
+
+- [#2513](https://github.com/finos/legend-studio/pull/2513) [`c4adb7fdc`](https://github.com/finos/legend-studio/commit/c4adb7fdc7871ec7e3f871bff85b2227dbcae087) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - **BREAKING CHANGES** Group new element dropdown by category
+
 ## 28.2.7
 
 ### Patch Changes
