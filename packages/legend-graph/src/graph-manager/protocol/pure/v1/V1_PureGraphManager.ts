@@ -3100,7 +3100,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       });
     } catch (error) {
       assertErrorThrown(error);
-      assertErrorThrown(error);
       this.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.RELATIONAL_CONNECTION),
         error,
