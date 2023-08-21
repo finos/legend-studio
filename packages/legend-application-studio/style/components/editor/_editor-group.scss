@@ -200,6 +200,12 @@
       background: var(--color-dark-grey-100);
     }
 
+    &__option__group__options--center {
+      justify-content: center;
+      display: flex;
+      flex-direction: column;
+    }
+
     &__option {
       @include flexCenter;
 

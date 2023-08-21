@@ -73,3 +73,12 @@ export enum PACKAGEABLE_ELEMENT_TYPE {
   TEMPORARY__LOCAL_CONNECTION = 'LOCAL_CONNECTION',
   INTERNAL__UNKNOWN = 'UNKNOWN',
 }
+
+export enum PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY {
+  MODEL = 'Model',
+  STORE = 'Store',
+  QUERY = 'Query',
+  EXTERNAL_FORMAT = 'External Format',
+  GENERATION = 'Generation',
+  OTHER = 'Other',
+}

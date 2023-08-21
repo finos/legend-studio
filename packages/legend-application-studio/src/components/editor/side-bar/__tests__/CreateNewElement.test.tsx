@@ -40,7 +40,7 @@ const addRootPackage = async (
 ): Promise<void> => {
   fireEvent.click(result.getByTitle('New Element...', { exact: false }));
   const contextMenu = await waitFor(() => result.getByRole('menu'));
-  fireEvent.click(getByText(contextMenu, 'New Package...'));
+  fireEvent.click(getByText(contextMenu, 'Package'));
   const modal = result.getByTestId(LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL);
   const packageInput = getByPlaceholderText(modal, 'Enter a name', {
     exact: false,
@@ -64,7 +64,7 @@ const createNewElementOnRootPackage = async (
   fireEvent.contextMenu(pkgContainer);
   const contextMenu = await waitFor(() => result.getByRole('menu'));
   fireEvent.click(
-    getByText(contextMenu, `New ${toTitleCase(elementType.toLowerCase())}...`),
+    getByText(contextMenu, `${toTitleCase(elementType.toLowerCase())}`),
   );
   const modal = result.getByTestId(LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL);
   const elementInput = getByPlaceholderText(modal, 'Enter a name', {

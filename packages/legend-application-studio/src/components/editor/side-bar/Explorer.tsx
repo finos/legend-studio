@@ -123,7 +123,10 @@ import {
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/editor/utils/ModelClassifierUtils.js';
+import {
+  PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
+  PACKAGEABLE_ELEMENT_TYPE,
+} from '../../../stores/editor/utils/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
 import { queryClass } from '../editor-group/uml-editor/ClassQueryBuilder.js';
 import { createViewSDLCProjectHandler } from '../../../stores/editor/DependencyProjectViewerHelper.js';
@@ -498,14 +501,16 @@ const ExplorerContextMenu = observer(
         ? node.packageableElement
         : undefined
       : editorStore.graphManagerState.graph.root;
-    const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
-      .concat(editorStore.getSupportedElementTypes())
-      .filter(
-        // NOTE: we can only create package in root
-        (type) =>
-          _package !== editorStore.graphManagerState.graph.root ||
-          type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
-      );
+
+    const elementTypesWithCategory =
+      _package === editorStore.graphManagerState.graph.root
+        ? new Map<string, string[]>([
+            [
+              PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.MODEL,
+              [PACKAGEABLE_ELEMENT_TYPE.PACKAGE],
+            ],
+          ])
+        : editorStore.supportedElementTypesWithCategory;
 
     // actions
     const buildQuery = editorStore.applicationStore.guardUnhandledError(
@@ -795,15 +800,27 @@ const ExplorerContextMenu = observer(
     if (_package && !isReadOnly) {
       return (
         <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
-          {elementTypes.map((type) => (
-            <MenuContentItem key={type} onClick={createNewElement(type)}>
-              <MenuContentItemIcon>
-                {getElementTypeIcon(type, editorStore)}
-              </MenuContentItemIcon>
-              <MenuContentItemLabel>
-                New {toTitleCase(getElementTypeLabel(editorStore, type))}...
-              </MenuContentItemLabel>
-            </MenuContentItem>
+          {Array.from(elementTypesWithCategory.entries()).map((entry) => (
+            <div
+              className="editor-group__view-mode__option__group editor-group__view-mode__option__group--native"
+              key={entry[0]}
+            >
+              <div className="editor-group__view-mode__option__group__name">
+                {entry[0]}
+              </div>
+              <div className="editor-group__view-mode__option__group__options editor-group__view-mode__option__group__options--center">
+                {entry[1].map((type) => (
+                  <MenuContentItem key={type} onClick={createNewElement(type)}>
+                    <MenuContentItemIcon>
+                      {getElementTypeIcon(type, editorStore)}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      {toTitleCase(getElementTypeLabel(editorStore, type))}
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                ))}
+              </div>
+            </div>
           ))}
           {node && (
             <>
@@ -1053,26 +1070,39 @@ const ExplorerDropdownMenu = observer(() => {
     (): void =>
       editorStore.newElementState.openModal(type, _package);
 
-  const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
-    .concat(editorStore.getSupportedElementTypes())
-    .filter(
-      // NOTE: we can only create package in root
-      (type) =>
-        _package !== editorStore.graphManagerState.graph.root ||
-        type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
-    );
+  const elementTypesWithCategory =
+    _package === editorStore.graphManagerState.graph.root
+      ? new Map<string, string[]>([
+          [
+            PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.MODEL,
+            [PACKAGEABLE_ELEMENT_TYPE.PACKAGE],
+          ],
+        ])
+      : editorStore.supportedElementTypesWithCategory;
 
   return (
     <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
-      {elementTypes.map((type) => (
-        <MenuContentItem key={type} onClick={createNewElement(type)}>
-          <MenuContentItemIcon>
-            {getElementTypeIcon(type, editorStore)}
-          </MenuContentItemIcon>
-          <MenuContentItemLabel>
-            New {toTitleCase(getElementTypeLabel(editorStore, type))}...
-          </MenuContentItemLabel>
-        </MenuContentItem>
+      {Array.from(elementTypesWithCategory.entries()).map((entry) => (
+        <div
+          className="editor-group__view-mode__option__group editor-group__view-mode__option__group--native"
+          key={entry[0]}
+        >
+          <div className="editor-group__view-mode__option__group__name">
+            {entry[0]}
+          </div>
+          <div className="editor-group__view-mode__option__group__options editor-group__view-mode__option__group__options--center">
+            {entry[1].map((type) => (
+              <MenuContentItem key={type} onClick={createNewElement(type)}>
+                <MenuContentItemIcon>
+                  {getElementTypeIcon(type, editorStore)}
+                </MenuContentItemIcon>
+                <MenuContentItemLabel>
+                  {toTitleCase(getElementTypeLabel(editorStore, type))}
+                </MenuContentItemLabel>
+              </MenuContentItem>
+            ))}
+          </div>
+        </div>
       ))}
     </MenuContent>
   );

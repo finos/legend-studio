@@ -235,6 +235,11 @@ export interface DSL_LegendStudioApplicationPlugin_Extension
   getExtraSupportedElementTypes?(): string[];
 
   /**
+   * Get the Map of the supported packageable element type specifiers with its category.
+   */
+  getExtraSupportedElementTypesWithCategory?(): Map<string, string[]>;
+
+  /**
    * Get the list of classifiers for a packageable element.
    */
   getExtraElementClassifiers?(): ElementClassifier[];

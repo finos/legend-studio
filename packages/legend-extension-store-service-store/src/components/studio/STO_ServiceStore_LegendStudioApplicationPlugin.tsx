@@ -57,6 +57,7 @@ import {
   type EmbeddedDataTypeFromConnectionMatcher,
   type StoreTestDataCreators,
   type EmbeddedDataCloner,
+  PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
 } from '@finos/legend-application-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import {
@@ -142,6 +143,15 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
 
   getExtraSupportedElementTypes(): string[] {
     return [SERVICE_STORE_ELEMENT_TYPE];
+  }
+
+  getExtraSupportedElementTypesWithCategory?(): Map<string, string[]> {
+    const elementTypesWithCategoryMap = new Map<string, string[]>();
+    elementTypesWithCategoryMap.set(
+      PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY.STORE,
+      [SERVICE_STORE_ELEMENT_TYPE],
+    );
+    return elementTypesWithCategoryMap;
   }
 
   getExtraElementClassifiers(): ElementClassifier[] {
