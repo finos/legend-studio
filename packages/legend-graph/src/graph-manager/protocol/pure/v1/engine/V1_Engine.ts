@@ -1065,16 +1065,12 @@ export class V1_Engine {
   async getAvailableRelationalDatabaseTypeConfigurations(): Promise<
     V1_RelationalConnectionBuilder[]
   > {
-    try {
-      return (
-        await this.engineServerClient.getAvailableRelationalDatabaseTypeConfigurations()
-      ).map((dbTypeToDataSourceAndAuthMap) =>
-        V1_RelationalConnectionBuilder.serialization.fromJson(
-          dbTypeToDataSourceAndAuthMap,
-        ),
-      );
-    } catch (error) {
-      return [];
-    }
+    return (
+      await this.engineServerClient.getAvailableRelationalDatabaseTypeConfigurations()
+    ).map((dbTypeToDataSourceAndAuthMap) =>
+      V1_RelationalConnectionBuilder.serialization.fromJson(
+        dbTypeToDataSourceAndAuthMap,
+      ),
+    );
   }
 }

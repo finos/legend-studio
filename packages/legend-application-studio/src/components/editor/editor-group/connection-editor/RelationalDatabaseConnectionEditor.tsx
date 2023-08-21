@@ -1579,7 +1579,7 @@ const RelationalConnectionGeneralEditor = observer(
     const databseTypeConfigs =
       connectionValueState.editorStore.graphState
         .relationalDatabseTypeConfigurations;
-    const availableDbTypes = databseTypeConfigs
+    const availableDbTypes = databseTypeConfigs?.length
       ? // Currently H2 Flow is not returned in relational configs. We will remove this once it is properly returned as a supported flow in engine
         uniq([DatabaseType.H2, ...databseTypeConfigs.map((e) => e.type)])
       : Object.values(DatabaseType);
