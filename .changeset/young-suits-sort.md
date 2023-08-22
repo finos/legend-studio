@@ -2,4 +2,4 @@
 '@finos/legend-application-studio': patch
 ---
 
-Add custom execution edior for InlineServicePureExecutionState
+Remove execution context editor for inline service queries
