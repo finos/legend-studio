@@ -156,7 +156,7 @@ const ShowcaseManagerExplorer = observer(
                 <HomeIcon />
               </div>
               <div className="showcase-manager__view__breadcrumb__text">
-                Showcaces
+                Showcases
               </div>
             </div>
             <div className="showcase-manager__view__breadcrumb__arrow">
@@ -371,7 +371,7 @@ const ShowcaseManagerSearchPanel = observer(
                 <HomeIcon />
               </div>
               <div className="showcase-manager__view__breadcrumb__text">
-                Showcaces
+                Showcases
               </div>
             </div>
             <div className="showcase-manager__view__breadcrumb__arrow">
@@ -554,7 +554,7 @@ const ShowcaseViewer = observer(
                 <HomeIcon />
               </div>
               <div className="showcase-manager__view__breadcrumb__text">
-                Showcaces
+                Showcases
               </div>
             </div>
             <div className="showcase-manager__view__breadcrumb__arrow">
