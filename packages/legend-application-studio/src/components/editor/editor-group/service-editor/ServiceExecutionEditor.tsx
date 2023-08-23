@@ -22,6 +22,7 @@ import {
   SingleServicePureExecutionState,
   ServicePureExecutionState,
   MultiServicePureExecutionState,
+  InlineServicePureExecutionState,
 } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import { EmbeddedRuntimeEditor } from '../RuntimeEditor.js';
 import { useDrop } from 'react-dnd';
@@ -809,69 +810,81 @@ const ServicePureExecutionEditor = observer(
         />
       );
     };
-    return (
-      <div className="service-execution-editor">
-        <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel size={500} minSize={28}>
-            <ServiceExecutionQueryEditor
-              executionState={servicePureExecutionState}
-              isReadOnly={isReadOnly}
-            />
-          </ResizablePanel>
-          <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-          </ResizablePanelSplitter>
-          <ResizablePanel minSize={56}>
-            <div className="service-execution-editor__content">
-              <Panel>
-                <div className="panel__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__label service-editor__execution__label--test">
-                      context
+    if (servicePureExecutionState instanceof InlineServicePureExecutionState) {
+      return (
+        <div className="service-execution-editor">
+          <ServiceExecutionQueryEditor
+            executionState={servicePureExecutionState}
+            isReadOnly={isReadOnly}
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div className="service-execution-editor">
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel size={500} minSize={28}>
+              <ServiceExecutionQueryEditor
+                executionState={servicePureExecutionState}
+                isReadOnly={isReadOnly}
+              />
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel minSize={56}>
+              <div className="service-execution-editor__content">
+                <Panel>
+                  <div className="panel__header">
+                    <div className="panel__header__title">
+                      <div className="panel__header__title__label service-editor__execution__label--test">
+                        context
+                      </div>
+                    </div>
+                    <div className="service-multi-execution-editor__actions">
+                      {(servicePureExecutionState instanceof
+                        SingleServicePureExecutionState ||
+                        servicePureExecutionState instanceof
+                          MultiServicePureExecutionState) && (
+                        <button
+                          className="service-multi-execution-editor__action"
+                          tabIndex={-1}
+                          onClick={showChangeExecutionModal}
+                          title={`Switch to ${
+                            servicePureExecutionState instanceof
+                            SingleServicePureExecutionState
+                              ? 'multi execution'
+                              : 'single execution'
+                          }`}
+                        >
+                          {isMultiExecution ? (
+                            <ArrowsJoinIcon />
+                          ) : (
+                            <ArrowsSplitIcon />
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <div className="service-multi-execution-editor__actions">
-                    {(servicePureExecutionState instanceof
-                      SingleServicePureExecutionState ||
-                      servicePureExecutionState instanceof
-                        MultiServicePureExecutionState) && (
-                      <button
-                        className="service-multi-execution-editor__action"
-                        tabIndex={-1}
-                        onClick={showChangeExecutionModal}
-                        title={`Switch to ${
-                          servicePureExecutionState instanceof
-                          SingleServicePureExecutionState
-                            ? 'multi execution'
-                            : 'single execution'
-                        }`}
-                      >
-                        {isMultiExecution ? (
-                          <ArrowsJoinIcon />
-                        ) : (
-                          <ArrowsSplitIcon />
-                        )}
-                      </button>
+                  <div className="panel__content service-execution-editor__configuration__content">
+                    {renderExecutionEditor()}
+                    {servicePureExecutionState.showChangeExecModal && (
+                      <ChangeExecutionModal
+                        executionState={servicePureExecutionState}
+                        isReadOnly={
+                          servicePureExecutionState.serviceEditorState
+                            .isReadOnly
+                        }
+                      />
                     )}
                   </div>
-                </div>
-                <div className="panel__content service-execution-editor__configuration__content">
-                  {renderExecutionEditor()}
-                  {servicePureExecutionState.showChangeExecModal && (
-                    <ChangeExecutionModal
-                      executionState={servicePureExecutionState}
-                      isReadOnly={
-                        servicePureExecutionState.serviceEditorState.isReadOnly
-                      }
-                    />
-                  )}
-                </div>
-              </Panel>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    );
+                </Panel>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+      );
+    }
   },
 );
 
