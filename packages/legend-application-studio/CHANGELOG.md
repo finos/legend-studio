@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.3.2
+
+### Patch Changes
+
+- [#2538](https://github.com/finos/legend-studio/pull/2538) [`8960e7b82`](https://github.com/finos/legend-studio/commit/8960e7b8225da76de452ccf4829d552660132210) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Remove execution context editor for inline service queries
+
 ## 28.3.1
 
 ## 28.3.0
