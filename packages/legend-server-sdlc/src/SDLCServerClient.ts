@@ -54,6 +54,10 @@ import type { WorkflowJob } from './models/workflow/WorkflowJob.js';
 import type { SDLCServerFeaturesConfiguration } from './models/server/SDLCServerFeaturesConfiguration.js';
 import type { Platform } from './models/configuration/Platform.js';
 import type { ProjectConfigurationStatusReport } from './models/project/ProjectConfigurationStatus.js';
+import type {
+  AuthorizableProjectAction,
+  ProjectAccessRole,
+} from './models/project/ProjectAccess.js';
 
 enum SDLC_ACTIVITY_TRACE {
   IMPORT_PROJECT = 'import project',
@@ -221,6 +225,20 @@ export class SDLCServerClient extends AbstractServerClient {
       command,
     );
 
+  // ------------------------------------------- Project Access -------------------------------------------
+  private _authorizedActionProject = (projectId: string): string =>
+    `${this._project(projectId)}/authorizedActions`;
+  getAutorizedActions = (
+    projectId: string,
+  ): Promise<AuthorizableProjectAction[]> =>
+    this.get(this._authorizedActionProject(projectId));
+
+  private _acessRole = (projectId: string): string =>
+    `${this._project(projectId)}/userAccessRole/currentUser`;
+  getAccessRole = (
+    projectId: string,
+  ): Promise<PlainObject<ProjectAccessRole>> =>
+    this.get(this._acessRole(projectId));
   // ------------------------------------------- Workspace -------------------------------------------
 
   private _workspaces = (projectId: string): string =>
