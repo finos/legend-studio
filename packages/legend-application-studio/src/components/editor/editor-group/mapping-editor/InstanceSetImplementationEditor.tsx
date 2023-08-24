@@ -101,6 +101,9 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const { setImplementation, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
+    const [sourceElementToFilter, setSourceElementToFilter] = useState<
+      PackageableElement | undefined
+    >(undefined);
     const mappingEditorState =
       editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
     const instanceSetImplementationState =
@@ -122,6 +125,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const CHANGING_SOURCE_ON_EMBEDDED =
       'Changing source on mapping with embedded children will delete all its children';
     const showSourceSelectorModal = (): void => {
+      setSourceElementToFilter(undefined);
       if (!isReadOnly) {
         const embeddedSetImpls =
           getEmbeddedSetImplementations(setImplementation);
@@ -183,6 +187,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
             setSourceElementForSourceSelectorModal(allRecordTypes[0]);
           }
         } else if (droppedPackagableElement instanceof Database) {
+          setSourceElementToFilter(droppedPackagableElement);
           const relations = droppedPackagableElement.schemas.flatMap((schema) =>
             (schema.tables as (Table | View)[]).concat(schema.views),
           );
@@ -380,6 +385,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
                 setImplementation={setImplementation}
                 sourceElementToSelect={sourceElementForSourceSelectorModal}
                 closeModal={hideSourceSelectorModal}
+                sourceElementToFilter={sourceElementToFilter}
               />
             )}
           </PanelDropZone>
