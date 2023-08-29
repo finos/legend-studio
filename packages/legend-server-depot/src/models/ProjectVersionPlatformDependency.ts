@@ -15,13 +15,7 @@
  */
 
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import {
-  list,
-  primitive,
-  createModelSchema,
-  optional,
-  object,
-} from 'serializr';
+import { list, primitive, createModelSchema, optional } from 'serializr';
 import { ProjectDependencyCoordinates } from './ProjectVersionEntities.js';
 
 class PlatformsVersion {
@@ -42,7 +36,6 @@ export class ProjectVersionPlatformDependency {
   groupId!: string;
   artifactId!: string;
   versionId!: string;
-  platformsVersionSpecific?: string[] | undefined;
   platformsVersion: PlatformsVersion[] | undefined;
   dependency!: ProjectDependencyCoordinates;
   projectId?: string | undefined;
@@ -52,10 +45,9 @@ export class ProjectVersionPlatformDependency {
       groupId: primitive(),
       artifactId: primitive(),
       versionId: primitive(),
-      platformsVersionSpecific: usingModelSchema(
-        PlatformsVersion.serialization.schema,
+      platformsVersion: optional(
+        list(usingModelSchema(PlatformsVersion.serialization.schema)),
       ),
-      platformsVersion: optional(list(object(PlatformsVersion))),
       dependency: usingModelSchema(
         ProjectDependencyCoordinates.serialization.schema,
       ),
