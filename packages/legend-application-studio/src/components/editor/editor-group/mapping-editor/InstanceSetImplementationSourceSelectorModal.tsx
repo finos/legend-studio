@@ -32,6 +32,7 @@ import {
 import {
   type InstanceSetImplementation,
   type View,
+  type Database,
   Class,
   RootFlatDataRecordType,
   Table,
@@ -41,6 +42,7 @@ import {
   ViewExplicitReference,
   getAllRecordTypes,
   PackageableElement,
+  FlatData,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -120,41 +122,68 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
      */
     sourceElementToSelect: MappingElementSource;
     closeModal: () => void;
+    /**
+     *  use sourceElementToFilter to compose source element options dropdown
+     */
+    sourceElementToFilter?: PackageableElement | undefined;
   }) => {
     const {
       mappingEditorState,
       setImplementation,
       closeModal,
       sourceElementToSelect,
+      sourceElementToFilter,
     } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const options = (
-      editorStore.graphManagerState.usableClasses as MappingElementSource[]
-    )
-      .concat(
-        editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
-          getAllRecordTypes,
-        ),
-      )
-      .concat(
-        editorStore.graphManagerState.usableDatabases
-          .flatMap((e) =>
-            e.schemas.flatMap((schema) =>
-              (schema.tables as (Table | View)[]).concat(schema.views),
-            ),
+      sourceElementToFilter === undefined
+        ? (
+            editorStore.graphManagerState
+              .usableClasses as MappingElementSource[]
           )
-          .map((relation) => {
-            const mainTableAlias = new TableAlias();
-            mainTableAlias.relation =
-              relation instanceof Table
-                ? TableExplicitReference.create(relation)
-                : ViewExplicitReference.create(relation);
-            mainTableAlias.name = mainTableAlias.relation.value.name;
-            return mainTableAlias;
-          }),
-      )
-      .map(buildMappingElementSourceOption);
+            .concat(
+              editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
+                getAllRecordTypes,
+              ),
+            )
+            .concat(
+              editorStore.graphManagerState.usableDatabases
+                .flatMap((e) =>
+                  e.schemas.flatMap((schema) =>
+                    (schema.tables as (Table | View)[]).concat(schema.views),
+                  ),
+                )
+                .map((relation) => {
+                  const mainTableAlias = new TableAlias();
+                  mainTableAlias.relation =
+                    relation instanceof Table
+                      ? TableExplicitReference.create(relation)
+                      : ViewExplicitReference.create(relation);
+                  mainTableAlias.name = mainTableAlias.relation.value.name;
+                  return mainTableAlias;
+                }),
+            )
+        : sourceElementToFilter instanceof Class
+        ? ([sourceElementToFilter] as MappingElementSource[])
+        : sourceElementToFilter instanceof FlatData
+        ? [sourceElementToFilter].flatMap(getAllRecordTypes)
+        : [sourceElementToFilter as Database]
+            .flatMap((e) =>
+              e.schemas.flatMap((schema) =>
+                (schema.tables as (Table | View)[]).concat(schema.views),
+              ),
+            )
+            .map((relation) => {
+              const mainTableAlias = new TableAlias();
+              mainTableAlias.relation =
+                relation instanceof Table
+                  ? TableExplicitReference.create(relation)
+                  : ViewExplicitReference.create(relation);
+              mainTableAlias.name = mainTableAlias.relation.value.name;
+              return mainTableAlias;
+            })
+    ).map(buildMappingElementSourceOption);
     const sourceFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
