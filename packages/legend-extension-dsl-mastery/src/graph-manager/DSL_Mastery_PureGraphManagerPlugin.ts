@@ -23,6 +23,18 @@ import {
   type ElementObserver,
   type ObserverContext,
 } from '@finos/legend-graph';
+import { DataProvider } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_DataProvider.js';
+import { observe_DataProvider } from './action/changeDetection/DSL_DataProvider_ObserverHelper.js';
+import {
+  FTPConnection,
+  HTTPConnection,
+  KafkaConnection,
+} from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Connection.js';
+import {
+  observe_FTPConnection,
+  observe_HTTPConnection,
+  observe_KafkaConnection,
+} from './action/changeDetection/DSL_Connection_ObserverHelper.js';
 
 export class DSL_Mastery_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -37,6 +49,14 @@ export class DSL_Mastery_PureGraphManagerPlugin extends PureGraphManagerPlugin {
       ): PackageableElement | undefined => {
         if (element instanceof MasterRecordDefinition) {
           return observe_Mastery(element);
+        } else if (element instanceof DataProvider) {
+          return observe_DataProvider(element);
+        } else if (element instanceof KafkaConnection) {
+          return observe_KafkaConnection(element);
+        } else if (element instanceof FTPConnection) {
+          return observe_FTPConnection(element);
+        } else if (element instanceof HTTPConnection) {
+          return observe_HTTPConnection(element);
         }
         return undefined;
       },

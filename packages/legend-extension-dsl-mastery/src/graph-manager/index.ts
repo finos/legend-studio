@@ -20,11 +20,36 @@ export * from './DSL_Mastery_GraphManagerPreset.js';
 
 // metamodels
 export { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+export { DataProvider } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_DataProvider.js';
+export {
+  KafkaConnection,
+  FTPConnection,
+  HTTPConnection,
+} from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Connection.js';
 
 // v1 protocols
 export { V1_MasterRecordDefinition } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
+export { V1_DataProvider } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_DataProvider.js';
+export {
+  V1_KafkaConnection,
+  V1_FTPConnection,
+  V1_HTTPConnection,
+} from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
 
 // ---------- TRANSFORMATION ----------
 
-export { V1_transformMasterRecordDefinition } from './protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
-export { V1_buildMasterRecordDefinition } from './protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
+export {
+  V1_transformMasterRecordDefinition,
+  V1_transformDataProvider,
+  V1_transformKafkaConnection,
+  V1_transformFTPConnection,
+  V1_transformHTTPConnection,
+} from './protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
+
+export {
+  V1_buildMasterRecordDefinition,
+  V1_buildDataProvider,
+  V1_buildKafkaConnection,
+  V1_buildFTPConnection,
+  V1_buildHTTPConnection,
+} from './protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';

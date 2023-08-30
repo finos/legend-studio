@@ -15,9 +15,15 @@
  */
 
 import packageJson from '../../package.json' assert { type: 'json' };
-import { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import { MasterRecordDefinition } from './metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import type { Clazz } from '@finos/legend-shared';
 import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
+import { DataProvider } from './metamodel/pure/model/packageableElements/mastery/DSL_Mastery_DataProvider.js';
+import {
+  FTPConnection,
+  HTTPConnection,
+  KafkaConnection,
+} from './metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Connection.js';
 
 export class DSL_Mastery_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
@@ -25,6 +31,12 @@ export class DSL_Mastery_PureGraphPlugin extends PureGraphPlugin {
   }
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
-    return [MasterRecordDefinition];
+    return [
+      MasterRecordDefinition,
+      DataProvider,
+      KafkaConnection,
+      FTPConnection,
+      HTTPConnection,
+    ];
   }
 }

@@ -16,41 +16,41 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
-import type { DataProviderType } from './DSL_Mastery_DataProvider.js';
 
-export abstract class RuleScope implements Hashable {
-  abstract get hashCode(): string;
-}
+export abstract class AuthenticationStrategy implements Hashable {
+  credential?: CredentialSecret | undefined;
 
-export class RecordSourceScope extends RuleScope {
-  recordSourceId!: string;
-
-  override get hashCode(): string {
+  get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.RECORD_SOURCE_SCOPE,
-      this.recordSourceId,
+      MASTERY_HASH_STRUCTURE.MASTERY_AUTHENTICATION_STRATEGY,
+      this.credential ?? '',
     ]);
   }
 }
 
-export class DataProviderIdScope extends RuleScope {
-  dataProviderId!: string;
-
+export class NTLMAuthenticationStrategy extends AuthenticationStrategy {
   override get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.DATA_PROVIDER_ID_SCOPE,
-      this.dataProviderId,
+      MASTERY_HASH_STRUCTURE.NTLM_AUTHENTICATION_STRATEGY,
+      super.hashCode,
     ]);
   }
 }
 
-export class DataProviderTypeScope extends RuleScope {
-  dataProviderType!: DataProviderType;
+export class TokenAuthenticationStrategy extends AuthenticationStrategy {
+  tokenUrl!: string;
 
   override get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.DATA_PROVIDER_TYPE_SCOPE,
-      this.dataProviderType,
+      MASTERY_HASH_STRUCTURE.TOKEN_AUTHENTICATION_STRATEGY,
+      this.tokenUrl,
+      super.hashCode,
     ]);
+  }
+}
+
+export class CredentialSecret implements Hashable {
+  get hashCode(): string {
+    return hashArray([MASTERY_HASH_STRUCTURE.MASTERY_CREDENTIAL_SECRET]);
   }
 }

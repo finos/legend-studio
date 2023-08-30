@@ -19,8 +19,9 @@ import {
   ResolutionQuery,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_IdentityResolution.js';
 import {
+  type RecordSourceStatus,
+  RecordService,
   RecordSource,
-  RecordSourcePartition,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_RecordSource.js';
 import type { V1_MasterRecordDefinition } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import type {
@@ -28,10 +29,82 @@ import type {
   V1_ResolutionQuery,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_IdentityResolution.js';
 import type {
+  V1_RecordService,
   V1_RecordSource,
-  V1_RecordSourcePartition,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
-import { getOwnMasterRecordDefinition } from '../../../../../../DSL_Mastery_GraphManagerHelper.js';
+import {
+  getOwnDataProvider,
+  getOwnFTPConnection,
+  getOwnHTTPConnection,
+  getOwnKafkaConnection,
+  getOwnMasterRecordDefinition,
+} from '../../../../../../DSL_Mastery_GraphManagerHelper.js';
+import { UnsupportedOperationError } from '@finos/legend-shared';
+import { PropertyPath } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_PropertyPath.js';
+import type { V1_PropertyPath } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_PropertyPath.js';
+import type {
+  DataProvider,
+  DataProviderType,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_DataProvider.js';
+import {
+  type V1_FileConnection,
+  type V1_KafkaConnection,
+  type V1_ProxyConfiguration,
+  V1_FTPConnection,
+  V1_HTTPConnection,
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
+import {
+  type FileConnection,
+  type FTPConnection,
+  type HTTPConnection,
+  type KafkaConnection,
+  ProxyConfiguration,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Connection.js';
+import {
+  type V1_AcquisitionProtocol,
+  V1_FileAcquisitionProtocol,
+  V1_KafkaAcquisitionProtocol,
+  V1_LegendServiceAcquisitionProtocol,
+  V1_RestAcquisitionProtocol,
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AcquisitionProtocol.js';
+import {
+  type AcquisitionProtocol,
+  type FileType,
+  type KafkaDataType,
+  FileAcquisitionProtocol,
+  KafkaAcquisitionProtocol,
+  LegendServiceAcquisitionProtocol,
+  RestAcquisitionProtocol,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AcquisitionProtocol.js';
+import type { V1_DataProvider } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_DataProvider.js';
+import {
+  type Day,
+  type Frequency,
+  type Month,
+  type Trigger,
+  CronTrigger,
+  ManualTrigger,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Trigger.js';
+import {
+  type V1_Trigger,
+  V1_CronTrigger,
+  V1_ManualTrigger,
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Trigger.js';
+import type { DSL_Mastery_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mastery_PureProtocolProcessorPlugin_Extension.js';
+import type { V1_Authorization } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Authorization.js';
+import type { Authorization } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Authorization.js';
+import {
+  type V1_AuthenticationStrategy,
+  type V1_CredentialSecret,
+  V1_NTLMAuthenticationStrategy,
+  V1_TokenAuthenticationStrategy,
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+import {
+  type AuthenticationStrategy,
+  type CredentialSecret,
+  NTLMAuthenticationStrategy,
+  TokenAuthenticationStrategy,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AuthenticationStrategy.js';
 import {
   type PrecedenceRule,
   type RuleAction,
@@ -48,9 +121,6 @@ import {
   type V1_SourcePrecedenceRule,
   V1_RuleType,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_PrecedenceRule.js';
-import { UnsupportedOperationError } from '@finos/legend-shared';
-import { PropertyPath } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_PropertyPath.js';
-import type { V1_PropertyPath } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_PropertyPath.js';
 import {
   type RuleScope,
   DataProviderIdScope,
@@ -69,20 +139,371 @@ import {
   V1_buildFullPath,
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
-import type { DataProviderType } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_DataProviderType.js';
+
+/**********
+ * data provider
+ **********/
+
+export const V1_buildDataProvider = (
+  element: V1_DataProvider,
+  context: V1_GraphBuilderContext,
+): DataProvider => {
+  const path = V1_buildFullPath(element.package, element.name);
+  const dataProvider = getOwnDataProvider(path, context.currentSubGraph);
+  dataProvider.dataProviderId = element.dataProviderId;
+  dataProvider.dataProviderType =
+    element.dataProviderType.valueOf() as DataProviderType;
+  return dataProvider;
+};
+
+/**********
+ * trigger
+ **********/
+
+export const V1_buildCronTrigger = (
+  element: V1_CronTrigger,
+  context: V1_GraphBuilderContext,
+): CronTrigger => {
+  const cronTrigger = new CronTrigger();
+  cronTrigger.minute = element.minute;
+  cronTrigger.hour = element.hour;
+  cronTrigger.days = element.days?.valueOf() as Day[];
+  cronTrigger.month = element.month?.valueOf() as Month;
+  cronTrigger.dayOfMonth = element.dayOfMonth;
+  cronTrigger.timeZone = element.timeZone;
+  cronTrigger.frequency = element.frequency?.valueOf() as Frequency;
+  return cronTrigger;
+};
+
+export const V1_buildTrigger = (
+  element: V1_Trigger,
+  context: V1_GraphBuilderContext,
+): Trigger => {
+  switch (element.constructor) {
+    case V1_ManualTrigger:
+      return new ManualTrigger();
+    case V1_CronTrigger:
+      return V1_buildCronTrigger(element as V1_CronTrigger, context);
+    default:
+      throw new UnsupportedOperationError(
+        `Unsupported trigger '${typeof element}'`,
+      );
+  }
+};
+
+/**********
+ * credential secret
+ **********/
+
+export const V1_buildCredentialSecret = (
+  element: V1_CredentialSecret | undefined,
+  context: V1_GraphBuilderContext,
+): CredentialSecret | undefined => {
+  if (element === undefined) {
+    return element;
+  }
+  const extraCredentialSecretBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraCredentialSecretBuilders?.() ?? [],
+  );
+  for (const builder of extraCredentialSecretBuilders) {
+    const metamodel = builder(element, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Unsupported credential secret '${typeof element}'`,
+  );
+};
+
+/**********
+ * authentication strategy
+ **********/
+
+export const V1_buildNTLMAuthenticationStrategy = (
+  element: V1_NTLMAuthenticationStrategy,
+  context: V1_GraphBuilderContext,
+): NTLMAuthenticationStrategy => {
+  const ntlmAuthenticationStrategy = new NTLMAuthenticationStrategy();
+  ntlmAuthenticationStrategy.credential = V1_buildCredentialSecret(
+    element.credential as V1_CredentialSecret,
+    context,
+  );
+  return ntlmAuthenticationStrategy;
+};
+
+export const V1_buildTokenAuthenticationStrategy = (
+  element: V1_TokenAuthenticationStrategy,
+  context: V1_GraphBuilderContext,
+): TokenAuthenticationStrategy => {
+  const tokenAuthenticationStrategy = new TokenAuthenticationStrategy();
+  tokenAuthenticationStrategy.credential = V1_buildCredentialSecret(
+    element.credential as V1_CredentialSecret,
+    context,
+  );
+  tokenAuthenticationStrategy.tokenUrl = element.tokenUrl;
+  return tokenAuthenticationStrategy;
+};
+
+export const V1_buildAuthenticationStrategy = (
+  element: V1_AuthenticationStrategy | undefined,
+  context: V1_GraphBuilderContext,
+): AuthenticationStrategy | undefined => {
+  if (element === undefined) {
+    return element;
+  }
+  switch (element.constructor) {
+    case V1_NTLMAuthenticationStrategy:
+      return V1_buildNTLMAuthenticationStrategy(
+        element as V1_NTLMAuthenticationStrategy,
+        context,
+      );
+    case V1_TokenAuthenticationStrategy:
+      return V1_buildTokenAuthenticationStrategy(
+        element as V1_TokenAuthenticationStrategy,
+        context,
+      );
+    default: {
+      const extraAuthenticationStrategyBuilders =
+        context.extensions.plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+            ).V1_getExtraAuthenticationStrategyBuilders?.() ?? [],
+        );
+      for (const builder of extraAuthenticationStrategyBuilders) {
+        const metamodel = builder(element, context);
+        if (metamodel) {
+          return metamodel;
+        }
+      }
+      throw new UnsupportedOperationError(
+        `Unsupported authentication strategy '${typeof element}'`,
+      );
+    }
+  }
+};
+
+/**********
+ * connection
+ **********/
+
+export const V1_buildProxyConfiguration = (
+  element: V1_ProxyConfiguration,
+  context: V1_GraphBuilderContext,
+): ProxyConfiguration => {
+  const proxyConfiguration = new ProxyConfiguration();
+  proxyConfiguration.authentication = V1_buildAuthenticationStrategy(
+    element.authentication,
+    context,
+  );
+  proxyConfiguration.host = element.host;
+  proxyConfiguration.port = element.port;
+  return proxyConfiguration;
+};
+
+export const V1_buildFTPConnection = (
+  element: V1_FTPConnection,
+  context: V1_GraphBuilderContext,
+): FTPConnection => {
+  const path = V1_buildFullPath(element.package, element.name);
+  const ftpConnection = getOwnFTPConnection(path, context.currentSubGraph);
+  ftpConnection.authentication = V1_buildAuthenticationStrategy(
+    element.authentication,
+    context,
+  );
+  ftpConnection.host = element.host;
+  ftpConnection.port = element.port;
+  ftpConnection.secure = element.secure;
+  return ftpConnection;
+};
+
+export const V1_buildHTTPConnection = (
+  element: V1_HTTPConnection,
+  context: V1_GraphBuilderContext,
+): HTTPConnection => {
+  const path = V1_buildFullPath(element.package, element.name);
+  const httpConnection = getOwnHTTPConnection(path, context.currentSubGraph);
+  httpConnection.authentication = V1_buildAuthenticationStrategy(
+    element.authentication,
+    context,
+  );
+  httpConnection.proxy = element.proxy
+    ? V1_buildProxyConfiguration(element.proxy, context)
+    : undefined;
+  httpConnection.url = element.url;
+  return httpConnection;
+};
+
+export const V1_buildFileConnection = (
+  element: V1_FileConnection,
+  context: V1_GraphBuilderContext,
+): FileConnection => {
+  switch (element.constructor) {
+    case V1_FTPConnection:
+      return V1_buildFTPConnection(element as V1_FTPConnection, context);
+    case V1_HTTPConnection:
+      return V1_buildHTTPConnection(element as V1_HTTPConnection, context);
+    default:
+      throw new UnsupportedOperationError(
+        `Unsupported file connection '${typeof element}'`,
+      );
+  }
+};
+
+export const V1_buildKafkaConnection = (
+  element: V1_KafkaConnection,
+  context: V1_GraphBuilderContext,
+): KafkaConnection => {
+  const path = V1_buildFullPath(element.package, element.name);
+  const kafkaConnection = getOwnKafkaConnection(path, context.currentSubGraph);
+  kafkaConnection.authentication = V1_buildAuthenticationStrategy(
+    element.authentication,
+    context,
+  );
+  kafkaConnection.topicName = element.topicName;
+  kafkaConnection.topicUrls = element.topicUrls;
+  return kafkaConnection;
+};
+
+/**********
+ * acquisition protocol
+ **********/
+
+export const V1_buildLegendServiceAcquisitionProtocol = (
+  element: V1_LegendServiceAcquisitionProtocol,
+  context: V1_GraphBuilderContext,
+): LegendServiceAcquisitionProtocol => {
+  const legendServiceAcquisitionProtocol =
+    new LegendServiceAcquisitionProtocol();
+  legendServiceAcquisitionProtocol.service = element.service;
+  return legendServiceAcquisitionProtocol;
+};
+
+export const V1_buildFileAcquisitionProtocol = (
+  element: V1_FileAcquisitionProtocol,
+  context: V1_GraphBuilderContext,
+): FileAcquisitionProtocol => {
+  const fileAcquisitionProtocol = new FileAcquisitionProtocol();
+  fileAcquisitionProtocol.connection = element.connection;
+  fileAcquisitionProtocol.filePath = element.filePath;
+  fileAcquisitionProtocol.fileType = element.fileType.valueOf() as FileType;
+  fileAcquisitionProtocol.fileSplittingKeys = element.fileSplittingKeys;
+  fileAcquisitionProtocol.headerLines = element.headerLines;
+  fileAcquisitionProtocol.recordsKey = element.recordsKey;
+  return fileAcquisitionProtocol;
+};
+
+export const V1_buildKafkaAcquisitionProtocol = (
+  element: V1_KafkaAcquisitionProtocol,
+  context: V1_GraphBuilderContext,
+): KafkaAcquisitionProtocol => {
+  const kafkaAcquisitionProtocol = new KafkaAcquisitionProtocol();
+  kafkaAcquisitionProtocol.connection = element.connection;
+  kafkaAcquisitionProtocol.kafkaDataType =
+    element.kafkaDataType.valueOf() as KafkaDataType;
+  kafkaAcquisitionProtocol.recordTag = element.recordTag;
+  return kafkaAcquisitionProtocol;
+};
+
+export const V1_buildRestAcquisitionProtocol = (
+  element: V1_RestAcquisitionProtocol,
+  context: V1_GraphBuilderContext,
+): RestAcquisitionProtocol => new RestAcquisitionProtocol();
+
+export const V1_buildAcquisitionProtocol = (
+  element: V1_AcquisitionProtocol,
+  context: V1_GraphBuilderContext,
+): AcquisitionProtocol => {
+  switch (element.constructor) {
+    case V1_LegendServiceAcquisitionProtocol:
+      return V1_buildLegendServiceAcquisitionProtocol(
+        element as V1_LegendServiceAcquisitionProtocol,
+        context,
+      );
+    case V1_FileAcquisitionProtocol:
+      return V1_buildFileAcquisitionProtocol(
+        element as V1_FileAcquisitionProtocol,
+        context,
+      );
+    case V1_KafkaAcquisitionProtocol:
+      return V1_buildKafkaAcquisitionProtocol(
+        element as V1_KafkaAcquisitionProtocol,
+        context,
+      );
+    case V1_RestAcquisitionProtocol:
+      return V1_buildRestAcquisitionProtocol(
+        element as V1_RestAcquisitionProtocol,
+        context,
+      );
+    default: {
+      const extraAcquisitionProtocolBuilders =
+        context.extensions.plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+            ).V1_getExtraAcquisitionProtocolBuilders?.() ?? [],
+        );
+      for (const builder of extraAcquisitionProtocolBuilders) {
+        const metamodel = builder(element, context);
+        if (metamodel) {
+          return metamodel;
+        }
+      }
+      throw new UnsupportedOperationError(
+        `Unsupported acquisition protocol '${typeof element}'`,
+      );
+    }
+  }
+};
+
+/**********
+ * authorization
+ **********/
+
+export const V1_buildAuthorization = (
+  element: V1_Authorization | undefined,
+  context: V1_GraphBuilderContext,
+): Authorization | undefined => {
+  if (element === undefined) {
+    return element;
+  }
+  const extraAuthorizationBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAuthorizationBuilders?.() ?? [],
+  );
+  for (const builder of extraAuthorizationBuilders) {
+    const metamodel = builder(element, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Unsupported authorization '${typeof element}'`,
+  );
+};
 
 /**********
  * sources
  **********/
 
-export const V1_buildRecordSourcePartition = (
-  protocol: V1_RecordSourcePartition,
+export const V1_buildRecordService = (
+  protocol: V1_RecordService,
   context: V1_GraphBuilderContext,
-): RecordSourcePartition => {
-  const recordSourcePartition = new RecordSourcePartition();
-  recordSourcePartition.id = protocol.id;
-  recordSourcePartition.tags = protocol.tags;
-  return recordSourcePartition;
+): RecordService => {
+  const recordService = new RecordService();
+  recordService.parseService = protocol.parseService;
+  recordService.transformService = protocol.transformService;
+  recordService.acquisitionProtocol = V1_buildAcquisitionProtocol(
+    protocol.acquisitionProtocol,
+    context,
+  );
+  return recordService;
 };
 
 export const V1_buildRecordSource = (
@@ -91,18 +512,23 @@ export const V1_buildRecordSource = (
 ): RecordSource => {
   const recordSource = new RecordSource();
   recordSource.id = protocol.id;
-  recordSource.status = protocol.status;
+  recordSource.status = protocol.status.valueOf() as RecordSourceStatus;
   recordSource.description = protocol.description;
-  recordSource.partitions = protocol.partitions.map((p) =>
-    V1_buildRecordSourcePartition(p, context),
-  );
-  recordSource.parseService = protocol.parseService;
-  recordSource.transformService = protocol.transformService;
   recordSource.sequentialData = protocol.sequentialData;
   recordSource.stagedLoad = protocol.stagedLoad;
   recordSource.createPermitted = protocol.createPermitted;
   recordSource.createBlockedException = protocol.createBlockedException;
-  recordSource.tags = protocol.tags;
+  recordSource.allowFieldDelete = protocol.allowFieldDelete;
+  recordSource.recordService = V1_buildRecordService(
+    protocol.recordService,
+    context,
+  );
+  recordSource.trigger = V1_buildTrigger(protocol.trigger, context);
+  recordSource.authorization = V1_buildAuthorization(
+    protocol.authorization,
+    context,
+  );
+  recordSource.dataProvider = protocol.dataProvider;
   return recordSource;
 };
 
@@ -337,4 +763,6 @@ export const V1_buildMasterRecordDefinition = (
   masterRecordDefinition.sources = protocol.sources.map((s) =>
     V1_buildRecordSource(s, context),
   );
+  masterRecordDefinition.postCurationEnrichmentService =
+    protocol.postCurationEnrichmentService;
 };

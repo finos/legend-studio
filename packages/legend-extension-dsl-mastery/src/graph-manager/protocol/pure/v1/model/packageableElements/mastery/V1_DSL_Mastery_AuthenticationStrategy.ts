@@ -16,48 +16,41 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
-import type { V1_DataProviderType } from './V1_DSL_Mastery_DataProvider.js';
 
-export abstract class V1_RuleScope implements Hashable {
-  _type!: V1_RuleScopeType;
-  abstract get hashCode(): string;
-}
+export abstract class V1_AuthenticationStrategy implements Hashable {
+  credential?: V1_CredentialSecret | undefined;
 
-export class V1_RecordSourceScope extends V1_RuleScope {
-  recordSourceId!: string;
-
-  override get hashCode(): string {
+  get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.RECORD_SOURCE_SCOPE,
-      this.recordSourceId,
+      MASTERY_HASH_STRUCTURE.MASTERY_AUTHENTICATION_STRATEGY,
+      this.credential ?? '',
     ]);
   }
 }
 
-export class V1_DataProviderIdScope extends V1_RuleScope {
-  dataProviderId!: string;
-
+export class V1_NTLMAuthenticationStrategy extends V1_AuthenticationStrategy {
   override get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.DATA_PROVIDER_ID_SCOPE,
-      this.dataProviderId,
+      MASTERY_HASH_STRUCTURE.NTLM_AUTHENTICATION_STRATEGY,
+      super.hashCode,
     ]);
   }
 }
 
-export class V1_DataProviderTypeScope extends V1_RuleScope {
-  dataProviderType!: V1_DataProviderType;
+export class V1_TokenAuthenticationStrategy extends V1_AuthenticationStrategy {
+  tokenUrl!: string;
 
   override get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.DATA_PROVIDER_TYPE_SCOPE,
-      this.dataProviderType,
+      MASTERY_HASH_STRUCTURE.TOKEN_AUTHENTICATION_STRATEGY,
+      this.tokenUrl,
+      super.hashCode,
     ]);
   }
 }
 
-export enum V1_RuleScopeType {
-  DATA_PROVIDER_ID_SCOPE = 'dataProviderIdScope',
-  DATA_PROVIDER_TYPE_SCOPE = 'dataProviderTypeScope',
-  RECORD_SOURCE_SCOPE = 'recordSourceScope',
+export class V1_CredentialSecret implements Hashable {
+  get hashCode(): string {
+    return hashArray([MASTERY_HASH_STRUCTURE.MASTERY_CREDENTIAL_SECRET]);
+  }
 }

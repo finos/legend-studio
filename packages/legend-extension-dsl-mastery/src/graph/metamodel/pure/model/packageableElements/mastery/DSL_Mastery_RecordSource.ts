@@ -16,19 +16,23 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
+import type { AcquisitionProtocol } from './DSL_Mastery_AcquisitionProtocol.js';
+import type { Trigger } from './DSL_Mastery_Trigger.js';
+import type { Authorization } from './DSL_Mastery_Authorization.js';
 
 export class RecordSource implements Hashable {
   id!: string;
-  status!: string;
+  status!: RecordSourceStatus;
   description!: string;
-  partitions!: RecordSourcePartition[];
-  parseService?: string | undefined;
-  transformService!: string;
+  recordService!: RecordService;
   sequentialData?: boolean | undefined;
   stagedLoad?: boolean | undefined;
   createPermitted?: boolean | undefined;
   createBlockedException?: boolean | undefined;
-  tags: string[] = [];
+  allowFieldDelete?: boolean | undefined;
+  trigger!: Trigger;
+  authorization?: Authorization | undefined;
+  dataProvider?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -36,27 +40,37 @@ export class RecordSource implements Hashable {
       this.id,
       this.status,
       this.description,
-      hashArray(this.partitions),
-      this.parseService ?? '',
-      this.transformService,
       this.sequentialData?.toString() ?? '',
       this.stagedLoad?.toString() ?? '',
       this.createPermitted?.toString() ?? '',
       this.createBlockedException?.toString() ?? '',
-      hashArray(this.tags),
+      this.allowFieldDelete?.toString() ?? '',
+      this.trigger,
+      this.authorization ?? '',
+      this.dataProvider ?? '',
     ]);
   }
 }
 
-export class RecordSourcePartition implements Hashable {
-  id!: string;
-  tags: string[] = [];
+export class RecordService implements Hashable {
+  acquisitionProtocol!: AcquisitionProtocol;
+  parseService?: string | undefined;
+  transformService!: string;
 
   get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.RECORD_SOURCE_PARTITION,
-      this.id,
-      hashArray(this.tags),
+      MASTERY_HASH_STRUCTURE.RECORD_SERVICE,
+      this.acquisitionProtocol,
+      this.parseService ?? '',
+      this.transformService,
     ]);
   }
+}
+
+export enum RecordSourceStatus {
+  Development,
+  TestOnly,
+  Production,
+  Dormant,
+  Decommissioned,
 }
