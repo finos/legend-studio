@@ -170,9 +170,13 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                   strict={true}
                   path={[
                     LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE,
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_GROUP_WORKSPACE,
                     LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY,
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_GROUP_WORKSPACE_ENTITY,
                     LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE,
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_WORKSPACE,
                     LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY,
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_WORKSPACE_ENTITY,
                   ]}
                   component={
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -185,7 +189,9 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                     // root path will lead to setup page (home page)
                     '/',
                     LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE,
+                    LEGEND_STUDIO_ROUTE_PATTERN.SETUP_PATCH_WORKSPACE,
                     LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
+                    LEGEND_STUDIO_ROUTE_PATTERN.SETUP_PATCH_GROUP_WORKSPACE,
                   ]}
                   component={
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

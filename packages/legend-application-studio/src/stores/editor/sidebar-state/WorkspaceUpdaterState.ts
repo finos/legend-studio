@@ -190,6 +190,7 @@ export class WorkspaceUpdaterState {
       this.sdlcState.isWorkspaceOutdated =
         (yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
         )) as boolean;
 
@@ -277,6 +278,7 @@ export class WorkspaceUpdaterState {
       const workspaceUpdateReport =
         (yield this.editorStore.sdlcServerClient.updateWorkspace(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.logService.info(
@@ -324,6 +326,7 @@ export class WorkspaceUpdaterState {
       const workspaceBaseRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           RevisionAlias.BASE,
         )) as PlainObject<Revision>,
@@ -331,6 +334,7 @@ export class WorkspaceUpdaterState {
       const baseReviewObj = getNullableFirstEntry(
         (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           {
             state: ReviewState.COMMITTED,
             revisionIds: [workspaceBaseRevision.id],
@@ -344,6 +348,7 @@ export class WorkspaceUpdaterState {
       this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = (
         (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           {
             state: ReviewState.COMMITTED,
             since: baseReview

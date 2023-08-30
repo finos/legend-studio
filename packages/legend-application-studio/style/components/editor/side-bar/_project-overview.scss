@@ -96,7 +96,7 @@
   }
 
   &__panel {
-    width: calc(100% - 2.8rem);
+    width: calc(100% - 3rem);
   }
 
   &__panel__content {
@@ -106,13 +106,65 @@
   &__release,
   &__versions,
   &__workspaces,
-  &__overview {
+  &__overview,
+  &__patch {
     height: 100%;
     background: var(--color-dark-grey-100);
   }
 
+  &__patch {
+    &__create {
+      height: 33rem;
+    }
+
+    &__create--progress {
+      height: 35rem;
+    }
+
+    &__content__progress-msg {
+      margin: 1rem;
+      line-height: 2rem;
+      color: var(--color-dark-grey-500);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    &__source__version__selector {
+      width: 100%;
+    }
+
+    &__create__button,
+    &__release__button {
+      margin-left: 3rem;
+      margin-top: 1rem;
+    }
+
+    &__workspace__type__button {
+      margin-left: 1rem;
+    }
+
+    &__release {
+      width: 100%;
+      height: 36rem;
+    }
+
+    &__release__content {
+      display: flex;
+      background: var(--color-dark-grey-85);
+      border: 0.1rem solid var(--color-dark-grey-280);
+      border-radius: 0.2rem;
+      margin: 0 2.7rem;
+      padding: 1rem;
+      color: var(--color-light-grey-400);
+      line-height: 2rem;
+    }
+  }
+
   &__workspace__viewer {
     @include flexVCenter;
+
+    width: 100%;
 
     &-icon {
       display: flex;
@@ -122,6 +174,23 @@
       min-width: 1.7rem;
       height: 1.4rem;
       margin-right: 0.5rem;
+    }
+
+    &__label {
+      width: calc(100% - 1rem);
+    }
+
+    &__source {
+      @include flexCenter;
+
+      height: 1.8rem;
+      background: var(--color-dark-grey-500);
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      color: var(--color-dark-grey-200);
+      font-weight: 500;
+      width: 7rem;
+      padding: 0.2rem;
     }
   }
 
@@ -136,11 +205,11 @@
   }
 
   &__release__info {
-    height: calc(100% - 10.4rem);
+    height: calc(100% - 30.4rem);
   }
 
   &__release__info__reviews {
-    height: calc(100% - 6rem);
+    height: calc(100% - 26rem);
   }
 
   &__release__info__current-version {
@@ -210,9 +279,22 @@
   }
 
   &__release__editor {
-    width: 100%;
     padding: 0.5rem;
-    display: flex;
+
+    &__project {
+      width: 100%;
+      display: flex;
+    }
+
+    &__title {
+      @include flexVCenter;
+
+      font-weight: 300;
+      color: var(--color-light-grey-50);
+      margin-bottom: 0.5rem;
+      line-height: 1.8rem;
+      cursor: default;
+    }
 
     &__input {
       @include flexVCenter;
@@ -240,6 +322,11 @@
       min-width: 2.8rem;
       font-weight: 500;
       color: var(--color-light-grey-250);
+    }
+
+    &__patch__action {
+      width: 10rem;
+      margin-top: 0.5rem;
     }
 
     &__action + &__action {

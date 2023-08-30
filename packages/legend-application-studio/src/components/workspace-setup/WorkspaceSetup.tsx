@@ -62,6 +62,8 @@ const WorkspaceSetupStoreContext = createContext<
   WorkspaceSetupStore | undefined
 >(undefined);
 
+export const DEFAULT_WORKSPACE_SOURCE = 'HEAD';
+
 const WorkspaceSetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
@@ -175,6 +177,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
         applicationStore.navigationService.navigator.goToLocation(
           generateEditorRoute(
             setupStore.currentProject.projectId,
+            setupStore.currentWorkspace.source,
             setupStore.currentWorkspace.workspaceId,
             setupStore.currentWorkspace.workspaceType,
           ),

@@ -501,7 +501,12 @@ export class EditorStore implements CommandRegistrar {
     if (entityPath) {
       this.initialEntityPath = entityPath;
       this.applicationStore.navigationService.navigator.updateCurrentLocation(
-        generateEditorRoute(projectId, workspaceId, workspaceType),
+        generateEditorRoute(
+          projectId,
+          params.patchReleaseVersionId,
+          workspaceId,
+          workspaceType,
+        ),
       );
     }
   }
@@ -513,6 +518,7 @@ export class EditorStore implements CommandRegistrar {
    */
   *initialize(
     projectId: string,
+    patchReleaseVersionId: string | undefined,
     workspaceId: string,
     workspaceType: WorkspaceType,
   ): GeneratorFn<void> {
@@ -577,7 +583,7 @@ export class EditorStore implements CommandRegistrar {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigationService.navigator.goToLocation(
-                generateSetupRoute(undefined),
+                generateSetupRoute(undefined, undefined),
               );
             },
           },
@@ -587,8 +593,14 @@ export class EditorStore implements CommandRegistrar {
       return;
     }
     yield flowResult(
+      this.sdlcState.fetchCurrentPatch(projectId, patchReleaseVersionId, {
+        suppressNotification: true,
+      }),
+    );
+    yield flowResult(
       this.sdlcState.fetchCurrentWorkspace(
         projectId,
+        patchReleaseVersionId,
         workspaceId,
         workspaceType,
         {
@@ -611,6 +623,7 @@ export class EditorStore implements CommandRegistrar {
           });
           const workspace = await this.sdlcServerClient.createWorkspace(
             projectId,
+            patchReleaseVersionId,
             workspaceId,
             workspaceType,
           );
@@ -669,6 +682,7 @@ export class EditorStore implements CommandRegistrar {
     yield Promise.all([
       this.sdlcState.fetchCurrentRevision(
         projectId,
+        patchReleaseVersionId,
         this.sdlcState.activeWorkspace,
       ),
       this.graphManagerState.graphManager.initialize(
@@ -710,9 +724,12 @@ export class EditorStore implements CommandRegistrar {
 
   private *initStandardMode(): GeneratorFn<void> {
     const projectId = this.sdlcState.activeProject.projectId;
+    const patchReleaseVersionId =
+      this.sdlcState.activePatch?.patchReleaseVersionId.id;
     const activeWorkspace = this.sdlcState.activeWorkspace;
     const projectConfiguration = (yield this.sdlcServerClient.getConfiguration(
       projectId,
+      patchReleaseVersionId,
       activeWorkspace,
     )) as PlainObject<ProjectConfiguration>;
     this.projectConfigurationEditorState.setProjectConfiguration(
@@ -788,9 +805,12 @@ export class EditorStore implements CommandRegistrar {
     try {
       // fetch workspace entities and config at the same time
       const projectId = this.sdlcState.activeProject.projectId;
+      const patchReleaseVersionId =
+        this.sdlcState.activePatch?.patchReleaseVersionId.id;
       const activeWorkspace = this.sdlcState.activeWorkspace;
       entities = (yield this.sdlcServerClient.getEntities(
         projectId,
+        patchReleaseVersionId,
         activeWorkspace,
       )) as Entity[];
       this.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(

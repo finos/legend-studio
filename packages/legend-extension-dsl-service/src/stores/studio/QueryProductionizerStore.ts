@@ -466,6 +466,7 @@ export class QueryProductionizerStore {
       this.currentProjectConfigurationStatus =
         (yield fetchProjectConfigurationStatus(
           project.projectId,
+          undefined,
           this.applicationStore,
           this.sdlcServerClient,
         )) as ProjectConfigurationStatus;
@@ -473,6 +474,7 @@ export class QueryProductionizerStore {
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           project.projectId,
+          undefined,
         )) as Workspace[]
       ).map((workspace) => workspace.workspaceId);
       this.groupWorkspaces = (
@@ -539,8 +541,16 @@ export class QueryProductionizerStore {
         this.graphManagerState,
       );
       const projectData = await Promise.all([
-        this.sdlcServerClient.getEntities(project.projectId, undefined),
-        this.sdlcServerClient.getConfiguration(project.projectId, undefined),
+        this.sdlcServerClient.getEntities(
+          project.projectId,
+          undefined,
+          undefined,
+        ),
+        this.sdlcServerClient.getConfiguration(
+          project.projectId,
+          undefined,
+          undefined,
+        ),
       ]);
       const [currentProjectEntities, currentProjectConfiguration] = [
         projectData[0] as unknown as Entity[],
@@ -622,6 +632,7 @@ export class QueryProductionizerStore {
           workspace = Workspace.serialization.fromJson(
             await this.sdlcServerClient.createWorkspace(
               project.projectId,
+              undefined,
               this.workspaceName,
               WorkspaceType.GROUP,
             ),
@@ -645,6 +656,7 @@ export class QueryProductionizerStore {
               dependenciesToAdd;
             await this.sdlcServerClient.updateConfiguration(
               project.projectId,
+              undefined,
               workspace,
               UpdateProjectConfigurationCommand.serialization.toJson(
                 projectConfigurationUpdateCommand,
@@ -660,6 +672,7 @@ export class QueryProductionizerStore {
           });
           await this.sdlcServerClient.performEntityChanges(
             project.projectId,
+            undefined,
             workspace,
             {
               message: 'productionize-query: add service element',
@@ -692,6 +705,7 @@ export class QueryProductionizerStore {
                       this.applicationStore.navigationService.navigator.goToLocation(
                         generateEditorRoute(
                           project.projectId,
+                          undefined,
                           this.workspaceName,
                           WorkspaceType.GROUP,
                         ),
@@ -722,6 +736,7 @@ export class QueryProductionizerStore {
                       this.applicationStore.navigationService.navigator.goToLocation(
                         generateEditorRoute(
                           project.projectId,
+                          undefined,
                           this.workspaceName,
                           WorkspaceType.GROUP,
                         ),
@@ -741,6 +756,7 @@ export class QueryProductionizerStore {
             // notify if we fail to delete the left-over workspace?
             await this.sdlcServerClient.deleteWorkspace(
               project.projectId,
+              undefined,
               workspace,
             );
           }

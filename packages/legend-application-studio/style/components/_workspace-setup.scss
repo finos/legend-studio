@@ -114,4 +114,22 @@
       margin-left: 0.5rem;
     }
   }
+
+  &__filter__selector {
+    width: 100%;
+    background: var(--color-dark-grey-250);
+
+    &__header__label {
+      @include flexVCenter;
+
+      font-weight: 500;
+      color: var(--color-light-grey-50);
+      background: var(--color-dark-grey-300);
+      padding: 0 1rem;
+      line-height: 2rem;
+      font-size: 1.2rem;
+      cursor: default;
+      user-select: none;
+    }
+  }
 }

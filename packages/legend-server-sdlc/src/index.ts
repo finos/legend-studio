@@ -41,6 +41,7 @@ export * from './models/workspace/WorkspaceUpdateReport.js';
 export * from './models/revision/Revision.js';
 
 export * from './models/version/Version.js';
+export * from './models/version/VersionId.js';
 export * from './models/version/VersionCommands.js';
 
 export * from './models/configuration/ProjectDependency.js';
@@ -51,5 +52,7 @@ export * from './models/configuration/Platform.js';
 export * from './models/configuration/PlatformConfiguration.js';
 
 export * from './models/User.js';
+
+export * from './models/patch/Patch.js';
 
 export { SDLCServerClient } from './SDLCServerClient.js';

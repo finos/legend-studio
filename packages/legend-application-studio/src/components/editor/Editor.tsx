@@ -58,6 +58,7 @@ export const Editor = withEditorStore(
   observer(() => {
     const params = useParams<WorkspaceEditorPathParams>();
     const projectId = params.projectId;
+    const patchReleaseVersionId = params.patchReleaseVersionId;
     const workspaceType = params.groupWorkspaceId
       ? WorkspaceType.GROUP
       : WorkspaceType.USER;
@@ -130,9 +131,21 @@ export const Editor = withEditorStore(
     }, [editorStore, params]);
     useEffect(() => {
       flowResult(
-        editorStore.initialize(projectId, workspaceId, workspaceType),
+        editorStore.initialize(
+          projectId,
+          patchReleaseVersionId,
+          workspaceId,
+          workspaceType,
+        ),
       ).catch(applicationStore.alertUnhandledError);
-    }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
+    }, [
+      editorStore,
+      patchReleaseVersionId,
+      applicationStore,
+      projectId,
+      workspaceId,
+      workspaceType,
+    ]);
 
     useEffect(() => {
       applicationStore.navigationService.navigator.blockNavigation(

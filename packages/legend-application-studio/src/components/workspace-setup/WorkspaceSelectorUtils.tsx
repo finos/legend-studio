@@ -33,13 +33,20 @@ export const formatWorkspaceOptionLabel = (
   option: WorkspaceOption,
 ): React.ReactNode => (
   <div className="workspace-selector__option">
-    <div className="workspace-selector__option__icon">
-      {option.value.workspaceType === WorkspaceType.GROUP ? (
-        <UsersIcon />
-      ) : (
-        <UserIcon />
+    <div className="workspace-selector__option__label">
+      <div className="workspace-selector__option__icon">
+        {option.value.workspaceType === WorkspaceType.GROUP ? (
+          <UsersIcon />
+        ) : (
+          <UserIcon />
+        )}
+      </div>
+      <div className="workspace-selector__option__name">{option.label}</div>
+    </div>
+    <div className="workspace-selector__option__source">
+      {option.value.source && (
+        <div className="workspace-selector__option__source__patch">{`patch/${option.value.source}`}</div>
       )}
     </div>
-    <div className="workspace-selector__option__name">{option.label}</div>
   </div>
 );

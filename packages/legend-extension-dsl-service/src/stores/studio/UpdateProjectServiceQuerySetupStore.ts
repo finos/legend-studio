@@ -186,12 +186,14 @@ export class UpdateProjectServiceQuerySetupStore {
       this.currentProjectConfigurationStatus =
         (yield fetchProjectConfigurationStatus(
           project.projectId,
+          undefined,
           this.applicationStore,
           this.sdlcServerClient,
         )) as ProjectConfigurationStatus;
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           project.projectId,
+          undefined,
         )) as Workspace[]
       ).map((workspace) => workspace.workspaceId);
 
@@ -233,7 +235,11 @@ export class UpdateProjectServiceQuerySetupStore {
 
     try {
       const entities = (yield flowResult(
-        this.sdlcServerClient.getEntities(workspace.projectId, workspace),
+        this.sdlcServerClient.getEntities(
+          workspace.projectId,
+          undefined,
+          workspace,
+        ),
       )) as Entity[];
       this.services = entities.filter(
         (entity) => entity.classifierPath === CORE_PURE_PATH.SERVICE,
@@ -258,6 +264,7 @@ export class UpdateProjectServiceQuerySetupStore {
       const newGroupWorkspace = Workspace.serialization.fromJson(
         (yield this.sdlcServerClient.createWorkspace(
           projectId,
+          undefined,
           workspaceId,
           WorkspaceType.GROUP,
         )) as PlainObject<Workspace>,

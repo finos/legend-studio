@@ -38,6 +38,7 @@ export class StandardEditorMode extends EditorMode {
   generateElementLink(elementPath: string): string {
     return generateEditorRoute(
       this.editorStore.sdlcState.activeProject.projectId,
+      this.editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
       this.editorStore.sdlcState.activeWorkspace.workspaceId,
       this.editorStore.sdlcState.activeWorkspace.workspaceType,
       elementPath,

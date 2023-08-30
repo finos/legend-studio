@@ -14,43 +14,18 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import { primitive, createModelSchema } from 'serializr';
+import { VersionId } from '../version/VersionId.js';
 
-.workspace-selector__option {
-  @include flexVCenter;
+export class Patch {
+  projectId!: string;
+  patchReleaseVersionId!: VersionId;
 
-  width: 100%;
-
-  &__icon {
-    @include flexCenter;
-
-    width: 2rem;
-    min-width: 2rem;
-    margin-right: 0.5rem;
-  }
-
-  &__label {
-    width: calc(100% - 1rem);
-    display: flex;
-  }
-
-  &__name {
-    @include flexVCenter;
-
-    height: 1.8rem;
-  }
-
-  &__source {
-    &__patch {
-      @include flexCenter;
-
-      height: 1.8rem;
-      background: var(--color-dark-grey-500);
-      border-radius: 0.2rem;
-      font-size: 1.2rem;
-      color: var(--color-dark-grey-200);
-      font-weight: 500;
-      width: 8rem;
-    }
-  }
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(Patch, {
+      patchReleaseVersionId: usingModelSchema(VersionId.serialization.schema),
+      projectId: primitive(),
+    }),
+  );
 }

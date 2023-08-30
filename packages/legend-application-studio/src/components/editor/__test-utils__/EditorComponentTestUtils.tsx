@@ -332,6 +332,7 @@ export const TEST__setUpEditor = async (
     initialEntries: [
       generateEditorRoute(
         (workspace as unknown as Workspace).projectId,
+        undefined,
         (workspace as unknown as Workspace).workspaceId,
         WorkspaceType.USER,
       ),

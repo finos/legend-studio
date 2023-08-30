@@ -35,6 +35,25 @@
     &__workspace {
       flex-direction: column;
     }
+
+    &__workspace--source {
+      padding: 1rem;
+      width: 100%;
+
+      &__label {
+        @include flexVCenter;
+
+        font-weight: 500;
+        color: var(--color-light-grey-50);
+        margin-bottom: 0.5rem;
+        line-height: 2rem;
+        cursor: default;
+      }
+
+      &__selector {
+        width: 100%;
+      }
+    }
   }
 }
 

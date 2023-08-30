@@ -449,6 +449,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
     return (
       (yield this.editorStore.sdlcServerClient.getWorkflowJobs(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
         workflowId,
         undefined,
@@ -462,6 +463,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
     return (
       (yield this.editorStore.sdlcServerClient.getWorkflowJob(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
         job,
       )) as PlainObject<WorkflowJob>[]
@@ -472,6 +474,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
     return (
       (yield this.editorStore.sdlcServerClient.getWorkflows(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
         undefined,
         undefined,
@@ -484,6 +487,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
     return Workflow.serialization.fromJson(
       (yield this.editorStore.sdlcServerClient.getWorkflow(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
         workflowId,
       )) as PlainObject<Workflow>,
@@ -493,6 +497,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
   override *retryJob(workflowJob: WorkflowJob): GeneratorFn<void> {
     (yield this.editorStore.sdlcServerClient.retryWorkflowJob(
       this.sdlcState.activeProject.projectId,
+      this.sdlcState.activePatch?.patchReleaseVersionId.id,
       this.sdlcState.activeWorkspace,
       workflowJob,
     )) as PlainObject<WorkflowJob>[];
@@ -501,6 +506,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
   override *runManualJob(workflowJob: WorkflowJob): GeneratorFn<void> {
     (yield this.editorStore.sdlcServerClient.runManualWorkflowJob(
       this.sdlcState.activeProject.projectId,
+      this.sdlcState.activePatch?.patchReleaseVersionId.id,
       this.sdlcState.activeWorkspace,
       workflowJob,
     )) as PlainObject<WorkflowJob>[];
@@ -509,6 +515,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
   override *cancelJob(workflowJob: WorkflowJob): GeneratorFn<void> {
     (yield this.editorStore.sdlcServerClient.cancelWorkflowJob(
       this.sdlcState.activeProject.projectId,
+      this.sdlcState.activePatch?.patchReleaseVersionId.id,
       this.sdlcState.activeWorkspace,
       workflowJob,
     )) as PlainObject<WorkflowJob>[];
@@ -517,6 +524,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
   override *getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string> {
     return (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
       this.sdlcState.activeProject.projectId,
+      this.sdlcState.activePatch?.patchReleaseVersionId.id,
       this.sdlcState.activeWorkspace,
       workflowJob,
     )) as string;
@@ -618,6 +626,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
       (yield this.editorStore.sdlcServerClient.getWorkflowJobs(
         this.sdlcState.activeProject.projectId,
         undefined,
+        undefined,
         workflowId,
         undefined,
         undefined,
@@ -630,6 +639,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
     return (
       (yield this.editorStore.sdlcServerClient.getWorkflowJob(
         this.sdlcState.activeProject.projectId,
+        undefined,
         undefined,
         job,
       )) as PlainObject<WorkflowJob>[]
@@ -644,6 +654,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
         undefined,
+        undefined,
       )) as PlainObject<Workflow>[]
     ).map((v) => Workflow.serialization.fromJson(v));
   }
@@ -652,6 +663,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
     return Workflow.serialization.fromJson(
       (yield this.editorStore.sdlcServerClient.getWorkflow(
         this.sdlcState.activeProject.projectId,
+        undefined,
         undefined,
         workflowId,
       )) as PlainObject<Workflow>,
@@ -662,6 +674,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
     (yield this.editorStore.sdlcServerClient.retryWorkflowJob(
       this.sdlcState.activeProject.projectId,
       undefined,
+      undefined,
       workflowJob,
     )) as PlainObject<WorkflowJob>[];
   }
@@ -669,6 +682,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
   override *runManualJob(workflowJob: WorkflowJob): GeneratorFn<void> {
     (yield this.editorStore.sdlcServerClient.runManualWorkflowJob(
       this.sdlcState.activeProject.projectId,
+      undefined,
       undefined,
       workflowJob,
     )) as PlainObject<WorkflowJob>[];
@@ -678,6 +692,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
     (yield this.editorStore.sdlcServerClient.cancelWorkflowJob(
       this.sdlcState.activeProject.projectId,
       undefined,
+      undefined,
       workflowJob,
     )) as PlainObject<WorkflowJob>[];
   }
@@ -685,6 +700,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
   override *getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string> {
     return (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
       this.sdlcState.activeProject.projectId,
+      undefined,
       undefined,
       workflowJob,
     )) as string;

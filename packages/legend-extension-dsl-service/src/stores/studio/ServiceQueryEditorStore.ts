@@ -165,6 +165,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       yield flowResult(
         this.initialize(
           serviceInfo.projectId,
+          undefined,
           serviceInfo.groupWorkspaceId,
           WorkspaceType.GROUP,
         ),
@@ -226,6 +227,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       yield flowResult(
         this.sdlcState.fetchRemoteWorkspaceRevision(
           this.sdlcState.activeProject.projectId,
+          undefined,
           this.sdlcState.activeWorkspace,
         ),
       );
@@ -246,6 +248,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       const nullableRevisionChange =
         (yield this.sdlcServerClient.performEntityChanges(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           {
             message: `updated service ${serviceEntity.path} query`,
@@ -296,10 +299,12 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       });
       yield this.sdlcServerClient.deleteWorkspace(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
       );
       yield this.sdlcServerClient.createWorkspace(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );

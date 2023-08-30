@@ -177,12 +177,13 @@ export class WorkspaceReviewState {
       const currentWorkspaceRevision =
         (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as Revision;
       const reviews = (yield this.editorStore.sdlcServerClient.getReviews(
         this.sdlcState.activeProject.projectId,
-
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         {
           state: ReviewState.OPEN,
           revisionIds: [
@@ -236,6 +237,7 @@ export class WorkspaceReviewState {
       });
       yield this.editorStore.sdlcServerClient.createWorkspace(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
@@ -265,6 +267,7 @@ export class WorkspaceReviewState {
     try {
       yield this.editorStore.sdlcServerClient.rejectReview(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.workspaceReview.id,
       );
       this.workspaceReview = undefined;
@@ -308,6 +311,7 @@ export class WorkspaceReviewState {
       this.workspaceReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.createReview(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           {
             workspaceId: this.sdlcState.activeWorkspace.workspaceId,
             title,
@@ -367,6 +371,7 @@ export class WorkspaceReviewState {
     try {
       yield this.editorStore.sdlcServerClient.commitReview(
         this.sdlcState.activeProject.projectId,
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         review.id,
         { message: `${review.title} [review]` },
       );
@@ -389,6 +394,7 @@ export class WorkspaceReviewState {
               this.editorStore.applicationStore.navigationService.navigator.goToLocation(
                 generateSetupRoute(
                   this.editorStore.sdlcState.activeProject.projectId,
+                  this.sdlcState.activePatch?.patchReleaseVersionId.id,
                 ),
                 {
                   ignoreBlocking: true,
