@@ -761,6 +761,7 @@ export class SDLCServerClient extends AbstractServerClient {
 
   private _reviews = (projectId: string): string =>
     `${this._project(projectId)}/reviews`;
+  private _allReviews = (): string => `${this.baseUrl}/reviews`;
   private _review = (projectId: string, reviewId: string): string =>
     `${this._reviews(projectId)}/${encodeURIComponent(reviewId)}`;
 
@@ -779,6 +780,29 @@ export class SDLCServerClient extends AbstractServerClient {
       until: until?.toISOString(),
       limit,
     });
+  getAllReviews = (
+    assignedToMe?: boolean | undefined,
+    authoredByMe?: boolean | undefined,
+    labels?: string[] | undefined,
+    workspaceIdRegex?: string | undefined,
+    workspaceTypes?: string[] | undefined,
+    state?: ReviewState | undefined,
+    since?: Date | undefined,
+    until?: Date | undefined,
+    limit?: number | undefined,
+  ): Promise<PlainObject<Review>[]> =>
+    this.get(this._allReviews(), undefined, undefined, {
+      assignedToMe: assignedToMe,
+      authoredByMe: authoredByMe,
+      labels: labels,
+      workspaceIdRegex: workspaceIdRegex,
+      workspaceTypes: workspaceTypes,
+      state: state,
+      since: since?.toISOString(),
+      until: until?.toISOString(),
+      limit: limit,
+    });
+
   getReview = (
     projectId: string,
     reviewId: string,
