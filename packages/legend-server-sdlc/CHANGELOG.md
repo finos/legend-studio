@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 5.1.2
+
+### Patch Changes
+
+- [#2551](https://github.com/finos/legend-studio/pull/2551) [`a93c63148`](https://github.com/finos/legend-studio/commit/a93c63148c5fdb4b0802a6f42d9ba195cb55dde2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add labels to `Review`.
+
 ## 5.1.1
 
 ## 5.1.0
