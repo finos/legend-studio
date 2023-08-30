@@ -74,6 +74,28 @@ enum SDLC_ACTIVITY_TRACE {
   COMMIT_REVIEW = 'commit review',
 }
 
+export interface ReviewSeachOptions {
+  assignedToMe?: boolean | undefined;
+  authoredByMe?: boolean | undefined;
+  labels?: string[] | undefined;
+  workspaceIdRegex?: string | undefined;
+  workspaceTypes?: WorkspaceType[] | undefined;
+  state?: ReviewState | undefined;
+  since?: Date | undefined;
+  until?: Date | undefined;
+  limit?: number | undefined;
+}
+
+export interface ProjectReviewSeachOptions {
+  state?: ReviewState | undefined;
+  revisionIds?: string[] | undefined;
+  workspaceIdRegex?: string | undefined;
+  workspaceTypes?: WorkspaceType[] | undefined;
+  since?: Date | undefined;
+  until?: Date | undefined;
+  limit?: number | undefined;
+}
+
 export interface SDLCServerClientConfig {
   env: string;
   serverUrl: string;
@@ -767,40 +789,20 @@ export class SDLCServerClient extends AbstractServerClient {
 
   getReviews = (
     projectId: string,
-    state: ReviewState | undefined,
-    revisionIds: string[] | undefined,
-    since: Date | undefined,
-    until: Date | undefined,
-    limit: number | undefined,
+    options?: ProjectReviewSeachOptions | undefined,
   ): Promise<PlainObject<Review>[]> =>
     this.get(this._reviews(projectId), undefined, undefined, {
-      state,
-      revisionIds,
-      since: since?.toISOString(),
-      until: until?.toISOString(),
-      limit,
+      ...options,
+      since: options?.since?.toISOString(),
+      until: options?.until?.toISOString(),
     });
   getAllReviews = (
-    assignedToMe?: boolean | undefined,
-    authoredByMe?: boolean | undefined,
-    labels?: string[] | undefined,
-    workspaceIdRegex?: string | undefined,
-    workspaceTypes?: string[] | undefined,
-    state?: ReviewState | undefined,
-    since?: Date | undefined,
-    until?: Date | undefined,
-    limit?: number | undefined,
+    options?: ReviewSeachOptions | undefined,
   ): Promise<PlainObject<Review>[]> =>
     this.get(this._allReviews(), undefined, undefined, {
-      assignedToMe: assignedToMe,
-      authoredByMe: authoredByMe,
-      labels: labels,
-      workspaceIdRegex: workspaceIdRegex,
-      workspaceTypes: workspaceTypes,
-      state: state,
-      since: since?.toISOString(),
-      until: until?.toISOString(),
-      limit: limit,
+      ...options,
+      since: options?.since?.toISOString(),
+      until: options?.until?.toISOString(),
     });
 
   getReview = (

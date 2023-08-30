@@ -182,11 +182,15 @@ export class WorkspaceReviewState {
         )) as Revision;
       const reviews = (yield this.editorStore.sdlcServerClient.getReviews(
         this.sdlcState.activeProject.projectId,
-        ReviewState.OPEN,
-        [currentWorkspaceRevision.id, currentWorkspaceRevision.id],
-        undefined,
-        undefined,
-        1,
+
+        {
+          state: ReviewState.OPEN,
+          revisionIds: [
+            currentWorkspaceRevision.id,
+            currentWorkspaceRevision.id,
+          ],
+          limit: 1,
+        },
       )) as Review[];
       const review = reviews.find(
         (r) =>
