@@ -21,6 +21,7 @@ export interface CreateReviewCommand {
   title: string;
   workspaceType: WorkspaceType;
   description: string;
+  labels?: string[] | undefined;
 }
 
 export interface CommitReviewCommand {
