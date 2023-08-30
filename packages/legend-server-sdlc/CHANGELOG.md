@@ -1,5 +1,13 @@
 # @finos/legend-server-sdlc
 
+## 5.1.1
+
+## 5.1.0
+
+### Minor Changes
+
+- [#2544](https://github.com/finos/legend-studio/pull/2544) [`48625ea12`](https://github.com/finos/legend-studio/commit/48625ea124653fc80e592ea7dda8e98e5b43ee3a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add SDLCServerClient project access apis to get project access role and authorizable roles.
+
 ## 5.0.28
 
 ## 5.0.27

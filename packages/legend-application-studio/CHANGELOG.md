@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 28.3.3
+
+### Patch Changes
+
+- [#2543](https://github.com/finos/legend-studio/pull/2543) [`a15914d9f`](https://github.com/finos/legend-studio/commit/a15914d9fa6c04a1a09bf7842b2f8b06ac3b701e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Default to only showing tables in the source dropdown when drag and drop store to mapping source
+
+## 28.3.2
+
+### Patch Changes
+
+- [#2538](https://github.com/finos/legend-studio/pull/2538) [`8960e7b82`](https://github.com/finos/legend-studio/commit/8960e7b8225da76de452ccf4829d552660132210) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Remove execution context editor for inline service queries
+
 ## 28.3.1
 
 ## 28.3.0

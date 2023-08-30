@@ -32,6 +32,7 @@ export * from './models/project/Project.js';
 export * from './models/project/ProjectConfigurationStatus.js';
 export * from './models/project/ImportReport.js';
 export * from './models/project/ProjectCommands.js';
+export * from './models/project/ProjectAccess.js';
 
 export * from './models/workspace/Workspace.js';
 export * from './models/workspace/WorkspaceUtils.js';
