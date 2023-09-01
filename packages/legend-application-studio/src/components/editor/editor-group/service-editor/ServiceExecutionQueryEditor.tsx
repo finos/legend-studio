@@ -114,7 +114,6 @@ export const ServiceExecutionQueryEditor = observer(
       applicationStore.guardUnhandledError(async () => {
         const selectedExecutionState =
           executionState.selectedExecutionContextState;
-
         await flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
             setupQueryBuilderState: (): QueryBuilderState => {
@@ -179,9 +178,7 @@ export const ServiceExecutionQueryEditor = observer(
                 },
               },
             ],
-            disableCompile: isStubbed_RawLambda(
-              executionState.queryState.query,
-            ),
+            disableCompile: true,
           }),
         );
         executionState.setOpeningQueryEditor(false);
