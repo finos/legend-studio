@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.18
+
+### Patch Changes
+
+- [#2556](https://github.com/finos/legend-studio/pull/2556) [`be4ed675b`](https://github.com/finos/legend-studio/commit/be4ed675b2e54b67e97b78d19098c79047bd9ac0) ([@gayathrir11](https://github.com/gayathrir11)) - Support querying `DataSpace` from studio
+
 ## 10.1.17
 
 ## 10.1.16
