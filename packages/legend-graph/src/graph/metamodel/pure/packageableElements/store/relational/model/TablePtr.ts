@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { TablePtr } from '../../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TablePtr.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../Core_HashUtils.js';
 
-export class V1_TablePtr implements Hashable {
+export class TablePtr implements Hashable {
   table!: string;
   schema!: string;
   database!: string;
@@ -34,12 +33,3 @@ export class V1_TablePtr implements Hashable {
     ]);
   }
 }
-
-export const V1_buildTablePtr = (protocol: V1_TablePtr): TablePtr => {
-  const tablePtr = new TablePtr();
-  tablePtr.database = protocol.database;
-  tablePtr.schema = protocol.schema;
-  tablePtr.table = protocol.table;
-  tablePtr.mainTableDb = protocol.mainTableDb;
-  return tablePtr;
-};
