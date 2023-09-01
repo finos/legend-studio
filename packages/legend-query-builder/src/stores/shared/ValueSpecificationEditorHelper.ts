@@ -84,7 +84,7 @@ export const buildPrimitiveInstanceValue = (
   return instance;
 };
 
-const createMockPrimitiveValueSpecification = (
+export const createMockPrimitiveValueSpecification = (
   primitiveType: PrimitiveType,
   graph: PureModel,
   observerContext: ObserverContext,

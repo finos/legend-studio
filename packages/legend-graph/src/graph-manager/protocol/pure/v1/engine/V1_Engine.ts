@@ -76,6 +76,7 @@ import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfigurat
 import {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
+  V1_TestDataGenerationExecutionWithSeedInput,
 } from './execution/V1_ExecuteInput.js';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan.js';
 import { type V1_ExecutionResult } from './execution/V1_ExecutionResult.js';
@@ -701,6 +702,14 @@ export class V1_Engine {
   ): Promise<string> {
     return this.engineServerClient.generateTestDataWithDefaultSeed(
       V1_TestDataGenerationExecutionInput.serialization.toJson(input),
+    );
+  }
+
+  generateExecuteTestDataWithSeedData(
+    input: V1_TestDataGenerationExecutionWithSeedInput,
+  ): Promise<string> {
+    return this.engineServerClient.generateTestDataWithSeed(
+      V1_TestDataGenerationExecutionWithSeedInput.serialization.toJson(input),
     );
   }
 

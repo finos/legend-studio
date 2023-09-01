@@ -103,6 +103,7 @@ import type { FunctionActivator } from '../graph/metamodel/pure/packageableEleme
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
 import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
 import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
+import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -493,6 +494,20 @@ export abstract class AbstractPureGraphManager {
   abstract generateExecuteTestData(
     lambda: RawLambda,
     parameters: (string | number | boolean)[],
+    mapping: Mapping,
+    runtime: Runtime,
+    graph: PureModel,
+    options?: {
+      // Anonymizes data by hashing any string values in the generated data
+      anonymizeGeneratedData?: boolean;
+      parameterValues?: ParameterValue[];
+    },
+    report?: GraphManagerOperationReport,
+  ): Promise<string>;
+
+  abstract generateExecuteTestDataWithSeedData(
+    lambda: RawLambda,
+    tableRowIdentifiers: TableRowIdentifiers[],
     mapping: Mapping,
     runtime: Runtime,
     graph: PureModel,
