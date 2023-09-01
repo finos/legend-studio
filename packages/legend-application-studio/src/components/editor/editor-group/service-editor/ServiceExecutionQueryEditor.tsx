@@ -16,7 +16,7 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { ServicePureExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
+import { ServicePureExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import {
   Dialog,
   PanelLoadingIndicator,
@@ -32,12 +32,18 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@finos/legend-art';
-import { assertErrorThrown } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  returnUndefOnError,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  isStubbed_RawLambda,
+  type Service,
   KeyedExecutionParameter,
+  MultiExecutionParameters,
+  PureExecution,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderState,
@@ -56,6 +62,9 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from '../../../../__lib__/LegendStudioNavigation.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { pureExecution_setFunction } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
+import { ServiceEditorState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -432,3 +441,91 @@ export const ServiceExecutionQueryEditor = observer(
     );
   },
 );
+
+export const queryService = async (
+  service: Service,
+  editorStore: EditorStore,
+): Promise<void> => {
+  const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
+  const applicationStore = editorStore.applicationStore;
+  const execution =
+    service.execution instanceof PureExecution ? service.execution : undefined;
+  const selectedExec =
+    execution instanceof MultiExecutionParameters
+      ? execution.singleExecutionParameters[0]?.key
+      : undefined;
+  await flowResult(
+    embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+      setupQueryBuilderState: (): QueryBuilderState => {
+        const queryBuilderState = new ServiceQueryBuilderState(
+          embeddedQueryBuilderState.editorStore.applicationStore,
+          embeddedQueryBuilderState.editorStore.graphManagerState,
+          service,
+          undefined,
+          selectedExec,
+        );
+        if (execution) {
+          queryBuilderState.initializeWithQuery(execution.func);
+        }
+        return queryBuilderState;
+      },
+      actionConfigs: [
+        {
+          key: 'save-query-btn',
+          renderer: (queryBuilderState: QueryBuilderState): React.ReactNode => {
+            const save = applicationStore.guardUnhandledError(async () => {
+              try {
+                const rawLambda = queryBuilderState.buildQuery();
+                const serviceState = returnUndefOnError(() =>
+                  editorStore.tabManagerState.getCurrentEditorState(
+                    ServiceEditorState,
+                  ),
+                );
+                if (
+                  serviceState?.service === service &&
+                  serviceState.executionState instanceof
+                    ServicePureExecutionState
+                ) {
+                  await flowResult(
+                    serviceState.executionState.queryState.updateLamba(
+                      rawLambda,
+                    ),
+                  );
+                } else {
+                  pureExecution_setFunction(
+                    guaranteeNonNullable(
+                      execution,
+                      'Service execution expected to be a pure execution',
+                    ),
+                    rawLambda,
+                  );
+                }
+                applicationStore.notificationService.notifySuccess(
+                  `Service query is updated`,
+                );
+                embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+                  undefined,
+                );
+              } catch (error) {
+                assertErrorThrown(error);
+                applicationStore.notificationService.notifyError(
+                  `Can't save query: ${error.message}`,
+                );
+              }
+            });
+            return (
+              <button
+                className="query-builder__dialog__header__custom-action"
+                tabIndex={-1}
+                disabled={editorStore.isInViewerMode}
+                onClick={save}
+              >
+                Save Query
+              </button>
+            );
+          },
+        },
+      ],
+    }),
+  );
+};

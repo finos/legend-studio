@@ -113,6 +113,7 @@ import {
   type FunctionActivatorConfiguration,
   Database,
   DEPENDENCY_ROOT_PACKAGE_PREFIX,
+  Service,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -145,6 +146,7 @@ import {
 import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
 import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
+import { queryService } from '../editor-group/service-editor/ServiceExecutionQueryEditor.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -520,6 +522,13 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const buildServiceQuery = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (node?.packageableElement instanceof Service) {
+          await queryService(node.packageableElement, editorStore);
+        }
+      },
+    );
     const generateSampleData = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (node?.packageableElement instanceof Class) {
@@ -848,6 +857,14 @@ const ExplorerContextMenu = observer(
             <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
             <MenuContentItem onClick={generateSampleData}>
               Generate Sample Data...
+            </MenuContentItem>
+            <MenuContentDivider />
+          </>
+        )}
+        {node.packageableElement instanceof Service && (
+          <>
+            <MenuContentItem onClick={buildServiceQuery}>
+              Query...
             </MenuContentItem>
             <MenuContentDivider />
           </>
