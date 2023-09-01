@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.3.5
+
+### Patch Changes
+
+- [#2562](https://github.com/finos/legend-studio/pull/2562) [`1892f9d7c`](https://github.com/finos/legend-studio/commit/1892f9d7cdadd569988f9ad30bd5c6edd191e835) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - support generate test data with seed data input
+
+- [#2561](https://github.com/finos/legend-studio/pull/2561) [`753e0eb46`](https://github.com/finos/legend-studio/commit/753e0eb4687ab3d642b3dfc3321ae00641d2af13) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add right click `Query...` for service.
+
 ## 28.3.4
 
 ## 28.3.3
