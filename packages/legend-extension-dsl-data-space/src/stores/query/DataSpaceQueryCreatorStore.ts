@@ -46,7 +46,10 @@ import {
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../graph/DSL_DataSpace_MetaModelConst.js';
 import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
-import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
+import {
+  DataSpaceQueryBuilderState,
+  ProjectInfo,
+} from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
@@ -143,12 +146,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     } catch {
       // do nothing
     }
-    const queryBuilderState = new DataSpaceQueryBuilderState(
-      this.applicationStore,
-      this.graphManagerState,
-      this.depotServerClient,
-      dataSpace,
-      executionContext,
+    const projectInfo = new ProjectInfo(
       this.groupId,
       this.artifactId,
       this.versionId,
@@ -157,13 +155,20 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         this.applicationStore,
         this.depotServerClient,
       ),
+    );
+    const queryBuilderState = new DataSpaceQueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+      this.depotServerClient,
+      dataSpace,
+      executionContext,
       (dataSpaceInfo: DataSpaceInfo) => {
         if (dataSpaceInfo.defaultExecutionContext) {
           this.applicationStore.navigationService.navigator.goToLocation(
             generateDataSpaceQueryCreatorRoute(
-              dataSpaceInfo.groupId,
-              dataSpaceInfo.artifactId,
-              dataSpaceInfo.versionId,
+              guaranteeNonNullable(dataSpaceInfo.groupId),
+              guaranteeNonNullable(dataSpaceInfo.artifactId),
+              guaranteeNonNullable(dataSpaceInfo.versionId),
               dataSpaceInfo.path,
               dataSpaceInfo.defaultExecutionContext,
               undefined,
@@ -176,6 +181,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           );
         }
       },
+      true,
       dataSpaceAnalysisResult,
       (ec: DataSpaceExecutionContext) => {
         // runtime should already be set
@@ -202,9 +208,9 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         const runtimePointer = guaranteeType(runtimeValue, RuntimePointer);
         queryBuilderState.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateDataSpaceQueryCreatorRoute(
-            queryBuilderState.groupId,
-            queryBuilderState.artifactId,
-            queryBuilderState.versionId,
+            guaranteeNonNullable(queryBuilderState.projectInfo).groupId,
+            guaranteeNonNullable(queryBuilderState.projectInfo).artifactId,
+            guaranteeNonNullable(queryBuilderState.projectInfo).versionId,
             queryBuilderState.dataSpace.path,
             queryBuilderState.executionContext.name,
             runtimePointer.packageableRuntime.value ===
@@ -223,9 +229,9 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         );
         queryBuilderState.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateDataSpaceQueryCreatorRoute(
-            queryBuilderState.groupId,
-            queryBuilderState.artifactId,
-            queryBuilderState.versionId,
+            guaranteeNonNullable(queryBuilderState.projectInfo).groupId,
+            guaranteeNonNullable(queryBuilderState.projectInfo).artifactId,
+            guaranteeNonNullable(queryBuilderState.projectInfo).versionId,
             queryBuilderState.dataSpace.path,
             queryBuilderState.executionContext.name,
             runtimePointer.packageableRuntime.value ===
@@ -236,6 +242,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           ),
         );
       },
+      projectInfo,
     );
     queryBuilderState.setExecutionContext(executionContext);
     queryBuilderState.propagateExecutionContextChange(executionContext);

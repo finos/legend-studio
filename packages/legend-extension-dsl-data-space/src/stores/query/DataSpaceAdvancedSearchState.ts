@@ -32,6 +32,7 @@ import {
   type PlainObject,
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
@@ -157,16 +158,16 @@ export class DataSpaceAdvancedSearchState {
   *loadDataSpace(dataSpace: DataSpaceInfo): GeneratorFn<void> {
     this.loadDataSpaceState.inProgress();
     this.loadDataSpaceState.setMessage(`Initializing...`);
+    const groupId = guaranteeNonNullable(dataSpace.groupId);
+    const artifactId = guaranteeNonNullable(dataSpace.artifactId);
+    const versionId = guaranteeNonNullable(dataSpace.versionId);
 
     try {
       // fetch project
       this.loadDataSpaceState.setMessage(`Fetching project...`);
       const project = StoreProjectData.serialization.fromJson(
         (yield flowResult(
-          this.depotServerClient.getProject(
-            dataSpace.groupId,
-            dataSpace.artifactId,
-          ),
+          this.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<StoreProjectData>,
       );
       // analyze data space
@@ -177,13 +178,13 @@ export class DataSpaceAdvancedSearchState {
         () =>
           retrieveProjectEntitiesWithDependencies(
             project,
-            dataSpace.versionId,
+            versionId,
             this.depotServerClient,
           ),
         () =>
           retrieveAnalyticsResultCache(
             project,
-            dataSpace.versionId,
+            versionId,
             dataSpace.path,
             this.depotServerClient,
           ),
@@ -192,45 +193,36 @@ export class DataSpaceAdvancedSearchState {
       this.dataSpaceViewerState = new DataSpaceViewerState(
         this.applicationStore,
         this.graphManagerState,
-        dataSpace.groupId,
-        dataSpace.artifactId,
-        dataSpace.versionId,
+        groupId,
+        artifactId,
+        versionId,
         analysisResult,
         {
           retrieveGraphData: () =>
             new GraphDataWithOrigin(
-              new LegendSDLC(
-                dataSpace.groupId,
-                dataSpace.artifactId,
-                dataSpace.versionId,
-              ),
+              new LegendSDLC(groupId, artifactId, versionId),
             ),
           queryDataSpace: (executionContextKey: string) =>
             generateDataSpaceQueryCreatorRoute(
-              dataSpace.groupId,
-              dataSpace.artifactId,
-              dataSpace.versionId,
+              groupId,
+              artifactId,
+              versionId,
               analysisResult.path,
               executionContextKey,
             ),
           viewProject: (path: string | undefined) =>
-            this.viewProject(
-              dataSpace.groupId,
-              dataSpace.artifactId,
-              dataSpace.versionId,
-              path,
-            ),
+            this.viewProject(groupId, artifactId, versionId, path),
           viewSDLCProject: (path: string | undefined) =>
-            this.viewSDLCProject(dataSpace.groupId, dataSpace.artifactId, path),
+            this.viewSDLCProject(groupId, artifactId, path),
           queryClass: (_class: Class): void => {
             this.proceedToCreateQuery(_class);
           },
           openServiceQuery: (servicePath: string): void =>
             this.applicationStore.navigationService.navigator.visitAddress(
               generateServiceQueryCreatorRoute(
-                dataSpace.groupId,
-                dataSpace.artifactId,
-                dataSpace.versionId,
+                groupId,
+                artifactId,
+                versionId,
                 servicePath,
               ),
             ),
