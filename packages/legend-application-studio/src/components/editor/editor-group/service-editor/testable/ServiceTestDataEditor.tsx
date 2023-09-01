@@ -53,11 +53,12 @@ import {
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
-import type {
-  ConnectionTestDataState,
-  RowIdentifierState,
-  ServiceTestDataState,
-  TableRowIdentifierState,
+import {
+  createMockPrimitiveValueSpecificationFromRelationalDataType,
+  type ConnectionTestDataState,
+  type RowIdentifierState,
+  type ServiceTestDataState,
+  type TableRowIdentifierState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestDataState.js';
 import type { EmbeddedDataTypeOption } from '../../../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import { EmbeddedDataEditor } from '../../data-editor/EmbeddedDataEditor.js';
@@ -71,6 +72,7 @@ import {
 import { buildElementOption } from '@finos/legend-lego/graph-editor';
 import {
   filterByType,
+  getNullableFirstEntry,
   guaranteeNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
@@ -78,12 +80,11 @@ import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../
 import { useEditorStore } from '../../../EditorStoreProvider.js';
 import {
   BasicValueSpecificationEditor,
-  createMockPrimitiveValueSpecificationFromRelationalDataType,
   LambdaParameterValuesEditor,
-  relationalDataTypeToPrimitiveType,
 } from '@finos/legend-query-builder';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../../__lib__/LegendStudioDocumentation.js';
 import type { TableOption } from '../../data-editor/RelationalCSVDataEditor.js';
+import { getPrimitiveTypeFromRelationalType } from '../../../../../stores/editor/utils/MockDataUtils.js';
 
 export interface ColumnOption {
   value: Column;
@@ -104,29 +105,33 @@ export const RowIdentifierEditor = observer(
       }));
     const changeColumn = (val: ColumnOption): void => {
       if (rowIdentifierState.column.name !== val.value.name) {
-        rowIdentifierState.updateRowIdentifierValue(
+        const valueSpec =
           createMockPrimitiveValueSpecificationFromRelationalDataType(
-            guaranteeNonNullable(val.value.type),
+            guaranteeNonNullable(rowIdentifierState.column.type),
             tableRowIdentifierState.connectionTestDataState.editorStore
               .graphManagerState.graph,
             tableRowIdentifierState.connectionTestDataState.editorStore
               .changeDetectionState.observerContext,
-          ),
-        );
-        rowIdentifierState.updateRowIdentifierColumn(val.value);
+          );
+        if (valueSpec) {
+          rowIdentifierState.updateRowIdentifierValue(valueSpec);
+          rowIdentifierState.updateRowIdentifierColumn(val.value);
+        }
       }
     };
 
     const resetNode = (): void => {
-      rowIdentifierState.updateRowIdentifierValue(
+      const valueSpec =
         createMockPrimitiveValueSpecificationFromRelationalDataType(
           guaranteeNonNullable(rowIdentifierState.column.type),
           tableRowIdentifierState.connectionTestDataState.editorStore
             .graphManagerState.graph,
           tableRowIdentifierState.connectionTestDataState.editorStore
             .changeDetectionState.observerContext,
-        ),
-      );
+        );
+      if (valueSpec) {
+        rowIdentifierState.updateRowIdentifierValue(valueSpec);
+      }
     };
 
     return (
@@ -158,8 +163,10 @@ export const RowIdentifierEditor = observer(
                 .changeDetectionState.observerContext
             }
             typeCheckOption={{
-              expectedType: relationalDataTypeToPrimitiveType(
-                guaranteeNonNullable(rowIdentifierState.column.type),
+              expectedType: guaranteeNonNullable(
+                getPrimitiveTypeFromRelationalType(
+                  guaranteeNonNullable(rowIdentifierState.column.type),
+                ),
               ),
             }}
             resetValue={resetNode}
@@ -458,9 +465,11 @@ export const ConnectionTestDataEditor = observer(
     const generateTestDataWithSeedData = (): void => {
       connectionTestDataState.setUseSeedDataInputModal(true);
       connectionTestDataState.setNewTableIdentifierState([]);
-      const tables = connectionTestDataState.getAvailableTables();
-      if (tables[0]) {
-        connectionTestDataState.addNewTableIdentifierState(tables[0]);
+      const table = getNullableFirstEntry(
+        connectionTestDataState.getAvailableTables(),
+      );
+      if (table) {
+        connectionTestDataState.addNewTableIdentifierState(table);
       }
     };
 

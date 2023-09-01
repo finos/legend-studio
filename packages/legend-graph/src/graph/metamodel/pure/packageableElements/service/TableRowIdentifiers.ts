@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { TablePtr } from '../store/relational/model/TablePtr.js';
+import type { TablePtr } from './TablePtr.js';
 
 export class ColumnValuePair {
   name!: string;

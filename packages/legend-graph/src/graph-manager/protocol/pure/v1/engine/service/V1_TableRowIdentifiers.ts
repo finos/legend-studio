@@ -17,15 +17,15 @@
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, primitive, raw } from 'serializr';
 import {
-  V1_tablePtrModelSchema,
   type V1_TablePtr,
-  V1_buildTablePtr,
+  V1_tablePtrModelSchema,
 } from '../../../../../../STO_Relational_Exports.js';
 import {
   ColumnValuePair,
   RowIdentifier,
   TableRowIdentifiers,
 } from '../../../../../../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
+import { V1_buildTablePtr } from '../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper.js';
 
 export class V1_ColumnValuePair {
   name!: string;

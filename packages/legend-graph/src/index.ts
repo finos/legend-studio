@@ -72,7 +72,7 @@ export {
 export * from './graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 export { TestDataGenerationResult } from './graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 export * from './graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
-export * from './graph/metamodel/pure/packageableElements/store/relational/model/TablePtr.js';
+export * from './graph/metamodel/pure/packageableElements/service/TablePtr.js';
 export { FunctionActivator } from './graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 

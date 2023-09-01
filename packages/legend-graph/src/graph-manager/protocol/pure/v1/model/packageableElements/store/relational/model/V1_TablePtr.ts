@@ -16,7 +16,6 @@
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { TablePtr } from '../../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TablePtr.js';
 
 export class V1_TablePtr implements Hashable {
   table!: string;
@@ -34,12 +33,3 @@ export class V1_TablePtr implements Hashable {
     ]);
   }
 }
-
-export const V1_buildTablePtr = (protocol: V1_TablePtr): TablePtr => {
-  const tablePtr = new TablePtr();
-  tablePtr.database = protocol.database;
-  tablePtr.schema = protocol.schema;
-  tablePtr.table = protocol.table;
-  tablePtr.mainTableDb = protocol.mainTableDb;
-  return tablePtr;
-};

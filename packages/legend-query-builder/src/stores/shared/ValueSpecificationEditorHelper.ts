@@ -22,7 +22,6 @@ import {
   type Enum,
   type ObserverContext,
   type RawLambda,
-  type RelationalDataType,
   VariableExpression,
   CollectionInstanceValue,
   Enumeration,
@@ -43,18 +42,6 @@ import {
   CORE_PURE_PATH,
   buildRawLambdaFromLambdaFunction,
   getValueSpecificationReturnType,
-  Timestamp as RelationalDateTypeTimestamp,
-  Date as RelationalDateTypeDate,
-  BigInt as RelationalDateTypeBigInt,
-  SmallInt as RelationalDateTypeSmallInt,
-  TinyInt as RelationalDateTypeTinyInt,
-  Integer as RelationalDateTypeInteger,
-  Float as RelationalDateTypeFloat,
-  Double as RelationalDateTypeDouble,
-  Decimal as RelationalDateTypeDecimal,
-  Float as RelationalDateTypeNumeric,
-  VarChar as RelationalDateTypeVarChar,
-  Char as RelationalDateTypeChar,
 } from '@finos/legend-graph';
 import {
   Randomizer,
@@ -97,14 +84,15 @@ export const buildPrimitiveInstanceValue = (
   return instance;
 };
 
-const createMockPrimitiveValueSpecificationHelper = (
-  primitiveTypeName: string,
+export const createMockPrimitiveValueSpecification = (
+  primitiveType: PrimitiveType,
   graph: PureModel,
   observerContext: ObserverContext,
   options?: {
     useCurrentDateDependentFunctions?: boolean;
   },
 ): ValueSpecification => {
+  const primitiveTypeName = primitiveType.name;
   if (options?.useCurrentDateDependentFunctions) {
     if (
       primitiveTypeName === PRIMITIVE_TYPE.DATE ||
@@ -136,88 +124,6 @@ const createMockPrimitiveValueSpecificationHelper = (
     observerContext,
   );
 };
-
-export const relationalDataTypeToPrimitiveType = (
-  relationalDataType: RelationalDataType,
-): PrimitiveType => {
-  if (relationalDataType instanceof RelationalDateTypeDate) {
-    return PrimitiveType.STRICTDATE;
-  }
-  if (relationalDataType instanceof RelationalDateTypeTimestamp) {
-    return PrimitiveType.DATETIME;
-  }
-  if (
-    relationalDataType instanceof RelationalDateTypeVarChar ||
-    relationalDataType instanceof RelationalDateTypeChar
-  ) {
-    return PrimitiveType.STRING;
-  }
-  if (
-    relationalDataType instanceof RelationalDateTypeNumeric ||
-    relationalDataType instanceof RelationalDateTypeSmallInt ||
-    relationalDataType instanceof RelationalDateTypeTinyInt ||
-    relationalDataType instanceof RelationalDateTypeDecimal ||
-    relationalDataType instanceof RelationalDateTypeBigInt ||
-    relationalDataType instanceof RelationalDateTypeFloat ||
-    relationalDataType instanceof RelationalDateTypeDouble ||
-    relationalDataType instanceof RelationalDateTypeInteger
-  ) {
-    return PrimitiveType.NUMBER;
-  }
-  return PrimitiveType.STRING;
-};
-
-export const createMockPrimitiveValueSpecificationFromRelationalDataType = (
-  relationalDataType: RelationalDataType,
-  graph: PureModel,
-  observerContext: ObserverContext,
-): ValueSpecification => {
-  let primitiveTypeName: string = PRIMITIVE_TYPE.STRING;
-  if (relationalDataType instanceof RelationalDateTypeDate) {
-    primitiveTypeName = PRIMITIVE_TYPE.STRICTDATE;
-  }
-  if (relationalDataType instanceof RelationalDateTypeTimestamp) {
-    primitiveTypeName = PRIMITIVE_TYPE.DATETIME;
-  }
-  if (
-    relationalDataType instanceof RelationalDateTypeVarChar ||
-    relationalDataType instanceof RelationalDateTypeChar
-  ) {
-    primitiveTypeName = PRIMITIVE_TYPE.STRING;
-  }
-  if (
-    relationalDataType instanceof RelationalDateTypeNumeric ||
-    relationalDataType instanceof RelationalDateTypeSmallInt ||
-    relationalDataType instanceof RelationalDateTypeTinyInt ||
-    relationalDataType instanceof RelationalDateTypeDecimal ||
-    relationalDataType instanceof RelationalDateTypeBigInt ||
-    relationalDataType instanceof RelationalDateTypeFloat ||
-    relationalDataType instanceof RelationalDateTypeDouble ||
-    relationalDataType instanceof RelationalDateTypeInteger
-  ) {
-    primitiveTypeName = PRIMITIVE_TYPE.NUMBER;
-  }
-  return createMockPrimitiveValueSpecificationHelper(
-    primitiveTypeName,
-    graph,
-    observerContext,
-  );
-};
-
-export const createMockPrimitiveValueSpecification = (
-  primitiveType: PrimitiveType,
-  graph: PureModel,
-  observerContext: ObserverContext,
-  options?: {
-    useCurrentDateDependentFunctions?: boolean;
-  },
-): ValueSpecification =>
-  createMockPrimitiveValueSpecificationHelper(
-    primitiveType.name,
-    graph,
-    observerContext,
-    options,
-  );
 
 export const createMockEnumerationProperty = (
   enumeration: Enumeration,

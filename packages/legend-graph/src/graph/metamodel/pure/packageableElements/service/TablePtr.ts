@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../Core_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 
 export class TablePtr implements Hashable {
   table!: string;

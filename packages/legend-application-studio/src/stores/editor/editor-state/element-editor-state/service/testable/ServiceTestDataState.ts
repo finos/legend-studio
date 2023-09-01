@@ -29,6 +29,9 @@ import {
   type ValueSpecification,
   type Table,
   type PrimitiveInstanceValue,
+  type ObserverContext,
+  type PureModel,
+  type RelationalDataType,
   ConnectionTestData,
   PureSingleExecution,
   PureMultiExecution,
@@ -86,14 +89,15 @@ import {
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import { LegendStudioTelemetryHelper } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import {
-  createMockPrimitiveValueSpecificationFromRelationalDataType,
   LambdaParameterState,
   LambdaParametersState,
   PARAMETER_SUBMIT_ACTION,
   buildExecutionParameterValues,
   buildParametersLetLambdaFunc,
   getExecutionQueryFromRawLambda,
+  createMockPrimitiveValueSpecification,
 } from '@finos/legend-query-builder';
+import { getPrimitiveTypeFromRelationalType } from '../../../../utils/MockDataUtils.js';
 
 export const createConnectionTestData = (
   val: IdentifiedConnection,
@@ -105,6 +109,24 @@ export const createConnectionTestData = (
   const testData = createEmbeddedData(embeddedDataType, editorStore);
   connectionTestData.testData = testData;
   return connectionTestData;
+};
+
+export const createMockPrimitiveValueSpecificationFromRelationalDataType = (
+  relationalDataType: RelationalDataType,
+  graph: PureModel,
+  observerContext: ObserverContext,
+): ValueSpecification | undefined => {
+  const primitiveTypeFromRelational =
+    getPrimitiveTypeFromRelationalType(relationalDataType);
+
+  if (primitiveTypeFromRelational) {
+    return createMockPrimitiveValueSpecification(
+      primitiveTypeFromRelational,
+      graph,
+      observerContext,
+    );
+  }
+  return undefined;
 };
 
 export class ServiceTestDataParametersState extends LambdaParametersState {
@@ -249,17 +271,21 @@ export class TableRowIdentifierState {
   }
 
   addNewRowIdentifierState(column: Column): void {
-    const rowIdentifierState = new RowIdentifierState(
-      this.connectionTestDataState,
-      column,
+    const valueSpec =
       createMockPrimitiveValueSpecificationFromRelationalDataType(
         guaranteeNonNullable(column.type),
         this.connectionTestDataState.editorStore.graphManagerState.graph,
         this.connectionTestDataState.editorStore.changeDetectionState
           .observerContext,
-      ),
-    );
-    this.rowIdentifierStates.push(rowIdentifierState);
+      );
+    if (valueSpec) {
+      const rowIdentifierState = new RowIdentifierState(
+        this.connectionTestDataState,
+        column,
+        valueSpec,
+      );
+      this.rowIdentifierStates.push(rowIdentifierState);
+    }
   }
 
   removeRowIdentifierState(rowIdentifierState: RowIdentifierState): void {
