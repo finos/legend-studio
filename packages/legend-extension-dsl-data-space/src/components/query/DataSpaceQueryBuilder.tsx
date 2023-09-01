@@ -432,6 +432,7 @@ export const queryDataSpace = async (
         return queryBuilderState;
       },
       actionConfigs: [],
+      disableCompile: true,
     }),
   );
 };

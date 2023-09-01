@@ -74,7 +74,7 @@ export const resolveUsableDataSpaceClasses = (
   return getMappingCompatibleClasses(mapping, graphManagerState.usableClasses);
 };
 
-export class ProjectInfo {
+export class DataSpaceProjectInfo {
   readonly groupId: string;
   readonly artifactId: string;
   readonly versionId: string;
@@ -125,7 +125,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
   readonly onClassChange?: ((val: Class) => void) | undefined;
   readonly dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined;
-  readonly projectInfo?: ProjectInfo | undefined;
+  readonly projectInfo?: DataSpaceProjectInfo | undefined;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
@@ -150,7 +150,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       | undefined,
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
-    projectInfo?: ProjectInfo | undefined,
+    projectInfo?: DataSpaceProjectInfo | undefined,
   ) {
     super(applicationStore, graphManagerState);
 
@@ -185,7 +185,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   }
 
   showAdvancedSearchPanel(): void {
-    if (this.projectInfo) {
+    if (this.projectInfo && this.isAdvancedDataSpaceSearchEnabled) {
       this.advancedSearchState = new DataSpaceAdvancedSearchState(
         this.applicationStore,
         this.graphManagerState,

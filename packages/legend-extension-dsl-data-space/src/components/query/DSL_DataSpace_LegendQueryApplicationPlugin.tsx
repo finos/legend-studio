@@ -45,7 +45,7 @@ import {
 } from '../../graph/DSL_DataSpace_MetaModelConst.js';
 import {
   DataSpaceQueryBuilderState,
-  ProjectInfo,
+  DataSpaceProjectInfo,
 } from '../../stores/query/DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
@@ -148,7 +148,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
           } catch {
             // do nothing
           }
-          const projectInfo = new ProjectInfo(
+          const projectInfo = new DataSpaceProjectInfo(
             query.groupId,
             query.artifactId,
             query.versionId,
