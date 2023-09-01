@@ -30,7 +30,10 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import type { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
+import {
+  resolveUsableDataSpaceClasses,
+  type DataSpaceQueryBuilderState,
+} from '../../stores/query/DataSpaceQueryBuilderState.js';
 import {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
@@ -38,30 +41,16 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type Runtime,
-  type GraphManagerState,
-  type Mapping,
-  getMappingCompatibleClasses,
   getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
   RuntimePointer,
-  Class,
-  Package,
-  getDescendantsOfPackage,
 } from '@finos/legend-graph';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  debounce,
-  filterByType,
-  guaranteeType,
-  uniq,
-} from '@finos/legend-shared';
+import { debounce, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import type {
-  DataSpace,
-  DataSpaceExecutionContext,
-} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
 
@@ -101,25 +90,6 @@ export const formatDataSpaceOptionLabel = (
     </div>
   </div>
 );
-
-const resolveDataSpaceClasses = (
-  dataSpace: DataSpace,
-  mapping: Mapping,
-  graphManagerState: GraphManagerState,
-): Class[] => {
-  if (dataSpace.elements?.length) {
-    const dataSpaceElements = dataSpace.elements.map((ep) => ep.element.value);
-    return uniq([
-      ...dataSpaceElements.filter(filterByType(Class)),
-      ...dataSpaceElements
-        .filter(filterByType(Package))
-        .map((_package) => Array.from(getDescendantsOfPackage(_package)))
-        .flat()
-        .filter(filterByType(Class)),
-    ]);
-  }
-  return getMappingCompatibleClasses(mapping, graphManagerState.usableClasses);
-};
 
 type ExecutionContextOption = {
   label: string;
@@ -241,7 +211,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     });
 
     // class
-    const classes = resolveDataSpaceClasses(
+    const classes = resolveUsableDataSpaceClasses(
       queryBuilderState.dataSpace,
       queryBuilderState.executionContext.mapping.value,
       queryBuilderState.graphManagerState,
