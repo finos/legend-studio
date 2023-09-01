@@ -25,6 +25,10 @@ import {
   type Mapping,
   type TestDataGenerationResult,
   type GraphManagerState,
+  type Column,
+  type ValueSpecification,
+  type Table,
+  type PrimitiveInstanceValue,
   ConnectionTestData,
   PureSingleExecution,
   PureMultiExecution,
@@ -41,6 +45,10 @@ import {
   Database,
   RuntimePointer,
   buildRawLambdaFromLambdaFunction,
+  TableRowIdentifiers,
+  RowIdentifier,
+  ColumnValuePair,
+  TablePtr,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -77,6 +85,7 @@ import {
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import { LegendStudioTelemetryHelper } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import {
+  createMockPrimitiveValueSpecificationFromRelationalDataType,
   LambdaParameterState,
   LambdaParametersState,
   PARAMETER_SUBMIT_ACTION,
@@ -111,24 +120,38 @@ export class ServiceTestDataParametersState extends LambdaParametersState {
     this.connectionTestDataState = connectionTestDataState;
   }
 
-  openModal(serviceExecutionParameters: {
-    query: RawLambda;
-    mapping: Mapping;
-    runtime: Runtime;
-  }): void {
+  openModal(
+    serviceExecutionParameters: {
+      query: RawLambda;
+      mapping: Mapping;
+      runtime: Runtime;
+    },
+    option?: {
+      generateWithSeedData: boolean;
+    },
+  ): void {
     this.parameterStates = this.build(serviceExecutionParameters.query);
-    this.parameterValuesEditorState.open(
-      (): Promise<void> =>
-        flowResult(
+    this.parameterValuesEditorState.open((): Promise<void> => {
+      if (option?.generateWithSeedData) {
+        return flowResult(
+          this.connectionTestDataState.generateTestDataWithSeedDataForDatabaseConnection(
+            serviceExecutionParameters,
+          ),
+        ).catch(
+          this.connectionTestDataState.editorStore.applicationStore
+            .alertUnhandledError,
+        );
+      } else {
+        return flowResult(
           this.connectionTestDataState.generateTestDataForDatabaseConnection(
             serviceExecutionParameters,
           ),
         ).catch(
           this.connectionTestDataState.editorStore.applicationStore
             .alertUnhandledError,
-        ),
-      PARAMETER_SUBMIT_ACTION.RUN,
-    );
+        );
+      }
+    }, PARAMETER_SUBMIT_ACTION.RUN);
   }
 
   build(query: RawLambda): LambdaParameterState[] {
@@ -157,14 +180,96 @@ export class ServiceTestDataParametersState extends LambdaParametersState {
   }
 }
 
+export class RowIdentifierState {
+  readonly connectionTestDataState: ConnectionTestDataState;
+  column: Column;
+  value: ValueSpecification;
+
+  constructor(
+    connectionTestDataState: ConnectionTestDataState,
+    column: Column,
+    value: ValueSpecification,
+  ) {
+    makeObservable(this, {
+      column: observable,
+      value: observable,
+      updateRowIdentifierColumn: action,
+      updateRowIdentifierValue: action,
+    });
+    this.connectionTestDataState = connectionTestDataState;
+    this.column = column;
+    this.value = value;
+  }
+
+  updateRowIdentifierColumn(col: Column): void {
+    this.column = col;
+  }
+
+  updateRowIdentifierValue(val: ValueSpecification): void {
+    this.value = observe_ValueSpecification(
+      val,
+      this.connectionTestDataState.editorStore.changeDetectionState
+        .observerContext,
+    );
+  }
+}
+
+export class TableRowIdentifierState {
+  readonly connectionTestDataState: ConnectionTestDataState;
+  table: Table;
+  rowIdentifierStates: RowIdentifierState[] = [];
+
+  constructor(
+    connectionTestDataState: ConnectionTestDataState,
+    table: Table,
+    rowIdentifierStates: RowIdentifierState[],
+  ) {
+    makeObservable(this, {
+      table: observable,
+      rowIdentifierStates: observable,
+      updateTable: action,
+      addNewRowIdentifierState: action,
+      removeRowIdentifierState: action,
+    });
+    this.connectionTestDataState = connectionTestDataState;
+    this.table = table;
+    this.rowIdentifierStates = rowIdentifierStates;
+  }
+
+  updateTable(table: Table): void {
+    this.table = table;
+  }
+
+  addNewRowIdentifierState(column: Column): void {
+    const rowIdentifierState = new RowIdentifierState(
+      this.connectionTestDataState,
+      column,
+      createMockPrimitiveValueSpecificationFromRelationalDataType(
+        guaranteeNonNullable(column.type),
+        this.connectionTestDataState.editorStore.graphManagerState.graph,
+        this.connectionTestDataState.editorStore.changeDetectionState
+          .observerContext,
+      ),
+    );
+    this.rowIdentifierStates.push(rowIdentifierState);
+  }
+
+  removeRowIdentifierState(rowIdentifierState: RowIdentifierState): void {
+    deleteEntry(this.rowIdentifierStates, rowIdentifierState);
+  }
+}
+
 export class ConnectionTestDataState {
   readonly editorStore: EditorStore;
   readonly testDataState: ServiceTestDataState;
   readonly connectionData: ConnectionTestData;
   readonly parametersState: ServiceTestDataParametersState;
   readonly generatingTestDataState = ActionState.create();
+  readonly generatingTestDataWithSeedDataState = ActionState.create();
   readonly generateSchemaQueryState = ActionState.create();
   useSharedModal = false;
+  useSeedDataInputModal = false;
+  tableRowIdentifierStates: TableRowIdentifierState[] = [];
 
   embeddedEditorState: EmbeddedDataEditorState;
   anonymizeGeneratedData = true;
@@ -174,17 +279,26 @@ export class ConnectionTestDataState {
     connectionData: ConnectionTestData,
   ) {
     makeObservable(this, {
+      tableRowIdentifierStates: observable,
       generatingTestDataState: observable,
+      generatingTestDataWithSeedDataState: observable,
       generateSchemaQueryState: observable,
       embeddedEditorState: observable,
       useSharedModal: observable,
+      useSeedDataInputModal: observable,
       anonymizeGeneratedData: observable,
       setAnonymizeGeneratedData: action,
+      setUseSeedDataInputModal: action,
+      setNewTableIdentifierState: action,
+      addNewTableIdentifierState: action,
+      removeTableIdentifierState: action,
       changeEmbeddedData: action,
       buildEmbeddedEditorState: action,
       createExecutableQuery: action,
       generateTestData: flow,
       generateTestDataForDatabaseConnection: flow,
+      generateTestDataWithSeedData: flow,
+      generateTestDataWithSeedDataForDatabaseConnection: flow,
       generateQuerySchemas: flow,
     });
     this.testDataState = testDataState;
@@ -214,8 +328,48 @@ export class ConnectionTestDataState {
     }
   }
 
+  getAvailableTables(): Table[] {
+    const runtime =
+      this.testDataState.testSuiteState.testableState.serviceEditorState
+        .executionState.serviceExecutionParameters?.runtime;
+    if (runtime instanceof RuntimePointer) {
+      const db =
+        runtime.packageableRuntime.value.runtimeValue.connections[0]?.store
+          .value;
+      if (db instanceof Database) {
+        return db.schemas.flatMap((schema) => schema.tables);
+      }
+    }
+    return [];
+  }
+
   setUseSharedModal(val: boolean): void {
     this.useSharedModal = val;
+  }
+
+  setUseSeedDataInputModal(val: boolean): void {
+    this.useSeedDataInputModal = val;
+  }
+
+  setNewTableIdentifierState(
+    tableRowIdentifierStates: TableRowIdentifierState[],
+  ): void {
+    this.tableRowIdentifierStates = tableRowIdentifierStates;
+  }
+
+  addNewTableIdentifierState(table: Table): void {
+    const tableRowIdentifierState = new TableRowIdentifierState(
+      this,
+      table,
+      [],
+    );
+    this.tableRowIdentifierStates.push(tableRowIdentifierState);
+  }
+
+  removeTableIdentifierState(
+    tableRowIdentifierState: TableRowIdentifierState,
+  ): void {
+    deleteEntry(this.tableRowIdentifierStates, tableRowIdentifierState);
   }
 
   setAnonymizeGeneratedData(val: boolean): void {
@@ -334,6 +488,146 @@ export class ConnectionTestDataState {
       this.generatingTestDataState.fail();
     } finally {
       this.generatingTestDataState.complete();
+    }
+  }
+
+  *generateTestDataWithSeedDataForDatabaseConnection(serviceExecutionParameters: {
+    query: RawLambda;
+    mapping: Mapping;
+    runtime: Runtime;
+  }): GeneratorFn<void> {
+    try {
+      this.generatingTestDataWithSeedDataState.inProgress();
+      // NOTE: since we don't have a generic mechanism for test-data generation
+      // we will only report metrics around API usage, when we genericize, we will
+      // move this out
+      LegendStudioTelemetryHelper.logEvent_TestDataGenerationLaunched(
+        this.testDataState.editorStore.applicationStore.telemetryService,
+      );
+      const report = reportGraphAnalytics(
+        this.editorStore.graphManagerState.graph,
+      );
+      const rowIdentifiersArray =
+        this.tableRowIdentifierStates[0]?.rowIdentifierStates.map(
+          (rowIdentifierState) =>
+            new RowIdentifier([
+              new ColumnValuePair(
+                rowIdentifierState.column.name,
+                (rowIdentifierState.value as PrimitiveInstanceValue)
+                  .values[0] as object, // to do : change once engine code is in place
+              ),
+            ]),
+        ) ?? [];
+      const tablePtr = new TablePtr();
+      const table = guaranteeNonNullable(
+        this.tableRowIdentifierStates[0]?.table,
+      );
+      tablePtr.database = table.schema._OWNER.path;
+      tablePtr.mainTableDb = tablePtr.database;
+      tablePtr.schema = table.schema.name;
+      tablePtr.table = table.name;
+      const tableRowIdentifiers = new TableRowIdentifiers(
+        tablePtr,
+        rowIdentifiersArray,
+      );
+      const value =
+        (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestDataWithSeedData(
+          getExecutionQueryFromRawLambda(
+            serviceExecutionParameters.query,
+            this.parametersState.parameterStates,
+            this.editorStore.graphManagerState,
+          ),
+          [tableRowIdentifiers],
+          serviceExecutionParameters.mapping,
+          serviceExecutionParameters.runtime,
+          this.editorStore.graphManagerState.graph,
+          {
+            anonymizeGeneratedData: this.anonymizeGeneratedData,
+            parameterValues: buildExecutionParameterValues(
+              this.parametersState.parameterStates,
+              this.editorStore.graphManagerState,
+            ),
+          },
+          report,
+        )) as string;
+
+      // NOTE: since we don't have a generic mechanism for test-data generation
+      // we will only report metrics around API usage, when we genericize, we will
+      // move this out
+      LegendStudioTelemetryHelper.logEvent_TestDataGenerationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        report,
+      );
+      service_setConnectionTestDataEmbeddedData(
+        this.connectionData,
+        TEMPORARY__createRelationalDataFromCSV(value),
+        this.editorStore.changeDetectionState.observerContext,
+      );
+      this.embeddedEditorState = new EmbeddedDataEditorState(
+        this.testDataState.editorStore,
+        this.connectionData.testData,
+      );
+      this.generatingTestDataWithSeedDataState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to generate test data: ${error.message}`,
+      );
+      this.generatingTestDataWithSeedDataState.fail();
+    } finally {
+      this.generatingTestDataWithSeedDataState.complete();
+    }
+  }
+
+  *generateTestDataWithSeedData(): GeneratorFn<void> {
+    try {
+      this.generatingTestDataWithSeedDataState.inProgress();
+      const connection = guaranteeNonNullable(
+        this.resolveConnectionValue(this.connectionData.connectionId),
+        `Unable to resolve connection ID '${this.connectionData.connectionId}`,
+      );
+      if (connection instanceof DatabaseConnection) {
+        const serviceExecutionParameters = guaranteeNonNullable(
+          this.testDataState.testSuiteState.testableState.serviceEditorState
+            .executionState.serviceExecutionParameters,
+        );
+        const parameters = (serviceExecutionParameters.query.parameters ??
+          []) as object[];
+        if (parameters.length > 0) {
+          this.parametersState.openModal(serviceExecutionParameters, {
+            generateWithSeedData: true,
+          });
+          return;
+        } else {
+          yield flowResult(
+            this.generateTestDataWithSeedDataForDatabaseConnection(
+              serviceExecutionParameters,
+            ),
+          );
+        }
+      } else {
+        // TODO: delete this once the backend code is in place
+        service_setConnectionTestDataEmbeddedData(
+          this.connectionData,
+          connection.accept_ConnectionVisitor(
+            new TEMPORARY__EmbeddedDataConnectionVisitor(this.editorStore),
+          ),
+          this.editorStore.changeDetectionState.observerContext,
+        );
+      }
+      this.embeddedEditorState = new EmbeddedDataEditorState(
+        this.testDataState.editorStore,
+        this.connectionData.testData,
+      );
+      this.generatingTestDataWithSeedDataState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to generate test data with seed data: ${error.message}`,
+      );
+      this.generatingTestDataWithSeedDataState.fail();
+    } finally {
+      this.generatingTestDataWithSeedDataState.complete();
     }
   }
 

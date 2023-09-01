@@ -39,6 +39,7 @@ import type { V1_ParameterValue } from '../../model/packageableElements/service/
 import { V1_parameterValueModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import { V1_TableRowIdentifiers } from '../service/V1_TableRowIdentifiers.js';
 
 export class V1_ExecuteInput {
   clientVersion: string | undefined;
@@ -87,6 +88,29 @@ export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
       context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
       hashStrings: primitive(),
       parameters: list(primitive()),
+    }),
+  );
+}
+
+export class V1_TestDataGenerationExecutionWithSeedInput extends V1_ExecuteInput {
+  tableRowIdentifiers: V1_TableRowIdentifiers[] = [];
+  hashStrings = false;
+
+  static override readonly serialization = new SerializationFactory(
+    createModelSchema(V1_TestDataGenerationExecutionWithSeedInput, {
+      clientVersion: optional(primitive()),
+      function: usingModelSchema(V1_rawLambdaModelSchema),
+      mapping: primitive(),
+      model: V1_pureModelContextPropSchema,
+      runtime: custom(
+        (val) => V1_serializeRuntime(val),
+        () => SKIP,
+      ),
+      context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
+      hashStrings: primitive(),
+      tableRowIdentifiers: list(
+        usingModelSchema(V1_TableRowIdentifiers.serialization.schema),
+      ),
     }),
   );
 }

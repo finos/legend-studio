@@ -106,6 +106,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   ACTIVATE_SERVICE_GENERATION_ID = 'activate service generation id',
   RUN_SERVICE_TESTS = 'run service tests',
   GENERATE_TEST_DATA_WITH_DEFAULT_SEED = 'generate test data with default seed',
+  GENERATE_TEST_DATA_WITH_SEED = 'generate test data with seed',
 
   RUN_TESTS = 'run tests',
 
@@ -616,6 +617,24 @@ export class V1_EngineServerClient extends AbstractServerClient {
       this.debugPayload(
         input,
         CORE_ENGINE_ACTIVITY_TRACE.GENERATE_TEST_DATA_WITH_DEFAULT_SEED,
+      ),
+      {},
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+      undefined,
+      { enableCompression: true },
+    );
+
+  generateTestDataWithSeed = (
+    input: PlainObject<V1_ExecuteInput>,
+  ): Promise<string> =>
+    this.postWithTracing(
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.GENERATE_TEST_DATA_WITH_SEED,
+      ),
+      `${this._execution()}/testDataGeneration/generateTestData_WithSeed`,
+      this.debugPayload(
+        input,
+        CORE_ENGINE_ACTIVITY_TRACE.GENERATE_TEST_DATA_WITH_SEED,
       ),
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },

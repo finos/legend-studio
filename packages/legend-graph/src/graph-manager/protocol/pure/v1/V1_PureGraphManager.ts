@@ -123,6 +123,7 @@ import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda.js
 import {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
+  V1_TestDataGenerationExecutionWithSeedInput,
 } from './engine/execution/V1_ExecuteInput.js';
 import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput.js';
 import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
@@ -294,7 +295,7 @@ import { V1_FunctionActivatorInput } from './engine/functionActivator/V1_Functio
 import { V1_FunctionActivator } from './model/packageableElements/function/V1_FunctionActivator.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from './model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import { V1_DatabaseToModelGenerationInput } from './engine/relational/V1_DatabaseToModelGenerationInput.js';
-import type { RelationalDatabaseConnection } from '../../../../STO_Relational_Exports.js';
+import { type RelationalDatabaseConnection } from '../../../../STO_Relational_Exports.js';
 import { V1_RawSQLExecuteInput } from './engine/execution/V1_RawSQLExecuteInput.js';
 import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
 import { V1_INTERNAL__UnknownStore } from './model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
@@ -310,6 +311,13 @@ import { V1_TestDataGenerationInput } from './engine/service/V1_TestDataGenerati
 import type { TestDataGenerationResult } from '../../../../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 import { V1_buildTestDataGenerationResult } from './engine/service/V1_TestDataGenerationResult.js';
 import { RelationalDatabaseTypeConfiguration } from '../../../action/relational/RelationalDatabaseTypeConfiguration.js';
+import type { TableRowIdentifiers } from '../../../../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
+import {
+  V1_ColumnValuePair,
+  V1_RowIdentifier,
+  V1_TableRowIdentifiers,
+} from './engine/service/V1_TableRowIdentifiers.js';
+import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2652,6 +2660,69 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     const result = await this.engine.generateExecuteTestData(
       testDataGenerationExecuteInput,
+    );
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+    );
+
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
+
+    return result;
+  }
+
+  async generateExecuteTestDataWithSeedData(
+    lambda: RawLambda,
+    tableRowIdentifiers: TableRowIdentifiers[],
+    mapping: Mapping,
+    runtime: Runtime,
+    graph: PureModel,
+    options?: {
+      anonymizeGeneratedData?: boolean;
+      parameterValues?: ParameterValue[];
+    },
+    _report?: GraphManagerOperationReport,
+  ): Promise<string> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+    const testDataGenerationExecuteWithSeedInput =
+      new V1_TestDataGenerationExecutionWithSeedInput();
+    this.createExecutionInputWithPureModelContext(
+      graph.origin
+        ? this.buildPureModelSDLCPointer(graph.origin, undefined)
+        : this.getFullGraphModelData(graph),
+      mapping,
+      lambda,
+      runtime,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+      testDataGenerationExecuteWithSeedInput,
+      options?.parameterValues,
+    );
+    testDataGenerationExecuteWithSeedInput.hashStrings = Boolean(
+      options?.anonymizeGeneratedData,
+    );
+    testDataGenerationExecuteWithSeedInput.tableRowIdentifiers =
+      tableRowIdentifiers.map((tr) => {
+        const result = new V1_TableRowIdentifiers();
+        result.table = V1_transformTablePointer(tr.table);
+        result.rowIdentifiers = tr.rowIdentifiers.map((ri) => {
+          const value = new V1_RowIdentifier();
+          value.columnValuePairs = ri.columnValuePairs.map((cv) => {
+            const pair = new V1_ColumnValuePair();
+            pair.name = cv.name;
+            pair.value = cv.value;
+            return pair;
+          });
+          return value;
+        });
+        return result;
+      });
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+
+    const result = await this.engine.generateExecuteTestDataWithSeedData(
+      testDataGenerationExecuteWithSeedInput,
     );
     stopWatch.record(
       GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,

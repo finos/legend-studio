@@ -39,20 +39,25 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  TimesIcon,
 } from '@finos/legend-art';
 import {
   type IdentifiedConnection,
   type ConnectionTestData,
   type DataElement,
+  type ValueSpecification,
   getAllIdentifiedServiceConnections,
   DataElementReference,
   PackageableElementExplicitReference,
+  Column,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
 import type {
   ConnectionTestDataState,
+  RowIdentifierState,
   ServiceTestDataState,
+  TableRowIdentifierState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/service/testable/ServiceTestDataState.js';
 import type { EmbeddedDataTypeOption } from '../../../../../stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 import { EmbeddedDataEditor } from '../../data-editor/EmbeddedDataEditor.js';
@@ -64,11 +69,245 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-lego/graph-editor';
-import { prettyCONSTName } from '@finos/legend-shared';
+import {
+  filterByType,
+  guaranteeNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
-import { LambdaParameterValuesEditor } from '@finos/legend-query-builder';
+import {
+  BasicValueSpecificationEditor,
+  createMockPrimitiveValueSpecificationFromRelationalDataType,
+  LambdaParameterValuesEditor,
+  relationalDataTypeToPrimitiveType,
+} from '@finos/legend-query-builder';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../../__lib__/LegendStudioDocumentation.js';
+import type { TableOption } from '../../data-editor/RelationalCSVDataEditor.js';
+
+export interface ColumnOption {
+  value: Column;
+  label: string;
+}
+
+export const RowIdentifierEditor = observer(
+  (props: {
+    tableRowIdentifierState: TableRowIdentifierState;
+    rowIdentifierState: RowIdentifierState;
+  }) => {
+    const { tableRowIdentifierState, rowIdentifierState } = props;
+    const columnOptions = tableRowIdentifierState.table.columns
+      .filter(filterByType(Column))
+      .map((_c) => ({
+        label: _c.name,
+        value: _c,
+      }));
+    const changeColumn = (val: ColumnOption): void => {
+      if (rowIdentifierState.column.name !== val.value.name) {
+        rowIdentifierState.updateRowIdentifierValue(
+          createMockPrimitiveValueSpecificationFromRelationalDataType(
+            guaranteeNonNullable(val.value.type),
+            tableRowIdentifierState.connectionTestDataState.editorStore
+              .graphManagerState.graph,
+            tableRowIdentifierState.connectionTestDataState.editorStore
+              .changeDetectionState.observerContext,
+          ),
+        );
+        rowIdentifierState.updateRowIdentifierColumn(val.value);
+      }
+    };
+
+    const resetNode = (): void => {
+      rowIdentifierState.updateRowIdentifierValue(
+        createMockPrimitiveValueSpecificationFromRelationalDataType(
+          guaranteeNonNullable(rowIdentifierState.column.type),
+          tableRowIdentifierState.connectionTestDataState.editorStore
+            .graphManagerState.graph,
+          tableRowIdentifierState.connectionTestDataState.editorStore
+            .changeDetectionState.observerContext,
+        ),
+      );
+    };
+
+    return (
+      <div className="panel__content__form__section__list">
+        <div className="panel__content__form__section__list__new-item">
+          <CustomSelectorInput
+            className="service-editor__owner__selector"
+            placeholder="Choose a column..."
+            options={columnOptions}
+            onChange={changeColumn}
+            value={{
+              label: rowIdentifierState.column.name,
+
+              value: rowIdentifierState.column,
+            }}
+            darkMode={true}
+          />
+          <BasicValueSpecificationEditor
+            valueSpecification={rowIdentifierState.value}
+            setValueSpecification={(val: ValueSpecification): void => {
+              rowIdentifierState.updateRowIdentifierValue(val);
+            }}
+            graph={
+              tableRowIdentifierState.connectionTestDataState.editorStore
+                .graphManagerState.graph
+            }
+            obseverContext={
+              tableRowIdentifierState.connectionTestDataState.editorStore
+                .changeDetectionState.observerContext
+            }
+            typeCheckOption={{
+              expectedType: relationalDataTypeToPrimitiveType(
+                guaranteeNonNullable(rowIdentifierState.column.type),
+              ),
+            }}
+            resetValue={resetNode}
+          />
+          <button
+            className="btn--icon btn--dark btn--sm"
+            onClick={(): void =>
+              tableRowIdentifierState.removeRowIdentifierState(
+                rowIdentifierState,
+              )
+            }
+            tabIndex={-1}
+            title={'Remove Row'}
+          >
+            <TimesIcon />
+          </button>
+        </div>
+      </div>
+    );
+  },
+);
+
+export const TableRowIdentifierEditor = observer(
+  (props: {
+    connectionTestDataState: ConnectionTestDataState;
+    tableRowIdentifierState: TableRowIdentifierState;
+  }) => {
+    const { connectionTestDataState, tableRowIdentifierState } = props;
+    const tables = connectionTestDataState.getAvailableTables();
+    const tableOptions = tables.map((_t) => ({
+      label: `${_t.schema.name}.${_t.name}`,
+      value: _t,
+    }));
+
+    const changeTable = (val: TableOption): void => {
+      if (tableRowIdentifierState.table !== val.value) {
+        tableRowIdentifierState.updateTable(val.value);
+      }
+    };
+    const addNewValue = (): void => {
+      tableRowIdentifierState.addNewRowIdentifierState(
+        guaranteeNonNullable(
+          tableRowIdentifierState.table.columns.filter(filterByType(Column))[0],
+        ),
+      );
+    };
+    return (
+      <ModalBody className="lambda-parameter-values__modal__body">
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Table
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            create seed data below based on this table
+          </div>
+          <CustomSelectorInput
+            placeholder="Choose a table..."
+            options={tableOptions}
+            onChange={changeTable}
+            value={{
+              label: `${tableRowIdentifierState.table.schema.name}.${tableRowIdentifierState.table.name}`,
+
+              value: tableRowIdentifierState.table,
+            }}
+            darkMode={true}
+          />
+        </div>
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Seed Data
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            create value for each column
+          </div>
+          {tableRowIdentifierState.rowIdentifierStates.map(
+            (rowIdentifierState) => (
+              <RowIdentifierEditor
+                key={rowIdentifierState.column.name}
+                tableRowIdentifierState={tableRowIdentifierState}
+                rowIdentifierState={rowIdentifierState}
+              />
+            ),
+          )}
+          <div className="panel__content__form__section__list__new-item__add">
+            <button
+              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+              onClick={addNewValue}
+              tabIndex={-1}
+              title="Add Seed Data for column"
+            >
+              Add Row
+            </button>
+          </div>
+        </div>
+      </ModalBody>
+    );
+  },
+);
+
+export const SeedDataInputModal = observer(
+  (props: { connectionTestDataState: ConnectionTestDataState }) => {
+    const { connectionTestDataState } = props;
+    const applicationStore = useApplicationStore();
+    const useSeedDataInputModal = connectionTestDataState.useSeedDataInputModal;
+    const closeModal = (): void =>
+      connectionTestDataState.setUseSeedDataInputModal(false);
+    const generateWithSeedData = (): void => {
+      closeModal();
+      flowResult(connectionTestDataState.generateTestDataWithSeedData()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+
+    return (
+      <Dialog
+        open={useSeedDataInputModal}
+        onClose={closeModal}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal
+          darkMode={true}
+          className="editor-modal lambda-parameter-values__modal"
+        >
+          <ModalHeader title="Create Seed Data Input (BETA)" />
+          <ModalBody className="lambda-parameter-values__modal__body">
+            {connectionTestDataState.tableRowIdentifierStates.map(
+              (tableRowIdentifierState) => (
+                <TableRowIdentifierEditor
+                  key={tableRowIdentifierState.table.name}
+                  connectionTestDataState={connectionTestDataState}
+                  tableRowIdentifierState={tableRowIdentifierState}
+                />
+              ),
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton onClick={closeModal} text="Close" />
+            <ModalFooterButton onClick={generateWithSeedData} text="Generate" />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
 
 export const UseDataElementModal = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
@@ -201,6 +440,15 @@ export const ConnectionTestDataEditor = observer(
       }
     };
 
+    const generateTestDataWithSeedData = (): void => {
+      connectionTestDataState.setUseSeedDataInputModal(true);
+      connectionTestDataState.setNewTableIdentifierState([]);
+      const tables = connectionTestDataState.getAvailableTables();
+      if (tables[0]) {
+        connectionTestDataState.addNewTableIdentifierState(tables[0]);
+      }
+    };
+
     const generateQuerySchemas = (): void => {
       flowResult(connectionTestDataState.generateQuerySchemas()).catch(
         applicationStore.alertUnhandledError,
@@ -268,6 +516,16 @@ export const ConnectionTestDataEditor = observer(
                     >
                       Generate Query Schemas
                     </MenuContentItem>
+                    <MenuContentItem
+                      className="btn__dropdown-combo__option"
+                      onClick={generateTestDataWithSeedData}
+                      disabled={
+                        connectionTestDataState
+                          .generatingTestDataWithSeedDataState.isInProgress
+                      }
+                    >
+                      Generate with Seed Data (Beta)
+                    </MenuContentItem>
                   </MenuContent>
                 }
                 menuProps={{
@@ -313,6 +571,11 @@ export const ConnectionTestDataEditor = observer(
         )}
         {connectionTestDataState.useSharedModal && (
           <UseDataElementModal
+            connectionTestDataState={connectionTestDataState}
+          />
+        )}
+        {connectionTestDataState.useSeedDataInputModal && (
+          <SeedDataInputModal
             connectionTestDataState={connectionTestDataState}
           />
         )}
@@ -624,6 +887,10 @@ export const ServiceTestDataEditor = observer(
               Boolean(
                 testDataState.selectedDataState?.generateSchemaQueryState
                   .isInProgress,
+              ) ||
+              Boolean(
+                testDataState.selectedDataState
+                  ?.generatingTestDataWithSeedDataState.isInProgress,
               )
             }
           />
