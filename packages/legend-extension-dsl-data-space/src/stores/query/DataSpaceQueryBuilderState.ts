@@ -25,7 +25,10 @@ import {
   getMappingCompatibleClasses,
   RuntimePointer,
   type Runtime,
-  type Class,
+  Class,
+  type Mapping,
+  getDescendantsOfPackage,
+  Package,
 } from '@finos/legend-graph';
 import {
   DepotScope,
@@ -39,6 +42,7 @@ import {
   assertErrorThrown,
   getNullableFirstEntry,
   filterByType,
+  uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
@@ -50,6 +54,25 @@ import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import { DataSpaceAdvancedSearchState } from './DataSpaceAdvancedSearchState.js';
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
+
+export const resolveUsableDataSpaceClasses = (
+  dataSpace: DataSpace,
+  mapping: Mapping,
+  graphManagerState: GraphManagerState,
+): Class[] => {
+  if (dataSpace.elements?.length) {
+    const dataSpaceElements = dataSpace.elements.map((ep) => ep.element.value);
+    return uniq([
+      ...dataSpaceElements.filter(filterByType(Class)),
+      ...dataSpaceElements
+        .filter(filterByType(Package))
+        .map((_package) => Array.from(getDescendantsOfPackage(_package)))
+        .flat()
+        .filter(filterByType(Class)),
+    ]);
+  }
+  return getMappingCompatibleClasses(mapping, graphManagerState.usableClasses);
+};
 
 export class ProjectInfo {
   readonly groupId: string;
@@ -263,9 +286,10 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     }
     this.changeRuntime(new RuntimePointer(executionContext.defaultRuntime));
 
-    const compatibleClasses = getMappingCompatibleClasses(
+    const compatibleClasses = resolveUsableDataSpaceClasses(
+      this.dataSpace,
       mapping,
-      this.graphManagerState.usableClasses,
+      this.graphManagerState,
     );
     // if there is no chosen class or the chosen one is not compatible
     // with the mapping then pick a compatible class if possible
