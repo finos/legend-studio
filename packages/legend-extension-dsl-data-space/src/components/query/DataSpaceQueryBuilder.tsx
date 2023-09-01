@@ -30,7 +30,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import type { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
+import { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
 import {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
@@ -58,12 +58,13 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import type {
+import {
   DataSpace,
-  DataSpaceExecutionContext,
+  type DataSpaceExecutionContext,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
+import type { EditorStore } from '@finos/legend-application-studio';
 
 export type DataSpaceOption = {
   label: string;
@@ -80,11 +81,15 @@ export const formatDataSpaceOptionLabel = (
 ): React.ReactNode => (
   <div
     className="query-builder__setup__data-space__option"
-    title={`${option.label} - ${option.value.path} - ${generateGAVCoordinates(
-      option.value.groupId,
-      option.value.artifactId,
-      option.value.versionId,
-    )}`}
+    title={`${option.label} - ${option.value.path} - ${
+      option.value.groupId && option.value.artifactId && option.value.versionId
+        ? generateGAVCoordinates(
+            option.value.groupId,
+            option.value.artifactId,
+            option.value.versionId,
+          )
+        : ''
+    }`}
   >
     <div className="query-builder__setup__data-space__option__label">
       {option.label}
@@ -93,11 +98,17 @@ export const formatDataSpaceOptionLabel = (
       {option.value.path}
     </div>
     <div className="query-builder__setup__data-space__option__gav">
-      {generateGAVCoordinates(
-        option.value.groupId,
-        option.value.artifactId,
-        option.value.versionId,
-      )}
+      {option.value.groupId &&
+        option.value.artifactId &&
+        option.value.versionId && (
+          <>
+            {generateGAVCoordinates(
+              option.value.groupId,
+              option.value.artifactId,
+              option.value.versionId,
+            )}
+          </>
+        )}
     </div>
   </div>
 );
@@ -154,9 +165,9 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       label:
         queryBuilderState.dataSpace.title ?? queryBuilderState.dataSpace.name,
       value: {
-        groupId: queryBuilderState.groupId,
-        artifactId: queryBuilderState.artifactId,
-        versionId: queryBuilderState.versionId,
+        groupId: queryBuilderState.projectInfo?.groupId,
+        artifactId: queryBuilderState.projectInfo?.artifactId,
+        versionId: queryBuilderState.projectInfo?.versionId,
         title: queryBuilderState.dataSpace.title,
         name: queryBuilderState.dataSpace.name,
         path: queryBuilderState.dataSpace.path,
@@ -408,3 +419,46 @@ export const renderDataSpaceQueryBuilderSetupPanelContent = (
     queryBuilderState={queryBuilderState}
   />
 );
+
+export const queryDataSpace = async (
+  dataSpace: DataSpace,
+  editorStore: EditorStore,
+): Promise<void> => {
+  const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
+  await flowResult(
+    embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+      setupQueryBuilderState: () => {
+        const queryBuilderState = new DataSpaceQueryBuilderState(
+          editorStore.applicationStore,
+          editorStore.graphManagerState,
+          editorStore.depotServerClient,
+          dataSpace,
+          dataSpace.defaultExecutionContext,
+          (dataSpaceInfo: DataSpaceInfo) => {
+            queryBuilderState.dataSpace = guaranteeType(
+              queryBuilderState.graphManagerState.graph.getElement(
+                dataSpaceInfo.path,
+              ),
+              DataSpace,
+            );
+            queryBuilderState.setExecutionContext(
+              queryBuilderState.dataSpace.defaultExecutionContext,
+            );
+            queryBuilderState.propagateExecutionContextChange(
+              queryBuilderState.dataSpace.defaultExecutionContext,
+            );
+          },
+          false,
+        );
+        queryBuilderState.setExecutionContext(
+          dataSpace.defaultExecutionContext,
+        );
+        queryBuilderState.propagateExecutionContextChange(
+          dataSpace.defaultExecutionContext,
+        );
+        return queryBuilderState;
+      },
+      actionConfigs: [],
+    }),
+  );
+};
