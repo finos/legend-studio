@@ -48,7 +48,7 @@ import {
 import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import {
   DataSpaceQueryBuilderState,
-  ProjectInfo,
+  DataSpaceProjectInfo,
 } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
@@ -146,7 +146,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     } catch {
       // do nothing
     }
-    const projectInfo = new ProjectInfo(
+    const projectInfo = new DataSpaceProjectInfo(
       this.groupId,
       this.artifactId,
       this.versionId,

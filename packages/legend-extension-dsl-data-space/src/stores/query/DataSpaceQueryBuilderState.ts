@@ -25,7 +25,10 @@ import {
   getMappingCompatibleClasses,
   RuntimePointer,
   type Runtime,
-  type Class,
+  Class,
+  type Mapping,
+  getDescendantsOfPackage,
+  Package,
 } from '@finos/legend-graph';
 import {
   DepotScope,
@@ -39,6 +42,7 @@ import {
   assertErrorThrown,
   getNullableFirstEntry,
   filterByType,
+  uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
@@ -51,7 +55,26 @@ import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import { DataSpaceAdvancedSearchState } from './DataSpaceAdvancedSearchState.js';
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 
-export class ProjectInfo {
+export const resolveUsableDataSpaceClasses = (
+  dataSpace: DataSpace,
+  mapping: Mapping,
+  graphManagerState: GraphManagerState,
+): Class[] => {
+  if (dataSpace.elements?.length) {
+    const dataSpaceElements = dataSpace.elements.map((ep) => ep.element.value);
+    return uniq([
+      ...dataSpaceElements.filter(filterByType(Class)),
+      ...dataSpaceElements
+        .filter(filterByType(Package))
+        .map((_package) => Array.from(getDescendantsOfPackage(_package)))
+        .flat()
+        .filter(filterByType(Class)),
+    ]);
+  }
+  return getMappingCompatibleClasses(mapping, graphManagerState.usableClasses);
+};
+
+export class DataSpaceProjectInfo {
   readonly groupId: string;
   readonly artifactId: string;
   readonly versionId: string;
@@ -102,7 +125,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
   readonly onClassChange?: ((val: Class) => void) | undefined;
   readonly dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined;
-  readonly projectInfo?: ProjectInfo | undefined;
+  readonly projectInfo?: DataSpaceProjectInfo | undefined;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
@@ -127,7 +150,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       | undefined,
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
-    projectInfo?: ProjectInfo | undefined,
+    projectInfo?: DataSpaceProjectInfo | undefined,
   ) {
     super(applicationStore, graphManagerState);
 
@@ -162,7 +185,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   }
 
   showAdvancedSearchPanel(): void {
-    if (this.projectInfo) {
+    if (this.projectInfo && this.isAdvancedDataSpaceSearchEnabled) {
       this.advancedSearchState = new DataSpaceAdvancedSearchState(
         this.applicationStore,
         this.graphManagerState,
@@ -263,9 +286,10 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     }
     this.changeRuntime(new RuntimePointer(executionContext.defaultRuntime));
 
-    const compatibleClasses = getMappingCompatibleClasses(
+    const compatibleClasses = resolveUsableDataSpaceClasses(
+      this.dataSpace,
       mapping,
-      this.graphManagerState.usableClasses,
+      this.graphManagerState,
     );
     // if there is no chosen class or the chosen one is not compatible
     // with the mapping then pick a compatible class if possible

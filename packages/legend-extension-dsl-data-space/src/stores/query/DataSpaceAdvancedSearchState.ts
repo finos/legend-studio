@@ -158,11 +158,10 @@ export class DataSpaceAdvancedSearchState {
   *loadDataSpace(dataSpace: DataSpaceInfo): GeneratorFn<void> {
     this.loadDataSpaceState.inProgress();
     this.loadDataSpaceState.setMessage(`Initializing...`);
-    const groupId = guaranteeNonNullable(dataSpace.groupId);
-    const artifactId = guaranteeNonNullable(dataSpace.artifactId);
-    const versionId = guaranteeNonNullable(dataSpace.versionId);
-
     try {
+      const groupId = guaranteeNonNullable(dataSpace.groupId);
+      const artifactId = guaranteeNonNullable(dataSpace.artifactId);
+      const versionId = guaranteeNonNullable(dataSpace.versionId);
       // fetch project
       this.loadDataSpaceState.setMessage(`Fetching project...`);
       const project = StoreProjectData.serialization.fromJson(
