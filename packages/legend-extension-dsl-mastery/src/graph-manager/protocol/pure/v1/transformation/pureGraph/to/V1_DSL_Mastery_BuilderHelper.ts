@@ -186,7 +186,7 @@ export const V1_buildTrigger = (
       return V1_buildCronTrigger(element as V1_CronTrigger, context);
     default:
       throw new UnsupportedOperationError(
-        `Unsupported trigger '${typeof element}'`,
+        `Can't build trigger '${typeof element}'`,
       );
   }
 };
@@ -215,7 +215,7 @@ export const V1_buildCredentialSecret = (
     }
   }
   throw new UnsupportedOperationError(
-    `Unsupported credential secret '${typeof element}'`,
+    `Can't build credential secret '${typeof element}'`,
   );
 };
 
@@ -281,7 +281,7 @@ export const V1_buildAuthenticationStrategy = (
         }
       }
       throw new UnsupportedOperationError(
-        `Unsupported authentication strategy '${typeof element}'`,
+        `Can't build authentication strategy '${typeof element}'`,
       );
     }
   }
@@ -349,7 +349,7 @@ export const V1_buildFileConnection = (
       return V1_buildHTTPConnection(element as V1_HTTPConnection, context);
     default:
       throw new UnsupportedOperationError(
-        `Unsupported file connection '${typeof element}'`,
+        `Can't build file connection '${typeof element}'`,
       );
   }
 };
@@ -454,7 +454,7 @@ export const V1_buildAcquisitionProtocol = (
         }
       }
       throw new UnsupportedOperationError(
-        `Unsupported acquisition protocol '${typeof element}'`,
+        `Can't build acquisition protocol '${typeof element}'`,
       );
     }
   }
@@ -484,7 +484,7 @@ export const V1_buildAuthorization = (
     }
   }
   throw new UnsupportedOperationError(
-    `Unsupported authorization '${typeof element}'`,
+    `Can't build authorization '${typeof element}'`,
   );
 };
 
@@ -628,7 +628,7 @@ export const V1_buildRuleScope = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Unsupported rule scope '${element._type}'`,
+        `Can't build rule scope '${element._type}'`,
       );
   }
 };
@@ -734,7 +734,7 @@ export const V1_buildPrecedenceRule = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Unsupported precedence rule '${element._type}'`,
+        `Can't build precedence rule '${element._type}'`,
       );
   }
 };

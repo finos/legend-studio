@@ -97,6 +97,13 @@ export const FTP_CONNECTION_ELEMENT_CLASSIFIER_PATH =
 export const HTTP_CONNECTION_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::mastery::metamodel::connection::HTTPConnection';
 
+export const KAFKA_CONNECTION_ELEMENT_CLASS_NAME = 'KafkaConnection';
+export const FTP_CONNECTION_ELEMENT_CLASS_NAME = 'FTPConnection';
+export const HTTP_CONNECTION_ELEMENT_CLASS_NAME = 'HTTPConnection';
+export const MASTER_RECORD_DEFINITION_ELEMENT_CLASS_NAME =
+  'MasterRecordDefinition';
+export const DATA_PROVIDER_ELEMENT_CLASS_NAME = 'DataProvider';
+
 export class DSL_Mastery_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
   implements DSL_Mastery_PureProtocolProcessorPlugin_Extension
@@ -111,7 +118,7 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
     return [
       new V1_ElementBuilder<V1_KafkaConnection>({
-        elementClassName: 'KafkaConnection',
+        elementClassName: KAFKA_CONNECTION_ELEMENT_CLASS_NAME,
         _class: V1_KafkaConnection,
         firstPass: (
           elementProtocol: V1_PackageableElement,
@@ -139,7 +146,7 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
         },
       }),
       new V1_ElementBuilder<V1_FTPConnection>({
-        elementClassName: 'FTPConnection',
+        elementClassName: FTP_CONNECTION_ELEMENT_CLASS_NAME,
         _class: V1_FTPConnection,
         firstPass: (
           elementProtocol: V1_PackageableElement,
@@ -167,7 +174,7 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
         },
       }),
       new V1_ElementBuilder<V1_HTTPConnection>({
-        elementClassName: 'HTTPConnection',
+        elementClassName: HTTP_CONNECTION_ELEMENT_CLASS_NAME,
         _class: V1_HTTPConnection,
         firstPass: (
           elementProtocol: V1_PackageableElement,
@@ -195,7 +202,7 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
         },
       }),
       new V1_ElementBuilder<V1_MasterRecordDefinition>({
-        elementClassName: 'MasterRecordDefinition',
+        elementClassName: MASTER_RECORD_DEFINITION_ELEMENT_CLASS_NAME,
         _class: V1_MasterRecordDefinition,
         firstPass: (
           elementProtocol: V1_PackageableElement,
@@ -223,7 +230,7 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
         },
       }),
       new V1_ElementBuilder<V1_DataProvider>({
-        elementClassName: 'DataProvider',
+        elementClassName: DATA_PROVIDER_ELEMENT_CLASS_NAME,
         _class: V1_DataProvider,
         firstPass: (
           elementProtocol: V1_PackageableElement,
