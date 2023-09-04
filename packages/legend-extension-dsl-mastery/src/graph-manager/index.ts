@@ -53,3 +53,6 @@ export {
   V1_buildFTPConnection,
   V1_buildHTTPConnection,
 } from './protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
+
+// extension
+export * from './protocol/pure/DSL_Mastery_PureProtocolProcessorPlugin_Extension.js';
