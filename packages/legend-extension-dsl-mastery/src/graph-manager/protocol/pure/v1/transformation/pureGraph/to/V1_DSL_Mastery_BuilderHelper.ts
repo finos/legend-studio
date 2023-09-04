@@ -46,12 +46,14 @@ import type {
   DataProvider,
   DataProviderType,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_DataProvider.js';
+import type {
+  V1_FTPConnection,
+  V1_HTTPConnection,
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
 import {
   type V1_FileConnection,
   type V1_KafkaConnection,
   type V1_ProxyConfiguration,
-  V1_FTPConnection,
-  V1_HTTPConnection,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
 import {
   type FileConnection,
@@ -139,6 +141,7 @@ import {
   V1_buildFullPath,
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
+import { V1_transformCronTrigger } from '../from/V1_DSL_Mastery_TransformerHelper.js';
 
 /**********
  * data provider
@@ -179,16 +182,14 @@ export const V1_buildTrigger = (
   element: V1_Trigger,
   context: V1_GraphBuilderContext,
 ): Trigger => {
-  switch (element.constructor) {
-    case V1_ManualTrigger:
-      return new ManualTrigger();
-    case V1_CronTrigger:
-      return V1_buildCronTrigger(element as V1_CronTrigger, context);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't build trigger '${typeof element}'`,
-      );
+  if (element instanceof V1_ManualTrigger) {
+    return new ManualTrigger();
+  } else if (element instanceof V1_CronTrigger) {
+    return V1_buildCronTrigger(element as V1_CronTrigger, context);
   }
+  throw new UnsupportedOperationError(
+    `Can't build trigger '${typeof element}'`,
+  );
 };
 
 /**********
@@ -196,12 +197,9 @@ export const V1_buildTrigger = (
  **********/
 
 export const V1_buildCredentialSecret = (
-  element: V1_CredentialSecret | undefined,
+  element: V1_CredentialSecret,
   context: V1_GraphBuilderContext,
-): CredentialSecret | undefined => {
-  if (element === undefined) {
-    return element;
-  }
+): CredentialSecret => {
   const extraCredentialSecretBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
       (
@@ -228,10 +226,9 @@ export const V1_buildNTLMAuthenticationStrategy = (
   context: V1_GraphBuilderContext,
 ): NTLMAuthenticationStrategy => {
   const ntlmAuthenticationStrategy = new NTLMAuthenticationStrategy();
-  ntlmAuthenticationStrategy.credential = V1_buildCredentialSecret(
-    element.credential as V1_CredentialSecret,
-    context,
-  );
+  ntlmAuthenticationStrategy.credential = element.credential
+    ? V1_buildCredentialSecret(element.credential, context)
+    : undefined;
   return ntlmAuthenticationStrategy;
 };
 
@@ -240,51 +237,44 @@ export const V1_buildTokenAuthenticationStrategy = (
   context: V1_GraphBuilderContext,
 ): TokenAuthenticationStrategy => {
   const tokenAuthenticationStrategy = new TokenAuthenticationStrategy();
-  tokenAuthenticationStrategy.credential = V1_buildCredentialSecret(
-    element.credential as V1_CredentialSecret,
-    context,
-  );
+  tokenAuthenticationStrategy.credential = element.credential
+    ? V1_buildCredentialSecret(element.credential, context)
+    : undefined;
   tokenAuthenticationStrategy.tokenUrl = element.tokenUrl;
   return tokenAuthenticationStrategy;
 };
 
 export const V1_buildAuthenticationStrategy = (
-  element: V1_AuthenticationStrategy | undefined,
+  element: V1_AuthenticationStrategy,
   context: V1_GraphBuilderContext,
-): AuthenticationStrategy | undefined => {
-  if (element === undefined) {
-    return element;
+): AuthenticationStrategy => {
+  if (element instanceof V1_NTLMAuthenticationStrategy) {
+    return V1_buildNTLMAuthenticationStrategy(
+      element as V1_NTLMAuthenticationStrategy,
+      context,
+    );
+  } else if (element instanceof V1_TokenAuthenticationStrategy) {
+    return V1_buildTokenAuthenticationStrategy(
+      element as V1_TokenAuthenticationStrategy,
+      context,
+    );
   }
-  switch (element.constructor) {
-    case V1_NTLMAuthenticationStrategy:
-      return V1_buildNTLMAuthenticationStrategy(
-        element as V1_NTLMAuthenticationStrategy,
-        context,
-      );
-    case V1_TokenAuthenticationStrategy:
-      return V1_buildTokenAuthenticationStrategy(
-        element as V1_TokenAuthenticationStrategy,
-        context,
-      );
-    default: {
-      const extraAuthenticationStrategyBuilders =
-        context.extensions.plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-            ).V1_getExtraAuthenticationStrategyBuilders?.() ?? [],
-        );
-      for (const builder of extraAuthenticationStrategyBuilders) {
-        const metamodel = builder(element, context);
-        if (metamodel) {
-          return metamodel;
-        }
-      }
-      throw new UnsupportedOperationError(
-        `Can't build authentication strategy '${typeof element}'`,
-      );
+  const extraAuthenticationStrategyBuilders =
+    context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraAuthenticationStrategyBuilders?.() ?? [],
+    );
+  for (const builder of extraAuthenticationStrategyBuilders) {
+    const metamodel = builder(element, context);
+    if (metamodel) {
+      return metamodel;
     }
   }
+  throw new UnsupportedOperationError(
+    `Can't build authentication strategy '${typeof element}'`,
+  );
 };
 
 /**********
@@ -296,10 +286,9 @@ export const V1_buildProxyConfiguration = (
   context: V1_GraphBuilderContext,
 ): ProxyConfiguration => {
   const proxyConfiguration = new ProxyConfiguration();
-  proxyConfiguration.authentication = V1_buildAuthenticationStrategy(
-    element.authentication,
-    context,
-  );
+  proxyConfiguration.authentication = element.authentication
+    ? V1_buildAuthenticationStrategy(element.authentication, context)
+    : undefined;
   proxyConfiguration.host = element.host;
   proxyConfiguration.port = element.port;
   return proxyConfiguration;
@@ -311,10 +300,9 @@ export const V1_buildFTPConnection = (
 ): FTPConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const ftpConnection = getOwnFTPConnection(path, context.currentSubGraph);
-  ftpConnection.authentication = V1_buildAuthenticationStrategy(
-    element.authentication,
-    context,
-  );
+  ftpConnection.authentication = element.authentication
+    ? V1_buildAuthenticationStrategy(element.authentication, context)
+    : undefined;
   ftpConnection.host = element.host;
   ftpConnection.port = element.port;
   ftpConnection.secure = element.secure;
@@ -327,31 +315,14 @@ export const V1_buildHTTPConnection = (
 ): HTTPConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const httpConnection = getOwnHTTPConnection(path, context.currentSubGraph);
-  httpConnection.authentication = V1_buildAuthenticationStrategy(
-    element.authentication,
-    context,
-  );
+  httpConnection.authentication = element.authentication
+    ? V1_buildAuthenticationStrategy(element.authentication, context)
+    : undefined;
   httpConnection.proxy = element.proxy
     ? V1_buildProxyConfiguration(element.proxy, context)
     : undefined;
   httpConnection.url = element.url;
   return httpConnection;
-};
-
-export const V1_buildFileConnection = (
-  element: V1_FileConnection,
-  context: V1_GraphBuilderContext,
-): FileConnection => {
-  switch (element.constructor) {
-    case V1_FTPConnection:
-      return V1_buildFTPConnection(element as V1_FTPConnection, context);
-    case V1_HTTPConnection:
-      return V1_buildHTTPConnection(element as V1_HTTPConnection, context);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't build file connection '${typeof element}'`,
-      );
-  }
 };
 
 export const V1_buildKafkaConnection = (
@@ -360,10 +331,9 @@ export const V1_buildKafkaConnection = (
 ): KafkaConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const kafkaConnection = getOwnKafkaConnection(path, context.currentSubGraph);
-  kafkaConnection.authentication = V1_buildAuthenticationStrategy(
-    element.authentication,
-    context,
-  );
+  kafkaConnection.authentication = element.authentication
+    ? V1_buildAuthenticationStrategy(element.authentication, context)
+    : undefined;
   kafkaConnection.topicName = element.topicName;
   kafkaConnection.topicUrls = element.topicUrls;
   return kafkaConnection;
@@ -418,46 +388,42 @@ export const V1_buildAcquisitionProtocol = (
   element: V1_AcquisitionProtocol,
   context: V1_GraphBuilderContext,
 ): AcquisitionProtocol => {
-  switch (element.constructor) {
-    case V1_LegendServiceAcquisitionProtocol:
-      return V1_buildLegendServiceAcquisitionProtocol(
-        element as V1_LegendServiceAcquisitionProtocol,
-        context,
-      );
-    case V1_FileAcquisitionProtocol:
-      return V1_buildFileAcquisitionProtocol(
-        element as V1_FileAcquisitionProtocol,
-        context,
-      );
-    case V1_KafkaAcquisitionProtocol:
-      return V1_buildKafkaAcquisitionProtocol(
-        element as V1_KafkaAcquisitionProtocol,
-        context,
-      );
-    case V1_RestAcquisitionProtocol:
-      return V1_buildRestAcquisitionProtocol(
-        element as V1_RestAcquisitionProtocol,
-        context,
-      );
-    default: {
-      const extraAcquisitionProtocolBuilders =
-        context.extensions.plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-            ).V1_getExtraAcquisitionProtocolBuilders?.() ?? [],
-        );
-      for (const builder of extraAcquisitionProtocolBuilders) {
-        const metamodel = builder(element, context);
-        if (metamodel) {
-          return metamodel;
-        }
-      }
-      throw new UnsupportedOperationError(
-        `Can't build acquisition protocol '${typeof element}'`,
-      );
+  if (element instanceof V1_LegendServiceAcquisitionProtocol) {
+    return V1_buildLegendServiceAcquisitionProtocol(
+      element as V1_LegendServiceAcquisitionProtocol,
+      context,
+    );
+  } else if (element instanceof V1_FileAcquisitionProtocol) {
+    return V1_buildFileAcquisitionProtocol(
+      element as V1_FileAcquisitionProtocol,
+      context,
+    );
+  } else if (element instanceof V1_KafkaAcquisitionProtocol) {
+    return V1_buildKafkaAcquisitionProtocol(
+      element as V1_KafkaAcquisitionProtocol,
+      context,
+    );
+  } else if (element instanceof V1_RestAcquisitionProtocol) {
+    return V1_buildRestAcquisitionProtocol(
+      element as V1_RestAcquisitionProtocol,
+      context,
+    );
+  }
+  const extraAcquisitionProtocolBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAcquisitionProtocolBuilders?.() ?? [],
+  );
+  for (const builder of extraAcquisitionProtocolBuilders) {
+    const metamodel = builder(element, context);
+    if (metamodel) {
+      return metamodel;
     }
   }
+  throw new UnsupportedOperationError(
+    `Can't build acquisition protocol '${typeof element}'`,
+  );
 };
 
 /**********
@@ -465,12 +431,9 @@ export const V1_buildAcquisitionProtocol = (
  **********/
 
 export const V1_buildAuthorization = (
-  element: V1_Authorization | undefined,
+  element: V1_Authorization,
   context: V1_GraphBuilderContext,
-): Authorization | undefined => {
-  if (element === undefined) {
-    return element;
-  }
+): Authorization => {
   const extraAuthorizationBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
       (
@@ -524,10 +487,9 @@ export const V1_buildRecordSource = (
     context,
   );
   recordSource.trigger = V1_buildTrigger(protocol.trigger, context);
-  recordSource.authorization = V1_buildAuthorization(
-    protocol.authorization,
-    context,
-  );
+  recordSource.authorization = protocol.authorization
+    ? V1_buildAuthorization(protocol.authorization, context)
+    : undefined;
   recordSource.dataProvider = protocol.dataProvider;
   return recordSource;
 };

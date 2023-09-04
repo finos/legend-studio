@@ -132,6 +132,10 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+import {
+  V1_buildNTLMAuthenticationStrategy,
+  V1_buildTokenAuthenticationStrategy,
+} from '../to/V1_DSL_Mastery_BuilderHelper.js';
 
 /**********
  * data provider
@@ -172,16 +176,14 @@ export const V1_transformTrigger = (
   element: Trigger,
   context: V1_GraphTransformerContext,
 ): V1_Trigger => {
-  switch (element.constructor) {
-    case ManualTrigger:
-      return new V1_ManualTrigger();
-    case CronTrigger:
-      return V1_transformCronTrigger(element as CronTrigger, context);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't transform trigger '${typeof element}'`,
-      );
+  if (element instanceof ManualTrigger) {
+    return new V1_ManualTrigger();
+  } else if (element instanceof CronTrigger) {
+    return V1_transformCronTrigger(element as CronTrigger, context);
   }
+  throw new UnsupportedOperationError(
+    `Can't transform trigger '${typeof element}'`,
+  );
 };
 
 /**********
@@ -189,12 +191,9 @@ export const V1_transformTrigger = (
  **********/
 
 export const V1_transformCredentialSecret = (
-  element: CredentialSecret | undefined,
+  element: CredentialSecret,
   context: V1_GraphTransformerContext,
-): V1_CredentialSecret | undefined => {
-  if (element === undefined) {
-    return element;
-  }
+): V1_CredentialSecret => {
   const extraCredentialSecretTransformers = context.plugins.flatMap(
     (plugin) =>
       (
@@ -221,10 +220,9 @@ export const V1_transformNTLMAuthenticationStrategy = (
   context: V1_GraphTransformerContext,
 ): V1_NTLMAuthenticationStrategy => {
   const ntlmAuthenticationStrategy = new V1_NTLMAuthenticationStrategy();
-  ntlmAuthenticationStrategy.credential = V1_transformCredentialSecret(
-    element.credential,
-    context,
-  );
+  ntlmAuthenticationStrategy.credential = element.credential
+    ? V1_transformCredentialSecret(element.credential, context)
+    : undefined;
   return ntlmAuthenticationStrategy;
 };
 
@@ -233,50 +231,43 @@ export const V1_transformTokenAuthenticationStrategy = (
   context: V1_GraphTransformerContext,
 ): V1_TokenAuthenticationStrategy => {
   const tokenAuthenticationStrategy = new V1_TokenAuthenticationStrategy();
-  tokenAuthenticationStrategy.credential = V1_transformCredentialSecret(
-    element.credential,
-    context,
-  );
+  tokenAuthenticationStrategy.credential = element.credential
+    ? V1_transformCredentialSecret(element.credential, context)
+    : undefined;
   tokenAuthenticationStrategy.tokenUrl = element.tokenUrl;
   return tokenAuthenticationStrategy;
 };
 
 export const V1_transformAuthenticationStrategy = (
-  element: AuthenticationStrategy | undefined,
+  element: AuthenticationStrategy,
   context: V1_GraphTransformerContext,
-): V1_AuthenticationStrategy | undefined => {
-  if (element === undefined) {
-    return element;
+): V1_AuthenticationStrategy => {
+  if (element instanceof NTLMAuthenticationStrategy) {
+    return V1_transformNTLMAuthenticationStrategy(
+      element as NTLMAuthenticationStrategy,
+      context,
+    );
+  } else if (element instanceof TokenAuthenticationStrategy) {
+    return V1_transformTokenAuthenticationStrategy(
+      element as TokenAuthenticationStrategy,
+      context,
+    );
   }
-  switch (element.constructor) {
-    case NTLMAuthenticationStrategy:
-      return V1_transformNTLMAuthenticationStrategy(
-        element as NTLMAuthenticationStrategy,
-        context,
-      );
-    case TokenAuthenticationStrategy:
-      return V1_transformTokenAuthenticationStrategy(
-        element as TokenAuthenticationStrategy,
-        context,
-      );
-    default: {
-      const extraAuthenticationStrategyTransformers = context.plugins.flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-          ).V1_getExtraAuthenticationStrategyTransformers?.() ?? [],
-      );
-      for (const transformer of extraAuthenticationStrategyTransformers) {
-        const protocol = transformer(element, context);
-        if (protocol) {
-          return protocol;
-        }
-      }
-      throw new UnsupportedOperationError(
-        `Can't transform authentication strategy '${typeof element}'`,
-      );
+  const extraAuthenticationStrategyTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAuthenticationStrategyTransformers?.() ?? [],
+  );
+  for (const transformer of extraAuthenticationStrategyTransformers) {
+    const protocol = transformer(element, context);
+    if (protocol) {
+      return protocol;
     }
   }
+  throw new UnsupportedOperationError(
+    `Can't transform authentication strategy '${typeof element}'`,
+  );
 };
 
 /**********
@@ -288,10 +279,9 @@ export const V1_transformProxyConfiguration = (
   context: V1_GraphTransformerContext,
 ): V1_ProxyConfiguration => {
   const proxyConfiguration = new V1_ProxyConfiguration();
-  proxyConfiguration.authentication = V1_transformAuthenticationStrategy(
-    element.authentication,
-    context,
-  );
+  proxyConfiguration.authentication = element.authentication
+    ? V1_transformAuthenticationStrategy(element.authentication, context)
+    : undefined;
   proxyConfiguration.host = element.host;
   proxyConfiguration.port = element.port;
   return proxyConfiguration;
@@ -303,10 +293,9 @@ export const V1_transformFTPConnection = (
 ): V1_FTPConnection => {
   const ftpConnection = new V1_FTPConnection();
   V1_initPackageableElement(ftpConnection, element);
-  ftpConnection.authentication = V1_transformAuthenticationStrategy(
-    element.authentication,
-    context,
-  );
+  ftpConnection.authentication = element.authentication
+    ? V1_transformAuthenticationStrategy(element.authentication, context)
+    : undefined;
   ftpConnection.host = element.host;
   ftpConnection.port = element.port;
   ftpConnection.secure = element.secure;
@@ -319,10 +308,9 @@ export const V1_transformHTTPConnection = (
 ): V1_HTTPConnection => {
   const httpConnection = new V1_HTTPConnection();
   V1_initPackageableElement(httpConnection, element);
-  httpConnection.authentication = V1_transformAuthenticationStrategy(
-    element.authentication,
-    context,
-  );
+  httpConnection.authentication = element.authentication
+    ? V1_transformAuthenticationStrategy(element.authentication, context)
+    : undefined;
   httpConnection.proxy = element.proxy
     ? V1_transformProxyConfiguration(element.proxy, context)
     : undefined;
@@ -336,10 +324,9 @@ export const V1_transformKafkaConnection = (
 ): V1_KafkaConnection => {
   const kafkaConnection = new V1_KafkaConnection();
   V1_initPackageableElement(kafkaConnection, element);
-  kafkaConnection.authentication = V1_transformAuthenticationStrategy(
-    element.authentication,
-    context,
-  );
+  kafkaConnection.authentication = element.authentication
+    ? V1_transformAuthenticationStrategy(element.authentication, context)
+    : undefined;
   kafkaConnection.topicName = element.topicName;
   kafkaConnection.topicUrls = element.topicUrls;
   return kafkaConnection;
@@ -394,45 +381,42 @@ export const V1_transformAcquisitionProtocol = (
   element: AcquisitionProtocol,
   context: V1_GraphTransformerContext,
 ): V1_AcquisitionProtocol => {
-  switch (element.constructor) {
-    case LegendServiceAcquisitionProtocol:
-      return V1_transformLegendServiceAcquisitionProtocol(
-        element as LegendServiceAcquisitionProtocol,
-        context,
-      );
-    case FileAcquisitionProtocol:
-      return V1_transformFileAcquisitionProtocol(
-        element as FileAcquisitionProtocol,
-        context,
-      );
-    case KafkaAcquisitionProtocol:
-      return V1_transformKafkaAcquisitionProtocol(
-        element as KafkaAcquisitionProtocol,
-        context,
-      );
-    case RestAcquisitionProtocol:
-      return V1_transformRestAcquisitionProtocol(
-        element as RestAcquisitionProtocol,
-        context,
-      );
-    default: {
-      const extraAcquisitionProtocolTransformers = context.plugins.flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-          ).V1_getExtraAcquisitionProtocolTransformers?.() ?? [],
-      );
-      for (const transformer of extraAcquisitionProtocolTransformers) {
-        const protocol = transformer(element, context);
-        if (protocol) {
-          return protocol;
-        }
-      }
-      throw new UnsupportedOperationError(
-        `Can't transform acquisition protocol '${typeof element}'`,
-      );
+  if (element instanceof LegendServiceAcquisitionProtocol) {
+    return V1_transformLegendServiceAcquisitionProtocol(
+      element as LegendServiceAcquisitionProtocol,
+      context,
+    );
+  } else if (element instanceof FileAcquisitionProtocol) {
+    return V1_transformFileAcquisitionProtocol(
+      element as FileAcquisitionProtocol,
+      context,
+    );
+  } else if (element instanceof KafkaAcquisitionProtocol) {
+    return V1_transformKafkaAcquisitionProtocol(
+      element as KafkaAcquisitionProtocol,
+      context,
+    );
+  } else if (element instanceof RestAcquisitionProtocol) {
+    return V1_transformRestAcquisitionProtocol(
+      element as RestAcquisitionProtocol,
+      context,
+    );
+  }
+  const extraAcquisitionProtocolTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAcquisitionProtocolTransformers?.() ?? [],
+  );
+  for (const transformer of extraAcquisitionProtocolTransformers) {
+    const protocol = transformer(element, context);
+    if (protocol) {
+      return protocol;
     }
   }
+  throw new UnsupportedOperationError(
+    `Can't transform acquisition protocol '${typeof element}'`,
+  );
 };
 
 /**********
@@ -440,12 +424,9 @@ export const V1_transformAcquisitionProtocol = (
  **********/
 
 export const V1_transformAuthorization = (
-  element: Authorization | undefined,
+  element: Authorization,
   context: V1_GraphTransformerContext,
-): V1_Authorization | undefined => {
-  if (element === undefined) {
-    return element;
-  }
+): V1_Authorization => {
   const extraAuthorizationTransformers = context.plugins.flatMap(
     (plugin) =>
       (
@@ -499,10 +480,9 @@ export const V1_transformRecordSource = (
     context,
   );
   recordSource.trigger = V1_transformTrigger(element.trigger, context);
-  recordSource.authorization = V1_transformAuthorization(
-    element.authorization,
-    context,
-  );
+  recordSource.authorization = element.authorization
+    ? V1_transformAuthorization(element.authorization, context)
+    : undefined;
   recordSource.dataProvider = element.dataProvider;
   return recordSource;
 };
@@ -587,27 +567,22 @@ export const V1_transformRuleScope = (
   element: RuleScope,
   context: V1_GraphTransformerContext,
 ): V1_RuleScope => {
-  switch (element.constructor) {
-    case DataProviderIdScope:
-      return V1_transformDataProviderIdScope(
-        element as DataProviderIdScope,
-        context,
-      );
-    case DataProviderTypeScope:
-      return V1_transformDataProviderTypeScope(
-        element as DataProviderTypeScope,
-        context,
-      );
-    case RecordSourceScope:
-      return V1_transformRecordSourceScope(
-        element as RecordSourceScope,
-        context,
-      );
-    default:
-      throw new UnsupportedOperationError(
-        `Can't transform rule scope '${typeof element}'`,
-      );
+  if (element instanceof DataProviderIdScope) {
+    return V1_transformDataProviderIdScope(
+      element as DataProviderIdScope,
+      context,
+    );
+  } else if (element instanceof DataProviderTypeScope) {
+    return V1_transformDataProviderTypeScope(
+      element as DataProviderTypeScope,
+      context,
+    );
+  } else if (element instanceof RecordSourceScope) {
+    return V1_transformRecordSourceScope(element as RecordSourceScope, context);
   }
+  throw new UnsupportedOperationError(
+    `Can't transform rule scope '${typeof element}'`,
+  );
 };
 
 export const V1_transformSourcePrecedenceRule = (
@@ -693,23 +668,21 @@ export const V1_transformPrecedenceRule = (
   element: PrecedenceRule,
   context: V1_GraphTransformerContext,
 ): V1_PrecedenceRule => {
-  switch (element.constructor) {
-    case CreateRule:
-      return V1_transformCreateRule(element, context);
-    case DeleteRule:
-      return V1_transformDeleteRule(element, context);
-    case ConditionalRule:
-      return V1_transformConditionalRule(element as ConditionalRule, context);
-    case SourcePrecedenceRule:
-      return V1_transformSourcePrecedenceRule(
-        element as SourcePrecedenceRule,
-        context,
-      );
-    default:
-      throw new UnsupportedOperationError(
-        `Can't transform precedence rule '${typeof element}'`,
-      );
+  if (element instanceof CreateRule) {
+    return V1_transformCreateRule(element, context);
+  } else if (element instanceof DeleteRule) {
+    return V1_transformDeleteRule(element, context);
+  } else if (element instanceof ConditionalRule) {
+    return V1_transformConditionalRule(element as ConditionalRule, context);
+  } else if (element instanceof SourcePrecedenceRule) {
+    return V1_transformSourcePrecedenceRule(
+      element as SourcePrecedenceRule,
+      context,
+    );
   }
+  throw new UnsupportedOperationError(
+    `Can't transform precedence rule '${typeof element}'`,
+  );
 };
 
 /**********
