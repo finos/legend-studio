@@ -22,9 +22,9 @@ import { isString } from '@finos/legend-shared';
 import { extractEntityNameFromPath } from '@finos/legend-storage';
 
 export interface DataSpaceInfo {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
+  groupId: string | undefined;
+  artifactId: string | undefined;
+  versionId: string | undefined;
   title: string | undefined;
   name: string;
   path: string;

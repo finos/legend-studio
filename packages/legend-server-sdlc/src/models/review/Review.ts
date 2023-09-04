@@ -15,7 +15,14 @@
  */
 
 import { User } from '../User.js';
-import { SKIP, custom, createModelSchema, primitive } from 'serializr';
+import {
+  SKIP,
+  custom,
+  createModelSchema,
+  primitive,
+  list,
+  optional,
+} from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import type { WorkspaceType } from '../workspace/Workspace.js';
 
@@ -39,6 +46,7 @@ export class Review {
   lastUpdatedAt?: Date;
   committedAt?: Date;
   workspaceType!: WorkspaceType;
+  labels: string[] | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Review, {
@@ -62,6 +70,7 @@ export class Review {
       ),
       projectId: primitive(),
       state: primitive(),
+      labels: optional(list(primitive())),
       title: primitive(),
       webURL: primitive(),
       workspaceId: primitive(),

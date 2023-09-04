@@ -43,7 +43,10 @@ import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../graph/DSL_DataSpace_MetaModelConst.js';
-import { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
+import {
+  DataSpaceQueryBuilderState,
+  DataSpaceProjectInfo,
+} from '../../stores/query/DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
@@ -145,12 +148,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
           } catch {
             // do nothing
           }
-          const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
-            editorStore.applicationStore,
-            editorStore.graphManagerState,
-            editorStore.depotServerClient,
-            dataSpace,
-            matchingExecutionContext,
+          const projectInfo = new DataSpaceProjectInfo(
             query.groupId,
             query.artifactId,
             query.versionId,
@@ -159,6 +157,13 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
               editorStore.applicationStore,
               editorStore.depotServerClient,
             ),
+          );
+          const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
+            editorStore.applicationStore,
+            editorStore.graphManagerState,
+            editorStore.depotServerClient,
+            dataSpace,
+            matchingExecutionContext,
             (dataSpaceInfo: DataSpaceInfo) => {
               if (dataSpaceInfo.defaultExecutionContext) {
                 const createQuery = async (): Promise<void> => {
@@ -255,7 +260,12 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                 );
               }
             },
+            true,
             dataSpaceAnalysisResult,
+            undefined,
+            undefined,
+            undefined,
+            projectInfo,
           );
           const mappingModelCoverageAnalysisResult =
             dataSpaceAnalysisResult?.executionContextsIndex.get(

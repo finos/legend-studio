@@ -129,6 +129,8 @@ import { FilterMapping } from '../../../../../../../../graph/metamodel/pure/pack
 import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
 import { FilterImplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/FilterReference.js';
 import { PackageableElementImplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import type { V1_TablePtr } from '../../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
+import { TablePtr } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/TablePtr.js';
 
 const _schemaExists = (
   db: Database,
@@ -664,4 +666,13 @@ export const V1_buildDatabaseFilter = (
   const filter = new Filter(srcFilter.name, op);
   filter.owner = database;
   return filter;
+};
+
+export const V1_buildTablePtr = (protocol: V1_TablePtr): TablePtr => {
+  const tablePtr = new TablePtr();
+  tablePtr.database = protocol.database;
+  tablePtr.schema = protocol.schema;
+  tablePtr.table = protocol.table;
+  tablePtr.mainTableDb = protocol.mainTableDb;
+  return tablePtr;
 };

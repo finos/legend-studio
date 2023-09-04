@@ -56,7 +56,7 @@ import {
 } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { createMockDataForMappingElementSource } from '../../../../stores/editor/utils/MockDataUtils.js';
 
-interface TableOption {
+export interface TableOption {
   value: Table;
   label: string;
 }

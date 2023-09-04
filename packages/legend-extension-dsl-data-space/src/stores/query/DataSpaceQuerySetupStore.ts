@@ -37,6 +37,7 @@ import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
   UnsupportedOperationError,
   type GeneratorFn,
 } from '@finos/legend-shared';
@@ -175,9 +176,9 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
         if (dataSpaceInfo.defaultExecutionContext) {
           this.applicationStore.navigationService.navigator.goToLocation(
             generateDataSpaceQueryCreatorRoute(
-              dataSpaceInfo.groupId,
-              dataSpaceInfo.artifactId,
-              dataSpaceInfo.versionId,
+              guaranteeNonNullable(dataSpaceInfo.groupId),
+              guaranteeNonNullable(dataSpaceInfo.artifactId),
+              guaranteeNonNullable(dataSpaceInfo.versionId),
               dataSpaceInfo.path,
               dataSpaceInfo.defaultExecutionContext,
               undefined,

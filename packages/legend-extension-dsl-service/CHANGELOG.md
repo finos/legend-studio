@@ -1,5 +1,9 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.74
+
+## 1.0.73
+
 ## 1.0.72
 
 ## 1.0.71
