@@ -219,11 +219,11 @@ export class ProjectOverviewState {
         const latestProjectVersionRevisionReviewObj = getNullableFirstEntry(
           (yield this.editorStore.sdlcServerClient.getReviews(
             this.sdlcState.activeProject.projectId,
-            ReviewState.COMMITTED,
-            [latestProjectVersionRevision.id],
-            undefined,
-            undefined,
-            1,
+            {
+              state: ReviewState.COMMITTED,
+              revisionIds: [latestProjectVersionRevision.id],
+              limit: 1,
+            },
           )) as PlainObject<Review>[],
         );
         const latestProjectVersionRevisionReview =
@@ -235,12 +235,12 @@ export class ProjectOverviewState {
         this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
           (yield this.editorStore.sdlcServerClient.getReviews(
             this.sdlcState.activeProject.projectId,
-            ReviewState.COMMITTED,
-            undefined,
-            latestProjectVersionRevisionReview?.committedAt ??
-              latestProjectVersionRevision.committedAt,
-            undefined,
-            undefined,
+            {
+              state: ReviewState.COMMITTED,
+              since:
+                latestProjectVersionRevisionReview?.committedAt ??
+                latestProjectVersionRevision.committedAt,
+            },
           )) as PlainObject<Review>[]
         )
           .map((v) => Review.serialization.fromJson(v))
@@ -253,11 +253,9 @@ export class ProjectOverviewState {
         this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
           (yield this.editorStore.sdlcServerClient.getReviews(
             this.sdlcState.activeProject.projectId,
-            ReviewState.COMMITTED,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
+            {
+              state: ReviewState.COMMITTED,
+            },
           )) as PlainObject<Review>[]
         ).map((v) => Review.serialization.fromJson(v));
       }

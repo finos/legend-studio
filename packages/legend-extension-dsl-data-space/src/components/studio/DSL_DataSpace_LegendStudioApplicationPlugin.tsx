@@ -56,6 +56,7 @@ import {
   DataSpacePreviewAction,
 } from './DataSpacePreviewAction.js';
 import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import { DataSpaceQueryAction } from './DataSpaceQueryAction.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -81,6 +82,15 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
 
   override getExtraExplorerContextMenuItemRendererConfigurations(): ExplorerContextMenuItemRendererConfiguration[] {
     return [
+      {
+        key: 'data-space-query',
+        renderer: (editorStore, element) => {
+          if (element instanceof DataSpace) {
+            return <DataSpaceQueryAction dataSpace={element} />;
+          }
+          return undefined;
+        },
+      },
       {
         key: 'data-space-preview',
         renderer: (editorStore, element) => {

@@ -105,6 +105,7 @@ import { V1_transformMilestoning } from './V1_MilestoningTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
+import type { TablePtr } from '../../../../../../../graph/metamodel/pure/packageableElements/service/TablePtr.js';
 
 const transformRelationalDataType = (
   type: RelationalDataType,
@@ -166,6 +167,15 @@ const transformRelationalDataType = (
     `Can't transform relational data type`,
     type,
   );
+};
+
+export const V1_transformTablePointer = (ptr: TablePtr): V1_TablePtr => {
+  const tablePtr = new V1_TablePtr();
+  tablePtr.database = ptr.database;
+  tablePtr.mainTableDb = ptr.mainTableDb;
+  tablePtr.schema = ptr.schema;
+  tablePtr.table = ptr.table;
+  return tablePtr;
 };
 
 export const V1_transformTableAliasToTablePointer = (

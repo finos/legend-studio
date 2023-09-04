@@ -25,7 +25,10 @@ import {
   getMappingCompatibleClasses,
   RuntimePointer,
   type Runtime,
-  type Class,
+  Class,
+  type Mapping,
+  getDescendantsOfPackage,
+  Package,
 } from '@finos/legend-graph';
 import {
   DepotScope,
@@ -38,21 +41,40 @@ import {
   ActionState,
   assertErrorThrown,
   getNullableFirstEntry,
+  filterByType,
+  uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
-import type {
+import {
   DataSpace,
-  DataSpaceExecutionContext,
+  type DataSpaceExecutionContext,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import { DataSpaceAdvancedSearchState } from './DataSpaceAdvancedSearchState.js';
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 
-export class DataSpaceQueryBuilderState extends QueryBuilderState {
-  readonly depotServerClient: DepotServerClient;
-  readonly dataSpace: DataSpace;
+export const resolveUsableDataSpaceClasses = (
+  dataSpace: DataSpace,
+  mapping: Mapping,
+  graphManagerState: GraphManagerState,
+): Class[] => {
+  if (dataSpace.elements?.length) {
+    const dataSpaceElements = dataSpace.elements.map((ep) => ep.element.value);
+    return uniq([
+      ...dataSpaceElements.filter(filterByType(Class)),
+      ...dataSpaceElements
+        .filter(filterByType(Package))
+        .map((_package) => Array.from(getDescendantsOfPackage(_package)))
+        .flat()
+        .filter(filterByType(Class)),
+    ]);
+  }
+  return getMappingCompatibleClasses(mapping, graphManagerState.usableClasses);
+};
+
+export class DataSpaceProjectInfo {
   readonly groupId: string;
   readonly artifactId: string;
   readonly versionId: string;
@@ -67,30 +89,8 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     artifactId: string,
     entityPath: string | undefined,
   ) => Promise<void>;
-  readonly isAdvancedDataSpaceSearchEnabled: boolean;
-  readonly loadDataSpacesState = ActionState.create();
-  readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
-  readonly onExecutionContextChange?:
-    | ((val: DataSpaceExecutionContext) => void)
-    | undefined;
-  readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
-  readonly onClassChange?: ((val: Class) => void) | undefined;
-  readonly dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined;
-
-  override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
-    renderDataSpaceQueryBuilderSetupPanelContent(this);
-
-  executionContext!: DataSpaceExecutionContext;
-  dataSpaces: DataSpaceInfo[] = [];
-  showRuntimeSelector = false;
-  advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
 
   constructor(
-    applicationStore: GenericLegendApplicationStore,
-    graphManagerState: GraphManagerState,
-    depotServerClient: DepotServerClient,
-    dataSpace: DataSpace,
-    executionContext: DataSpaceExecutionContext,
     groupId: string,
     artifactId: string,
     versionId: string,
@@ -105,13 +105,52 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       artifactId: string,
       entityPath: string | undefined,
     ) => Promise<void>,
+  ) {
+    this.groupId = groupId;
+    this.artifactId = artifactId;
+    this.versionId = versionId;
+    this.viewProject = viewProject;
+    this.viewSDLCProject = viewSDLCProject;
+  }
+}
+
+export class DataSpaceQueryBuilderState extends QueryBuilderState {
+  readonly depotServerClient: DepotServerClient;
+  readonly isAdvancedDataSpaceSearchEnabled: boolean;
+  readonly loadDataSpacesState = ActionState.create();
+  readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
+  readonly onExecutionContextChange?:
+    | ((val: DataSpaceExecutionContext) => void)
+    | undefined;
+  readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
+  readonly onClassChange?: ((val: Class) => void) | undefined;
+  readonly dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined;
+  readonly projectInfo?: DataSpaceProjectInfo | undefined;
+
+  override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
+    renderDataSpaceQueryBuilderSetupPanelContent(this);
+
+  dataSpace: DataSpace;
+  executionContext!: DataSpaceExecutionContext;
+  dataSpaces: DataSpaceInfo[] = [];
+  showRuntimeSelector = false;
+  advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
+
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+    depotServerClient: DepotServerClient,
+    dataSpace: DataSpace,
+    executionContext: DataSpaceExecutionContext,
     onDataSpaceChange: (val: DataSpaceInfo) => void,
+    isAdvancedDataSpaceSearchEnabled: boolean,
     dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined,
     onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
       | undefined,
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
+    projectInfo?: DataSpaceProjectInfo | undefined,
   ) {
     super(applicationStore, graphManagerState);
 
@@ -130,18 +169,12 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.depotServerClient = depotServerClient;
     this.dataSpace = dataSpace;
     this.executionContext = executionContext;
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.versionId = versionId;
-    this.viewProject = viewProject;
-    this.viewSDLCProject = viewSDLCProject;
+    this.projectInfo = projectInfo;
     this.onDataSpaceChange = onDataSpaceChange;
     this.onExecutionContextChange = onExecutionContextChange;
     this.onRuntimeChange = onRuntimeChange;
     this.onClassChange = onClassChange;
-    // NOTE: if we reuse this state in the future (e.g. in Studio), we might need
-    // to turn this flag off
-    this.isAdvancedDataSpaceSearchEnabled = true;
+    this.isAdvancedDataSpaceSearchEnabled = isAdvancedDataSpaceSearchEnabled;
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
   }
 
@@ -152,25 +185,27 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   }
 
   showAdvancedSearchPanel(): void {
-    this.advancedSearchState = new DataSpaceAdvancedSearchState(
-      this.applicationStore,
-      this.graphManagerState,
-      this.depotServerClient,
-      {
-        viewProject: this.viewProject,
-        viewSDLCProject: this.viewSDLCProject,
-      },
-      {
-        groupId: this.groupId,
-        artifactId: this.artifactId,
-        versionId: this.versionId,
-        title: this.dataSpace.title,
-        name: this.dataSpace.name,
-        path: this.dataSpace.path,
-        defaultExecutionContext: this.dataSpace.defaultExecutionContext.name,
-      },
-      this.versionId === SNAPSHOT_VERSION_ALIAS,
-    );
+    if (this.projectInfo && this.isAdvancedDataSpaceSearchEnabled) {
+      this.advancedSearchState = new DataSpaceAdvancedSearchState(
+        this.applicationStore,
+        this.graphManagerState,
+        this.depotServerClient,
+        {
+          viewProject: this.projectInfo.viewProject,
+          viewSDLCProject: this.projectInfo.viewSDLCProject,
+        },
+        {
+          groupId: this.projectInfo.groupId,
+          artifactId: this.projectInfo.artifactId,
+          versionId: this.projectInfo.versionId,
+          title: this.dataSpace.title,
+          name: this.dataSpace.name,
+          path: this.dataSpace.path,
+          defaultExecutionContext: this.dataSpace.defaultExecutionContext.name,
+        },
+        this.projectInfo.versionId === SNAPSHOT_VERSION_ALIAS,
+      );
+    }
   }
 
   hideAdvancedSearchPanel(): void {
@@ -186,28 +221,46 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   }
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
-    this.loadDataSpacesState.inProgress();
-    const toGetSnapShot = this.versionId === SNAPSHOT_VERSION_ALIAS;
-    try {
-      this.dataSpaces = (
-        (yield this.depotServerClient.getEntitiesByClassifierPath(
-          DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-          {
-            search: isValidSearchString ? searchText : undefined,
-            scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
-            limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-          },
-        )) as StoredEntity[]
-      ).map((storedEntity) =>
-        extractDataSpaceInfo(storedEntity, toGetSnapShot),
-      );
-      this.loadDataSpacesState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.loadDataSpacesState.fail();
-      this.applicationStore.notificationService.notifyError(error);
+    if (this.projectInfo) {
+      const isValidSearchString =
+        searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
+      this.loadDataSpacesState.inProgress();
+      const toGetSnapShot =
+        this.projectInfo.versionId === SNAPSHOT_VERSION_ALIAS;
+      try {
+        this.dataSpaces = (
+          (yield this.depotServerClient.getEntitiesByClassifierPath(
+            DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+            {
+              search: isValidSearchString ? searchText : undefined,
+              scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
+              limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+            },
+          )) as StoredEntity[]
+        ).map((storedEntity) =>
+          extractDataSpaceInfo(storedEntity, toGetSnapShot),
+        );
+        this.loadDataSpacesState.pass();
+      } catch (error) {
+        assertErrorThrown(error);
+        this.loadDataSpacesState.fail();
+        this.applicationStore.notificationService.notifyError(error);
+      }
+    } else {
+      this.dataSpaces = this.graphManagerState.graph.allOwnElements
+        .filter(filterByType(DataSpace))
+        .map(
+          (e) =>
+            ({
+              groupId: undefined,
+              artifactId: undefined,
+              versionId: undefined,
+              path: e.path,
+              name: e.name,
+              title: e.title,
+              defaultExecutionContext: e.defaultExecutionContext.title,
+            }) as DataSpaceInfo,
+        );
     }
   }
 
@@ -233,9 +286,10 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     }
     this.changeRuntime(new RuntimePointer(executionContext.defaultRuntime));
 
-    const compatibleClasses = getMappingCompatibleClasses(
+    const compatibleClasses = resolveUsableDataSpaceClasses(
+      this.dataSpace,
       mapping,
-      this.graphManagerState.usableClasses,
+      this.graphManagerState,
     );
     // if there is no chosen class or the chosen one is not compatible
     // with the mapping then pick a compatible class if possible

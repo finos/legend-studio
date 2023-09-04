@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-import type { WorkspaceType } from '../workspace/Workspace.js';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 
-export interface CreateReviewCommand {
-  workspaceId: string;
-  title: string;
-  workspaceType: WorkspaceType;
-  description: string;
-  labels?: string[] | undefined;
-}
+export class TablePtr implements Hashable {
+  table!: string;
+  schema!: string;
+  database!: string;
+  mainTableDb!: string; // NOTE: this field is likely deprecated, we will not account for it in Studio
 
-export interface CommitReviewCommand {
-  message: string;
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_POINTER,
+      this.database,
+      this.schema,
+      this.table,
+      // this.mainTableDb,
+    ]);
+  }
 }

@@ -331,11 +331,11 @@ export class WorkspaceUpdaterState {
       const baseReviewObj = getNullableFirstEntry(
         (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.activeProject.projectId,
-          ReviewState.COMMITTED,
-          [workspaceBaseRevision.id],
-          undefined,
-          undefined,
-          1,
+          {
+            state: ReviewState.COMMITTED,
+            revisionIds: [workspaceBaseRevision.id],
+            limit: 1,
+          },
         )) as PlainObject<Review>[],
       );
       const baseReview = baseReviewObj
@@ -344,13 +344,12 @@ export class WorkspaceUpdaterState {
       this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = (
         (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.activeProject.projectId,
-          ReviewState.COMMITTED,
-          undefined,
-          baseReview
-            ? baseReview.committedAt
-            : workspaceBaseRevision.committedAt,
-          undefined,
-          undefined,
+          {
+            state: ReviewState.COMMITTED,
+            since: baseReview
+              ? baseReview.committedAt
+              : workspaceBaseRevision.committedAt,
+          },
         )) as PlainObject<Review>[]
       )
         .map((v) => Review.serialization.fromJson(v))
