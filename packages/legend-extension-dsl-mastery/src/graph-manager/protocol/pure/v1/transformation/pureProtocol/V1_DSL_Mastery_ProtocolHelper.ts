@@ -114,16 +114,14 @@ export const V1_manualTriggerSchema = createModelSchema(V1_ManualTrigger, {
 export const V1_serializeTrigger = (
   protocol: V1_Trigger,
 ): PlainObject<V1_Trigger> => {
-  switch (protocol.constructor) {
-    case V1_CronTrigger:
-      return serialize(V1_cronTriggerSchema, protocol);
-    case V1_ManualTrigger:
-      return serialize(V1_manualTriggerSchema, protocol);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't serialize trigger '${typeof protocol}'`,
-      );
+  if (protocol instanceof V1_CronTrigger) {
+    return serialize(V1_cronTriggerSchema, protocol);
+  } else if (protocol instanceof V1_ManualTrigger) {
+    return serialize(V1_manualTriggerSchema, protocol);
   }
+  throw new UnsupportedOperationError(
+    `Can't serialize trigger '${typeof protocol}'`,
+  );
 };
 
 export const V1_deserializeTrigger = (

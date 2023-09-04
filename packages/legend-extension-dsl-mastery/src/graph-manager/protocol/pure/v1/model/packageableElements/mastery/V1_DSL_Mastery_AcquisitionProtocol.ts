@@ -72,7 +72,7 @@ export class V1_FileAcquisitionProtocol extends V1_AcquisitionProtocol {
 export class V1_KafkaAcquisitionProtocol extends V1_AcquisitionProtocol {
   connection!: string;
   kafkaDataType!: V1_KafkaDataType;
-  recordTag: string | undefined;
+  recordTag?: string | undefined;
 
   override get hashCode(): string {
     return hashArray([

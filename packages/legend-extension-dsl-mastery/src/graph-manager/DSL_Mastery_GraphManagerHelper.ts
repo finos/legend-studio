@@ -113,5 +113,5 @@ export const getOwnDataProvider = (
 ): DataProvider =>
   guaranteeNonNullable(
     graph.getOwnNullableExtensionElement(path, DataProvider),
-    `Can't find master data provider '${path}'`,
+    `Can't find data provider '${path}'`,
   );
