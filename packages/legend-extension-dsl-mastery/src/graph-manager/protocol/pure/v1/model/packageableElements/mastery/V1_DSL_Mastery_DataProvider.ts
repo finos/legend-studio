@@ -21,6 +21,12 @@ import {
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
 
+export enum V1_DataProviderType {
+  AGGREGATOR = 'Aggregator',
+  EXCHANGE = 'Exchange',
+  REGULATOR = 'Regulator',
+}
+
 export class V1_DataProvider extends V1_PackageableElement implements Hashable {
   dataProviderId!: string;
   dataProviderType!: V1_DataProviderType;
@@ -38,10 +44,4 @@ export class V1_DataProvider extends V1_PackageableElement implements Hashable {
   ): T {
     return visitor.visit_PackageableElement(this);
   }
-}
-
-export enum V1_DataProviderType {
-  AGGREGATOR = 'Aggregator',
-  EXCHANGE = 'Exchange',
-  REGULATOR = 'Regulator',
 }

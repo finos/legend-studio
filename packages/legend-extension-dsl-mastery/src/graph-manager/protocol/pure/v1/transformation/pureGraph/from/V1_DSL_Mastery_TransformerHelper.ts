@@ -179,7 +179,7 @@ export const V1_transformTrigger = (
       return V1_transformCronTrigger(element as CronTrigger, context);
     default:
       throw new UnsupportedOperationError(
-        `Unsupported trigger '${typeof element}'`,
+        `Can't transform trigger '${typeof element}'`,
       );
   }
 };
@@ -208,7 +208,7 @@ export const V1_transformCredentialSecret = (
     }
   }
   throw new UnsupportedOperationError(
-    `Unsupported credential secret '${typeof element}'`,
+    `Can't transform credential secret '${typeof element}'`,
   );
 };
 
@@ -273,7 +273,7 @@ export const V1_transformAuthenticationStrategy = (
         }
       }
       throw new UnsupportedOperationError(
-        `Unsupported authentication strategy '${typeof element}'`,
+        `Can't transform authentication strategy '${typeof element}'`,
       );
     }
   }
@@ -429,7 +429,7 @@ export const V1_transformAcquisitionProtocol = (
         }
       }
       throw new UnsupportedOperationError(
-        `Unsupported acquisition protocol '${typeof element}'`,
+        `Can't transform acquisition protocol '${typeof element}'`,
       );
     }
   }
@@ -459,7 +459,7 @@ export const V1_transformAuthorization = (
     }
   }
   throw new UnsupportedOperationError(
-    `Unsupported authorization '${typeof element}'`,
+    `Can't transform authorization '${typeof element}'`,
   );
 };
 
@@ -605,7 +605,7 @@ export const V1_transformRuleScope = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Unsupported rule scope '${typeof element}'`,
+        `Can't transform rule scope '${typeof element}'`,
       );
   }
 };
@@ -707,7 +707,7 @@ export const V1_transformPrecedenceRule = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Unsupported precedence rule '${typeof element}'`,
+        `Can't transform precedence rule '${typeof element}'`,
       );
   }
 };

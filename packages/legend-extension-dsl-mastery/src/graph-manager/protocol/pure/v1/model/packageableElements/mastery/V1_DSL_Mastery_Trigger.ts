@@ -16,6 +16,37 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
 
+export enum V1_Frequency {
+  Daily,
+  Weekly,
+  Intraday,
+}
+
+export enum V1_Month {
+  January,
+  February,
+  March,
+  April,
+  May,
+  June,
+  July,
+  August,
+  September,
+  October,
+  November,
+  December,
+}
+
+export enum V1_Day {
+  Monday,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday,
+  Sunday,
+}
+
 export abstract class V1_Trigger implements Hashable {
   get hashCode(): string {
     return hashArray([MASTERY_HASH_STRUCTURE.MASTERY_TRIGGER]);
@@ -52,35 +83,4 @@ export class V1_CronTrigger extends V1_Trigger {
       super.hashCode,
     ]);
   }
-}
-
-export enum V1_Frequency {
-  Daily,
-  Weekly,
-  Intraday,
-}
-
-export enum V1_Month {
-  January,
-  February,
-  March,
-  April,
-  May,
-  June,
-  July,
-  August,
-  September,
-  October,
-  November,
-  December,
-}
-
-export enum V1_Day {
-  Monday,
-  Tuesday,
-  Wednesday,
-  Thursday,
-  Friday,
-  Saturday,
-  Sunday,
 }

@@ -17,6 +17,18 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
 
+export enum V1_FileType {
+  JSON,
+  CSV,
+  XML,
+}
+
+export enum V1_KafkaDataType {
+  JSON,
+  CSV,
+  XML,
+}
+
 export abstract class V1_AcquisitionProtocol implements Hashable {
   get hashCode(): string {
     return hashArray([MASTERY_HASH_STRUCTURE.ACQUISITION_PROTOCOL]);
@@ -41,7 +53,7 @@ export class V1_FileAcquisitionProtocol extends V1_AcquisitionProtocol {
   fileType!: V1_FileType;
   fileSplittingKeys: string[] | undefined;
   headerLines!: number;
-  recordsKey: string | undefined;
+  recordsKey?: string | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -80,16 +92,4 @@ export class V1_RestAcquisitionProtocol extends V1_AcquisitionProtocol {
       super.hashCode,
     ]);
   }
-}
-
-export enum V1_FileType {
-  JSON,
-  CSV,
-  XML,
-}
-
-export enum V1_KafkaDataType {
-  JSON,
-  CSV,
-  XML,
 }

@@ -20,6 +20,14 @@ import type { V1_AcquisitionProtocol } from './V1_DSL_Mastery_AcquisitionProtoco
 import type { V1_Trigger } from './V1_DSL_Mastery_Trigger.js';
 import type { V1_Authorization } from './V1_DSL_Mastery_Authorization.js';
 
+export enum V1_RecordSourceStatus {
+  Development,
+  TestOnly,
+  Production,
+  Dormant,
+  Decommissioned,
+}
+
 export class V1_RecordSource implements Hashable {
   id!: string;
   status!: V1_RecordSourceStatus;
@@ -65,12 +73,4 @@ export class V1_RecordService implements Hashable {
       this.transformService,
     ]);
   }
-}
-
-export enum V1_RecordSourceStatus {
-  Development,
-  TestOnly,
-  Production,
-  Dormant,
-  Decommissioned,
 }

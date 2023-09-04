@@ -24,6 +24,7 @@ import {
   V1_RecordSource,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 import {
+  optionalCustom,
   type PlainObject,
   UnsupportedOperationError,
   usingConstantValueSchema,
@@ -57,8 +58,6 @@ import {
   list,
   primitive,
   serialize,
-  optional,
-  SKIP,
 } from 'serializr';
 import {
   type V1_AcquisitionProtocol,
@@ -203,11 +202,9 @@ export const V1_NTLMAuthenticationStrategySchema = (
 ): ModelSchema<V1_NTLMAuthenticationStrategy> =>
   createModelSchema(V1_NTLMAuthenticationStrategy, {
     _type: usingConstantValueSchema(V1_AuthenticationStrategyType.NTLM),
-    credential: optional(
-      custom(
-        (val) => (val ? V1_serializeCredentialSecret(val, plugins) : SKIP),
-        (val) => V1_deserializeCredentialSecret(val, plugins),
-      ),
+    credential: optionalCustom(
+      (val) => V1_serializeCredentialSecret(val, plugins),
+      (val) => V1_deserializeCredentialSecret(val, plugins),
     ),
   });
 
@@ -216,11 +213,9 @@ export const V1_TokenAuthenticationStrategyProtocolSchema = (
 ): ModelSchema<V1_TokenAuthenticationStrategy> =>
   createModelSchema(V1_TokenAuthenticationStrategy, {
     _type: usingConstantValueSchema(V1_AuthenticationStrategyType.TOKEN),
-    credential: optional(
-      custom(
-        (val) => (val ? V1_serializeCredentialSecret(val, plugins) : SKIP),
-        (val) => V1_deserializeCredentialSecret(val, plugins),
-      ),
+    credential: optionalCustom(
+      (val) => V1_serializeCredentialSecret(val, plugins),
+      (val) => V1_deserializeCredentialSecret(val, plugins),
     ),
     tokenUrl: primitive(),
   });
@@ -295,12 +290,9 @@ export const V1_ProxyConfigurationSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ProxyConfiguration> =>
   createModelSchema(V1_ProxyConfiguration, {
-    authentication: optional(
-      custom(
-        (val) =>
-          val ? V1_serializeAuthenticationStrategy(val, plugins) : SKIP,
-        (val) => V1_deserializeAuthenticationStrategy(val, plugins),
-      ),
+    authentication: optionalCustom(
+      (val) => V1_serializeAuthenticationStrategy(val, plugins),
+      (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
     host: primitive(),
     port: primitive(),
@@ -317,12 +309,9 @@ export const V1_KafkaConnectionSchema = (
 ): ModelSchema<V1_KafkaConnection> =>
   createModelSchema(V1_KafkaConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.KAFKA),
-    authentication: optional(
-      custom(
-        (val) =>
-          val ? V1_serializeAuthenticationStrategy(val, plugins) : SKIP,
-        (val) => V1_deserializeAuthenticationStrategy(val, plugins),
-      ),
+    authentication: optionalCustom(
+      (val) => V1_serializeAuthenticationStrategy(val, plugins),
+      (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
     name: primitive(),
     package: primitive(),
@@ -335,12 +324,9 @@ export const V1_FTPConnectionSchema = (
 ): ModelSchema<V1_FTPConnection> =>
   createModelSchema(V1_FTPConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.FTP),
-    authentication: optional(
-      custom(
-        (val) =>
-          val ? V1_serializeAuthenticationStrategy(val, plugins) : SKIP,
-        (val) => V1_deserializeAuthenticationStrategy(val, plugins),
-      ),
+    authentication: optionalCustom(
+      (val) => V1_serializeAuthenticationStrategy(val, plugins),
+      (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
     host: primitive(),
     name: primitive(),
@@ -354,21 +340,15 @@ export const V1_HTTPConnectionSchema = (
 ): ModelSchema<V1_HTTPConnection> =>
   createModelSchema(V1_HTTPConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.HTTP),
-    authentication: optional(
-      custom(
-        (val) =>
-          val ? V1_serializeAuthenticationStrategy(val, plugins) : SKIP,
-        (val) => V1_deserializeAuthenticationStrategy(val, plugins),
-      ),
+    authentication: optionalCustom(
+      (val) => V1_serializeAuthenticationStrategy(val, plugins),
+      (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
     name: primitive(),
     package: primitive(),
-    proxy: optional(
-      custom(
-        (val) =>
-          val ? serialize(V1_ProxyConfigurationSchema(plugins), val) : SKIP,
-        (val) => deserialize(V1_ProxyConfigurationSchema(plugins), val),
-      ),
+    proxy: optionalCustom(
+      (val) => serialize(V1_ProxyConfigurationSchema(plugins), val),
+      (val) => deserialize(V1_ProxyConfigurationSchema(plugins), val),
     ),
     url: primitive(),
   });
@@ -553,11 +533,9 @@ const V1_recordSourceSchema = (
 ): ModelSchema<V1_RecordSource> =>
   createModelSchema(V1_RecordSource, {
     allowFieldDelete: primitive(),
-    authorization: optional(
-      custom(
-        (val) => (val ? V1_serializeAuthorization(val, plugins) : SKIP),
-        (val) => V1_deserializeAuthorization(val, plugins),
-      ),
+    authorization: optionalCustom(
+      (val) => V1_serializeAuthorization(val, plugins),
+      (val) => V1_deserializeAuthorization(val, plugins),
     ),
     createBlockedException: primitive(),
     createPermitted: primitive(),

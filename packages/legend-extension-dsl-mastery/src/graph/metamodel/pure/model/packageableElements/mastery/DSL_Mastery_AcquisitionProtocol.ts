@@ -17,6 +17,18 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
 
+export enum FileType {
+  JSON,
+  CSV,
+  XML,
+}
+
+export enum KafkaDataType {
+  JSON,
+  CSV,
+  XML,
+}
+
 export abstract class AcquisitionProtocol implements Hashable {
   get hashCode(): string {
     return hashArray([MASTERY_HASH_STRUCTURE.ACQUISITION_PROTOCOL]);
@@ -41,7 +53,7 @@ export class FileAcquisitionProtocol extends AcquisitionProtocol {
   fileType!: FileType;
   fileSplittingKeys: string[] | undefined;
   headerLines!: number;
-  recordsKey: string | undefined;
+  recordsKey?: string | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -80,16 +92,4 @@ export class RestAcquisitionProtocol extends AcquisitionProtocol {
       super.hashCode,
     ]);
   }
-}
-
-export enum FileType {
-  JSON,
-  CSV,
-  XML,
-}
-
-export enum KafkaDataType {
-  JSON,
-  CSV,
-  XML,
 }

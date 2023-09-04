@@ -20,6 +20,14 @@ import type { AcquisitionProtocol } from './DSL_Mastery_AcquisitionProtocol.js';
 import type { Trigger } from './DSL_Mastery_Trigger.js';
 import type { Authorization } from './DSL_Mastery_Authorization.js';
 
+export enum RecordSourceStatus {
+  Development,
+  TestOnly,
+  Production,
+  Dormant,
+  Decommissioned,
+}
+
 export class RecordSource implements Hashable {
   id!: string;
   status!: RecordSourceStatus;
@@ -65,12 +73,4 @@ export class RecordService implements Hashable {
       this.transformService,
     ]);
   }
-}
-
-export enum RecordSourceStatus {
-  Development,
-  TestOnly,
-  Production,
-  Dormant,
-  Decommissioned,
 }
