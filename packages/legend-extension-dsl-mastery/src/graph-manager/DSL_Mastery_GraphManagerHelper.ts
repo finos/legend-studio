@@ -50,7 +50,7 @@ export const getKafkaConnection = (
   graph.getExtensionElement(
     path,
     KafkaConnection,
-    `Can't find master record definition '${path}'`,
+    `Can't find kafka connection '${path}'`,
   );
 
 export const getOwnKafkaConnection = (
@@ -59,7 +59,7 @@ export const getOwnKafkaConnection = (
 ): KafkaConnection =>
   guaranteeNonNullable(
     graph.getOwnNullableExtensionElement(path, KafkaConnection),
-    `Can't find master record definition '${path}'`,
+    `Can't find kafka connection '${path}'`,
   );
 
 export const getFTPConnection = (
@@ -69,7 +69,7 @@ export const getFTPConnection = (
   graph.getExtensionElement(
     path,
     FTPConnection,
-    `Can't find master record definition '${path}'`,
+    `Can't find FTP connection '${path}'`,
   );
 
 export const getOwnFTPConnection = (
@@ -78,7 +78,7 @@ export const getOwnFTPConnection = (
 ): FTPConnection =>
   guaranteeNonNullable(
     graph.getOwnNullableExtensionElement(path, FTPConnection),
-    `Can't find master record definition '${path}'`,
+    `Can't find master FTP connection '${path}'`,
   );
 
 export const getHTTPConnection = (
@@ -88,7 +88,7 @@ export const getHTTPConnection = (
   graph.getExtensionElement(
     path,
     HTTPConnection,
-    `Can't find master record definition '${path}'`,
+    `Can't find HTTP connection '${path}'`,
   );
 
 export const getOwnHTTPConnection = (
@@ -97,14 +97,14 @@ export const getOwnHTTPConnection = (
 ): HTTPConnection =>
   guaranteeNonNullable(
     graph.getOwnNullableExtensionElement(path, HTTPConnection),
-    `Can't find master record definition '${path}'`,
+    `Can't find master HTTP connection '${path}'`,
   );
 
 export const getDataProvider = (path: string, graph: PureModel): DataProvider =>
   graph.getExtensionElement(
     path,
     DataProvider,
-    `Can't find master record definition '${path}'`,
+    `Can't find data provider '${path}'`,
   );
 
 export const getOwnDataProvider = (
@@ -113,5 +113,5 @@ export const getOwnDataProvider = (
 ): DataProvider =>
   guaranteeNonNullable(
     graph.getOwnNullableExtensionElement(path, DataProvider),
-    `Can't find master record definition '${path}'`,
+    `Can't find master data provider '${path}'`,
   );
