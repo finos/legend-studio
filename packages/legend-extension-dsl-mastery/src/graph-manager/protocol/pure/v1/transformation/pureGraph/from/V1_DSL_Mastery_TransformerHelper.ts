@@ -132,10 +132,6 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
-import {
-  V1_buildNTLMAuthenticationStrategy,
-  V1_buildTokenAuthenticationStrategy,
-} from '../to/V1_DSL_Mastery_BuilderHelper.js';
 
 /**********
  * data provider
@@ -179,7 +175,7 @@ export const V1_transformTrigger = (
   if (element instanceof ManualTrigger) {
     return new V1_ManualTrigger();
   } else if (element instanceof CronTrigger) {
-    return V1_transformCronTrigger(element as CronTrigger, context);
+    return V1_transformCronTrigger(element, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform trigger '${typeof element}'`,
@@ -243,15 +239,9 @@ export const V1_transformAuthenticationStrategy = (
   context: V1_GraphTransformerContext,
 ): V1_AuthenticationStrategy => {
   if (element instanceof NTLMAuthenticationStrategy) {
-    return V1_transformNTLMAuthenticationStrategy(
-      element as NTLMAuthenticationStrategy,
-      context,
-    );
+    return V1_transformNTLMAuthenticationStrategy(element, context);
   } else if (element instanceof TokenAuthenticationStrategy) {
-    return V1_transformTokenAuthenticationStrategy(
-      element as TokenAuthenticationStrategy,
-      context,
-    );
+    return V1_transformTokenAuthenticationStrategy(element, context);
   }
   const extraAuthenticationStrategyTransformers = context.plugins.flatMap(
     (plugin) =>
@@ -382,25 +372,13 @@ export const V1_transformAcquisitionProtocol = (
   context: V1_GraphTransformerContext,
 ): V1_AcquisitionProtocol => {
   if (element instanceof LegendServiceAcquisitionProtocol) {
-    return V1_transformLegendServiceAcquisitionProtocol(
-      element as LegendServiceAcquisitionProtocol,
-      context,
-    );
+    return V1_transformLegendServiceAcquisitionProtocol(element, context);
   } else if (element instanceof FileAcquisitionProtocol) {
-    return V1_transformFileAcquisitionProtocol(
-      element as FileAcquisitionProtocol,
-      context,
-    );
+    return V1_transformFileAcquisitionProtocol(element, context);
   } else if (element instanceof KafkaAcquisitionProtocol) {
-    return V1_transformKafkaAcquisitionProtocol(
-      element as KafkaAcquisitionProtocol,
-      context,
-    );
+    return V1_transformKafkaAcquisitionProtocol(element, context);
   } else if (element instanceof RestAcquisitionProtocol) {
-    return V1_transformRestAcquisitionProtocol(
-      element as RestAcquisitionProtocol,
-      context,
-    );
+    return V1_transformRestAcquisitionProtocol(element, context);
   }
   const extraAcquisitionProtocolTransformers = context.plugins.flatMap(
     (plugin) =>
@@ -568,17 +546,11 @@ export const V1_transformRuleScope = (
   context: V1_GraphTransformerContext,
 ): V1_RuleScope => {
   if (element instanceof DataProviderIdScope) {
-    return V1_transformDataProviderIdScope(
-      element as DataProviderIdScope,
-      context,
-    );
+    return V1_transformDataProviderIdScope(element, context);
   } else if (element instanceof DataProviderTypeScope) {
-    return V1_transformDataProviderTypeScope(
-      element as DataProviderTypeScope,
-      context,
-    );
+    return V1_transformDataProviderTypeScope(element, context);
   } else if (element instanceof RecordSourceScope) {
-    return V1_transformRecordSourceScope(element as RecordSourceScope, context);
+    return V1_transformRecordSourceScope(element, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform rule scope '${typeof element}'`,
@@ -673,12 +645,9 @@ export const V1_transformPrecedenceRule = (
   } else if (element instanceof DeleteRule) {
     return V1_transformDeleteRule(element, context);
   } else if (element instanceof ConditionalRule) {
-    return V1_transformConditionalRule(element as ConditionalRule, context);
+    return V1_transformConditionalRule(element, context);
   } else if (element instanceof SourcePrecedenceRule) {
-    return V1_transformSourcePrecedenceRule(
-      element as SourcePrecedenceRule,
-      context,
-    );
+    return V1_transformSourcePrecedenceRule(element, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform precedence rule '${typeof element}'`,

@@ -47,16 +47,12 @@ import type {
   DataProviderType,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_DataProvider.js';
 import type {
+  V1_KafkaConnection,
   V1_FTPConnection,
   V1_HTTPConnection,
+  V1_ProxyConfiguration,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
 import {
-  type V1_FileConnection,
-  type V1_KafkaConnection,
-  type V1_ProxyConfiguration,
-} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
-import {
-  type FileConnection,
   type FTPConnection,
   type HTTPConnection,
   type KafkaConnection,
@@ -141,7 +137,6 @@ import {
   V1_buildFullPath,
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
-import { V1_transformCronTrigger } from '../from/V1_DSL_Mastery_TransformerHelper.js';
 
 /**********
  * data provider
@@ -185,7 +180,7 @@ export const V1_buildTrigger = (
   if (element instanceof V1_ManualTrigger) {
     return new ManualTrigger();
   } else if (element instanceof V1_CronTrigger) {
-    return V1_buildCronTrigger(element as V1_CronTrigger, context);
+    return V1_buildCronTrigger(element, context);
   }
   throw new UnsupportedOperationError(
     `Can't build trigger '${typeof element}'`,
@@ -249,15 +244,9 @@ export const V1_buildAuthenticationStrategy = (
   context: V1_GraphBuilderContext,
 ): AuthenticationStrategy => {
   if (element instanceof V1_NTLMAuthenticationStrategy) {
-    return V1_buildNTLMAuthenticationStrategy(
-      element as V1_NTLMAuthenticationStrategy,
-      context,
-    );
+    return V1_buildNTLMAuthenticationStrategy(element, context);
   } else if (element instanceof V1_TokenAuthenticationStrategy) {
-    return V1_buildTokenAuthenticationStrategy(
-      element as V1_TokenAuthenticationStrategy,
-      context,
-    );
+    return V1_buildTokenAuthenticationStrategy(element, context);
   }
   const extraAuthenticationStrategyBuilders =
     context.extensions.plugins.flatMap(
@@ -389,25 +378,13 @@ export const V1_buildAcquisitionProtocol = (
   context: V1_GraphBuilderContext,
 ): AcquisitionProtocol => {
   if (element instanceof V1_LegendServiceAcquisitionProtocol) {
-    return V1_buildLegendServiceAcquisitionProtocol(
-      element as V1_LegendServiceAcquisitionProtocol,
-      context,
-    );
+    return V1_buildLegendServiceAcquisitionProtocol(element, context);
   } else if (element instanceof V1_FileAcquisitionProtocol) {
-    return V1_buildFileAcquisitionProtocol(
-      element as V1_FileAcquisitionProtocol,
-      context,
-    );
+    return V1_buildFileAcquisitionProtocol(element, context);
   } else if (element instanceof V1_KafkaAcquisitionProtocol) {
-    return V1_buildKafkaAcquisitionProtocol(
-      element as V1_KafkaAcquisitionProtocol,
-      context,
-    );
+    return V1_buildKafkaAcquisitionProtocol(element, context);
   } else if (element instanceof V1_RestAcquisitionProtocol) {
-    return V1_buildRestAcquisitionProtocol(
-      element as V1_RestAcquisitionProtocol,
-      context,
-    );
+    return V1_buildRestAcquisitionProtocol(element, context);
   }
   const extraAcquisitionProtocolBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
