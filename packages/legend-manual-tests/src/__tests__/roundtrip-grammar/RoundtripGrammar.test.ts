@@ -83,6 +83,8 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // Update processing to handle Persistence V2 specs
   // See https://github.com/finos/legend-engine/pull/1764
   'DSL_Persistence-basic.pure': SKIP,
+  // Remove this when mastery DSL is finalized
+  'DSL_Mastery-basic.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {
