@@ -14,34 +14,11 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
-import {
-  type PackageableElementVisitor,
-  PackageableElement,
-} from '@finos/legend-graph';
-import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
-
 export enum DataProviderType {
   AGGREGATOR = 'Aggregator',
   EXCHANGE = 'Exchange',
+  INTERNAL_APPLICATION = 'InternalApplication',
+  STEWARD = 'Steward',
+  STEWARD_BULK_UPLOAD = 'StewardBulkUpload',
   REGULATOR = 'Regulator',
-}
-
-export class DataProvider extends PackageableElement implements Hashable {
-  dataProviderId!: string;
-  dataProviderType!: DataProviderType;
-
-  override get hashCode(): string {
-    return hashArray([
-      MASTERY_HASH_STRUCTURE.DATA_PROVIDER,
-      this.dataProviderId,
-      this.dataProviderType,
-    ]);
-  }
-
-  accept_PackageableElementVisitor<T>(
-    visitor: PackageableElementVisitor<T>,
-  ): T {
-    return visitor.visit_PackageableElement(this);
-  }
 }

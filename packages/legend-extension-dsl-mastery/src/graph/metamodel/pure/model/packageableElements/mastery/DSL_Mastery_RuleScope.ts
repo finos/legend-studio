@@ -16,7 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
-import type { DataProviderType } from './DSL_Mastery_DataProvider.js';
+import type { DataProviderType } from './DSL_Mastery_DataProviderType.js';
 
 export abstract class RuleScope implements Hashable {
   abstract get hashCode(): string;

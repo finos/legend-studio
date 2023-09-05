@@ -32,7 +32,6 @@ export class V1_MasterRecordDefinition
   identityResolution!: V1_IdentityResolution;
   sources: V1_RecordSource[] = [];
   precedenceRules: V1_PrecedenceRule[] | undefined;
-  postCurationEnrichmentService?: string | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -41,7 +40,6 @@ export class V1_MasterRecordDefinition
       this.identityResolution,
       hashArray(this.sources),
       this.precedenceRules ? hashArray(this.precedenceRules) : '',
-      this.postCurationEnrichmentService ?? '',
     ]);
   }
 

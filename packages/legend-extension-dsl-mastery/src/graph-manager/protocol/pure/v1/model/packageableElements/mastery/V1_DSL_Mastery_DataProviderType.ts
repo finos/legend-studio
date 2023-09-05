@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
-import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
-
-export abstract class Authorization implements Hashable {
-  get hashCode(): string {
-    return hashArray([MASTERY_HASH_STRUCTURE.AUTHORIZATION]);
-  }
+export enum V1_DataProviderType {
+  AGGREGATOR = 'Aggregator',
+  EXCHANGE = 'Exchange',
+  INTERNAL_APPLICATION = 'InternalApplication',
+  STEWARD = 'Steward',
+  STEWARD_BULK_UPLOAD = 'StewardBulkUpload',
+  REGULATOR = 'Regulator',
 }

@@ -19,32 +19,14 @@ import { MasterRecordDefinition } from '../../../graph/metamodel/pure/model/pack
 import { V1_MasterRecordDefinition } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import {
   V1_conditionalRuleSchema,
-  V1_ConnectionType,
   V1_createRuleSchema,
-  V1_DATA_PROVIDER_ELEMENT_PROTOCOL_TYPE,
-  V1_dataProviderModelSchema,
   V1_deleteRuleSchema,
-  V1_FTPConnectionSchema,
-  V1_HTTPConnectionSchema,
-  V1_KafkaConnectionSchema,
   V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE,
   V1_masterRecordDefinitionModelSchema,
   V1_sourcePrecedenceRuleSchema,
 } from './v1/transformation/pureProtocol/V1_DSL_Mastery_ProtocolHelper.js';
-import {
-  V1_buildDataProvider,
-  V1_buildFTPConnection,
-  V1_buildHTTPConnection,
-  V1_buildKafkaConnection,
-  V1_buildMasterRecordDefinition,
-} from './v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
-import {
-  V1_transformDataProvider,
-  V1_transformFTPConnection,
-  V1_transformHTTPConnection,
-  V1_transformKafkaConnection,
-  V1_transformMasterRecordDefinition,
-} from './v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
+import { V1_buildMasterRecordDefinition } from './v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
+import { V1_transformMasterRecordDefinition } from './v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
 import {
   type PackageableElement,
   PureProtocolProcessorPlugin,
@@ -69,40 +51,9 @@ import {
   type V1_PrecedenceRule,
   V1_RuleType,
 } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_PrecedenceRule.js';
-import { V1_DataProvider } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_DataProvider.js';
-import { DataProvider } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_DataProvider.js';
-import {
-  FTPConnection,
-  HTTPConnection,
-  KafkaConnection,
-} from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Connection.js';
-import {
-  V1_FTPConnection,
-  V1_HTTPConnection,
-  V1_KafkaConnection,
-} from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
 
 export const MASTER_RECORD_DEFINITION_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::mastery::metamodel::MasterRecordDefinition';
-
-export const DATA_PROVIDER_ELEMENT_CLASSIFIER_PATH =
-  'meta::pure::mastery::metamodel::precedence::DataProvider';
-
-export const KAFKA_CONNECTION_ELEMENT_CLASSIFIER_PATH =
-  'meta::pure::mastery::metamodel::connection::KafkaConnection';
-
-export const FTP_CONNECTION_ELEMENT_CLASSIFIER_PATH =
-  'meta::pure::mastery::metamodel::connection::FTPConnection';
-
-export const HTTP_CONNECTION_ELEMENT_CLASSIFIER_PATH =
-  'meta::pure::mastery::metamodel::connection::HTTPConnection';
-
-export const KAFKA_CONNECTION_ELEMENT_CLASS_NAME = 'KafkaConnection';
-export const FTP_CONNECTION_ELEMENT_CLASS_NAME = 'FTPConnection';
-export const HTTP_CONNECTION_ELEMENT_CLASS_NAME = 'HTTPConnection';
-export const MASTER_RECORD_DEFINITION_ELEMENT_CLASS_NAME =
-  'MasterRecordDefinition';
-export const DATA_PROVIDER_ELEMENT_CLASS_NAME = 'DataProvider';
 
 export class DSL_Mastery_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
@@ -117,92 +68,8 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
     return [
-      new V1_ElementBuilder<V1_KafkaConnection>({
-        elementClassName: KAFKA_CONNECTION_ELEMENT_CLASS_NAME,
-        _class: V1_KafkaConnection,
-        firstPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): PackageableElement => {
-          assertType(elementProtocol, V1_KafkaConnection);
-          const element = new KafkaConnection(elementProtocol.name);
-          const path = V1_buildFullPath(
-            elementProtocol.package,
-            elementProtocol.name,
-          );
-          context.currentSubGraph.setOwnElementInExtension(
-            path,
-            element,
-            KafkaConnection,
-          );
-          return element;
-        },
-        secondPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): void => {
-          assertType(elementProtocol, V1_KafkaConnection);
-          V1_buildKafkaConnection(elementProtocol, context);
-        },
-      }),
-      new V1_ElementBuilder<V1_FTPConnection>({
-        elementClassName: FTP_CONNECTION_ELEMENT_CLASS_NAME,
-        _class: V1_FTPConnection,
-        firstPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): PackageableElement => {
-          assertType(elementProtocol, V1_FTPConnection);
-          const element = new FTPConnection(elementProtocol.name);
-          const path = V1_buildFullPath(
-            elementProtocol.package,
-            elementProtocol.name,
-          );
-          context.currentSubGraph.setOwnElementInExtension(
-            path,
-            element,
-            FTPConnection,
-          );
-          return element;
-        },
-        secondPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): void => {
-          assertType(elementProtocol, V1_FTPConnection);
-          V1_buildFTPConnection(elementProtocol, context);
-        },
-      }),
-      new V1_ElementBuilder<V1_HTTPConnection>({
-        elementClassName: HTTP_CONNECTION_ELEMENT_CLASS_NAME,
-        _class: V1_HTTPConnection,
-        firstPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): PackageableElement => {
-          assertType(elementProtocol, V1_HTTPConnection);
-          const element = new HTTPConnection(elementProtocol.name);
-          const path = V1_buildFullPath(
-            elementProtocol.package,
-            elementProtocol.name,
-          );
-          context.currentSubGraph.setOwnElementInExtension(
-            path,
-            element,
-            HTTPConnection,
-          );
-          return element;
-        },
-        secondPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): void => {
-          assertType(elementProtocol, V1_HTTPConnection);
-          V1_buildHTTPConnection(elementProtocol, context);
-        },
-      }),
       new V1_ElementBuilder<V1_MasterRecordDefinition>({
-        elementClassName: MASTER_RECORD_DEFINITION_ELEMENT_CLASS_NAME,
+        elementClassName: 'MasterRecordDefinition',
         _class: V1_MasterRecordDefinition,
         firstPass: (
           elementProtocol: V1_PackageableElement,
@@ -229,34 +96,6 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
           V1_buildMasterRecordDefinition(elementProtocol, context);
         },
       }),
-      new V1_ElementBuilder<V1_DataProvider>({
-        elementClassName: DATA_PROVIDER_ELEMENT_CLASS_NAME,
-        _class: V1_DataProvider,
-        firstPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): PackageableElement => {
-          assertType(elementProtocol, V1_DataProvider);
-          const element = new DataProvider(elementProtocol.name);
-          const path = V1_buildFullPath(
-            elementProtocol.package,
-            elementProtocol.name,
-          );
-          context.currentSubGraph.setOwnElementInExtension(
-            path,
-            element,
-            DataProvider,
-          );
-          return element;
-        },
-        secondPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
-        ): void => {
-          assertType(elementProtocol, V1_DataProvider);
-          V1_buildDataProvider(elementProtocol, context);
-        },
-      }),
     ];
   }
 
@@ -265,14 +104,6 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
       (elementProtocol: V1_PackageableElement): string | undefined => {
         if (elementProtocol instanceof V1_MasterRecordDefinition) {
           return MASTER_RECORD_DEFINITION_ELEMENT_CLASSIFIER_PATH;
-        } else if (elementProtocol instanceof V1_DataProvider) {
-          return DATA_PROVIDER_ELEMENT_CLASSIFIER_PATH;
-        } else if (elementProtocol instanceof V1_KafkaConnection) {
-          return KAFKA_CONNECTION_ELEMENT_CLASSIFIER_PATH;
-        } else if (elementProtocol instanceof V1_FTPConnection) {
-          return FTP_CONNECTION_ELEMENT_CLASSIFIER_PATH;
-        } else if (elementProtocol instanceof V1_HTTPConnection) {
-          return HTTP_CONNECTION_ELEMENT_CLASSIFIER_PATH;
         }
         return undefined;
       },
@@ -290,17 +121,6 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
             V1_masterRecordDefinitionModelSchema(plugins),
             elementProtocol,
           );
-        } else if (elementProtocol instanceof V1_DataProvider) {
-          return serialize(
-            V1_dataProviderModelSchema(plugins),
-            elementProtocol,
-          );
-        } else if (elementProtocol instanceof V1_KafkaConnection) {
-          return serialize(V1_KafkaConnectionSchema(plugins), elementProtocol);
-        } else if (elementProtocol instanceof V1_FTPConnection) {
-          return serialize(V1_FTPConnectionSchema(plugins), elementProtocol);
-        } else if (elementProtocol instanceof V1_HTTPConnection) {
-          return serialize(V1_HTTPConnectionSchema(plugins), elementProtocol);
         }
         return undefined;
       },
@@ -318,14 +138,6 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
             V1_masterRecordDefinitionModelSchema(plugins),
             json,
           );
-        } else if (json._type === V1_DATA_PROVIDER_ELEMENT_PROTOCOL_TYPE) {
-          return deserialize(V1_dataProviderModelSchema(plugins), json);
-        } else if (json._type === V1_ConnectionType.KAFKA) {
-          return deserialize(V1_KafkaConnectionSchema(plugins), json);
-        } else if (json._type === V1_ConnectionType.FTP) {
-          return deserialize(V1_FTPConnectionSchema(plugins), json);
-        } else if (json._type === V1_ConnectionType.HTTP) {
-          return deserialize(V1_HTTPConnectionSchema(plugins), json);
         }
         return undefined;
       },
@@ -340,14 +152,6 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
       ): V1_PackageableElement | undefined => {
         if (metamodel instanceof MasterRecordDefinition) {
           return V1_transformMasterRecordDefinition(metamodel, context);
-        } else if (metamodel instanceof DataProvider) {
-          return V1_transformDataProvider(metamodel, context);
-        } else if (metamodel instanceof KafkaConnection) {
-          return V1_transformKafkaConnection(metamodel, context);
-        } else if (metamodel instanceof FTPConnection) {
-          return V1_transformFTPConnection(metamodel, context);
-        } else if (metamodel instanceof HTTPConnection) {
-          return V1_transformHTTPConnection(metamodel, context);
         }
         return undefined;
       },
