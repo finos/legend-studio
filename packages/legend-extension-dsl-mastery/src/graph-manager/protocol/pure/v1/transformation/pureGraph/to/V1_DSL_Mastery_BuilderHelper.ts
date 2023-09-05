@@ -493,7 +493,6 @@ export const V1_buildIdentityResolution = (
   context: V1_GraphBuilderContext,
 ): IdentityResolution => {
   const identityResolution = new IdentityResolution();
-  identityResolution.modelClass = protocol.modelClass;
   identityResolution.resolutionQueries = protocol.resolutionQueries.map((q) =>
     V1_buildResolutionQuery(q, context),
   );

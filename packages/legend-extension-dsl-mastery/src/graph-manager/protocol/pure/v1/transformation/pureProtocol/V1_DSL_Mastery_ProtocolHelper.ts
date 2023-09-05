@@ -58,6 +58,7 @@ import {
   list,
   primitive,
   serialize,
+  optional,
 } from 'serializr';
 import {
   type V1_AcquisitionProtocol,
@@ -97,14 +98,14 @@ export enum V1_TriggerType {
 
 export const V1_cronTriggerSchema = createModelSchema(V1_CronTrigger, {
   _type: usingConstantValueSchema(V1_TriggerType.CRON),
-  days: list(primitive()),
-  dayOfMonth: primitive(),
-  frequency: primitive(),
+  days: optional(list(primitive())),
+  dayOfMonth: optional(primitive()),
+  frequency: optional(primitive()),
   hour: primitive(),
   minute: primitive(),
-  month: primitive(),
+  month: optional(primitive()),
   timeZone: primitive(),
-  year: primitive(),
+  year: optional(primitive()),
 });
 
 export const V1_manualTriggerSchema = createModelSchema(V1_ManualTrigger, {
@@ -522,22 +523,22 @@ const V1_recordServiceSchema = (
       (protocol) => V1_serializeAcquisitionProtocol(protocol, plugins),
       (protocol) => V1_deserializeAcquisitionProtocol(protocol, plugins),
     ),
-    parseService: primitive(),
-    transformService: primitive(),
+    parseService: optional(primitive()),
+    transformService: optional(primitive()),
   });
 
 const V1_recordSourceSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_RecordSource> =>
   createModelSchema(V1_RecordSource, {
-    allowFieldDelete: primitive(),
+    allowFieldDelete: optional(primitive()),
     authorization: optionalCustom(
       (val) => V1_serializeAuthorization(val, plugins),
       (val) => V1_deserializeAuthorization(val, plugins),
     ),
     createBlockedException: primitive(),
     createPermitted: primitive(),
-    dataProvider: primitive(),
+    dataProvider: optional(primitive()),
     description: primitive(),
     id: primitive(),
     recordService: usingModelSchema(V1_recordServiceSchema(plugins)),
@@ -561,7 +562,6 @@ const V1_resolutionQuerySchema = createModelSchema(V1_ResolutionQuery, {
 });
 
 const V1_identityResolutionSchema = createModelSchema(V1_IdentityResolution, {
-  modelClass: primitive(),
   resolutionQueries: list(
     custom(
       (val) => serialize(V1_resolutionQuerySchema, val),
@@ -657,7 +657,6 @@ export const V1_deleteRuleSchema = createModelSchema(V1_DeleteRule, {
       (val) => deserialize(V1_propertyPathSchema, val),
     ),
   ),
-  precedence: primitive(),
   predicate: usingModelSchema(V1_rawLambdaModelSchema),
   scopes: list(
     custom(

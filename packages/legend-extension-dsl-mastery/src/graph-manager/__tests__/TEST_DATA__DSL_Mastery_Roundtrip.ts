@@ -112,7 +112,6 @@ export const TEST_DATA__roundtrip = [
       package: 'org::legend',
       modelClass: 'org::legend::Person',
       identityResolution: {
-        modelClass: 'org::legend::Person',
         resolutionQueries: [
           {
             keyType: 'Optional',

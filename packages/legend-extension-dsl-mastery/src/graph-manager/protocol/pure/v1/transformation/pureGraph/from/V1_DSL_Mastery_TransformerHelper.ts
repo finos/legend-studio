@@ -490,7 +490,6 @@ export const V1_transformIdentityResolution = (
   context: V1_GraphTransformerContext,
 ): V1_IdentityResolution => {
   const identityResolution = new V1_IdentityResolution();
-  identityResolution.modelClass = element.modelClass;
   identityResolution.resolutionQueries = element.resolutionQueries.map((q) =>
     V1_transformResolutionQuery(q, context),
   );
