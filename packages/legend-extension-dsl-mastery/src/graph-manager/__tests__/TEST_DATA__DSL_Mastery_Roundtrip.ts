@@ -16,6 +16,75 @@
 
 export const TEST_DATA__roundtrip = [
   {
+    path: 'alloy::mastery::connection::KafkaConnection',
+    classifierPath:
+      'meta::pure::mastery::metamodel::connection::KafkaConnection',
+    content: {
+      _type: 'kafkaConnection',
+      name: 'KafkaConnection',
+      package: 'alloy::mastery::connection',
+      topicName: 'my-topic-name',
+      topicUrls: ['some.url.com:2100', 'another.url.com:2100'],
+    },
+  },
+  {
+    path: 'alloy::mastery::connection::FTPConnection',
+    classifierPath: 'meta::pure::mastery::metamodel::connection::FTPConnection',
+    content: {
+      _type: 'ftpConnection',
+      name: 'FTPConnection',
+      package: 'alloy::mastery::connection',
+      host: 'site.url.com',
+      port: 30,
+    },
+  },
+  {
+    path: 'alloy::mastery::connection::SFTPConnection',
+    classifierPath: 'meta::pure::mastery::metamodel::connection::FTPConnection',
+    content: {
+      _type: 'ftpConnection',
+      name: 'SFTPConnection',
+      package: 'alloy::mastery::connection',
+      host: 'site.url.com',
+      port: 30,
+      secure: true,
+    },
+  },
+  {
+    path: 'alloy::mastery::connection::HTTPConnection',
+    classifierPath:
+      'meta::pure::mastery::metamodel::connection::HTTPConnection',
+    content: {
+      _type: 'httpConnection',
+      authentication: {
+        _type: 'tokenAuthenticationStrategy',
+        tokenUrl: 'https://some.url.com',
+      },
+      name: 'HTTPConnection',
+      package: 'alloy::mastery::connection',
+      url: 'https://some.url.com',
+      proxy: {
+        authentication: {
+          _type: 'tokenAuthenticationStrategy',
+          tokenUrl: 'https://some.url.com',
+        },
+        host: 'proxy.url.com',
+        port: 85,
+      },
+    },
+  },
+  {
+    path: 'org::legend::TestDataProvider',
+    classifierPath: 'meta::pure::mastery::metamodel::precedence::DataProvider',
+    content: {
+      _type: 'dataProvider',
+      name: 'TestDataProvider',
+      package: 'org::legend',
+      dataProviderId: 'reuters',
+      dataProviderType: 'Aggregator',
+    },
+  },
+  {
     path: 'org::legend::Person',
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
@@ -38,12 +107,11 @@ export const TEST_DATA__roundtrip = [
     path: 'org::legend::PersonMasterRecord',
     classifierPath: 'meta::pure::mastery::metamodel::MasterRecordDefinition',
     content: {
-      _type: 'mastery',
+      _type: 'masterRecordDefinition',
       name: 'PersonMasterRecord',
       package: 'org::legend',
       modelClass: 'org::legend::Person',
       identityResolution: {
-        modelClass: 'org::legend::Person',
         resolutionQueries: [
           {
             keyType: 'Optional',
@@ -417,24 +485,30 @@ export const TEST_DATA__roundtrip = [
       ],
       sources: [
         {
+          allowFieldDelete: false,
           createBlockedException: false,
           createPermitted: true,
           description: 'Single partition source',
           id: 'widget-file-single-partition',
-          partitions: [
-            {
-              id: 'partition-1',
-              tags: ['Full Universe', 'Global'],
+          recordService: {
+            acquisitionProtocol: {
+              _type: 'legendServiceAcquisitionProtocol',
+              service:
+                'alloy::mastery::booklibrary::sources::isbndb::ReadFromSnowFlakeService',
             },
-          ],
-          parseService: 'org::legend::PersonParseService',
+            parseService: 'org::legend::PersonParseService',
+            transformService: 'org::legend::PersonTransformService',
+          },
           sequentialData: true,
           stagedLoad: false,
           status: 'Development',
-          transformService: 'org::legend::PersonTransformService',
-          tags: ['Widget Test'],
+          trigger: {
+            _type: 'manualTrigger',
+          },
+          dataProvider: 'org::legend::TestDataProvider',
         },
       ],
+      postCurationEnrichmentService: 'org::legend::PersonEnrichmentService',
     },
   },
 ];

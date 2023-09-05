@@ -19,13 +19,11 @@ import type { RawLambda } from '@finos/legend-graph';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
 
 export class IdentityResolution implements Hashable {
-  modelClass!: string;
   resolutionQueries: ResolutionQuery[] = [];
 
   get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.IDENTITY_RESOLUTION,
-      this.modelClass,
       hashArray(this.resolutionQueries),
     ]);
   }

@@ -14,34 +14,28 @@
  * limitations under the License.
  */
 
-import type { V1_IdentityResolution } from './V1_DSL_Mastery_IdentityResolution.js';
-import type { V1_RecordSource } from './V1_DSL_Mastery_RecordSource.js';
 import {
   V1_PackageableElement,
   type V1_PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
-import type { V1_PrecedenceRule } from './V1_DSL_Mastery_PrecedenceRule.js';
 
-export class V1_MasterRecordDefinition
-  extends V1_PackageableElement
-  implements Hashable
-{
-  modelClass!: string;
-  identityResolution!: V1_IdentityResolution;
-  sources: V1_RecordSource[] = [];
-  precedenceRules: V1_PrecedenceRule[] | undefined;
-  postCurationEnrichmentService?: string | undefined;
+export enum V1_DataProviderType {
+  AGGREGATOR = 'Aggregator',
+  EXCHANGE = 'Exchange',
+  REGULATOR = 'Regulator',
+}
+
+export class V1_DataProvider extends V1_PackageableElement implements Hashable {
+  dataProviderId!: string;
+  dataProviderType!: V1_DataProviderType;
 
   override get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.MASTER_RECORD_DEFINITION,
-      this.modelClass,
-      this.identityResolution,
-      hashArray(this.sources),
-      this.precedenceRules ? hashArray(this.precedenceRules) : '',
-      this.postCurationEnrichmentService ?? '',
+      MASTERY_HASH_STRUCTURE.DATA_PROVIDER,
+      this.dataProviderId,
+      this.dataProviderType,
     ]);
   }
 
