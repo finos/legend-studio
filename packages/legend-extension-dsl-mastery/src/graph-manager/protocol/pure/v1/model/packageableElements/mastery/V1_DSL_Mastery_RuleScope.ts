@@ -16,13 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
-import type { V1_DataProviderType } from './V1_DSL_Mastery_DataProvider.js';
-
-export enum V1_RuleScopeType {
-  DATA_PROVIDER_ID_SCOPE = 'dataProviderIdScope',
-  DATA_PROVIDER_TYPE_SCOPE = 'dataProviderTypeScope',
-  RECORD_SOURCE_SCOPE = 'recordSourceScope',
-}
+import type { V1_DataProviderType } from './V1_DSL_Mastery_DataProviderType.js';
 
 export abstract class V1_RuleScope implements Hashable {
   _type!: V1_RuleScopeType;
@@ -60,4 +54,10 @@ export class V1_DataProviderTypeScope extends V1_RuleScope {
       this.dataProviderType,
     ]);
   }
+}
+
+export enum V1_RuleScopeType {
+  DATA_PROVIDER_ID_SCOPE = 'dataProviderIdScope',
+  DATA_PROVIDER_TYPE_SCOPE = 'dataProviderTypeScope',
+  RECORD_SOURCE_SCOPE = 'recordSourceScope',
 }

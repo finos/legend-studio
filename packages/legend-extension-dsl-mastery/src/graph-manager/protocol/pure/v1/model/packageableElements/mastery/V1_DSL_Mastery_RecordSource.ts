@@ -14,33 +14,21 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
-import type { V1_AcquisitionProtocol } from './V1_DSL_Mastery_AcquisitionProtocol.js';
-import type { V1_Trigger } from './V1_DSL_Mastery_Trigger.js';
-import type { V1_Authorization } from './V1_DSL_Mastery_Authorization.js';
-
-export enum V1_RecordSourceStatus {
-  Development,
-  TestOnly,
-  Production,
-  Dormant,
-  Decommissioned,
-}
+import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class V1_RecordSource implements Hashable {
   id!: string;
-  status!: V1_RecordSourceStatus;
+  status!: string;
   description!: string;
-  recordService!: V1_RecordService;
+  partitions!: V1_RecordSourcePartition[];
+  parseService?: string | undefined;
+  transformService!: string;
   sequentialData?: boolean | undefined;
   stagedLoad?: boolean | undefined;
   createPermitted?: boolean | undefined;
   createBlockedException?: boolean | undefined;
-  allowFieldDelete?: boolean | undefined;
-  trigger!: V1_Trigger;
-  authorization?: V1_Authorization | undefined;
-  dataProvider?: string | undefined;
+  tags: string[] = [];
 
   get hashCode(): string {
     return hashArray([
@@ -48,29 +36,27 @@ export class V1_RecordSource implements Hashable {
       this.id,
       this.status,
       this.description,
+      hashArray(this.partitions),
+      this.parseService ?? '',
+      this.transformService,
       this.sequentialData?.toString() ?? '',
       this.stagedLoad?.toString() ?? '',
       this.createPermitted?.toString() ?? '',
       this.createBlockedException?.toString() ?? '',
-      this.allowFieldDelete?.toString() ?? '',
-      this.trigger,
-      this.authorization ?? '',
-      this.dataProvider ?? '',
+      hashArray(this.tags),
     ]);
   }
 }
 
-export class V1_RecordService implements Hashable {
-  acquisitionProtocol!: V1_AcquisitionProtocol;
-  parseService?: string | undefined;
-  transformService!: string;
+export class V1_RecordSourcePartition implements Hashable {
+  id!: string;
+  tags: string[] = [];
 
   get hashCode(): string {
     return hashArray([
-      MASTERY_HASH_STRUCTURE.RECORD_SERVICE,
-      this.acquisitionProtocol,
-      this.parseService ?? '',
-      this.transformService,
+      MASTERY_HASH_STRUCTURE.RECORD_SOURCE_PARTITION,
+      this.id,
+      hashArray(this.tags),
     ]);
   }
 }

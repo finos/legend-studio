@@ -20,11 +20,6 @@ import type { PropertyPath } from './DSL_Mastery_PropertyPath.js';
 import type { RawLambda } from '@finos/legend-graph';
 import type { RuleScope } from './DSL_Mastery_RuleScope.js';
 
-export enum RuleAction {
-  BLOCK = 'Block',
-  OVERWRITE = 'Overwrite',
-}
-
 export abstract class PrecedenceRule implements Hashable {
   paths: PropertyPath[] = [];
   scopes: RuleScope[] = [];
@@ -82,4 +77,9 @@ export class SourcePrecedenceRule extends UpdateRule {
       super.hashCode,
     ]);
   }
+}
+
+export enum RuleAction {
+  BLOCK = 'Block',
+  OVERWRITE = 'Overwrite',
 }
