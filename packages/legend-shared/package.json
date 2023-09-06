@@ -41,19 +41,19 @@
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.4",
-    "@types/lodash-es": "4.17.8",
-    "@types/object-hash": "3.0.3",
+    "@types/lodash-es": "4.17.9",
+    "@types/object-hash": "3.0.4",
     "@types/pako": "2.0.0",
-    "@types/papaparse": "5.3.7",
+    "@types/papaparse": "5.3.8",
     "@types/seedrandom": "3.0.5",
-    "@types/uuid": "9.0.2",
+    "@types/uuid": "9.0.3",
     "date-fns": "2.30.0",
     "fuse.js": "6.6.2",
     "hash.js": "1.1.7",
     "http-status-codes": "2.2.0",
     "lodash-es": "4.17.21",
     "lossless-json": "2.0.11",
-    "mobx": "6.10.0",
+    "mobx": "6.10.2",
     "object-hash": "3.0.0",
     "pako": "2.1.0",
     "papaparse": "5.4.1",
@@ -65,14 +65,14 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@jest/globals": "29.6.3",
+    "@jest/globals": "29.6.4",
     "cross-env": "7.0.3",
-    "eslint": "8.47.0",
-    "jest": "29.6.3",
+    "eslint": "8.48.0",
+    "jest": "29.6.4",
     "lodash": "4.17.21",
     "npm-run-all": "4.1.5",
     "rimraf": "5.0.1",
-    "typescript": "5.1.6"
+    "typescript": "5.2.2"
   },
   "publishConfig": {
     "directory": "build/publishContent"
