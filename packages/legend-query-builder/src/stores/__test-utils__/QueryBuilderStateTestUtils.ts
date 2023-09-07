@@ -131,6 +131,7 @@ export const TEST__setUpQueryBuilderState = async (
   const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
     applicationStore,
     graphManagerState,
+    undefined,
   );
   if (rawLambda) {
     queryBuilderState.initializeWithQuery(rawLambda);

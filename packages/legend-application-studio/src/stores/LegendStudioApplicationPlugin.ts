@@ -326,4 +326,10 @@ export interface DSL_LegendStudioApplicationPlugin_Extension
    * (e.g. Class, Enum in ###Pure)
    */
   getExtraPureGrammarParserElementSnippetSuggestionsGetters?(): PureGrammarParserElementSnippetSuggestionsGetter[];
+
+  /**
+   * Get a string of the Pure grammar element name for auto-folding the element
+   * (e.g. Diagram, or Text)
+   */
+  getAutoFoldingCandidateToken?(): string[];
 }

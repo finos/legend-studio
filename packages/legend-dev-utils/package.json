@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-dev-utils",
-  "version": "2.0.78",
+  "version": "2.0.79",
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
@@ -50,7 +50,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@babel/core": "7.22.10",
+    "@babel/core": "7.22.15",
     "@changesets/assemble-release-plan": "5.2.4",
     "@changesets/changelog-github": "0.4.8",
     "@changesets/config": "2.3.1",
@@ -59,12 +59,12 @@
     "@changesets/logger": "0.0.5",
     "@changesets/read": "0.5.9",
     "@changesets/write": "0.2.3",
-    "@jest/globals": "29.6.3",
+    "@jest/globals": "29.6.4",
     "@juggle/resize-observer": "3.4.0",
     "@manypkg/get-packages": "1.1.3",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.11",
     "autoprefixer": "10.4.15",
-    "babel-jest": "29.6.3",
+    "babel-jest": "29.6.4",
     "babel-loader": "9.1.3",
     "chalk": "5.3.0",
     "circular-dependency-plugin": "5.2.2",
@@ -73,9 +73,9 @@
     "cssnano": "6.0.1",
     "html-webpack-plugin": "5.5.3",
     "isbinaryfile": "5.0.0",
-    "jest": "29.6.3",
+    "jest": "29.6.4",
     "jest-canvas-mock": "2.5.2",
-    "jest-environment-jsdom": "29.6.3",
+    "jest-environment-jsdom": "29.6.4",
     "jest-extended": "4.0.1",
     "jest-watch-typeahead": "2.2.2",
     "jsonc-parser": "3.2.0",
@@ -83,18 +83,18 @@
     "mini-css-extract-plugin": "2.7.6",
     "monaco-editor": "0.41.0",
     "monaco-editor-webpack-plugin": "7.1.0",
-    "postcss": "8.4.28",
+    "postcss": "8.4.29",
     "postcss-loader": "7.3.3",
     "react-refresh": "0.14.0",
     "resolve": "1.22.4",
     "sass": "1.66.1",
     "sass-loader": "13.3.2",
-    "typescript": "5.1.6",
+    "typescript": "5.2.2",
     "webpack": "5.88.2"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.47.0",
+    "eslint": "8.48.0",
     "rimraf": "5.0.1"
   },
   "publishConfig": {

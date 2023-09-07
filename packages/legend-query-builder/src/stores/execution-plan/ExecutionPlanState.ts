@@ -20,6 +20,8 @@ import {
   type GraphManagerState,
   ExecutionPlan,
   ExecutionNode,
+  StoreMappingGlobalGraphFetchExecutionNode,
+  RelationalGraphFetchExecutionNode,
 } from '@finos/legend-graph';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
@@ -28,6 +30,7 @@ import {
   filterByType,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
+import { generateExecutionNodeLabel } from '../../components/execution-plan/ExecutionPlanViewer.js';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;
@@ -63,8 +66,14 @@ export class ExecutionNodeTreeNodeData implements TreeNodeData {
   isOpen?: boolean;
   childrenIds?: string[];
   executionNode: ExecutionNode;
+  parentNodeId: string | undefined;
 
-  constructor(id: string, label: string, executionNode: ExecutionNode) {
+  constructor(
+    id: string,
+    label: string,
+    executionNode: ExecutionNode,
+    parentNodeId: string | undefined,
+  ) {
     makeObservable(this, {
       isSelected: observable,
       isOpen: observable,
@@ -74,6 +83,7 @@ export class ExecutionNodeTreeNodeData implements TreeNodeData {
     this.id = id;
     this.label = label;
     this.executionNode = executionNode;
+    this.parentNodeId = parentNodeId;
   }
 
   setIsSelected(val: boolean): void {
@@ -96,6 +106,9 @@ export const generateExecutionNodeTreeNodeData = (
     executionNode._UUID,
     label,
     executionNode,
+    parentNode instanceof ExecutionNodeTreeNodeData
+      ? generateExecutionNodeLabel(parentNode.executionNode)
+      : undefined,
   );
 
   const childrenIds: string[] = [];
@@ -107,6 +120,27 @@ export const generateExecutionNodeTreeNodeData = (
       addUniqueEntry(childrenIds, childExecutionNode._UUID);
     });
 
+  if (executionNode instanceof StoreMappingGlobalGraphFetchExecutionNode) {
+    addUniqueEntry(
+      childrenIds,
+      executionNode.localGraphFetchExecutionNode._UUID,
+    );
+    executionNode.children
+      .slice()
+      .filter(filterByType(ExecutionNode))
+      .forEach((childExecutionNode) => {
+        addUniqueEntry(childrenIds, childExecutionNode._UUID);
+      });
+  }
+
+  if (executionNode instanceof RelationalGraphFetchExecutionNode) {
+    executionNode.children
+      .slice()
+      .filter(filterByType(ExecutionNode))
+      .forEach((childExecutionNode) => {
+        addUniqueEntry(childrenIds, childExecutionNode._UUID);
+      });
+  }
   executionNodeTreeNode.childrenIds = childrenIds;
 
   return executionNodeTreeNode;
@@ -149,6 +183,32 @@ export enum EXECUTION_PLAN_VIEW_MODE {
   JSON = 'JSON',
 }
 
+export enum PLAN_TABS {
+  GENERAL = 'GENERAL',
+  GLOBAL_IMPLEMENTATION_SUPPORT = 'GLOBAL_IMPLEMENTATION_SUPPORT',
+}
+
+class GlobalImplementationSupportState {
+  selectedTab: PLAN_TABS = PLAN_TABS.GENERAL;
+  selectedJavaClass: string | undefined = undefined;
+  constructor() {
+    makeObservable(this, {
+      selectedTab: observable,
+      selectedJavaClass: observable,
+      setSelectedTab: action,
+      setSelectedJavaClass: action,
+    });
+  }
+
+  setSelectedTab(tab: PLAN_TABS): void {
+    this.selectedTab = tab;
+  }
+
+  setSelectedJavaClass(javaClass: string | undefined): void {
+    this.selectedJavaClass = javaClass;
+  }
+}
+
 export class ExecutionPlanState {
   applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
@@ -165,6 +225,8 @@ export class ExecutionPlanState {
   rawPlan?: RawExecutionPlan | undefined;
   plan?: ExecutionPlan | undefined;
   debugText?: string | undefined;
+  globalImplementationSupportState: GlobalImplementationSupportState =
+    new GlobalImplementationSupportState();
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -191,6 +253,7 @@ export class ExecutionPlanState {
       refreshTreeData: action,
       nonNullableTreeData: computed,
       initialize: action,
+      globalImplementationSupportState: observable,
     });
     this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;

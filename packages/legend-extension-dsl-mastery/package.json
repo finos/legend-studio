@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-mastery",
-  "version": "3.0.74",
+  "version": "3.0.76",
   "description": "Legend extension for Mastery DSL",
   "keywords": [
     "legend",
@@ -49,21 +49,21 @@
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@types/react": "18.2.20",
-    "mobx": "6.10.0",
+    "@types/react": "18.2.21",
+    "mobx": "6.10.2",
     "react": "18.2.0",
     "serializr": "3.0.2"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@jest/globals": "29.6.3",
+    "@jest/globals": "29.6.4",
     "cross-env": "7.0.3",
-    "eslint": "8.47.0",
-    "jest": "29.6.3",
+    "eslint": "8.48.0",
+    "jest": "29.6.4",
     "npm-run-all": "4.1.5",
     "rimraf": "5.0.1",
     "sass": "1.66.1",
-    "typescript": "5.1.6"
+    "typescript": "5.2.2"
   },
   "peerDependencies": {
     "react": "^18.0.0"

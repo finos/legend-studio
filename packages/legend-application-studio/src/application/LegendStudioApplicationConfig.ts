@@ -27,12 +27,14 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
   SerializationFactory,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
+import { QueryBuilderConfig } from '@finos/legend-query-builder';
 
 export class ServiceRegistrationEnvironmentConfig {
   env!: string;
@@ -99,6 +101,11 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
+  /**
+   * Config specific to query builder
+   */
+  queryBuilderConfig: QueryBuilderConfig | undefined;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       enableGraphBuilderStrictMode: optional(primitive()),
@@ -109,6 +116,9 @@ class LegendStudioApplicationCoreOptions {
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
+      ),
+      queryBuilderConfig: optional(
+        usingModelSchema(QueryBuilderConfig.serialization.schema),
       ),
     }),
   );

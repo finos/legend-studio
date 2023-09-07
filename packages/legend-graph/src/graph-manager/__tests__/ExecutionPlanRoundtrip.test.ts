@@ -23,6 +23,9 @@ import {
 } from '../__test-utils__/GraphManagerTestUtils.js';
 import { TEST_DATA__simpleRelationalExecutionPlan } from './roundtripTestData/TEST_DATA__SimpleRelationalExecutionPlan.js';
 import { TEST_DATA__simpleM2MExecutionPlan } from './roundtripTestData/TEST_DATA__SimpleM2MExecutionPlan.js';
+import { TEST_DATA__simpleFlowControlExecutionPlan } from './roundtripTestData/TEST_DATA__SimpleFlowControlExecutionPlan.js';
+import { TEST_DATA__simpleGraphFetchExecutionPlan } from './roundtripTestData/TEST_DATA__simpleGraphFetchExecutionPlan.js';
+import { TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan } from './roundtripTestData/TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan.js';
 
 type RoundtripTestCase = [
   string,
@@ -46,6 +49,27 @@ const cases: RoundtripTestCase[] = [
       entities: TEST_DATA__simpleRelationalExecutionPlan.entities,
     },
     TEST_DATA__simpleRelationalExecutionPlan.plan,
+  ],
+  [
+    'Simple flow control execution plan',
+    {
+      entities: TEST_DATA__simpleFlowControlExecutionPlan.entities,
+    },
+    TEST_DATA__simpleFlowControlExecutionPlan.plan,
+  ],
+  [
+    'Simple graph fetch execution plan',
+    {
+      entities: TEST_DATA__simpleGraphFetchExecutionPlan.entities,
+    },
+    TEST_DATA__simpleGraphFetchExecutionPlan.plan,
+  ],
+  [
+    'Simple cross store graph fetch execution plan',
+    {
+      entities: TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan.entities,
+    },
+    TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan.plan,
   ],
 ];
 

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-query-deployment",
-  "version": "10.24.0",
+  "version": "10.26.0",
   "private": true,
   "description": "Legend Query web application deployment",
   "keywords": [
@@ -40,12 +40,12 @@
     "@finos/legend-dev-utils": "workspace:*",
     "copy-webpack-plugin": "11.0.0",
     "cross-env": "7.0.3",
-    "eslint": "8.47.0",
+    "eslint": "8.48.0",
     "npm-run-all": "4.1.5",
     "rimraf": "5.0.1",
-    "typescript": "5.1.6",
+    "typescript": "5.2.2",
     "webpack": "5.88.2",
-    "webpack-bundle-analyzer": "4.9.0",
+    "webpack-bundle-analyzer": "4.9.1",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "4.15.1"
   }

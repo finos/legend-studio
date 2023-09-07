@@ -45,10 +45,9 @@ module.exports = {
         workspacePath &&
         fs.existsSync(path.resolve(workspacePath, 'package.json'))
       ) {
-        workspaceName = require(path.resolve(
-          workspacePath,
-          'package.json',
-        )).name;
+        workspaceName = require(
+          path.resolve(workspacePath, 'package.json'),
+        ).name;
       }
     }
 

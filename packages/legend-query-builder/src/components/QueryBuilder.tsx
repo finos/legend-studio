@@ -124,20 +124,22 @@ const QueryBuilderStatusBar = observer(
           {queryBuilderState.isQueryChatOpened && (
             <QueryChat queryBuilderState={queryBuilderState} />
           )}
-          <button
-            className={clsx(
-              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
-              {
-                'query-builder__status-bar__action__toggler--toggled':
-                  queryBuilderState.isQueryChatOpened === true,
-              },
-            )}
-            onClick={openQueryChat}
-            tabIndex={-1}
-            title="Open Query Chat"
-          >
-            <ChatIcon />
-          </button>
+          {!queryBuilderState.config?.TEMPORARY__disableQueryBuilderChat && (
+            <button
+              className={clsx(
+                'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+                {
+                  'query-builder__status-bar__action__toggler--toggled':
+                    queryBuilderState.isQueryChatOpened === true,
+                },
+              )}
+              onClick={openQueryChat}
+              tabIndex={-1}
+              title="Open Query Chat"
+            >
+              <ChatIcon />
+            </button>
+          )}
           <button
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__compile-btn',

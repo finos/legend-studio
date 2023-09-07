@@ -19,7 +19,10 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
 } from '@finos/legend-application';
-import { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderConfig,
+  QueryBuilderState,
+} from '@finos/legend-query-builder';
 import {
   type GraphManagerState,
   getMappingCompatibleClasses,
@@ -151,8 +154,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
     projectInfo?: DataSpaceProjectInfo | undefined,
+    config?: QueryBuilderConfig | undefined,
   ) {
-    super(applicationStore, graphManagerState);
+    super(applicationStore, graphManagerState, config);
 
     makeObservable(this, {
       dataSpaces: observable,

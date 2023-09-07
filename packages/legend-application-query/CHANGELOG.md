@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.1.0
+
+### Minor Changes
+
+- [#2570](https://github.com/finos/legend-studio/pull/2570) [`aada85b52`](https://github.com/finos/legend-studio/commit/aada85b524ce21856f73bc8d160afce362d0ca1a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `queryBuidlerConfig` and add config to `LegendQueryApplicationConfig` and `LegendStudioApplicationConfig`. Disable QueryChat with `TEMPORARY__disableQueryBuilderChat` flag.
+
 ## 13.0.57
 
 ## 13.0.56

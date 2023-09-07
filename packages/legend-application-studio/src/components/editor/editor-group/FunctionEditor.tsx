@@ -1083,6 +1083,7 @@ export const FunctionEditor = observer(() => {
           embeddedQueryBuilderState.editorStore.applicationStore,
           embeddedQueryBuilderState.editorStore.graphManagerState,
           functionEditorState.functionElement,
+          editorStore.applicationStore.config.options.queryBuilderConfig,
         );
         functionQueryBuilderState.initializeWithQuery(
           new RawLambda(

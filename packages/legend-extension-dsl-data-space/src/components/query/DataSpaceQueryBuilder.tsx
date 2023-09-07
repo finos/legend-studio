@@ -422,6 +422,12 @@ export const queryDataSpace = async (
             );
           },
           false,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          editorStore.applicationStore.config.options.queryBuilderConfig,
         );
         queryBuilderState.setExecutionContext(
           dataSpace.defaultExecutionContext,
