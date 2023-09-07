@@ -59,6 +59,13 @@ import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../graph/QueryBuilderMetaModelConst.js';
+import {
+  useApplicationStore,
+  type ApplicationStore,
+  type LegendApplicationConfig,
+  type LegendApplicationPlugin,
+  type LegendApplicationPluginManager,
+} from '@finos/legend-application';
 
 export enum CUSTOM_DATE_PICKER_OPTION {
   ABSOLUTE_DATE = 'Absolute Date',
@@ -616,6 +623,10 @@ const buildCustomDateOptionReferenceMomentValue = (
  */
 const buildCustomDateOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
+  applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >,
 ): CustomDateOption => {
   if (
     valueSpecification instanceof SimpleFunctionExpression &&
@@ -652,6 +663,7 @@ const buildCustomDateOption = (
       return customDateOption;
     } catch (error) {
       assertErrorThrown(error);
+      applicationStore.notificationService.notifyError(error);
     }
   }
   return new CustomDateOption('', '', 0, undefined, undefined, undefined);
@@ -662,6 +674,10 @@ const buildCustomDateOption = (
  */
 export const buildDatePickerOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
+  applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >,
 ): DatePickerOption => {
   if (valueSpecification instanceof SimpleFunctionExpression) {
     switch (getSupportedDateFunctionFullPath(valueSpecification.functionName)) {
@@ -704,7 +720,7 @@ export const buildDatePickerOption = (
             .values[0]?.value.name as CUSTOM_DATE_DAY_OF_WEEK,
         );
       case QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST:
-        return buildCustomDateOption(valueSpecification);
+        return buildCustomDateOption(valueSpecification, applicationStore);
       default:
         return new DatePickerOption('', '');
     }
@@ -1220,6 +1236,7 @@ export const CustomDatePicker: React.FC<{
     observerContext,
     typeCheckOption,
   } = props;
+  const applicationStore = useApplicationStore();
   // For some cases where types need to be matched strictly.
   // Some options need to be filtered out for DateTime.
   const targetDateOptionsEnum = typeCheckOption.match
@@ -1229,7 +1246,7 @@ export const CustomDatePicker: React.FC<{
       ])
     : Object.values(CUSTOM_DATE_PICKER_OPTION);
   const [datePickerOption, setDatePickerOption] = useState(
-    buildDatePickerOption(valueSpecification),
+    buildDatePickerOption(valueSpecification, applicationStore),
   );
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -1239,10 +1256,14 @@ export const CustomDatePicker: React.FC<{
     setAnchorEl(event.currentTarget);
   };
   const handleEnter = (): void => {
-    setDatePickerOption(buildDatePickerOption(valueSpecification));
+    setDatePickerOption(
+      buildDatePickerOption(valueSpecification, applicationStore),
+    );
   };
   const closeCustomDatePickerPopover = (): void => {
-    setDatePickerOption(buildDatePickerOption(valueSpecification));
+    setDatePickerOption(
+      buildDatePickerOption(valueSpecification, applicationStore),
+    );
     setAnchorEl(null);
   };
   const handleDatePickerOptionChange = (
@@ -1321,7 +1342,10 @@ export const CustomDatePicker: React.FC<{
           <CustomDateInstanceValueEditor
             graph={graph}
             observerContext={observerContext}
-            customDateOptionValue={buildCustomDateOption(valueSpecification)}
+            customDateOptionValue={buildCustomDateOption(
+              valueSpecification,
+              applicationStore,
+            )}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
@@ -1333,6 +1357,7 @@ export const CustomDatePicker: React.FC<{
             observerContext={observerContext}
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
+              applicationStore,
             )}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
@@ -1345,6 +1370,7 @@ export const CustomDatePicker: React.FC<{
             observerContext={observerContext}
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
+              applicationStore,
             )}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
@@ -1357,8 +1383,10 @@ export const CustomDatePicker: React.FC<{
 
   // make sure the date picker label is updated when the value is reset or changed somehow
   useEffect(() => {
-    setDatePickerOption(buildDatePickerOption(valueSpecification));
-  }, [valueSpecification]);
+    setDatePickerOption(
+      buildDatePickerOption(valueSpecification, applicationStore),
+    );
+  }, [applicationStore, valueSpecification]);
 
   return (
     <>

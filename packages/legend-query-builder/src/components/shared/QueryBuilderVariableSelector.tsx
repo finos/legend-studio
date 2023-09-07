@@ -55,7 +55,10 @@ export const VariableViewer = observer(
 
     const getNameOfValue = (value: ValueSpecification): string | undefined => {
       if (value instanceof SimpleFunctionExpression) {
-        const possibleDateLabel = buildDatePickerOption(value).label;
+        const possibleDateLabel = buildDatePickerOption(
+          value,
+          queryBuilderState.applicationStore,
+        ).label;
         if (possibleDateLabel) {
           return possibleDateLabel;
         }
