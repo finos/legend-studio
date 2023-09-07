@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.2.0
+
+### Minor Changes
+
+- [#2441](https://github.com/finos/legend-studio/pull/2441) [`4ab805204`](https://github.com/finos/legend-studio/commit/4ab8052040e4cab0f2004ba872e5fbbb910c30a9) ([@Paarth002](https://github.com/Paarth002)) - Added relational graph fetch execution nodes
+
 ## 31.1.10
 
 ## 31.1.9
