@@ -47,6 +47,7 @@ import {
   BufferIcon,
   CustomSelectorInput,
   FolderIcon,
+  PURE_UnknownElementTypeIcon,
 } from '@finos/legend-art';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
@@ -80,6 +81,8 @@ import {
   Binding,
   Package,
   getDescendantsOfPackage,
+  PropertyGraphFetchTree,
+  RootGraphFetchTree,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -115,20 +118,26 @@ const getBindingFormatter = (props: {
     );
   };
 
-const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
+export const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     QueryBuilderGraphFetchTreeNodeData,
     {
       isReadOnly: boolean;
-      removeNode: (node: QueryBuilderGraphFetchTreeNodeData) => void;
+      removeNode?: (node: QueryBuilderGraphFetchTreeNodeData) => void;
     }
   >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-  const { removeNode } = innerProps;
-  const property = node.tree.property.value;
-  const type = property.genericType.value.rawType;
-  const subType = node.tree.subType?.value;
+  const { isReadOnly, removeNode } = innerProps;
+  let property, type, subType;
+  if (node.tree instanceof PropertyGraphFetchTree) {
+    property = node.tree.property.value;
+    type = property.genericType.value.rawType;
+    subType = node.tree.subType?.value;
+  } else if (node.tree instanceof RootGraphFetchTree) {
+    type = node.tree.class.value;
+  }
+
   const isExpandable = Boolean(node.childrenIds.length);
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (
@@ -139,9 +148,13 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   ) : (
     <div />
   );
-  const nodeTypeIcon = getClassPropertyIcon(type);
+  const nodeTypeIcon = type ? (
+    getClassPropertyIcon(type)
+  ) : (
+    <PURE_UnknownElementTypeIcon />
+  );
   const toggleExpandNode = (): void => onNodeSelect?.(node);
-  const deleteNode = (): void => removeNode(node);
+  const deleteNode = (): void => removeNode?.(node);
 
   return (
     <div
@@ -184,7 +197,7 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
           {
             <div className="query-builder-graph-fetch-tree__node__type">
               <div className="query-builder-graph-fetch-tree__node__type__label">
-                {type.name}
+                {type?.name}
               </div>
             </div>
           }
@@ -196,6 +209,7 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
           title="Remove"
           tabIndex={-1}
           onClick={deleteNode}
+          disabled={isReadOnly}
         >
           <TimesIcon />
         </button>

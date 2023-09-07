@@ -19,9 +19,11 @@ import {
   type ResultType,
   TDSResultType,
   DataTypeResultType,
+  PartialClassResultType,
 } from '@finos/legend-graph';
 import { DataTypeResultTypeViewer } from './DataTypeResultTypeViewer.js';
 import { TDSResultTypeViewer } from './TDSResultTypeViewer.js';
+import { PartialClassResultTypeViewer } from './PartialClassResultViewer.js';
 
 export const ResultTypeViewer: React.FC<{
   resultType: ResultType;
@@ -31,6 +33,8 @@ export const ResultTypeViewer: React.FC<{
     return <DataTypeResultTypeViewer resultType={resultType} />;
   } else if (resultType instanceof TDSResultType) {
     return <TDSResultTypeViewer resultType={resultType} />;
+  } else if (resultType instanceof PartialClassResultType) {
+    return <PartialClassResultTypeViewer resultType={resultType} />;
   } else {
     return null;
   }

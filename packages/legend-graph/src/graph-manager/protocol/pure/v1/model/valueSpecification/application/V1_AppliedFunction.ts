@@ -22,7 +22,7 @@ import { V1_AbstractAppliedFunction } from '../raw/V1_AbstractAppliedFunction.js
 
 export class V1_AppliedFunction extends V1_AbstractAppliedFunction {
   function!: string;
-  // fControl!: string;
+  fControl?: string | undefined;
   parameters: V1_ValueSpecification[] = [];
 
   accept_ValueSpecificationVisitor<T>(

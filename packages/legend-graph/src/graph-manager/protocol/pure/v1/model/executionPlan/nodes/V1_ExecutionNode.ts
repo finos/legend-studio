@@ -16,15 +16,12 @@
 
 import type { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
 import type { V1_ResultType } from '../results/V1_ResultType.js';
+import type { V1_PlatformImplementation } from './V1_PlatformImplementation.js';
 
 export abstract class V1_ExecutionNode {
   resultType!: V1_ResultType;
   executionNodes: V1_ExecutionNode[] = [];
+  authDependent?: boolean | undefined;
   resultSizeRange?: V1_Multiplicity | undefined;
-  /**
-   * Studio does not process the platform implementation info
-   *
-   * @discrepancy model
-   */
-  implementation!: object;
+  implementation?: V1_PlatformImplementation | undefined;
 }

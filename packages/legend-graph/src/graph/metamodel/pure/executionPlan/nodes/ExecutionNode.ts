@@ -17,6 +17,7 @@
 import { uuid } from '@finos/legend-shared';
 import type { Multiplicity } from '../../packageableElements/domain/Multiplicity.js';
 import type { ResultType } from '../result/ResultType.js';
+import type { PlatformImplementation } from './PlatformImplementation.js';
 
 export class ExecutionNode {
   readonly _UUID = uuid();
@@ -27,10 +28,5 @@ export class ExecutionNode {
   executionNodes: ExecutionNode[] = [];
   authDependent?: boolean | undefined;
   supportFunctions: string[] = [];
-  /**
-   * Studio does not process the platform implementation info
-   *
-   * @discrepancy model
-   */
-  implementation!: object;
+  implementation?: PlatformImplementation | undefined;
 }

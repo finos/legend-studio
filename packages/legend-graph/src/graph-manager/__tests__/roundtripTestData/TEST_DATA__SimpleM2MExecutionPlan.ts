@@ -85,8 +85,8 @@ export const TEST_DATA__simpleM2MExecutionPlan = {
           _type: 'storeMappingGlobalGraphFetchExecutionNode',
           authDependent: false,
           checked: true,
+          dependencyIndices: [],
           enableConstraints: true,
-          executionNodes: [],
           graphFetchTree: {
             _type: 'rootGraphFetchTree',
             class: 'model::Person',
@@ -213,6 +213,10 @@ export const TEST_DATA__simpleM2MExecutionPlan = {
           { _type: 'collection', multiplicity: { lowerBound: 0 }, values: [] },
           {
             _type: 'classInstance',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
             type: 'rootGraphFetchTree',
             value: {
               _type: 'rootGraphFetchTree',

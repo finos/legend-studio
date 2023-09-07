@@ -15,7 +15,10 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { generateExecutionNodeLabel } from './ExecutionPlanViewer.js';
+import {
+  ExecutionNodeViewer,
+  generateExecutionNodeLabel,
+} from './ExecutionPlanViewer.js';
 import {
   type ExecutionPlanState,
   EXECUTION_PLAN_VIEW_MODE,
@@ -28,33 +31,55 @@ import {
   PanelDivider,
   Button,
   PanelContent,
+  ChevronDownIcon,
+  ChevronRightIcon,
 } from '@finos/legend-art';
 import type { ExecutionNode, SequenceExecutionNode } from '@finos/legend-graph';
 import { ResultTypeViewer } from './ResultTypeViewer.js';
+import { useState } from 'react';
 
-export const SequenceExecutionNodeViewer: React.FC<{
+export const SequenceExecutionNodeViewerHelper: React.FC<{
   node: SequenceExecutionNode;
   executionPlanState: ExecutionPlanState;
+  viewJson?: boolean | undefined;
 }> = observer((props) => {
-  const { node, executionPlanState } = props;
+  const { node, executionPlanState, viewJson } = props;
   const resultType = node.resultType;
-  const applicationStore = executionPlanState.applicationStore;
+  const [executionNode, setExecutionNode] = useState<ExecutionNode | undefined>(
+    undefined,
+  );
+  const nodeExpandIcon = viewJson ? (
+    <div />
+  ) : executionNode ? (
+    <ChevronDownIcon />
+  ) : (
+    <ChevronRightIcon />
+  );
   const openExecutionNode = (child: ExecutionNode): void => {
     const newNode = executionPlanState.treeData?.nodes.get(child._UUID);
-    if (newNode instanceof ExecutionPlanViewTreeNodeData) {
-      executionPlanState.transformMetadataToProtocolJson(newNode.executionPlan);
-    } else if (newNode instanceof ExecutionNodeTreeNodeData) {
-      executionPlanState.transformMetadataToProtocolJson(newNode.executionNode);
-    }
-    executionPlanState.setSelectedNode(newNode);
-  };
-
-  return (
-    <PanelContent
-      darkMode={
-        !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+    if (viewJson === false) {
+      if (executionNode) {
+        setExecutionNode(undefined);
+      } else {
+        setExecutionNode(child);
       }
-    >
+    } else {
+      if (newNode instanceof ExecutionPlanViewTreeNodeData) {
+        executionPlanState.transformMetadataToProtocolJson(
+          newNode.executionPlan,
+        );
+      } else if (newNode instanceof ExecutionNodeTreeNodeData) {
+        executionPlanState.transformMetadataToProtocolJson(
+          newNode.executionNode,
+        );
+      }
+      if (newNode) {
+        executionPlanState.setSelectedNode(newNode);
+      }
+    }
+  };
+  return (
+    <>
       <div className="query-builder__sequence__container">
         <div>
           <PanelListItem className="query-builder__sequence__container__item__label">
@@ -72,6 +97,7 @@ export const SequenceExecutionNodeViewer: React.FC<{
                 tabIndex={-1}
                 title={`Go to ${generateExecutionNodeLabel(child)}`}
               >
+                {!viewJson && nodeExpandIcon}
                 {`${index + 1}: ${generateExecutionNodeLabel(child)}`}
               </button>
             </div>
@@ -80,6 +106,44 @@ export const SequenceExecutionNodeViewer: React.FC<{
       </div>
       <PanelDivider />
       <ResultTypeViewer resultType={resultType} />
+      {viewJson === false && executionNode && (
+        <ExecutionNodeViewer
+          executionNode={executionNode}
+          executionPlanState={executionPlanState}
+          viewJson={false}
+        />
+      )}
+    </>
+  );
+});
+
+export const SequenceExecutionNodeViewer: React.FC<{
+  node: SequenceExecutionNode;
+  executionPlanState: ExecutionPlanState;
+  viewJson?: boolean | undefined;
+}> = observer((props) => {
+  const { node, executionPlanState, viewJson } = props;
+  const applicationStore = executionPlanState.applicationStore;
+  if (viewJson === false) {
+    return (
+      <SequenceExecutionNodeViewerHelper
+        node={node}
+        executionPlanState={executionPlanState}
+        viewJson={viewJson}
+      />
+    );
+  }
+  return (
+    <PanelContent
+      darkMode={
+        !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+      }
+    >
+      <SequenceExecutionNodeViewerHelper
+        node={node}
+        executionPlanState={executionPlanState}
+        viewJson={viewJson}
+      />
       <div className="query-builder__execution__container">
         <Button
           className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"

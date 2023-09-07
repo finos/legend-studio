@@ -20,13 +20,14 @@ import {
   deleteEntry,
   hashArray,
   type Hashable,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   type AbstractProperty,
   type GraphFetchTree,
   type Type,
-  type RootGraphFetchTree,
+  RootGraphFetchTree,
   PropertyExplicitReference,
   Class,
   PropertyGraphFetchTree,
@@ -51,7 +52,7 @@ export class QueryBuilderGraphFetchTreeNodeData
 {
   readonly id: string;
   readonly label: string;
-  readonly tree: PropertyGraphFetchTree;
+  readonly tree: PropertyGraphFetchTree | RootGraphFetchTree;
   readonly parentId?: string | undefined;
   isSelected?: boolean | undefined;
   isOpen?: boolean | undefined;
@@ -61,7 +62,7 @@ export class QueryBuilderGraphFetchTreeNodeData
     id: string,
     label: string,
     parentId: string | undefined,
-    graphFetchTreeNode: PropertyGraphFetchTree,
+    graphFetchTreeNode: PropertyGraphFetchTree | RootGraphFetchTree,
   ) {
     makeObservable(this, {
       hashCode: computed,
@@ -76,7 +77,16 @@ export class QueryBuilderGraphFetchTreeNodeData
   }
 
   get type(): Type {
-    return this.tree.property.value.genericType.value.rawType;
+    if (this.tree instanceof PropertyGraphFetchTree) {
+      return this.tree.property.value.genericType.value.rawType;
+    }
+    if (this.tree instanceof RootGraphFetchTree) {
+      return this.tree.class.value;
+    }
+    throw new UnsupportedOperationError(
+      `Can't get type of Graph Fetch Tree`,
+      this.tree,
+    );
   }
 
   get hashCode(): string {
@@ -103,6 +113,14 @@ export const generateGraphFetchTreeNodeID = (
 ): string =>
   `${parentNodeId ? `${parentNodeId}.` : ''}${property.name}${
     subType ? `${TYPE_CAST_TOKEN}${subType.path}` : ''
+  }`;
+
+export const generateRootGraphFetchTreeNodeID = (
+  parentNodeId: string | undefined,
+  classValue: string | undefined,
+): string =>
+  `${parentNodeId ? `${parentNodeId}.` : ''}${
+    classValue ? `${TYPE_CAST_TOKEN}${classValue}` : ''
   }`;
 
 const buildGraphFetchSubTree = (
@@ -132,19 +150,65 @@ const buildGraphFetchSubTree = (
   return node;
 };
 
+const buildRootGraphFetchSubTree = (
+  tree: RootGraphFetchTree,
+  parentNode: QueryBuilderGraphFetchTreeNodeData | undefined,
+  nodes: Map<string, QueryBuilderGraphFetchTreeNodeData>,
+): QueryBuilderGraphFetchTreeNodeData => {
+  const parentNodeId = parentNode?.id;
+  const node = new QueryBuilderGraphFetchTreeNodeData(
+    generateRootGraphFetchTreeNodeID(
+      parentNodeId,
+      tree.class.valueForSerialization ?? '',
+    ),
+    tree.class.value.name,
+    parentNodeId,
+    tree,
+  );
+  tree.subTrees.forEach((subTree) => {
+    const subTreeNode = buildGraphFetchSubTree(subTree, node, nodes);
+    addUniqueEntry(node.childrenIds, subTreeNode.id);
+    nodes.set(subTreeNode.id, subTreeNode);
+  });
+  return node;
+};
+
 /**
  * Build graph fetch tree data from an existing graph fetch tree root
  */
 export const buildGraphFetchTreeData = (
   tree: RootGraphFetchTree,
+  displayRoot: boolean = false,
 ): QueryBuilderGraphFetchTreeData => {
   const rootIds: string[] = [];
   const nodes = new Map<string, QueryBuilderGraphFetchTreeNodeData>();
-  tree.subTrees.forEach((subTree) => {
-    const subTreeNode = buildGraphFetchSubTree(subTree, undefined, nodes);
-    addUniqueEntry(rootIds, subTreeNode.id);
-    nodes.set(subTreeNode.id, subTreeNode);
-  });
+  if (displayRoot) {
+    const rootNode = buildRootGraphFetchSubTree(tree, undefined, nodes);
+    addUniqueEntry(rootIds, rootNode.id);
+    nodes.set(rootNode.id, rootNode);
+  } else {
+    tree.subTrees.forEach((subTree) => {
+      const subTreeNode = buildGraphFetchSubTree(subTree, undefined, nodes);
+      addUniqueEntry(rootIds, subTreeNode.id);
+      nodes.set(subTreeNode.id, subTreeNode);
+    });
+  }
+
+  return { rootIds, nodes, tree };
+};
+
+export const buildPropertyGraphFetchTreeData = (
+  propertyTree: PropertyGraphFetchTree,
+): QueryBuilderGraphFetchTreeData => {
+  const rootIds: string[] = [];
+  const nodes = new Map<string, QueryBuilderGraphFetchTreeNodeData>();
+  const propertyNode = buildGraphFetchSubTree(propertyTree, undefined, nodes);
+  addUniqueEntry(rootIds, propertyNode.id);
+  nodes.set(propertyNode.id, propertyNode);
+  const tree = new RootGraphFetchTree(
+    PackageableElementExplicitReference.create(new Class('root')),
+  );
+  tree.subTrees.push(propertyTree);
   return { rootIds, nodes, tree };
 };
 

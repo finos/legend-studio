@@ -18,5 +18,5 @@ import { ExecutionNode } from './ExecutionNode.js';
 
 export class AllocationExecutionNode extends ExecutionNode {
   varName!: string;
-  realizeInMemory!: boolean;
+  realizeInMemory?: boolean | undefined;
 }
