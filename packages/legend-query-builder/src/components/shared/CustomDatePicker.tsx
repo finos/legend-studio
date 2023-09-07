@@ -38,6 +38,7 @@ import {
   PrimitiveType,
 } from '@finos/legend-graph';
 import {
+  assertErrorThrown,
   guaranteeNonNullable,
   parseNumber,
   returnUndefOnError,
@@ -110,6 +111,7 @@ enum CUSTOM_DATE_OPTION_REFERENCE_MOMENT {
   FIRST_DAY_OF_QUARTER = 'Start of Quarter',
   FIRST_DAY_OF_MONTH = 'Start of Month',
   FIRST_DAY_OF_WEEK = 'Start of Week',
+  PERVIOUS_DAY_OF_WEEK = 'Previous Day of Week',
 }
 
 /**
@@ -599,6 +601,8 @@ const buildCustomDateOptionReferenceMomentValue = (
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH;
     case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK;
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK:
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.PERVIOUS_DAY_OF_WEEK;
     default:
       throw new UnsupportedOperationError(
         `Can't build custom date option reference moment '${funcName}'`,
@@ -620,29 +624,35 @@ const buildCustomDateOption = (
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
     )
   ) {
-    const customDateOption = new CustomDateOption(
-      '',
-      CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
-      buildCustomDateOptionDurationValue(valueSpecification),
-      buildCustomDateOptionUnitValue(valueSpecification),
-      buildCustomDateOptionDirectionValue(valueSpecification),
-      buildCustomDateOptionReferenceMomentValue(valueSpecification),
-    );
-    const matchedPreservedCustomAdjustDates = reservedCustomDateOptions.filter(
-      (t) =>
-        t.generateDisplayLabel() === customDateOption.generateDisplayLabel(),
-    );
-    if (matchedPreservedCustomAdjustDates.length > 0) {
-      customDateOption.label = guaranteeNonNullable(
-        matchedPreservedCustomAdjustDates[0]?.label,
+    try {
+      const customDateOption = new CustomDateOption(
+        '',
+        CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
+        buildCustomDateOptionDurationValue(valueSpecification),
+        buildCustomDateOptionUnitValue(valueSpecification),
+        buildCustomDateOptionDirectionValue(valueSpecification),
+        buildCustomDateOptionReferenceMomentValue(valueSpecification),
       );
-      customDateOption.value = guaranteeNonNullable(
-        matchedPreservedCustomAdjustDates[0]?.value,
-      );
+      const matchedPreservedCustomAdjustDates =
+        reservedCustomDateOptions.filter(
+          (t) =>
+            t.generateDisplayLabel() ===
+            customDateOption.generateDisplayLabel(),
+        );
+      if (matchedPreservedCustomAdjustDates.length > 0) {
+        customDateOption.label = guaranteeNonNullable(
+          matchedPreservedCustomAdjustDates[0]?.label,
+        );
+        customDateOption.value = guaranteeNonNullable(
+          matchedPreservedCustomAdjustDates[0]?.value,
+        );
+        return customDateOption;
+      }
+      customDateOption.updateLabel();
       return customDateOption;
+    } catch (error) {
+      assertErrorThrown(error);
     }
-    customDateOption.updateLabel();
-    return customDateOption;
   }
   return new CustomDateOption('', '', 0, undefined, undefined, undefined);
 };
