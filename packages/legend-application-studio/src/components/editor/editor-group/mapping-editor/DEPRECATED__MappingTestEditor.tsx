@@ -117,6 +117,7 @@ const MappingTestQueryEditor = observer(
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,
                 testState.mappingEditorState.mapping,
+                editorStore.applicationStore.config.options.queryBuilderConfig,
               );
               queryBuilderState.initializeWithQuery(testState.queryState.query);
               if (openInTextMode) {

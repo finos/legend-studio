@@ -788,6 +788,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
           ),
         );
       },
+      this.applicationStore.config.options.queryBuilderConfig,
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
@@ -1018,7 +1019,11 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     // if no extension found, fall back to basic `class -> mapping -> runtime` mode
     queryBuilderState =
       queryBuilderState ??
-      new ClassQueryBuilderState(this.applicationStore, this.graphManagerState);
+      new ClassQueryBuilderState(
+        this.applicationStore,
+        this.graphManagerState,
+        this.applicationStore.config.options.queryBuilderConfig,
+      );
 
     queryBuilderState.executionContextState.setMapping(query.mapping.value);
     queryBuilderState.executionContextState.setRuntimeValue(

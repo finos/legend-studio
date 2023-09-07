@@ -99,6 +99,7 @@ import {
   QueryBuilderExternalExecutionContextState,
   type QueryBuilderExecutionContextState,
 } from './QueryBuilderExecutionContextState.js';
+import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -107,6 +108,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   readonly changeDetectionState: QueryBuilderChangeDetectionState;
   readonly queryCompileState = ActionState.create();
   readonly observerContext: ObserverContext;
+  readonly config: QueryBuilderConfig | undefined;
 
   explorerState: QueryBuilderExplorerState;
   functionsExplorerState: QueryFunctionsExplorerState;
@@ -140,6 +142,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
+    config: QueryBuilderConfig | undefined,
   ) {
     makeObservable(this, {
       explorerState: observable,
@@ -207,6 +210,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
+    this.config = config;
   }
 
   get isMappingReadOnly(): boolean {
@@ -669,6 +673,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     const basicState = new INTERNAL__BasicQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
+      undefined,
     );
     basicState.class = this.class;
     basicState.executionContextState.mapping =
