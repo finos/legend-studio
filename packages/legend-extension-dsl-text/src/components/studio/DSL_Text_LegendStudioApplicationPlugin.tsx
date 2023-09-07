@@ -246,4 +246,8 @@ export class DSL_Text_LegendStudioApplicationPlugin
           : undefined,
     ];
   }
+
+  getAutoFoldingCandidateToken(): string[] {
+    return [PURE_GRAMMAR_TEXT_PARSER_NAME];
+  }
 }
