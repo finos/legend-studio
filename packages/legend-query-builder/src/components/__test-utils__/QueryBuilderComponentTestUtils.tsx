@@ -82,6 +82,7 @@ export const TEST__setUpQueryBuilder = async (
   const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
     MOCK__applicationStore,
     graphManagerState,
+    undefined,
   );
   const mapping = graphManagerState.graph.getMapping(mappingPath);
   queryBuilderState.executionContextState.setMapping(mapping);

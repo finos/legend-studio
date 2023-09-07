@@ -187,6 +187,9 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         this.service,
         undefined,
         undefined,
+        undefined,
+        undefined,
+        this.applicationStore.config.options.queryBuilderConfig,
       );
 
       // leverage initialization of query builder state to ensure we handle unsupported queries

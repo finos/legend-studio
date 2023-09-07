@@ -210,6 +210,7 @@ const MappingExecutionQueryEditor = observer(
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,
                 executionState.mappingEditorState.mapping,
+                editorStore.applicationStore.config.options.queryBuilderConfig,
               );
               queryBuilderState.initializeWithQuery(
                 executionState.queryState.query,

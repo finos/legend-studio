@@ -20,13 +20,21 @@ import {
   guaranteeNonNullable,
   SerializationFactory,
   type PlainObject,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
-import { createModelSchema, primitive, list, object } from 'serializr';
+import {
+  createModelSchema,
+  primitive,
+  list,
+  object,
+  optional,
+} from 'serializr';
+import { QueryBuilderConfig } from '@finos/legend-query-builder';
 
 export class ServiceRegistrationEnvironmentConfig {
   env!: string;
@@ -57,10 +65,18 @@ class LegendQueryApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
+  /**
+   * Config specific to query builder
+   */
+  queryBuilderConfig: QueryBuilderConfig | undefined;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryApplicationCoreOptions, {
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
+      ),
+      queryBuilderConfig: optional(
+        usingModelSchema(QueryBuilderConfig.serialization.schema),
       ),
     }),
   );

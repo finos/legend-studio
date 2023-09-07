@@ -15,7 +15,10 @@
  */
 
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderConfig,
+  QueryBuilderState,
+} from '@finos/legend-query-builder';
 import type { GraphManagerState, Mapping } from '@finos/legend-graph';
 import { renderMappingExecutionQueryBuilderSetupPanelContent } from '../../../../../components/editor/editor-group/mapping-editor/MappingExecutionQueryBuilder.js';
 
@@ -29,8 +32,9 @@ export class MappingExecutionQueryBuilderState extends QueryBuilderState {
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     mapping: Mapping,
+    config: QueryBuilderConfig | undefined,
   ) {
-    super(applicationStore, graphManagerState);
+    super(applicationStore, graphManagerState, config);
     this.executionMapping = mapping;
     this.executionContextState.mapping = mapping;
   }

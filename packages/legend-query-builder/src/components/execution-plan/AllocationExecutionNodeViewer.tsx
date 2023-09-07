@@ -31,7 +31,7 @@ export const AllocationExecutionNodeViewer: React.FC<{
   const { node, executionPlanState } = props;
   const varName = node.varName;
   const resultType = node.resultType;
-  const realizeInMemory = node.realizeInMemory.toString();
+  const realizeInMemory = node.realizeInMemory?.toString();
   const applicationStore = executionPlanState.applicationStore;
 
   return (

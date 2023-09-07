@@ -26,6 +26,8 @@ import {
   clsx,
   WordWrapIcon,
   MoreHorizontalIcon,
+  FoldIcon,
+  UnfoldIcon,
   PanelContent,
   MenuContent,
   MenuContentItem,
@@ -686,6 +688,7 @@ export const GrammarTextEditor = observer(() => {
     GraphEditGrammarModeState,
   ).grammarTextEditorState;
   const error = editorStore.graphState.error;
+  const [elementsFolded, setFoldingElements] = useState(false);
 
   const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
@@ -974,11 +977,171 @@ export const GrammarTextEditor = observer(() => {
       );
   }
 
+  function toggleAutoFoldingElements(): void {
+    const autoFoldingElements = editorStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
+          ).getAutoFoldingCandidateToken?.() ?? [],
+      );
+    const foldingClass = editor?.getContribution('editor.contrib.folding');
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (foldingClass as any).getFoldingModel().then(
+      (foldingModel: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _regions: any;
+        onDidChange: (arg0: () => void) => void;
+        getRegionAtLine: (arg0: unknown) => unknown;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getAllRegionsAtLine(arg0: unknown): any;
+        toggleCollapseState: (arg0: unknown) => unknown;
+      }) => {
+        const model = editor?.getModel();
+        const toggleFoldingLines: number[] = [];
+        model?.getLinesContent().forEach((line, j) => {
+          autoFoldingElements.forEach((elementName) => {
+            if (line.match(new RegExp(`^${elementName}`))) {
+              toggleFoldingLines.push(j + 2);
+            }
+          });
+        });
+        let allElementsFolded = true;
+        toggleFoldingLines.forEach((foldingLineRegion, i) => {
+          if (foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]) {
+            if (
+              foldingModel._regions.isCollapsed(
+                foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]
+                  .regionIndex,
+              ) === false
+            ) {
+              allElementsFolded = false;
+            }
+          }
+        });
+
+        setFoldingElements(!allElementsFolded);
+
+        toggleFoldingLines.forEach((foldingLineRegion, i) => {
+          if (foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]) {
+            if (
+              foldingModel._regions.isCollapsed(
+                foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]
+                  .regionIndex,
+              ) !== elementsFolded
+            ) {
+              foldingModel.toggleCollapseState(
+                foldingModel.getAllRegionsAtLine(foldingLineRegion),
+              );
+            }
+          }
+        });
+      },
+    );
+  }
+
   useEffect(() => {
     if (editor && forcedCursorPosition) {
       moveCursorToPosition(editor, forcedCursorPosition);
     }
   }, [editor, forcedCursorPosition]);
+
+  useEffect(() => {
+    if (editor) {
+      const autoFoldingElements = editorStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
+            ).getAutoFoldingCandidateToken?.() ?? [],
+        );
+      const foldingClass = editor.getContribution('editor.contrib.folding');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (foldingClass as any).getFoldingModel().then(
+        (foldingModel: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          _regions: any;
+          onDidChange: (arg0: () => void) => void;
+          getRegionAtLine: (arg0: unknown) => unknown;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          getAllRegionsAtLine(arg0: unknown): any;
+          toggleCollapseState: (arg0: unknown) => unknown;
+        }) => {
+          foldingModel.onDidChange(() => {
+            const model = editor.getModel();
+            const toggleFoldingLines: number[] = [];
+            model?.getLinesContent().forEach((line, j) => {
+              autoFoldingElements.forEach((elementName) => {
+                if (line.match(new RegExp(`^${elementName}`))) {
+                  toggleFoldingLines.push(j + 2);
+                }
+              });
+            });
+            let allElementsFolded = true;
+            toggleFoldingLines.forEach((foldingLineRegion, i) => {
+              if (foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]) {
+                if (
+                  foldingModel._regions.isCollapsed(
+                    foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]
+                      .regionIndex,
+                  ) === false
+                ) {
+                  allElementsFolded = false;
+                }
+              }
+            });
+
+            setFoldingElements(!allElementsFolded);
+          });
+        },
+      );
+    }
+  });
+
+  useEffect(() => {
+    if (editor) {
+      const autoFoldingElements = editorStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
+            ).getAutoFoldingCandidateToken?.() ?? [],
+        );
+      const foldingClass = editor.getContribution('editor.contrib.folding');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (foldingClass as any)
+        .getFoldingModel()
+        .then(
+          (foldingModel: {
+            onDidChange: (arg0: () => void) => void;
+            getRegionAtLine: (arg0: unknown) => unknown;
+            getAllRegionsAtLine(arg0: unknown): unknown;
+            toggleCollapseState: (arg0: unknown) => unknown;
+          }) => {
+            const model = editor.getModel();
+            const foldingLines: number[] = [];
+            model?.getLinesContent().forEach((line, j) => {
+              autoFoldingElements.forEach((elementName) => {
+                if (line.match(new RegExp(`^${elementName}`))) {
+                  foldingLines.push(j + 2);
+                }
+              });
+            });
+            foldingLines.forEach((foldingLineRegion, i) => {
+              foldingModel.toggleCollapseState(
+                foldingModel.getAllRegionsAtLine(foldingLineRegion),
+              );
+            });
+          },
+        );
+    }
+  }, [editor, editorStore.pluginManager]);
 
   // NOTE: dispose the editor to prevent potential memory-leak
   useEffect(
@@ -1035,6 +1198,23 @@ export const GrammarTextEditor = observer(() => {
             }] Toggle word wrap`}
           >
             <WordWrapIcon className="editor-group__icon__word-wrap" />
+          </button>
+          <button
+            className={clsx('editor-group__header__action', {
+              'editor-group__header__action--active': elementsFolded,
+            })}
+            onClick={toggleAutoFoldingElements}
+            tabIndex={-1}
+            title={`${
+              !elementsFolded ? 'Unfold' : 'Fold'
+            } auto-folding elements`}
+          >
+            {!elementsFolded && (
+              <UnfoldIcon className="editor-group__icon__word-wrap" />
+            )}
+            {elementsFolded && (
+              <FoldIcon className="editor-group__icon__word-wrap" />
+            )}
           </button>
         </div>
       </div>

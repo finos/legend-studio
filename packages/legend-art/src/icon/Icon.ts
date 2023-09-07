@@ -195,6 +195,8 @@ export const QueryIcon = MD.MdQueryStats;
 export const CenterFocusIcon = MD.MdFilterCenterFocus;
 export const DescriptionIcon = MD.MdOutlineDescription;
 export const QuestionAnswerIcon = MD.MdQuestionAnswer;
+export const FoldIcon = MD.MdUnfoldLess;
+export const UnfoldIcon = MD.MdUnfoldMore;
 
 const VSC = ReactIcons.VSC;
 export const ErrorIcon = VSC.VscError;

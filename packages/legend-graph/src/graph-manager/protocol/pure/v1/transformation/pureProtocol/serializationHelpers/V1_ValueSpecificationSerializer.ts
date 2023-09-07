@@ -482,6 +482,12 @@ const propertyGraphFetchTreeModelSchema = (
         (val) => V1_deserializeGraphFetchTree(val, plugins),
       ),
     ),
+    subTypeTrees: list(
+      custom(
+        (val) => V1_serializeGraphFetchTree(val, plugins),
+        (val) => V1_deserializeGraphFetchTree(val, plugins),
+      ),
+    ),
     subType: optional(primitive()),
   });
 
@@ -501,7 +507,7 @@ const subTypeGraphFetchTreeModelSchema = (
     subTypeClass: primitive(),
   });
 
-function V1_serializeGraphFetchTree(
+export function V1_serializeGraphFetchTree(
   protocol: V1_GraphFetchTree,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_GraphFetchTree> {
@@ -518,7 +524,7 @@ function V1_serializeGraphFetchTree(
   );
 }
 
-function V1_deserializeGraphFetchTree(
+export function V1_deserializeGraphFetchTree(
   json: PlainObject<V1_GraphFetchTree>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_GraphFetchTree {

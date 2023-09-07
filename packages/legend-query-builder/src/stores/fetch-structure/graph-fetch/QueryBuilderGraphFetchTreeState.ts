@@ -25,6 +25,7 @@ import {
   RootGraphFetchTree,
   getAllSuperclasses,
   type Binding,
+  PropertyGraphFetchTree,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderGraphFetchTreeData,
@@ -323,12 +324,18 @@ export class QueryBuilderGraphFetchTreeState
         ? // since we traverse the nodes in order, parent node ID should already been computed
           guaranteeNonNullable(explorerTreeNodeIDIndex.get(node.parentId))
         : '';
+      let generateID = '';
+      if (node.tree instanceof RootGraphFetchTree) {
+        generateID = `root.${node.tree.class.valueForSerialization ?? ''}`;
+      } else if (node.tree instanceof PropertyGraphFetchTree) {
+        generateID = node.tree.property.value.name;
+      }
       const propertyNodeID = generateExplorerTreePropertyNodeID(
         parentNodeID,
-        node.tree.property.value.name,
+        generateID,
       );
       ids.push(propertyNodeID);
-      if (node.tree.subType) {
+      if (node.tree instanceof PropertyGraphFetchTree && node.tree.subType) {
         nodeID = generateExplorerTreeSubtypeNodeID(
           propertyNodeID,
           node.tree.subType.value.path,
@@ -502,11 +509,14 @@ export class QueryBuilderGraphFetchTreeState
 
   isVariableUsed(variable: VariableExpression): boolean {
     return Boolean(
-      Array.from(this.treeData?.nodes.values() ?? []).find((node) =>
-        node.tree.parameters.find((p) =>
-          isValueExpressionReferencedInValue(variable, p),
-        ),
-      ),
+      Array.from(this.treeData?.nodes.values() ?? []).find((node) => {
+        if (node.tree instanceof PropertyGraphFetchTree) {
+          return node.tree.parameters.find((p) =>
+            isValueExpressionReferencedInValue(variable, p),
+          );
+        }
+        return undefined;
+      }),
     );
   }
 
