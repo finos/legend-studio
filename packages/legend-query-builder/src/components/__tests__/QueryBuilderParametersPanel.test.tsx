@@ -26,6 +26,7 @@ import {
   TEST_DATA__simpleProjection,
   TEST_DATA__simpeDateParameters,
   TEST_DATA__simpeDateParametersForUnsupportedQuery,
+  TEST_DATA_simpleProjectionWithCustomDate,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
@@ -216,6 +217,28 @@ test(
     ).not.toBeNull();
   },
 );
+
+test(integrationTest('Query builder renders custom date label'), async () => {
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    TEST_DATA__ComplexRelationalModel,
+    stub_RawLambda(),
+    'model::relational::tests::simpleRelationalMapping',
+    'model::MyRuntime',
+    TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  );
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(
+        TEST_DATA_simpleProjectionWithCustomDate.parameters,
+        TEST_DATA_simpleProjectionWithCustomDate.body,
+      ),
+    );
+  });
+
+  await waitFor(() =>
+    renderResult.getByText('2 Day(s) Before Previous Day of Week'),
+  );
+});
 
 test(integrationTest('Query builder parameter default values'), async () => {
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
