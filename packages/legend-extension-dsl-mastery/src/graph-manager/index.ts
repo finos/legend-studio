@@ -26,6 +26,15 @@ export {
   FTPConnection,
   HTTPConnection,
 } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Connection.js';
+export {
+  AcquisitionProtocol,
+  KafkaDataType,
+} from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AcquisitionProtocol.js';
+export { Authorization } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Authorization.js';
+export {
+  AuthenticationStrategy,
+  CredentialSecret,
+} from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AuthenticationStrategy.js';
 
 // v1 protocols
 export { V1_MasterRecordDefinition } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
@@ -35,6 +44,15 @@ export {
   V1_FTPConnection,
   V1_HTTPConnection,
 } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
+export {
+  V1_AcquisitionProtocol,
+  V1_KafkaDataType,
+} from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_AcquisitionProtocol.js';
+export { V1_Authorization } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_Authorization.js';
+export {
+  V1_AuthenticationStrategy,
+  V1_CredentialSecret,
+} from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
 
 // ---------- TRANSFORMATION ----------
 
