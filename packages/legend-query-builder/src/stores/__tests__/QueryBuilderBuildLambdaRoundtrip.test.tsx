@@ -698,6 +698,7 @@ describe(
         const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
           applicationStore,
           graphManagerState,
+          undefined,
         );
         // do the check using input and output lambda
         const rawLambda = inputLambda ?? lambda;
@@ -740,8 +741,8 @@ test(
     await TEST__buildGraphWithEntities(graphManagerState, entities);
     const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
       applicationStore,
-
       graphManagerState,
+      undefined,
     );
     queryBuilderState.resultState.setPreviewLimit(DEFAULT_LIMIT);
     const rawLambda = TEST_DATA__simpleProjectionWithOutPreviewLimit;

@@ -131,6 +131,7 @@ describe(
         const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
           applicationStore,
           graphManagerState,
+          undefined,
         );
         await act(async () => {
           queryBuilderState.initializeWithQuery(

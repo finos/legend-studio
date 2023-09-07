@@ -135,6 +135,9 @@ export const ServiceExecutionQueryEditor = observer(
                 KeyedExecutionParameter
                   ? selectedExecutionState.executionContext.key
                   : undefined,
+                undefined,
+                undefined,
+                embeddedQueryBuilderState.editorStore.applicationStore.config.options.queryBuilderConfig,
               );
               queryBuilderState.initializeWithQuery(
                 executionState.execution.func,
@@ -463,6 +466,9 @@ export const queryService = async (
           service,
           undefined,
           selectedExec,
+          undefined,
+          undefined,
+          embeddedQueryBuilderState.editorStore.applicationStore.config.options.queryBuilderConfig,
         );
         if (execution) {
           queryBuilderState.initializeWithQuery(execution.func);

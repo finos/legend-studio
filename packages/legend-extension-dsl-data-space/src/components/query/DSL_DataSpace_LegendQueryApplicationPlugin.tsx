@@ -266,6 +266,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             undefined,
             undefined,
             projectInfo,
+            editorStore.applicationStore.config.options.queryBuilderConfig,
           );
           const mappingModelCoverageAnalysisResult =
             dataSpaceAnalysisResult?.executionContextsIndex.get(

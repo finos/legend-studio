@@ -32,7 +32,10 @@ import {
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderConfig,
+  QueryBuilderState,
+} from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   ActionState,
@@ -86,8 +89,9 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
       artifactId: string,
       entityPath: string | undefined,
     ) => Promise<void>,
+    config: QueryBuilderConfig | undefined,
   ) {
-    super(applicationStore, graphManagerState);
+    super(applicationStore, graphManagerState, config);
 
     makeObservable(this, {
       dataSpaces: observable,
@@ -196,6 +200,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
         this.applicationStore,
         this.depotServerClient,
       ),
+      this.applicationStore.config.options.queryBuilderConfig,
     );
 
     return queryBuilderState;

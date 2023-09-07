@@ -33,6 +33,7 @@ import {
 import { action, makeObservable, observable } from 'mobx';
 import { renderServiceQueryBuilderSetupPanelContent } from '../../components/workflows/ServiceQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
+import type { QueryBuilderConfig } from '../../graph-manager/QueryBuilderConfig.js';
 
 export type ServiceExecutionContext = {
   key: string;
@@ -64,8 +65,9 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
     onExecutionContextChange?:
       | ((val: ServiceExecutionContext) => void)
       | undefined,
+    config?: QueryBuilderConfig | undefined,
   ) {
-    super(applicationStore, graphManagerState);
+    super(applicationStore, graphManagerState, config);
 
     makeObservable(this, {
       selectedExecutionContext: observable,
