@@ -770,8 +770,7 @@ export const V1_dataProviderModelSchema = (
  * master record definition
  **********/
 
-export const V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE =
-  'masterRecordDefinition';
+export const V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE = 'mastery';
 
 export const V1_masterRecordDefinitionModelSchema = (
   plugins: PureProtocolProcessorPlugin[],

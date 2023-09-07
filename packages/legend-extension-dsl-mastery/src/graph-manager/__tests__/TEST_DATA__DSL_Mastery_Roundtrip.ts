@@ -107,7 +107,7 @@ export const TEST_DATA__roundtrip = [
     path: 'org::legend::PersonMasterRecord',
     classifierPath: 'meta::pure::mastery::metamodel::MasterRecordDefinition',
     content: {
-      _type: 'masterRecordDefinition',
+      _type: 'mastery',
       name: 'PersonMasterRecord',
       package: 'org::legend',
       modelClass: 'org::legend::Person',

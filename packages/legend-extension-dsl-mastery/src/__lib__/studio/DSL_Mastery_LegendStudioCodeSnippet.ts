@@ -19,7 +19,6 @@ export const SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET = `MasterRecordDefinition \
    modelClass: \${2:model::SomeClass};
    identityResolution:
    {
-     modelClass: \${2:model::SomeClass};
      resolutionQueries:
        [
          {
@@ -41,18 +40,15 @@ export const SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET = `MasterRecordDefinition \
      test-source-id: {
        status: Development;
        description: 'Test Source Description';
-       parseService: \${5:model::SomeParseService};
-       transformService: \${6:model::SomeTransformService};
+       recordService: {
+          acquisitionProtocol: \${5:model::SomeAcquisitionService};
+          parseService: \${6:model::SomeParseService};
+          transformService: \${7:model::SomeTransformService};
+       };
        createPermitted: true;
        createBlockedException: false;
        stagedLoad: false;
        sequentialData: false;
-       partitions: [
-         test-partition-1: {
-           tags: [];
-         }
-       ]
-       tags: [];
      }
    ]
  }`;
