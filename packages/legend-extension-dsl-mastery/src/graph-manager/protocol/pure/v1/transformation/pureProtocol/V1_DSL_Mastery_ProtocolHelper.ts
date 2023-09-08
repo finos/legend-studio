@@ -183,7 +183,7 @@ export const V1_deserializeCredentialSecret = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't deserialize authorization of type '${json._type}': no compatible deserializer available from plugins`,
+    `Can't deserialize credential secret of type '${json._type}': no compatible deserializer available from plugins`,
   );
 };
 
