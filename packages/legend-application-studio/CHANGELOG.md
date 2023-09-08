@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.4.1
+
+### Patch Changes
+
+- [#2492](https://github.com/finos/legend-studio/pull/2492) [`e3f48d05d`](https://github.com/finos/legend-studio/commit/e3f48d05d6975a5c6e14f6e0e523e01ec89571de) ([@mohamed-abead](https://github.com/mohamed-abead)) - Added the code to auto-fold components upon the form mode to text switch, and added an extension mechanism to get Auto-Folding candidates.
+
 ## 28.4.0
 
 ### Minor Changes

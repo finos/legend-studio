@@ -38,6 +38,7 @@ import {
   PrimitiveType,
 } from '@finos/legend-graph';
 import {
+  assertErrorThrown,
   guaranteeNonNullable,
   parseNumber,
   returnUndefOnError,
@@ -58,6 +59,13 @@ import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../graph/QueryBuilderMetaModelConst.js';
+import {
+  useApplicationStore,
+  type ApplicationStore,
+  type LegendApplicationConfig,
+  type LegendApplicationPlugin,
+  type LegendApplicationPluginManager,
+} from '@finos/legend-application';
 
 export enum CUSTOM_DATE_PICKER_OPTION {
   ABSOLUTE_DATE = 'Absolute Date',
@@ -110,6 +118,7 @@ enum CUSTOM_DATE_OPTION_REFERENCE_MOMENT {
   FIRST_DAY_OF_QUARTER = 'Start of Quarter',
   FIRST_DAY_OF_MONTH = 'Start of Month',
   FIRST_DAY_OF_WEEK = 'Start of Week',
+  PERVIOUS_DAY_OF_WEEK = 'Previous Day of Week',
 }
 
 /**
@@ -599,6 +608,8 @@ const buildCustomDateOptionReferenceMomentValue = (
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH;
     case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK;
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK:
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.PERVIOUS_DAY_OF_WEEK;
     default:
       throw new UnsupportedOperationError(
         `Can't build custom date option reference moment '${funcName}'`,
@@ -612,6 +623,10 @@ const buildCustomDateOptionReferenceMomentValue = (
  */
 const buildCustomDateOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
+  applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >,
 ): CustomDateOption => {
   if (
     valueSpecification instanceof SimpleFunctionExpression &&
@@ -620,29 +635,36 @@ const buildCustomDateOption = (
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST,
     )
   ) {
-    const customDateOption = new CustomDateOption(
-      '',
-      CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
-      buildCustomDateOptionDurationValue(valueSpecification),
-      buildCustomDateOptionUnitValue(valueSpecification),
-      buildCustomDateOptionDirectionValue(valueSpecification),
-      buildCustomDateOptionReferenceMomentValue(valueSpecification),
-    );
-    const matchedPreservedCustomAdjustDates = reservedCustomDateOptions.filter(
-      (t) =>
-        t.generateDisplayLabel() === customDateOption.generateDisplayLabel(),
-    );
-    if (matchedPreservedCustomAdjustDates.length > 0) {
-      customDateOption.label = guaranteeNonNullable(
-        matchedPreservedCustomAdjustDates[0]?.label,
+    try {
+      const customDateOption = new CustomDateOption(
+        '',
+        CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
+        buildCustomDateOptionDurationValue(valueSpecification),
+        buildCustomDateOptionUnitValue(valueSpecification),
+        buildCustomDateOptionDirectionValue(valueSpecification),
+        buildCustomDateOptionReferenceMomentValue(valueSpecification),
       );
-      customDateOption.value = guaranteeNonNullable(
-        matchedPreservedCustomAdjustDates[0]?.value,
-      );
+      const matchedPreservedCustomAdjustDates =
+        reservedCustomDateOptions.filter(
+          (t) =>
+            t.generateDisplayLabel() ===
+            customDateOption.generateDisplayLabel(),
+        );
+      if (matchedPreservedCustomAdjustDates.length > 0) {
+        customDateOption.label = guaranteeNonNullable(
+          matchedPreservedCustomAdjustDates[0]?.label,
+        );
+        customDateOption.value = guaranteeNonNullable(
+          matchedPreservedCustomAdjustDates[0]?.value,
+        );
+        return customDateOption;
+      }
+      customDateOption.updateLabel();
       return customDateOption;
+    } catch (error) {
+      assertErrorThrown(error);
+      applicationStore.notificationService.notifyError(error);
     }
-    customDateOption.updateLabel();
-    return customDateOption;
   }
   return new CustomDateOption('', '', 0, undefined, undefined, undefined);
 };
@@ -652,6 +674,10 @@ const buildCustomDateOption = (
  */
 export const buildDatePickerOption = (
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue,
+  applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >,
 ): DatePickerOption => {
   if (valueSpecification instanceof SimpleFunctionExpression) {
     switch (getSupportedDateFunctionFullPath(valueSpecification.functionName)) {
@@ -694,7 +720,7 @@ export const buildDatePickerOption = (
             .values[0]?.value.name as CUSTOM_DATE_DAY_OF_WEEK,
         );
       case QUERY_BUILDER_SUPPORTED_FUNCTIONS.ADJUST:
-        return buildCustomDateOption(valueSpecification);
+        return buildCustomDateOption(valueSpecification, applicationStore);
       default:
         return new DatePickerOption('', '');
     }
@@ -1210,6 +1236,7 @@ export const CustomDatePicker: React.FC<{
     observerContext,
     typeCheckOption,
   } = props;
+  const applicationStore = useApplicationStore();
   // For some cases where types need to be matched strictly.
   // Some options need to be filtered out for DateTime.
   const targetDateOptionsEnum = typeCheckOption.match
@@ -1219,7 +1246,7 @@ export const CustomDatePicker: React.FC<{
       ])
     : Object.values(CUSTOM_DATE_PICKER_OPTION);
   const [datePickerOption, setDatePickerOption] = useState(
-    buildDatePickerOption(valueSpecification),
+    buildDatePickerOption(valueSpecification, applicationStore),
   );
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -1229,10 +1256,14 @@ export const CustomDatePicker: React.FC<{
     setAnchorEl(event.currentTarget);
   };
   const handleEnter = (): void => {
-    setDatePickerOption(buildDatePickerOption(valueSpecification));
+    setDatePickerOption(
+      buildDatePickerOption(valueSpecification, applicationStore),
+    );
   };
   const closeCustomDatePickerPopover = (): void => {
-    setDatePickerOption(buildDatePickerOption(valueSpecification));
+    setDatePickerOption(
+      buildDatePickerOption(valueSpecification, applicationStore),
+    );
     setAnchorEl(null);
   };
   const handleDatePickerOptionChange = (
@@ -1311,7 +1342,10 @@ export const CustomDatePicker: React.FC<{
           <CustomDateInstanceValueEditor
             graph={graph}
             observerContext={observerContext}
-            customDateOptionValue={buildCustomDateOption(valueSpecification)}
+            customDateOptionValue={buildCustomDateOption(
+              valueSpecification,
+              applicationStore,
+            )}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
@@ -1323,6 +1357,7 @@ export const CustomDatePicker: React.FC<{
             observerContext={observerContext}
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
+              applicationStore,
             )}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
@@ -1335,6 +1370,7 @@ export const CustomDatePicker: React.FC<{
             observerContext={observerContext}
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
+              applicationStore,
             )}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
@@ -1347,8 +1383,10 @@ export const CustomDatePicker: React.FC<{
 
   // make sure the date picker label is updated when the value is reset or changed somehow
   useEffect(() => {
-    setDatePickerOption(buildDatePickerOption(valueSpecification));
-  }, [valueSpecification]);
+    setDatePickerOption(
+      buildDatePickerOption(valueSpecification, applicationStore),
+    );
+  }, [applicationStore, valueSpecification]);
 
   return (
     <>
