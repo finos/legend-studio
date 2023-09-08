@@ -1,5 +1,7 @@
 # @finos/legend-application-query
 
+## 13.1.1
+
 ## 13.1.0
 
 ### Minor Changes
