@@ -476,7 +476,7 @@ export const V1_serializeAuthorization = (
     (plugin) =>
       (
         plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraAcquisitionProtocolSerializers?.() ?? [],
+      ).V1_getExtraAuthorizationProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraAuthorizationSerializers) {
     const authorizationJson = serializer(protocol, plugins);
