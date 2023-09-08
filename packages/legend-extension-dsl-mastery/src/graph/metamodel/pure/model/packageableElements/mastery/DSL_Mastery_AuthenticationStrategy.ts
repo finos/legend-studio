@@ -49,7 +49,7 @@ export class TokenAuthenticationStrategy extends AuthenticationStrategy {
   }
 }
 
-export class CredentialSecret implements Hashable {
+export abstract class CredentialSecret implements Hashable {
   get hashCode(): string {
     return hashArray([MASTERY_HASH_STRUCTURE.MASTERY_CREDENTIAL_SECRET]);
   }

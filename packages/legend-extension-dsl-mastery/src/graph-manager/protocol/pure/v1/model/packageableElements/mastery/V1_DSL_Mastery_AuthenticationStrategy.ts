@@ -49,7 +49,7 @@ export class V1_TokenAuthenticationStrategy extends V1_AuthenticationStrategy {
   }
 }
 
-export class V1_CredentialSecret implements Hashable {
+export abstract class V1_CredentialSecret implements Hashable {
   get hashCode(): string {
     return hashArray([MASTERY_HASH_STRUCTURE.MASTERY_CREDENTIAL_SECRET]);
   }

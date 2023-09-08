@@ -53,6 +53,12 @@ export {
   V1_AuthenticationStrategy,
   V1_CredentialSecret,
 } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+export { V1_transformCredentialSecret } from './protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
+export { V1_buildCredentialSecret } from './protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
+export {
+  V1_serializeCredentialSecret,
+  V1_deserializeCredentialSecret,
+} from './protocol/pure/v1/transformation/pureProtocol/V1_DSL_Mastery_ProtocolHelper.js';
 
 // ---------- TRANSFORMATION ----------
 
