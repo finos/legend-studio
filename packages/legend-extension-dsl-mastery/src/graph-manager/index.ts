@@ -53,8 +53,6 @@ export {
   V1_AuthenticationStrategy,
   V1_CredentialSecret,
 } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
-export { V1_transformCredentialSecret } from './protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
-export { V1_buildCredentialSecret } from './protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
 export {
   V1_serializeCredentialSecret,
   V1_deserializeCredentialSecret,
@@ -68,6 +66,7 @@ export {
   V1_transformKafkaConnection,
   V1_transformFTPConnection,
   V1_transformHTTPConnection,
+  V1_transformCredentialSecret,
 } from './protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
 
 export {
@@ -76,6 +75,7 @@ export {
   V1_buildKafkaConnection,
   V1_buildFTPConnection,
   V1_buildHTTPConnection,
+  V1_buildCredentialSecret,
 } from './protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
 
 // extension
