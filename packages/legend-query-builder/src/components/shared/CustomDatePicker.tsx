@@ -840,22 +840,21 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
   const updateAbsoluteTimeValue: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
+    //
+    const value = new Date(event.target.value).getUTCSeconds()
+      ? event.target.value
+      : `${event.target.value}:00`;
     if (valueSpecification instanceof SimpleFunctionExpression) {
       setValueSpecification(
         buildPrimitiveInstanceValue(
           graph,
           PRIMITIVE_TYPE.DATETIME,
-          event.target.value,
+          value,
           observerContext,
         ),
       );
     } else {
-      instanceValue_setValue(
-        valueSpecification,
-        event.target.value,
-        0,
-        observerContext,
-      );
+      instanceValue_setValue(valueSpecification, value, 0, observerContext);
       if (
         valueSpecification.genericType.value.rawType.path !==
         PRIMITIVE_TYPE.DATETIME
