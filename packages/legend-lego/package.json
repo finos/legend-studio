@@ -47,10 +47,10 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "30.1.0",
-    "@ag-grid-community/core": "30.1.0",
-    "@ag-grid-community/react": "30.1.0",
-    "@ag-grid-community/styles": "30.1.0",
+    "@ag-grid-community/client-side-row-model": "30.0.6",
+    "@ag-grid-community/core": "30.0.6",
+    "@ag-grid-community/react": "30.0.6",
+    "@ag-grid-community/styles": "30.0.6",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
