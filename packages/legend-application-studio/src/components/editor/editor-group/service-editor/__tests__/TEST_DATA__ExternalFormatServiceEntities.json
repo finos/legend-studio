@@ -336,9 +336,7 @@
         }
       },
       "name": "FlatdataWithM2MChainingMerged",
-      "owners": [
-        "maheha"
-      ],
+      "owners": ["maheha"],
       "package": "demo::externalFormat::flatdata::simple::service",
       "pattern": "/flatdata/showcase/flatdataWithM2MChaining",
       "testSuites": [
@@ -520,9 +518,7 @@
         }
       },
       "name": "FlatdataWithM2MContentType",
-      "owners": [
-        "maheha"
-      ],
+      "owners": ["maheha"],
       "package": "demo::externalFormat::flatdata::simple::service",
       "pattern": "/flatdata/showcase/FlatdataWithM2MContentType",
       "testSuites": [
@@ -648,9 +644,7 @@
         }
       },
       "name": "FlatdataInternalizeByte",
-      "owners": [
-        "maheha"
-      ],
+      "owners": ["maheha"],
       "package": "demo::externalFormat::flatdata::simple::service",
       "pattern": "/flatdata/showcase/flatdataInternalize",
       "testSuites": [
