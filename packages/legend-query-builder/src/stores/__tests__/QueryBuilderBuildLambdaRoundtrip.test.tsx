@@ -602,7 +602,7 @@ const cases: RoundtripTestCase[] = [
     undefined,
   ],
   [
-    'Constant expression with multi string instance',
+    'Constant expression with multi string instance + calculated constants',
     olapGroupbyCtx,
     TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables,
     undefined,

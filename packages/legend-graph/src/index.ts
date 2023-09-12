@@ -128,6 +128,7 @@ export { V1_Multiplicity } from './graph-manager/protocol/pure/v1/model/packagea
 export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_ExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
+export { V1_LambdaPrefix } from './graph-manager/protocol/pure/v1/engine/lambda/V1_LambdaPrefix.js';
 export {
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
@@ -135,7 +136,6 @@ export {
 export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
 export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
-
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
