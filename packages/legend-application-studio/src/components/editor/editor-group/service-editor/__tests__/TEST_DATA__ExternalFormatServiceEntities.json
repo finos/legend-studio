@@ -1,223 +1,5 @@
 [
   {
-    "path": "demo::externalFormat::flatdata::allTypes::models::Gender",
-    "content": {
-      "_type": "Enumeration",
-      "name": "Gender",
-      "package": "demo::externalFormat::flatdata::allTypes::models",
-      "values": [
-        {
-          "value": "MALE"
-        },
-        {
-          "value": "FEMALE"
-        },
-        {
-          "value": "OTHER"
-        }
-      ]
-    },
-    "classifierPath": "meta::pure::metamodel::type::Enumeration"
-  },
-  {
-    "path": "demo::externalFormat::flatdata::allTypes::models::Person",
-    "content": {
-      "_type": "class",
-      "name": "Person",
-      "package": "demo::externalFormat::flatdata::allTypes::models",
-      "properties": [
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "name",
-          "type": "String"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "gender",
-          "type": "demo::externalFormat::flatdata::allTypes::models::Gender"
-        }
-      ]
-    },
-    "classifierPath": "meta::pure::metamodel::type::Class"
-  },
-  {
-    "path": "demo::externalFormat::flatdata::allTypes::models::AllTypesRecord",
-    "content": {
-      "_type": "class",
-      "name": "AllTypesRecord",
-      "package": "demo::externalFormat::flatdata::allTypes::models",
-      "properties": [
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "string",
-          "type": "String"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 0,
-            "upperBound": 1
-          },
-          "name": "optionalString",
-          "type": "String"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "integer",
-          "type": "Integer"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 0,
-            "upperBound": 1
-          },
-          "name": "optionalInteger",
-          "type": "Integer"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "customInteger",
-          "type": "Integer"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "float",
-          "type": "Float"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 0,
-            "upperBound": 1
-          },
-          "name": "optionalFloat",
-          "type": "Float"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "customFloat",
-          "type": "Float"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "decimal",
-          "type": "Float"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 0,
-            "upperBound": 1
-          },
-          "name": "optionalDecimal",
-          "type": "Float"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "customDecimal",
-          "type": "Float"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "boolean",
-          "type": "Boolean"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 0,
-            "upperBound": 1
-          },
-          "name": "optionalBoolean",
-          "type": "Boolean"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "customBoolean",
-          "type": "Boolean"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "date",
-          "type": "StrictDate"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 0,
-            "upperBound": 1
-          },
-          "name": "optionalDate",
-          "type": "StrictDate"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "customDate",
-          "type": "StrictDate"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "dateTime",
-          "type": "DateTime"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 0,
-            "upperBound": 1
-          },
-          "name": "optionalDateTime",
-          "type": "DateTime"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "customDateTime",
-          "type": "DateTime"
-        }
-      ]
-    },
-    "classifierPath": "meta::pure::metamodel::type::Class"
-  },
-  {
     "path": "demo::externalFormat::flatdata::simple::models::TargetPerson",
     "content": {
       "_type": "class",
@@ -255,13 +37,13 @@
                     "parameters": [
                       {
                         "_type": "property",
-                        "property": "lastName",
                         "parameters": [
                           {
                             "_type": "var",
                             "name": "this"
                           }
-                        ]
+                        ],
+                        "property": "lastName"
                       }
                     ]
                   },
@@ -301,29 +83,10 @@
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
   {
-    "path": "demo::externalFormat::flatdata::allTypes::binding::EnumBinding",
-    "content": {
-      "_type": "binding",
-      "contentType": "application/x.flatdata",
-      "includedStores": [],
-      "modelUnit": {
-        "packageableElementExcludes": [],
-        "packageableElementIncludes": [
-          "demo::externalFormat::flatdata::allTypes::models::Person"
-        ]
-      },
-      "name": "EnumBinding",
-      "package": "demo::externalFormat::flatdata::allTypes::binding",
-      "schemaSet": "demo::externalFormat::flatdata::allTypes::schemaSet::EnumSchemaSet"
-    },
-    "classifierPath": "meta::external::shared::format::binding::Binding"
-  },
-  {
     "path": "demo::externalFormat::flatdata::simple::binding::PersonBinding",
     "content": {
       "_type": "binding",
       "contentType": "application/x.flatdata",
-      "includedStores": [],
       "modelUnit": {
         "packageableElementExcludes": [],
         "packageableElementIncludes": [
@@ -333,24 +96,6 @@
       "name": "PersonBinding",
       "package": "demo::externalFormat::flatdata::simple::binding",
       "schemaSet": "demo::externalFormat::flatdata::simple::schemaSet::PersonSchema"
-    },
-    "classifierPath": "meta::external::shared::format::binding::Binding"
-  },
-  {
-    "path": "demo::externalFormat::flatdata::allTypes::binding::AllTypesBinding",
-    "content": {
-      "_type": "binding",
-      "contentType": "application/x.flatdata",
-      "includedStores": [],
-      "modelUnit": {
-        "packageableElementExcludes": [],
-        "packageableElementIncludes": [
-          "demo::externalFormat::flatdata::allTypes::models::AllTypesRecord"
-        ]
-      },
-      "name": "AllTypesBinding",
-      "package": "demo::externalFormat::flatdata::allTypes::binding",
-      "schemaSet": "demo::externalFormat::flatdata::allTypes::schemaSet::AllTypesSchemaSet"
     },
     "classifierPath": "meta::external::shared::format::binding::Binding"
   },
@@ -387,13 +132,13 @@
                         "values": [
                           {
                             "_type": "property",
-                            "property": "firstName",
                             "parameters": [
                               {
                                 "_type": "var",
                                 "name": "src"
                               }
-                            ]
+                            ],
+                            "property": "firstName"
                           },
                           {
                             "_type": "string",
@@ -401,13 +146,13 @@
                           },
                           {
                             "_type": "property",
-                            "property": "lastName",
                             "parameters": [
                               {
                                 "_type": "var",
                                 "name": "src"
                               }
-                            ]
+                            ],
+                            "property": "lastName"
                           }
                         ]
                       }
@@ -429,153 +174,6 @@
       "tests": []
     },
     "classifierPath": "meta::pure::mapping::Mapping"
-  },
-  {
-    "path": "demo::externalFormat::flatdata::simple::service::FlatdataInternalizeByte",
-    "content": {
-      "_type": "service",
-      "autoActivateUpdates": true,
-      "documentation": "Demonstrates usage of internalize with flatdata",
-      "execution": {
-        "_type": "pureSingleExecution",
-        "func": {
-          "_type": "lambda",
-          "body": [
-            {
-              "_type": "func",
-              "function": "serialize",
-              "parameters": [
-                {
-                  "_type": "func",
-                  "function": "internalize",
-                  "parameters": [
-                    {
-                      "_type": "packageableElementPtr",
-                      "fullPath": "demo::externalFormat::flatdata::simple::models::Person"
-                    },
-                    {
-                      "_type": "packageableElementPtr",
-                      "fullPath": "demo::externalFormat::flatdata::simple::binding::PersonBinding"
-                    },
-                    {
-                      "_type": "var",
-                      "name": "data"
-                    }
-                  ]
-                },
-                {
-                  "_type": "classInstance",
-                  "type": "rootGraphFetchTree",
-                  "value": {
-                    "subTrees": [
-                      {
-                        "_type": "propertyGraphFetchTree",
-                        "subTrees": [],
-                        "subTypeTrees": [],
-                        "property": "firstName",
-                        "parameters": []
-                      },
-                      {
-                        "_type": "propertyGraphFetchTree",
-                        "subTrees": [],
-                        "subTypeTrees": [],
-                        "property": "lastName",
-                        "parameters": []
-                      }
-                    ],
-                    "subTypeTrees": [],
-                    "_type": "rootGraphFetchTree",
-                    "class": "demo::externalFormat::flatdata::simple::models::Person"
-                  }
-                }
-              ]
-            }
-          ],
-          "parameters": [
-            {
-              "_type": "var",
-              "name": "data",
-              "multiplicity": {
-                "lowerBound": 0
-              },
-              "class": "Byte"
-            },
-            {
-              "_type": "var",
-              "name": "date",
-              "multiplicity": {
-                "lowerBound": 1,
-                "upperBound": 1
-              },
-              "class": "String"
-            }
-          ]
-        }
-      },
-      "name": "FlatdataInternalizeByte",
-      "owners": ["maheha"],
-      "package": "demo::externalFormat::flatdata::simple::service",
-      "pattern": "/flatdata/showcase/flatdataInternalize",
-      "testSuites": [
-        {
-          "_type": "serviceTestSuite",
-          "id": "testSuite_1",
-          "testData": {
-            "connectionsTestData": []
-          },
-          "tests": [
-            {
-              "_type": "serviceTest",
-              "assertions": [
-                {
-                  "_type": "equalToJson",
-                  "expected": {
-                    "_type": "externalFormat",
-                    "contentType": "application/json",
-                    "data": "[ \n  {\n    \"firstName\" : \"John\",\n    \"lastName\" : \"Doe\"\n  },\n  {\n    \"firstName\" : \"Olive\",\n    \"lastName\" : \"Yew\"\n  }\n]"
-                  },
-                  "id": "assertion_1"
-                }
-              ],
-              "id": "test_1",
-              "keys": [],
-              "parameters": [
-                {
-                  "name": "data",
-                  "value": {
-                    "_type": "byteArray",
-                    "sourceInformation": {
-                      "sourceId": "",
-                      "startLine": 39,
-                      "startColumn": 20,
-                      "endLine": 39,
-                      "endColumn": 71
-                    },
-                    "value": "Rmlyc3QgTmFtZSxMYXN0IE5hbWVKb2huLERvZU9saXZlLFlldw=="
-                  }
-                },
-                {
-                  "name": "date",
-                  "value": {
-                    "_type": "string",
-                    "sourceInformation": {
-                      "sourceId": "",
-                      "startLine": 40,
-                      "startColumn": 20,
-                      "endLine": 40,
-                      "endColumn": 32
-                    },
-                    "value": "%2020-09-20"
-                  }
-                }
-              ],
-              "serializationFormat": "PURE"
-            }
-          ]
-        }
-      ]
-    },
-    "classifierPath": "meta::legend::service::metamodel::Service"
   },
   {
     "path": "demo::externalFormat::flatdata::simple::service::FlatdataWithM2MChainingMerged",
@@ -614,18 +212,18 @@
                           "_type": "classInstance",
                           "type": "rootGraphFetchTree",
                           "value": {
+                            "_type": "rootGraphFetchTree",
+                            "class": "demo::externalFormat::flatdata::simple::models::TargetPerson",
                             "subTrees": [
                               {
                                 "_type": "propertyGraphFetchTree",
-                                "subTrees": [],
-                                "subTypeTrees": [],
+                                "parameters": [],
                                 "property": "fullName",
-                                "parameters": []
+                                "subTrees": [],
+                                "subTypeTrees": []
                               }
                             ],
-                            "subTypeTrees": [],
-                            "_type": "rootGraphFetchTree",
-                            "class": "demo::externalFormat::flatdata::simple::models::TargetPerson"
+                            "subTypeTrees": []
                           }
                         }
                       ]
@@ -691,25 +289,25 @@
                   "_type": "classInstance",
                   "type": "rootGraphFetchTree",
                   "value": {
+                    "_type": "rootGraphFetchTree",
+                    "class": "demo::externalFormat::flatdata::simple::models::Person",
                     "subTrees": [
                       {
                         "_type": "propertyGraphFetchTree",
-                        "subTrees": [],
-                        "subTypeTrees": [],
+                        "parameters": [],
                         "property": "firstName",
-                        "parameters": []
+                        "subTrees": [],
+                        "subTypeTrees": []
                       },
                       {
                         "_type": "propertyGraphFetchTree",
-                        "subTrees": [],
-                        "subTypeTrees": [],
+                        "parameters": [],
                         "property": "lastName",
-                        "parameters": []
+                        "subTrees": [],
+                        "subTypeTrees": []
                       }
                     ],
-                    "subTypeTrees": [],
-                    "_type": "rootGraphFetchTree",
-                    "class": "demo::externalFormat::flatdata::simple::models::Person"
+                    "subTypeTrees": []
                   }
                 }
               ]
@@ -718,27 +316,29 @@
           "parameters": [
             {
               "_type": "var",
-              "name": "data",
+              "class": "String",
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "class": "String"
+              "name": "data"
             },
             {
               "_type": "var",
-              "name": "data1",
+              "class": "String",
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "class": "String"
+              "name": "data1"
             }
           ]
         }
       },
       "name": "FlatdataWithM2MChainingMerged",
-      "owners": ["maheha"],
+      "owners": [
+        "maheha"
+      ],
       "package": "demo::externalFormat::flatdata::simple::service",
       "pattern": "/flatdata/showcase/flatdataWithM2MChaining",
       "testSuites": [
@@ -770,11 +370,11 @@
                   "value": {
                     "_type": "string",
                     "sourceInformation": {
-                      "sourceId": "",
-                      "startLine": 54,
-                      "startColumn": 20,
+                      "endColumn": 62,
                       "endLine": 54,
-                      "endColumn": 62
+                      "sourceId": "",
+                      "startColumn": 20,
+                      "startLine": 54
                     },
                     "value": "First Name,Last Name\nJohn,Doe\nOlive,Yew"
                   }
@@ -784,13 +384,325 @@
                   "value": {
                     "_type": "string",
                     "sourceInformation": {
-                      "sourceId": "",
-                      "startLine": 55,
-                      "startColumn": 21,
+                      "endColumn": 63,
                       "endLine": 55,
-                      "endColumn": 63
+                      "sourceId": "",
+                      "startColumn": 21,
+                      "startLine": 55
                     },
                     "value": "First Name,Last Name\nJohn,Doe\nOlive,Yew"
+                  }
+                }
+              ],
+              "serializationFormat": "PURE"
+            }
+          ]
+        }
+      ]
+    },
+    "classifierPath": "meta::legend::service::metamodel::Service"
+  },
+  {
+    "path": "demo::externalFormat::flatdata::simple::service::FlatdataWithM2MContentType",
+    "content": {
+      "_type": "service",
+      "autoActivateUpdates": true,
+      "documentation": "Demonstrates usage of internalize with flatdata",
+      "execution": {
+        "_type": "pureSingleExecution",
+        "func": {
+          "_type": "lambda",
+          "body": [
+            {
+              "_type": "func",
+              "function": "serialize",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "from",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "graphFetch",
+                      "parameters": [
+                        {
+                          "_type": "func",
+                          "function": "getAll",
+                          "parameters": [
+                            {
+                              "_type": "packageableElementPtr",
+                              "fullPath": "demo::externalFormat::flatdata::simple::models::TargetPerson"
+                            }
+                          ]
+                        },
+                        {
+                          "_type": "classInstance",
+                          "type": "rootGraphFetchTree",
+                          "value": {
+                            "_type": "rootGraphFetchTree",
+                            "class": "demo::externalFormat::flatdata::simple::models::TargetPerson",
+                            "subTrees": [
+                              {
+                                "_type": "propertyGraphFetchTree",
+                                "parameters": [],
+                                "property": "fullName",
+                                "subTrees": [],
+                                "subTypeTrees": []
+                              }
+                            ],
+                            "subTypeTrees": []
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "demo::externalFormat::flatdata::simple::mapping::M2MMapping"
+                    },
+                    {
+                      "_type": "func",
+                      "function": "getRuntimeWithModelQueryConnection",
+                      "parameters": [
+                        {
+                          "_type": "packageableElementPtr",
+                          "fullPath": "demo::externalFormat::flatdata::simple::models::Person"
+                        },
+                        {
+                          "_type": "string",
+                          "value": "application/json"
+                        },
+                        {
+                          "_type": "var",
+                          "name": "data"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "classInstance",
+                  "type": "rootGraphFetchTree",
+                  "value": {
+                    "_type": "rootGraphFetchTree",
+                    "class": "demo::externalFormat::flatdata::simple::models::Person",
+                    "subTrees": [
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "parameters": [],
+                        "property": "firstName",
+                        "subTrees": [],
+                        "subTypeTrees": []
+                      },
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "parameters": [],
+                        "property": "lastName",
+                        "subTrees": [],
+                        "subTypeTrees": []
+                      }
+                    ],
+                    "subTypeTrees": []
+                  }
+                }
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "Byte",
+              "multiplicity": {
+                "lowerBound": 0
+              },
+              "name": "data"
+            }
+          ]
+        }
+      },
+      "name": "FlatdataWithM2MContentType",
+      "owners": [
+        "maheha"
+      ],
+      "package": "demo::externalFormat::flatdata::simple::service",
+      "pattern": "/flatdata/showcase/FlatdataWithM2MContentType",
+      "testSuites": [
+        {
+          "_type": "serviceTestSuite",
+          "id": "testSuite_1",
+          "testData": {
+            "connectionsTestData": []
+          },
+          "tests": [
+            {
+              "_type": "serviceTest",
+              "assertions": [
+                {
+                  "_type": "equalToJson",
+                  "expected": {
+                    "_type": "externalFormat",
+                    "contentType": "application/json",
+                    "data": "[ {\n  \"fullName\" : \"John Doe\"\n}, {\n  \"fullName\" : \"Olive Yew\"\n} ]"
+                  },
+                  "id": "assertion_1"
+                }
+              ],
+              "id": "test_1",
+              "keys": [],
+              "parameters": [
+                {
+                  "name": "data",
+                  "value": {
+                    "_type": "byteArray",
+                    "value": "Rmlyc3QgTmFtZSxMYXN0IE5hbWVKb2huLERvZU9saXZlLFlldw=="
+                  }
+                }
+              ],
+              "serializationFormat": "PURE"
+            }
+          ]
+        }
+      ]
+    },
+    "classifierPath": "meta::legend::service::metamodel::Service"
+  },
+  {
+    "path": "demo::externalFormat::flatdata::simple::service::FlatdataInternalizeByte",
+    "content": {
+      "_type": "service",
+      "autoActivateUpdates": true,
+      "documentation": "Demonstrates usage of internalize with flatdata",
+      "execution": {
+        "_type": "pureSingleExecution",
+        "func": {
+          "_type": "lambda",
+          "body": [
+            {
+              "_type": "func",
+              "function": "serialize",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "internalize",
+                  "parameters": [
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "demo::externalFormat::flatdata::simple::models::Person"
+                    },
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "demo::externalFormat::flatdata::simple::binding::PersonBinding"
+                    },
+                    {
+                      "_type": "var",
+                      "name": "data"
+                    }
+                  ]
+                },
+                {
+                  "_type": "classInstance",
+                  "type": "rootGraphFetchTree",
+                  "value": {
+                    "_type": "rootGraphFetchTree",
+                    "class": "demo::externalFormat::flatdata::simple::models::Person",
+                    "subTrees": [
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "parameters": [],
+                        "property": "firstName",
+                        "subTrees": [],
+                        "subTypeTrees": []
+                      },
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "parameters": [],
+                        "property": "lastName",
+                        "subTrees": [],
+                        "subTypeTrees": []
+                      }
+                    ],
+                    "subTypeTrees": []
+                  }
+                }
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "Byte",
+              "multiplicity": {
+                "lowerBound": 0
+              },
+              "name": "data"
+            },
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "name": "date"
+            }
+          ]
+        }
+      },
+      "name": "FlatdataInternalizeByte",
+      "owners": [
+        "maheha"
+      ],
+      "package": "demo::externalFormat::flatdata::simple::service",
+      "pattern": "/flatdata/showcase/flatdataInternalize",
+      "testSuites": [
+        {
+          "_type": "serviceTestSuite",
+          "id": "testSuite_1",
+          "testData": {
+            "connectionsTestData": []
+          },
+          "tests": [
+            {
+              "_type": "serviceTest",
+              "assertions": [
+                {
+                  "_type": "equalToJson",
+                  "expected": {
+                    "_type": "externalFormat",
+                    "contentType": "application/json",
+                    "data": "[ \n  {\n    \"firstName\" : \"John\",\n    \"lastName\" : \"Doe\"\n  },\n  {\n    \"firstName\" : \"Olive\",\n    \"lastName\" : \"Yew\"\n  }\n]"
+                  },
+                  "id": "assertion_1"
+                }
+              ],
+              "id": "test_1",
+              "keys": [],
+              "parameters": [
+                {
+                  "name": "data",
+                  "value": {
+                    "_type": "byteArray",
+                    "sourceInformation": {
+                      "endColumn": 67,
+                      "endLine": 181,
+                      "sourceId": "",
+                      "startColumn": 20,
+                      "startLine": 181
+                    },
+                    "value": "Rmlyc3QgTmFtZSxMYXN0IE5hbWVKb2huLERvZU9saXZlLFlldw=="
+                  }
+                },
+                {
+                  "name": "date",
+                  "value": {
+                    "_type": "string",
+                    "sourceInformation": {
+                      "endColumn": 32,
+                      "endLine": 182,
+                      "sourceId": "",
+                      "startColumn": 20,
+                      "startLine": 182
+                    },
+                    "value": "%2020-09-20"
                   }
                 }
               ],
@@ -812,36 +724,6 @@
       "schemas": [
         {
           "content": "section Person: DelimitedWithHeadings \n{  \n  delimiter: ',';  \n  scope.untilEof;   \n  nullString: '';\n  \n  Record  \n  { \n    'First Name' : STRING; \n    'Last Name' : STRING; \n  }\n}"
-        }
-      ]
-    },
-    "classifierPath": "meta::external::shared::format::metamodel::SchemaSet"
-  },
-  {
-    "path": "demo::externalFormat::flatdata::allTypes::schemaSet::EnumSchemaSet",
-    "content": {
-      "_type": "externalFormatSchemaSet",
-      "format": "FlatData",
-      "name": "EnumSchemaSet",
-      "package": "demo::externalFormat::flatdata::allTypes::schemaSet",
-      "schemas": [
-        {
-          "content": "section Person: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: ',';\n\n  Record\n  {\n    name: STRING;\n    gender: STRING;\n  }\n}"
-        }
-      ]
-    },
-    "classifierPath": "meta::external::shared::format::metamodel::SchemaSet"
-  },
-  {
-    "path": "demo::externalFormat::flatdata::allTypes::schemaSet::AllTypesSchemaSet",
-    "content": {
-      "_type": "externalFormatSchemaSet",
-      "format": "FlatData",
-      "name": "AllTypesSchemaSet",
-      "package": "demo::externalFormat::flatdata::allTypes::schemaSet",
-      "schemas": [
-        {
-          "content": "section AllTypes: DelimitedWithHeadings\n{\n  scope.untilEof;\n  nullString: 'null';  \n  delimiter: '~';\n\n  Record\n  {\n    string: STRING;\n    optionalString: STRING(optional);\n    integer: INTEGER;\n    optionalInteger: INTEGER(optional);\n    customInteger: INTEGER(format='#,##0');\n    float: DECIMAL;\n    optionalFloat: DECIMAL(optional);\n    customFloat: DECIMAL(format='#,##0.0#');\n    decimal: DECIMAL;\n    optionalDecimal: DECIMAL(optional);\n    customDecimal: DECIMAL(format='#,##0.0#');\n    boolean: BOOLEAN;\n    optionalBoolean: BOOLEAN(optional);\n    customBoolean: BOOLEAN(trueString='Y', falseString='N');\n    date: DATE;\n    optionalDate: DATE(optional);\n    customDate: DATE(format=['MM/dd/yyyy', 'MM dd yyyy']);\n    dateTime: DATETIME;\n    optionalDateTime: DATETIME(optional);\n    customDateTime: DATETIME(format=['dd/MM/yyyy HH:mm:ss', 'dd MM yyyy HH:mm:ss']);\n  }\n}"
         }
       ]
     },
