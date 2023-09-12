@@ -61,6 +61,13 @@
           },
           "name": "contractors",
           "type": "model::Person"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "address",
+          "type": "model::Address"
         }
       ]
     },
@@ -94,11 +101,35 @@
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
   {
-    "path": "model::class",
+    "path": "model::Address",
     "content": {
       "_type": "class",
-      "name": "class",
-      "package": "model"
+      "name": "Address",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "streetName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "pincode",
+          "type": "Number"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "meta::pure::profiles::temporal",
+          "value": "businesstemporal"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -126,6 +157,39 @@
                   "table": "PersonTable"
                 },
                 "tableAlias": "PersonTable"
+              },
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "store::TestDB",
+                  "mainTableDb": "store::TestDB",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            ]
+          }
+        },
+        {
+          "name": "FirmAddress",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "firm_id",
+                "table": {
+                  "_type": "Table",
+                  "database": "store::TestDB",
+                  "mainTableDb": "store::TestDB",
+                  "schema": "default",
+                  "table": "AddressTable"
+                },
+                "tableAlias": "AddressTable"
               },
               {
                 "_type": "column",
@@ -258,6 +322,41 @@
                 }
               ],
               "name": "HobbyTable",
+              "primaryKey": ["id"]
+            },
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firm_id",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "pincode",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "streetName",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "name": "AddressTable",
               "primaryKey": ["id"]
             }
           ],
@@ -434,6 +533,23 @@
                 ]
               },
               "target": "model_Person"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Firm",
+                "property": "address"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "store::TestDB",
+                    "name": "FirmAddress"
+                  }
+                ]
+              },
+              "target": "model_Address"
             }
           ],
           "root": true
@@ -500,6 +616,73 @@
                   "table": "HobbyTable"
                 },
                 "tableAlias": "HobbyTable"
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "model::Address",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "store::TestDB",
+            "mainTableDb": "store::TestDB",
+            "schema": "default",
+            "table": "AddressTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "store::TestDB",
+                "mainTableDb": "store::TestDB",
+                "schema": "default",
+                "table": "AddressTable"
+              },
+              "tableAlias": "AddressTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Address",
+                "property": "streetName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "streetName",
+                "table": {
+                  "_type": "Table",
+                  "database": "store::TestDB",
+                  "mainTableDb": "store::TestDB",
+                  "schema": "default",
+                  "table": "AddressTable"
+                },
+                "tableAlias": "AddressTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Address",
+                "property": "pincode"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "pincode",
+                "table": {
+                  "_type": "Table",
+                  "database": "store::TestDB",
+                  "mainTableDb": "store::TestDB",
+                  "schema": "default",
+                  "table": "AddressTable"
+                },
+                "tableAlias": "AddressTable"
               }
             }
           ],
@@ -575,13 +758,13 @@
                               "parameters": [
                                 {
                                   "_type": "property",
-                                  "property": "employees",
                                   "parameters": [
                                     {
                                       "_type": "var",
                                       "name": "x"
                                     }
-                                  ]
+                                  ],
+                                  "property": "employees"
                                 },
                                 {
                                   "_type": "lambda",
@@ -600,13 +783,13 @@
                                               "parameters": [
                                                 {
                                                   "_type": "property",
-                                                  "property": "firstName",
                                                   "parameters": [
                                                     {
                                                       "_type": "var",
                                                       "name": "x_1"
                                                     }
-                                                  ]
+                                                  ],
+                                                  "property": "firstName"
                                                 },
                                                 {
                                                   "_type": "string",
@@ -620,13 +803,13 @@
                                               "parameters": [
                                                 {
                                                   "_type": "property",
-                                                  "property": "lastName",
                                                   "parameters": [
                                                     {
                                                       "_type": "var",
                                                       "name": "x_1"
                                                     }
-                                                  ]
+                                                  ],
+                                                  "property": "lastName"
                                                 },
                                                 {
                                                   "_type": "string",
@@ -642,13 +825,13 @@
                                           "parameters": [
                                             {
                                               "_type": "property",
-                                              "property": "hobbies",
                                               "parameters": [
                                                 {
                                                   "_type": "var",
                                                   "name": "x_1"
                                                 }
-                                              ]
+                                              ],
+                                              "property": "hobbies"
                                             },
                                             {
                                               "_type": "lambda",
@@ -659,13 +842,13 @@
                                                   "parameters": [
                                                     {
                                                       "_type": "property",
-                                                      "property": "id",
                                                       "parameters": [
                                                         {
                                                           "_type": "var",
                                                           "name": "x_2"
                                                         }
-                                                      ]
+                                                      ],
+                                                      "property": "id"
                                                     },
                                                     {
                                                       "_type": "integer",
@@ -701,13 +884,13 @@
                               "parameters": [
                                 {
                                   "_type": "property",
-                                  "property": "legalName",
                                   "parameters": [
                                     {
                                       "_type": "var",
                                       "name": "x"
                                     }
-                                  ]
+                                  ],
+                                  "property": "legalName"
                                 },
                                 {
                                   "_type": "string",
@@ -739,19 +922,19 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "firstName",
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             }
-                          ]
+                          ],
+                          "property": "firstName"
                         }
                       ],
                       "parameters": [
@@ -766,19 +949,19 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "lastName",
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             }
-                          ]
+                          ],
+                          "property": "lastName"
                         }
                       ],
                       "parameters": [
@@ -793,13 +976,13 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "legalName",
                           "parameters": [
                             {
                               "_type": "var",
                               "name": "x"
                             }
-                          ]
+                          ],
+                          "property": "legalName"
                         }
                       ],
                       "parameters": [
@@ -838,12 +1021,12 @@
           "parameters": [
             {
               "_type": "var",
-              "name": "var_1",
+              "class": "StrictDate",
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "class": "StrictDate"
+              "name": "var_1"
             }
           ]
         }
@@ -900,11 +1083,11 @@
                   "value": {
                     "_type": "strictDate",
                     "sourceInformation": {
+                      "endColumn": 31,
+                      "endLine": 126,
                       "sourceId": "",
-                      "startLine": 73,
                       "startColumn": 21,
-                      "endLine": 73,
-                      "endColumn": 31
+                      "startLine": 126
                     },
                     "value": "2022-08-12"
                   }
@@ -961,11 +1144,11 @@
                   "value": {
                     "_type": "strictDate",
                     "sourceInformation": {
+                      "endColumn": 31,
+                      "endLine": 173,
                       "sourceId": "",
-                      "startLine": 120,
                       "startColumn": 21,
-                      "endLine": 120,
-                      "endColumn": 31
+                      "startLine": 173
                     },
                     "value": "2022-08-12"
                   }
@@ -1040,13 +1223,13 @@
                               "parameters": [
                                 {
                                   "_type": "property",
-                                  "property": "employees",
                                   "parameters": [
                                     {
                                       "_type": "var",
                                       "name": "x"
                                     }
-                                  ]
+                                  ],
+                                  "property": "employees"
                                 },
                                 {
                                   "_type": "lambda",
@@ -1061,13 +1244,13 @@
                                           "parameters": [
                                             {
                                               "_type": "property",
-                                              "property": "firstName",
                                               "parameters": [
                                                 {
                                                   "_type": "var",
                                                   "name": "x_1"
                                                 }
-                                              ]
+                                              ],
+                                              "property": "firstName"
                                             },
                                             {
                                               "_type": "string",
@@ -1081,13 +1264,13 @@
                                           "parameters": [
                                             {
                                               "_type": "property",
-                                              "property": "lastName",
                                               "parameters": [
                                                 {
                                                   "_type": "var",
                                                   "name": "x_1"
                                                 }
-                                              ]
+                                              ],
+                                              "property": "lastName"
                                             },
                                             {
                                               "_type": "string",
@@ -1113,13 +1296,13 @@
                               "parameters": [
                                 {
                                   "_type": "property",
-                                  "property": "legalName",
                                   "parameters": [
                                     {
                                       "_type": "var",
                                       "name": "x"
                                     }
-                                  ]
+                                  ],
+                                  "property": "legalName"
                                 },
                                 {
                                   "_type": "string",
@@ -1151,19 +1334,19 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "firstName",
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             }
-                          ]
+                          ],
+                          "property": "firstName"
                         }
                       ],
                       "parameters": [
@@ -1178,19 +1361,19 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "lastName",
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             }
-                          ]
+                          ],
+                          "property": "lastName"
                         }
                       ],
                       "parameters": [
@@ -1205,13 +1388,13 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "legalName",
                           "parameters": [
                             {
                               "_type": "var",
                               "name": "x"
                             }
-                          ]
+                          ],
+                          "property": "legalName"
                         }
                       ],
                       "parameters": [
@@ -1250,12 +1433,12 @@
           "parameters": [
             {
               "_type": "var",
-              "name": "var_1",
+              "class": "StrictDate",
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "class": "StrictDate"
+              "name": "var_1"
             }
           ]
         }
@@ -1312,11 +1495,11 @@
                   "value": {
                     "_type": "strictDate",
                     "sourceInformation": {
+                      "endColumn": 31,
+                      "endLine": 262,
                       "sourceId": "",
-                      "startLine": 70,
                       "startColumn": 21,
-                      "endLine": 70,
-                      "endColumn": 31
+                      "startLine": 262
                     },
                     "value": "2022-08-12"
                   }
@@ -1373,11 +1556,11 @@
                   "value": {
                     "_type": "strictDate",
                     "sourceInformation": {
+                      "endColumn": 31,
+                      "endLine": 309,
                       "sourceId": "",
-                      "startLine": 117,
                       "startColumn": 21,
-                      "endLine": 117,
-                      "endColumn": 31
+                      "startLine": 309
                     },
                     "value": "2022-08-12"
                   }
@@ -1429,13 +1612,13 @@
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             },
                             {
                               "_type": "lambda",
@@ -1446,13 +1629,13 @@
                                   "parameters": [
                                     {
                                       "_type": "property",
-                                      "property": "firstName",
                                       "parameters": [
                                         {
                                           "_type": "var",
                                           "name": "x_1"
                                         }
-                                      ]
+                                      ],
+                                      "property": "firstName"
                                     },
                                     {
                                       "_type": "string",
@@ -1492,19 +1675,19 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "firstName",
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             }
-                          ]
+                          ],
+                          "property": "firstName"
                         }
                       ],
                       "parameters": [
@@ -1519,19 +1702,19 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "lastName",
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             }
-                          ]
+                          ],
+                          "property": "lastName"
                         }
                       ],
                       "parameters": [
@@ -1546,13 +1729,13 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "legalName",
                           "parameters": [
                             {
                               "_type": "var",
                               "name": "x"
                             }
-                          ]
+                          ],
+                          "property": "legalName"
                         }
                       ],
                       "parameters": [
@@ -1591,12 +1774,12 @@
           "parameters": [
             {
               "_type": "var",
-              "name": "var_1",
+              "class": "StrictDate",
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "class": "StrictDate"
+              "name": "var_1"
             }
           ]
         },
@@ -1658,11 +1841,11 @@
                   "value": {
                     "_type": "strictDate",
                     "sourceInformation": {
+                      "endColumn": 31,
+                      "endLine": 387,
                       "sourceId": "",
-                      "startLine": 59,
                       "startColumn": 21,
-                      "endLine": 59,
-                      "endColumn": 31
+                      "startLine": 387
                     },
                     "value": "2022-08-12"
                   }
@@ -1737,13 +1920,13 @@
                               "parameters": [
                                 {
                                   "_type": "property",
-                                  "property": "legalName",
                                   "parameters": [
                                     {
                                       "_type": "var",
                                       "name": "x"
                                     }
-                                  ]
+                                  ],
+                                  "property": "legalName"
                                 },
                                 {
                                   "_type": "string",
@@ -1761,13 +1944,13 @@
                                   "parameters": [
                                     {
                                       "_type": "property",
-                                      "property": "employees",
                                       "parameters": [
                                         {
                                           "_type": "var",
                                           "name": "x"
                                         }
-                                      ]
+                                      ],
+                                      "property": "employees"
                                     },
                                     {
                                       "_type": "lambda",
@@ -1782,13 +1965,13 @@
                                               "parameters": [
                                                 {
                                                   "_type": "property",
-                                                  "property": "firstName",
                                                   "parameters": [
                                                     {
                                                       "_type": "var",
                                                       "name": "x_1"
                                                     }
-                                                  ]
+                                                  ],
+                                                  "property": "firstName"
                                                 },
                                                 {
                                                   "_type": "string",
@@ -1802,13 +1985,13 @@
                                               "parameters": [
                                                 {
                                                   "_type": "property",
-                                                  "property": "lastName",
                                                   "parameters": [
                                                     {
                                                       "_type": "var",
                                                       "name": "x_1"
                                                     }
-                                                  ]
+                                                  ],
+                                                  "property": "lastName"
                                                 },
                                                 {
                                                   "_type": "string",
@@ -1834,13 +2017,13 @@
                                   "parameters": [
                                     {
                                       "_type": "property",
-                                      "property": "employees",
                                       "parameters": [
                                         {
                                           "_type": "var",
                                           "name": "x"
                                         }
-                                      ]
+                                      ],
+                                      "property": "employees"
                                     },
                                     {
                                       "_type": "lambda",
@@ -1855,13 +2038,13 @@
                                               "parameters": [
                                                 {
                                                   "_type": "property",
-                                                  "property": "firstName",
                                                   "parameters": [
                                                     {
                                                       "_type": "var",
                                                       "name": "x_1"
                                                     }
-                                                  ]
+                                                  ],
+                                                  "property": "firstName"
                                                 },
                                                 {
                                                   "_type": "string",
@@ -1875,13 +2058,13 @@
                                               "parameters": [
                                                 {
                                                   "_type": "property",
-                                                  "property": "lastName",
                                                   "parameters": [
                                                     {
                                                       "_type": "var",
                                                       "name": "x_1"
                                                     }
-                                                  ]
+                                                  ],
+                                                  "property": "lastName"
                                                 },
                                                 {
                                                   "_type": "string",
@@ -1927,19 +2110,19 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "firstName",
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             }
-                          ]
+                          ],
+                          "property": "firstName"
                         }
                       ],
                       "parameters": [
@@ -1954,19 +2137,19 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "lastName",
                           "parameters": [
                             {
                               "_type": "property",
-                              "property": "employees",
                               "parameters": [
                                 {
                                   "_type": "var",
                                   "name": "x"
                                 }
-                              ]
+                              ],
+                              "property": "employees"
                             }
-                          ]
+                          ],
+                          "property": "lastName"
                         }
                       ],
                       "parameters": [
@@ -1981,13 +2164,13 @@
                       "body": [
                         {
                           "_type": "property",
-                          "property": "legalName",
                           "parameters": [
                             {
                               "_type": "var",
                               "name": "x"
                             }
-                          ]
+                          ],
+                          "property": "legalName"
                         }
                       ],
                       "parameters": [
@@ -2026,12 +2209,12 @@
           "parameters": [
             {
               "_type": "var",
-              "name": "var_1",
+              "class": "StrictDate",
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "class": "StrictDate"
+              "name": "var_1"
             }
           ]
         }
@@ -2088,11 +2271,11 @@
                   "value": {
                     "_type": "strictDate",
                     "sourceInformation": {
+                      "endColumn": 31,
+                      "endLine": 480,
                       "sourceId": "",
-                      "startLine": 74,
                       "startColumn": 21,
-                      "endLine": 74,
-                      "endColumn": 31
+                      "startLine": 480
                     },
                     "value": "2022-08-12"
                   }
@@ -2149,11 +2332,11 @@
                   "value": {
                     "_type": "strictDate",
                     "sourceInformation": {
+                      "endColumn": 31,
+                      "endLine": 527,
                       "sourceId": "",
-                      "startLine": 121,
                       "startColumn": 21,
-                      "endLine": 121,
-                      "endColumn": 31
+                      "startLine": 527
                     },
                     "value": "2022-08-12"
                   }

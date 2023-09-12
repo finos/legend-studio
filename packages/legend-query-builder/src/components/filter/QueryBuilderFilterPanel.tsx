@@ -45,6 +45,7 @@ import {
   MoreVerticalIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -66,7 +67,10 @@ import {
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
-import { QueryBuilderPropertyExpressionBadge } from '../QueryBuilderPropertyExpressionEditor.js';
+import {
+  QueryBuilderPropertyExpressionBadge,
+  QueryBuilderPropertyExpressionEditor,
+} from '../QueryBuilderPropertyExpressionEditor.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import {
   assertErrorThrown,
@@ -242,9 +246,12 @@ export const buildFilterTreeWithExists = (
       const parentPropertyChainIndex = existsLambdaPropertyChains.findIndex(
         (p) =>
           p instanceof AbstractPropertyExpression &&
-          p.func.value === targetDropNode.propertyExpression.func.value &&
+          p.func.value ===
+            targetDropNode.propertyExpressionState.propertyExpression.func
+              .value &&
           p.func.ownerReference.value.path ===
-            targetDropNode.propertyExpression.func.ownerReference.value.path,
+            targetDropNode.propertyExpressionState.propertyExpression.func
+              .ownerReference.value.path,
       );
       if (parentPropertyChainIndex >= 0) {
         parentNode = targetDropNode;
@@ -281,9 +288,10 @@ export const buildFilterTreeWithExists = (
             cn instanceof QueryBuilderFilterTreeExistsNodeData &&
             p.func.value ===
               guaranteeType(cn, QueryBuilderFilterTreeExistsNodeData)
-                .propertyExpression.func.value &&
+                .propertyExpressionState.propertyExpression.func.value &&
             p.func.ownerReference.value.path ===
-              cn.propertyExpression.func.ownerReference.value.path,
+              cn.propertyExpressionState.propertyExpression.func.ownerReference
+                .value.path,
         );
         if (parentPropertyChainIndex >= 0) {
           parentNode = targetDropNode;
@@ -302,7 +310,7 @@ export const buildFilterTreeWithExists = (
   // 3. Create exists tree node for all the property chains and add them to the filter tree
   for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
     const existsNode: QueryBuilderFilterTreeExistsNodeData =
-      new QueryBuilderFilterTreeExistsNodeData(parentNode?.id);
+      new QueryBuilderFilterTreeExistsNodeData(filterState, parentNode?.id);
     existsNode.setPropertyExpression(
       existsLambdaPropertyChains[i] as AbstractPropertyExpression,
     );
@@ -456,6 +464,15 @@ const QueryBuilderFilterExistsConditionEditor = observer(
     isDroppable: boolean;
   }) => {
     const { node, humanizePropertyName, isDragOver, isDroppable } = props;
+    const hasDerivedPropertyInExpression = Boolean(
+      node.propertyExpressionState.derivedPropertyExpressionStates.length,
+    );
+    const isValid = node.propertyExpressionState.isValid;
+    const setDerivedPropertyArguments = (): void => {
+      if (hasDerivedPropertyInExpression) {
+        node.propertyExpressionState.setIsEditingDerivedProperty(true);
+      }
+    };
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
@@ -470,13 +487,32 @@ const QueryBuilderFilterExistsConditionEditor = observer(
           >
             <div className="query-builder-filter-tree__exists-node__label">
               {getPropertyChainName(
-                node.propertyExpression,
+                node.propertyExpressionState.propertyExpression,
                 humanizePropertyName,
               )}
             </div>
             <div className="query-builder-filter-tree__exists-node__exists--label">
               exists
             </div>
+            {hasDerivedPropertyInExpression && (
+              <button
+                className={clsx(
+                  'query-builder-filter-tree__exists-node__exists--label__action',
+                  {
+                    'query-builder-filter-tree__exists-node__exists--label__action--error':
+                      !isValid,
+                  },
+                )}
+                tabIndex={-1}
+                onClick={setDerivedPropertyArguments}
+                title="Set Derived Property Argument(s)..."
+              >
+                {!isValid && <InfoCircleIcon />} (...)
+              </button>
+            )}
+            <QueryBuilderPropertyExpressionEditor
+              propertyExpressionState={node.propertyExpressionState}
+            />
           </div>
         </PanelEntryDropZonePlaceholder>
       </div>
