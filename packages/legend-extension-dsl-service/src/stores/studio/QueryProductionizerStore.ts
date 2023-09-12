@@ -541,16 +541,8 @@ export class QueryProductionizerStore {
         this.graphManagerState,
       );
       const projectData = await Promise.all([
-        this.sdlcServerClient.getEntities(
-          project.projectId,
-          undefined,
-          undefined,
-        ),
-        this.sdlcServerClient.getConfiguration(
-          project.projectId,
-          undefined,
-          undefined,
-        ),
+        this.sdlcServerClient.getEntities(project.projectId, undefined),
+        this.sdlcServerClient.getConfiguration(project.projectId, undefined),
       ]);
       const [currentProjectEntities, currentProjectConfiguration] = [
         projectData[0] as unknown as Entity[],
@@ -656,7 +648,6 @@ export class QueryProductionizerStore {
               dependenciesToAdd;
             await this.sdlcServerClient.updateConfiguration(
               project.projectId,
-              undefined,
               workspace,
               UpdateProjectConfigurationCommand.serialization.toJson(
                 projectConfigurationUpdateCommand,
@@ -672,7 +663,6 @@ export class QueryProductionizerStore {
           });
           await this.sdlcServerClient.performEntityChanges(
             project.projectId,
-            undefined,
             workspace,
             {
               message: 'productionize-query: add service element',
@@ -756,7 +746,6 @@ export class QueryProductionizerStore {
             // notify if we fail to delete the left-over workspace?
             await this.sdlcServerClient.deleteWorkspace(
               project.projectId,
-              undefined,
               workspace,
             );
           }

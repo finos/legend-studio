@@ -412,7 +412,6 @@ export class WorkspaceSyncState {
       const revisions = (
         (yield this.editorStore.sdlcServerClient.getRevisions(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           this.sdlcState.activeRevision.committedAt,
           this.sdlcState.activeRemoteWorkspaceRevision.committedAt,

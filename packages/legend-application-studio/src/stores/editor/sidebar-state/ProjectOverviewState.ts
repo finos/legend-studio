@@ -151,7 +151,6 @@ export class ProjectOverviewState {
       this.isDeletingWorkspace = true;
       yield this.editorStore.sdlcServerClient.deleteWorkspace(
         this.sdlcState.activeProject.projectId,
-        workspace.source,
         workspace,
       );
       this.projectWorkspaces = this.projectWorkspaces.filter(
@@ -251,7 +250,6 @@ export class ProjectOverviewState {
         (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.activeProject.projectId,
           undefined,
-          undefined,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
       );
@@ -262,7 +260,6 @@ export class ProjectOverviewState {
         const latestProjectVersionRevision = Revision.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getRevision(
             this.sdlcState.activeProject.projectId,
-            undefined,
             undefined,
             this.latestProjectVersion.revisionId,
           )) as PlainObject<Revision>,
@@ -413,6 +410,7 @@ export class ProjectOverviewState {
           workspaceType,
         )) as PlainObject<Workspace>,
       );
+      newWorkspace.source = newPatch.patchReleaseVersionId.id;
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Workspace '${newWorkspace.workspaceId}' is succesfully created`,
       );

@@ -256,7 +256,6 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
       } entities]`;
       await this.editorStore.sdlcServerClient.updateEntities(
         this.editorStore.sdlcState.activeProject.projectId,
-        this.editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
@@ -435,7 +434,6 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
       } entities]`;
       await this.editorStore.sdlcServerClient.updateEntities(
         this.editorStore.sdlcState.activeProject.projectId,
-        this.editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );

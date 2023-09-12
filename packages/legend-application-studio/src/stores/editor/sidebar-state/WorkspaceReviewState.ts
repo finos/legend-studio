@@ -177,7 +177,6 @@ export class WorkspaceReviewState {
       const currentWorkspaceRevision =
         (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as Revision;

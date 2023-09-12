@@ -254,7 +254,6 @@ export abstract class LocalChangesState {
       yield flowResult(
         this.sdlcState.fetchRemoteWorkspaceRevision(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
         ),
       );
@@ -267,7 +266,6 @@ export abstract class LocalChangesState {
           const remoteWorkspaceEntities =
             (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
               this.sdlcState.activeProject.projectId,
-              this.sdlcState.activePatch?.patchReleaseVersionId.id,
               this.sdlcState.activeWorkspace,
               this.sdlcState.activeRemoteWorkspaceRevision.id,
             )) as Entity[];
@@ -340,7 +338,6 @@ export abstract class LocalChangesState {
     yield flowResult(
       this.sdlcState.fetchRemoteWorkspaceRevision(
         this.sdlcState.activeProject.projectId,
-        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
       ),
     );
@@ -349,7 +346,6 @@ export abstract class LocalChangesState {
       const remoteWorkspaceEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           this.sdlcState.activeRemoteWorkspaceRevision.id,
         )) as Entity[];
@@ -398,7 +394,6 @@ export abstract class LocalChangesState {
       const nullableRevisionChange =
         (yield this.editorStore.sdlcServerClient.performEntityChanges(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           {
             message:
@@ -441,7 +436,6 @@ export abstract class LocalChangesState {
         const entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.sdlcState.activeProject.projectId,
-            this.sdlcState.activePatch?.patchReleaseVersionId.id,
             this.sdlcState.activeWorkspace,
             latestRevision.id,
           )) as Entity[];

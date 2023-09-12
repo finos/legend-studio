@@ -262,6 +262,7 @@ export class EditorSDLCState {
           workspaceType,
         )) as PlainObject<Workspace>,
       );
+      this.currentWorkspace.source = patchReleaseVersionId;
       const isInConflictResolutionMode = (yield flowResult(
         this.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
@@ -307,14 +308,12 @@ export class EditorSDLCState {
   *checkIfCurrentWorkspaceIsInConflictResolutionMode(): GeneratorFn<boolean> {
     return (yield this.editorStore.sdlcServerClient.checkIfWorkspaceIsInConflictResolutionMode(
       this.activeProject.projectId,
-      this.activePatch?.patchReleaseVersionId.id,
       this.activeWorkspace,
     )) as boolean;
   }
 
   *fetchRemoteWorkspaceRevision(
     projectId: string,
-    patchReleaseVersionId: string | undefined,
     workspace: Workspace,
   ): GeneratorFn<void> {
     try {
@@ -325,13 +324,11 @@ export class EditorSDLCState {
         this.editorStore.isInConflictResolutionMode
           ? ((yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
               projectId,
-              patchReleaseVersionId,
               workspace,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>)
           : ((yield this.editorStore.sdlcServerClient.getRevision(
               projectId,
-              patchReleaseVersionId,
               workspace,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>),
@@ -349,7 +346,6 @@ export class EditorSDLCState {
 
   *fetchCurrentRevision(
     projectId: string,
-    patchReleaseVersionId: string | undefined,
     workspace: Workspace,
   ): GeneratorFn<void> {
     try {
@@ -357,13 +353,11 @@ export class EditorSDLCState {
         this.editorStore.isInConflictResolutionMode
           ? ((yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
               projectId,
-              patchReleaseVersionId,
               workspace,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>)
           : ((yield this.editorStore.sdlcServerClient.getRevision(
               projectId,
-              patchReleaseVersionId,
               workspace,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>),
@@ -386,12 +380,10 @@ export class EditorSDLCState {
       this.isWorkspaceOutdated = this.editorStore.isInConflictResolutionMode
         ? ((yield this.editorStore.sdlcServerClient.isConflictResolutionOutdated(
             this.activeProject.projectId,
-            this.activePatch?.patchReleaseVersionId.id,
             this.activeWorkspace,
           )) as boolean)
         : ((yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
             this.activeProject.projectId,
-            this.activePatch?.patchReleaseVersionId.id,
             this.activeWorkspace,
           )) as boolean);
     } catch (error) {
@@ -415,7 +407,6 @@ export class EditorSDLCState {
         const latestRevision = Revision.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getRevision(
             this.activeProject.projectId,
-            this.activePatch?.patchReleaseVersionId.id,
             this.activeWorkspace,
             RevisionAlias.CURRENT,
           )) as PlainObject<Revision>,
@@ -428,7 +419,6 @@ export class EditorSDLCState {
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.activeProject.projectId,
-            this.activePatch?.patchReleaseVersionId.id,
             this.activeWorkspace,
             this.activeRevision.id,
           )) as Entity[];
@@ -436,7 +426,6 @@ export class EditorSDLCState {
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.activeProject.projectId,
-            this.activePatch?.patchReleaseVersionId.id,
             this.activeWorkspace,
             RevisionAlias.CURRENT,
           )) as Entity[];
@@ -468,7 +457,6 @@ export class EditorSDLCState {
       const workspaceBaseEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
           this.activeProject.projectId,
-          this.activePatch?.patchReleaseVersionId.id,
           this.activeWorkspace,
           RevisionAlias.BASE,
         )) as Entity[];
@@ -499,7 +487,6 @@ export class EditorSDLCState {
       const projectLatestEntities =
         (yield this.editorStore.sdlcServerClient.getEntities(
           this.activeProject.projectId,
-          this.activePatch?.patchReleaseVersionId.id,
           undefined,
         )) as Entity[];
       this.editorStore.changeDetectionState.projectLatestRevisionState.setEntities(
@@ -529,7 +516,6 @@ export class EditorSDLCState {
       this.workspaceWorkflows = (
         (yield this.editorStore.sdlcServerClient.getWorkflowsByRevision(
           this.activeProject.projectId,
-          this.activePatch?.patchReleaseVersionId.id,
           this.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Workflow>[]

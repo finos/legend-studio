@@ -171,7 +171,6 @@ export class ProjectViewerStore {
       (yield this.editorStore.sdlcServerClient.getRevision(
         this.editorStore.sdlcState.activeProject.projectId,
         undefined,
-        undefined,
         RevisionAlias.CURRENT,
       )) as PlainObject<Revision>,
     );
@@ -223,7 +222,6 @@ export class ProjectViewerStore {
               (yield this.editorStore.sdlcServerClient.getRevision(
                 this.editorStore.sdlcState.activeProject.projectId,
                 undefined,
-                undefined,
                 revisionId,
               )) as PlainObject<Revision>,
             )
@@ -232,12 +230,10 @@ export class ProjectViewerStore {
         this.editorStore.sdlcServerClient.getEntitiesByRevision(
           this.editorStore.sdlcState.activeProject.projectId,
           undefined,
-          undefined,
           revisionId,
         ),
         this.editorStore.sdlcServerClient.getConfigurationByRevision(
           this.editorStore.sdlcState.activeProject.projectId,
-          undefined,
           undefined,
           revisionId,
         ),
@@ -249,11 +245,9 @@ export class ProjectViewerStore {
         this.editorStore.sdlcServerClient.getEntities(
           this.editorStore.sdlcState.activeProject.projectId,
           undefined,
-          undefined,
         ),
         this.editorStore.sdlcServerClient.getConfiguration(
           this.editorStore.sdlcState.activeProject.projectId,
-          undefined,
           undefined,
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];

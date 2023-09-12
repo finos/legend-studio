@@ -235,11 +235,7 @@ export class UpdateProjectServiceQuerySetupStore {
 
     try {
       const entities = (yield flowResult(
-        this.sdlcServerClient.getEntities(
-          workspace.projectId,
-          undefined,
-          workspace,
-        ),
+        this.sdlcServerClient.getEntities(workspace.projectId, workspace),
       )) as Entity[];
       this.services = entities.filter(
         (entity) => entity.classifierPath === CORE_PURE_PATH.SERVICE,

@@ -236,7 +236,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.updatingConfigurationState.inProgress();
       yield this.editorStore.sdlcServerClient.updateConfiguration(
         this.editorStore.sdlcState.activeProject.projectId,
-        this.editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.editorStore.sdlcState.activeWorkspace,
         UpdateProjectConfigurationCommand.serialization.toJson(
           updateConfigurationCommand,
@@ -255,7 +254,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       yield flowResult(
         this.sdlcState.fetchCurrentRevision(
           this.editorStore.sdlcState.activeProject.projectId,
-          this.editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.editorStore.sdlcState.activeWorkspace,
         ),
       );

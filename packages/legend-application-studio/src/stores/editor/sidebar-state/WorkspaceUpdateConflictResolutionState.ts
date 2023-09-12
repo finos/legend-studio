@@ -237,7 +237,6 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     const projectConfiguration =
       (yield this.editorStore.sdlcServerClient.getConfigurationOfWorkspaceInConflictResolutionMode(
         this.sdlcState.activeProject.projectId,
-        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
       )) as PlainObject<ProjectConfiguration>;
     this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
@@ -386,7 +385,6 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       const latestRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
@@ -399,7 +397,6 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       const entities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           this.sdlcState.activeRevision.id,
         )) as Entity[];
@@ -434,7 +431,6 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       const workspaceBaseEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.sdlcState.activeWorkspace,
           RevisionAlias.BASE,
         )) as Entity[];
@@ -502,7 +498,6 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.editorStore.localChangesState.computeLocalEntityChanges();
       yield this.editorStore.sdlcServerClient.acceptConflictResolution(
         this.sdlcState.activeProject.projectId,
-        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
         {
           message: `resolving update merge conflicts for workspace from ${
@@ -571,7 +566,6 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       });
       yield this.editorStore.sdlcServerClient.discardConflictResolutionChanges(
         this.sdlcState.activeProject.projectId,
-        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
       );
       this.editorStore.applicationStore.navigationService.navigator.reload({
@@ -629,7 +623,6 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       });
       yield this.editorStore.sdlcServerClient.abortConflictResolution(
         this.sdlcState.activeProject.projectId,
-        this.sdlcState.activePatch?.patchReleaseVersionId.id,
         this.sdlcState.activeWorkspace,
       );
       this.editorStore.applicationStore.navigationService.navigator.reload({

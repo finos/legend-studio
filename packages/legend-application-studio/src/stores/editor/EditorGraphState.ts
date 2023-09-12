@@ -562,7 +562,6 @@ export class EditorGraphState {
         ProjectConfiguration.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getConfiguration(
             this.editorStore.sdlcState.activeProject.projectId,
-            this.editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
             this.editorStore.sdlcState.activeWorkspace,
           )) as PlainObject<ProjectConfiguration>,
         ),

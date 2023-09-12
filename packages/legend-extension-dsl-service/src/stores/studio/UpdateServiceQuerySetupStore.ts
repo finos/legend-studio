@@ -297,11 +297,7 @@ export class UpdateServiceQuerySetupStore {
     this.checkWorkspaceCompatibilityState.inProgress();
     try {
       this.currentWorkspaceService = (yield flowResult(
-        this.sdlcServerClient.getWorkspaceEntity(
-          undefined,
-          workspace,
-          servicePath,
-        ),
+        this.sdlcServerClient.getWorkspaceEntity(workspace, servicePath),
       )) as Entity;
     } catch {
       this.currentWorkspaceService = undefined;
