@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.5.1
+
+### Patch Changes
+
+- [#2584](https://github.com/finos/legend-studio/pull/2584) [`e3aaf7aeb`](https://github.com/finos/legend-studio/commit/e3aaf7aeb52c968298cdede6631c10d06bee1d44) ([@gayathrir11](https://github.com/gayathrir11)) - Fix DnD of exists filter for milestoned property.
+
 ## 4.5.0
 
 ### Minor Changes
