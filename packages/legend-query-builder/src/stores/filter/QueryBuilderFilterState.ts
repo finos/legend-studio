@@ -343,16 +343,21 @@ export class QueryBuilderFilterTreeExistsNodeData
   extends QueryBuilderFilterTreeOperationNodeData
   implements Hashable
 {
-  propertyExpression!: AbstractPropertyExpression;
+  readonly filterState: QueryBuilderFilterState;
+  propertyExpressionState!: QueryBuilderPropertyExpressionState;
 
-  constructor(parentId: string | undefined) {
+  constructor(
+    filterState: QueryBuilderFilterState,
+    parentId: string | undefined,
+  ) {
     super(parentId);
 
     makeObservable(this, {
-      propertyExpression: observable,
+      propertyExpressionState: observable,
       setPropertyExpression: action,
     });
 
+    this.filterState = filterState;
     this.isOpen = true;
   }
 
@@ -361,7 +366,10 @@ export class QueryBuilderFilterTreeExistsNodeData
   }
 
   setPropertyExpression(val: AbstractPropertyExpression): void {
-    this.propertyExpression = val;
+    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
+      this.filterState.queryBuilderState,
+      val,
+    );
   }
 
   get hashCode(): string {
@@ -369,7 +377,7 @@ export class QueryBuilderFilterTreeExistsNodeData
       QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_TREE_EXISTS_NODE_DATA,
       this.parentId ?? '',
       hashArray(this.childrenIds),
-      this.propertyExpression,
+      this.propertyExpressionState.propertyExpression,
       this.lambdaParameterName ?? '',
     ]);
   }

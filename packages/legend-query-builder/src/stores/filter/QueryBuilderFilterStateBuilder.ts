@@ -120,6 +120,7 @@ const processFilterTree = (
       propertyExpression.func.value.multiplicity.upperBound > 1
     ) {
       const existsNode = new QueryBuilderFilterTreeExistsNodeData(
+        filterState,
         parentFilterNodeId,
       );
       const lambdaFunctionInstance = guaranteeType(

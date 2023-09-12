@@ -1231,3 +1231,90 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalResult = {
     },
   ],
 };
+
+export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists =
+  {
+    mappedEntities: [
+      {
+        path: 'model::Address',
+        properties: [
+          {
+            _type: 'MappedProperty',
+            name: 'pincode',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'streetName',
+          },
+        ],
+      },
+      {
+        path: 'model::Firm',
+        properties: [
+          {
+            _type: 'entity',
+            entityPath: 'model::Address',
+            name: 'address',
+          },
+          {
+            _type: 'entity',
+            entityPath: 'model::Person',
+            name: 'contractors',
+          },
+          {
+            _type: 'entity',
+            entityPath: 'model::Person',
+            name: 'employees',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'legalName',
+          },
+        ],
+      },
+      {
+        path: 'model::Hobby',
+        properties: [
+          {
+            _type: 'MappedProperty',
+            name: 'id',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'name',
+          },
+        ],
+      },
+      {
+        path: 'model::Person',
+        properties: [
+          {
+            _type: 'MappedProperty',
+            name: 'firstName',
+          },
+          {
+            _type: 'entity',
+            entityPath: 'model::Hobby',
+            name: 'hobbies',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'lastName',
+          },
+        ],
+      },
+      {
+        path: 'model_Address_milestoning',
+        properties: [
+          {
+            _type: 'MappedProperty',
+            name: 'from',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'thru',
+          },
+        ],
+      },
+    ],
+  };

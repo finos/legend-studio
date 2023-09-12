@@ -37,6 +37,7 @@ import {
 } from './QueryBuilderFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
+import { buildPropertyExpressionChain } from '../QueryBuilderValueSpecificationBuilderHelper.js';
 
 const buildFilterConditionExpression = (
   filterState: QueryBuilderFilterState,
@@ -110,7 +111,19 @@ const buildFilterConditionExpression = (
           )
         : undefined;
     }
-    const propertyExpression = guaranteeNonNullable(node.propertyExpression);
+    const lambdaParameterName = node.parentId
+      ? guaranteeType(
+          filterState.nodes.get(guaranteeNonNullable(node.parentId)),
+          QueryBuilderFilterTreeOperationNodeData,
+        ).lambdaParameterName
+      : undefined;
+    const propertyExpression = guaranteeNonNullable(
+      buildPropertyExpressionChain(
+        node.propertyExpressionState.propertyExpression,
+        node.propertyExpressionState.queryBuilderState,
+        lambdaParameterName ?? filterState.lambdaParameterName,
+      ),
+    );
     const clauses = node.childrenIds
       .map((e) => filterState.nodes.get(e))
       .filter(isNonNullable)
