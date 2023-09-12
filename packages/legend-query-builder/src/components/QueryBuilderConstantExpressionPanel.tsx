@@ -45,19 +45,22 @@ import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { DEFAULT_CONSTANT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
-import { QueryBuilderConstantExpressionState } from '../stores/QueryBuilderConstantsState.js';
+import {
+  type QueryBuilderConstantExpressionState,
+  QueryBuilderSimpleConstantExpressionState,
+} from '../stores/QueryBuilderConstantsState.js';
 import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEditorHelper.js';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
 const QueryBuilderConstantExpressionEditor = observer(
-  (props: { constantState: QueryBuilderConstantExpressionState }) => {
+  (props: { constantState: QueryBuilderSimpleConstantExpressionState }) => {
     const { constantState } = props;
     const queryBuilderState = constantState.queryBuilderState;
     const applicationStore = queryBuilderState.applicationStore;
@@ -232,13 +235,22 @@ export const QueryBuilderConstantExpressionPanel = observer(
           Multiplicity.ONE,
         );
         variableEx.genericType = defaultVal.genericType;
-        const constState = new QueryBuilderConstantExpressionState(
+        const constState = new QueryBuilderSimpleConstantExpressionState(
           queryBuilderState,
           variableEx,
           defaultVal,
         );
         constantState.setSelectedConstant(constState);
       }
+    };
+
+    const renderConstantModal = (
+      val: QueryBuilderConstantExpressionState,
+    ): React.ReactNode => {
+      if (val instanceof QueryBuilderSimpleConstantExpressionState) {
+        return <QueryBuilderConstantExpressionEditor constantState={val} />;
+      }
+      return null;
     };
 
     return (
@@ -300,11 +312,8 @@ export const QueryBuilderConstantExpressionPanel = observer(
             )}
           </>
         </div>
-        {constantState.selectedConstant && (
-          <QueryBuilderConstantExpressionEditor
-            constantState={constantState.selectedConstant}
-          />
-        )}
+        {constantState.selectedConstant &&
+          renderConstantModal(constantState.selectedConstant)}
       </div>
     );
   },

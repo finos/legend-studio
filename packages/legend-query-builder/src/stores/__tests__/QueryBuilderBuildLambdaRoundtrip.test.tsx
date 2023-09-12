@@ -119,7 +119,7 @@ import {
   TEST_DATA_lambda_watermark_Parameter,
 } from './TEST_DATA__QueryBuilder_Roundtrip_Watermark.js';
 import {
-  TEST_DATA__lambda_ContantExpression_MultiConstantVAriables,
+  TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables,
   TEST_DATA__lambda_ContantExpression_Simple,
   TEST_DATA__lambda_ContantExpression_SimpleUsedAsVariable,
 } from './TEST_DATA__QueryBuilder_ConstantExpression.js';
@@ -604,7 +604,7 @@ const cases: RoundtripTestCase[] = [
   [
     'Constant expression with multi string instance',
     olapGroupbyCtx,
-    TEST_DATA__lambda_ContantExpression_MultiConstantVAriables,
+    TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables,
     undefined,
   ],
   // externalize

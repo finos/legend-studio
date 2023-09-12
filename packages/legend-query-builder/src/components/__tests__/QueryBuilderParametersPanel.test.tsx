@@ -44,6 +44,7 @@ import {
   MockedMonacoEditorInstance,
   MockedMonacoEditorAPI,
 } from '@finos/legend-lego/code-editor/test';
+import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
 
 test(
   integrationTest(
@@ -190,9 +191,12 @@ test(
       if (!queryBuilderState.constantState.selectedConstant) {
         return;
       }
-      queryBuilderState.constantState.selectedConstant.changeValSpecType(
-        PrimitiveType.STRICTDATE,
-      );
+      const selectedConstant = queryBuilderState.constantState.selectedConstant;
+      if (
+        selectedConstant instanceof QueryBuilderSimpleConstantExpressionState
+      ) {
+        selectedConstant.changeValSpecType(PrimitiveType.STRICTDATE);
+      }
     });
 
     await waitFor(() =>

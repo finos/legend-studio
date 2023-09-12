@@ -298,172 +298,243 @@ export const TEST_DATA__lambda_ContantExpression_SimpleUsedAsVariable = {
   parameters: [],
 };
 
-export const TEST_DATA__lambda_ContantExpression_MultiConstantVAriables = {
-  _type: 'lambda',
-  body: [
-    {
-      _type: 'func',
-      function: 'letFunction',
-      parameters: [
-        {
-          _type: 'string',
-          value: 'a',
-        },
-        {
-          _type: 'string',
-          value: 'a',
-        },
-      ],
-    },
-    {
-      _type: 'func',
-      function: 'letFunction',
-      parameters: [
-        {
-          _type: 'string',
-          value: 'b',
-        },
-        {
-          _type: 'string',
-          value: 'b',
-        },
-      ],
-    },
-    {
-      _type: 'func',
-      function: 'letFunction',
-      parameters: [
-        {
-          _type: 'string',
-          value: 'c',
-        },
-        {
-          _type: 'string',
-          value: 'c',
-        },
-      ],
-    },
-    {
-      _type: 'func',
-      function: 'project',
-      parameters: [
-        {
-          _type: 'func',
-          function: 'filter',
-          parameters: [
-            {
-              _type: 'func',
-              function: 'getAll',
-              parameters: [
-                {
-                  _type: 'packageableElementPtr',
-                  fullPath: 'model::Person',
-                },
-              ],
-            },
-            {
-              _type: 'lambda',
-              body: [
-                {
-                  _type: 'func',
-                  function: 'greaterThan',
-                  parameters: [
-                    {
-                      _type: 'property',
-                      property: 'age',
-                      parameters: [
-                        {
-                          _type: 'var',
-                          name: 'x',
-                        },
-                      ],
-                    },
-                    {
-                      _type: 'integer',
-                      value: 20,
-                    },
-                  ],
-                },
-              ],
-              parameters: [
-                {
-                  _type: 'var',
-                  name: 'x',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          _type: 'collection',
-          multiplicity: {
-            lowerBound: 2,
-            upperBound: 2,
+export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'letFunction',
+        parameters: [
+          {
+            _type: 'string',
+            value: 'a',
           },
-          values: [
-            {
-              _type: 'lambda',
-              body: [
-                {
-                  _type: 'property',
-                  property: 'firstName',
-                  parameters: [
-                    {
-                      _type: 'var',
-                      name: 'x',
-                    },
-                  ],
-                },
-              ],
-              parameters: [
-                {
-                  _type: 'var',
-                  name: 'x',
-                },
-              ],
-            },
-            {
-              _type: 'lambda',
-              body: [
-                {
-                  _type: 'property',
-                  property: 'lastName',
-                  parameters: [
-                    {
-                      _type: 'var',
-                      name: 'x',
-                    },
-                  ],
-                },
-              ],
-              parameters: [
-                {
-                  _type: 'var',
-                  name: 'x',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          _type: 'collection',
-          multiplicity: {
-            lowerBound: 2,
-            upperBound: 2,
+          {
+            _type: 'string',
+            value: 'a',
           },
-          values: [
-            {
-              _type: 'string',
-              value: 'First Name',
+        ],
+      },
+      {
+        _type: 'func',
+        function: 'letFunction',
+        parameters: [
+          {
+            _type: 'string',
+            value: 'b',
+          },
+          {
+            _type: 'string',
+            value: 'b',
+          },
+        ],
+      },
+      {
+        _type: 'func',
+        function: 'letFunction',
+        parameters: [
+          {
+            _type: 'string',
+            value: 'c',
+          },
+          {
+            _type: 'integer',
+            value: 1,
+          },
+        ],
+      },
+      {
+        _type: 'func',
+        function: 'letFunction',
+        parameters: [
+          {
+            _type: 'string',
+            value: 'd',
+          },
+          {
+            _type: 'func',
+            function: 'if',
+            parameters: [
+              {
+                _type: 'func',
+                function: 'equal',
+                parameters: [
+                  {
+                    _type: 'integer',
+                    value: 2,
+                  },
+                  {
+                    _type: 'integer',
+                    value: 2,
+                  },
+                ],
+              },
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 1,
+                  },
+                ],
+                parameters: [],
+              },
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 2,
+                  },
+                ],
+                parameters: [],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        _type: 'func',
+        function: 'letFunction',
+        parameters: [
+          {
+            _type: 'string',
+            value: 'e',
+          },
+          {
+            _type: 'func',
+            function: 'toString',
+            parameters: [
+              {
+                _type: 'integer',
+                value: 2,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'filter',
+            parameters: [
+              {
+                _type: 'func',
+                function: 'getAll',
+                parameters: [
+                  {
+                    _type: 'packageableElementPtr',
+                    fullPath: 'model::Person',
+                  },
+                ],
+              },
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'greaterThan',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                        ],
+                        property: 'age',
+                      },
+                      {
+                        _type: 'integer',
+                        value: 20,
+                      },
+                    ],
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 2,
+              upperBound: 2,
             },
-            {
-              _type: 'string',
-              value: 'Last Name',
+            values: [
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'x',
+                      },
+                    ],
+                    property: 'firstName',
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'x',
+                      },
+                    ],
+                    property: 'lastName',
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 2,
+              upperBound: 2,
             },
-          ],
-        },
-      ],
-    },
-  ],
-  parameters: [],
-};
+            values: [
+              {
+                _type: 'string',
+                value: 'First Name',
+              },
+              {
+                _type: 'string',
+                value: 'Last Name',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  };
