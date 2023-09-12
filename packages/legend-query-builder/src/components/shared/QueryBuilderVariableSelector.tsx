@@ -24,9 +24,10 @@ import {
   useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
-  SimpleFunctionExpression,
   type ValueSpecification,
+  SimpleFunctionExpression,
   type VariableExpression,
+  INTERNAL__UnknownValueSpecification,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
@@ -62,11 +63,12 @@ export const VariableViewer = observer(
         if (possibleDateLabel) {
           return possibleDateLabel;
         }
+      } else if (value instanceof INTERNAL__UnknownValueSpecification) {
+        return '(calculated)';
       }
       return getValueSpecificationStringValue(value);
     };
-
-    const valueString = constantValue
+    const constantValueString = constantValue
       ? getNameOfValue(constantValue)
       : undefined;
     const name = variable.name;
@@ -75,6 +77,15 @@ export const VariableViewer = observer(
     const isVariableUsed = queryBuilderState.isVariableUsed(variable);
     const deleteDisabled = isReadOnly || isVariableUsed;
     const deleteTitle = isVariableUsed ? 'Used in query' : 'Remove';
+
+    const isEditDisabled =
+      isReadOnly ||
+      constantValue instanceof INTERNAL__UnknownValueSpecification;
+
+    const editMessage =
+      constantValue instanceof INTERNAL__UnknownValueSpecification
+        ? 'Calculated constants can only be edited via text mode'
+        : 'Edit';
     const editVariable = (): void => {
       actions?.editVariable();
     };
@@ -115,14 +126,14 @@ export const VariableViewer = observer(
           </div>
           <div className="query-builder__variables__variable__label">
             {name}
-            {valueString ? (
+            {constantValueString ? (
               <div className="query-builder__constants__value">
-                {valueString}
+                {constantValueString}
               </div>
             ) : (
               <div className="query-builder__variables__variable__type">
                 <div className="query-builder__variables__variable__type__label">
-                  {typeName}
+                  {typeName ?? 'unknown'}
                 </div>
               </div>
             )}
@@ -133,9 +144,9 @@ export const VariableViewer = observer(
             <button
               className="query-builder__variables__variable__action"
               tabIndex={-1}
-              disabled={isReadOnly}
+              disabled={isEditDisabled}
               onClick={editVariable}
-              title="Edit"
+              title={editMessage}
             >
               <PencilIcon />
             </button>

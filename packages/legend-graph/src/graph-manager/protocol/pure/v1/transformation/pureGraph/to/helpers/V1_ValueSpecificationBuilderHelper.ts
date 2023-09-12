@@ -21,6 +21,7 @@ import {
   isNonNullable,
   uniq,
   returnUndefOnError,
+  assertTrue,
 } from '@finos/legend-shared';
 import {
   PRIMITIVE_TYPE,
@@ -95,7 +96,10 @@ import { getEnumValue } from '../../../../../../../../graph/helpers/DomainHelper
 import { matchFunctionName } from '../../../../../../../../graph/MetaModelUtils.js';
 import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import type { V1_GenericTypeInstance } from '../../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
-import { V1_ClassInstanceType } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+import {
+  V1_ClassInstanceType,
+  V1_serializeValueSpecification,
+} from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import {
   KeyExpression,
@@ -220,12 +224,15 @@ export class V1_ValueSpecificationBuilder
       `Applying function '${appliedFunction.function}'`,
     );
     if (matchFunctionName(appliedFunction.function, SUPPORTED_FUNCTIONS.LET)) {
+      // We will build the let parameters to assign the right side of the expression to the left side
       const parameters = appliedFunction.parameters.map((expression) =>
-        expression.accept_ValueSpecificationVisitor(
-          new V1_ValueSpecificationBuilder(
-            this.context,
-            this.processingContext,
-            this.openVariables,
+        returnUndefOnError(() =>
+          expression.accept_ValueSpecificationVisitor(
+            new V1_ValueSpecificationBuilder(
+              this.context,
+              this.processingContext,
+              this.openVariables,
+            ),
           ),
         ),
       );
@@ -234,13 +241,13 @@ export class V1_ValueSpecificationBuilder
         V1_CString,
       ).value;
       // right side (value spec)
-      const rightSide = guaranteeNonNullable(parameters[1]);
+      const rightSide = parameters[1];
       const variableExpression = new VariableExpression(
         letName,
-        rightSide.multiplicity,
+        rightSide?.multiplicity ?? Multiplicity.ONE,
       );
 
-      variableExpression.genericType = rightSide.genericType;
+      variableExpression.genericType = rightSide?.genericType;
       this.processingContext.addInferredVariables(letName, variableExpression);
       this.openVariables.push(letName);
     }
@@ -619,6 +626,63 @@ export const V1_buildGenericFunctionExpression = (
     functionName,
     compileContext,
   );
+
+export const V1_buildGenericLetFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  try {
+    return V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+  } catch (error) {
+    // let statement
+    assertTrue(
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.LET),
+      'Expected let() function for custom let() handling',
+    );
+    assertTrue(parameters.length === 2, 'Let() function expects 2 parameters');
+    const leftSide = guaranteeNonNullable(
+      parameters[0],
+      'Left side of let statement expected to be defined',
+    ).accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+    const rightSideParam = guaranteeNonNullable(parameters[1]);
+    const rightSide =
+      returnUndefOnError(() =>
+        rightSideParam.accept_ValueSpecificationVisitor(
+          new V1_ValueSpecificationBuilder(
+            compileContext,
+            processingContext,
+            openVariables,
+          ),
+        ),
+      ) ??
+      new INTERNAL__UnknownValueSpecification(
+        V1_serializeValueSpecification(
+          rightSideParam,
+          compileContext.extensions.plugins,
+        ),
+      );
+    return V1_buildBaseSimpleFunctionExpression(
+      [leftSide, rightSide],
+      functionName,
+      compileContext,
+    );
+  }
+};
 /**
  * This is fairly similar to how engine does function matching in a way.
  * Notice that Studio core should not attempt to do any function inferencing/matching
@@ -647,6 +711,15 @@ export function V1_buildFunctionExpression(
     );
   }
   if (matchFunctionName(functionName, Object.values(SUPPORTED_FUNCTIONS))) {
+    if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.LET)) {
+      return V1_buildGenericLetFunctionExpression(
+        functionName,
+        parameters,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
+    }
     // NOTE: this is a catch-all builder that is only meant for basic function expression
     // such as and(), or(), etc. It will fail when type-inferencing/function-matching is required
     // such as for project(), filter(), getAll(), etc.

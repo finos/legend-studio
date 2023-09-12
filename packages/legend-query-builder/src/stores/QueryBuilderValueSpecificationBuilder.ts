@@ -40,7 +40,7 @@ import type { QueryBuilderFetchStructureState } from './fetch-structure/QueryBui
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
 import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValueSpecificationBuilder.js';
 import { buildExecutionQueryFromLambdaFunction } from './shared/LambdaParameterState.js';
-import type { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
+import { type QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
 import {
   QueryBuilderEmbeddedFromExecutionContextState,
   type QueryBuilderExecutionContextState,

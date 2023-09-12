@@ -17,6 +17,7 @@
 import {
   type Type,
   type ValueSpecification,
+  type INTERNAL__UnknownValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
   observe_ValueSpecification,
@@ -37,7 +38,7 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildDefaultInstanceValue } from './shared/ValueSpecificationEditorHelper.js';
 import { valueSpecification_setGenericType } from './shared/ValueSpecificationModifierHelper.js';
 
-export class QueryBuilderConstantExpressionState implements Hashable {
+export abstract class QueryBuilderConstantExpressionState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
   readonly uuid = uuid();
   variable: VariableExpression;
@@ -48,13 +49,36 @@ export class QueryBuilderConstantExpressionState implements Hashable {
     variable: VariableExpression,
     value: ValueSpecification,
   ) {
+    this.queryBuilderState = queryBuilderState;
+    this.variable = variable;
+    this.value = value;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.CONSTANT_EXPRESSION_STATE,
+      this.variable.name,
+      this.value,
+    ]);
+  }
+}
+
+export class QueryBuilderSimpleConstantExpressionState
+  extends QueryBuilderConstantExpressionState
+  implements Hashable
+{
+  constructor(
+    queryBuilderState: QueryBuilderState,
+    variable: VariableExpression,
+    value: ValueSpecification,
+  ) {
+    super(queryBuilderState, variable, value);
     makeObservable(this, {
       variable: observable,
       value: observable,
       setValueSpec: action,
       changeValSpecType: action,
     });
-    this.queryBuilderState = queryBuilderState;
     this.value = observe_ValueSpecification(
       value,
       this.queryBuilderState.observerContext,
@@ -63,7 +87,6 @@ export class QueryBuilderConstantExpressionState implements Hashable {
       variable,
       this.queryBuilderState.observerContext,
     );
-    this.variable = variable;
   }
 
   changeValSpecType(type: Type): void {
@@ -106,13 +129,24 @@ export class QueryBuilderConstantExpressionState implements Hashable {
       );
     }
   }
+}
 
-  get hashCode(): string {
-    return hashArray([
-      QUERY_BUILDER_STATE_HASH_STRUCTURE.CONSTANT_EXPRESSION_STATE,
-      this.variable.name,
-      this.value,
-    ]);
+export class QueryBuilderCalculatedConstantExpressionState
+  extends QueryBuilderConstantExpressionState
+  implements Hashable
+{
+  declare value: INTERNAL__UnknownValueSpecification;
+
+  constructor(
+    queryBuilderState: QueryBuilderState,
+    variable: VariableExpression,
+    value: INTERNAL__UnknownValueSpecification,
+  ) {
+    super(queryBuilderState, variable, value);
+    makeObservable(this, {
+      variable: observable,
+      value: observable,
+    });
   }
 }
 

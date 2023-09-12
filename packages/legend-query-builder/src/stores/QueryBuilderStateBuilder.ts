@@ -31,7 +31,7 @@ import {
   type GraphFetchTreeInstanceValue,
   type ValueSpecificationVisitor,
   InstanceValue,
-  type INTERNAL__UnknownValueSpecification,
+  INTERNAL__UnknownValueSpecification,
   type LambdaFunction,
   type KeyExpressionInstanceValue,
   matchFunctionName,
@@ -81,7 +81,11 @@ import {
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/QueryBuilderWindowStateBuilder.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
-import { QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
+import {
+  type QueryBuilderConstantExpressionState,
+  QueryBuilderCalculatedConstantExpressionState,
+  QueryBuilderSimpleConstantExpressionState,
+} from './QueryBuilderConstantsState.js';
 import { checkIfEquivalent } from './milestoning/QueryBuilderMilestoningHelper.js';
 import type { QueryBuilderParameterValue } from './QueryBuilderParametersState.js';
 import { QueryBuilderEmbeddedFromExecutionContextState } from './QueryBuilderExecutionContextState.js';
@@ -143,12 +147,20 @@ const processLetExpression = (
   );
   // process right side (value)
   const rightSide = guaranteeNonNullable(parameters[1]);
-  // final
-  const constantExpression = new QueryBuilderConstantExpressionState(
-    queryBuilderState,
-    varExp,
-    rightSide,
-  );
+  let constantExpression: QueryBuilderConstantExpressionState;
+  if (rightSide instanceof INTERNAL__UnknownValueSpecification) {
+    constantExpression = new QueryBuilderCalculatedConstantExpressionState(
+      queryBuilderState,
+      varExp,
+      rightSide,
+    );
+  } else {
+    constantExpression = new QueryBuilderSimpleConstantExpressionState(
+      queryBuilderState,
+      varExp,
+      rightSide,
+    );
+  }
   queryBuilderState.constantState.setShowConstantPanel(true);
   queryBuilderState.constantState.addConstant(constantExpression);
 };
