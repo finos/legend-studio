@@ -1069,7 +1069,10 @@ export const QueryBuilderResultPanel = observer(
               </div>
             )}
 
-            <div className="query-builder__result__analytics">
+            <div
+              data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS}
+              className="query-builder__result__analytics"
+            >
               {resultDescription ?? ''}
             </div>
             {executionResult && resultState.checkForStaleResults && (

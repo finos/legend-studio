@@ -175,11 +175,12 @@ test(integrationTest('test query execution with parameters'), async () => {
   );
   await waitFor(() => fireEvent.click(getByText(parameterValueDialog, 'Run')));
   await waitFor(() => findByText(queryBuilderResultPanel, 'Age'));
-  expect(
-    queryBuilderResultPanel.getElementsByClassName(
-      'query-builder__result__analytics',
-    )[0]?.innerHTML,
-  ).toContain('1 row(s)');
+  const queryBuilderResultAnalytics = await waitFor(() =>
+    renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS,
+    ),
+  );
+  expect(queryBuilderResultAnalytics.innerHTML).toContain('1 row(s)');
   expect(
     queryBuilderResultPanel.getElementsByClassName('ag-cell')[0]?.innerHTML,
   ).toContain('20');
@@ -233,25 +234,14 @@ test(integrationTest('test query execution with parameters'), async () => {
   const parameterValueDialog1 = await waitFor(() =>
     renderResult.getByRole('dialog'),
   );
-  await waitFor(() =>
-    fireEvent.change(
-      guaranteeNonNullable(
-        parameterValueDialog1.getElementsByClassName(
-          'value-spec-editor__input',
-        )[0],
-      ),
-      {
-        target: { value: 20 },
-      },
+  // Don't need to reset parameter value as the previous value is saved
+  await waitFor(() => fireEvent.click(getByText(parameterValueDialog1, 'Run')));
+  const queryBuilderResultAnalytics1 = await waitFor(() =>
+    renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS,
     ),
   );
-  await waitFor(() => fireEvent.click(getByText(parameterValueDialog1, 'Run')));
-
-  expect(
-    queryBuilderResultPanel1.getElementsByClassName(
-      'query-builder__result__analytics',
-    )[0]?.innerHTML,
-  ).toContain('1 row(s)');
+  expect(queryBuilderResultAnalytics1.innerHTML).toContain('1 row(s)');
   await waitFor(() => findByText(queryBuilderResultPanel1, 'Age'));
   await waitFor(() => findByText(queryBuilderResultPanel1, 'First Name'));
   expect(
