@@ -121,7 +121,7 @@ export const VariableInfoTooltip: React.FC<{
               Type
             </div>
             <div className="value-spec-paramater__tooltip__item__value">
-              {type?.name ?? ''}
+              {type?.name ?? '(unknown)'}
             </div>
           </div>
           <div className="value-spec-paramater__tooltip__item">

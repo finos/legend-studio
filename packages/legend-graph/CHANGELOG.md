@@ -1,5 +1,7 @@
 # @finos/legend-graph
 
+## 31.2.1
+
 ## 31.2.0
 
 ### Minor Changes

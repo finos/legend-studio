@@ -1,5 +1,21 @@
 # @finos/legend-query-builder
 
+## 4.6.0
+
+### Minor Changes
+
+- [#2585](https://github.com/finos/legend-studio/pull/2585) [`3db1d1c5a`](https://github.com/finos/legend-studio/commit/3db1d1c5a30139daefe3c584419c7295ad359170) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Read calculated constants other than simple primitives.
+
+### Patch Changes
+
+- [#2579](https://github.com/finos/legend-studio/pull/2579) [`302e51d7b`](https://github.com/finos/legend-studio/commit/302e51d7b28d59b5bdd4e56fe4f4bf12e32d0c62) ([@gayathrir11](https://github.com/gayathrir11)) - Persist seconds field when zero seconds are provided for DateTime field in filter and post-filter values
+
+## 4.5.1
+
+### Patch Changes
+
+- [#2584](https://github.com/finos/legend-studio/pull/2584) [`e3aaf7aeb`](https://github.com/finos/legend-studio/commit/e3aaf7aeb52c968298cdede6631c10d06bee1d44) ([@gayathrir11](https://github.com/gayathrir11)) - Fix DnD of exists filter for milestoned property.
+
 ## 4.5.0
 
 ### Minor Changes
