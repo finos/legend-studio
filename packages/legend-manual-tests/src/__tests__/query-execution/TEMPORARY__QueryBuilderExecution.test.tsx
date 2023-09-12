@@ -175,12 +175,76 @@ test(integrationTest('test query execution with parameters'), async () => {
   );
   await waitFor(() => fireEvent.click(getByText(parameterValueDialog, 'Run')));
   await waitFor(() => findByText(queryBuilderResultPanel, 'Age'));
-  expect(
-    queryBuilderResultPanel.getElementsByClassName(
-      'query-builder__result__analytics',
-    )[0]?.innerHTML,
-  ).toContain('1 row(s)');
+  const queryBuilderResultAnalytics = await waitFor(() =>
+    renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS,
+    ),
+  );
+  expect(queryBuilderResultAnalytics.innerHTML).toContain('1 row(s)');
   expect(
     queryBuilderResultPanel.getElementsByClassName('ag-cell')[0]?.innerHTML,
   ).toContain('20');
+
+  // Test drag and drop a new property to Projection panel and ag-grid is updated after re-running query
+  const queryBuilderExploreTree = await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+  );
+  const propertyNode = getByText(queryBuilderExploreTree, 'First Name');
+  await waitFor(() => fireEvent.contextMenu(propertyNode));
+  await waitFor(() =>
+    fireEvent.click(renderResult.getByText('Add Property to Fetch Structure')),
+  );
+  const queryBuilderResultPanel1 = await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL),
+  );
+  await waitFor(() =>
+    findByText(queryBuilderResultPanel1, 'Preview data might be stale'),
+  );
+  const executionInput1 = (
+    queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
+  ).createExecutionInput(
+    queryBuilderState.graphManagerState.graph,
+    guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
+    queryBuilderState.resultState.buildExecutionRawLambda(),
+    guaranteeNonNullable(queryBuilderState.executionContextState.runtimeValue),
+    V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    parameterValues,
+  );
+  const executionResult1 = await axios.post<
+    unknown,
+    AxiosResponse<{ elements: object[] }>
+  >(
+    `${ENGINE_SERVER_URL}/pure/v1/execution/execute`,
+    V1_ExecuteInput.serialization.toJson(executionInput1),
+    {
+      headers: {
+        [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
+      },
+    },
+  );
+  createSpy(
+    queryBuilderState.graphManagerState.graphManager,
+    'runQuery',
+  ).mockResolvedValue(
+    V1_buildExecutionResult(V1_serializeExecutionResult(executionResult1.data)),
+  );
+  await act(async () => {
+    fireEvent.click(getByText(queryBuilderResultPanel1, 'Run Query'));
+  });
+  const parameterValueDialog1 = await waitFor(() =>
+    renderResult.getByRole('dialog'),
+  );
+  // Don't need to reset parameter value as the previous value is saved
+  await waitFor(() => fireEvent.click(getByText(parameterValueDialog1, 'Run')));
+  const queryBuilderResultAnalytics1 = await waitFor(() =>
+    renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS,
+    ),
+  );
+  expect(queryBuilderResultAnalytics1.innerHTML).toContain('1 row(s)');
+  await waitFor(() => findByText(queryBuilderResultPanel1, 'Age'));
+  await waitFor(() => findByText(queryBuilderResultPanel1, 'First Name'));
+  expect(
+    queryBuilderResultPanel1.getElementsByClassName('ag-cell')[1]?.innerHTML,
+  ).toContain('An');
 });
