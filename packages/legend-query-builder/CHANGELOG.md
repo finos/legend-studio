@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.7.0
+
+### Minor Changes
+
+- [#2593](https://github.com/finos/legend-studio/pull/2593) [`1f8e593b9`](https://github.com/finos/legend-studio/commit/1f8e593b9d0ab25ccb1a1bd9bcd11029d0a028f9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable editing of calculated constants.
+
 ## 4.6.0
 
 ### Minor Changes

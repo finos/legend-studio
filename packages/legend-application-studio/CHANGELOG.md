@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.4.4
+
+### Patch Changes
+
+- [#2588](https://github.com/finos/legend-studio/pull/2588) [`617e6dd94`](https://github.com/finos/legend-studio/commit/617e6dd9419200ac4f221507a7faed85ef4cde33) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - render service test data with different function forms of `getRuntimeWithModelQueryConnection`
+
 ## 28.4.3
 
 ## 28.4.2
