@@ -288,6 +288,19 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
+  grammarToJSON_valueSpecification = (
+    input: string,
+  ): Promise<PlainObject<V1_ValueSpecification>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
+      `${this._grammarToJSON()}/valueSpecification`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
   grammarToJSON_relationalOperationElement = (
     input: string,
     sourceId?: string | undefined,
@@ -386,6 +399,20 @@ export class V1_EngineServerClient extends AbstractServerClient {
       undefined,
       { renderStyle },
       { enableCompression: true },
+    );
+
+  JSONToGrammar_valueSpecification = (
+    input: PlainObject<V1_ValueSpecification>,
+    renderStyle?: V1_RenderStyle | undefined,
+  ): Promise<string> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
+      `${this._JSONToGrammar()}/valueSpecification`,
+      input,
+      {},
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+      { renderStyle },
+      { enableCompression: false },
     );
 
   JSONToGrammar_relationalOperationElement = (

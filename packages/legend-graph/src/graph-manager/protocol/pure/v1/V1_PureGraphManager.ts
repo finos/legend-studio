@@ -1831,6 +1831,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.transformValueSpecsToCode(input, Boolean(pretty));
   }
 
+  async valueSpecificationToPureCode(
+    valSpec: PlainObject<ValueSpecification>,
+    pretty?: boolean | undefined,
+  ): Promise<string> {
+    return this.engine.transformValueSpecToCode(valSpec, Boolean(pretty));
+  }
+
+  async pureCodeToValueSpecification(
+    valSpec: string,
+  ): Promise<PlainObject<ValueSpecification>> {
+    return this.engine.transformCodeToValueSpec(valSpec);
+  }
+
   async pureCodeToValueSpecifications(
     lambdas: Map<string, string>,
     graph: PureModel,

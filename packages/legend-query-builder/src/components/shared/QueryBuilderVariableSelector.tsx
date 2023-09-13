@@ -15,19 +15,23 @@
  */
 
 import {
+  CalculatorIcon,
+  ContextMenu,
   DollarIcon,
   DragPreviewLayer,
   InfoCircleIcon,
+  MenuContent,
+  MenuContentItem,
   PanelFormListItems,
   PencilIcon,
   TimesIcon,
+  clsx,
   useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
+  type VariableExpression,
   type ValueSpecification,
   SimpleFunctionExpression,
-  type VariableExpression,
-  INTERNAL__UnknownValueSpecification,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
@@ -39,59 +43,121 @@ import {
   VariableInfoTooltip,
 } from './BasicValueSpecificationEditor.js';
 import { buildDatePickerOption } from './CustomDatePicker.js';
+import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
+import { forwardRef, useState } from 'react';
 
+const CALCULATED = '(calculated)';
+
+const getNameOfValue = (
+  value: ValueSpecification,
+  queryBuilderState: QueryBuilderState,
+): string | undefined => {
+  if (value instanceof SimpleFunctionExpression) {
+    const possibleDateLabel = buildDatePickerOption(
+      value,
+      queryBuilderState.applicationStore,
+    ).label;
+    if (possibleDateLabel) {
+      return possibleDateLabel;
+    }
+  }
+  return getValueSpecificationStringValue(value);
+};
+
+const QueryBuilderVariableContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      variable: VariableExpression;
+      variableInUse: boolean;
+      actions?:
+        | {
+            editVariable: () => void;
+            deleteVariable: () => void;
+          }
+        | undefined;
+      extraContextMenuActions?:
+        | {
+            key: string;
+            label: string;
+            handler: () => void;
+          }[]
+        | undefined;
+    }
+  >(function QueryBuilderVariableContextMenu(props, ref) {
+    const { actions, extraContextMenuActions, variableInUse } = props;
+    return (
+      <MenuContent ref={ref}>
+        {extraContextMenuActions?.map((action) => (
+          <MenuContentItem onClick={action.handler} key={action.key}>
+            {action.label}
+          </MenuContentItem>
+        ))}
+        {actions?.editVariable && (
+          <MenuContentItem onClick={actions.editVariable}>Edit</MenuContentItem>
+        )}
+        {actions?.deleteVariable && (
+          <MenuContentItem
+            disabled={variableInUse}
+            onClick={actions.deleteVariable}
+          >
+            Remove
+          </MenuContentItem>
+        )}
+      </MenuContent>
+    );
+  }),
+);
 export const VariableViewer = observer(
   (props: {
     variable: VariableExpression;
     queryBuilderState: QueryBuilderState;
     isReadOnly: boolean;
-    constantValue?: ValueSpecification | undefined;
+    value?: {
+      val: ValueSpecification | undefined;
+    };
     actions?: {
       editVariable: () => void;
       deleteVariable: () => void;
     };
+    extraContextMenuActions?:
+      | {
+          key: string;
+          label: string;
+          handler: () => void;
+        }[]
+      | undefined;
   }) => {
-    const { variable, constantValue, actions, isReadOnly, queryBuilderState } =
-      props;
-
-    const getNameOfValue = (value: ValueSpecification): string | undefined => {
-      if (value instanceof SimpleFunctionExpression) {
-        const possibleDateLabel = buildDatePickerOption(
-          value,
-          queryBuilderState.applicationStore,
-        ).label;
-        if (possibleDateLabel) {
-          return possibleDateLabel;
-        }
-      } else if (value instanceof INTERNAL__UnknownValueSpecification) {
-        return '(calculated)';
-      }
-      return getValueSpecificationStringValue(value);
-    };
-    const constantValueString = constantValue
-      ? getNameOfValue(constantValue)
+    const {
+      variable,
+      value,
+      actions,
+      isReadOnly,
+      queryBuilderState,
+      extraContextMenuActions,
+    } = props;
+    const isVariableUsed = queryBuilderState.isVariableUsed(variable);
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
+    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
+    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+    const isConstant = Boolean(value);
+    const constantValueString = value?.val
+      ? getNameOfValue(value.val, queryBuilderState)
       : undefined;
     const name = variable.name;
-    const variableType = variable.genericType?.value.rawType;
-    const typeName = variableType?.name;
-    const isVariableUsed = queryBuilderState.isVariableUsed(variable);
+    const variableTypeName =
+      variable.genericType?.value.rawType.name ??
+      (isConstant ? CALCULATED : undefined);
     const deleteDisabled = isReadOnly || isVariableUsed;
     const deleteTitle = isVariableUsed ? 'Used in query' : 'Remove';
-
-    const isEditDisabled =
-      isReadOnly ||
-      constantValue instanceof INTERNAL__UnknownValueSpecification;
-
-    const editMessage =
-      constantValue instanceof INTERNAL__UnknownValueSpecification
-        ? 'Calculated constants can only be edited via text mode'
-        : 'Edit';
     const editVariable = (): void => {
       actions?.editVariable();
     };
     const deleteVariable = (): void => {
       actions?.deleteVariable();
     };
+
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: QUERY_BUILDER_VARIABLE_DND_TYPE,
@@ -103,69 +169,94 @@ export const VariableViewer = observer(
 
     return (
       <div className="query-builder__variables__variable" ref={dragConnector}>
-        <DragPreviewLayer
-          labelGetter={(item: QueryBuilderVariableDragSource): string =>
-            item.variable.name === '' ? '(unknown)' : item.variable.name
+        <ContextMenu
+          content={
+            <QueryBuilderVariableContextMenu
+              variable={variable}
+              variableInUse={isVariableUsed}
+              actions={actions}
+              extraContextMenuActions={extraContextMenuActions}
+            />
           }
-          types={[QUERY_BUILDER_VARIABLE_DND_TYPE]}
-        />
-        <div
-          onClick={editVariable}
-          className="query-builder__variables__variable__content"
+          disabled={isReadOnly || !actions}
+          className={clsx('query-builder__variables__variable__context-menu', {
+            'query-builder__variables__variable--selected-from-context-menu':
+              isSelectedFromContextMenu,
+          })}
+          menuProps={{ elevation: 7 }}
+          onOpen={onContextMenuOpen}
+          onClose={onContextMenuClose}
         >
-          <div className="query-builder__variables__variable__icon">
-            <div className="query-builder__variables__variable-icon">
-              {constantValue ? (
-                <div className="icon query-builder__variables__variable-icon">
-                  C
+          <DragPreviewLayer
+            labelGetter={(item: QueryBuilderVariableDragSource): string =>
+              item.variable.name === '' ? '(unknown)' : item.variable.name
+            }
+            types={[QUERY_BUILDER_VARIABLE_DND_TYPE]}
+          />
+          <div
+            onClick={editVariable}
+            className="query-builder__variables__variable__content"
+          >
+            <div className="query-builder__variables__variable__icon">
+              <div className="query-builder__variables__variable-icon">
+                {isConstant ? (
+                  <div className="icon query-builder__variables__variable-icon">
+                    C
+                  </div>
+                ) : (
+                  <DollarIcon />
+                )}
+              </div>
+            </div>
+            <div className="query-builder__variables__variable__label">
+              {name}
+              {isConstant ? (
+                <div
+                  className={clsx('query-builder__constants__value', {
+                    'query-builder__constants__value--icon':
+                      !constantValueString,
+                  })}
+                >
+                  {constantValueString}
+                  {!constantValueString && <CalculatorIcon />}
                 </div>
               ) : (
-                <DollarIcon />
+                <div className="query-builder__variables__variable__type">
+                  <div className="query-builder__variables__variable__type__label">
+                    {variableTypeName ?? 'unknown'}
+                  </div>
+                </div>
               )}
             </div>
           </div>
-          <div className="query-builder__variables__variable__label">
-            {name}
-            {constantValueString ? (
-              <div className="query-builder__constants__value">
-                {constantValueString}
-              </div>
-            ) : (
-              <div className="query-builder__variables__variable__type">
-                <div className="query-builder__variables__variable__type__label">
-                  {typeName ?? 'unknown'}
+          {actions && (
+            <div className="query-builder__variables__variable__actions">
+              <button
+                className="query-builder__variables__variable__action"
+                tabIndex={-1}
+                disabled={isReadOnly}
+                onClick={editVariable}
+                title="Edit"
+              >
+                <PencilIcon />
+              </button>
+              <button
+                className="query-builder__variables__variable__action"
+                tabIndex={-1}
+                onClick={deleteVariable}
+                disabled={deleteDisabled}
+                title={deleteTitle}
+              >
+                <TimesIcon />
+              </button>
+              <VariableInfoTooltip variable={variable}>
+                <div className="query-builder__variables__variable__action value-spec-editor__variable__info">
+                  <InfoCircleIcon />
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
-        {actions && (
-          <div className="query-builder__variables__variable__actions">
-            <button
-              className="query-builder__variables__variable__action"
-              tabIndex={-1}
-              disabled={isEditDisabled}
-              onClick={editVariable}
-              title={editMessage}
-            >
-              <PencilIcon />
-            </button>
-            <button
-              className="query-builder__variables__variable__action"
-              tabIndex={-1}
-              onClick={deleteVariable}
-              disabled={deleteDisabled}
-              title={deleteTitle}
-            >
-              <TimesIcon />
-            </button>
-            <VariableInfoTooltip variable={variable}>
-              <div className="query-builder__variables__variable__action value-spec-editor__variable__info">
-                <InfoCircleIcon />
-              </div>
-            </VariableInfoTooltip>
-          </div>
-        )}
+              </VariableInfoTooltip>
+            </div>
+          )}
+        </ContextMenu>
       </div>
     );
   },
@@ -177,7 +268,6 @@ export const VariableSelector = observer(
     filterBy?: (variableExpression: VariableExpression) => boolean;
   }) => {
     const { queryBuilderState, filterBy } = props;
-    const isReadOnly = !queryBuilderState.isQuerySupported;
     const filteredParameterStates =
       queryBuilderState.parametersState.parameterStates.filter((p) =>
         filterBy ? filterBy(p.parameter) : true,
@@ -197,7 +287,7 @@ export const VariableSelector = observer(
             <VariableViewer
               key={pState.uuid}
               variable={pState.parameter}
-              isReadOnly={isReadOnly}
+              isReadOnly={true}
               queryBuilderState={queryBuilderState}
             />
           ))}
@@ -208,9 +298,15 @@ export const VariableSelector = observer(
               <VariableViewer
                 key={constantState.uuid}
                 variable={constantState.variable}
-                constantValue={constantState.value}
+                value={{
+                  val:
+                    constantState instanceof
+                    QueryBuilderSimpleConstantExpressionState
+                      ? constantState.value
+                      : undefined,
+                }}
                 queryBuilderState={queryBuilderState}
-                isReadOnly={isReadOnly}
+                isReadOnly={true}
               />
             ))}
           </PanelFormListItems>

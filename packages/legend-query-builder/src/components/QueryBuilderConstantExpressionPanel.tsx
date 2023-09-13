@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import {
   BlankPanelPlaceholder,
+  clsx,
   CustomSelectorInput,
   Dialog,
   InfoCircleIcon,
@@ -41,25 +42,30 @@ import {
   Multiplicity,
   isValidIdentifier,
 } from '@finos/legend-graph';
-import { generateEnumerableNameFromToken } from '@finos/legend-shared';
+import {
+  debounce,
+  generateEnumerableNameFromToken,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { DEFAULT_CONSTANT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type QueryBuilderConstantExpressionState,
   QueryBuilderSimpleConstantExpressionState,
+  QueryBuilderCalculatedConstantExpressionState,
 } from '../stores/QueryBuilderConstantsState.js';
 import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEditorHelper.js';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
-import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
+import { LambdaEditor_PopUp } from './shared/LambdaEditor.js';
+import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
-const QueryBuilderConstantExpressionEditor = observer(
+const QueryBuilderSimpleConstantExpressionEditor = observer(
   (props: { constantState: QueryBuilderSimpleConstantExpressionState }) => {
     const { constantState } = props;
     const queryBuilderState = constantState.queryBuilderState;
@@ -208,6 +214,35 @@ const QueryBuilderConstantExpressionEditor = observer(
   },
 );
 
+const QuerryBuilderCalculatedConstantExpressionEditor = observer(
+  (props: { constantState: QueryBuilderCalculatedConstantExpressionState }) => {
+    const { constantState } = props;
+    const queryBuilderState = constantState.queryBuilderState;
+    const lambdaState = constantState.lambdaState;
+    const closePopUp = (): void =>
+      queryBuilderState.constantState.setSelectedConstant(undefined);
+    const debouncedTransformStringToLambda = useMemo(
+      () =>
+        debounce(() => lambdaState.convertLambdaGrammarStringToObject(), 1000),
+      [lambdaState],
+    );
+    const canDrop = true;
+    return (
+      <>
+        <div className="lambda-editor" />
+        <LambdaEditor_PopUp
+          title={`Edit Constant ${constantState.variable.name}`}
+          className={clsx({ 'lambda-editor--dnd-match': canDrop })}
+          disabled={false}
+          lambdaEditorState={lambdaState}
+          transformStringToLambda={debouncedTransformStringToLambda}
+          onClose={closePopUp}
+        />
+      </>
+    );
+  },
+);
+
 export const QueryBuilderConstantExpressionPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -248,9 +283,40 @@ export const QueryBuilderConstantExpressionPanel = observer(
       val: QueryBuilderConstantExpressionState,
     ): React.ReactNode => {
       if (val instanceof QueryBuilderSimpleConstantExpressionState) {
-        return <QueryBuilderConstantExpressionEditor constantState={val} />;
+        return (
+          <QueryBuilderSimpleConstantExpressionEditor constantState={val} />
+        );
+      } else if (val instanceof QueryBuilderCalculatedConstantExpressionState) {
+        return (
+          <QuerryBuilderCalculatedConstantExpressionEditor
+            constantState={val}
+          />
+        );
       }
       return null;
+    };
+    const getExtraContextMenu = (
+      val: QueryBuilderConstantExpressionState,
+    ):
+      | {
+          key: string;
+          label: string;
+          handler: () => void;
+        }[]
+      | undefined => {
+      if (val instanceof QueryBuilderSimpleConstantExpressionState) {
+        return [
+          {
+            key: 'convert-to-derivation',
+            label: 'Convert To Derivation',
+            handler: () =>
+              constantState.queryBuilderState.constantState.convertToCalculated(
+                val,
+              ),
+          },
+        ];
+      }
+      return undefined;
     };
 
     return (
@@ -290,13 +356,20 @@ export const QueryBuilderConstantExpressionPanel = observer(
                   key={constState.uuid}
                   queryBuilderState={queryBuilderState}
                   variable={constState.variable}
-                  constantValue={constState.value}
+                  value={{
+                    val:
+                      constState instanceof
+                      QueryBuilderSimpleConstantExpressionState
+                        ? constState.value
+                        : undefined,
+                  }}
                   actions={{
                     editVariable: () =>
                       constantState.setSelectedConstant(constState),
                     deleteVariable: () =>
                       constantState.removeConstant(constState),
                   }}
+                  extraContextMenuActions={getExtraContextMenu(constState)}
                   isReadOnly={isReadOnly}
                 />
               ))}

@@ -17,6 +17,7 @@
 export enum QUERY_BUILDER_SOURCE_ID_LABEL {
   QUERY_BUILDER = 'query-builder',
   PROJECTION = 'projection',
+  CONSTANT = 'constant',
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
