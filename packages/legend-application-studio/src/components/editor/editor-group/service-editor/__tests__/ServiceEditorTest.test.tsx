@@ -41,6 +41,7 @@ import { ServiceEditorState } from '../../../../../stores/editor/editor-state/el
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 
 test(integrationTest('Service Multi Execution Editor'), async () => {
   const MOCK__editorStore = TEST__provideMockedEditorStore();
@@ -99,7 +100,12 @@ test(integrationTest('Service Multi Execution Editor'), async () => {
 });
 
 const pluginManager = LegendStudioPluginManager.create();
-pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
+pluginManager
+  .usePresets([
+    new QueryBuilder_GraphManagerPreset(),
+    new Core_GraphManagerPreset(),
+  ])
+  .install();
 
 test(
   integrationTest('Test Enternal Format Service Test Parameter Setup'),
@@ -152,11 +158,9 @@ test(
     const secondPair = guaranteeNonNullable(
       guaranteeNonNullable(contentTypeParmPairs)[1],
     );
-    // it's somehow undefined
-    // expect(firstPair.contentType).toBe('application/x.flatdata');
+    expect(firstPair.contentType).toBe('application/x.flatdata');
     expect(firstPair.param).toBe('data');
-    // it's somehow undefined
-    // expect(secondPair.contentType).toBe('application/x.flatdata');
+    expect(secondPair.contentType).toBe('application/x.flatdata');
     expect(secondPair.param).toBe('data1');
     fireEvent.click(getByText(serviceTestEditor, 'Setup'));
     await waitFor(() =>
@@ -223,11 +227,10 @@ test(
       .getCurrentEditorState(ServiceEditorState)
       .testableState.selectedSuiteState?.testStates[0]?.setupState.getContentTypeWithParamFromQuery();
     expect(contentTypeParmPairsForByte).toHaveLength(1);
-    // it's somehow undefined
-    // expect(
-    //   guaranteeNonNullable(guaranteeNonNullable(contentTypeParmPairsForByte)[0])
-    //     .contentType,
-    // ).toBe('application/x.flatdata');
+    expect(
+      guaranteeNonNullable(guaranteeNonNullable(contentTypeParmPairsForByte)[0])
+        .contentType,
+    ).toBe('application/x.flatdata');
 
     //Test showing actual string as value for byte type
     await waitFor(() =>
