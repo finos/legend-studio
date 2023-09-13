@@ -19,13 +19,11 @@ import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_H
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class V1_IdentityResolution implements Hashable {
-  modelClass!: string;
   resolutionQueries: V1_ResolutionQuery[] = [];
 
   get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.IDENTITY_RESOLUTION,
-      this.modelClass,
       hashArray(this.resolutionQueries),
     ]);
   }

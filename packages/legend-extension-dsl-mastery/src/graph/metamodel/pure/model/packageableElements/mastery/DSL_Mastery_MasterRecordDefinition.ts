@@ -30,6 +30,7 @@ export class MasterRecordDefinition
 {
   modelClass!: string;
   identityResolution!: IdentityResolution;
+  postCurationEnrichmentService?: string | undefined;
   precedenceRules: PrecedenceRule[] | undefined;
   sources: RecordSource[] = [];
 
@@ -40,6 +41,7 @@ export class MasterRecordDefinition
       this.identityResolution,
       hashArray(this.sources),
       this.precedenceRules ? hashArray(this.precedenceRules) : '',
+      this.postCurationEnrichmentService ?? '',
     ]);
   }
 

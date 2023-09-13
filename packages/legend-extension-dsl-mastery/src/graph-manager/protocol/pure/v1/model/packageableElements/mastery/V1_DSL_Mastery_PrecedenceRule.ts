@@ -20,6 +20,18 @@ import type { V1_PropertyPath } from './V1_DSL_Mastery_PropertyPath.js';
 import type { V1_RawLambda } from '@finos/legend-graph';
 import type { V1_RuleScope } from './V1_DSL_Mastery_RuleScope.js';
 
+export enum V1_RuleAction {
+  BLOCK = 'Block',
+  OVERWRITE = 'Overwrite',
+}
+
+export enum V1_RuleType {
+  SOURCE_PRECEDENCE_RULE = 'sourcePrecedenceRule',
+  CONDITIONAL_RULE = 'conditionalRule',
+  CREATE_RULE = 'createRule',
+  DELETE_RULE = 'deleteRule',
+}
+
 export abstract class V1_PrecedenceRule implements Hashable {
   _type!: string;
   paths: V1_PropertyPath[] = [];
@@ -78,16 +90,4 @@ export class V1_SourcePrecedenceRule extends V1_UpdateRule {
       super.hashCode,
     ]);
   }
-}
-
-export enum V1_RuleAction {
-  BLOCK = 'Block',
-  OVERWRITE = 'Overwrite',
-}
-
-export enum V1_RuleType {
-  SOURCE_PRECEDENCE_RULE = 'sourcePrecedenceRule',
-  CONDITIONAL_RULE = 'conditionalRule',
-  CREATE_RULE = 'createRule',
-  DELETE_RULE = 'deleteRule',
 }
