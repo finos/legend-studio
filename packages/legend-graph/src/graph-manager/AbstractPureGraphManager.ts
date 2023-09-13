@@ -322,6 +322,16 @@ export abstract class AbstractPureGraphManager {
     pretty?: boolean,
   ): Promise<Map<string, string>>;
 
+  abstract valueSpecificationToPureCode(
+    valSpec: PlainObject<ValueSpecification>,
+    pretty?: boolean,
+  ): Promise<string>;
+
+  abstract pureCodeToValueSpecification(
+    valSpec: string,
+    pretty?: boolean,
+  ): Promise<PlainObject<ValueSpecification>>;
+
   abstract pureCodeToValueSpecifications(
     lambdas: Map<string, string>,
     graph: PureModel,

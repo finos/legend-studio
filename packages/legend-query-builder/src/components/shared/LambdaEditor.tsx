@@ -419,8 +419,9 @@ const LambdaEditor_Inner = observer(
   },
 );
 
-const LambdaEditor_PopUp = observer(
+export const LambdaEditor_PopUp = observer(
   (props: {
+    title?: string | undefined;
     className?: string | undefined;
     disabled: boolean;
     lambdaEditorState: LambdaEditorState;
@@ -432,6 +433,7 @@ const LambdaEditor_PopUp = observer(
       disabled,
       lambdaEditorState,
       transformStringToLambda,
+      title,
       onClose,
     } = props;
     const applicationStore = useApplicationStore();
@@ -607,7 +609,7 @@ const LambdaEditor_PopUp = observer(
           )}
         >
           <ModalHeader>
-            <ModalTitle title="Edit Lambda" />
+            <ModalTitle title={title ?? 'Edit Lambda'} />
             {lambdaEditorState.parserError && (
               <div className="modal__title__error-badge">
                 Failed to parse lambda

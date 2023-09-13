@@ -66,6 +66,17 @@
 }
 
 .query-builder__variables {
+  &__variable__context-menu {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+
+  &__variable--selected-from-context-menu {
+    background: var(--color-dark-blue-shade-100);
+  }
+
   .panel__header {
     border-top: 0.1rem solid var(--color-dark-grey-200);
   }
@@ -226,6 +237,15 @@
     text-decoration: underline;
     text-decoration-style: dotted;
     text-underline-position: under;
+  }
+
+  &__value--icon {
+    display: flex;
+    align-items: center;
+
+    svg {
+      font-size: 1.2rem;
+    }
   }
 }
 

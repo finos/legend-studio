@@ -266,7 +266,6 @@ export const QueryBuilderParametersPanel = observer(
         parmaterState.mockParameterValue();
       }
     };
-
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS}

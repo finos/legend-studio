@@ -152,7 +152,7 @@ const processLetExpression = (
     constantExpression = new QueryBuilderCalculatedConstantExpressionState(
       queryBuilderState,
       varExp,
-      rightSide,
+      rightSide.content,
     );
   } else {
     constantExpression = new QueryBuilderSimpleConstantExpressionState(

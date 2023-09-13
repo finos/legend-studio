@@ -69,6 +69,7 @@ import {
   TEST_DATA__graphFetchWithSerializationConfigWithNullableConfigProperties,
 } from './TEST_DATA__QueryBuilder_GraphFetch.js';
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
+import { TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables } from './TEST_DATA__QueryBuilder_ConstantExpression.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
 pluginManager
@@ -220,6 +221,11 @@ const cases: RoundtripTestCase[] = [
     'OlapGroupBy with simple string with rank operation and post filter()',
     olapGroupbyCtx,
     TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
+  ],
+  [
+    'Constant expression with multi string instance + calculated constants',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables,
   ],
   // externalize
   [
