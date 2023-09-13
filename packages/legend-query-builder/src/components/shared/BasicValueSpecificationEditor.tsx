@@ -873,7 +873,7 @@ const CollectionValueInstanceValueEditor = observer(
       >
         <div className="value-spec-editor__list-editor__preview">
           {previewText}
-        </div>{' '}
+        </div>
         <button className="value-spec-editor__list-editor__edit-icon">
           <PencilIcon />
         </button>
