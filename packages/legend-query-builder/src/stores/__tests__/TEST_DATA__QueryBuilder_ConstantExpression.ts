@@ -312,7 +312,7 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
           },
           {
             _type: 'string',
-            value: 'a',
+            value: 'valueForConstantA',
           },
         ],
       },
@@ -326,7 +326,7 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
           },
           {
             _type: 'string',
-            value: 'b',
+            value: 'valueForConstantB',
           },
         ],
       },
@@ -441,13 +441,13 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
                     parameters: [
                       {
                         _type: 'property',
+                        property: 'age',
                         parameters: [
                           {
                             _type: 'var',
                             name: 'x',
                           },
                         ],
-                        property: 'age',
                       },
                       {
                         _type: 'integer',
@@ -477,13 +477,13 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
                 body: [
                   {
                     _type: 'property',
+                    property: 'firstName',
                     parameters: [
                       {
                         _type: 'var',
                         name: 'x',
                       },
                     ],
-                    property: 'firstName',
                   },
                 ],
                 parameters: [
@@ -498,13 +498,13 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
                 body: [
                   {
                     _type: 'property',
+                    property: 'lastName',
                     parameters: [
                       {
                         _type: 'var',
                         name: 'x',
                       },
                     ],
-                    property: 'lastName',
                   },
                 ],
                 parameters: [
@@ -536,5 +536,15 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
         ],
       },
     ],
-    parameters: [],
+    parameters: [
+      {
+        _type: 'var',
+        name: 'param1',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        class: 'String',
+      },
+    ],
   };

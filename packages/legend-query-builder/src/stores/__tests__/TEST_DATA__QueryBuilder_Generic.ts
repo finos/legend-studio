@@ -2776,6 +2776,161 @@ export const TEST_DATA__simpeDateParameters = (
   ],
 });
 
+export const TEST_DATA__simpleProjectionWithConstantsAndParameters = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'c1',
+        },
+        {
+          _type: 'string',
+          value: 'value1',
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'complex',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'boolean',
+              value: true,
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 2,
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'firstName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'lastName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'Edited First Name',
+            },
+            {
+              _type: 'string',
+              value: 'Last Name',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'String',
+      multiplicity: {
+        lowerBound: 0,
+        upperBound: 1,
+      },
+      name: 'var_1',
+    },
+  ],
+};
+
 export const TEST_DATA__simpeDateParametersForUnsupportedQuery = {
   _type: 'lambda',
   body: [
