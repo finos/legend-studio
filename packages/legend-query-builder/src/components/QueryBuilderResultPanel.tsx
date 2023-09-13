@@ -480,8 +480,8 @@ const QueryResultCellRenderer = observer(
     const resultState = params.resultState;
     const tdsExecutionResult = params.tdsExecutionResult;
 
-    const cellValue = params.value as string;
     const columnName = params.column?.getColId() ?? '';
+    const cellValue = params.data[columnName] as string;
 
     const findCoordinatesFromResultValue = (
       colId: string,
