@@ -17,11 +17,13 @@
 import {
   type Type,
   type ValueSpecification,
-  type INTERNAL__UnknownValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
   observe_ValueSpecification,
   VariableExpression,
+  buildSourceInformationSourceId,
+  ParserError,
+  GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -31,34 +33,40 @@ import {
   IllegalStateError,
   uuid,
   assertErrorThrown,
+  type GeneratorFn,
+  type PlainObject,
+  LogEvent,
+  changeEntry,
+  assertTrue,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { buildDefaultInstanceValue } from './shared/ValueSpecificationEditorHelper.js';
+import {
+  buildDefaultEmptyStringRawLambda,
+  buildDefaultInstanceValue,
+} from './shared/ValueSpecificationEditorHelper.js';
 import { valueSpecification_setGenericType } from './shared/ValueSpecificationModifierHelper.js';
+import { LambdaEditorState } from './shared/LambdaEditorState.js';
+import { QUERY_BUILDER_SOURCE_ID_LABEL } from './QueryBuilderConfig.js';
 
 export abstract class QueryBuilderConstantExpressionState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
   readonly uuid = uuid();
   variable: VariableExpression;
-  value: ValueSpecification;
 
   constructor(
     queryBuilderState: QueryBuilderState,
     variable: VariableExpression,
-    value: ValueSpecification,
   ) {
     this.queryBuilderState = queryBuilderState;
     this.variable = variable;
-    this.value = value;
   }
 
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.CONSTANT_EXPRESSION_STATE,
       this.variable.name,
-      this.value,
     ]);
   }
 }
@@ -67,12 +75,14 @@ export class QueryBuilderSimpleConstantExpressionState
   extends QueryBuilderConstantExpressionState
   implements Hashable
 {
+  value: ValueSpecification;
+
   constructor(
     queryBuilderState: QueryBuilderState,
     variable: VariableExpression,
     value: ValueSpecification,
   ) {
-    super(queryBuilderState, variable, value);
+    super(queryBuilderState, variable);
     makeObservable(this, {
       variable: observable,
       value: observable,
@@ -129,24 +139,126 @@ export class QueryBuilderSimpleConstantExpressionState
       );
     }
   }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.CONSTANT_EXPRESSION_STATE,
+      this.variable.name,
+      this.value,
+    ]);
+  }
+}
+
+export class QueryBuilderConstantLambdaEditorState extends LambdaEditorState {
+  readonly queryBuilderState: QueryBuilderState;
+  calculatedState: QueryBuilderCalculatedConstantExpressionState;
+  constructor(calculatedState: QueryBuilderCalculatedConstantExpressionState) {
+    super('', '');
+    makeObservable(this, {
+      calculatedState: observable,
+      buildEmptyValueSpec: observable,
+    });
+    this.calculatedState = calculatedState;
+    this.queryBuilderState = calculatedState.queryBuilderState;
+  }
+
+  buildEmptyValueSpec(): PlainObject {
+    return this.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+      buildDefaultEmptyStringRawLambda(
+        this.queryBuilderState.graphManagerState,
+        this.queryBuilderState.observerContext,
+      ),
+    );
+  }
+
+  get lambdaId(): string {
+    return buildSourceInformationSourceId([
+      // TODO: to be reworked
+      // See https://github.com/finos/legend-studio/issues/1168
+      QUERY_BUILDER_SOURCE_ID_LABEL.QUERY_BUILDER,
+      QUERY_BUILDER_SOURCE_ID_LABEL.CONSTANT,
+      this.calculatedState.uuid,
+    ]);
+  }
+
+  override *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
+    if (this.lambdaString) {
+      try {
+        const valSpec =
+          (yield this.queryBuilderState.graphManagerState.graphManager.pureCodeToValueSpecification(
+            this.fullLambdaString,
+          )) as PlainObject<ValueSpecification>;
+        this.setParserError(undefined);
+        this.calculatedState.setValue(valSpec);
+      } catch (error) {
+        assertErrorThrown(error);
+        if (error instanceof ParserError) {
+          this.setParserError(error);
+        }
+        this.queryBuilderState.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+          error,
+        );
+      }
+    } else {
+      this.clearErrors();
+      this.calculatedState.setValue(this.buildEmptyValueSpec());
+    }
+  }
+  override *convertLambdaObjectToGrammarString(
+    options?:
+      | {
+          pretty?: boolean | undefined;
+          preserveCompilationError?: boolean | undefined;
+        }
+      | undefined,
+  ): GeneratorFn<void> {
+    try {
+      const value = this.calculatedState.value;
+      const grammarText =
+        (yield this.queryBuilderState.graphManagerState.graphManager.valueSpecificationToPureCode(
+          value,
+          options?.pretty,
+        )) as string;
+      this.setLambdaString(grammarText);
+      this.clearErrors({
+        preserveCompilationError: options?.preserveCompilationError,
+      });
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+        error,
+      );
+    }
+  }
 }
 
 export class QueryBuilderCalculatedConstantExpressionState
   extends QueryBuilderConstantExpressionState
   implements Hashable
 {
-  declare value: INTERNAL__UnknownValueSpecification;
+  value: PlainObject;
+  lambdaState: QueryBuilderConstantLambdaEditorState;
 
   constructor(
     queryBuilderState: QueryBuilderState,
     variable: VariableExpression,
-    value: INTERNAL__UnknownValueSpecification,
+    value: PlainObject,
   ) {
-    super(queryBuilderState, variable, value);
+    super(queryBuilderState, variable);
     makeObservable(this, {
       variable: observable,
+      lambdaState: observable,
       value: observable,
+      setValue: action,
     });
+    this.value = value;
+    this.lambdaState = new QueryBuilderConstantLambdaEditorState(this);
+  }
+
+  setValue(val: PlainObject): void {
+    this.value = val;
   }
 }
 
@@ -167,6 +279,7 @@ export class QueryBuilderConstantsState implements Hashable {
       removeConstant: action,
       setShowConstantPanel: action,
       setSelectedConstant: action,
+      convertToCalculated: action,
     });
   }
 
@@ -199,6 +312,29 @@ export class QueryBuilderConstantsState implements Hashable {
       );
     }
     return false;
+  }
+
+  convertToCalculated(val: QueryBuilderSimpleConstantExpressionState): void {
+    try {
+      const content =
+        this.queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
+          val.value,
+        );
+      const constantState = new QueryBuilderCalculatedConstantExpressionState(
+        this.queryBuilderState,
+        val.variable,
+        content,
+      );
+      assertTrue(
+        changeEntry(this.constants, val, constantState),
+        'Unable to convert to calculated constant',
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.notificationService.notifyError(
+        error,
+      );
+    }
   }
 
   get hashCode(): string {

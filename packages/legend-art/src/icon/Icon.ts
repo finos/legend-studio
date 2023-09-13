@@ -157,6 +157,7 @@ export const BrainIcon = FA.FaBrain;
 export const DocumentationIcon = FA.FaBookOpen;
 export const LevelDownIcon = FA.FaLevelDownAlt; // to be reviewed/combined
 export const CalendarIcon = FA.FaRegCalendarAlt;
+export const CalculatorIcon = FA.FaCalculator;
 
 const GI = ReactIcons.GI;
 export const WaterDropIcon = GI.GiWaterDrop;

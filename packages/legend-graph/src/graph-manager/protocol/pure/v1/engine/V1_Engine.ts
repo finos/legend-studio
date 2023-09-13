@@ -405,6 +405,17 @@ export class V1_Engine {
     );
   }
 
+  async transformValueSpecToCode(
+    input: PlainObject<V1_ValueSpecification>,
+    pretty: boolean,
+  ): Promise<string> {
+    const code = await this.engineServerClient.JSONToGrammar_valueSpecification(
+      input,
+      pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
+    );
+    return code;
+  }
+
   async transformCodeToValueSpeces(
     input: Record<string, V1_GrammarParserBatchInputEntry>,
   ): Promise<Map<string, PlainObject>> {
@@ -420,6 +431,29 @@ export class V1_Engine {
       });
     }
     return finalResults;
+  }
+
+  async transformCodeToValueSpec(
+    input: string,
+  ): Promise<PlainObject<V1_ValueSpecification>> {
+    try {
+      const batchResults =
+        await this.engineServerClient.grammarToJSON_valueSpecification(input);
+      return batchResults;
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   async transformLambdaToCode(

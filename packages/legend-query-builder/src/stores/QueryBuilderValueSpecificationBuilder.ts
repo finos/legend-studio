@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  UnsupportedOperationError,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
 import {
   type Class,
+  type ValueSpecification,
   Multiplicity,
   getMilestoneTemporalStereotype,
   extractElementNameFromPath,
@@ -32,6 +37,7 @@ import {
   PrimitiveType,
   SUPPORTED_FUNCTIONS,
   RuntimePointer,
+  INTERNAL__UnknownValueSpecification,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
@@ -40,7 +46,11 @@ import type { QueryBuilderFetchStructureState } from './fetch-structure/QueryBui
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
 import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValueSpecificationBuilder.js';
 import { buildExecutionQueryFromLambdaFunction } from './shared/LambdaParameterState.js';
-import { type QueryBuilderConstantExpressionState } from './QueryBuilderConstantsState.js';
+import {
+  QueryBuilderSimpleConstantExpressionState,
+  type QueryBuilderConstantExpressionState,
+  QueryBuilderCalculatedConstantExpressionState,
+} from './QueryBuilderConstantsState.js';
 import {
   QueryBuilderEmbeddedFromExecutionContextState,
   type QueryBuilderExecutionContextState,
@@ -84,7 +94,6 @@ const buildLetExpression = (
   constantExpressionState: QueryBuilderConstantExpressionState,
 ): SimpleFunctionExpression => {
   const varName = constantExpressionState.variable.name;
-  const value = constantExpressionState.value;
   const leftSide = new PrimitiveInstanceValue(
     GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
   );
@@ -92,6 +101,25 @@ const buildLetExpression = (
   const letFunc = new SimpleFunctionExpression(
     extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
   );
+  let value: ValueSpecification;
+  if (
+    constantExpressionState instanceof QueryBuilderSimpleConstantExpressionState
+  ) {
+    value = constantExpressionState.value;
+  } else if (
+    constantExpressionState instanceof
+    QueryBuilderCalculatedConstantExpressionState
+  ) {
+    value = new INTERNAL__UnknownValueSpecification(
+      constantExpressionState.value,
+    );
+  } else {
+    throw new UnsupportedOperationError(
+      `Can't build let() expression: unsupported constant state`,
+      constantExpressionState,
+    );
+  }
+
   letFunc.parametersValues = [leftSide, value];
   return letFunc;
 };
