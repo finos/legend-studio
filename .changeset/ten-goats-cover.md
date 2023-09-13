@@ -1,5 +1,0 @@
----
-'@finos/legend-query-builder': patch
-'@finos/legend-graph': patch
-'@finos/legend-art': patch
----

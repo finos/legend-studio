@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.80
+
+### Patch Changes
+
+- [#2573](https://github.com/finos/legend-studio/pull/2573) [`a9a99c18d`](https://github.com/finos/legend-studio/commit/a9a99c18dccdd925062b7fb642969c1ff1764dfe) ([@arikpamnani](https://github.com/arikpamnani)) - Adding support for mastery acquisition specification.
+
 ## 3.0.79
 
 ## 3.0.78
