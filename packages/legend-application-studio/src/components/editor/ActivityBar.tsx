@@ -89,7 +89,7 @@ export const ActivityBarMenu: React.FC = () => {
   const goToWorkspaceSetup = (): void =>
     applicationStore.navigationService.navigator.visitAddress(
       applicationStore.navigationService.navigator.generateAddress(
-        generateSetupRoute(undefined),
+        generateSetupRoute(undefined, undefined),
       ),
     );
   // help

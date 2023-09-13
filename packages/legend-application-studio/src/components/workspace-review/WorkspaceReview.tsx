@@ -87,7 +87,7 @@ const WorkspaceReviewStatusBar = observer(() => {
             onClick={(): void =>
               applicationStore.navigationService.navigator.visitAddress(
                 applicationStore.navigationService.navigator.generateAddress(
-                  generateSetupRoute(reviewStore.projectId),
+                  generateSetupRoute(reviewStore.projectId, undefined),
                 ),
               )
             }

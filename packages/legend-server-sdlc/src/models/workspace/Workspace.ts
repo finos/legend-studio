@@ -33,6 +33,8 @@ export class Workspace {
   userId?: string | undefined;
 
   accessType = WorkspaceAccessType.WORKSPACE;
+  // TODO: Add `SourceType` when SDLC starts returning this field
+  source?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Workspace, {

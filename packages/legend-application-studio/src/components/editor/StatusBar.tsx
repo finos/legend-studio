@@ -57,6 +57,9 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const workspaceType = params.groupWorkspaceId
     ? WorkspaceType.GROUP
     : WorkspaceType.USER;
+  const patchReleaseVersionId = params.patchReleaseVersionId
+    ? `patch / ${params.patchReleaseVersionId} / `
+    : '';
   const workspaceId = guaranteeNonNullable(
     params.groupWorkspaceId ?? params.workspaceId,
     `Workspace/group workspace ID is not provided`,
@@ -171,7 +174,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             onClick={(): void =>
               applicationStore.navigationService.navigator.visitAddress(
                 applicationStore.navigationService.navigator.generateAddress(
-                  generateSetupRoute(projectId),
+                  generateSetupRoute(projectId, undefined),
                 ),
               )
             }
@@ -191,6 +194,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               )
             }
           >
+            {patchReleaseVersionId}
             {workspaceId}
             {editorStore.localChangesState.hasUnpushedChanges ? '*' : ''}
           </button>

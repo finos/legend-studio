@@ -32,7 +32,7 @@ import {
 import type { EditorStore } from '../editor/EditorStore.js';
 import { ACTIVITY_MODE } from '../editor/EditorConfig.js';
 import type { Entity } from '@finos/legend-storage';
-import { Project, Review } from '@finos/legend-server-sdlc';
+import { Project, Review, type Patch } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
@@ -41,6 +41,7 @@ export class WorkspaceReviewStore {
 
   currentProjectId?: string | undefined;
   currentProject?: Project | undefined;
+  currentPatch?: Patch | undefined;
   currentReviewId?: string | undefined;
   currentReview?: Review | undefined;
   isFetchingCurrentReview = false;
@@ -54,6 +55,7 @@ export class WorkspaceReviewStore {
     makeObservable(this, {
       currentProjectId: observable,
       currentProject: observable,
+      currentPatch: observable,
       currentReviewId: observable,
       currentReview: observable,
       isFetchingCurrentReview: observable,
@@ -63,6 +65,7 @@ export class WorkspaceReviewStore {
       isCommittingReview: observable,
       isReopeningReview: observable,
       projectId: computed,
+      patchReleaseVersionId: computed,
       reviewId: computed,
       review: computed,
       setProjectIdAndReviewId: action,
@@ -82,6 +85,10 @@ export class WorkspaceReviewStore {
 
   get projectId(): string {
     return guaranteeNonNullable(this.currentProjectId, 'Project ID must exist');
+  }
+
+  get patchReleaseVersionId(): string | undefined {
+    return this.currentPatch?.patchReleaseVersionId.id;
   }
 
   get reviewId(): string {
@@ -131,10 +138,12 @@ export class WorkspaceReviewStore {
       const [fromEntities, toEntities] = (yield Promise.all([
         this.editorStore.sdlcServerClient.getReviewFromEntities(
           this.projectId,
+          this.patchReleaseVersionId,
           this.review.id,
         ),
         this.editorStore.sdlcServerClient.getReviewToEntities(
           this.projectId,
+          this.patchReleaseVersionId,
           this.review.id,
         ),
       ])) as [Entity[], Entity[]];
@@ -196,6 +205,7 @@ export class WorkspaceReviewStore {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getReview(
           this.projectId,
+          this.patchReleaseVersionId,
           this.reviewId,
         )) as PlainObject<Review>,
       );
@@ -217,6 +227,7 @@ export class WorkspaceReviewStore {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.approveReview(
           this.projectId,
+          this.patchReleaseVersionId,
           this.review.id,
         )) as PlainObject<Review>,
       );
@@ -238,6 +249,7 @@ export class WorkspaceReviewStore {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.commitReview(
           this.projectId,
+          this.patchReleaseVersionId,
           this.review.id,
           { message: `${this.review.title} [review]` },
         )) as PlainObject<Review>,
@@ -260,6 +272,7 @@ export class WorkspaceReviewStore {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.reopenReview(
           this.projectId,
+          this.patchReleaseVersionId,
           this.review.id,
         )) as PlainObject<Review>,
       );
@@ -281,6 +294,7 @@ export class WorkspaceReviewStore {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.closeReview(
           this.projectId,
+          this.patchReleaseVersionId,
           this.review.id,
         )) as PlainObject<Review>,
       );

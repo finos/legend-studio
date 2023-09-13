@@ -246,6 +246,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       yield flowResult(
         this.editorStore.sdlcState.fetchCurrentWorkspace(
           this.editorStore.sdlcState.activeProject.projectId,
+          this.editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
           this.editorStore.sdlcState.activeWorkspace.workspaceId,
           this.editorStore.sdlcState.activeWorkspace.workspaceType,
         ),

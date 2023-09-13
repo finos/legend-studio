@@ -115,7 +115,7 @@ const ProjectViewerStatusBar = observer(() => {
                 onClick={(): void =>
                   applicationStore.navigationService.navigator.visitAddress(
                     applicationStore.navigationService.navigator.generateAddress(
-                      generateSetupRoute(projectId),
+                      generateSetupRoute(projectId, undefined),
                     ),
                   )
                 }

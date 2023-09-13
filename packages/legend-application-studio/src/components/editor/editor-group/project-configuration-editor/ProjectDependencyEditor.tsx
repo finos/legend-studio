@@ -97,7 +97,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 
-interface VersionOption {
+export interface VersionOption {
   label: string;
   value: string;
 }

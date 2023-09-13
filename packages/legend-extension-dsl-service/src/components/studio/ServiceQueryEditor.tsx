@@ -393,6 +393,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
       applicationStore.navigationService.navigator.generateAddress(
         generateEditorRoute(
           editorStore.sdlcState.activeProject.projectId,
+          editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
           editorStore.sdlcState.activeWorkspace.workspaceId,
           WorkspaceType.GROUP,
         ),

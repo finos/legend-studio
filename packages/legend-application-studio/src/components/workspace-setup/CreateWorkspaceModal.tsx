@@ -25,13 +25,22 @@ import {
   PanelDivider,
   PanelForm,
   PanelFormBooleanField,
+  CustomSelectorInput,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import { type Project, WorkspaceType } from '@finos/legend-server-sdlc';
+import { type Project, WorkspaceType, Patch } from '@finos/legend-server-sdlc';
 import { useApplicationStore } from '@finos/legend-application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/LegendStudioDocumentation.js';
-import { useWorkspaceSetupStore } from './WorkspaceSetup.js';
+import {
+  DEFAULT_WORKSPACE_SOURCE,
+  useWorkspaceSetupStore,
+} from './WorkspaceSetup.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
+
+export interface PatchOption {
+  label: string;
+  value: Patch | string;
+}
 
 export const CreateWorkspaceModal = observer(
   (props: { selectedProject: Project }) => {
@@ -41,6 +50,35 @@ export const CreateWorkspaceModal = observer(
     const workspaceNameInputRef = useRef<HTMLInputElement>(null);
     const [workspaceName, setWorkspaceName] = useState('');
     const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(true);
+    const [patchOptions] = useState<PatchOption[]>(
+      [
+        {
+          label: DEFAULT_WORKSPACE_SOURCE,
+          value: DEFAULT_WORKSPACE_SOURCE,
+        } as PatchOption,
+      ].concat(
+        setupStore.patches.map((p) => ({
+          label: `patch/${p.patchReleaseVersionId.id}`,
+          value: p,
+        })),
+      ),
+    );
+    const [selectedPatchOption, setSelectedPatchOption] =
+      useState<PatchOption | null>({
+        label: DEFAULT_WORKSPACE_SOURCE,
+        value: DEFAULT_WORKSPACE_SOURCE,
+      });
+
+    const onPatchOptionChange = (val: PatchOption | null): void => {
+      if (
+        (val !== null || selectedPatchOption !== null) &&
+        (!val ||
+          !selectedPatchOption ||
+          val.value !== selectedPatchOption.value)
+      ) {
+        setSelectedPatchOption(val);
+      }
+    };
 
     const workspaceAlreadyExists = Boolean(
       setupStore.workspaces.find(
@@ -49,7 +87,12 @@ export const CreateWorkspaceModal = observer(
           ((workspace.workspaceType === WorkspaceType.GROUP &&
             isGroupWorkspace) ||
             (workspace.workspaceType === WorkspaceType.USER &&
-              !isGroupWorkspace)),
+              !isGroupWorkspace)) &&
+          ((!workspace.source &&
+            !(selectedPatchOption?.value instanceof Patch)) ||
+            (selectedPatchOption?.value instanceof Patch &&
+              workspace.source ===
+                selectedPatchOption.value.patchReleaseVersionId.id)),
       ),
     );
     const createWorkspace = (): void => {
@@ -60,6 +103,9 @@ export const CreateWorkspaceModal = observer(
         flowResult(
           setupStore.createWorkspace(
             selectedProject.projectId,
+            selectedPatchOption?.value instanceof Patch
+              ? selectedPatchOption.value.patchReleaseVersionId.id
+              : undefined,
             workspaceName,
             isGroupWorkspace ? WorkspaceType.GROUP : WorkspaceType.USER,
           ),
@@ -130,7 +176,20 @@ export const CreateWorkspaceModal = observer(
                     : ''
                 }
               />
-
+              <div className="workspace-setup__create-workspace-modal__form__workspace--source">
+                <div className="workspace-setup__create-workspace-modal__form__workspace--source__label">
+                  Workspace Source
+                </div>
+                <CustomSelectorInput
+                  className="workspace-setup__create-workspace-modal__form__workspace--source__selector"
+                  options={patchOptions}
+                  onChange={onPatchOptionChange}
+                  value={selectedPatchOption}
+                  isClearable={true}
+                  escapeClearsValue={true}
+                  darkMode={true}
+                />
+              </div>
               <PanelFormBooleanField
                 name="Group Workspace"
                 prompt="Group workspaces can be accessed by all users in the project"

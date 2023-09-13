@@ -331,6 +331,7 @@ export class WorkspaceUpdaterState {
       const baseReviewObj = getNullableFirstEntry(
         (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           {
             state: ReviewState.COMMITTED,
             revisionIds: [workspaceBaseRevision.id],
@@ -344,6 +345,7 @@ export class WorkspaceUpdaterState {
       this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = (
         (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.activeProject.projectId,
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
           {
             state: ReviewState.COMMITTED,
             since: baseReview

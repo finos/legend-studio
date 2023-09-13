@@ -31,6 +31,7 @@ export class ProjectConfigurationStatus {
 
 export const fetchProjectConfigurationStatus = async (
   projectId: string,
+  patchReleaseVersionId: string | undefined,
   applicationStore: GenericLegendApplicationStore,
   sdlcServerClient: SDLCServerClient,
 ): Promise<ProjectConfigurationStatus> => {
@@ -45,6 +46,7 @@ export const fetchProjectConfigurationStatus = async (
       const review = Review.serialization.fromJson(
         await sdlcServerClient.getReview(
           projectId,
+          patchReleaseVersionId,
           guaranteeNonNullable(status.reviewIds[0]),
         ),
       );

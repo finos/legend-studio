@@ -466,6 +466,7 @@ export class QueryProductionizerStore {
       this.currentProjectConfigurationStatus =
         (yield fetchProjectConfigurationStatus(
           project.projectId,
+          undefined,
           this.applicationStore,
           this.sdlcServerClient,
         )) as ProjectConfigurationStatus;
@@ -473,6 +474,7 @@ export class QueryProductionizerStore {
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           project.projectId,
+          undefined,
         )) as Workspace[]
       ).map((workspace) => workspace.workspaceId);
       this.groupWorkspaces = (
@@ -622,6 +624,7 @@ export class QueryProductionizerStore {
           workspace = Workspace.serialization.fromJson(
             await this.sdlcServerClient.createWorkspace(
               project.projectId,
+              undefined,
               this.workspaceName,
               WorkspaceType.GROUP,
             ),
@@ -692,6 +695,7 @@ export class QueryProductionizerStore {
                       this.applicationStore.navigationService.navigator.goToLocation(
                         generateEditorRoute(
                           project.projectId,
+                          undefined,
                           this.workspaceName,
                           WorkspaceType.GROUP,
                         ),
@@ -722,6 +726,7 @@ export class QueryProductionizerStore {
                       this.applicationStore.navigationService.navigator.goToLocation(
                         generateEditorRoute(
                           project.projectId,
+                          undefined,
                           this.workspaceName,
                           WorkspaceType.GROUP,
                         ),

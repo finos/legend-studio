@@ -32,6 +32,7 @@ import {
   Project,
   Review,
   Workspace,
+  Patch,
 } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import {
@@ -63,11 +64,15 @@ export class WorkspaceSetupStore {
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
   showCreateProjectModal = false;
 
+  patches: Patch[] = [];
+  loadPatchesState = ActionState.create();
+
   workspaces: Workspace[] = [];
   currentWorkspace?: Workspace | undefined;
   loadWorkspacesState = ActionState.create();
   createWorkspaceState = ActionState.create();
   showCreateWorkspaceModal = false;
+  showAdvancedWorkspaceFilterOptions = false;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -81,9 +86,11 @@ export class WorkspaceSetupStore {
       showCreateProjectModal: observable,
       workspaces: observable,
       currentWorkspace: observable,
+      showAdvancedWorkspaceFilterOptions: observable,
       showCreateWorkspaceModal: observable,
       setShowCreateProjectModal: action,
       setShowCreateWorkspaceModal: action,
+      setShowAdvancedWorkspaceFilterOptions: action,
       setImportProjectSuccessReport: action,
       changeWorkspace: action,
       resetProject: action,
@@ -108,6 +115,10 @@ export class WorkspaceSetupStore {
     this.showCreateWorkspaceModal = val;
   }
 
+  setShowAdvancedWorkspaceFilterOptions(val: boolean): void {
+    this.showAdvancedWorkspaceFilterOptions = val;
+  }
+
   setImportProjectSuccessReport(
     importProjectSuccessReport: ImportProjectSuccessReport | undefined,
   ): void {
@@ -116,10 +127,11 @@ export class WorkspaceSetupStore {
 
   resetProject(): void {
     this.currentProject = undefined;
+    this.patches = [];
     this.workspaces = [];
     this.currentWorkspace = undefined;
     this.applicationStore.navigationService.navigator.updateCurrentLocation(
-      generateSetupRoute(undefined, undefined, undefined),
+      generateSetupRoute(undefined, undefined, undefined, undefined),
     );
     this.currentProjectConfigurationStatus = undefined;
   }
@@ -128,7 +140,12 @@ export class WorkspaceSetupStore {
     this.currentWorkspace = undefined;
     if (this.currentProject) {
       this.applicationStore.navigationService.navigator.updateCurrentLocation(
-        generateSetupRoute(this.currentProject.projectId, undefined, undefined),
+        generateSetupRoute(
+          this.currentProject.projectId,
+          undefined,
+          undefined,
+          undefined,
+        ),
       );
     }
   }
@@ -157,7 +174,7 @@ export class WorkspaceSetupStore {
           );
         } catch {
           this.applicationStore.navigationService.navigator.updateCurrentLocation(
-            generateSetupRoute(undefined),
+            generateSetupRoute(undefined, undefined),
           );
           this.initState.pass();
           return;
@@ -221,12 +238,30 @@ export class WorkspaceSetupStore {
   ): GeneratorFn<void> {
     this.currentProject = project;
     this.currentProjectConfigurationStatus = undefined;
-    this.loadWorkspacesState.inProgress();
+    this.loadPatchesState.inProgress();
+    try {
+      this.patches = (
+        (yield this.sdlcServerClient.getPatches(
+          project.projectId,
+        )) as PlainObject<Patch>[]
+      ).map((v) => Patch.serialization.fromJson(v));
+      this.loadPatchesState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        error,
+      );
+      this.applicationStore.notificationService.notifyError(error);
+      this.loadPatchesState.fail();
+    }
 
+    this.loadWorkspacesState.inProgress();
     try {
       this.currentProjectConfigurationStatus =
         (yield fetchProjectConfigurationStatus(
           project.projectId,
+          undefined,
           this.applicationStore,
           this.sdlcServerClient,
         )) as ProjectConfigurationStatus;
@@ -234,6 +269,7 @@ export class WorkspaceSetupStore {
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           project.projectId,
+          undefined,
         )) as Workspace[]
       ).map((workspace) => workspace.workspaceId);
 
@@ -250,6 +286,30 @@ export class WorkspaceSetupStore {
             !workspacesInConflictResolutionIds.includes(workspace.workspaceId),
         );
 
+      for (const patch of this.patches) {
+        this.workspaces = this.workspaces.concat(
+          (
+            (yield this.sdlcServerClient.getWorkspaces(
+              project.projectId,
+              patch.patchReleaseVersionId.id,
+            )) as PlainObject<Workspace>[]
+          )
+            .map((v) => {
+              const w = Workspace.serialization.fromJson(v);
+              w.source = patch.patchReleaseVersionId.id;
+              return w;
+            })
+            .filter(
+              // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
+              // since that indicates bad state of the SDLC server
+              (workspace) =>
+                !workspacesInConflictResolutionIds.includes(
+                  workspace.workspaceId,
+                ),
+            ),
+        );
+      }
+
       if (workspaceInfo) {
         const matchingWorkspace = this.workspaces.find(
           (workspace) =>
@@ -260,16 +320,15 @@ export class WorkspaceSetupStore {
           this.changeWorkspace(matchingWorkspace);
         } else {
           this.applicationStore.navigationService.navigator.updateCurrentLocation(
-            generateSetupRoute(project.projectId),
+            generateSetupRoute(project.projectId, undefined),
           );
         }
       } else {
         this.currentWorkspace = undefined;
         this.applicationStore.navigationService.navigator.updateCurrentLocation(
-          generateSetupRoute(project.projectId),
+          generateSetupRoute(project.projectId, undefined),
         );
       }
-
       this.loadWorkspacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -292,6 +351,7 @@ export class WorkspaceSetupStore {
     this.applicationStore.navigationService.navigator.updateCurrentLocation(
       generateSetupRoute(
         this.currentProject.projectId,
+        workspace.source,
         workspace.workspaceId,
         workspace.workspaceType,
       ),
@@ -348,6 +408,7 @@ export class WorkspaceSetupStore {
       const importReview = Review.serialization.fromJson(
         (yield this.sdlcServerClient.getReview(
           report.project.projectId,
+          undefined,
           report.reviewId,
         )) as PlainObject<Review>,
       );
@@ -368,6 +429,7 @@ export class WorkspaceSetupStore {
 
   *createWorkspace(
     projectId: string,
+    patchReleaseVersionId: string | undefined,
     workspaceId: string,
     workspaceType: WorkspaceType,
   ): GeneratorFn<void> {
@@ -376,10 +438,12 @@ export class WorkspaceSetupStore {
       const newWorkspace = Workspace.serialization.fromJson(
         (yield this.sdlcServerClient.createWorkspace(
           projectId,
+          patchReleaseVersionId,
           workspaceId,
           workspaceType,
         )) as PlainObject<Workspace>,
       );
+      newWorkspace.source = patchReleaseVersionId;
 
       this.applicationStore.notificationService.notifySuccess(
         `Workspace '${newWorkspace.workspaceId}' is succesfully created`,
