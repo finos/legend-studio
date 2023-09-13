@@ -871,12 +871,9 @@ const CollectionValueInstanceValueEditor = observer(
         onClick={enableEdit}
         title="Click to edit"
       >
-        <input
-          className="value-spec-editor__list-editor__preview"
-          spellCheck={false}
-          value={previewText}
-          disabled={true}
-        />
+        <div className="value-spec-editor__list-editor__preview">
+          {previewText}
+        </div>
         <button className="value-spec-editor__list-editor__edit-icon">
           <PencilIcon />
         </button>

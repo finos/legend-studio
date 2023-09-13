@@ -650,19 +650,19 @@ test(
     await waitFor(() => getByText(filterPanel, 'is in'));
 
     //Should support linebreaked seperated values
-    fireEvent.click(getByDisplayValue(filterPanel, 'List(3): 1,2,3'));
+    fireEvent.click(getByText(filterPanel, 'List(3): 1,2,3'));
     const firstInputEl = getByDisplayValue(filterPanel, '1,2,3');
     fireEvent.change(firstInputEl, { target: { value: '5\n2\n8' } });
     fireEvent.keyDown(firstInputEl, { key: 'Enter' });
 
     //Should support comma seperated values
-    fireEvent.click(getByDisplayValue(filterPanel, 'List(3): 5,2,8'));
+    fireEvent.click(getByText(filterPanel, 'List(3): 5,2,8'));
     const secondInputEl = getByDisplayValue(filterPanel, '5,2,8');
     fireEvent.change(secondInputEl, { target: { value: '4,9,1' } });
     fireEvent.keyDown(secondInputEl, { key: 'Enter' });
 
     //Should support same actions in expanded window
-    fireEvent.click(getByDisplayValue(filterPanel, 'List(3): 4,9,1'));
+    fireEvent.click(getByText(filterPanel, 'List(3): 4,9,1'));
     const thirdInputEl = getByDisplayValue(filterPanel, '4,9,1');
     fireEvent.change(thirdInputEl, { target: { value: '0\n1\n' } });
     fireEvent.keyDown(thirdInputEl, { key: 'Enter' });
@@ -673,7 +673,7 @@ test(
       (filterConditionValue.values[1] as PrimitiveInstanceValue).values[0],
     ).toEqual(1);
     expect(
-      await waitFor(() => getByDisplayValue(filterPanel, 'List(2): 0,1')),
+      await waitFor(() => getByText(filterPanel, 'List(2): 0,1')),
     ).not.toBeNull();
   },
 );

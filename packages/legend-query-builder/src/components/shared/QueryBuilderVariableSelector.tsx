@@ -218,7 +218,9 @@ export const VariableViewer = observer(
                   })}
                 >
                   {constantValueString}
-                  {!constantValueString && <CalculatorIcon />}
+                  {!constantValueString && (
+                    <CalculatorIcon title="Calculated Constant" />
+                  )}
                 </div>
               ) : (
                 <div className="query-builder__variables__variable__type">
