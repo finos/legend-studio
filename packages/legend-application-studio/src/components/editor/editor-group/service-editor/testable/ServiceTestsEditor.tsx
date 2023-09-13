@@ -43,7 +43,6 @@ import {
   PlayIcon,
 } from '@finos/legend-art';
 import {
-  type Binding,
   type ValueSpecification,
   PrimitiveInstanceValue,
   PrimitiveType,
@@ -147,8 +146,8 @@ export const ExternalFormatParameterEditorModal = observer(
     isReadOnly: boolean;
     onClose: () => void;
     updateParamValue: (val: string) => void;
-    bindingParamPair: {
-      binding: Binding;
+    contentTypeParamPair: {
+      contentType: string;
       param: string;
     };
   }) => {
@@ -157,7 +156,7 @@ export const ExternalFormatParameterEditorModal = observer(
       isReadOnly,
       onClose,
       updateParamValue,
-      bindingParamPair,
+      contentTypeParamPair,
     } = props;
     const paramValue =
       paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
@@ -190,7 +189,7 @@ export const ExternalFormatParameterEditorModal = observer(
                   updateInput={updateParamValue}
                   isReadOnly={isReadOnly}
                   language={
-                    bindingParamPair.binding.contentType ===
+                    contentTypeParamPair.contentType ===
                     ContentType.APPLICATION_JSON.toString()
                       ? CODE_EDITOR_LANGUAGE.JSON
                       : CODE_EDITOR_LANGUAGE.TEXT
@@ -215,21 +214,21 @@ const ServiceTestParameterEditor = observer(
     isReadOnly: boolean;
     paramState: ServiceValueSpecificationTestParameterState;
     serviceTestState: ServiceTestState;
-    bindingParamPair:
+    contentTypeParamPair:
       | {
-          binding: Binding;
+          contentType: string;
           param: string;
         }
       | undefined;
   }) => {
-    const { serviceTestState, paramState, isReadOnly, bindingParamPair } =
+    const { serviceTestState, paramState, isReadOnly, contentTypeParamPair } =
       props;
     const [showPopUp, setShowPopUp] = useState(false);
     const setupState = serviceTestState.setupState;
     const paramIsRequired =
       paramState.varExpression.multiplicity.lowerBound > 0;
-    const type = bindingParamPair
-      ? bindingParamPair.binding.contentType
+    const type = contentTypeParamPair
+      ? contentTypeParamPair.contentType
       : paramState.varExpression.genericType?.value.rawType.name ?? 'unknown';
     const paramValue =
       paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
@@ -273,7 +272,7 @@ const ServiceTestParameterEditor = observer(
           </button>
         </div>
         <>
-          {bindingParamPair ? (
+          {contentTypeParamPair ? (
             <div className="service-test-editor__setup__parameter__code-editor">
               <textarea
                 className="panel__content__form__section__textarea value-spec-editor__input"
@@ -295,7 +294,7 @@ const ServiceTestParameterEditor = observer(
                   isReadOnly={isReadOnly}
                   onClose={closePopUp}
                   updateParamValue={updateParamValue}
-                  bindingParamPair={bindingParamPair}
+                  contentTypeParamPair={contentTypeParamPair}
                 />
               )}
               <div className="service-test-editor__setup__parameter__value__actions">
@@ -526,8 +525,8 @@ const ServiceTestSetupEditor = observer(
                         isReadOnly={isReadOnly}
                         paramState={paramState}
                         serviceTestState={serviceTestState}
-                        bindingParamPair={setupState
-                          .getBindingWithParamFromQuery()
+                        contentTypeParamPair={setupState
+                          .getContentTypeWithParamFromQuery()
                           .find(
                             (pair) =>
                               pair.param === paramState.parameterValue.name,

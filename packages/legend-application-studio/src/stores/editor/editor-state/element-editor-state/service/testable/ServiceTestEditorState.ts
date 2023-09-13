@@ -32,6 +32,8 @@ import {
   SimpleFunctionExpression,
   CollectionInstanceValue,
   resolveServiceQueryRawLambda,
+  PrimitiveInstanceValue,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
@@ -198,7 +200,7 @@ export class ServiceTestSetupState {
       addServiceTestAssertKeys: action,
       syncWithQuery: action,
       removeParamValueState: action,
-      getBindingWithParamFromQuery: action,
+      getContentTypeWithParamFromQuery: action,
     });
     this.parameterValueStates = this.buildParameterStates();
   }
@@ -239,8 +241,8 @@ export class ServiceTestSetupState {
     }));
   }
 
-  getBindingWithParamFromQuery(): {
-    binding: Binding;
+  getContentTypeWithParamFromQuery(): {
+    contentType: string;
     param: string;
   }[] {
     const query = resolveServiceQueryRawLambda(this.testState.service);
@@ -255,7 +257,7 @@ export class ServiceTestSetupState {
             this.editorStore.graphManagerState.graph,
           );
         if (valueSpec instanceof LambdaFunctionInstanceValue) {
-          return this.getBindingWithParamRecursively(
+          return this.getContentTypeWithParamRecursively(
             valueSpec.values[0]?.expressionSequence.find(
               (exp) =>
                 exp instanceof SimpleFunctionExpression &&
@@ -280,13 +282,15 @@ export class ServiceTestSetupState {
     return [];
   }
 
-  getBindingWithParamRecursively(expression: ValueSpecification | undefined): {
-    binding: Binding;
+  getContentTypeWithParamRecursively(
+    expression: ValueSpecification | undefined,
+  ): {
+    contentType: string;
     param: string;
   }[] {
     let currentExpression = expression;
     const res: {
-      binding: Binding;
+      contentType: string;
       param: string;
     }[] = [];
     // use if statement to safely scan service query without breaking the app
@@ -308,8 +312,25 @@ export class ServiceTestSetupState {
             currentExpression.parametersValues[2] instanceof VariableExpression
           ) {
             res.push({
-              binding: currentExpression.parametersValues[1].values[0]
-                .value as Binding,
+              contentType: (
+                currentExpression.parametersValues[1].values[0].value as Binding
+              ).contentType,
+              param: currentExpression.parametersValues[2].name,
+            });
+          } else if (
+            matchFunctionName(
+              currentExpression.functionName,
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_RUNTIME_WITH_MODEL_QUERY_CONNECTION,
+            ) &&
+            currentExpression.parametersValues[1] instanceof
+              PrimitiveInstanceValue &&
+            currentExpression.parametersValues[1].genericType.value.rawType ===
+              PrimitiveType.STRING &&
+            currentExpression.parametersValues[2] instanceof VariableExpression
+          ) {
+            res.push({
+              contentType: currentExpression.parametersValues[1]
+                .values[0] as string,
               param: currentExpression.parametersValues[2].name,
             });
           }
@@ -331,7 +352,7 @@ export class ServiceTestSetupState {
         const collection = currentExpression.parametersValues[0];
         if (collection instanceof CollectionInstanceValue) {
           collection.values
-            .map((v) => this.getBindingWithParamRecursively(v))
+            .map((v) => this.getContentTypeWithParamRecursively(v))
             .flat()
             .map((p) => res.push(p));
         }
