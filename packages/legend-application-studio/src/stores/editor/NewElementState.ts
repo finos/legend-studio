@@ -80,6 +80,7 @@ import {
   ConnectionPointer,
   IdentifiedConnection,
   generateIdentifiedConnectionId,
+  getMappingCompatibleRuntimes,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -104,6 +105,11 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
+
+export type RuntimeOption = {
+  label: string;
+  value: PackageableRuntime | undefined;
+};
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -471,21 +477,50 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
 export class NewServiceDriver extends NewElementDriver<Service> {
   mappingOption?: PackageableElementOption<Mapping> | undefined;
+  runtimeOption?: RuntimeOption | undefined;
   constructor(editorStore: EditorStore) {
     super(editorStore);
 
     makeObservable(this, {
       mappingOption: observable,
+      runtimeOption: observable,
       setMappingOption: action,
+      setRuntimeOption: action,
+      getCompatibleRuntimeOptions: action,
       isValid: computed,
       createElement: action,
     });
     this.mappingOption =
       editorStore.graphManagerState.usableMappings.map(buildElementOption)[0];
+    this.runtimeOption = this.getCompatibleRuntimeOptions(
+      this.mappingOption?.value,
+    )[0];
   }
 
   setMappingOption(val: PackageableElementOption<Mapping> | undefined): void {
     this.mappingOption = val;
+  }
+
+  setRuntimeOption(val: RuntimeOption | undefined): void {
+    this.runtimeOption = val;
+  }
+
+  getCompatibleRuntimeOptions(mapping: Mapping | undefined): RuntimeOption[] {
+    const availableRuntimes = mapping
+      ? getMappingCompatibleRuntimes(
+          mapping,
+          this.editorStore.graphManagerState.usableRuntimes,
+        )
+      : [];
+
+    return availableRuntimes.length > 0
+      ? availableRuntimes.map(buildElementOption)
+      : [
+          {
+            label: '(custom)',
+            value: undefined,
+          },
+        ];
   }
 
   get isValid(): boolean {
@@ -497,13 +532,9 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     const _mapping = mappingOption.value;
     const mapping = PackageableElementExplicitReference.create(_mapping);
     const service = new Service(name);
-    const runtimes = this.editorStore.graphManagerState.usableRuntimes;
-    const compatibleRuntimes = runtimes.filter((runtime) =>
-      runtime.runtimeValue.mappings.map((m) => m.value).includes(_mapping),
-    );
     let runtimeValue: Runtime;
-    if (compatibleRuntimes.length) {
-      runtimeValue = (compatibleRuntimes[0] as PackageableRuntime).runtimeValue;
+    if (this.runtimeOption?.value) {
+      runtimeValue = this.runtimeOption.value.runtimeValue;
     } else {
       const engineRuntime = new EngineRuntime();
       runtime_addMapping(engineRuntime, mapping);
