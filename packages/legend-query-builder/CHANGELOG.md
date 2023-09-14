@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.7.1
+
+### Patch Changes
+
+- [#2589](https://github.com/finos/legend-studio/pull/2589) [`32a31249b`](https://github.com/finos/legend-studio/commit/32a31249b22081e5aacf55715335fd5c735d7b05) ([@gayathrir11](https://github.com/gayathrir11)) - Fix default milestoning dates getting added as parameters when they are defined as constants.
+
 ## 4.7.0
 
 ### Minor Changes
