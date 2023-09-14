@@ -25,6 +25,7 @@ export class IdentityResolution implements Hashable {
   get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.IDENTITY_RESOLUTION,
+      this.modelClass ?? '',
       hashArray(this.resolutionQueries),
     ]);
   }

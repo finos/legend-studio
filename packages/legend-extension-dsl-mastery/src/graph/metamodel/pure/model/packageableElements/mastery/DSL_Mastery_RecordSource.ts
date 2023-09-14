@@ -51,12 +51,13 @@ export class RecordSource implements Hashable {
       this.id,
       this.status,
       this.description,
+      this.recordService ?? '',
       this.sequentialData?.toString() ?? '',
       this.stagedLoad?.toString() ?? '',
       this.createPermitted?.toString() ?? '',
       this.createBlockedException?.toString() ?? '',
       this.allowFieldDelete?.toString() ?? '',
-      this.trigger,
+      this.trigger ?? '',
       this.authorization ?? '',
       this.dataProvider ?? '',
       this.partitions ? hashArray(this.partitions) : '',
@@ -74,7 +75,7 @@ export class RecordService implements Hashable {
   get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.RECORD_SERVICE,
-      this.acquisitionProtocol,
+      this.acquisitionProtocol ?? '',
       this.parseService ?? '',
       this.transformService,
     ]);
