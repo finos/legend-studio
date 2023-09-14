@@ -22,9 +22,11 @@ import {
 import {
   V1_RecordService,
   V1_RecordSource,
+  V1_RecordSourcePartition,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 import {
   optionalCustom,
+  optionalCustomList,
   type PlainObject,
   UnsupportedOperationError,
   usingConstantValueSchema,
@@ -519,13 +521,20 @@ const V1_recordServiceSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_RecordService> =>
   createModelSchema(V1_RecordService, {
-    acquisitionProtocol: custom(
+    acquisitionProtocol: optionalCustom(
       (protocol) => V1_serializeAcquisitionProtocol(protocol, plugins),
       (protocol) => V1_deserializeAcquisitionProtocol(protocol, plugins),
     ),
     parseService: optional(primitive()),
     transformService: optional(primitive()),
   });
+
+const V1_recordSourcePartitionSchema = createModelSchema(
+  V1_RecordSourcePartition,
+  {
+    id: primitive(),
+  },
+);
 
 const V1_recordSourceSchema = (
   plugins: PureProtocolProcessorPlugin[],
@@ -541,11 +550,17 @@ const V1_recordSourceSchema = (
     dataProvider: optional(primitive()),
     description: primitive(),
     id: primitive(),
-    recordService: usingModelSchema(V1_recordServiceSchema(plugins)),
+    parseService: optional(primitive()),
+    partitions: optionalCustomList(
+      (val) => serialize(V1_recordSourcePartitionSchema, val),
+      (val) => deserialize(V1_recordSourcePartitionSchema, val),
+    ),
+    recordService: optional(usingModelSchema(V1_recordServiceSchema(plugins))),
     sequentialData: primitive(),
     stagedLoad: primitive(),
     status: primitive(),
-    trigger: custom(
+    transformService: optional(primitive()),
+    trigger: optionalCustom(
       (val) => V1_serializeTrigger(val),
       (val) => V1_deserializeTrigger(val),
     ),
@@ -562,6 +577,7 @@ const V1_resolutionQuerySchema = createModelSchema(V1_ResolutionQuery, {
 });
 
 const V1_identityResolutionSchema = createModelSchema(V1_IdentityResolution, {
+  modelClass: optional(primitive()),
   resolutionQueries: list(
     custom(
       (val) => serialize(V1_resolutionQuerySchema, val),
