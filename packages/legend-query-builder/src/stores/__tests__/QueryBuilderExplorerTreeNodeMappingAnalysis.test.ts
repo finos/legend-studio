@@ -55,6 +55,7 @@ import {
   TEST_DATA__MappingData_RelationalInline,
   TEST_DATA__Mappingdata__NestedSubtype,
   TEST_DATA__Mappingdata__MultiMappedNestedSubtype,
+  TEST_DATA__Mappingdata__SimpleSubtype,
 } from './TEST_DATA__MappingData.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_AssociationMapping,
@@ -65,8 +66,10 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance,
   TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
   TEST_DATA__ModelCoverageAnalysisResult_MultiMappedNestedSubtype,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from './TEST_DATA__ModelCoverageAnalysisResult.js';
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
+import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
 
 interface NodeMappingData {
   name: string;
@@ -175,6 +178,18 @@ const cases: TestCase[] = [
       maxDepth: 1,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_MultiMappedNestedSubtype,
+    },
+  ],
+  [
+    'Simple relational mapping when property mapping points to class mapping of subType',
+    {
+      mappingPath: 'model::NewMapping',
+      classPath: 'model::Firm',
+      expectedMappingData: TEST_DATA__Mappingdata__SimpleSubtype,
+      entities: TEST_DATA_SimpleSubtypeModel,
+      maxDepth: 3,
+      rawMappingModelCoverageAnalysisResult:
+        TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
     },
   ],
 ];

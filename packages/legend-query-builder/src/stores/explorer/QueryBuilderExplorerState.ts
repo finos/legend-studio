@@ -152,13 +152,14 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     parentId: string,
     isPartOfDerivedPropertyBranch: boolean,
     mappingData: QueryBuilderExplorerTreeNodeMappingData,
+    type?: Type | undefined,
   ) {
     super(
       id,
       label,
       dndText,
       isPartOfDerivedPropertyBranch,
-      property.genericType.value.rawType,
+      type ?? property.genericType.value.rawType,
       mappingData,
     );
     this.property = property;
@@ -233,7 +234,10 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     }
 
     let parentPropertyExpression;
-    if (parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
+    if (
+      parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData ||
+      parentNode.mappingData.entityMappedProperty?.subType
+    ) {
       parentPropertyExpression = new SimpleFunctionExpression(
         extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
       );
@@ -444,6 +448,15 @@ export const getQueryBuilderPropertyNodeData = (
   ) {
     return undefined;
   }
+  const _subclasses =
+    property.genericType.value.rawType instanceof Class
+      ? getAllSubclasses(property.genericType.value.rawType)
+      : [];
+  const subClass = mappingNodeData.entityMappedProperty?.subType
+    ? _subclasses.find(
+        (c) => c.path === mappingNodeData.entityMappedProperty?.subType,
+      )
+    : undefined;
   const propertyNode = new QueryBuilderExplorerTreePropertyNodeData(
     generateExplorerTreePropertyNodeID(
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
@@ -461,6 +474,9 @@ export const getQueryBuilderPropertyNodeData = (
     parentNode.id,
     isPartOfDerivedPropertyBranch,
     mappingNodeData,
+    // Inorder to cast the properties to the right subType based on what mapping analysis
+    // returns we assign the type of the property node to the mapped subClass
+    subClass,
   );
   if (propertyNode.type instanceof Class) {
     propertyNode.childrenIds =

@@ -1,32 +1,5 @@
 [
   {
-    "path": "model::Person",
-    "content": {
-      "_type": "class",
-      "name": "Person",
-      "package": "model",
-      "properties": [
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "name",
-          "type": "String"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "address",
-          "type": "model::Address"
-        }
-      ]
-    },
-    "classifierPath": "meta::pure::metamodel::type::Class"
-  },
-  {
     "path": "model::Address",
     "content": {
       "_type": "class",
@@ -81,6 +54,43 @@
           "type": "Integer"
         }
       ],
+      "superTypes": ["model::AddressType1"]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "address",
+          "type": "model::Address"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::AddressType3",
+    "content": {
+      "_type": "class",
+      "name": "AddressType3",
+      "package": "model",
       "superTypes": ["model::AddressType1"]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
@@ -261,7 +271,24 @@
                   }
                 ]
               },
-              "target": "model_AddressType2"
+              "target": "modelAddressType2"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "address"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "model::Database",
+                    "name": "PersonAddress"
+                  }
+                ]
+              },
+              "target": "modelAddressType3"
             }
           ],
           "root": true
@@ -270,6 +297,7 @@
           "_type": "relational",
           "class": "model::AddressType2",
           "distinct": false,
+          "id": "modelAddressType2",
           "mainTable": {
             "_type": "Table",
             "database": "model::Database",
@@ -309,7 +337,8 @@
                   "table": "AddressTable"
                 },
                 "tableAlias": "AddressTable"
-              }
+              },
+              "source": "modelAddressType2"
             },
             {
               "_type": "relationalPropertyMapping",
@@ -328,7 +357,8 @@
                   "table": "AddressTable"
                 },
                 "tableAlias": "AddressTable"
-              }
+              },
+              "source": "modelAddressType2"
             },
             {
               "_type": "relationalPropertyMapping",
@@ -339,7 +369,92 @@
               "relationalOperation": {
                 "_type": "literal",
                 "value": 12345
-              }
+              },
+              "source": "modelAddressType2"
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "operation",
+          "class": "model::Address",
+          "operation": "INHERITANCE",
+          "parameters": [],
+          "root": true
+        },
+        {
+          "_type": "operation",
+          "class": "model::AddressType1",
+          "operation": "INHERITANCE",
+          "parameters": [],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "model::AddressType3",
+          "distinct": false,
+          "id": "modelAddressType3",
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Database",
+            "mainTableDb": "model::Database",
+            "schema": "default",
+            "table": "AddressTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Database",
+                "mainTableDb": "model::Database",
+                "schema": "default",
+                "table": "AddressTable"
+              },
+              "tableAlias": "AddressTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::AddressType3",
+                "property": "zipcode"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Database",
+                  "mainTableDb": "model::Database",
+                  "schema": "default",
+                  "table": "AddressTable"
+                },
+                "tableAlias": "AddressTable"
+              },
+              "source": "modelAddressType3"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::AddressType3",
+                "property": "streetName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Database",
+                  "mainTableDb": "model::Database",
+                  "schema": "default",
+                  "table": "AddressTable"
+                },
+                "tableAlias": "AddressTable"
+              },
+              "source": "modelAddressType3"
             }
           ],
           "root": true

@@ -199,6 +199,22 @@ export const TEST_DATA__Mappingdata__NestedSubtype = [
             mappingData: { mapped: true },
             name: 'model::AddressType2',
           },
+          {
+            childNodes: [
+              {
+                childNodes: [],
+                mappingData: { mapped: true },
+                name: 'zipcode',
+              },
+              {
+                childNodes: [],
+                mappingData: { mapped: true },
+                name: 'streetName',
+              },
+            ],
+            mappingData: { mapped: true },
+            name: 'model::AddressType3',
+          },
         ],
         mappingData: { mapped: true },
         name: 'model::AddressType1',
@@ -255,4 +271,61 @@ export const TEST_DATA__Mappingdata__MultiMappedNestedSubtype = [
     name: 'position',
   },
   { childNodes: [], mappingData: { mapped: true }, name: 'name' },
+];
+
+export const TEST_DATA__Mappingdata__SimpleSubtype = [
+  { childNodes: [], mappingData: { mapped: false }, name: 'legalName' },
+  { childNodes: [], mappingData: { mapped: true }, name: 'Name' },
+  {
+    childNodes: [
+      { childNodes: [], mappingData: { mapped: true }, name: 'firstName' },
+      { childNodes: [], mappingData: { mapped: true }, name: 'lastName' },
+      {
+        childNodes: [
+          { childNodes: [], mappingData: { mapped: true }, name: 'streetName' },
+          {
+            childNodes: [
+              {
+                childNodes: [],
+                mappingData: { mapped: true },
+                name: 'streetName',
+              },
+              {
+                childNodes: [],
+                mappingData: { mapped: true },
+                name: 'zipcode',
+              },
+              {
+                childNodes: [
+                  {
+                    childNodes: [],
+                    mappingData: { mapped: true },
+                    name: 'zipcode',
+                  },
+                  {
+                    childNodes: [],
+                    mappingData: { mapped: true },
+                    name: 'streetName',
+                  },
+                  {
+                    childNodes: [],
+                    mappingData: { mapped: true },
+                    name: 'id',
+                  },
+                ],
+                mappingData: { mapped: true },
+                name: 'model::Colony',
+              },
+            ],
+            mappingData: { mapped: true },
+            name: 'model::Street',
+          },
+        ],
+        mappingData: { mapped: true },
+        name: 'address',
+      },
+    ],
+    mappingData: { mapped: true },
+    name: 'employees',
+  },
 ];
