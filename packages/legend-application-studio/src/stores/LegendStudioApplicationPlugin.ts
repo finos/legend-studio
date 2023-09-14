@@ -331,5 +331,5 @@ export interface DSL_LegendStudioApplicationPlugin_Extension
    * Get a string of the Pure grammar element name for auto-folding the element
    * (e.g. Diagram, or Text)
    */
-  getAutoFoldingCandidateToken?(): string[];
+  getExtraGrammarTextEditorAutoFoldingElementCreatorKeywords?(): string[];
 }

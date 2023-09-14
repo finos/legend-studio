@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 5.2.0
+
+### Minor Changes
+
+- [#2555](https://github.com/finos/legend-studio/pull/2555) [`99cb86a04`](https://github.com/finos/legend-studio/commit/99cb86a04894a5fae77e3e576840c2423eac2c8d) ([@gayathrir11](https://github.com/gayathrir11)) - Support patch release
+
 ## 5.1.3
 
 ## 5.1.2

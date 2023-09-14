@@ -984,7 +984,8 @@ export const GrammarTextEditor = observer(() => {
         (plugin) =>
           (
             plugin as DSL_LegendStudioApplicationPlugin_Extension
-          ).getAutoFoldingCandidateToken?.() ?? [],
+          ).getExtraGrammarTextEditorAutoFoldingElementCreatorKeywords?.() ??
+          [],
       );
     const foldingClass = editor?.getContribution('editor.contrib.folding');
 
@@ -1056,7 +1057,8 @@ export const GrammarTextEditor = observer(() => {
           (plugin) =>
             (
               plugin as DSL_LegendStudioApplicationPlugin_Extension
-            ).getAutoFoldingCandidateToken?.() ?? [],
+            ).getExtraGrammarTextEditorAutoFoldingElementCreatorKeywords?.() ??
+            [],
         );
       const foldingClass = editor.getContribution('editor.contrib.folding');
 
@@ -1110,7 +1112,8 @@ export const GrammarTextEditor = observer(() => {
           (plugin) =>
             (
               plugin as DSL_LegendStudioApplicationPlugin_Extension
-            ).getAutoFoldingCandidateToken?.() ?? [],
+            ).getExtraGrammarTextEditorAutoFoldingElementCreatorKeywords?.() ??
+            [],
         );
       const foldingClass = editor.getContribution('editor.contrib.folding');
 
