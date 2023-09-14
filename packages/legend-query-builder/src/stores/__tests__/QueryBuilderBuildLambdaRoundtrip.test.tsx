@@ -675,7 +675,7 @@ const cases: RoundtripTestCase[] = [
     undefined,
   ],
   [
-    'Simple milestoned projection query with milestoning paramters as constants',
+    'Simple milestoned projection query with milestoning parameters as constants',
     milestoningCtx,
     TEST_DATA__simpleProjectionWithBusinessMilestonedColumn,
     undefined,
