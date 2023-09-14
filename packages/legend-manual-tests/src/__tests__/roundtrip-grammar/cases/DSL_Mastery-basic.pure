@@ -94,6 +94,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
   modelClass: org::dataeng::Widget;
   identityResolution:
   {
+    modelClass: org::dataeng::Widget;
     resolutionQueries:
       [
         {
@@ -207,7 +208,6 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
           connection: alloy::mastery::connection::HTTPConnection;
         }#;
       };
-      trigger: Manual;
       sequentialData: false;
       stagedLoad: true;
       createPermitted: false;
@@ -218,7 +218,6 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       status: Production;
       recordService: {
         transformService: org::dataeng::TransformWidget;
-        acquisitionProtocol: REST;
       };
       trigger: Manual;
       sequentialData: false;
@@ -229,13 +228,6 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
     widget-kafka-source: {
       description: 'Multiple partition source.';
       status: Production;
-      recordService: {
-        transformService: org::dataeng::TransformWidget;
-        acquisitionProtocol: Kafka #{
-          dataType: JSON;
-          connection: alloy::mastery::connection::KafkaConnection;
-        }#;
-      };
       trigger: Manual;
       sequentialData: false;
       stagedLoad: true;
@@ -253,6 +245,13 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       stagedLoad: true;
       createPermitted: false;
       createBlockedException: true;
+      parseService: org::dataeng::ParseWidget;
+      transformService: org::dataeng::TransformWidget;
+      partitions:
+      [
+        "partition-a": {},
+        "partition-b": {}
+      ]
     }
   ]
 }
