@@ -251,7 +251,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       [
         "partition-a": {},
         "partition-b": {}
-      ]
+      ];
     }
   ]
 }
