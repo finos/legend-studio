@@ -247,7 +247,7 @@ export class DSL_Text_LegendStudioApplicationPlugin
     ];
   }
 
-  getAutoFoldingCandidateToken(): string[] {
+  getExtraGrammarTextEditorAutoFoldingElementCreatorKeywords(): string[] {
     return [PURE_GRAMMAR_TEXT_PARSER_NAME];
   }
 }

@@ -307,7 +307,7 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
     ];
   }
 
-  getAutoFoldingCandidateToken(): string[] {
+  getExtraGrammarTextEditorAutoFoldingElementCreatorKeywords(): string[] {
     return [PURE_GRAMMAR_DIAGRAM_PARSER_NAME];
   }
 }
