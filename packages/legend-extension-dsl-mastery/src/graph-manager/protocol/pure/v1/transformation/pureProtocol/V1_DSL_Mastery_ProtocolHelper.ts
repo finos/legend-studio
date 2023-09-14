@@ -550,6 +550,7 @@ const V1_recordSourceSchema = (
     dataProvider: optional(primitive()),
     description: primitive(),
     id: primitive(),
+    parseService: optional(primitive()),
     partitions: optionalCustomList(
       (val) => serialize(V1_recordSourcePartitionSchema, val),
       (val) => deserialize(V1_recordSourcePartitionSchema, val),
@@ -558,6 +559,7 @@ const V1_recordSourceSchema = (
     sequentialData: primitive(),
     stagedLoad: primitive(),
     status: primitive(),
+    transformService: optional(primitive()),
     trigger: optionalCustom(
       (val) => V1_serializeTrigger(val),
       (val) => V1_deserializeTrigger(val),

@@ -42,6 +42,8 @@ export class RecordSource implements Hashable {
   authorization?: Authorization | undefined;
   dataProvider?: string | undefined;
   partitions?: RecordSourcePartition[] | undefined;
+  parseService?: string | undefined;
+  transformService?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -57,6 +59,9 @@ export class RecordSource implements Hashable {
       this.trigger,
       this.authorization ?? '',
       this.dataProvider ?? '',
+      this.partitions ? hashArray(this.partitions) : '',
+      this.parseService ?? '',
+      this.transformService ?? '',
     ]);
   }
 }

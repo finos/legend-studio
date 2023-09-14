@@ -482,6 +482,8 @@ export const V1_buildRecordSource = (
   recordSource.partitions = protocol.partitions
     ? protocol.partitions.map((p) => V1_buildRecordSourcePartition(p, context))
     : undefined;
+  recordSource.parseService = protocol.parseService;
+  recordSource.transformService = protocol.transformService;
   return recordSource;
 };
 

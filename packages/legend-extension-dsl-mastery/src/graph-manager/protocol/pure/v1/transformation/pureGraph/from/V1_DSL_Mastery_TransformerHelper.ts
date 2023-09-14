@@ -478,6 +478,8 @@ export const V1_transformRecordSource = (
         V1_transformRecordSourcePartition(p, context),
       )
     : undefined;
+  recordSource.parseService = element.parseService;
+  recordSource.transformService = element.transformService;
   return recordSource;
 };
 
