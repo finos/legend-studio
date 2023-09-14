@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.81
+
+### Patch Changes
+
+- [#2600](https://github.com/finos/legend-studio/pull/2600) [`99bfd394d`](https://github.com/finos/legend-studio/commit/99bfd394dac27564db09470e142916cf0267c95b) ([@arikpamnani](https://github.com/arikpamnani)) - BugFix for mastery DSL to make a few fields optional
+
 ## 3.0.80
 
 ### Patch Changes
