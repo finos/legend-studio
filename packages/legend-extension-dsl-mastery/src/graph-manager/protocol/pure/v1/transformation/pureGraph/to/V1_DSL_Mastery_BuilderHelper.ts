@@ -32,6 +32,7 @@ import type {
 import type {
   V1_RecordService,
   V1_RecordSource,
+  V1_RecordSourcePartition,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 import {
   getOwnDataProvider,
@@ -138,7 +139,6 @@ import {
   V1_buildFullPath,
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
-import type { V1_RecordSourcePartition } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 
 /**********
  * data provider
