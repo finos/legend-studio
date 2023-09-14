@@ -22,6 +22,7 @@ import {
   type RecordSourceStatus,
   RecordService,
   RecordSource,
+  RecordSourcePartition,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_RecordSource.js';
 import type { V1_MasterRecordDefinition } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import type {
@@ -137,6 +138,7 @@ import {
   V1_buildFullPath,
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
+import type { V1_RecordSourcePartition } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 
 /**********
  * data provider
@@ -439,11 +441,19 @@ export const V1_buildRecordService = (
   const recordService = new RecordService();
   recordService.parseService = protocol.parseService;
   recordService.transformService = protocol.transformService;
-  recordService.acquisitionProtocol = V1_buildAcquisitionProtocol(
-    protocol.acquisitionProtocol,
-    context,
-  );
+  recordService.acquisitionProtocol = protocol.acquisitionProtocol
+    ? V1_buildAcquisitionProtocol(protocol.acquisitionProtocol, context)
+    : undefined;
   return recordService;
+};
+
+export const V1_buildRecordSourcePartition = (
+  protocol: V1_RecordSourcePartition,
+  context: V1_GraphBuilderContext,
+): RecordSourcePartition => {
+  const recordSourcePartition = new RecordSourcePartition();
+  recordSourcePartition.id = protocol.id;
+  return recordSourcePartition;
 };
 
 export const V1_buildRecordSource = (
@@ -459,15 +469,19 @@ export const V1_buildRecordSource = (
   recordSource.createPermitted = protocol.createPermitted;
   recordSource.createBlockedException = protocol.createBlockedException;
   recordSource.allowFieldDelete = protocol.allowFieldDelete;
-  recordSource.recordService = V1_buildRecordService(
-    protocol.recordService,
-    context,
-  );
-  recordSource.trigger = V1_buildTrigger(protocol.trigger, context);
+  recordSource.recordService = protocol.recordService
+    ? V1_buildRecordService(protocol.recordService, context)
+    : undefined;
+  recordSource.trigger = protocol.trigger
+    ? V1_buildTrigger(protocol.trigger, context)
+    : undefined;
   recordSource.authorization = protocol.authorization
     ? V1_buildAuthorization(protocol.authorization, context)
     : undefined;
   recordSource.dataProvider = protocol.dataProvider;
+  recordSource.partitions = protocol.partitions
+    ? protocol.partitions.map((p) => V1_buildRecordSourcePartition(p, context))
+    : undefined;
   return recordSource;
 };
 
@@ -493,6 +507,7 @@ export const V1_buildIdentityResolution = (
   context: V1_GraphBuilderContext,
 ): IdentityResolution => {
   const identityResolution = new IdentityResolution();
+  identityResolution.modelClass = protocol.modelClass;
   identityResolution.resolutionQueries = protocol.resolutionQueries.map((q) =>
     V1_buildResolutionQuery(q, context),
   );

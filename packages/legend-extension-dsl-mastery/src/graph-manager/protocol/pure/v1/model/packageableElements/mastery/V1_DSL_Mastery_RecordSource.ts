@@ -32,15 +32,16 @@ export class V1_RecordSource implements Hashable {
   id!: string;
   status!: V1_RecordSourceStatus;
   description!: string;
-  recordService!: V1_RecordService;
+  recordService?: V1_RecordService | undefined;
   sequentialData?: boolean | undefined;
   stagedLoad?: boolean | undefined;
   createPermitted?: boolean | undefined;
   createBlockedException?: boolean | undefined;
   allowFieldDelete?: boolean | undefined;
-  trigger!: V1_Trigger;
+  trigger?: V1_Trigger | undefined;
   authorization?: V1_Authorization | undefined;
   dataProvider?: string | undefined;
+  partitions?: V1_RecordSourcePartition[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -61,7 +62,7 @@ export class V1_RecordSource implements Hashable {
 }
 
 export class V1_RecordService implements Hashable {
-  acquisitionProtocol!: V1_AcquisitionProtocol;
+  acquisitionProtocol?: V1_AcquisitionProtocol | undefined;
   parseService?: string | undefined;
   transformService!: string;
 
@@ -72,5 +73,13 @@ export class V1_RecordService implements Hashable {
       this.parseService ?? '',
       this.transformService,
     ]);
+  }
+}
+
+export class V1_RecordSourcePartition implements Hashable {
+  id!: string;
+
+  get hashCode(): string {
+    return hashArray([MASTERY_HASH_STRUCTURE.RECORD_SOURCE_PARTITION, this.id]);
   }
 }

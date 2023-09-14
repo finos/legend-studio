@@ -19,6 +19,7 @@ import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_H
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class V1_IdentityResolution implements Hashable {
+  modelClass?: string | undefined;
   resolutionQueries: V1_ResolutionQuery[] = [];
 
   get hashCode(): string {

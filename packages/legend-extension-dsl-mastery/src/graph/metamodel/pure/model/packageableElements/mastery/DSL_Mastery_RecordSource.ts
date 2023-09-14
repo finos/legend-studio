@@ -32,15 +32,16 @@ export class RecordSource implements Hashable {
   id!: string;
   status!: RecordSourceStatus;
   description!: string;
-  recordService!: RecordService;
+  recordService?: RecordService | undefined;
   sequentialData?: boolean | undefined;
   stagedLoad?: boolean | undefined;
   createPermitted?: boolean | undefined;
   createBlockedException?: boolean | undefined;
   allowFieldDelete?: boolean | undefined;
-  trigger!: Trigger;
+  trigger?: Trigger | undefined;
   authorization?: Authorization | undefined;
   dataProvider?: string | undefined;
+  partitions?: RecordSourcePartition[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -61,7 +62,7 @@ export class RecordSource implements Hashable {
 }
 
 export class RecordService implements Hashable {
-  acquisitionProtocol!: AcquisitionProtocol;
+  acquisitionProtocol?: AcquisitionProtocol | undefined;
   parseService?: string | undefined;
   transformService!: string;
 
@@ -72,5 +73,13 @@ export class RecordService implements Hashable {
       this.parseService ?? '',
       this.transformService,
     ]);
+  }
+}
+
+export class RecordSourcePartition implements Hashable {
+  id!: string;
+
+  get hashCode(): string {
+    return hashArray([MASTERY_HASH_STRUCTURE.RECORD_SOURCE_PARTITION, this.id]);
   }
 }

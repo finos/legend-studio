@@ -22,6 +22,7 @@ import type {
 import type {
   RecordService,
   RecordSource,
+  RecordSourcePartition,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_RecordSource.js';
 import { V1_MasterRecordDefinition } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import {
@@ -32,6 +33,7 @@ import {
   type V1_RecordSourceStatus,
   V1_RecordService,
   V1_RecordSource,
+  V1_RecordSourcePartition,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 import { V1_PropertyPath } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_PropertyPath.js';
 import type { PropertyPath } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_PropertyPath.js';
@@ -433,11 +435,19 @@ export const V1_transformRecordService = (
   const recordService = new V1_RecordService();
   recordService.parseService = element.parseService;
   recordService.transformService = element.transformService;
-  recordService.acquisitionProtocol = V1_transformAcquisitionProtocol(
-    element.acquisitionProtocol,
-    context,
-  );
+  recordService.acquisitionProtocol = element.acquisitionProtocol
+    ? V1_transformAcquisitionProtocol(element.acquisitionProtocol, context)
+    : undefined;
   return recordService;
+};
+
+export const V1_transformRecordSourcePartition = (
+  element: RecordSourcePartition,
+  context: V1_GraphTransformerContext,
+): V1_RecordSourcePartition => {
+  const recordSourcePartition = new V1_RecordSourcePartition();
+  recordSourcePartition.id = element.id;
+  return recordSourcePartition;
 };
 
 export const V1_transformRecordSource = (
@@ -453,15 +463,21 @@ export const V1_transformRecordSource = (
   recordSource.createPermitted = element.createPermitted;
   recordSource.createBlockedException = element.createBlockedException;
   recordSource.allowFieldDelete = element.allowFieldDelete;
-  recordSource.recordService = V1_transformRecordService(
-    element.recordService,
-    context,
-  );
-  recordSource.trigger = V1_transformTrigger(element.trigger, context);
+  recordSource.recordService = element.recordService
+    ? V1_transformRecordService(element.recordService, context)
+    : undefined;
+  recordSource.trigger = element.trigger
+    ? V1_transformTrigger(element.trigger, context)
+    : undefined;
   recordSource.authorization = element.authorization
     ? V1_transformAuthorization(element.authorization, context)
     : undefined;
   recordSource.dataProvider = element.dataProvider;
+  recordSource.partitions = element.partitions
+    ? element.partitions.map((p) =>
+        V1_transformRecordSourcePartition(p, context),
+      )
+    : undefined;
   return recordSource;
 };
 
@@ -490,6 +506,7 @@ export const V1_transformIdentityResolution = (
   context: V1_GraphTransformerContext,
 ): V1_IdentityResolution => {
   const identityResolution = new V1_IdentityResolution();
+  identityResolution.modelClass = element.modelClass;
   identityResolution.resolutionQueries = element.resolutionQueries.map((q) =>
     V1_transformResolutionQuery(q, context),
   );
