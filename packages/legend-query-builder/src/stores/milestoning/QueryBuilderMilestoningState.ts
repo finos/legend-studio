@@ -155,6 +155,9 @@ export class QueryBuilderMilestoningState implements Hashable {
     if (
       !this.queryBuilderState.parametersState.parameterStates.find(
         (p) => p.variableName === parameterName,
+      ) &&
+      !this.queryBuilderState.constantState.constants.find(
+        (c) => c.variable.name === parameterName,
       )
     ) {
       const variableState = new LambdaParameterState(

@@ -139,6 +139,8 @@ import {
 } from './TEST_DATA__QueryBuilder_Calendar.js';
 import { DEFAULT_LIMIT } from '../QueryBuilderResultState.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
+import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' assert { type: 'json' };
+import { TEST_DATA__simpleProjectionWithBusinessMilestonedColumn } from './TEST_DATA__QueryBuilder_Milestoning.js';
 
 type RoundtripTestCase = [
   string,
@@ -195,6 +197,10 @@ const calendarAggregationCtx = {
 
 const existsCtx = {
   entities: TEST_DATA__QueryBuilder_Model_SimpleRelational,
+};
+
+const milestoningCtx = {
+  entities: TEST_MilestoningModel,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -666,6 +672,12 @@ const cases: RoundtripTestCase[] = [
     'Simple filter with in operator for date primitive type',
     calendarAggregationCtx,
     TEST_DATA__lambda_isOperatorFilterForDate,
+    undefined,
+  ],
+  [
+    'Simple milestoned projection query with milestoning parameters as constants',
+    milestoningCtx,
+    TEST_DATA__simpleProjectionWithBusinessMilestonedColumn,
     undefined,
   ],
 ];

@@ -1632,3 +1632,88 @@ export const TEST_DATA__getAllWithHardcodedDateOutput = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__simpleProjectionWithBusinessMilestonedColumn = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'businessDate',
+        },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::now',
+          parameters: [],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'my::Firm',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                            {
+                              _type: 'var',
+                              name: 'businessDate',
+                            },
+                          ],
+                          property: 'businessTemporal',
+                        },
+                      ],
+                      property: 'businessTemporal',
+                    },
+                  ],
+                  property: 'firmID',
+                },
+                {
+                  _type: 'integer',
+                  value: 0,
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
