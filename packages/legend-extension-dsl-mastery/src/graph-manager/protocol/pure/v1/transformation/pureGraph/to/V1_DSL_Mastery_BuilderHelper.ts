@@ -20,11 +20,16 @@ import {
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_IdentityResolution.js';
 import {
   type RecordSourceStatus,
+  type Profile,
   RecordService,
   RecordSource,
   RecordSourcePartition,
+  RecordSourceDependency,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_RecordSource.js';
-import type { V1_MasterRecordDefinition } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
+import type {
+  V1_MasterRecordDefinition,
+  V1_CollectionEquality,
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import type {
   V1_IdentityResolution,
   V1_ResolutionQuery,
@@ -33,6 +38,7 @@ import type {
   V1_RecordService,
   V1_RecordSource,
   V1_RecordSourcePartition,
+  V1_RecordSourceDependency,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 import {
   getOwnDataProvider,
@@ -62,10 +68,13 @@ import {
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Connection.js';
 import {
   type V1_AcquisitionProtocol,
+  type V1_Decryption,
   V1_FileAcquisitionProtocol,
   V1_KafkaAcquisitionProtocol,
   V1_LegendServiceAcquisitionProtocol,
   V1_RestAcquisitionProtocol,
+  V1_DESDecryption,
+  V1_PGPDecryption,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AcquisitionProtocol.js';
 import {
   type AcquisitionProtocol,
@@ -139,6 +148,10 @@ import {
   V1_buildFullPath,
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
+import { CollectionEquality } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import { PGPDecryption } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AcquisitionProtocol.js';
+import { DESDecryption } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AcquisitionProtocol.js';
+import { Decryption } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AcquisitionProtocol.js';
 
 /**********
  * data provider
@@ -331,6 +344,54 @@ export const V1_buildKafkaConnection = (
 };
 
 /**********
+ * decryption
+ **********/
+
+export const V1_buildPGPDecryption = (
+  element: V1_PGPDecryption,
+  context: V1_GraphBuilderContext,
+): PGPDecryption => {
+  const pgpDecryption = new PGPDecryption();
+  pgpDecryption.privateKey = V1_buildCredentialSecret(
+    element.privateKey,
+    context,
+  );
+  pgpDecryption.passPhrase = V1_buildCredentialSecret(
+    element.passPhrase,
+    context,
+  );
+  return pgpDecryption;
+};
+
+export const V1_buildDESDecryption = (
+  element: V1_DESDecryption,
+  context: V1_GraphBuilderContext,
+): DESDecryption => {
+  const desDecryption = new DESDecryption();
+  desDecryption.decryptionKey = V1_buildCredentialSecret(
+    element.decryptionKey,
+    context,
+  );
+  desDecryption.capOption = element.capOption;
+  desDecryption.uuEncode = element.uuEncode;
+  return desDecryption;
+};
+
+export const V1_buildDecryption = (
+  element: V1_Decryption,
+  context: V1_GraphBuilderContext,
+): Decryption => {
+  if (element instanceof V1_PGPDecryption) {
+    return V1_buildPGPDecryption(element, context);
+  } else if (element instanceof V1_DESDecryption) {
+    return V1_buildDESDecryption(element, context);
+  }
+  throw new UnsupportedOperationError(
+    `Can't build decryption '${typeof element}'`,
+  );
+};
+
+/**********
  * acquisition protocol
  **********/
 
@@ -355,6 +416,11 @@ export const V1_buildFileAcquisitionProtocol = (
   fileAcquisitionProtocol.fileSplittingKeys = element.fileSplittingKeys;
   fileAcquisitionProtocol.headerLines = element.headerLines;
   fileAcquisitionProtocol.recordsKey = element.recordsKey;
+  fileAcquisitionProtocol.maxRetryTimeInMinutes = element.maxRetryTimeInMinutes;
+  fileAcquisitionProtocol.encoding = element.encoding;
+  fileAcquisitionProtocol.decryption = element.decryption
+    ? V1_buildDecryption(element.decryption, context)
+    : undefined;
   return fileAcquisitionProtocol;
 };
 
@@ -456,6 +522,16 @@ export const V1_buildRecordSourcePartition = (
   return recordSourcePartition;
 };
 
+export const V1_buildRecordSourceDependency = (
+  protocol: V1_RecordSourceDependency,
+  context: V1_GraphBuilderContext,
+): RecordSourceDependency => {
+  const recordSourceDependency = new RecordSourceDependency();
+  recordSourceDependency.dependentRecordSourceId =
+    protocol.dependentRecordSourceId;
+  return recordSourceDependency;
+};
+
 export const V1_buildRecordSource = (
   protocol: V1_RecordSource,
   context: V1_GraphBuilderContext,
@@ -484,6 +560,14 @@ export const V1_buildRecordSource = (
     : undefined;
   recordSource.parseService = protocol.parseService;
   recordSource.transformService = protocol.transformService;
+  recordSource.raiseExceptionWorkflow = protocol.raiseExceptionWorkflow;
+  recordSource.runProfile = protocol.runProfile
+    ? (protocol.runProfile.valueOf() as Profile)
+    : undefined;
+  recordSource.timeoutInMinutes = protocol.timeoutInMinutes;
+  recordSource.dependencies = protocol.dependencies?.map((dependency) =>
+    V1_buildRecordSourceDependency(dependency, context),
+  );
   return recordSource;
 };
 
@@ -695,6 +779,20 @@ export const V1_buildPrecedenceRule = (
 };
 
 /**********
+ * collection equality
+ **********/
+
+export const V1_buildCollectionEquality = (
+  protocol: V1_CollectionEquality,
+  context: V1_GraphBuilderContext,
+): CollectionEquality => {
+  const collectionEquality = new CollectionEquality();
+  collectionEquality.modelClass = protocol.modelClass;
+  collectionEquality.equalityFunction = protocol.equalityFunction;
+  return collectionEquality;
+};
+
+/**********
  * master record definition
  **********/
 
@@ -720,4 +818,14 @@ export const V1_buildMasterRecordDefinition = (
   );
   masterRecordDefinition.postCurationEnrichmentService =
     protocol.postCurationEnrichmentService;
+  masterRecordDefinition.collectionEqualities =
+    protocol.collectionEqualities?.map((collectionEquality) =>
+      V1_buildCollectionEquality(collectionEquality, context),
+    );
+  masterRecordDefinition.publishToElasticSearch =
+    protocol.publishToElasticSearch;
+  masterRecordDefinition.elasticSearchTransformService =
+    protocol.elasticSearchTransformService;
+  masterRecordDefinition.exceptionWorkflowTransformService =
+    protocol.exceptionWorkflowTransformService;
 };

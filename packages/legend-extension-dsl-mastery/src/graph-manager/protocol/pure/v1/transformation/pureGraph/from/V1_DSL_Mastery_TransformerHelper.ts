@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { MasterRecordDefinition } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import type {
+  MasterRecordDefinition,
+  CollectionEquality,
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import type {
   IdentityResolution,
   ResolutionQuery,
@@ -23,14 +26,19 @@ import type {
   RecordService,
   RecordSource,
   RecordSourcePartition,
+  RecordSourceDependency,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_RecordSource.js';
-import { V1_MasterRecordDefinition } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
+import {
+  V1_CollectionEquality,
+  V1_MasterRecordDefinition,
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import {
   V1_IdentityResolution,
   V1_ResolutionQuery,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_IdentityResolution.js';
 import {
   type V1_RecordSourceStatus,
+  type V1_Profile,
   V1_RecordService,
   V1_RecordSource,
   V1_RecordSourcePartition,
@@ -46,17 +54,23 @@ import {
   type V1_AcquisitionProtocol,
   type V1_FileType,
   type V1_KafkaDataType,
+  type V1_Decryption,
   V1_FileAcquisitionProtocol,
   V1_KafkaAcquisitionProtocol,
   V1_LegendServiceAcquisitionProtocol,
   V1_RestAcquisitionProtocol,
+  V1_DESDecryption,
+  V1_PGPDecryption,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AcquisitionProtocol.js';
 import {
   type AcquisitionProtocol,
+  type Decryption,
   FileAcquisitionProtocol,
   KafkaAcquisitionProtocol,
   LegendServiceAcquisitionProtocol,
   RestAcquisitionProtocol,
+  DESDecryption,
+  PGPDecryption,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AcquisitionProtocol.js';
 import type {
   KafkaConnection,
@@ -134,6 +148,7 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+import { V1_RecordSourceDependency } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 
 /**********
  * data provider
@@ -325,6 +340,54 @@ export const V1_transformKafkaConnection = (
 };
 
 /**********
+ * decryption
+ **********/
+
+export const V1_transformPGPDecryption = (
+  element: PGPDecryption,
+  context: V1_GraphTransformerContext,
+): V1_PGPDecryption => {
+  const pgpDecryption = new V1_PGPDecryption();
+  pgpDecryption.privateKey = V1_transformCredentialSecret(
+    element.privateKey,
+    context,
+  );
+  pgpDecryption.passPhrase = V1_transformCredentialSecret(
+    element.passPhrase,
+    context,
+  );
+  return pgpDecryption;
+};
+
+export const V1_transformDESDecryption = (
+  element: DESDecryption,
+  context: V1_GraphTransformerContext,
+): V1_DESDecryption => {
+  const desDecryption = new V1_DESDecryption();
+  desDecryption.decryptionKey = V1_transformCredentialSecret(
+    element.decryptionKey,
+    context,
+  );
+  desDecryption.capOption = element.capOption;
+  desDecryption.uuEncode = element.uuEncode;
+  return desDecryption;
+};
+
+export const V1_transformDecryption = (
+  element: Decryption,
+  context: V1_GraphTransformerContext,
+): V1_Decryption => {
+  if (element instanceof PGPDecryption) {
+    return V1_transformPGPDecryption(element, context);
+  } else if (element instanceof DESDecryption) {
+    return V1_transformDESDecryption(element, context);
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform decryption '${typeof element}'`,
+  );
+};
+
+/**********
  * acquisition protocol
  **********/
 
@@ -349,6 +412,11 @@ export const V1_transformFileAcquisitionProtocol = (
   fileAcquisitionProtocol.fileSplittingKeys = element.fileSplittingKeys;
   fileAcquisitionProtocol.headerLines = element.headerLines;
   fileAcquisitionProtocol.recordsKey = element.recordsKey;
+  fileAcquisitionProtocol.maxRetryTimeInMinutes = element.maxRetryTimeInMinutes;
+  fileAcquisitionProtocol.encoding = element.encoding;
+  fileAcquisitionProtocol.decryption = element.decryption
+    ? V1_transformDecryption(element.decryption, context)
+    : undefined;
   return fileAcquisitionProtocol;
 };
 
@@ -450,6 +518,16 @@ export const V1_transformRecordSourcePartition = (
   return recordSourcePartition;
 };
 
+export const V1_transformRecordSourceDependency = (
+  element: RecordSourceDependency,
+  context: V1_GraphTransformerContext,
+): V1_RecordSourceDependency => {
+  const recordSourceDependency = new V1_RecordSourceDependency();
+  recordSourceDependency.dependentRecordSourceId =
+    element.dependentRecordSourceId;
+  return recordSourceDependency;
+};
+
 export const V1_transformRecordSource = (
   element: RecordSource,
   context: V1_GraphTransformerContext,
@@ -480,6 +558,14 @@ export const V1_transformRecordSource = (
     : undefined;
   recordSource.parseService = element.parseService;
   recordSource.transformService = element.transformService;
+  recordSource.raiseExceptionWorkflow = element.raiseExceptionWorkflow;
+  recordSource.runProfile = element.runProfile
+    ? (element.runProfile.valueOf() as V1_Profile)
+    : undefined;
+  recordSource.timeoutInMinutes = element.timeoutInMinutes;
+  recordSource.dependencies = element.dependencies?.map((dependency) =>
+    V1_transformRecordSourceDependency(dependency, context),
+  );
   return recordSource;
 };
 
@@ -673,6 +759,20 @@ export const V1_transformPrecedenceRule = (
 };
 
 /**********
+ * collection equality
+ **********/
+
+export const V1_transformCollectionEquality = (
+  element: CollectionEquality,
+  context: V1_GraphTransformerContext,
+): V1_CollectionEquality => {
+  const collectionEquality = new V1_CollectionEquality();
+  collectionEquality.modelClass = element.modelClass;
+  collectionEquality.equalityFunction = element.equalityFunction;
+  return collectionEquality;
+};
+
+/**********
  * master record definition
  **********/
 
@@ -695,5 +795,14 @@ export const V1_transformMasterRecordDefinition = (
   protocol.sources = element.sources.map((s) =>
     V1_transformRecordSource(s, context),
   );
+  protocol.collectionEqualities = element.collectionEqualities?.map(
+    (collectionEquality) =>
+      V1_transformCollectionEquality(collectionEquality, context),
+  );
+  protocol.publishToElasticSearch = element.publishToElasticSearch;
+  protocol.elasticSearchTransformService =
+    element.elasticSearchTransformService;
+  protocol.exceptionWorkflowTransformService =
+    element.exceptionWorkflowTransformService;
   return protocol;
 };

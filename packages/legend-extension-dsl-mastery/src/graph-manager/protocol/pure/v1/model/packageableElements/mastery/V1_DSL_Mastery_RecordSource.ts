@@ -28,6 +28,24 @@ export enum V1_RecordSourceStatus {
   Decommissioned,
 }
 
+export enum V1_Profile {
+  Large,
+  Medium,
+  Small,
+  ExtraSmall,
+}
+
+export class V1_RecordSourceDependency implements Hashable {
+  dependentRecordSourceId!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      MASTERY_HASH_STRUCTURE.RECORD_SOURCE_DEPENDENCY,
+      this.dependentRecordSourceId,
+    ]);
+  }
+}
+
 export class V1_RecordSource implements Hashable {
   id!: string;
   status!: V1_RecordSourceStatus;
@@ -44,6 +62,10 @@ export class V1_RecordSource implements Hashable {
   partitions?: V1_RecordSourcePartition[] | undefined;
   parseService?: string | undefined;
   transformService?: string | undefined;
+  raiseExceptionWorkflow?: boolean | undefined;
+  runProfile?: V1_Profile | undefined;
+  timeoutInMinutes?: number | undefined;
+  dependencies: V1_RecordSourceDependency[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -63,6 +85,10 @@ export class V1_RecordSource implements Hashable {
       this.partitions ? hashArray(this.partitions) : '',
       this.parseService ?? '',
       this.transformService ?? '',
+      this.raiseExceptionWorkflow?.toString() ?? '',
+      this.runProfile ?? '',
+      this.timeoutInMinutes ?? '',
+      this.dependencies ? hashArray(this.dependencies) : '',
     ]);
   }
 }
