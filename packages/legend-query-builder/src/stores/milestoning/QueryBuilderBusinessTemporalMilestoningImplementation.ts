@@ -43,6 +43,8 @@ export class QueryBuilderBusinessTemporalMilestoningImplementation extends Query
         ),
       );
     }
+    // Show the parameter panel because we populate paramaters state with milestoning parameters
+    this.milestoningState.queryBuilderState.setShowParametersPanel(true);
   }
 
   processGetAllParamaters(parameterValues: ValueSpecification[]): void {
