@@ -249,8 +249,8 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       transformService: org::dataeng::TransformWidget;
       partitions:
       [
-        "partition-a": {},
-        "partition-b": {}
+        "partition-a": {
+        },
       ];
     }
   ]
