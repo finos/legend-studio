@@ -43,11 +43,15 @@ import {
   type Type,
   resolveServiceQueryRawLambda,
   PureExecution,
+  DeploymentOwnership,
+  ServiceOwnership,
+  UserListOwnership,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
 import { ServicePostValidationsState } from './ServicePostValidationState.js';
 import { valueSpecReturnTDS } from '@finos/legend-query-builder';
+import { service_setOwnership } from '../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
@@ -55,6 +59,11 @@ export enum SERVICE_TAB {
   TEST = 'TEST',
   REGISTRATION = 'REGISTRATION',
   POST_VALIDATION = 'POST_VALIDATION',
+}
+
+enum ServiceOwnershipType {
+  DEPLOYMENT_OWNERSHIP = 'deploymentOwnership',
+  USERLIST_OWNERSHIP = 'userListOwnership',
 }
 
 export const resolveServiceQueryValueSpec = (
@@ -101,6 +110,22 @@ export const isServiceQueryTDS = (
 };
 
 export const MINIMUM_SERVICE_OWNERS = 2;
+export const OWNERSHIP_OPTIONS = [
+  {
+    label: 'Deployment',
+    value: ServiceOwnershipType.DEPLOYMENT_OWNERSHIP,
+  },
+  {
+    label: 'User List',
+    value: ServiceOwnershipType.USERLIST_OWNERSHIP, //"UserListOwnership",
+  },
+];
+
+export type ServiceOwnerOption = {
+  label: string;
+  value: string;
+};
+
 export class ServiceEditorState extends ElementEditorState {
   executionState: ServiceExecutionState;
   registrationState: ServiceRegistrationState;
@@ -113,10 +138,12 @@ export class ServiceEditorState extends ElementEditorState {
 
     makeObservable(this, {
       executionState: observable,
+      selectedOwnership: computed,
       registrationState: observable,
       selectedTab: observable,
       postValidationState: observable,
       setSelectedTab: action,
+      setSelectedOwnership: action,
       resetExecutionState: action,
       openToTestTab: action,
       service: computed,
@@ -151,6 +178,41 @@ export class ServiceEditorState extends ElementEditorState {
 
   openToTestTab(): void {
     this.selectedTab = SERVICE_TAB.TEST;
+  }
+
+  get selectedOwnership(): ServiceOwnerOption | undefined {
+    const ownership = this.service.ownership;
+    if (ownership instanceof DeploymentOwnership) {
+      return {
+        label: 'Deployment',
+        value: ServiceOwnershipType.DEPLOYMENT_OWNERSHIP,
+      };
+    } else if (ownership instanceof UserListOwnership) {
+      return {
+        label: 'UserList',
+        value: ServiceOwnershipType.USERLIST_OWNERSHIP,
+      };
+    }
+    return undefined;
+  }
+
+  setSelectedOwnership(o: { label: string; value: string }): void {
+    let newVal: ServiceOwnership | undefined;
+    switch (o.value) {
+      case ServiceOwnershipType.DEPLOYMENT_OWNERSHIP: {
+        newVal = new DeploymentOwnership('', this.service);
+        service_setOwnership(this.service, newVal);
+        break;
+      }
+      case ServiceOwnershipType.USERLIST_OWNERSHIP: {
+        newVal = new UserListOwnership([], this.service);
+        service_setOwnership(this.service, newVal);
+        break;
+      }
+      default: {
+        throw new Error('Unsupported');
+      }
+    }
   }
 
   resetExecutionState(): void {

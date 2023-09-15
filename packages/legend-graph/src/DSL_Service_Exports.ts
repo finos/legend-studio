@@ -19,6 +19,7 @@ export {
   DEFAULT_SERVICE_PATTERN,
 } from './graph/metamodel/pure/packageableElements/service/Service.js';
 export * from './graph/metamodel/pure/packageableElements/service/ServiceTest.js';
+export * from './graph/metamodel/pure/packageableElements/service/ServiceOwnership.js';
 export * from './graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
 export * from './graph/metamodel/pure/packageableElements/service/ServiceExecution.js';
 export * from './graph/metamodel/pure/packageableElements/service/ConnectionTestData.js';

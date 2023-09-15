@@ -22,6 +22,54 @@ Service my::serviceWithEmptyTestSuite
   ]
 }
 
+Service my::serviceWithEmptyTestSuiteAndOwnershipDeployment
+{
+  pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d';
+  ownership: DID { identifier: '12345' };
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |my::Person.all()->project([x|$x.givenNames], ['Given Names']);
+    mapping: my::map;
+    runtime:
+    #{
+      mappings:
+      [
+        my::map
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service my::serviceWithEmptyTestSuiteAndOwnershipUsers
+{
+  pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d';
+  ownership: UserList { users: ['12345', '678'] };
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |my::Person.all()->project([x|$x.givenNames], ['Given Names']);
+    mapping: my::map;
+    runtime:
+    #{
+      mappings:
+      [
+        my::map
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
 Service my::serviceWithMultipleConnectionsData
 {
   pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d';

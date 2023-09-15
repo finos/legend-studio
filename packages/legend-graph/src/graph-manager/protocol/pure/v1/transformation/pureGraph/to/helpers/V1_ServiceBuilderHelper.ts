@@ -82,6 +82,16 @@ import type { V1_PostValidation } from '../../../../model/packageableElements/se
 import { PostValidation } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
 import type { V1_PostValidationAssertion } from '../../../../model/packageableElements/service/V1_PostValidationAssertion.js';
 import { PostValidationAssertion } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
+import {
+  V1_DeploymentOwnership,
+  V1_ServiceOwnership,
+  V1_UserListOwnership,
+} from '../../../../model/packageableElements/service/V1_ServiceOwnership.js';
+import {
+  DeploymentOwnership,
+  ServiceOwnership,
+  UserListOwnership,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceOwnership.js';
 
 const buildConnectionTestData = (
   element: V1_ConnectionTestData,
@@ -352,6 +362,18 @@ const buildServiceExecutionRuntime = (
       storeConnections.storeConnections.push(identifiedConnection);
     });
     return V1_buildEngineRuntime(engineRuntime, context);
+  }
+  throw new UnsupportedOperationError();
+};
+
+export const V1_buildServiceOwnership = (
+  serviceOwnership: V1_ServiceOwnership,
+  parentService: Service,
+): ServiceOwnership => {
+  if (serviceOwnership instanceof V1_DeploymentOwnership) {
+    return new DeploymentOwnership(serviceOwnership.identifier, parentService);
+  } else if (serviceOwnership instanceof V1_UserListOwnership) {
+    return new UserListOwnership(serviceOwnership.users, parentService);
   }
   throw new UnsupportedOperationError();
 };

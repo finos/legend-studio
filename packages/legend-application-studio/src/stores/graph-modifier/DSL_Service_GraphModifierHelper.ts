@@ -23,6 +23,9 @@ import {
   type RawLambda,
   type Runtime,
   type Service,
+  DeploymentOwnership,
+  UserListOwnership,
+  ServiceOwnership,
   type ServiceExecution,
   type ObserverContext,
   type ServiceTestSuite,
@@ -47,6 +50,7 @@ import {
   observe_PostValidationAssertion,
   TestData,
   observe_TestData,
+  observe_Ownership,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -162,7 +166,7 @@ export const service_initNewService = action(
   (service: Service, userId?: string): void => {
     service.pattern = `/${uuid()}`; // initialize the service pattern with an UUID to avoid people leaving the pattern as /
     if (userId) {
-      service.owners.push(userId);
+      service.ownership = new DeploymentOwnership('', service);
     } // this is used to add the current user as the first owner by default
   },
 );
@@ -180,6 +184,36 @@ export const service_setPattern = action(
     service.pattern = value;
   },
 );
+
+export const service_setOwnership = action(
+  (service: Service, value: ServiceOwnership | undefined): void => {
+    service.ownership = value ? observe_Ownership(value) : undefined;
+  },
+);
+export const service_deploymentOwnership = action(
+  (deployment: DeploymentOwnership, value: string): void => {
+    deployment.identifier = value;
+  },
+);
+
+export const service_addUserOwnership = action(
+  (userList: UserListOwnership, value: string): void => {
+    userList.users.push(value);
+  },
+);
+
+export const service_updateUserOwnership = action(
+  (userList: UserListOwnership, value: string, index: number): void => {
+    userList.users[index] = value;
+  },
+);
+
+export const service_deleteValueFromUserOwnership = action(
+  (userList: UserListOwnership, index: number): void => {
+    userList.users.splice(index, 1);
+  },
+);
+
 export const service_setDocumentation = action(
   (service: Service, value: string): void => {
     service.documentation = value;
