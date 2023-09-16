@@ -140,8 +140,6 @@ export class QueryBuilderMilestoningState implements Hashable {
       this.setProcessingDate(undefined);
       if (stereotype) {
         this.initializeQueryMilestoningParameters(stereotype);
-        // Show the parameter panel because we populate paramaters state with milestoning parameters
-        this.queryBuilderState.setShowParametersPanel(true);
       }
     }
   }
