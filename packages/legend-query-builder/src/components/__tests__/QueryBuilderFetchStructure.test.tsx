@@ -24,6 +24,7 @@ import {
   act,
   getByDisplayValue,
   getAllByTitle,
+  queryByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -323,13 +324,13 @@ test(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
       ),
     );
-    expect(queryBuilderResultModifierPrompt.innerHTML).not.toContain(
-      'Max Rows',
-    );
-    expect(queryBuilderResultModifierPrompt.innerHTML).not.toContain(
-      'Eliminate Duplicate Rows',
-    );
-    expect(queryBuilderResultModifierPrompt.innerHTML).not.toContain('Sort');
+    expect(
+      queryByText(queryBuilderResultModifierPrompt, 'Max Rows'),
+    ).toBeNull();
+    expect(
+      queryByText(queryBuilderResultModifierPrompt, 'Eliminate Duplicate Rows'),
+    ).toBeNull();
+    expect(queryByText(queryBuilderResultModifierPrompt, 'Sort')).toBeNull();
 
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
