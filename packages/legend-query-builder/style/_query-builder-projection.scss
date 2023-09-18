@@ -27,6 +27,70 @@
     border-bottom: 0.1rem solid var(--color-dark-grey-100);
   }
 
+  &__result-modifier-prompt {
+    @include flexVCenter;
+
+    overflow: scroll;
+
+    &__header {
+      @include flexVCenter;
+
+      height: 2.2rem;
+
+      &__label {
+        @include flexVCenter;
+
+        height: 2.2rem;
+        background: var(--color-blue-200);
+        padding: 1rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+      }
+
+      &__label__icon {
+        font-size: 1.2rem;
+        color: var(--color-light-grey-180);
+      }
+
+      &__label__title {
+        margin-left: 0.7rem;
+        color: var(--color-light-grey-180);
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+    }
+
+    &__group {
+      @include flexVCenter;
+
+      &__label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.7rem;
+        height: 2.2rem;
+        background: var(--color-dark-grey-280);
+        white-space: nowrap;
+        line-height: 1.8rem;
+        border-radius: 0.1rem;
+        font-size: 1.1rem;
+        margin-left: 0.5rem;
+      }
+
+      &__content {
+        color: var(--color-blue-200);
+        font-weight: 500;
+        font-size: 1.2rem;
+        padding-left: 0.5rem;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        white-space: nowrap;
+      }
+    }
+  }
+
   &__content {
     height: calc(100% - 2.8rem);
     width: 100%;
