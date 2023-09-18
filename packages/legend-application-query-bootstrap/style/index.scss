@@ -132,6 +132,7 @@
   .btn--medium:hover {
     background: var(--color-legacylight-light-blue-270);
   }
+
   // ---------------------------- Table -------------------------------
 
   .query-builder__explorer__preview-data-modal__body .table {
@@ -927,6 +928,11 @@
     .query-builder-graph-fetch-tree__actions__action-btn__label {
       background: var(--color-legacylight-light-blue-200);
       color: var(--color-light-grey-100);
+    }
+
+    .query-builder__projection__result-modifier-prompt__group__label {
+      background: var(--color-light-grey-250);
+      color: var(--color-legacylight-light-dark-grey-200);
     }
 
     // ------------------------------------ Projection Panel ---------------------------------------
