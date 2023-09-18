@@ -301,6 +301,36 @@ test(
     ).not.toBeNull();
     fireEvent.click(getByText(modal, 'Close'));
 
+    // Test text decriptions are correctly added for result set modifiers
+    await waitFor(() => renderResult.getByText('Query Options'));
+    await waitFor(() => renderResult.getByText('Max Rows'));
+    await waitFor(() => renderResult.getByText('500'));
+    await waitFor(() => renderResult.getByText('Eliminate Duplicate Rows'));
+    await waitFor(() => renderResult.getByText('Yes'));
+    await waitFor(() => renderResult.getByText('Sort'));
+    await waitFor(() => renderResult.getByText(`${FIRST_NAME_ALIAS} ASC`));
+    await waitFor(() =>
+      renderResult.getByText(`${CHAINED_PROPERTY_ALIAS} DESC`),
+    );
+
+    // Clear all projection columns
+    fireEvent.click(getByTitle(queryBuilder, 'Clear all projection columns'));
+    const closeModal = await waitFor(() => renderResult.getByRole('dialog'));
+    fireEvent.click(getByText(closeModal, 'Proceed'));
+    await waitFor(() => renderResult.getByText('Query Options'));
+    const queryBuilderResultModifierPrompt = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
+      ),
+    );
+    expect(queryBuilderResultModifierPrompt.innerHTML).not.toContain(
+      'Max Rows',
+    );
+    expect(queryBuilderResultModifierPrompt.innerHTML).not.toContain(
+      'Eliminate Duplicate Rows',
+    );
+    expect(queryBuilderResultModifierPrompt.innerHTML).not.toContain('Sort');
+
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     await act(async () => {
