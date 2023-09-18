@@ -1318,3 +1318,155 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists =
       },
     ],
   };
+
+export const TEST_DATA__ModelCoverageAnalysisResult_Milestoning = {
+  mappedEntities: [
+    {
+      path: 'my::Firm',
+      properties: [
+        {
+          _type: 'entity',
+          entityPath: 'my::Person1',
+          name: 'biTemporal',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'my::Person',
+          name: 'businessTemporal',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'my::Person2',
+          name: 'processingTemporal',
+        },
+      ],
+    },
+    {
+      path: 'my::Person',
+      properties: [
+        {
+          _type: 'entity',
+          entityPath: 'my::Person1',
+          name: 'biTemporal',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'my::Person',
+          name: 'businessTemporal',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'date',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'firmID',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'my::Person2',
+          name: 'processingTemporal',
+        },
+      ],
+    },
+    {
+      path: 'my::Person1',
+      properties: [
+        {
+          _type: 'entity',
+          entityPath: 'my::Person1',
+          name: 'biTemporal',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'my::Person',
+          name: 'businessTemporal',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'firmID',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'my::Person2',
+          name: 'processingTemporal',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'prop',
+        },
+      ],
+    },
+    {
+      path: 'my::Person2',
+      properties: [
+        {
+          _type: 'entity',
+          entityPath: 'my::Person1',
+          name: 'biTemporal',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'my::Person',
+          name: 'businessTemporal',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'firmID',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'my::Person2',
+          name: 'processingTemporal',
+        },
+      ],
+    },
+    {
+      path: 'my_Person_milestoning',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'from',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'thru',
+        },
+      ],
+    },
+    {
+      path: 'my_Person1_milestoning',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'from',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'in',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'out',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'thru',
+        },
+      ],
+    },
+    {
+      path: 'my_Person2_milestoning',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'in',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'out',
+        },
+      ],
+    },
+  ],
+};
