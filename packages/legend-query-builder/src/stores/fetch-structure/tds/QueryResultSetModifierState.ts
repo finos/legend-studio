@@ -82,6 +82,7 @@ export class QueryResultSetModifierState implements Hashable {
       deleteSortColumn: action,
       addSortColumn: action,
       updateSortColumns: action,
+      reset: action,
       hashCode: computed,
     });
 
@@ -112,6 +113,12 @@ export class QueryResultSetModifierState implements Hashable {
     this.sortColumns = this.sortColumns.filter((colState) =>
       this.tdsState.tdsColumns.includes(colState.columnState),
     );
+  }
+
+  reset(): void {
+    this.sortColumns = [];
+    this.distinct = false;
+    this.limit = undefined;
   }
 
   get hashCode(): string {

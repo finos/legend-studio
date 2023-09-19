@@ -41,6 +41,7 @@ import {
   CustomSelectorInput,
   PanelEntryDropZonePlaceholder,
   FunctionIcon,
+  CogIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -952,6 +953,7 @@ export const QueryBuilderTDSPanel = observer(
     const clearAllProjectionColumns = (): void => {
       tdsState.checkBeforeClearingColumns(() => {
         tdsState.removeAllColumns();
+        tdsState.resultSetModifierState.reset();
       });
     };
 
@@ -1090,6 +1092,68 @@ export const QueryBuilderTDSPanel = observer(
           >
             <PlusIcon />
           </button>
+        </div>
+        <div
+          className="query-builder__projection__result-modifier-prompt"
+          data-testid={
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT
+          }
+        >
+          <div className="query-builder__projection__result-modifier-prompt__header">
+            <button
+              className="query-builder__projection__result-modifier-prompt__header__label"
+              onClick={openResultSetModifierEditor}
+            >
+              <CogIcon className="query-builder__projection__result-modifier-prompt__header__label__icon" />
+              <div className="query-builder__projection__result-modifier-prompt__header__label__title">
+                Query Options
+              </div>
+            </button>
+          </div>
+          {tdsState.resultSetModifierState.limit && (
+            <div className="query-builder__projection__result-modifier-prompt__group">
+              <div className="query-builder__projection__result-modifier-prompt__group__label">
+                Max Rows
+              </div>
+              <div
+                className="query-builder__projection__result-modifier-prompt__group__content"
+                onClick={openResultSetModifierEditor}
+              >
+                {tdsState.resultSetModifierState.limit}
+              </div>
+            </div>
+          )}
+          {tdsState.resultSetModifierState.distinct && (
+            <div className="query-builder__projection__result-modifier-prompt__group">
+              <div className="query-builder__projection__result-modifier-prompt__group__label">
+                Eliminate Duplicate Rows
+              </div>
+              <div
+                className="query-builder__projection__result-modifier-prompt__group__content"
+                onClick={openResultSetModifierEditor}
+              >
+                Yes
+              </div>
+            </div>
+          )}
+          {tdsState.resultSetModifierState.sortColumns.length > 0 && (
+            <div className="query-builder__projection__result-modifier-prompt__group">
+              <div className="query-builder__projection__result-modifier-prompt__group__label">
+                Sort
+              </div>
+              {tdsState.resultSetModifierState.sortColumns.map(
+                (columnState) => (
+                  <div
+                    className="query-builder__projection__result-modifier-prompt__group__content"
+                    key={columnState.columnState.uuid}
+                    onClick={openResultSetModifierEditor}
+                  >
+                    {`${columnState.columnState.columnName} ${columnState.sortType}`}
+                  </div>
+                ),
+              )}
+            </div>
+          )}
         </div>
         <div className="query-builder__projection__content">
           <PanelDropZone
