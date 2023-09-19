@@ -235,7 +235,6 @@ const transformServiceExecution = (
 };
 const transformDeploymentOwnership = (
   element: DeploymentOwnership,
-  context: V1_GraphTransformerContext,
 ): V1_DeploymentOwnership => {
   const ownership = new V1_DeploymentOwnership();
   ownership.identifier = element.identifier;
@@ -244,7 +243,6 @@ const transformDeploymentOwnership = (
 
 const transformUserListOwnership = (
   element: UserListOwnership,
-  context: V1_GraphTransformerContext,
 ): V1_UserListOwnership => {
   const ownership = new V1_UserListOwnership();
   ownership.users = element.users;
@@ -255,9 +253,9 @@ const transformServiceOwnership = (
   metamodel: ServiceOwnership,
 ): V1_ServiceOwnership => {
   if (metamodel instanceof DeploymentOwnership) {
-    return transformDeploymentOwnership(metamodel, context);
+    return transformDeploymentOwnership(metamodel);
   } else if (metamodel instanceof UserListOwnership) {
-    return transformUserListOwnership(metamodel, context);
+    return transformUserListOwnership(metamodel);
   }
   throw new UnsupportedOperationError(
     "Can't transform service ownership",
@@ -337,7 +335,7 @@ export const V1_transformService = (
   service.documentation = element.documentation;
   service.execution = transformServiceExecution(element.execution, context);
   if (element.ownership) {
-    service.ownership = transformServiceOwnership(element.ownership, context);
+    service.ownership = transformServiceOwnership(element.ownership);
   }
   service.owners = element.owners;
   service.pattern = element.pattern;
