@@ -54,6 +54,7 @@ import {
   EnumValueExplicitReference,
   RelationalExecutionActivities,
   getTDSRowRankByColumnInAsc,
+  DEFAULT_LOCALE,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -482,7 +483,7 @@ const QueryResultCellRenderer = observer(
 
     const cellValue = params.value as string;
     const formattedCellValue = !isNaN(Number(cellValue))
-      ? Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(
+      ? Intl.NumberFormat(DEFAULT_LOCALE, { maximumFractionDigits: 4 }).format(
           Number(cellValue),
         )
       : cellValue;
