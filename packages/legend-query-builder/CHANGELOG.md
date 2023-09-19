@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.7.2
+
+### Patch Changes
+
+- [#2605](https://github.com/finos/legend-studio/pull/2605) [`1887f964f`](https://github.com/finos/legend-studio/commit/1887f964fd94805387dcb8690fb46a164148ebad) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add text descriptions in projection panel after setting result modifiers
+
+- [#2604](https://github.com/finos/legend-studio/pull/2604) [`bc2f2d1b6`](https://github.com/finos/legend-studio/commit/bc2f2d1b6fe51038bf0311f112857a1e44962315) ([@gayathrir11](https://github.com/gayathrir11)) - Open parameter panel when you populate default milestoning dates.
+
 ## 4.7.1
 
 ### Patch Changes

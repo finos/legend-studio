@@ -15,7 +15,13 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
-import { act } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  getAllByText,
+  getByText,
+  waitFor,
+} from '@testing-library/react';
 import {
   TEST_DATA__getAllWithHardcodedDateInput,
   TEST_DATA__getAllWithHardcodedDateOutput,
@@ -42,6 +48,8 @@ import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-stru
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { Entity } from '@finos/legend-storage';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { TEST_DATA__ModelCoverageAnalysisResult_Milestoning } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 
 type QueryComparisonTestCase = [
   string,
@@ -328,12 +336,13 @@ describe(
           expectedNumberOfParameterValues,
           expectedNumberOfPropertyParameterValues,
         } = testCase;
-        const { queryBuilderState } = await TEST__setUpQueryBuilder(
-          entities,
-          stub_RawLambda(),
-          mappingPath,
-          runtimePath,
-        );
+        const { renderResult, queryBuilderState } =
+          await TEST__setUpQueryBuilder(
+            entities,
+            stub_RawLambda(),
+            mappingPath,
+            runtimePath,
+          );
 
         const _personClass =
           queryBuilderState.graphManagerState.graph.getClass(classPath);
@@ -377,7 +386,75 @@ describe(
         expect(parameterValues.length).toBe(
           expectedNumberOfPropertyParameterValues,
         );
+
+        // Check if we have paramter panel opened and able to run query
+        if (expectedNumberOfParameterValues > 0) {
+          expect(queryBuilderState.showParametersPanel).toBe(true);
+          await waitFor(() =>
+            renderResult.getByTestId(
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+            ),
+          );
+          fireEvent.click(renderResult.getByText('Run Query'));
+          const executeDialog = await waitFor(() =>
+            renderResult.getByRole('dialog'),
+          );
+          expect(getByText(executeDialog, 'Set Parameter Values'));
+        }
       },
     );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after creating a query with non-temporal source and temporal target',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_MilestoningModel,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+    );
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('my::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Firm'));
+
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    //Add properties to fetch-structure
+    const element = await waitFor(() =>
+      getByText(explorerPanel, 'Business Temporal'),
+    );
+    fireEvent.contextMenu(element);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+    const tdsStateOne = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsStateOne.projectionColumns.length).toBe(2);
+
+    // Check if we have paramter panel opened and able to run query
+    expect(queryBuilderState.showParametersPanel).toBe(true);
+    await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+      ),
+    );
+    fireEvent.click(renderResult.getByText('Run Query'));
+    const executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(getByText(executeDialog, 'Set Parameter Values'));
   },
 );
