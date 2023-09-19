@@ -481,6 +481,11 @@ const QueryResultCellRenderer = observer(
     const tdsExecutionResult = params.tdsExecutionResult;
 
     const cellValue = params.value as string;
+    const formattedCellValue = !isNaN(Number(cellValue))
+      ? Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(
+          Number(cellValue),
+        )
+      : cellValue;
     const columnName = params.column?.getColId() ?? '';
 
     const findCoordinatesFromResultValue = (
@@ -733,7 +738,7 @@ const QueryResultCellRenderer = observer(
               {cellValue}
             </a>
           ) : (
-            <span>{cellValue}</span>
+            <span>{formattedCellValue}</span>
           )}
         </div>
       </ContextMenu>
