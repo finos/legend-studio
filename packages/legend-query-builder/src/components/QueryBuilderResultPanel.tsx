@@ -39,7 +39,6 @@ import {
   PanelDivider,
 } from '@finos/legend-art';
 import { format as formatSQL } from 'sql-formatter';
-
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -99,6 +98,7 @@ import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import {
   DataGrid,
   type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
 import {
   CODE_EDITOR_LANGUAGE,
@@ -480,6 +480,8 @@ const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
     const resultState = params.resultState;
     const tdsExecutionResult = params.tdsExecutionResult;
+    const fetchStructureImplementation =
+      resultState.queryBuilderState.fetchStructureState.implementation;
 
     const cellValue = params.value as string;
     const formattedCellValue = !isNaN(Number(cellValue))
@@ -504,7 +506,6 @@ const QueryResultCellRenderer = observer(
       columnName,
       params.rowIndex,
     );
-
     const cellInFilteredResults = resultState.selectedCells.some(
       (result) =>
         result.coordinates.colIndex === currentCellCoordinates.colIndex &&
@@ -570,7 +571,7 @@ const QueryResultCellRenderer = observer(
           coordinates.rowIndex,
           coordinates.colIndex,
         ]);
-        resultState.addCellData({
+        resultState.addSelectedCell({
           value: actualValue,
           columnName: columnName,
           coordinates: coordinates,
@@ -589,9 +590,6 @@ const QueryResultCellRenderer = observer(
           coordinates.rowIndex,
           coordinates.colIndex,
         ]);
-
-        const rowNode = params.api.getRowNode(params.rowIndex.toString());
-
         resultState.setSelectedCells([
           {
             value: actualValue,
@@ -599,15 +597,6 @@ const QueryResultCellRenderer = observer(
             coordinates: coordinates,
           },
         ]);
-
-        if (rowNode) {
-          params.api.refreshCells({
-            force: true,
-            columns: [columnName],
-            rowNodes: [rowNode],
-          });
-        }
-
         resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
       }
 
@@ -622,7 +611,6 @@ const QueryResultCellRenderer = observer(
             coordinates.rowIndex,
             coordinates.colIndex,
           ]);
-
           resultState.setSelectedCells([
             {
               value: actualValue,
@@ -630,19 +618,11 @@ const QueryResultCellRenderer = observer(
               coordinates: coordinates,
             },
           ]);
-          const rowNode = params.api.getRowNode(params.rowIndex.toString());
-
-          if (rowNode) {
-            params.api.refreshCells({
-              force: true,
-              columns: [columnName],
-              rowNodes: [rowNode],
-            });
-          }
           resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
         }
       }
     };
+
     const mouseUp: React.MouseEventHandler = (event) => {
       resultState.setIsSelectingCells(false);
     };
@@ -690,7 +670,7 @@ const QueryResultCellRenderer = observer(
                   result.coordinates.rowIndex === x,
               )
             ) {
-              resultState.addCellData(valueAndColumnId);
+              resultState.addSelectedCell(valueAndColumnId);
             }
           }
         }
@@ -698,9 +678,6 @@ const QueryResultCellRenderer = observer(
 
       resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
     };
-
-    const fetchStructureImplementation =
-      resultState.queryBuilderState.fetchStructureState.implementation;
 
     return (
       <ContextMenu
@@ -722,7 +699,6 @@ const QueryResultCellRenderer = observer(
           !resultState.mousedOverCell
         }
         menuProps={{ elevation: 7 }}
-        key={params.value as string}
         className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
       >
         <div
@@ -781,23 +757,29 @@ const QueryBuilderGridResult = observer(
             rowData={rowData}
             gridOptions={{
               suppressScrollOnNewData: true,
-              getRowId: function (data) {
-                return data.data.rowNumber as string;
-              },
+              getRowId: (data) => data.data.rowNumber,
+            }}
+            // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+            // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
             }}
             suppressFieldDotNotation={true}
-            columnDefs={executionResult.result.columns.map((colName) => ({
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              field: colName,
-              flex: 1,
-              cellRenderer: QueryResultCellRenderer,
-              cellRendererParams: {
-                resultState: resultState,
-                tdsExecutionResult: executionResult,
-              },
-            }))}
+            columnDefs={executionResult.result.columns.map(
+              (colName) =>
+                ({
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  field: colName,
+                  flex: 1,
+                  cellRenderer: QueryResultCellRenderer,
+                  cellRendererParams: {
+                    resultState: resultState,
+                    tdsExecutionResult: executionResult,
+                  },
+                }) as DataGridColumnDefinition,
+            )}
           />
         </div>
       </div>
