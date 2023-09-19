@@ -77,12 +77,12 @@ import type { PostValidationAssertion } from '../../../../../../../graph/metamod
 import { V1_PostValidationAssertion } from '../../../model/packageableElements/service/V1_PostValidationAssertion.js';
 import {
   DeploymentOwnership,
-  ServiceOwnership,
+  type ServiceOwnership,
   UserListOwnership,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceOwnership.js';
 import {
   V1_DeploymentOwnership,
-  V1_ServiceOwnership,
+  type V1_ServiceOwnership,
   V1_UserListOwnership,
 } from '../../../model/packageableElements/service/V1_ServiceOwnership.js';
 

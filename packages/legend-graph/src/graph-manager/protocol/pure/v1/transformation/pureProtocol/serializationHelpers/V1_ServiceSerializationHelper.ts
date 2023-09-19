@@ -84,7 +84,7 @@ import { V1_PostValidation } from '../../../model/packageableElements/service/V1
 import { V1_PostValidationAssertion } from '../../../model/packageableElements/service/V1_PostValidationAssertion.js';
 import {
   V1_DeploymentOwnership,
-  V1_ServiceOwnership,
+  type V1_ServiceOwnership,
   V1_UserListOwnership,
 } from '../../../model/packageableElements/service/V1_ServiceOwnership.js';
 

@@ -84,12 +84,12 @@ import type { V1_PostValidationAssertion } from '../../../../model/packageableEl
 import { PostValidationAssertion } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
 import {
   V1_DeploymentOwnership,
-  V1_ServiceOwnership,
+  type V1_ServiceOwnership,
   V1_UserListOwnership,
 } from '../../../../model/packageableElements/service/V1_ServiceOwnership.js';
 import {
   DeploymentOwnership,
-  ServiceOwnership,
+  type ServiceOwnership,
   UserListOwnership,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceOwnership.js';
 

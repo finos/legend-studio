@@ -196,7 +196,6 @@ const ServiceGeneralEditor = observer(() => {
     (idx: number): (() => void) =>
     (): void => {
       if (!isReadOnly && ownership instanceof UserListOwnership) {
-        console.log('deleting');
         service_deleteValueFromUserOwnership(ownership, idx);
         // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
         if (
@@ -359,7 +358,7 @@ const ServiceGeneralEditor = observer(() => {
         registration"
           update={toggleAutoActivateUpdates}
         />
-        {owners.length == 0 && (
+        {owners.length === 0 && (
           <div>
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">

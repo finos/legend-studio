@@ -57,7 +57,7 @@ import type { PostValidation } from '../../../graph/metamodel/pure/packageableEl
 import type { PostValidationAssertion } from '../../../graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
 import {
   DeploymentOwnership,
-  ServiceOwnership,
+  type ServiceOwnership,
   UserListOwnership,
 } from '../../../graph/metamodel/pure/packageableElements/service/ServiceOwnership.js';
 
@@ -229,17 +229,6 @@ export const observe_MultiExecutionTest = skipObserved(
   },
 );
 
-export const observe_Ownership = (
-  metamodel: ServiceOwnership,
-): ServiceOwnership => {
-  if (metamodel instanceof DeploymentOwnership) {
-    return observe_deploymentOwnership(metamodel);
-  } else if (metamodel instanceof UserListOwnership) {
-    return observe_userListOwnership(metamodel);
-  }
-  return metamodel;
-};
-
 export const observe_deploymentOwnership = skipObserved(
   (metamodel: DeploymentOwnership): DeploymentOwnership => {
     makeObservable(metamodel, {
@@ -259,6 +248,17 @@ export const observe_userListOwnership = skipObserved(
     return metamodel;
   },
 );
+
+export const observe_Ownership = (
+  metamodel: ServiceOwnership,
+): ServiceOwnership => {
+  if (metamodel instanceof DeploymentOwnership) {
+    return observe_deploymentOwnership(metamodel);
+  } else if (metamodel instanceof UserListOwnership) {
+    return observe_userListOwnership(metamodel);
+  }
+  return metamodel;
+};
 
 export const observe_ServiceTest_Legacy = (
   metamodel: DEPRECATED__ServiceTest,

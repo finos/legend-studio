@@ -44,7 +44,7 @@ import {
   resolveServiceQueryRawLambda,
   PureExecution,
   DeploymentOwnership,
-  ServiceOwnership,
+  type ServiceOwnership,
   UserListOwnership,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
