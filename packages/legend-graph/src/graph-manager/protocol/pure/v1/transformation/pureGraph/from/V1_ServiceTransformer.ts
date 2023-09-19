@@ -193,24 +193,6 @@ const transformSingleExecution = (
   return execution;
 };
 
-const transformDeploymentOwnership = (
-  element: DeploymentOwnership,
-  context: V1_GraphTransformerContext,
-): V1_DeploymentOwnership => {
-  const ownership = new V1_DeploymentOwnership();
-  ownership.identifier = element.identifier;
-  return ownership;
-};
-
-const transformUserListOwnership = (
-  element: UserListOwnership,
-  context: V1_GraphTransformerContext,
-): V1_UserListOwnership => {
-  const ownership = new V1_UserListOwnership();
-  ownership.users = element.users;
-  return ownership;
-};
-
 const transformKeyedParameter = (
   element: KeyedExecutionParameter,
   context: V1_GraphTransformerContext,
@@ -251,10 +233,26 @@ const transformServiceExecution = (
     metamodel,
   );
 };
+const transformDeploymentOwnership = (
+  element: DeploymentOwnership,
+  context: V1_GraphTransformerContext,
+): V1_DeploymentOwnership => {
+  const ownership = new V1_DeploymentOwnership();
+  ownership.identifier = element.identifier;
+  return ownership;
+};
+
+const transformUserListOwnership = (
+  element: UserListOwnership,
+  context: V1_GraphTransformerContext,
+): V1_UserListOwnership => {
+  const ownership = new V1_UserListOwnership();
+  ownership.users = element.users;
+  return ownership;
+};
 
 const transformServiceOwnership = (
   metamodel: ServiceOwnership,
-  context: V1_GraphTransformerContext,
 ): V1_ServiceOwnership => {
   if (metamodel instanceof DeploymentOwnership) {
     return transformDeploymentOwnership(metamodel, context);

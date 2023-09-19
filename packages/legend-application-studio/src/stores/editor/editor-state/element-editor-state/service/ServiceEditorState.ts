@@ -38,14 +38,14 @@ import {
   Service,
   PureSingleExecution,
   PureMultiExecution,
+  DeploymentOwnership,
+  type ServiceOwnership,
+  UserListOwnership,
   isStubbed_RawLambda,
   getValueSpecificationReturnType,
   type Type,
   resolveServiceQueryRawLambda,
   PureExecution,
-  DeploymentOwnership,
-  type ServiceOwnership,
-  UserListOwnership,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
@@ -117,7 +117,7 @@ export const OWNERSHIP_OPTIONS = [
   },
   {
     label: 'User List',
-    value: ServiceOwnershipType.USERLIST_OWNERSHIP, //"UserListOwnership",
+    value: ServiceOwnershipType.USERLIST_OWNERSHIP,
   },
 ];
 
@@ -196,12 +196,14 @@ export class ServiceEditorState extends ElementEditorState {
     return undefined;
   }
 
-  setSelectedOwnership(o: { label: string; value: string }): void {
+  setSelectedOwnership(o: ServiceOwnerOption): void {
     let newVal: ServiceOwnership | undefined;
     switch (o.value) {
       case ServiceOwnershipType.DEPLOYMENT_OWNERSHIP: {
-        newVal = new DeploymentOwnership('', this.service);
-        service_setOwnership(this.service, newVal);
+        service_setOwnership(
+          this.service,
+          new DeploymentOwnership('', this.service),
+        );
         break;
       }
       case ServiceOwnershipType.USERLIST_OWNERSHIP: {

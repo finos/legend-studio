@@ -258,9 +258,7 @@ const ServiceGeneralEditor = observer(() => {
     setIsLoadingUsers(false);
   };
 
-  const onOwnershipChange = (
-    val: { label: string; value: string } | undefined,
-  ): void => {
+  const onOwnershipChange = (val: ServiceOwnerOption | undefined): void => {
     if (val) {
       serviceState.setSelectedOwnership(val);
     }
