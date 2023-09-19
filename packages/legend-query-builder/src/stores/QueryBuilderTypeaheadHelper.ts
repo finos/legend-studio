@@ -15,15 +15,27 @@
  */
 
 import {
-  type AbstractPropertyExpression,
+  AbstractPropertyExpression,
   type ExecutionResult,
   type ValueSpecification,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   TDSExecutionResult,
   type RawLambda,
+  DerivedProperty,
+  Class,
+  SimpleFunctionExpression,
+  matchFunctionName,
+  PrimitiveType,
+  type ObserverContext,
 } from '@finos/legend-graph';
-import { guaranteeType, isNonNullable, isString } from '@finos/legend-shared';
+import {
+  getNullableFirstEntry,
+  guaranteeNonNullable,
+  guaranteeType,
+  isNonNullable,
+  isString,
+} from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_StartWith.js';
 import type { QueryBuilderAggregateColumnState } from './fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import {
@@ -40,6 +52,9 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
 } from '@finos/legend-application';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
+import { functionExpression_setParametersValues } from './shared/ValueSpecificationModifierHelper.js';
+import { createSupportedFunctionExpression } from './shared/ValueSpecificationEditorHelper.js';
 
 const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
@@ -52,6 +67,72 @@ const initializeQueryBuilderState = (
   tdsState.resultSetModifierState.distinct = true;
   tdsState.resultSetModifierState.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
   return builderState;
+};
+
+const applyMilestoningDates = (
+  propertyExpression: AbstractPropertyExpression,
+  observerContext: ObserverContext,
+): AbstractPropertyExpression => {
+  const newPropertyExpression = new AbstractPropertyExpression('');
+  newPropertyExpression.func = propertyExpression.func;
+  newPropertyExpression.parametersValues = [
+    ...propertyExpression.parametersValues,
+  ];
+
+  let nextExpression: ValueSpecification | undefined;
+  let currentExpression: ValueSpecification | undefined = newPropertyExpression;
+  while (currentExpression instanceof AbstractPropertyExpression) {
+    nextExpression = getNullableFirstEntry(currentExpression.parametersValues);
+    if (nextExpression instanceof AbstractPropertyExpression) {
+      const parameterValue = new AbstractPropertyExpression('');
+      parameterValue.func = nextExpression.func;
+      parameterValue.parametersValues = [...nextExpression.parametersValues];
+      nextExpression = parameterValue;
+      currentExpression.parametersValues[0] = parameterValue;
+    }
+    if (
+      currentExpression instanceof AbstractPropertyExpression &&
+      currentExpression.func.value.genericType.value.rawType instanceof Class &&
+      currentExpression.func.value._OWNER._generatedMilestonedProperties
+        .length !== 0 &&
+      currentExpression.func.value instanceof DerivedProperty &&
+      !currentExpression.func.value._OWNER.derivedProperties.includes(
+        currentExpression.func.value,
+      )
+    ) {
+      const parameterValue = createSupportedFunctionExpression(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
+        PrimitiveType.DATETIME,
+      );
+      const parameterValues =
+        currentExpression.parametersValues.length === 2
+          ? [parameterValue]
+          : [parameterValue, parameterValue];
+      functionExpression_setParametersValues(
+        currentExpression,
+        [
+          guaranteeNonNullable(currentExpression.parametersValues[0]),
+          ...parameterValues,
+        ],
+        observerContext,
+      );
+    }
+    currentExpression = nextExpression;
+    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+    // $x.employees->subType(@Person)->subType(@Staff)
+    while (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      currentExpression = getNullableFirstEntry(
+        currentExpression.parametersValues,
+      );
+    }
+  }
+  return newPropertyExpression;
 };
 
 const buildColumnTypeaheadQuery = (
@@ -73,6 +154,19 @@ const buildColumnTypeaheadQuery = (
     const aggregationState = tdsState.aggregationState;
     aggregationState.columns = [columnState];
   }
+  if (
+    projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+  ) {
+    const propertyExpression = applyMilestoningDates(
+      projectionColumnState.propertyExpressionState.propertyExpression,
+      builderState.observerContext,
+    );
+    projectionColumnState = new QueryBuilderSimpleProjectionColumnState(
+      tdsState,
+      propertyExpression,
+      true,
+    );
+  }
   tdsState.projectionColumns = [projectionColumnState];
   const postConditionState = new PostFilterConditionState(
     tdsState.postFilterState,
@@ -93,6 +187,10 @@ export const buildPropertyTypeaheadQuery = (
   propertyExpression: AbstractPropertyExpression,
   value: ValueSpecification | undefined,
 ): RawLambda => {
+  const newPropertyExpression = applyMilestoningDates(
+    propertyExpression,
+    queryBuilderState.observerContext,
+  );
   const builderState = initializeQueryBuilderState(queryBuilderState);
   const tdsState = guaranteeType(
     builderState.fetchStructureState.implementation,
@@ -100,7 +198,7 @@ export const buildPropertyTypeaheadQuery = (
   );
   const columnState = new QueryBuilderSimpleProjectionColumnState(
     tdsState,
-    propertyExpression,
+    newPropertyExpression,
     false,
   );
   return buildColumnTypeaheadQuery(builderState, columnState, value);
