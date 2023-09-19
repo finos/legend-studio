@@ -50,7 +50,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@fastify/cors": "8.3.0",
+    "@fastify/cors": "8.4.0",
     "@finos/legend-server-showcase": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "fastify": "4.23.2"

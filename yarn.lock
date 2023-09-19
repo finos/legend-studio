@@ -2034,13 +2034,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/cors@npm:8.3.0":
-  version: 8.3.0
-  resolution: "@fastify/cors@npm:8.3.0"
+"@fastify/cors@npm:8.4.0":
+  version: 8.4.0
+  resolution: "@fastify/cors@npm:8.4.0"
   dependencies:
     fastify-plugin: ^4.0.0
     mnemonist: 0.39.5
-  checksum: f487b5a8823264c3db58e99df020e38ada524514d60f2c5c2e01b994519545e2fc9481006d98e485b40e536b9b89f72af9061d9377b8e93f6ce07b14d40164a2
+  checksum: 4fe99623918b9c58f6590dac00fe778f2755eacc47de726acf97b3a3305a414425b393422429efca1b261514100f4092a4ad41bc549c6f6edf60e83f9f5d3701
   languageName: node
   linkType: hard
 
@@ -2806,7 +2806,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-fixture-mock-server@workspace:fixtures/legend-mock-server"
   dependencies:
-    "@fastify/cors": 8.3.0
+    "@fastify/cors": 8.4.0
     "@finos/legend-dev-utils": "workspace:*"
     cross-env: 7.0.3
     eslint: 8.49.0
@@ -2992,7 +2992,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-server-showcase-deployment@workspace:packages/legend-server-showcase-deployment"
   dependencies:
-    "@fastify/cors": 8.3.0
+    "@fastify/cors": 8.4.0
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-server-showcase": "workspace:*"
     "@finos/legend-shared": "workspace:*"

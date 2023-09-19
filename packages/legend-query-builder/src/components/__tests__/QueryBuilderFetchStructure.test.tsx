@@ -887,7 +887,8 @@ test(integrationTest('Query builder query cancellation'), async () => {
 
   await waitFor(() => renderResult.getByText('Run Query'));
   fireEvent.click(renderResult.getByText('Run Query'));
-  await waitFor(() => renderResult.getByText('Stop'));
-  fireEvent.click(renderResult.getByText('Stop'));
+  // NOTE: this could potentially be a flaky since if things happen too fast, the `Stop` button might not show up at all
+  // we'd probably should mock the execution call to have better control
+  fireEvent.click(await waitFor(() => renderResult.getByText('Stop')));
   await waitFor(() => renderResult.getByText('Run Query'));
 });
