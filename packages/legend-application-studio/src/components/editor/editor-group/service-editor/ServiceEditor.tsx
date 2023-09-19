@@ -21,6 +21,7 @@ import {
   ServiceEditorState,
   SERVICE_TAB,
   OWNERSHIP_OPTIONS,
+  type ServiceOwnerOption,
 } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   clsx,
