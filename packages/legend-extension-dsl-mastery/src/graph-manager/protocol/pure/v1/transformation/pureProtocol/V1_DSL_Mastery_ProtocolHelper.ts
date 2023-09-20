@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { V1_MasterRecordDefinition } from '../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
+import {
+  V1_MasterRecordDefinition,
+  V1_CollectionEquality,
+} from '../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import {
   V1_IdentityResolution,
   V1_ResolutionQuery,
@@ -23,6 +26,7 @@ import {
   V1_RecordService,
   V1_RecordSource,
   V1_RecordSourcePartition,
+  V1_RecordSourceDependency,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 import {
   optionalCustom,
@@ -64,10 +68,13 @@ import {
 } from 'serializr';
 import {
   type V1_AcquisitionProtocol,
+  type V1_Decryption,
   V1_FileAcquisitionProtocol,
   V1_KafkaAcquisitionProtocol,
   V1_LegendServiceAcquisitionProtocol,
   V1_RestAcquisitionProtocol,
+  V1_PGPDecryption,
+  V1_DESDecryption,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_AcquisitionProtocol.js';
 import {
   V1_FTPConnection,
@@ -355,6 +362,74 @@ export const V1_HTTPConnectionSchema = (
   });
 
 /********************
+ * decryption
+ ********************/
+export enum V1_DecryptionType {
+  PGP = 'pgpDecryption',
+  DES = 'desDecryption',
+}
+
+export const V1_PGPDecryptionSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PGPDecryption> =>
+  createModelSchema(V1_PGPDecryption, {
+    _type: usingConstantValueSchema(V1_DecryptionType.PGP),
+    privateKey: custom(
+      (val) => V1_serializeCredentialSecret(val, plugins),
+      (val) => V1_deserializeCredentialSecret(val, plugins),
+    ),
+    passPhrase: custom(
+      (val) => V1_serializeCredentialSecret(val, plugins),
+      (val) => V1_deserializeCredentialSecret(val, plugins),
+    ),
+  });
+
+export const V1_DESDecryptionSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DESDecryption> =>
+  createModelSchema(V1_DESDecryption, {
+    _type: usingConstantValueSchema(V1_DecryptionType.DES),
+    decryptionKey: custom(
+      (val) => V1_serializeCredentialSecret(val, plugins),
+      (val) => V1_deserializeCredentialSecret(val, plugins),
+    ),
+    uuEncode: primitive(),
+    capOption: primitive(),
+  });
+
+export const V1_serializeDecryption = (
+  protocol: V1_Decryption,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Decryption> => {
+  if (protocol instanceof V1_PGPDecryption) {
+    return serialize(V1_PGPDecryptionSchema(plugins), protocol);
+  } else if (protocol instanceof V1_DESDecryption) {
+    return serialize(V1_DESDecryptionSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize decryption: no compatible serializer available from plugins`,
+    protocol,
+  );
+};
+
+export const V1_deserializeDecryption = (
+  json: PlainObject<V1_Decryption>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Decryption => {
+  switch (json._type) {
+    case V1_DecryptionType.PGP:
+      return deserialize(V1_PGPDecryptionSchema(plugins), json);
+    case V1_DecryptionType.DES:
+      return deserialize(V1_DESDecryptionSchema(plugins), json);
+    default: {
+      throw new UnsupportedOperationError(
+        `Can't deserialize decryption of type '${json._type}': no compatible deserializer available from plugins`,
+      );
+    }
+  }
+};
+
+/********************
  * acquisition protocol
  ********************/
 export enum V1_AcquisitionProtocolType {
@@ -389,18 +464,24 @@ export const V1_KafkaAcquisitionProtocolSchema = createModelSchema(
   },
 );
 
-export const V1_FileAcquisitionProtocolSchema = createModelSchema(
-  V1_FileAcquisitionProtocol,
-  {
+export const V1_FileAcquisitionProtocolSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_FileAcquisitionProtocol> =>
+  createModelSchema(V1_FileAcquisitionProtocol, {
     _type: usingConstantValueSchema(V1_AcquisitionProtocolType.FILE),
     connection: primitive(),
+    decryption: optionalCustom(
+      (protocol) => V1_serializeDecryption(protocol, plugins),
+      (protocol) => V1_deserializeDecryption(protocol, plugins),
+    ),
+    encoding: optional(primitive()),
     filePath: primitive(),
     fileSplittingKeys: list(primitive()),
     fileType: primitive(),
     headerLines: primitive(),
+    maxRetryTimeInMinutes: optional(primitive()),
     recordsKey: primitive(),
-  },
-);
+  });
 
 export const V1_serializeAcquisitionProtocol = (
   protocol: V1_AcquisitionProtocol,
@@ -413,7 +494,7 @@ export const V1_serializeAcquisitionProtocol = (
   } else if (protocol instanceof V1_KafkaAcquisitionProtocol) {
     return serialize(V1_KafkaAcquisitionProtocolSchema, protocol);
   } else if (protocol instanceof V1_FileAcquisitionProtocol) {
-    return serialize(V1_FileAcquisitionProtocolSchema, protocol);
+    return serialize(V1_FileAcquisitionProtocolSchema(plugins), protocol);
   }
   const extraAcquisitionProtocolSerializers = plugins.flatMap(
     (plugin) =>
@@ -445,7 +526,7 @@ export const V1_deserializeAcquisitionProtocol = (
     case V1_AcquisitionProtocolType.KAFKA:
       return deserialize(V1_KafkaAcquisitionProtocolSchema, json);
     case V1_AcquisitionProtocolType.FILE:
-      return deserialize(V1_FileAcquisitionProtocolSchema, json);
+      return deserialize(V1_FileAcquisitionProtocolSchema(plugins), json);
     default: {
       const extraAcquisitionProtocolDeserializers = plugins.flatMap(
         (plugin) =>
@@ -536,6 +617,13 @@ const V1_recordSourcePartitionSchema = createModelSchema(
   },
 );
 
+const V1_recordSourceDependencySchema = createModelSchema(
+  V1_RecordSourceDependency,
+  {
+    dependentRecordSourceId: primitive(),
+  },
+);
+
 const V1_recordSourceSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_RecordSource> =>
@@ -548,6 +636,9 @@ const V1_recordSourceSchema = (
     createBlockedException: primitive(),
     createPermitted: primitive(),
     dataProvider: optional(primitive()),
+    dependencies: optional(
+      list(usingModelSchema(V1_recordSourceDependencySchema)),
+    ),
     description: primitive(),
     id: primitive(),
     parseService: optional(primitive()),
@@ -555,10 +646,13 @@ const V1_recordSourceSchema = (
       (val) => serialize(V1_recordSourcePartitionSchema, val),
       (val) => deserialize(V1_recordSourcePartitionSchema, val),
     ),
+    raiseExceptionWorkflow: optional(primitive()),
     recordService: optional(usingModelSchema(V1_recordServiceSchema(plugins))),
+    runProfile: optional(primitive()),
     sequentialData: primitive(),
     stagedLoad: primitive(),
     status: primitive(),
+    timeoutInMinutes: optional(primitive()),
     transformService: optional(primitive()),
     trigger: optionalCustom(
       (val) => V1_serializeTrigger(val),
@@ -783,6 +877,15 @@ export const V1_dataProviderModelSchema = (
   });
 
 /**********
+ * collection equality
+ **********/
+
+const V1_collectionEqualitySchema = createModelSchema(V1_CollectionEquality, {
+  equalityFunction: primitive(),
+  modelClass: primitive(),
+});
+
+/**********
  * master record definition
  **********/
 
@@ -795,6 +898,11 @@ export const V1_masterRecordDefinitionModelSchema = (
     _type: usingConstantValueSchema(
       V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE,
     ),
+    collectionEqualities: optional(
+      list(usingModelSchema(V1_collectionEqualitySchema)),
+    ),
+    elasticSearchTransformService: optional(primitive()),
+    exceptionWorkflowTransformService: optional(primitive()),
     identityResolution: custom(
       (val) => serialize(V1_identityResolutionSchema, val),
       (val) => deserialize(V1_identityResolutionSchema, val),
@@ -809,6 +917,7 @@ export const V1_masterRecordDefinitionModelSchema = (
         (val) => V1_deserializePrecedenceRule(val, plugins),
       ),
     ),
+    publishToElasticSearch: optional(primitive()),
     sources: list(
       custom(
         (val) => serialize(V1_recordSourceSchema(plugins), val),

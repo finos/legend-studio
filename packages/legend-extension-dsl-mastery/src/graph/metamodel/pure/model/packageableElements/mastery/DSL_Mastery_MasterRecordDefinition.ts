@@ -24,6 +24,19 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
 import type { PrecedenceRule } from './DSL_Mastery_PrecedenceRule.js';
 
+export class CollectionEquality implements Hashable {
+  modelClass!: string;
+  equalityFunction!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      MASTERY_HASH_STRUCTURE.COLLECTION_EQUALITY,
+      this.modelClass,
+      this.equalityFunction,
+    ]);
+  }
+}
+
 export class MasterRecordDefinition
   extends PackageableElement
   implements Hashable
@@ -33,6 +46,10 @@ export class MasterRecordDefinition
   postCurationEnrichmentService?: string | undefined;
   precedenceRules: PrecedenceRule[] | undefined;
   sources: RecordSource[] = [];
+  collectionEqualities: CollectionEquality[] | undefined;
+  publishToElasticSearch?: boolean | undefined;
+  elasticSearchTransformService?: string | undefined;
+  exceptionWorkflowTransformService?: string | undefined;
 
   protected override get _elementHashCode(): string {
     return hashArray([
@@ -42,6 +59,10 @@ export class MasterRecordDefinition
       hashArray(this.sources),
       this.precedenceRules ? hashArray(this.precedenceRules) : '',
       this.postCurationEnrichmentService ?? '',
+      this.collectionEqualities ? hashArray(this.collectionEqualities) : '',
+      this.publishToElasticSearch?.toString() ?? '',
+      this.elasticSearchTransformService ?? '',
+      this.exceptionWorkflowTransformService ?? '',
     ]);
   }
 

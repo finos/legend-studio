@@ -24,6 +24,7 @@ import {
   act,
   getByDisplayValue,
   getAllByTitle,
+  queryByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -300,6 +301,36 @@ test(
       ),
     ).not.toBeNull();
     fireEvent.click(getByText(modal, 'Close'));
+
+    // Test text decriptions are correctly added for result set modifiers
+    await waitFor(() => renderResult.getByText('Query Options'));
+    await waitFor(() => renderResult.getByText('Max Rows'));
+    await waitFor(() => renderResult.getByText('500'));
+    await waitFor(() => renderResult.getByText('Eliminate Duplicate Rows'));
+    await waitFor(() => renderResult.getByText('Yes'));
+    await waitFor(() => renderResult.getByText('Sort'));
+    await waitFor(() => renderResult.getByText(`${FIRST_NAME_ALIAS} ASC`));
+    await waitFor(() =>
+      renderResult.getByText(`${CHAINED_PROPERTY_ALIAS} DESC`),
+    );
+
+    // Clear all projection columns
+    fireEvent.click(getByTitle(queryBuilder, 'Clear all projection columns'));
+    const closeModal = await waitFor(() => renderResult.getByRole('dialog'));
+    fireEvent.click(getByText(closeModal, 'Proceed'));
+    await waitFor(() => renderResult.getByText('Query Options'));
+    const queryBuilderResultModifierPrompt = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
+      ),
+    );
+    expect(
+      queryByText(queryBuilderResultModifierPrompt, 'Max Rows'),
+    ).toBeNull();
+    expect(
+      queryByText(queryBuilderResultModifierPrompt, 'Eliminate Duplicate Rows'),
+    ).toBeNull();
+    expect(queryByText(queryBuilderResultModifierPrompt, 'Sort')).toBeNull();
 
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
@@ -856,7 +887,8 @@ test(integrationTest('Query builder query cancellation'), async () => {
 
   await waitFor(() => renderResult.getByText('Run Query'));
   fireEvent.click(renderResult.getByText('Run Query'));
-  await waitFor(() => renderResult.getByText('Stop'));
-  fireEvent.click(renderResult.getByText('Stop'));
+  // NOTE: this could potentially be a flaky since if things happen too fast, the `Stop` button might not show up at all
+  // we'd probably should mock the execution call to have better control
+  fireEvent.click(await waitFor(() => renderResult.getByText('Stop')));
   await waitFor(() => renderResult.getByText('Run Query'));
 });

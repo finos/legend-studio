@@ -87,6 +87,84 @@ Service org::dataeng::TransformWidget
   ]
 }
 
+Service org::dataeng::EqualityFunction
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::dataeng::Widget[1]|$src.widgetId;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      connections:
+      [
+        ModelStore:
+        [
+          id1: test::connection::modelConnection
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service org::dataeng::ElasticSearchTransformService
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::dataeng::Widget[1]|$src.widgetId;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      connections:
+      [
+        ModelStore:
+        [
+          id1: test::connection::modelConnection
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service org::dataeng::ExceptionWorkflowTransformService
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::dataeng::Widget[1]|$src.widgetId;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      connections:
+      [
+        ModelStore:
+        [
+          id1: test::connection::modelConnection
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
 
 ###Mastery
 MasterRecordDefinition alloy::mastery::WidgetMasterRecord
@@ -146,6 +224,15 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
     }
   ]
   postCurationEnrichmentService: org::dataeng::ParseWidget;
+  publishToElasticSearch: true;
+  elasticSearchTransformService: org::dataeng::ElasticSearchTransformService;
+  exceptionWorkflowTransformService: org::dataeng::ExceptionWorkflowTransformService;
+  collectionEqualities: [
+    {
+      modelClass: org::dataeng::MilestonedIdentifier;
+      equalityFunction: org::dataeng::EqualityFunction;
+    }
+  ]
   recordSources:
   [
     widget-file-source-ftp: {
@@ -158,6 +245,8 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
           fileType: CSV;
           filePath: '/download/day-file.csv';
           headerLines: 0;
+          maxRetryTimeInMinutes: 180;
+          encoding: 'Windows-1252';
           connection: alloy::mastery::connection::FTPConnection;
         }#;};
       dataProvider: alloy::mastery::dataprovider::Bloomberg;
@@ -167,6 +256,12 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       createPermitted: true;
       createBlockedException: false;
       allowFieldDelete: true;
+      raiseExceptionWorkflow: true;
+      runProfile: Medium;
+      timeoutInMinutes: 100;
+      dependencies: [
+        RecordSourceDependency {widget-file-source-sftp}
+      ];
     },
     widget-file-source-sftp: {
       description: 'Widget SFTP File source';
