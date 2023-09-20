@@ -16,6 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
+import { type V1_CredentialSecret } from './V1_DSL_Mastery_AuthenticationStrategy.js';
 
 export enum V1_FileType {
   JSON,
@@ -27,6 +28,42 @@ export enum V1_KafkaDataType {
   JSON,
   CSV,
   XML,
+}
+
+export abstract class V1_Decryption implements Hashable {
+  get hashCode(): string {
+    return hashArray([MASTERY_HASH_STRUCTURE.DECRYPTION]);
+  }
+}
+
+export class V1_PGPDecryption extends V1_Decryption {
+  privateKey!: V1_CredentialSecret;
+  passPhrase!: V1_CredentialSecret;
+
+  override get hashCode(): string {
+    return hashArray([
+      MASTERY_HASH_STRUCTURE.PGP_DECRYPTION,
+      this.privateKey,
+      this.passPhrase,
+      super.hashCode,
+    ]);
+  }
+}
+
+export class V1_DESDecryption extends V1_Decryption {
+  decryptionKey!: V1_CredentialSecret;
+  uuEncode!: boolean;
+  capOption!: boolean;
+
+  override get hashCode(): string {
+    return hashArray([
+      MASTERY_HASH_STRUCTURE.DES_DECRYPTION,
+      this.decryptionKey,
+      this.uuEncode.toString(),
+      this.capOption.toString(),
+      super.hashCode,
+    ]);
+  }
 }
 
 export abstract class V1_AcquisitionProtocol implements Hashable {
@@ -54,6 +91,9 @@ export class V1_FileAcquisitionProtocol extends V1_AcquisitionProtocol {
   fileSplittingKeys: string[] | undefined;
   headerLines!: number;
   recordsKey?: string | undefined;
+  maxRetryTimeInMinutes?: number | undefined;
+  encoding?: string | undefined;
+  decryption?: V1_Decryption | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -64,6 +104,9 @@ export class V1_FileAcquisitionProtocol extends V1_AcquisitionProtocol {
       this.fileSplittingKeys ? hashArray(this.fileSplittingKeys) : '',
       this.headerLines,
       this.recordsKey ?? '',
+      this.maxRetryTimeInMinutes ?? '',
+      this.encoding ?? '',
+      this.decryption ?? '',
       super.hashCode,
     ]);
   }

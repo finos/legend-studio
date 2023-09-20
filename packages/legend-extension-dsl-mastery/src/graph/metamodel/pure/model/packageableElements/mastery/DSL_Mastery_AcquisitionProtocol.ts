@@ -16,6 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
+import { type CredentialSecret } from './DSL_Mastery_AuthenticationStrategy.js';
 
 export enum FileType {
   JSON,
@@ -27,6 +28,42 @@ export enum KafkaDataType {
   JSON,
   CSV,
   XML,
+}
+
+export abstract class Decryption implements Hashable {
+  get hashCode(): string {
+    return hashArray([MASTERY_HASH_STRUCTURE.DECRYPTION]);
+  }
+}
+
+export class PGPDecryption extends Decryption {
+  privateKey!: CredentialSecret;
+  passPhrase!: CredentialSecret;
+
+  override get hashCode(): string {
+    return hashArray([
+      MASTERY_HASH_STRUCTURE.PGP_DECRYPTION,
+      this.privateKey,
+      this.passPhrase,
+      super.hashCode,
+    ]);
+  }
+}
+
+export class DESDecryption extends Decryption {
+  decryptionKey!: CredentialSecret;
+  uuEncode!: boolean;
+  capOption!: boolean;
+
+  override get hashCode(): string {
+    return hashArray([
+      MASTERY_HASH_STRUCTURE.DES_DECRYPTION,
+      this.decryptionKey,
+      this.uuEncode.toString(),
+      this.capOption.toString(),
+      super.hashCode,
+    ]);
+  }
 }
 
 export abstract class AcquisitionProtocol implements Hashable {
@@ -54,6 +91,9 @@ export class FileAcquisitionProtocol extends AcquisitionProtocol {
   fileSplittingKeys: string[] | undefined;
   headerLines!: number;
   recordsKey?: string | undefined;
+  maxRetryTimeInMinutes?: number | undefined;
+  encoding?: string | undefined;
+  decryption?: Decryption | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -64,6 +104,9 @@ export class FileAcquisitionProtocol extends AcquisitionProtocol {
       this.fileSplittingKeys ? hashArray(this.fileSplittingKeys) : '',
       this.headerLines,
       this.recordsKey ?? '',
+      this.maxRetryTimeInMinutes ?? '',
+      this.encoding ?? '',
+      this.decryption ?? '',
       super.hashCode,
     ]);
   }
