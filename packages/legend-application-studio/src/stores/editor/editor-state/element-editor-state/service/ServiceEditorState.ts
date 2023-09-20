@@ -110,13 +110,15 @@ export const isServiceQueryTDS = (
 };
 
 export const MINIMUM_SERVICE_OWNERS = 2;
+export const DeploymentOwnershipLabel = 'Deployment';
+export const UserlistOwnershipLabel = 'User List';
 export const OWNERSHIP_OPTIONS = [
   {
-    label: 'Deployment',
+    label: DeploymentOwnershipLabel,
     value: ServiceOwnershipType.DEPLOYMENT_OWNERSHIP,
   },
   {
-    label: 'User List',
+    label: UserlistOwnershipLabel,
     value: ServiceOwnershipType.USERLIST_OWNERSHIP,
   },
 ];
@@ -184,12 +186,12 @@ export class ServiceEditorState extends ElementEditorState {
     const ownership = this.service.ownership;
     if (ownership instanceof DeploymentOwnership) {
       return {
-        label: 'Deployment',
+        label: DeploymentOwnershipLabel,
         value: ServiceOwnershipType.DEPLOYMENT_OWNERSHIP,
       };
     } else if (ownership instanceof UserListOwnership) {
       return {
-        label: 'UserList',
+        label: UserlistOwnershipLabel,
         value: ServiceOwnershipType.USERLIST_OWNERSHIP,
       };
     }
@@ -197,7 +199,6 @@ export class ServiceEditorState extends ElementEditorState {
   }
 
   setSelectedOwnership(o: ServiceOwnerOption): void {
-    let newVal: ServiceOwnership | undefined;
     switch (o.value) {
       case ServiceOwnershipType.DEPLOYMENT_OWNERSHIP: {
         service_setOwnership(
@@ -207,12 +208,16 @@ export class ServiceEditorState extends ElementEditorState {
         break;
       }
       case ServiceOwnershipType.USERLIST_OWNERSHIP: {
-        newVal = new UserListOwnership([], this.service);
-        service_setOwnership(this.service, newVal);
+        service_setOwnership(
+          this.service,
+          new UserListOwnership([], this.service),
+        );
         break;
       }
       default: {
-        throw new Error('Unsupported');
+        this.editorStore.applicationStore.notificationService.notifyError(
+          'Unsupported ownership type',
+        );
       }
     }
   }
