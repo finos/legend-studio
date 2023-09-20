@@ -470,17 +470,17 @@ export const V1_FileAcquisitionProtocolSchema = (
   createModelSchema(V1_FileAcquisitionProtocol, {
     _type: usingConstantValueSchema(V1_AcquisitionProtocolType.FILE),
     connection: primitive(),
-    filePath: primitive(),
-    fileSplittingKeys: list(primitive()),
-    fileType: primitive(),
-    headerLines: primitive(),
-    recordsKey: primitive(),
-    maxRetryTimeInMinutes: optional(primitive()),
-    encoding: optional(primitive()),
     decryption: optionalCustom(
       (protocol) => V1_serializeDecryption(protocol, plugins),
       (protocol) => V1_deserializeDecryption(protocol, plugins),
     ),
+    encoding: optional(primitive()),
+    filePath: primitive(),
+    fileSplittingKeys: list(primitive()),
+    fileType: primitive(),
+    headerLines: primitive(),
+    maxRetryTimeInMinutes: optional(primitive()),
+    recordsKey: primitive(),
   });
 
 export const V1_serializeAcquisitionProtocol = (
@@ -636,6 +636,9 @@ const V1_recordSourceSchema = (
     createBlockedException: primitive(),
     createPermitted: primitive(),
     dataProvider: optional(primitive()),
+    dependencies: optional(
+      list(usingModelSchema(V1_recordSourceDependencySchema)),
+    ),
     description: primitive(),
     id: primitive(),
     parseService: optional(primitive()),
@@ -643,20 +646,17 @@ const V1_recordSourceSchema = (
       (val) => serialize(V1_recordSourcePartitionSchema, val),
       (val) => deserialize(V1_recordSourcePartitionSchema, val),
     ),
+    raiseExceptionWorkflow: optional(primitive()),
     recordService: optional(usingModelSchema(V1_recordServiceSchema(plugins))),
+    runProfile: optional(primitive()),
     sequentialData: primitive(),
     stagedLoad: primitive(),
     status: primitive(),
+    timeoutInMinutes: optional(primitive()),
     transformService: optional(primitive()),
     trigger: optionalCustom(
       (val) => V1_serializeTrigger(val),
       (val) => V1_deserializeTrigger(val),
-    ),
-    raiseExceptionWorkflow: optional(primitive()),
-    runProfile: optional(primitive()),
-    timeoutInMinutes: optional(primitive()),
-    dependencies: optional(
-      list(usingModelSchema(V1_recordSourceDependencySchema)),
     ),
   });
 
@@ -881,8 +881,8 @@ export const V1_dataProviderModelSchema = (
  **********/
 
 const V1_collectionEqualitySchema = createModelSchema(V1_CollectionEquality, {
-  modelClass: primitive(),
   equalityFunction: primitive(),
+  modelClass: primitive(),
 });
 
 /**********
@@ -898,6 +898,11 @@ export const V1_masterRecordDefinitionModelSchema = (
     _type: usingConstantValueSchema(
       V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE,
     ),
+    collectionEqualities: optional(
+      list(usingModelSchema(V1_collectionEqualitySchema)),
+    ),
+    elasticSearchTransformService: optional(primitive()),
+    exceptionWorkflowTransformService: optional(primitive()),
     identityResolution: custom(
       (val) => serialize(V1_identityResolutionSchema, val),
       (val) => deserialize(V1_identityResolutionSchema, val),
@@ -912,16 +917,11 @@ export const V1_masterRecordDefinitionModelSchema = (
         (val) => V1_deserializePrecedenceRule(val, plugins),
       ),
     ),
+    publishToElasticSearch: optional(primitive()),
     sources: list(
       custom(
         (val) => serialize(V1_recordSourceSchema(plugins), val),
         (val) => deserialize(V1_recordSourceSchema(plugins), val),
       ),
     ),
-    collectionEqualities: optional(
-      list(usingModelSchema(V1_collectionEqualitySchema)),
-    ),
-    publishToElasticSearch: optional(primitive()),
-    elasticSearchTransformService: optional(primitive()),
-    exceptionWorkflowTransformService: optional(primitive()),
   });
