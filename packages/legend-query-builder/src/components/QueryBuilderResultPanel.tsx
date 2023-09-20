@@ -54,7 +54,6 @@ import {
   EnumValueExplicitReference,
   RelationalExecutionActivities,
   getTDSRowRankByColumnInAsc,
-  DEFAULT_LOCALE,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -116,6 +115,7 @@ import {
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { QueryUsageViewer } from './QueryUsageViewer.js';
+import { DEFAULT_LOCALE } from '../graph-manager/QueryBuilderConst.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {

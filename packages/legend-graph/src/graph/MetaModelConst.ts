@@ -167,5 +167,3 @@ export const DATE_TIME_FORMAT_WITH_MILLISECONDS =
   "yyyy-MM-dd'T'HH:mm:ss.SSSxxxx";
 export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssxxxx";
 export const DATE_FORMAT = 'yyyy-MM-dd';
-
-export const DEFAULT_LOCALE = 'en-US';
