@@ -115,6 +115,7 @@ import {
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { QueryUsageViewer } from './QueryUsageViewer.js';
+import { DEFAULT_LOCALE } from '../graph-manager/QueryBuilderConst.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -481,6 +482,11 @@ const QueryResultCellRenderer = observer(
     const tdsExecutionResult = params.tdsExecutionResult;
 
     const cellValue = params.value as string;
+    const formattedCellValue = !isNaN(Number(cellValue))
+      ? Intl.NumberFormat(DEFAULT_LOCALE, { maximumFractionDigits: 4 }).format(
+          Number(cellValue),
+        )
+      : cellValue;
     const columnName = params.column?.getColId() ?? '';
 
     const findCoordinatesFromResultValue = (
@@ -733,7 +739,7 @@ const QueryResultCellRenderer = observer(
               {cellValue}
             </a>
           ) : (
-            <span>{cellValue}</span>
+            <span>{formattedCellValue}</span>
           )}
         </div>
       </ContextMenu>

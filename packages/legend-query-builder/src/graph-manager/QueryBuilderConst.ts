@@ -18,3 +18,5 @@ export enum QUERY_BUILDER_CALENDAR_TYPE {
   NY = 'NY',
   LDN = 'LDN',
 }
+
+export const DEFAULT_LOCALE = 'en-US';

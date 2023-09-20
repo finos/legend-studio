@@ -48,7 +48,7 @@ jobs:
       - name: Check Docker image tag
         run: node ./scripts/docker/checkDockerImageTag.js ${{ github.event.inputs.tag }}
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: finos
           password: ${{ secrets.DOCKER_PASSWORD }}
