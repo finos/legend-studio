@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.7.3
+
+### Patch Changes
+
+- [#2614](https://github.com/finos/legend-studio/pull/2614) [`c33337790`](https://github.com/finos/legend-studio/commit/c33337790fb06d17ee2d5d72f2092825d69a88af) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Minor css improvements for query builder result set modifier text description
+
+- [#2615](https://github.com/finos/legend-studio/pull/2615) [`41f4abd12`](https://github.com/finos/legend-studio/commit/41f4abd125f548d9c9031e909204f3d2f6f9cbb5) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Format value of type number to include commas for more than 4 digits in query builder result panel
+
 ## 4.7.2
 
 ### Patch Changes
