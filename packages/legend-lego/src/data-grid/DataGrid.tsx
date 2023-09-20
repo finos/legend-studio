@@ -23,6 +23,8 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import {
   type CellMouseOverEvent,
   type ICellRendererParams,
+  type GridOptions,
+  type ColDef,
   ModuleRegistry,
 } from '@ag-grid-community/core';
 
@@ -50,4 +52,6 @@ export const configureDataGridComponent = (): void => {
 export type {
   CellMouseOverEvent as DataGridCellMouseOverEvent,
   ICellRendererParams as DataGridCellRendererParams,
+  GridOptions as DataGridOptions,
+  ColDef as DataGridColumnDefinition,
 };

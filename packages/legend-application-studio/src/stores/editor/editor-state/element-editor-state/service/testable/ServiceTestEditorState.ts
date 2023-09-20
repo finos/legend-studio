@@ -185,16 +185,15 @@ export class ServiceTestSetupState {
   showNewParameterModal = false;
 
   constructor(testState: ServiceTestState) {
-    this.testState = testState;
-    this.editorStore = testState.editorStore;
     makeObservable(this, {
-      changeSerializationFormat: action,
       parameterValueStates: observable,
-      buildParameterStates: action,
       newParameterValueName: observable,
       showNewParameterModal: observable,
+      changeSerializationFormat: action,
+      buildParameterStates: action,
       setNewParameterValueName: action,
       setShowNewParameterModal: action,
+      generateTestParameterValues: action,
       openNewParamModal: action,
       addParameterValue: action,
       addServiceTestAssertKeys: action,
@@ -202,6 +201,9 @@ export class ServiceTestSetupState {
       removeParamValueState: action,
       getContentTypeWithParamFromQuery: action,
     });
+
+    this.testState = testState;
+    this.editorStore = testState.editorStore;
     this.parameterValueStates = this.buildParameterStates();
   }
 

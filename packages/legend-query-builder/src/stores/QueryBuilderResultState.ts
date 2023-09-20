@@ -98,13 +98,13 @@ export class QueryBuilderResultState {
       mousedOverCell: observable,
       isRunningQuery: observable,
       isSelectingCells: observable,
-      setIsSelectingCells: action,
       isQueryUsageViewerOpened: observable,
+      setIsSelectingCells: action,
       setIsRunningQuery: action,
       setExecutionResult: action,
       setExecutionDuration: action,
       setPreviewLimit: action,
-      addCellData: action,
+      addSelectedCell: action,
       setSelectedCells: action,
       setMouseOverCell: action,
       setQueryRunPromise: action,
@@ -124,43 +124,41 @@ export class QueryBuilderResultState {
     );
   }
 
-  setIsSelectingCells = (val: boolean): void => {
+  setIsSelectingCells(val: boolean): void {
     this.isSelectingCells = val;
-  };
+  }
 
-  setIsRunningQuery = (val: boolean): void => {
+  setIsRunningQuery(val: boolean): void {
     this.isRunningQuery = val;
-  };
+  }
 
-  setExecutionResult = (val: ExecutionResult | undefined): void => {
+  setExecutionResult(val: ExecutionResult | undefined): void {
     this.executionResult = val;
-  };
+  }
 
-  setExecutionDuration = (val: number | undefined): void => {
+  setExecutionDuration(val: number | undefined): void {
     this.executionDuration = val;
-  };
+  }
 
-  setPreviewLimit = (val: number): void => {
+  setPreviewLimit(val: number): void {
     this.previewLimit = Math.max(1, val);
-  };
+  }
 
-  addCellData = (val: QueryBuilderTDSResultCellData): void => {
+  addSelectedCell(val: QueryBuilderTDSResultCellData): void {
     this.selectedCells.push(val);
-  };
+  }
 
-  setSelectedCells = (val: QueryBuilderTDSResultCellData[]): void => {
+  setSelectedCells(val: QueryBuilderTDSResultCellData[]): void {
     this.selectedCells = val;
-  };
+  }
 
-  setMouseOverCell = (val: QueryBuilderTDSResultCellData | null): void => {
+  setMouseOverCell(val: QueryBuilderTDSResultCellData | null): void {
     this.mousedOverCell = val;
-  };
+  }
 
-  setQueryRunPromise = (
-    promise: Promise<ExecutionResult> | undefined,
-  ): void => {
+  setQueryRunPromise(promise: Promise<ExecutionResult> | undefined): void {
     this.queryRunPromise = promise;
-  };
+  }
 
   setIsQueryUsageViewerOpened(val: boolean): void {
     this.isQueryUsageViewerOpened = val;
