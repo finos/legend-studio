@@ -208,9 +208,15 @@ export class ServiceEditorState extends ElementEditorState {
         break;
       }
       case ServiceOwnershipType.USERLIST_OWNERSHIP: {
+        const currentUserId =
+          this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
+            .currentUserId;
         service_setOwnership(
           this.service,
-          new UserListOwnership([], this.service),
+          new UserListOwnership(
+            currentUserId ? [currentUserId] : [],
+            this.service,
+          ),
         );
         break;
       }
