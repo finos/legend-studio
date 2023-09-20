@@ -39,7 +39,6 @@ import {
   PureSingleExecution,
   PureMultiExecution,
   DeploymentOwnership,
-  type ServiceOwnership,
   UserListOwnership,
   isStubbed_RawLambda,
   getValueSpecificationReturnType,
