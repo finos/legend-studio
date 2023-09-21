@@ -87,7 +87,33 @@ Service org::dataeng::TransformWidget
   ]
 }
 
-Service org::dataeng::EqualityFunction
+Service org::dataeng::PostCurationWidget
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::dataeng::Widget[1]|$src.widgetId;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      connections:
+      [
+        ModelStore:
+        [
+          id1: test::connection::modelConnection
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service org::dataeng::EqualityFunctionMilestonedIdentifier
 {
   pattern: 'test';
   documentation: 'test';
@@ -172,7 +198,6 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
   modelClass: org::dataeng::Widget;
   identityResolution:
   {
-    modelClass: org::dataeng::Widget;
     resolutionQueries:
       [
         {
@@ -223,14 +248,14 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       ];
     }
   ]
-  postCurationEnrichmentService: org::dataeng::ParseWidget;
+  postCurationEnrichmentService: org::dataeng::PostCurationWidget;
   publishToElasticSearch: true;
   elasticSearchTransformService: org::dataeng::ElasticSearchTransformService;
   exceptionWorkflowTransformService: org::dataeng::ExceptionWorkflowTransformService;
   collectionEqualities: [
     {
       modelClass: org::dataeng::MilestonedIdentifier;
-      equalityFunction: org::dataeng::EqualityFunction;
+      equalityFunction: org::dataeng::EqualityFunctionMilestonedIdentifier;
     }
   ]
   recordSources:
@@ -245,7 +270,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
           fileType: CSV;
           filePath: '/download/day-file.csv';
           headerLines: 0;
-          maxRetryTimeInMinutes: 180;
+          maxRetryTimeMinutes: 180;
           encoding: 'Windows-1252';
           connection: alloy::mastery::connection::FTPConnection;
         }#;
@@ -259,7 +284,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       allowFieldDelete: true;
       raiseExceptionWorkflow: true;
       runProfile: Medium;
-      timeoutInMinutes: 100;
+      timeoutInMinutes: 180;
       dependencies: [
         RecordSourceDependency {widget-file-source-sftp}
       ];
@@ -304,6 +329,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
           connection: alloy::mastery::connection::HTTPConnection;
         }#;
       };
+      trigger: Manual;
       sequentialData: false;
       stagedLoad: true;
       createPermitted: false;
@@ -314,6 +340,23 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       status: Production;
       recordService: {
         transformService: org::dataeng::TransformWidget;
+acquisitionProtocol: REST;
+      };
+      trigger: Manual;
+      sequentialData: false;
+      stagedLoad: true;
+      createPermitted: false;
+      createBlockedException: true;
+    },
+    widget-kafka-source: {
+      description: 'Multiple partition source.';
+      status: Production;
+      recordService: {
+        transformService: org::dataeng::TransformWidget;
+        acquisitionProtocol: Kafka #{
+          dataType: JSON;
+          connection: alloy::mastery::connection::KafkaConnection;
+        }#;
       };
       trigger: Manual;
       sequentialData: false;
