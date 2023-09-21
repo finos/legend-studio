@@ -2150,7 +2150,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     monaco-editor: 0.43.0
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -2235,7 +2235,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
@@ -2321,7 +2321,7 @@ __metadata:
     fast-xml-parser: 4.2.7
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     mobx-utils: 6.0.8
     monaco-editor: 0.43.0
     node-diff3: 3.1.2
@@ -2355,7 +2355,7 @@ __metadata:
     history: 5.3.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dnd: 16.0.1
@@ -2400,7 +2400,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dnd: 16.0.1
@@ -2490,7 +2490,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
@@ -2524,7 +2524,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
@@ -2556,7 +2556,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dnd: 16.0.1
@@ -2650,7 +2650,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     react-dom: 18.2.0
@@ -2681,7 +2681,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
@@ -2710,7 +2710,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
@@ -2739,7 +2739,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
@@ -2769,7 +2769,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.1
@@ -2869,7 +2869,7 @@ __metadata:
     eslint: 8.49.0
     jest: 29.7.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     monaco-editor: 0.43.0
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -2934,7 +2934,7 @@ __metadata:
     jest: 29.7.0
     mathjs: 11.11.0
     mobx: 6.10.2
-    mobx-react-lite: 4.0.4
+    mobx-react-lite: 3.4.3
     monaco-editor: 0.43.0
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -4204,11 +4204,11 @@ __metadata:
   linkType: hard
 
 "@types/graceful-fs@npm:^4.1.3":
-  version: 4.1.6
-  resolution: "@types/graceful-fs@npm:4.1.6"
+  version: 4.1.7
+  resolution: "@types/graceful-fs@npm:4.1.7"
   dependencies:
     "@types/node": "*"
-  checksum: c3070ccdc9ca0f40df747bced1c96c71a61992d6f7c767e8fd24bb6a3c2de26e8b84135ede000b7e79db530a23e7e88dcd9db60eee6395d0f4ce1dae91369dd4
+  checksum: 8b97e208f85c9efd02a6003a582c77646dd87be0af13aec9419a720771560a8a87a979eaca73ae193d7c73127f34d0a958403a9b5d6246e450289fd8c79adf09
   languageName: node
   linkType: hard
 
@@ -4379,7 +4379,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:20.6.2":
+"@types/node@npm:*":
+  version: 20.6.3
+  resolution: "@types/node@npm:20.6.3"
+  checksum: 444a6f1f41cfa8d3e20ce0108e6e43960fb2ae0e481f233bb1c14d6252aa63a92e021de561cd317d9fdb411688f871065f40175a1f18763282dee2613a08f8a3
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:20.6.2":
   version: 20.6.2
   resolution: "@types/node@npm:20.6.2"
   checksum: 96fe5303872640a173f3fd43e289a451776ed5b8f0090094447c6790b43f23fb607eea8268af0829cef4d132e5afa0bfa4cd871aa7412e9042a414a698e9e971
@@ -7390,9 +7397,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.477":
-  version: 1.4.523
-  resolution: "electron-to-chromium@npm:1.4.523"
-  checksum: c090a958afe7849d9d1a0d3ed3a2300ded202374cd68013f9114fac33c506268b3e08a204c3f6e0ad4fe56a3ae75d23a8325cf9474e2954c6d0ddef6a018780c
+  version: 1.4.526
+  resolution: "electron-to-chromium@npm:1.4.526"
+  checksum: db37adc0b39b8d3f600e86f5f451744025a174fbe2e42ac4a7dbda809d7b417a0624d2570a8df5cb8f9f1e30d6b9ca9a5079eb09288ddd4a9588c6a39e3c3a0a
   languageName: node
   linkType: hard
 
@@ -8427,12 +8434,12 @@ __metadata:
   linkType: hard
 
 "follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.15.0":
-  version: 1.15.2
-  resolution: "follow-redirects@npm:1.15.2"
+  version: 1.15.3
+  resolution: "follow-redirects@npm:1.15.3"
   peerDependenciesMeta:
     debug:
       optional: true
-  checksum: faa66059b66358ba65c234c2f2a37fcec029dc22775f35d9ad6abac56003268baf41e55f9ee645957b32c7d9f62baf1f0b906e68267276f54ec4b4c597c2b190
+  checksum: 584da22ec5420c837bd096559ebfb8fe69d82512d5585004e36a3b4a6ef6d5905780e0c74508c7b72f907d1fa2b7bd339e613859e9c304d0dc96af2027fd0231
   languageName: node
   linkType: hard
 
@@ -8722,8 +8729,8 @@ __metadata:
   linkType: hard
 
 "glob@npm:^10.2.2, glob@npm:^10.2.5":
-  version: 10.3.4
-  resolution: "glob@npm:10.3.4"
+  version: 10.3.5
+  resolution: "glob@npm:10.3.5"
   dependencies:
     foreground-child: ^3.1.0
     jackspeak: ^2.0.3
@@ -8732,7 +8739,7 @@ __metadata:
     path-scurry: ^1.10.1
   bin:
     glob: dist/cjs/src/bin.js
-  checksum: 176b97c124414401cb51329a93d2ba112cef8814adbed10348481916b9521b677773eee2691cb6b24d66632d8c8bb8913533f5ac4bfb2d0ef5454a1856082361
+  checksum: 564f4799cae48c0bcc841c88a20b539b5701c27ed5596f8623f588b3c523262d3fc20eb1ea89cab9c75b0912faf40ca5501fc835f982225d0d0599282b09e97a
   languageName: node
   linkType: hard
 
@@ -8778,11 +8785,11 @@ __metadata:
   linkType: hard
 
 "globals@npm:^13.19.0":
-  version: 13.21.0
-  resolution: "globals@npm:13.21.0"
+  version: 13.22.0
+  resolution: "globals@npm:13.22.0"
   dependencies:
     type-fest: ^0.20.2
-  checksum: 86c92ca8a04efd864c10852cd9abb1ebe6d447dcc72936783e66eaba1087d7dba5c9c3421a48d6ca722c319378754dbcc3f3f732dbe47592d7de908edf58a773
+  checksum: 64af5a09565341432770444085f7aa98b54331c3b69732e0de411003921fa2dd060222ae7b50bec0b98f29c4d00b4f49bf434049ba9f7c36ca4ee1773f60458c
   languageName: node
   linkType: hard
 
@@ -11332,14 +11339,14 @@ __metadata:
   linkType: hard
 
 "mdast-util-find-and-replace@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "mdast-util-find-and-replace@npm:3.0.0"
+  version: 3.0.1
+  resolution: "mdast-util-find-and-replace@npm:3.0.1"
   dependencies:
     "@types/mdast": ^4.0.0
     escape-string-regexp: ^5.0.0
     unist-util-is: ^6.0.0
     unist-util-visit-parents: ^6.0.0
-  checksum: 578d2cd18d0955ada34d85cfc8c655c5e3bbe72b53675fd44c325a6599ec59084d84758fd3aadb6e96d33fce9dd7ae8e38c26260b78f8c997addb6353383099e
+  checksum: 05d5c4ff02e31db2f8a685a13bcb6c3f44e040bd9dfa54c19a232af8de5268334c8755d79cb456ed4cced1300c4fb83e88444c7ae8ee9ff16869a580f29d08cd
   languageName: node
   linkType: hard
 
@@ -12415,20 +12422,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx-react-lite@npm:4.0.4":
-  version: 4.0.4
-  resolution: "mobx-react-lite@npm:4.0.4"
-  dependencies:
-    use-sync-external-store: ^1.2.0
+"mobx-react-lite@npm:3.4.3":
+  version: 3.4.3
+  resolution: "mobx-react-lite@npm:3.4.3"
   peerDependencies:
-    mobx: ^6.9.0
+    mobx: ^6.1.0
     react: ^16.8.0 || ^17 || ^18
   peerDependenciesMeta:
     react-dom:
       optional: true
     react-native:
       optional: true
-  checksum: a0104357b8db5a4d208251401d6530d47fba0ebadd9ad19f24bd687165dc8776a0b11d9155b93b4aa7f050613d44e24e94cb5a2ef309b4fb1d6aa891552b1875
+  checksum: 60a2580eb9a0b9988fc76959d7299f018733dc33cacaa73c45500953006d4d45e738d9ae39ccfc767ac19a75656dbc028d833282c848fbc67d8d18a2bcb5c262
   languageName: node
   linkType: hard
 
@@ -15678,9 +15683,9 @@ __metadata:
   linkType: hard
 
 "spdx-license-ids@npm:^3.0.0":
-  version: 3.0.14
-  resolution: "spdx-license-ids@npm:3.0.14"
-  checksum: 9ff0264e5e84963f3fc438b77eeae9ce5f3f5a1807102be7efb6b5a0b14b0c1d3d5226e4ce881f58961b59165e05de8745e49b9c23c5a59d5197f4d0fb958ab1
+  version: 3.0.15
+  resolution: "spdx-license-ids@npm:3.0.15"
+  checksum: 99d567875b50504e1a7359f6da7d03e28db2b855b412ced18310679d091565a44f61ffd2585f19ea53a1192c35f2156c143507b12339dda26ef928547df32002
   languageName: node
   linkType: hard
 
@@ -16276,8 +16281,8 @@ __metadata:
   linkType: hard
 
 "terser@npm:^5.10.0, terser@npm:^5.16.8":
-  version: 5.19.4
-  resolution: "terser@npm:5.19.4"
+  version: 5.20.0
+  resolution: "terser@npm:5.20.0"
   dependencies:
     "@jridgewell/source-map": ^0.3.3
     acorn: ^8.8.2
@@ -16285,7 +16290,7 @@ __metadata:
     source-map-support: ~0.5.20
   bin:
     terser: bin/terser
-  checksum: 09273ce7d3fbe8fea0ec2603ad1c06cc304838bdac42bbfe77835b0b0b6c4a894054575ca518fe16c95d5c401574a8c703f4fde97da45f1c972ea568e6ecafda
+  checksum: 251d1b62d7c651ace29f997cf336ff5d5f8e30c65c8698ab7b831764d9e012ab0640895cb609906fb939a5bdf5143d73b5781c5c8c67b9216c77ce92dafdc0bc
   languageName: node
   linkType: hard
 
@@ -16923,8 +16928,8 @@ __metadata:
   linkType: hard
 
 "update-browserslist-db@npm:^1.0.11":
-  version: 1.0.11
-  resolution: "update-browserslist-db@npm:1.0.11"
+  version: 1.0.12
+  resolution: "update-browserslist-db@npm:1.0.12"
   dependencies:
     escalade: ^3.1.1
     picocolors: ^1.0.0
@@ -16932,7 +16937,7 @@ __metadata:
     browserslist: ">= 4.21.0"
   bin:
     update-browserslist-db: cli.js
-  checksum: b98327518f9a345c7cad5437afae4d2ae7d865f9779554baf2a200fdf4bac4969076b679b1115434bd6557376bdd37ca7583d0f9b8f8e302d7d4cc1e91b5f231
+  checksum: 60168fc8158935f70d60b30716a3b015a865b786434ebde91ade752bf94785f6f39c71b956cc0266d78f90cb895f6aa847fa9ca441940cd143d10caf0fbe764b
   languageName: node
   linkType: hard
 
@@ -16952,15 +16957,6 @@ __metadata:
     querystringify: ^2.1.1
     requires-port: ^1.0.0
   checksum: fbdba6b1d83336aca2216bbdc38ba658d9cfb8fc7f665eb8b17852de638ff7d1a162c198a8e4ed66001ddbf6c9888d41e4798912c62b4fd777a31657989f7bdf
-  languageName: node
-  linkType: hard
-
-"use-sync-external-store@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "use-sync-external-store@npm:1.2.0"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 5c639e0f8da3521d605f59ce5be9e094ca772bd44a4ce7322b055a6f58eeed8dda3c94cabd90c7a41fb6fa852210092008afe48f7038792fd47501f33299116a
   languageName: node
   linkType: hard
 
