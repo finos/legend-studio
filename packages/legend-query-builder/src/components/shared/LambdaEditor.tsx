@@ -191,10 +191,14 @@ const LambdaEditor_Inner = observer(
             : CODE_EDITOR_THEME.DEFAULT_DARK,
           ...lambdaEditorOptions,
         });
-
+        if (onEditorBlur) {
+          _editor.onDidBlurEditorText(() => {
+            onEditorBlur();
+          });
+        }
         setEditor(_editor);
       }
-    }, [editor, applicationStore, inline]);
+    }, [editor, applicationStore, inline, onEditorBlur]);
 
     // set styling for expanded mode
     useEffect(() => {
@@ -298,12 +302,6 @@ const LambdaEditor_Inner = observer(
       if (currentConfig.readOnly !== disabled) {
         editor.updateOptions({
           readOnly: disabled,
-        });
-      }
-
-      if (onEditorBlur) {
-        editor.onDidBlurEditorText(() => {
-          onEditorBlur();
         });
       }
 

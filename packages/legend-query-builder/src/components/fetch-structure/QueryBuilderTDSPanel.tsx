@@ -176,7 +176,10 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
     const hasParserError = projectionColumnState.tdsState.hasParserError;
     const onEditorBlur = (): void => {
       flowResult(
-        projectionColumnState.onBlurfetchDerivationLambdaReturnType(),
+        projectionColumnState.fetchDerivationLambdaReturnType({
+          forceConversionStringTOLambda: true,
+          forceRefresh: true,
+        }),
       ).catch(
         projectionColumnState.tdsState.queryBuilderState.applicationStore
           .alertUnhandledError,

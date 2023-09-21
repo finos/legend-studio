@@ -238,7 +238,7 @@ const QueryBuilderGridResultContextMenu = observer(
             QueryBuilderDerivationProjectionColumnState
           ) {
             await flowResult(
-              projectionColumnState.fetchDerivationLambdaReturnType(false),
+              projectionColumnState.fetchDerivationLambdaReturnType(),
             );
           }
 

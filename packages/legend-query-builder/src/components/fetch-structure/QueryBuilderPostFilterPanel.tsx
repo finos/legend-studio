@@ -46,6 +46,7 @@ import {
   MoreVerticalIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import {
   type ValueSpecification,
@@ -884,7 +885,9 @@ const QueryBuilderPostFilterPanelContent = observer(
             columnState instanceof QueryBuilderDerivationProjectionColumnState
           ) {
             await flowResult(
-              columnState.fetchDerivationLambdaReturnType(false),
+              columnState.fetchDerivationLambdaReturnType({
+                isBeingDropped: true,
+              }),
             );
           }
           postFilterConditionState = new PostFilterConditionState(
@@ -1036,6 +1039,11 @@ const QueryBuilderPostFilterPanelContent = observer(
             isDroppable={isDroppable && postFilterState.isEmpty}
             dropTargetConnector={dropTargetConnector}
           >
+            {
+              <PanelLoadingIndicator
+                isLoading={Boolean(postFilterState.derivedColumnBeingDropped)}
+              />
+            }
             {postFilterState.isEmpty && (
               <BlankPanelPlaceholder
                 text="Add a post-filter condition"

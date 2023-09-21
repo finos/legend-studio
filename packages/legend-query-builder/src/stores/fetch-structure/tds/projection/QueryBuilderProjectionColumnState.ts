@@ -31,6 +31,7 @@ import {
   assertNonEmptyString,
   type Hashable,
   hashArray,
+  ActionState,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -282,6 +283,7 @@ export class QueryBuilderDerivationProjectionColumnState
   derivationLambdaEditorState: QueryBuilderDerivationProjectionLambdaState;
   lambda: RawLambda;
   returnType: Type | undefined;
+  fetchingLambdaReturnTypeState = ActionState.create();
 
   constructor(tdsState: QueryBuilderTDSState, lambda: RawLambda) {
     super(tdsState, '(derivation)');
@@ -289,6 +291,7 @@ export class QueryBuilderDerivationProjectionColumnState
     makeObservable(this, {
       lambda: observable,
       returnType: observable,
+      fetchingLambdaReturnTypeState: observable,
       setLambda: action,
       fetchDerivationLambdaReturnType: flow,
       setLambdaReturnType: action,
@@ -310,35 +313,56 @@ export class QueryBuilderDerivationProjectionColumnState
     this.returnType = val;
   }
 
-  *onBlurfetchDerivationLambdaReturnType(): GeneratorFn<void> {
-    yield flowResult(
-      this.derivationLambdaEditorState.convertLambdaGrammarStringToObject(),
-    ).catch(
-      this.tdsState.queryBuilderState.applicationStore.alertUnhandledError,
-    );
-    yield flowResult(this.fetchDerivationLambdaReturnType(true)).catch(
-      this.tdsState.queryBuilderState.applicationStore.alertUnhandledError,
-    );
-  }
-
   /**
    * Fetches lambda return type for derivation column.
    * Throws error if unable to fetch type or if type is not primitive or an enumeration
    * as expected by a projection column
    */
-  *fetchDerivationLambdaReturnType(forceRefresh?: boolean): GeneratorFn<void> {
-    if (!forceRefresh && this.returnType !== undefined) {
+  *fetchDerivationLambdaReturnType(options?: {
+    forceRefresh?: boolean;
+    forceConversionStringTOLambda?: boolean;
+    isBeingDropped?: boolean;
+  }): GeneratorFn<void> {
+    if (!options?.forceRefresh && this.returnType !== undefined) {
       return;
     }
-    assertTrue(Array.isArray(this.lambda.parameters));
-    const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
-    const isolatedLambda = this.getIsolatedRawLambda();
-    const type =
-      (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
-        isolatedLambda,
-        graph,
-      )) as string;
-    this.setLambdaReturnType(type);
+    try {
+      assertTrue(
+        !this.fetchingLambdaReturnTypeState.isInProgress,
+        'Fetching lambda return type already in progress',
+      );
+      this.fetchingLambdaReturnTypeState.inProgress();
+      if (options?.isBeingDropped) {
+        this.tdsState.postFilterState.setDerivedColumnBeingDropped(this);
+      }
+      if (options?.forceConversionStringTOLambda) {
+        yield flowResult(
+          this.derivationLambdaEditorState.convertLambdaGrammarStringToObject(),
+        ).catch(
+          this.tdsState.queryBuilderState.applicationStore.alertUnhandledError,
+        );
+      }
+      assertTrue(Array.isArray(this.lambda.parameters));
+      const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
+      const isolatedLambda = this.getIsolatedRawLambda();
+      const type =
+        (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
+          isolatedLambda,
+          graph,
+        )) as string;
+      this.setLambdaReturnType(type);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.tdsState.queryBuilderState.applicationStore.logService.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
+        error,
+      );
+    } finally {
+      this.fetchingLambdaReturnTypeState.complete();
+      if (options?.isBeingDropped) {
+        this.tdsState.postFilterState.setDerivedColumnBeingDropped(undefined);
+      }
+    }
   }
 
   getIsolatedRawLambda(): RawLambda {
