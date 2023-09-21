@@ -34,6 +34,7 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.j
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
+import { CUSTOM_LABEL } from '../../../../stores/editor/NewElementState.js';
 
 const addRootPackage = async (
   packagePath: string,
@@ -193,5 +194,5 @@ test(integrationTest('Create a service'), async () => {
   await waitFor(() => findByText(dialog, 'Mapping'));
   await waitFor(() => findByText(dialog, 'MyMapping'));
   await waitFor(() => findByText(dialog, 'Runtime'));
-  await waitFor(() => findByText(dialog, '(custom)'));
+  await waitFor(() => findByText(dialog, CUSTOM_LABEL));
 });
