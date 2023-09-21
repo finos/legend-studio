@@ -658,10 +658,19 @@ export class V1_Engine {
   async getLambdaReturnType(
     lambdaReturnInput: V1_LambdaReturnTypeInput,
   ): Promise<string> {
+    const returnType = await this.getLambdaReturnTypeFromRawInput(
+      V1_LambdaReturnTypeInput.serialization.toJson(lambdaReturnInput),
+    );
+    return returnType;
+  }
+
+  async getLambdaReturnTypeFromRawInput(
+    rawInput: PlainObject<V1_LambdaReturnTypeInput>,
+  ): Promise<string> {
     try {
       return (
         (await this.engineServerClient.lambdaReturnType(
-          V1_LambdaReturnTypeInput.serialization.toJson(lambdaReturnInput),
+          rawInput,
         )) as unknown as V1_LambdaReturnTypeResult
       ).returnType;
     } catch (error) {

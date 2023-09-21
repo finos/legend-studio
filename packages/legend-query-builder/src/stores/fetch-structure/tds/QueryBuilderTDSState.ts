@@ -44,6 +44,7 @@ import {
   type LambdaFunction,
   type ValueSpecification,
   type VariableExpression,
+  type EngineError,
   GRAPH_MANAGER_EVENT,
   extractSourceInformationCoordinates,
   LAMBDA_PIPE,
@@ -153,6 +154,7 @@ export class QueryBuilderTDSState
       setShowPostFilterPanel: action,
       setShowWindowFuncPanel: action,
       convertDerivationProjectionObjects: flow,
+      fetchDerivedReturnTypes: flow,
     });
 
     this.resultSetModifierState = new QueryResultSetModifierState(this);
@@ -741,7 +743,7 @@ export class QueryBuilderTDSState
       filterByType(QueryBuilderDerivationProjectionColumnState),
     );
     if (derivationColumns.length) {
-      // we will return false if any derivation cols are present as we can't verify is the variable is ued
+      // we will return false if any derivation cols are present as we can't verify is the variable is used
       return false;
     }
     const usedInProjection = columns
@@ -759,5 +761,39 @@ export class QueryBuilderTDSState
       this.postFilterState,
       this.resultSetModifierState,
     ]);
+  }
+
+  *fetchDerivedReturnTypes(): GeneratorFn<void> {
+    console.log('fetchDerivedReturnTypes');
+    try {
+      const input = new Map<string, RawLambda>();
+      const graph = this.queryBuilderState.graphManagerState.graph;
+      const derivedCols = this.projectionColumns.filter(
+        filterByType(QueryBuilderDerivationProjectionColumnState),
+      );
+      derivedCols.forEach((col) =>
+        input.set(col.columnName, col.getIsolatedRawLambda()),
+      );
+      const result =
+        (yield this.queryBuilderState.graphManagerState.graphManager.getLambdasReturnType(
+          input,
+          graph,
+        )) as {
+          results: Map<string, string>;
+          errors: Map<string, EngineError>;
+        };
+      Object.entries(result.results).forEach((res) => {
+        const col = derivedCols.find((d) => d.columnName === res[0]);
+        if (col) {
+          col.setLambdaReturnType(res[1]);
+        }
+      });
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.logService.info(
+        LogEvent.create('Unable to fetch derived return types'),
+        error,
+      );
+    }
   }
 }

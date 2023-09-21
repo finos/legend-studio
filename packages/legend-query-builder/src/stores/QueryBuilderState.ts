@@ -552,6 +552,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       if (this.parametersState.parameterStates.length > 0) {
         this.setShowParametersPanel(true);
       }
+      this.fetchStructureState.initialize();
     } catch (error) {
       assertErrorThrown(error);
       this.resetQueryResult({ preserveResult: options?.preserveResult });

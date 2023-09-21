@@ -318,6 +318,7 @@ import {
   V1_TableRowIdentifiers,
 } from './engine/service/V1_TableRowIdentifiers.js';
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
+import { EngineError } from '../../../action/EngineError.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -827,6 +828,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           model: graph,
           data: V1_indexPureModelContextData(
             report,
+
             data,
             this.graphBuilderExtensions,
           ),
@@ -1987,6 +1989,58 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.buildLambdaReturnTypeInput(lambda, graph, options),
     );
   }
+  override async getLambdasReturnType(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<{
+    results: Map<string, string>;
+    errors: Map<string, EngineError>;
+  }> {
+    const types = {
+      results: new Map<string, string>(),
+      errors: new Map<string, EngineError>(),
+    };
+    const pmcd = V1_serializePureModelContext(
+      this.getFullGraphModelContext(
+        graph,
+        V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+      ),
+    );
+    await Promise.all(
+      Array.from(Object.entries(lambdas)).map((input) =>
+        this._getLambdaReturnType(input[0], input[1], pmcd, types, options),
+      ),
+    );
+    return types;
+  }
+
+  async _getLambdaReturnType(
+    key: string,
+    lambda: RawLambda,
+    plainGraph: PlainObject<V1_PureModelContext>,
+    finalResult: {
+      results: Map<string, string>;
+      errors: Map<string, EngineError>;
+    },
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<void> {
+    try {
+      const plainLambda = V1_serializeRawValueSpecification(
+        this.buildV1RawLambda(lambda, options),
+      );
+      const type = await this.engine.getLambdaReturnTypeFromRawInput({
+        model: plainGraph,
+        lambda: plainLambda,
+      });
+      finalResult.results.set(key, type);
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof EngineError) {
+        finalResult.errors.set(key, error);
+      }
+    }
+  }
 
   private buildLambdaReturnTypeInput(
     lambda: RawLambda,
@@ -1998,18 +2052,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graph,
         V1_PureGraphManager.DEV_PROTOCOL_VERSION,
       ),
-      lambda.accept_RawValueSpecificationVisitor(
-        new V1_RawValueSpecificationTransformer(
-          new V1_GraphTransformerContextBuilder(
-            this.pluginManager.getPureProtocolProcessorPlugins(),
-          )
-            .withKeepSourceInformationFlag(
-              Boolean(options?.keepSourceInformation),
-            )
-            .build(),
-        ),
-      ) as V1_RawLambda,
+      this.buildV1RawLambda(lambda, options),
     );
+  }
+
+  private buildV1RawLambda(
+    lambda: RawLambda,
+    options?: { keepSourceInformation?: boolean },
+  ): V1_RawLambda {
+    return lambda.accept_RawValueSpecificationVisitor(
+      new V1_RawValueSpecificationTransformer(
+        new V1_GraphTransformerContextBuilder(
+          this.pluginManager.getPureProtocolProcessorPlugins(),
+        )
+          .withKeepSourceInformationFlag(
+            Boolean(options?.keepSourceInformation),
+          )
+          .build(),
+      ),
+    ) as V1_RawLambda;
   }
 
   // ------------------------------------------- Generation -------------------------------------------

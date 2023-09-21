@@ -284,6 +284,7 @@ export class QueryBuilderDerivationProjectionColumnState
       returnType: observable,
       setLambda: action,
       fetchDerivationLambdaReturnType: flow,
+      setLambdaReturnType: action,
     });
 
     this.derivationLambdaEditorState =
@@ -309,8 +310,19 @@ export class QueryBuilderDerivationProjectionColumnState
    */
   *fetchDerivationLambdaReturnType(): GeneratorFn<void> {
     assertTrue(Array.isArray(this.lambda.parameters));
-    const projectionParameter = this.lambda.parameters as object[];
     const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
+    const isolatedLambda = this.getIsolatedRawLambda();
+    const type =
+      (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
+        isolatedLambda,
+        graph,
+      )) as string;
+    this.setLambdaReturnType(type);
+  }
+
+  getIsolatedRawLambda(): RawLambda {
+    assertTrue(Array.isArray(this.lambda.parameters));
+    const projectionParameter = this.lambda.parameters as object[];
     assertTrue(projectionParameter.length === 1);
     const variable = projectionParameter[0] as VariableExpression;
     assertNonEmptyString(variable.name);
@@ -330,12 +342,12 @@ export class QueryBuilderDerivationProjectionColumnState
       [_rawVariableExpression],
       this.lambda.body,
     );
-    const type =
-      (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
-        isolatedLambda,
-        graph,
-      )) as string;
-    const resolvedType = graph.getType(type);
+    return isolatedLambda;
+  }
+
+  setLambdaReturnType(type: string): void {
+    const resolvedType =
+      this.tdsState.queryBuilderState.graphManagerState.graph.getType(type);
     assertTrue(
       resolvedType instanceof PrimitiveType ||
         resolvedType instanceof Enumeration,
