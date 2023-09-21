@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.83
+
 ## 5.0.82
 
 ## 5.0.81

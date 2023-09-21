@@ -1,5 +1,7 @@
 # @finos/legend-extension-store-flat-data
 
+## 0.0.155
+
 ## 0.0.154
 
 ## 0.0.153
