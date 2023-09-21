@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.5.3
+
+### Patch Changes
+
+- [#2620](https://github.com/finos/legend-studio/pull/2620) [`292066eaa`](https://github.com/finos/legend-studio/commit/292066eaae08b06be938fe5b2f4f2f3082604e1c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Improve getAvailableTables for seed data input to include more runtime types and included stores.
+
 ## 28.5.2
 
 ## 28.5.1
