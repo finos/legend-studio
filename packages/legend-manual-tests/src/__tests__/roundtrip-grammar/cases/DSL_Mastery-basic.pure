@@ -134,12 +134,12 @@ Service org::dataeng::EqualityFunctionMilestonedIdentifier
   {
     query: src: org::dataeng::Widget[1]|$src.widgetId;
     mapping: test::Mapping;
-    mappings:
-    [
-      test::Mapping
-    ];
     runtime:
     #{
+      mappings:
+      [
+        test::Mapping
+      ];
       connections:
       [
         ModelStore:
