@@ -342,11 +342,6 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       createBlockedException: true;
       parseService: org::dataeng::ParseWidget;
       transformService: org::dataeng::TransformWidget;
-      partitions:
-      [
-        "partition-a": {
-        },
-      ];
     }
   ]
 }
