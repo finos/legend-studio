@@ -508,21 +508,21 @@ export class NewServiceDriver extends NewElementDriver<Service> {
   }
 
   getCompatibleRuntimeOptions(mapping: Mapping | undefined): RuntimeOption[] {
-    const availableRuntimes = mapping
-      ? getMappingCompatibleRuntimes(
-          mapping,
-          this.editorStore.graphManagerState.usableRuntimes,
-        )
-      : [];
+    const availableRuntimeOptions = (
+      mapping
+        ? getMappingCompatibleRuntimes(
+            mapping,
+            this.editorStore.graphManagerState.usableRuntimes,
+          )
+        : []
+    ).map((runtime) => buildElementOption(runtime) as RuntimeOption);
 
-    return availableRuntimes.length > 0
-      ? availableRuntimes.map(buildElementOption)
-      : [
-          {
-            label: CUSTOM_LABEL,
-            value: undefined,
-          },
-        ];
+    availableRuntimeOptions.push({
+      label: CUSTOM_LABEL,
+      value: undefined,
+    });
+
+    return availableRuntimeOptions;
   }
 
   get isValid(): boolean {
