@@ -30,7 +30,11 @@ import {
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
-import { prettyCONSTName, toTitleCase } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  prettyCONSTName,
+  toTitleCase,
+} from '@finos/legend-shared';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -353,9 +357,7 @@ const NewServiceDriverEditor = observer(() => {
     editorStore.newElementState.getNewElementDriver(NewServiceDriver);
   // runtime
   const onRuntimeChange = (val: RuntimeOption | null): void => {
-    if (!val) {
-      newServiceDriver.setRuntimeOption(undefined);
-    } else {
+    if (val) {
       newServiceDriver.setRuntimeOption(val);
     }
   };
@@ -372,9 +374,11 @@ const NewServiceDriverEditor = observer(() => {
     }
     //reset runtime
     newServiceDriver.setRuntimeOption(
-      newServiceDriver.getCompatibleRuntimeOptions(
-        newServiceDriver.mappingOption?.value,
-      )[0],
+      guaranteeNonNullable(
+        newServiceDriver.getCompatibleRuntimeOptions(
+          newServiceDriver.mappingOption?.value,
+        )[0],
+      ),
     );
   };
 

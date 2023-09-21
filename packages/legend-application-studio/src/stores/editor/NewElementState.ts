@@ -479,7 +479,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
 export class NewServiceDriver extends NewElementDriver<Service> {
   mappingOption?: PackageableElementOption<Mapping> | undefined;
-  runtimeOption?: RuntimeOption | undefined;
+  runtimeOption?: RuntimeOption;
   constructor(editorStore: EditorStore) {
     super(editorStore);
 
@@ -494,16 +494,16 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     });
     this.mappingOption =
       editorStore.graphManagerState.usableMappings.map(buildElementOption)[0];
-    this.runtimeOption = this.getCompatibleRuntimeOptions(
-      this.mappingOption?.value,
-    )[0];
+    this.runtimeOption = guaranteeNonNullable(
+      this.getCompatibleRuntimeOptions(this.mappingOption?.value)[0],
+    );
   }
 
   setMappingOption(val: PackageableElementOption<Mapping> | undefined): void {
     this.mappingOption = val;
   }
 
-  setRuntimeOption(val: RuntimeOption | undefined): void {
+  setRuntimeOption(val: RuntimeOption): void {
     this.runtimeOption = val;
   }
 
