@@ -75,6 +75,7 @@ import {
   runtime_deleteIdentifiedConnection,
   runtime_deleteMapping,
 } from '../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
+import { CUSTOM_LABEL } from '../../NewElementState.js';
 
 export const getClassMappingStore = (
   setImplementation: SetImplementation,
@@ -276,7 +277,7 @@ export const getRuntimeExplorerTreeData = (
     label:
       runtime instanceof RuntimePointer
         ? runtime.packageableRuntime.value.name
-        : '(custom)',
+        : CUSTOM_LABEL,
     isOpen: true,
     childrenIds: [] as string[],
   };

@@ -106,6 +106,8 @@ import {
 import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 
+export const CUSTOM_LABEL = '(custom)';
+
 export type RuntimeOption = {
   label: string;
   value: PackageableRuntime | undefined;
@@ -517,7 +519,7 @@ export class NewServiceDriver extends NewElementDriver<Service> {
       ? availableRuntimes.map(buildElementOption)
       : [
           {
-            label: '(custom)',
+            label: CUSTOM_LABEL,
             value: undefined,
           },
         ];
