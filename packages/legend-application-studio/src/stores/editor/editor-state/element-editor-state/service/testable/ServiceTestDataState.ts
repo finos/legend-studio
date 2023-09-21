@@ -52,6 +52,7 @@ import {
   RowIdentifier,
   ColumnValuePair,
   TablePtr,
+  getAllIncludedDatabases,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -65,6 +66,7 @@ import {
   assertType,
   assertTrue,
   uuid,
+  uniq,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -363,18 +365,19 @@ export class ConnectionTestDataState {
   }
 
   getAvailableTables(): Table[] {
-    const runtime =
-      this.testDataState.testSuiteState.testableState.serviceEditorState
-        .executionState.serviceExecutionParameters?.runtime;
-    if (runtime instanceof RuntimePointer) {
-      const db =
-        runtime.packageableRuntime.value.runtimeValue.connections[0]?.store
-          .value;
-      if (db instanceof Database) {
-        return db.schemas.flatMap((schema) => schema.tables);
-      }
-    }
-    return [];
+    const databases = uniq(
+      this.getAllIdentifiedConnections()
+        .map((idCon) => idCon.connection)
+        .flatMap((_c) => _c.store.value)
+        .filter(filterByType(Database))
+        .map((db) => Array.from(getAllIncludedDatabases(db)))
+        .flat(),
+    );
+    return uniq(
+      databases
+        .flatMap((_db) => _db.schemas)
+        .flatMap((schema) => schema.tables),
+    );
   }
 
   setUseSharedModal(val: boolean): void {
