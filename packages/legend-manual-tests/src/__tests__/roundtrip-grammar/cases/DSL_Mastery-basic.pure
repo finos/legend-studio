@@ -248,7 +248,8 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
           maxRetryTimeInMinutes: 180;
           encoding: 'Windows-1252';
           connection: alloy::mastery::connection::FTPConnection;
-        }#;};
+        }#;
+      };
       dataProvider: alloy::mastery::dataprovider::Bloomberg;
       trigger: Manual;
       sequentialData: true;
@@ -320,15 +321,6 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       createPermitted: false;
       createBlockedException: true;
     },
-    widget-kafka-source: {
-      description: 'Multiple partition source.';
-      status: Production;
-      trigger: Manual;
-      sequentialData: false;
-      stagedLoad: true;
-      createPermitted: false;
-      createBlockedException: true;
-    },
     widget-legend-service-source: {
       description: 'Widget Legend Service source.';
       status: Production;
@@ -340,8 +332,6 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       stagedLoad: true;
       createPermitted: false;
       createBlockedException: true;
-      parseService: org::dataeng::ParseWidget;
-      transformService: org::dataeng::TransformWidget;
     }
   ]
 }
