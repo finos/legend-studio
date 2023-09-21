@@ -1997,25 +1997,32 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     results: Map<string, string>;
     errors: Map<string, EngineError>;
   }> {
-    const types = {
+    const returnTypes = {
       results: new Map<string, string>(),
       errors: new Map<string, EngineError>(),
     };
-    const pmcd = V1_serializePureModelContext(
+    const plainGraph = V1_serializePureModelContext(
       this.getFullGraphModelContext(
         graph,
         V1_PureGraphManager.DEV_PROTOCOL_VERSION,
       ),
     );
     await Promise.all(
-      Array.from(Object.entries(lambdas)).map((input) =>
-        this._getLambdaReturnType(input[0], input[1], pmcd, types, options),
+      Array.from(lambdas.entries()).map((input) =>
+        this.TEMPORARY__getLambdaReturnType(
+          input[0],
+          input[1],
+          plainGraph,
+          returnTypes,
+          options,
+        ),
       ),
     );
-    return types;
+    return returnTypes;
   }
 
-  async _getLambdaReturnType(
+  // TEMPORARY: we mock batch `lambdaReturnType` as Engine currently does not support batching of lambda return types
+  async TEMPORARY__getLambdaReturnType(
     key: string,
     lambda: RawLambda,
     plainGraph: PlainObject<V1_PureModelContext>,
@@ -2038,7 +2045,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(error);
       if (error instanceof EngineError) {
         finalResult.errors.set(key, error);
+        return;
       }
+      this.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
+        error,
+      );
     }
   }
 

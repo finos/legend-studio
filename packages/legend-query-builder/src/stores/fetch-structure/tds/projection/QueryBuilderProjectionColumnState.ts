@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable, flow, computed } from 'mobx';
+import {
+  action,
+  makeObservable,
+  observable,
+  flow,
+  computed,
+  flowResult,
+} from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
@@ -303,12 +310,26 @@ export class QueryBuilderDerivationProjectionColumnState
     this.returnType = val;
   }
 
+  *onBlurfetchDerivationLambdaReturnType(): GeneratorFn<void> {
+    yield flowResult(
+      this.derivationLambdaEditorState.convertLambdaGrammarStringToObject(),
+    ).catch(
+      this.tdsState.queryBuilderState.applicationStore.alertUnhandledError,
+    );
+    yield flowResult(this.fetchDerivationLambdaReturnType(true)).catch(
+      this.tdsState.queryBuilderState.applicationStore.alertUnhandledError,
+    );
+  }
+
   /**
    * Fetches lambda return type for derivation column.
    * Throws error if unable to fetch type or if type is not primitive or an enumeration
    * as expected by a projection column
    */
-  *fetchDerivationLambdaReturnType(): GeneratorFn<void> {
+  *fetchDerivationLambdaReturnType(forceRefresh?: boolean): GeneratorFn<void> {
+    if (!forceRefresh && this.returnType !== undefined) {
+      return;
+    }
     assertTrue(Array.isArray(this.lambda.parameters));
     const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
     const isolatedLambda = this.getIsolatedRawLambda();

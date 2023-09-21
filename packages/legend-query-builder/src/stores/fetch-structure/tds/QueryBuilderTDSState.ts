@@ -764,7 +764,6 @@ export class QueryBuilderTDSState
   }
 
   *fetchDerivedReturnTypes(): GeneratorFn<void> {
-    console.log('fetchDerivedReturnTypes');
     try {
       const input = new Map<string, RawLambda>();
       const graph = this.queryBuilderState.graphManagerState.graph;
@@ -782,7 +781,7 @@ export class QueryBuilderTDSState
           results: Map<string, string>;
           errors: Map<string, EngineError>;
         };
-      Object.entries(result.results).forEach((res) => {
+      Array.from(result.results.entries()).forEach((res) => {
         const col = derivedCols.find((d) => d.columnName === res[0]);
         if (col) {
           col.setLambdaReturnType(res[1]);

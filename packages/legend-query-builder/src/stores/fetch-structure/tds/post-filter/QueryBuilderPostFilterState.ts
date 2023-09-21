@@ -437,7 +437,7 @@ export class PostFilterConditionState implements Hashable {
         );
       const colState = aggregateColumnState ?? columnState;
       if (colState instanceof QueryBuilderDerivationProjectionColumnState) {
-        yield flowResult(colState.fetchDerivationLambdaReturnType());
+        yield flowResult(colState.fetchDerivationLambdaReturnType(false));
       }
 
       //column

@@ -883,7 +883,9 @@ const QueryBuilderPostFilterPanelContent = observer(
             !aggregateColumnState &&
             columnState instanceof QueryBuilderDerivationProjectionColumnState
           ) {
-            await flowResult(columnState.fetchDerivationLambdaReturnType());
+            await flowResult(
+              columnState.fetchDerivationLambdaReturnType(false),
+            );
           }
           postFilterConditionState = new PostFilterConditionState(
             postFilterState,

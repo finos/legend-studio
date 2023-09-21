@@ -99,6 +99,7 @@ const LambdaEditor_Inner = observer(
     autoFocus?: boolean | undefined;
     openInPopUp?: (() => void) | undefined;
     onEditorFocus?: (() => void) | undefined;
+    onEditorBlur?: (() => void) | undefined;
     disableExpansion?: boolean | undefined;
     forceExpansion?: boolean | undefined;
   }) => {
@@ -119,6 +120,7 @@ const LambdaEditor_Inner = observer(
       autoFocus,
       openInPopUp,
       onEditorFocus,
+      onEditorBlur,
     } = props;
     const applicationStore = useApplicationStore();
     const onDidChangeModelContentEventDisposer = useRef<
@@ -189,6 +191,7 @@ const LambdaEditor_Inner = observer(
             : CODE_EDITOR_THEME.DEFAULT_DARK,
           ...lambdaEditorOptions,
         });
+
         setEditor(_editor);
       }
     }, [editor, applicationStore, inline]);
@@ -285,7 +288,6 @@ const LambdaEditor_Inner = observer(
           onEditorFocus?.();
         },
       );
-
       // Set the text value
       const currentValue = getCodeEditorValue(editor);
       const editorModel = editor.getModel();
@@ -296,6 +298,12 @@ const LambdaEditor_Inner = observer(
       if (currentConfig.readOnly !== disabled) {
         editor.updateOptions({
           readOnly: disabled,
+        });
+      }
+
+      if (onEditorBlur) {
+        editor.onDidBlurEditorText(() => {
+          onEditorBlur();
         });
       }
 
@@ -668,6 +676,7 @@ type LambdaEditorBaseProps = {
   forceBackdrop: boolean;
   autoFocus?: boolean | undefined;
   onEditorFocus?: (() => void) | undefined;
+  onEditorBlur?: (() => void) | undefined;
 };
 
 export const InlineLambdaEditor = observer(
@@ -716,6 +725,7 @@ export const InlineLambdaEditor = observer(
       hideErrorBar,
       autoFocus,
       onEditorFocus,
+      onEditorBlur,
     } = props;
     const [showPopUp, setShowPopUp] = useState(false);
     const openInPopUp = (): void => setShowPopUp(true);
@@ -786,6 +796,7 @@ export const InlineLambdaEditor = observer(
         autoFocus={autoFocus}
         openInPopUp={openInPopUp}
         onEditorFocus={onEditorFocus}
+        onEditorBlur={onEditorBlur}
         hideErrorBar={hideErrorBar}
         forceExpansion={
           disableExpansion !== undefined
