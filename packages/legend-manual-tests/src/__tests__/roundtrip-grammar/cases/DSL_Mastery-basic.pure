@@ -50,13 +50,6 @@ Service org::dataeng::ParseWidget
       [
         test::Mapping
       ];
-      connections:
-      [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
-      ];
     }#;
   }
   testSuites:
@@ -79,13 +72,6 @@ Service org::dataeng::TransformWidget
       mappings:
       [
         test::Mapping
-      ];
-      connections:
-      [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
       ];
     }#;
   }
@@ -110,13 +96,6 @@ Service org::dataeng::PostCurationWidget
       [
         test::Mapping
       ];
-      connections:
-      [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
-      ];
     }#;
   }
   testSuites:
@@ -139,13 +118,6 @@ Service org::dataeng::EqualityFunctionMilestonedIdentifier
       mappings:
       [
         test::Mapping
-      ];
-      connections:
-      [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
       ];
     }#;
   }
@@ -170,13 +142,6 @@ Service org::dataeng::ElasticSearchTransformService
       [
         test::Mapping
       ];
-      connections:
-      [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
-      ];
     }#;
   }
   testSuites:
@@ -199,13 +164,6 @@ Service org::dataeng::ExceptionWorkflowTransformService
       mappings:
       [
         test::Mapping
-      ];
-      connections:
-      [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
       ];
     }#;
   }
