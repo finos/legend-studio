@@ -26,14 +26,6 @@ Mapping test::Mapping
 )
 
 
-###Connection
-JsonModelConnection test::connection::modelConnection
-{
-  class: test::connection::class;
-  url: 'test/connection/url';
-}
-
-
 ###Service
 Service org::dataeng::ParseWidget
 {
@@ -150,29 +142,6 @@ Service org::dataeng::ElasticSearchTransformService
   ]
 }
 
-Service org::dataeng::ExceptionWorkflowTransformService
-{
-  pattern: 'test';
-  documentation: 'test';
-  autoActivateUpdates: true;
-  execution: Single
-  {
-    query: src: org::dataeng::Widget[1]|$src.widgetId;
-    mapping: test::Mapping;
-    runtime:
-    #{
-      mappings:
-      [
-        test::Mapping
-      ];
-    }#;
-  }
-  testSuites:
-  [
-
-  ]
-}
-
 
 ###Mastery
 MasterRecordDefinition alloy::mastery::WidgetMasterRecord
@@ -233,7 +202,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
   postCurationEnrichmentService: org::dataeng::PostCurationWidget;
   publishToElasticSearch: true;
   elasticSearchTransformService: org::dataeng::ElasticSearchTransformService;
-  exceptionWorkflowTransformService: org::dataeng::ExceptionWorkflowTransformService;
+  exceptionWorkflowTransformService: org::dataeng::ElasticSearchTransformService;
   collectionEqualities: [
     {
       modelClass: org::dataeng::MilestonedIdentifier;
