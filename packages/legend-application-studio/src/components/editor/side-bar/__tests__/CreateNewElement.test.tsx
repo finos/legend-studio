@@ -22,6 +22,7 @@ import {
   getByText,
   getByPlaceholderText,
   act,
+  findByText,
 } from '@testing-library/react';
 import { toTitleCase } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
@@ -169,4 +170,28 @@ test(integrationTest('Create elements with no drivers'), async () => {
   );
   expect(renderResult.queryByText('system')).toBeTruthy();
   expect(renderResult.queryByText('config')).toBeTruthy();
+});
+
+test(integrationTest('Create a service'), async () => {
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+  const ROOT_PACKAGE_NAME = 'model';
+  await addRootPackage(ROOT_PACKAGE_NAME, renderResult);
+  await createNewElementOnRootPackage(
+    ROOT_PACKAGE_NAME,
+    PACKAGEABLE_ELEMENT_TYPE.MAPPING,
+    renderResult,
+    'MyMapping',
+  );
+  const packageExplorer = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+  );
+  fireEvent.click(getByText(packageExplorer, 'MyMapping'));
+  fireEvent.click(renderResult.getByTitle('New Element... (Ctrl + Shift + N)'));
+  const contextMenu = await waitFor(() => renderResult.getByRole('menu'));
+  fireEvent.click(getByText(contextMenu, 'Service'));
+  const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+  await waitFor(() => findByText(dialog, 'Mapping'));
+  await waitFor(() => findByText(dialog, 'MyMapping'));
+  await waitFor(() => findByText(dialog, 'Runtime'));
+  await waitFor(() => findByText(dialog, '(custom)'));
 });
