@@ -46,6 +46,10 @@ Service org::dataeng::ParseWidget
     mapping: test::Mapping;
     runtime:
     #{
+      mappings:
+      [
+        test::Mapping
+      ];
       connections:
       [
         ModelStore:
@@ -72,6 +76,10 @@ Service org::dataeng::TransformWidget
     mapping: test::Mapping;
     runtime:
     #{
+      mappings:
+      [
+        test::Mapping
+      ];
       connections:
       [
         ModelStore:
@@ -98,6 +106,10 @@ Service org::dataeng::PostCurationWidget
     mapping: test::Mapping;
     runtime:
     #{
+      mappings:
+      [
+        test::Mapping
+      ];
       connections:
       [
         ModelStore:
@@ -122,6 +134,10 @@ Service org::dataeng::EqualityFunctionMilestonedIdentifier
   {
     query: src: org::dataeng::Widget[1]|$src.widgetId;
     mapping: test::Mapping;
+    mappings:
+    [
+      test::Mapping
+    ];
     runtime:
     #{
       connections:
@@ -150,6 +166,10 @@ Service org::dataeng::ElasticSearchTransformService
     mapping: test::Mapping;
     runtime:
     #{
+      mappings:
+      [
+        test::Mapping
+      ];
       connections:
       [
         ModelStore:
@@ -176,6 +196,10 @@ Service org::dataeng::ExceptionWorkflowTransformService
     mapping: test::Mapping;
     runtime:
     #{
+      mappings:
+      [
+        test::Mapping
+      ];
       connections:
       [
         ModelStore:
@@ -340,7 +364,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       status: Production;
       recordService: {
         transformService: org::dataeng::TransformWidget;
-acquisitionProtocol: REST;
+        acquisitionProtocol: REST;
       };
       trigger: Manual;
       sequentialData: false;
