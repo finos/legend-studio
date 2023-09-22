@@ -357,6 +357,7 @@ const ServiceGeneralEditor = observer(() => {
         registration"
           update={toggleAutoActivateUpdates}
         />
+        </PanelForm>
         <PanelForm>
           {owners.length === 0 && (
             <div>
@@ -702,7 +703,6 @@ const ServiceGeneralEditor = observer(() => {
             </div>
           )}
         </PanelForm>
-      </PanelForm>
     </PanelContentLists>
   );
 });
