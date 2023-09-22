@@ -536,7 +536,7 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     const mapping = PackageableElementExplicitReference.create(_mapping);
     const service = new Service(name);
     let runtimeValue: Runtime;
-    if (this.runtimeOption?.value) {
+    if (this.runtimeOption.value) {
       runtimeValue = this.runtimeOption.value.runtimeValue;
     } else {
       const engineRuntime = new EngineRuntime();
