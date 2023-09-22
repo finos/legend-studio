@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderGraphFetchTreeState } from './graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderTDSState } from './tds/QueryBuilderTDSState.js';
@@ -37,7 +37,7 @@ export class QueryBuilderFetchStructureState {
     makeObservable(this, {
       implementation: observable,
       changeImplementation: action,
-      initialize: action,
+      initializeWithQuery: action,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -78,12 +78,8 @@ export class QueryBuilderFetchStructureState {
     this.implementation.initialize();
   }
 
-  initialize(): void {
-    if (this.implementation instanceof QueryBuilderTDSState) {
-      flowResult(this.implementation.fetchDerivedReturnTypes()).catch(
-        this.queryBuilderState.applicationStore.alertUnhandledError,
-      );
-    }
+  initializeWithQuery(): void {
+    this.implementation.initializeWithQuery();
   }
 
   fetchProperty(node: QueryBuilderExplorerTreeNodeData): void {

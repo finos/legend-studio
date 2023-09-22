@@ -151,6 +151,7 @@ export class QueryBuilderTDSState
       removeAllColumns: action,
       replaceColumn: action,
       initialize: action,
+      initializeWithQuery: action,
       setShowPostFilterPanel: action,
       setShowWindowFuncPanel: action,
       convertDerivationProjectionObjects: flow,
@@ -358,6 +359,12 @@ export class QueryBuilderTDSState
     this.queryBuilderState.filterState.setShowPanel(true);
     this.setShowPostFilterPanel(false);
     this.setShowWindowFuncPanel(false);
+  }
+
+  override initializeWithQuery(): void {
+    flowResult(this.fetchDerivedReturnTypes()).catch(
+      this.queryBuilderState.applicationStore.alertUnhandledError,
+    );
   }
 
   isColumnInUse(tdsCol: QueryBuilderTDSColumnState): boolean {

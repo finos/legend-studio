@@ -320,7 +320,7 @@ export class QueryBuilderDerivationProjectionColumnState
    */
   *fetchDerivationLambdaReturnType(options?: {
     forceRefresh?: boolean;
-    forceConversionStringTOLambda?: boolean;
+    forceConversionStringToLambda?: boolean;
     isBeingDropped?: boolean;
   }): GeneratorFn<void> {
     if (!options?.forceRefresh && this.returnType !== undefined) {
@@ -335,7 +335,7 @@ export class QueryBuilderDerivationProjectionColumnState
       if (options?.isBeingDropped) {
         this.tdsState.postFilterState.setDerivedColumnBeingDropped(this);
       }
-      if (options?.forceConversionStringTOLambda) {
+      if (options?.forceConversionStringToLambda) {
         yield flowResult(
           this.derivationLambdaEditorState.convertLambdaGrammarStringToObject(),
         ).catch(

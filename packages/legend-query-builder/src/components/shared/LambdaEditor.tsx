@@ -193,12 +193,19 @@ const LambdaEditor_Inner = observer(
         });
         if (onEditorBlur) {
           _editor.onDidBlurEditorText(() => {
+            transformStringToLambda?.cancel();
             onEditorBlur();
           });
         }
         setEditor(_editor);
       }
-    }, [editor, applicationStore, inline, onEditorBlur]);
+    }, [
+      editor,
+      applicationStore,
+      inline,
+      onEditorBlur,
+      transformStringToLambda,
+    ]);
 
     // set styling for expanded mode
     useEffect(() => {

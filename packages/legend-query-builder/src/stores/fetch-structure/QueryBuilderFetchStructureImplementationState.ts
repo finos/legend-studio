@@ -73,6 +73,7 @@ export abstract class QueryBuilderFetchStructureImplementationState
     options?: LambdaFunctionBuilderOption,
   ): void;
   abstract initialize(): void;
+  abstract initializeWithQuery(): void;
   abstract get hashCode(): string;
 
   get TEMPORARY__showPostFetchStructurePanel(): boolean {

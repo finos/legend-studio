@@ -177,7 +177,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
     const onEditorBlur = (): void => {
       flowResult(
         projectionColumnState.fetchDerivationLambdaReturnType({
-          forceConversionStringTOLambda: true,
+          forceConversionStringToLambda: true,
           forceRefresh: true,
         }),
       ).catch(
