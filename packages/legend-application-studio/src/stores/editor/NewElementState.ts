@@ -509,7 +509,7 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     const availableRuntimeOptions = (
       this.mappingOption?.value
         ? getMappingCompatibleRuntimes(
-            this.mappingOption?.value,
+            this.mappingOption.value,
             this.editorStore.graphManagerState.usableRuntimes,
           )
         : []
