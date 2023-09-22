@@ -26,10 +26,15 @@ import {
   NewDataElementDriver,
   NewServiceDriver,
   CONNECTION_TYPE,
+  type RuntimeOption,
 } from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
-import { prettyCONSTName, toTitleCase } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  prettyCONSTName,
+  toTitleCase,
+} from '@finos/legend-shared';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -347,10 +352,16 @@ const NewConnectionDriverEditor = observer(() => {
 
 const NewServiceDriverEditor = observer(() => {
   const editorStore = useEditorStore();
+  const runtimeSelectorPlaceholder = 'Choose a compatible runtime...';
   const newServiceDriver =
     editorStore.newElementState.getNewElementDriver(NewServiceDriver);
+  // runtime
+  const onRuntimeChange = (val: RuntimeOption | null): void => {
+    if (val) {
+      newServiceDriver.setRuntimeOption(val);
+    }
+  };
   // mapping
-  const currentMappingOption = newServiceDriver.mappingOption;
   const mappingOptions =
     editorStore.graphManagerState.usableMappings.map(buildElementOption);
   const onMappingChange = (
@@ -361,17 +372,40 @@ const NewServiceDriverEditor = observer(() => {
     } else {
       newServiceDriver.setMappingOption(val);
     }
+    //reset runtime
+    newServiceDriver.setRuntimeOption(
+      guaranteeNonNullable(newServiceDriver.runtimeOptions[0]),
+    );
   };
+
   return (
-    <div className="explorer__new-element-modal__driver">
-      <CustomSelectorInput
-        className="explorer__new-element-modal__driver__dropdown"
-        options={mappingOptions}
-        onChange={onMappingChange}
-        value={currentMappingOption}
-        darkMode={true}
-      />
-    </div>
+    <>
+      <div className="panel__content__form__section__header__label">
+        Mapping
+      </div>
+      <div className="explorer__new-element-modal__driver">
+        <CustomSelectorInput
+          className="explorer__new-element-modal__driver__dropdown"
+          options={mappingOptions}
+          onChange={onMappingChange}
+          value={newServiceDriver.mappingOption}
+          darkMode={true}
+        />
+      </div>
+      <div className="panel__content__form__section__header__label">
+        Runtime
+      </div>
+      <div className="explorer__new-element-modal__driver">
+        <CustomSelectorInput
+          className="explorer__new-element-modal__driver__dropdown"
+          options={newServiceDriver.runtimeOptions}
+          onChange={onRuntimeChange}
+          value={newServiceDriver.runtimeOption}
+          darkMode={true}
+          placeholder={runtimeSelectorPlaceholder}
+        />
+      </div>
+    </>
   );
 });
 

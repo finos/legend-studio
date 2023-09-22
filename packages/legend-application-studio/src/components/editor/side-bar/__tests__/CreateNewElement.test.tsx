@@ -22,6 +22,7 @@ import {
   getByText,
   getByPlaceholderText,
   act,
+  findByText,
 } from '@testing-library/react';
 import { toTitleCase } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
@@ -33,6 +34,7 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.j
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/editor/utils/ModelClassifierUtils.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
+import { CUSTOM_LABEL } from '../../../../stores/editor/NewElementState.js';
 
 const addRootPackage = async (
   packagePath: string,
@@ -169,4 +171,39 @@ test(integrationTest('Create elements with no drivers'), async () => {
   );
   expect(renderResult.queryByText('system')).toBeTruthy();
   expect(renderResult.queryByText('config')).toBeTruthy();
+});
+
+test(integrationTest('Create a service'), async () => {
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+  const ROOT_PACKAGE_NAME = 'model';
+  await addRootPackage(ROOT_PACKAGE_NAME, renderResult);
+  await createNewElementOnRootPackage(
+    ROOT_PACKAGE_NAME,
+    PACKAGEABLE_ELEMENT_TYPE.MAPPING,
+    renderResult,
+    'MyMapping',
+  );
+  const packageExplorer = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+  );
+  fireEvent.click(getByText(packageExplorer, 'MyMapping'));
+  fireEvent.click(renderResult.getByTitle('New Element... (Ctrl + Shift + N)'));
+  const contextMenu = await waitFor(() => renderResult.getByRole('menu'));
+  fireEvent.click(getByText(contextMenu, 'Service'));
+  const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+  await waitFor(() => findByText(dialog, 'Mapping'));
+  await waitFor(() => findByText(dialog, 'MyMapping'));
+  await waitFor(() => findByText(dialog, 'Runtime'));
+  await waitFor(() => findByText(dialog, CUSTOM_LABEL));
+  const elementInput = getByPlaceholderText(dialog, 'Enter a name', {
+    exact: false,
+  });
+  fireEvent.change(elementInput, { target: { value: 'MyService' } });
+  await act(async () => {
+    fireEvent.click(getByText(dialog, 'Create'));
+  });
+  getByText(packageExplorer, 'MyService');
+  await waitFor(() => renderResult.getByTitle('Run Query'));
+  await waitFor(() => renderResult.getByText('model::MyMapping'));
+  await waitFor(() => renderResult.getByText(CUSTOM_LABEL));
 });
