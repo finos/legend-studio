@@ -479,7 +479,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
 export class NewServiceDriver extends NewElementDriver<Service> {
   mappingOption?: PackageableElementOption<Mapping> | undefined;
-  runtimeOption?: RuntimeOption;
+  runtimeOption: RuntimeOption;
   constructor(editorStore: EditorStore) {
     super(editorStore);
 
