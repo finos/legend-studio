@@ -38,6 +38,7 @@ import {
   LogEvent,
   changeEntry,
   assertTrue,
+  ActionState,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
@@ -152,10 +153,13 @@ export class QueryBuilderSimpleConstantExpressionState
 export class QueryBuilderConstantLambdaEditorState extends LambdaEditorState {
   readonly queryBuilderState: QueryBuilderState;
   calculatedState: QueryBuilderCalculatedConstantExpressionState;
+  convertingLambdaToStringState = ActionState.create();
+
   constructor(calculatedState: QueryBuilderCalculatedConstantExpressionState) {
     super('', '');
     makeObservable(this, {
       calculatedState: observable,
+      convertingLambdaToStringState: observable,
       buildEmptyValueSpec: observable,
     });
     this.calculatedState = calculatedState;
@@ -184,6 +188,7 @@ export class QueryBuilderConstantLambdaEditorState extends LambdaEditorState {
   override *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     if (this.lambdaString) {
       try {
+        this.convertingLambdaToStringState.inProgress();
         const valSpec =
           (yield this.queryBuilderState.graphManagerState.graphManager.pureCodeToValueSpecification(
             this.fullLambdaString,
@@ -199,10 +204,13 @@ export class QueryBuilderConstantLambdaEditorState extends LambdaEditorState {
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+      } finally {
+        this.convertingLambdaToStringState.complete();
       }
     } else {
       this.clearErrors();
       this.calculatedState.setValue(this.buildEmptyValueSpec());
+      this.convertingLambdaToStringState.complete();
     }
   }
   override *convertLambdaObjectToGrammarString(
@@ -255,6 +263,10 @@ export class QueryBuilderCalculatedConstantExpressionState
     });
     this.value = value;
     this.lambdaState = new QueryBuilderConstantLambdaEditorState(this);
+    observe_ValueSpecification(
+      variable,
+      this.queryBuilderState.observerContext,
+    );
   }
 
   setValue(val: PlainObject): void {

@@ -419,7 +419,7 @@ const LambdaEditor_Inner = observer(
   },
 );
 
-export const LambdaEditor_PopUp = observer(
+const LambdaEditor_PopUp = observer(
   (props: {
     title?: string | undefined;
     className?: string | undefined;
