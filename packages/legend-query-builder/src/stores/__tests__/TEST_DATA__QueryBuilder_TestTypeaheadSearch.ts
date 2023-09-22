@@ -72,7 +72,7 @@ export const TEST_DATA__lambda_expected_typeahead_filter = {
                       values: [
                         {
                           _type: 'string',
-                          value: 'Demographics/State',
+                          value: 'demographics.state',
                         },
                       ],
                     },
@@ -188,7 +188,7 @@ export const TEST_DATA__lambda_expected_typeahead_filter_milestoning = {
                       values: [
                         {
                           _type: 'string',
-                          value: 'Employees/First Name',
+                          value: 'employees.firstName',
                         },
                       ],
                     },
@@ -422,7 +422,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter_milestoning = {
                       values: [
                         {
                           _type: 'string',
-                          value: 'Employees/First Name',
+                          value: 'employees.firstName',
                         },
                       ],
                     },
@@ -441,7 +441,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter_milestoning = {
                             { _type: 'var', name: 'row' },
                             {
                               _type: 'string',
-                              value: 'Employees/First Name',
+                              value: 'employees.firstName',
                             },
                           ],
                           property: 'getString',
@@ -521,7 +521,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter = {
                       values: [
                         {
                           _type: 'string',
-                          value: 'Full Name',
+                          value: 'fullName',
                         },
                       ],
                     },
@@ -540,7 +540,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter = {
                             { _type: 'var', name: 'row' },
                             {
                               _type: 'string',
-                              value: 'Full Name',
+                              value: 'fullName',
                             },
                           ],
                           property: 'getString',

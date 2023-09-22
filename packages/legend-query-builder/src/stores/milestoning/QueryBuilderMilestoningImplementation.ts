@@ -64,6 +64,13 @@ export abstract class QueryBuilderMilestoningImplementation {
   ): void;
 
   /**
+   * Builds parameters for getAll() function with milestoned class
+   */
+  abstract buildGetAllWithDefaultParameters(
+    getAllFunction: SimpleFunctionExpression,
+  ): void;
+
+  /**
    * Generates milestoning date for a propertyexpression based on its source and target stereotype
    */
   abstract generateMilestoningDate(
