@@ -202,6 +202,7 @@ export class EntityDiffViewState extends EntityDiffViewerState {
         const elementGrammar =
           (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
             [this.fromEntity],
+            { pretty: true },
           )) as string;
         this.setFromGrammarText(elementGrammar);
       } catch (error) {
@@ -225,6 +226,7 @@ export class EntityDiffViewState extends EntityDiffViewerState {
         const elementGrammar =
           (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
             [this.toEntity],
+            { pretty: true },
           )) as string;
         this.setToGrammarText(elementGrammar);
       } catch (error) {
