@@ -78,6 +78,7 @@ export class DatabaseBuilderWizardState {
               this.schemaExplorerState.generateDatabase(),
             )) as Entity,
           ],
+          { pretty: true },
         )) as string,
       );
     } catch (error) {

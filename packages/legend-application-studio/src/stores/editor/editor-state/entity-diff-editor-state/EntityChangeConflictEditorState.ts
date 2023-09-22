@@ -426,6 +426,7 @@ export class EntityChangeConflictEditorState extends EntityDiffViewerState {
       const elementGrammar =
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
           [entity],
+          { pretty: true },
         )) as string;
       return elementGrammar;
     }
