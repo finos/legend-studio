@@ -603,6 +603,75 @@
   }
 }
 
+.query-builder__constants {
+  &__modal {
+    &__content {
+      width: 100%;
+      height: 100%;
+      background: var(--color-dark-grey-50);
+      flex-direction: column;
+      display: flex;
+      padding: 2rem;
+    }
+
+    &__name {
+      @include flexVCenter;
+
+      padding-bottom: 0.5rem;
+      padding-top: 0.5rem;
+      height: 3.4rem;
+
+      &__input {
+        height: 2.8rem;
+        line-height: 2.8rem;
+        width: 100%;
+        background: var(--color-dark-grey-100);
+        border: 0.1rem solid var(--color-dark-grey-300);
+        color: var(--color-light-grey-200);
+
+        &:focus {
+          border: 0.1rem solid var(--color-blue-200);
+          outline: none;
+        }
+      }
+    }
+  }
+
+  &__modal--has-error {
+    border: 0.1rem solid var(--color-red-200) !important;
+
+    .modal__header {
+      background: var(--color-red-200);
+    }
+
+    .modal__title__error-badge {
+      @include flexCenter;
+
+      margin-right: 1rem;
+      background: var(--color-red-400);
+      color: var(--color-white);
+      height: 2.2rem;
+      border-radius: 0.2rem;
+      padding: 0.5rem;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+  }
+
+  &__lambda-editor {
+    height: calc(100% - 3.4rem) !important;
+    border: 0.1rem solid var(--color-dark-grey-280);
+    border-radius: 0;
+
+    .monaco-editor {
+      .margin,
+      .monaco-editor-background {
+        background: var(--color-dark-grey-50) !important;
+      }
+    }
+  }
+}
+
 .query-builder__sql__container {
   width: 95%;
   margin: 1% auto 0;
