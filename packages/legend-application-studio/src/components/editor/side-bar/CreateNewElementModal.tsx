@@ -374,7 +374,7 @@ const NewServiceDriverEditor = observer(() => {
     }
     //reset runtime
     newServiceDriver.setRuntimeOption(
-      guaranteeNonNullable(newServiceDriver.compatibleRuntimeOptions[0]),
+      guaranteeNonNullable(newServiceDriver.runtimeOptions[0]),
     );
   };
 
@@ -398,7 +398,7 @@ const NewServiceDriverEditor = observer(() => {
       <div className="explorer__new-element-modal__driver">
         <CustomSelectorInput
           className="explorer__new-element-modal__driver__dropdown"
-          options={newServiceDriver.compatibleRuntimeOptions}
+          options={newServiceDriver.runtimeOptions}
           onChange={onRuntimeChange}
           value={newServiceDriver.runtimeOption}
           darkMode={true}

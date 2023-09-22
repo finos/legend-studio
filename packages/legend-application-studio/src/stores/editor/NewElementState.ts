@@ -488,13 +488,13 @@ export class NewServiceDriver extends NewElementDriver<Service> {
       runtimeOption: observable,
       setMappingOption: action,
       setRuntimeOption: action,
-      compatibleRuntimeOptions: computed,
+      runtimeOptions: computed,
       isValid: computed,
       createElement: action,
     });
     this.mappingOption =
       editorStore.graphManagerState.usableMappings.map(buildElementOption)[0];
-    this.runtimeOption = guaranteeNonNullable(this.compatibleRuntimeOptions[0]);
+    this.runtimeOption = guaranteeNonNullable(this.runtimeOptions[0]);
   }
 
   setMappingOption(val: PackageableElementOption<Mapping> | undefined): void {
@@ -505,22 +505,25 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     this.runtimeOption = val;
   }
 
-  get compatibleRuntimeOptions(): RuntimeOption[] {
-    const availableRuntimeOptions = (
-      this.mappingOption?.value
-        ? getMappingCompatibleRuntimes(
-            this.mappingOption.value,
-            this.editorStore.graphManagerState.usableRuntimes,
-          )
-        : []
-    ).map((runtime) => buildElementOption(runtime) as RuntimeOption);
+  get compatibleMappingRuntimes(): PackageableRuntime[] {
+    return this.mappingOption?.value
+      ? getMappingCompatibleRuntimes(
+          this.mappingOption.value,
+          this.editorStore.graphManagerState.usableRuntimes,
+        )
+      : [];
+  }
 
-    availableRuntimeOptions.push({
-      label: CUSTOM_LABEL,
-      value: undefined,
-    });
-
-    return availableRuntimeOptions;
+  get runtimeOptions(): RuntimeOption[] {
+    return [
+      ...this.compatibleMappingRuntimes.map((runtime) =>
+        buildElementOption(runtime),
+      ),
+      {
+        label: CUSTOM_LABEL,
+        value: undefined,
+      },
+    ];
   }
 
   get isValid(): boolean {
