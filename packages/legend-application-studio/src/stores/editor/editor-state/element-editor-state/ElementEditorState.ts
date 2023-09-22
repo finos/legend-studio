@@ -219,6 +219,7 @@ export abstract class ElementEditorState extends EditorState {
               this.element,
             ),
           ],
+          { pretty: true },
         )) as string;
       this.setTextContent(grammar);
     } catch (error) {

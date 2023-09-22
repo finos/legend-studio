@@ -93,6 +93,7 @@ export class DatabaseModelBuilderState {
       this.setDatabaseGrammarCode(
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
           entities,
+          { pretty: true },
         )) as string,
       );
     } catch (error) {
