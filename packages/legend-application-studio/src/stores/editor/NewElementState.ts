@@ -488,15 +488,13 @@ export class NewServiceDriver extends NewElementDriver<Service> {
       runtimeOption: observable,
       setMappingOption: action,
       setRuntimeOption: action,
-      getCompatibleRuntimeOptions: action,
+      compatibleRuntimeOptions: computed,
       isValid: computed,
       createElement: action,
     });
     this.mappingOption =
       editorStore.graphManagerState.usableMappings.map(buildElementOption)[0];
-    this.runtimeOption = guaranteeNonNullable(
-      this.getCompatibleRuntimeOptions(this.mappingOption?.value)[0],
-    );
+    this.runtimeOption = guaranteeNonNullable(this.compatibleRuntimeOptions[0]);
   }
 
   setMappingOption(val: PackageableElementOption<Mapping> | undefined): void {
@@ -507,11 +505,11 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     this.runtimeOption = val;
   }
 
-  getCompatibleRuntimeOptions(mapping: Mapping | undefined): RuntimeOption[] {
+  get compatibleRuntimeOptions(): RuntimeOption[] {
     const availableRuntimeOptions = (
-      mapping
+      this.mappingOption?.value
         ? getMappingCompatibleRuntimes(
-            mapping,
+            this.mappingOption?.value,
             this.editorStore.graphManagerState.usableRuntimes,
           )
         : []

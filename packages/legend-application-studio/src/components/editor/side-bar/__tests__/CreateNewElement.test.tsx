@@ -195,4 +195,15 @@ test(integrationTest('Create a service'), async () => {
   await waitFor(() => findByText(dialog, 'MyMapping'));
   await waitFor(() => findByText(dialog, 'Runtime'));
   await waitFor(() => findByText(dialog, CUSTOM_LABEL));
+  const elementInput = getByPlaceholderText(dialog, 'Enter a name', {
+    exact: false,
+  });
+  fireEvent.change(elementInput, { target: { value: 'MyService' } });
+  await act(async () => {
+    fireEvent.click(getByText(dialog, 'Create'));
+  });
+  getByText(packageExplorer, 'MyService');
+  await waitFor(() => renderResult.getByTitle('Run Query'));
+  await waitFor(() => renderResult.getByText('model::MyMapping'));
+  await waitFor(() => renderResult.getByText(CUSTOM_LABEL));
 });
