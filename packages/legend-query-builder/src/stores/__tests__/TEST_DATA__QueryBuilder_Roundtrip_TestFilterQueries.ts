@@ -74,6 +74,80 @@ export const TEST_DATA__lambda_simpleSingleConditionFilter = {
   parameters: [],
 };
 
+export const TEST_DATA__simpleSingleConditionMilestoningFilter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'my::Firm',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'var',
+                          name: 'businessDate',
+                        },
+                      ],
+                      property: 'employees',
+                    },
+                  ],
+                  property: 'firstName',
+                },
+                {
+                  _type: 'string',
+                  value: 'john',
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'Date',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'businessDate',
+    },
+  ],
+};
+
 export const TEST_DATA_lambda_negativeIntegerFilter = {
   _type: 'lambda',
   body: [
