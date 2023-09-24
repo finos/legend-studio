@@ -147,8 +147,8 @@ export const DatabaseBuilderWizard = observer(
                 <Panel className="database-builder__model">
                   <PanelHeader title="database model" />
                   <PanelContent>
-                    <div className="database-builder__modeller">
-                      <div className="panel__content__form__section database-builder__modeller__path">
+                    <div className="database-builder__modeler">
+                      <div className="panel__content__form__section database-builder__modeler__path">
                         <div className="panel__content__form__section__header__label">
                           Target Database Path
                         </div>
@@ -165,7 +165,7 @@ export const DatabaseBuilderWizard = observer(
                           error={elementAlreadyExistsMessage}
                         />
                       </div>
-                      <div className="database-builder__modeller__preview">
+                      <div className="database-builder__modeler__preview">
                         {databaseBuilderState.databaseGrammarCode && (
                           <CodeEditor
                             language={CODE_EDITOR_LANGUAGE.PURE}

@@ -614,6 +614,7 @@ export abstract class AbstractPureGraphManager {
 
   abstract generateModelsFromDatabaseSpecification(
     databasePath: string,
+    targetPackage: undefined | string,
     graph: PureModel,
   ): Promise<Entity[]>;
 
