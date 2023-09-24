@@ -129,6 +129,9 @@ const LambdaEditor_Inner = observer(
     const onDidFocusEditorWidgetDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
+    const onDidBlurEditorTextDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
     const value = normalizeLineEnding(lambdaEditorState.lambdaString);
     const parserError = lambdaEditorState.parserError;
     const compilationError = lambdaEditorState.compilationError;
@@ -191,21 +194,9 @@ const LambdaEditor_Inner = observer(
             : CODE_EDITOR_THEME.DEFAULT_DARK,
           ...lambdaEditorOptions,
         });
-        if (onEditorBlur) {
-          _editor.onDidBlurEditorText(() => {
-            transformStringToLambda?.cancel();
-            onEditorBlur();
-          });
-        }
         setEditor(_editor);
       }
-    }, [
-      editor,
-      applicationStore,
-      inline,
-      onEditorBlur,
-      transformStringToLambda,
-    ]);
+    }, [editor, applicationStore, inline]);
 
     // set styling for expanded mode
     useEffect(() => {
@@ -299,6 +290,12 @@ const LambdaEditor_Inner = observer(
           onEditorFocus?.();
         },
       );
+      if (onEditorBlur) {
+        onDidBlurEditorTextDisposer.current = editor.onDidBlurEditorText(() => {
+          transformStringToLambda?.cancel();
+          onEditorBlur();
+        });
+      }
       // Set the text value
       const currentValue = getCodeEditorValue(editor);
       const editorModel = editor.getModel();
