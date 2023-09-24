@@ -3204,12 +3204,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async generateModelsFromDatabaseSpecification(
     databasePath: string,
+    targetPackage: undefined | string,
     graph: PureModel,
   ): Promise<Entity[]> {
     const graphData = this.graphToPureModelContextData(graph);
     const input = new V1_DatabaseToModelGenerationInput();
     input.databasePath = databasePath;
     input.modelData = graphData;
+    input.targetPackage = targetPackage;
     const generatedModel =
       await this.engine.generateModelsFromDatabaseSpecification(input);
     return this.pureModelContextDataToEntities(generatedModel);
