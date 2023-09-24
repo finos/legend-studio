@@ -480,6 +480,9 @@ export class QueryBuilderPostFilterState
   operators: QueryBuilderPostFilterOperator[] = [];
   rootIds: string[] = [];
   nodes = new Map<string, QueryBuilderPostFilterTreeNodeData>();
+  derivedColumnBeingDropped:
+    | QueryBuilderDerivationProjectionColumnState
+    | undefined;
 
   constructor(
     tdsState: QueryBuilderTDSState,
@@ -492,6 +495,7 @@ export class QueryBuilderPostFilterState
       rootIds: observable,
       nodes: observable,
       lambdaParameterName: observable,
+      derivedColumnBeingDropped: observable,
       setLambdaParameterName: action,
       setSelectedNode: action,
       addNodeFromNode: action,
@@ -504,6 +508,7 @@ export class QueryBuilderPostFilterState
       expandTree: action,
       replaceBlankNodeWithNode: action,
       setRearrangingConditions: action,
+      setDerivedColumnBeingDropped: action,
       hashCode: computed,
     });
 
@@ -524,6 +529,12 @@ export class QueryBuilderPostFilterState
       this.nodes.get(id),
       `Can't find query builder post-filter tree node with ID '${id}'`,
     );
+  }
+
+  setDerivedColumnBeingDropped(
+    val: QueryBuilderDerivationProjectionColumnState | undefined,
+  ): void {
+    this.derivedColumnBeingDropped = val;
   }
 
   get isEmpty(): boolean {

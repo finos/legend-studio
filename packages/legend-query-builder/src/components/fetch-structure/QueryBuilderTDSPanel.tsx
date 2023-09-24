@@ -174,7 +174,17 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
   }) => {
     const { projectionColumnState } = props;
     const hasParserError = projectionColumnState.tdsState.hasParserError;
-
+    const onEditorBlur = (): void => {
+      flowResult(
+        projectionColumnState.fetchDerivationLambdaReturnType({
+          forceConversionStringToLambda: true,
+          forceRefresh: true,
+        }),
+      ).catch(
+        projectionColumnState.tdsState.queryBuilderState.applicationStore
+          .alertUnhandledError,
+      );
+    };
     const handleDrop = useCallback(
       (
         item:
@@ -247,6 +257,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           }
           lambdaEditorState={projectionColumnState.derivationLambdaEditorState}
           forceBackdrop={hasParserError}
+          onEditorBlur={onEditorBlur}
         />
       </div>
     );
