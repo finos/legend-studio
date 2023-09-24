@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.3.0
+
+### Minor Changes
+
+- [#2617](https://github.com/finos/legend-studio/pull/2617) [`a2de12f1e`](https://github.com/finos/legend-studio/commit/a2de12f1e8fa16dbf8c708988f5b831b02ccb6fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for getting return types for multiple lambdas with `getLambdasReturnType`.
+
 ## 31.2.3
 
 ## 31.2.2
