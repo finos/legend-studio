@@ -1,5 +1,17 @@
 # @finos/legend-query-builder
 
+## 4.8.0
+
+### Minor Changes
+
+- [#2617](https://github.com/finos/legend-studio/pull/2617) [`a2de12f1e`](https://github.com/finos/legend-studio/commit/a2de12f1e8fa16dbf8c708988f5b831b02ccb6fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enhance query derivaed projection performance by fetching lambda return types on initialization of query as well as updating when editing via lambda editor.
+
+- [#2617](https://github.com/finos/legend-studio/pull/2617) [`a2de12f1e`](https://github.com/finos/legend-studio/commit/a2de12f1e8fa16dbf8c708988f5b831b02ccb6fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `onEditorBlur` to LambdaEditor when leaving editor.
+
+### Patch Changes
+
+- [#2612](https://github.com/finos/legend-studio/pull/2612) [`f69c77947`](https://github.com/finos/legend-studio/commit/f69c779476cc66100936ef46ab1e8fc22a145a5a) ([@gayathrir11](https://github.com/gayathrir11)) - Fix typeahead search for milestoned properties
+
 ## 4.7.4
 
 ## 4.7.3

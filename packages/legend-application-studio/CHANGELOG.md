@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 28.5.4
+
+### Patch Changes
+
+- [#2542](https://github.com/finos/legend-studio/pull/2542) [`4e37a901e`](https://github.com/finos/legend-studio/commit/4e37a901ea05a8da0eff46fa762828a2329373dd) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable choose runtime when creating a new service
+
+- [#2627](https://github.com/finos/legend-studio/pull/2627) [`eada42c72`](https://github.com/finos/legend-studio/commit/eada42c72a3a62585a21b596ffa74ae7b349b0c7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - minor improvement - pretty pure grammar
+
+- [#2626](https://github.com/finos/legend-studio/pull/2626) [`52b18c884`](https://github.com/finos/legend-studio/commit/52b18c884338a54cde65e805be8dc977598e0fed) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - use pretty pure grammar in entity diff view
+
+- [#2628](https://github.com/finos/legend-studio/pull/2628) [`d3217adef`](https://github.com/finos/legend-studio/commit/d3217adefda1cb636c757c2e5b5f1dfd4f663266) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add database config with target package to build model/mapping from database.
+
 ## 28.5.3
 
 ### Patch Changes
