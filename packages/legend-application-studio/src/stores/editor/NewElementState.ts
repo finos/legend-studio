@@ -81,6 +81,7 @@ import {
   IdentifiedConnection,
   generateIdentifiedConnectionId,
   getMappingCompatibleRuntimes,
+  RuntimePointer,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -537,7 +538,9 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     const service = new Service(name);
     let runtimeValue: Runtime;
     if (this.runtimeOption.value) {
-      runtimeValue = this.runtimeOption.value.runtimeValue;
+      runtimeValue = new RuntimePointer(
+        PackageableElementExplicitReference.create(this.runtimeOption.value),
+      );
     } else {
       const engineRuntime = new EngineRuntime();
       runtime_addMapping(engineRuntime, mapping);
