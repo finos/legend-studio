@@ -73,12 +73,14 @@ export class QueryBuilderFilterOperator_LessThanEqual
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    return isTypeCompatibleForAssignment(
-      filterConditionState.value
-        ? getNonCollectionValueSpecificationType(filterConditionState.value)
-        : undefined,
-      filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType,
+    return (
+      isTypeCompatibleForAssignment(
+        filterConditionState.value
+          ? getNonCollectionValueSpecificationType(filterConditionState.value)
+          : undefined,
+        filterConditionState.propertyExpressionState.propertyExpression.func
+          .value.genericType.value.rawType,
+      ) || filterConditionState.hasCalcualtedConstantValue
     );
   }
 

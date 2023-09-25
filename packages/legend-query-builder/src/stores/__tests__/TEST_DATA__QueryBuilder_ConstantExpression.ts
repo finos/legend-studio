@@ -441,17 +441,17 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
                     parameters: [
                       {
                         _type: 'property',
-                        property: 'age',
                         parameters: [
                           {
                             _type: 'var',
                             name: 'x',
                           },
                         ],
+                        property: 'age',
                       },
                       {
-                        _type: 'integer',
-                        value: 20,
+                        _type: 'var',
+                        name: 'd',
                       },
                     ],
                   },
@@ -477,13 +477,13 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
                 body: [
                   {
                     _type: 'property',
-                    property: 'firstName',
                     parameters: [
                       {
                         _type: 'var',
                         name: 'x',
                       },
                     ],
+                    property: 'firstName',
                   },
                 ],
                 parameters: [
@@ -498,13 +498,13 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
                 body: [
                   {
                     _type: 'property',
-                    property: 'lastName',
                     parameters: [
                       {
                         _type: 'var',
                         name: 'x',
                       },
                     ],
+                    property: 'lastName',
                   },
                 ],
                 parameters: [
@@ -539,12 +539,12 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
     parameters: [
       {
         _type: 'var',
-        name: 'param1',
+        class: 'String',
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
         },
-        class: 'String',
+        name: 'param1',
       },
     ],
   };

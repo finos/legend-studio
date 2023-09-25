@@ -113,7 +113,6 @@ import {
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
-import { toJS } from 'mobx';
 
 const isCollectionProperty = (
   propertyExpression: AbstractPropertyExpression,
@@ -552,6 +551,7 @@ const QueryBuilderFilterConditionEditor = observer(
             .genericType.value.rawType;
         if (
           isTypeCompatibleForAssignment(parameterType, conditionValueType) ||
+          // we will relax compatible check if calcualted constant
           queryBuilderState.constantState.isCalculatedConstant(variable)
         ) {
           node.condition.setValue(item.variable);
@@ -561,7 +561,7 @@ const QueryBuilderFilterConditionEditor = observer(
           );
         }
       },
-      [applicationStore, node.condition],
+      [applicationStore, node.condition, queryBuilderState.constantState],
     );
     const [{ isFilterValueDragOver }, dropConnector] = useDrop<
       QueryBuilderVariableDragSource,

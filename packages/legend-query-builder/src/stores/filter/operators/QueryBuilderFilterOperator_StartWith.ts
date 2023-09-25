@@ -68,7 +68,10 @@ export class QueryBuilderFilterOperator_StartWith
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
-    return PrimitiveType.STRING === type || filterConditionState.hasCalcualtedConstantValue;
+    return (
+      PrimitiveType.STRING === type ||
+      filterConditionState.hasCalcualtedConstantValue
+    );
   }
 
   getDefaultFilterConditionValue(
