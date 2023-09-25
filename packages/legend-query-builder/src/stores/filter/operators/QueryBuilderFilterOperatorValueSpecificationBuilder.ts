@@ -36,6 +36,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMe
 import { simplifyValueExpression } from '../../QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { toJS } from 'mobx';
 
 export const buildFilterConditionExpression = (
   filterConditionState: FilterConditionState,

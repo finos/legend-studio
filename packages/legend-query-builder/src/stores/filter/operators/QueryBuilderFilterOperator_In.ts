@@ -127,6 +127,10 @@ export class QueryBuilderFilterOperator_In
       }
       return propertyType === valueSpec.genericType?.value.rawType;
     }
+    if(filterConditionState.hasCalcualtedConstantValue)
+    {
+      return true;
+    }
     return false;
   }
 

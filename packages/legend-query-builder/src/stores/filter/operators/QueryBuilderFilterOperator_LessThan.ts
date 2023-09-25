@@ -79,7 +79,7 @@ export class QueryBuilderFilterOperator_LessThan
         : undefined,
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType,
-    );
+    ) || filterConditionState.hasCalcualtedConstantValue;
   }
 
   getDefaultFilterConditionValue(

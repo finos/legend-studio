@@ -94,7 +94,7 @@ export class QueryBuilderFilterOperator_Equal
         : undefined,
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType,
-    );
+    ) || filterConditionState.hasCalcualtedConstantValue;
   }
 
   getDefaultFilterConditionValue(

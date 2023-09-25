@@ -39,6 +39,7 @@ import {
   changeEntry,
   assertTrue,
   ActionState,
+  filterByType,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
@@ -297,6 +298,14 @@ export class QueryBuilderConstantsState implements Hashable {
 
   get isEmpty(): boolean {
     return !this.constants.length;
+  }
+
+  isCalculatedConstant(value: VariableExpression): boolean {
+    return Boolean(
+      this.constants
+        .filter(filterByType(QueryBuilderCalculatedConstantExpressionState))
+        .find((v) => v.variable.name === value.name),
+    );
   }
 
   setShowConstantPanel(val: boolean): void {

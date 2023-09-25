@@ -113,6 +113,7 @@ import {
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import { toJS } from 'mobx';
 
 const isCollectionProperty = (
   propertyExpression: AbstractPropertyExpression,
@@ -544,11 +545,15 @@ const QueryBuilderFilterConditionEditor = observer(
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
       (item: QueryBuilderVariableDragSource): void => {
-        const parameterType = item.variable.genericType?.value.rawType;
+        const variable = item.variable;
+        const parameterType = variable.genericType?.value.rawType;
         const conditionValueType =
           node.condition.propertyExpressionState.propertyExpression.func.value
             .genericType.value.rawType;
-        if (isTypeCompatibleForAssignment(parameterType, conditionValueType)) {
+        if (
+          isTypeCompatibleForAssignment(parameterType, conditionValueType) ||
+          queryBuilderState.constantState.isCalculatedConstant(variable)
+        ) {
           node.condition.setValue(item.variable);
         } else {
           applicationStore.notificationService.notifyWarning(

@@ -40,7 +40,7 @@ import {
   type ExecutionResult,
   type AbstractPropertyExpression,
   type ValueSpecification,
-  type VariableExpression,
+  VariableExpression,
   observe_ValueSpecification,
 } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
@@ -119,6 +119,16 @@ export class FilterConditionState implements Hashable {
   get operators(): QueryBuilderFilterOperator[] {
     return this.filterState.operators.filter((op) =>
       op.isCompatibleWithFilterConditionProperty(this),
+    );
+  }
+
+  get hasCalcualtedConstantValue(): boolean {
+    const value = this.value;
+    return (
+      value instanceof VariableExpression &&
+      this.filterState.queryBuilderState.constantState.isCalculatedConstant(
+        value,
+      )
     );
   }
 
