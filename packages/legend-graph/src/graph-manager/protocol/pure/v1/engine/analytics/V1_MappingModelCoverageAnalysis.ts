@@ -33,6 +33,7 @@ import {
   EntityMappedProperty,
   EnumMappedProperty,
   MappedEntity,
+  MappedEntityInfo,
   MappedProperty,
   MappingModelCoverageAnalysisResult,
 } from '../../../../../../graph-manager/action/analytics/MappingModelCoverageAnalysis.js';
@@ -107,15 +108,31 @@ const V1_deserializeMappedProperty = (
   }
 };
 
+class V1_MappedEntityInfo {
+  classPath!: string;
+  isRootEntity!: boolean;
+  subClasses: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MappedEntityInfo, {
+      classPath: primitive(),
+      isRootEntity: primitive(),
+      subClasses: list(primitive()),
+    }),
+  );
+}
+
 class V1_MappedEntity {
   path!: string;
-  classPath!: string;
   properties: V1_MappedProperty[] = [];
+  info?: V1_MappedEntityInfo | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_MappedEntity, {
       path: primitive(),
-      classPath: primitive(),
+      info: optional(
+        usingModelSchema(V1_MappedEntityInfo.serialization.schema),
+      ),
       properties: list(
         custom(
           (prop) => V1_serializeMappedProperty(prop),
@@ -170,12 +187,23 @@ const buildMappedProperty = (protocol: V1_MappedProperty): MappedProperty =>
     ? new EnumMappedProperty(protocol.name, protocol.enumPath)
     : new MappedProperty(protocol.name);
 
-const buildMappedEntity = (protocol: V1_MappedEntity): MappedEntity =>
-  new MappedEntity(
-    protocol.path,
+const buildMappedEntityInfo = (
+  protocol: V1_MappedEntityInfo,
+): MappedEntityInfo =>
+  new MappedEntityInfo(
     protocol.classPath,
-    protocol.properties.map((p) => buildMappedProperty(p)),
+    protocol.isRootEntity,
+    protocol.subClasses,
   );
+
+const buildMappedEntity = (protocol: V1_MappedEntity): MappedEntity => {
+  const info = protocol.info ? buildMappedEntityInfo(protocol.info) : undefined;
+  return new MappedEntity(
+    protocol.path,
+    protocol.properties.map((p) => buildMappedProperty(p)),
+    info,
+  );
+};
 
 export const V1_buildModelCoverageAnalysisResult = (
   protocol: V1_MappingModelCoverageAnalysisResult,

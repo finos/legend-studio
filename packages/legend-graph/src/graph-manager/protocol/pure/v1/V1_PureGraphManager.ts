@@ -797,13 +797,99 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
+  async buildGraphForQuery(
+    graph: PureModel,
+    entities: Entity[],
+    buildState: ActionState,
+    options?: GraphBuilderOptions,
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
+    const stopWatch = new StopWatch();
+    const report = _report ?? createGraphBuilderReport();
+    buildState.reset();
+
+    try {
+      // deserialize
+      buildState.setMessage(`Deserializing elements...`);
+      const data = new V1_PureModelContextData();
+      await V1_entitiesToPureModelContextData(
+        entities,
+        data,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+        this.subtypeInfo,
+      );
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
+      );
+
+      // prepare build inputs
+      const buildInputs: V1_PureGraphBuilderInput[] = [
+        {
+          model: graph,
+          data: V1_indexPureModelContextData(
+            report,
+            data,
+            this.graphBuilderExtensions,
+          ),
+        },
+      ];
+
+      // index
+      buildState.setMessage(
+        `Indexing ${report.elementCount.total} elements...`,
+      );
+      await this.initializeAndIndexElements(graph, buildInputs, options);
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_INDEX_ELEMENTS__SUCCESS,
+      );
+      // build types
+      buildState.setMessage(`Building domain models...`);
+      await this.buildTypes(graph, buildInputs, options);
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DOMAIN_MODELS__SUCCESS,
+      );
+
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_OTHER_ELEMENTS__SUCCESS,
+      );
+
+      if (options?.origin) {
+        graph.setOrigin(options.origin);
+      }
+
+      buildState.pass();
+
+      const totalTime = stopWatch.elapsed;
+      report.timings = {
+        ...Object.fromEntries(stopWatch.records),
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_GRAPH__SUCCESS]: totalTime,
+        total: totalTime,
+      };
+    } catch (error) {
+      assertErrorThrown(error);
+      this.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
+      );
+      buildState.fail();
+      /**
+       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
+       * But we might want to rethink this decision in the future and throw appropriate type of error
+       */
+      throw error instanceof GraphBuilderError
+        ? error
+        : new GraphBuilderError(error);
+    } finally {
+      buildState.setMessage(undefined);
+    }
+  }
+
   async buildGraph(
     graph: PureModel,
     entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
     _report?: GraphManagerOperationReport,
-    buildRequiredGraph?: boolean | undefined,
   ): Promise<void> {
     const stopWatch = new StopWatch();
     const report = _report ?? createGraphBuilderReport();
@@ -837,25 +923,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ];
 
       // build
-      if (!buildRequiredGraph) {
-        await this.buildGraphFromInputs(
-          graph,
-          buildInputs,
-          report,
-          stopWatch,
-          buildState,
-          options,
-        );
-      } else {
-        await this.buildRequiredGraphFromInputs(
-          graph,
-          buildInputs,
-          report,
-          stopWatch,
-          buildState,
-          options,
-        );
-      }
+      await this.buildGraphFromInputs(
+        graph,
+        buildInputs,
+        report,
+        stopWatch,
+        buildState,
+        options,
+      );
 
       /**
        * For now, we delete the section index. We are able to read both resolved and unresolved element paths
@@ -1137,32 +1212,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildFileGenerations(graph, inputs, options);
     await this.buildGenerationSpecifications(graph, inputs, options);
     await this.buildOtherElements(graph, inputs, options);
-    stopWatch.record(
-      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_OTHER_ELEMENTS__SUCCESS,
-    );
-  }
-
-  private async buildRequiredGraphFromInputs(
-    graph: PureModel,
-    inputs: V1_PureGraphBuilderInput[],
-    report: GraphManagerOperationReport,
-    stopWatch: StopWatch,
-    graphBuilderState: ActionState,
-    options?: GraphBuilderOptions,
-  ): Promise<void> {
-    // index
-    graphBuilderState.setMessage(
-      `Indexing ${report.elementCount.total} elements...`,
-    );
-    await this.initializeAndIndexElements(graph, inputs, options);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_INDEX_ELEMENTS__SUCCESS);
-    // build types
-    graphBuilderState.setMessage(`Building domain models...`);
-    await this.buildTypes(graph, inputs, options);
-    stopWatch.record(
-      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DOMAIN_MODELS__SUCCESS,
-    );
-
     stopWatch.record(
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_OTHER_ELEMENTS__SUCCESS,
     );

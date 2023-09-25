@@ -375,7 +375,7 @@ export const queryClass = async (
   const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-      setupQueryBuilderState: () => {
+      setupQueryBuilderState: async () => {
         const queryBuilderState = new ClassQueryBuilderState(
           embeddedQueryBuilderState.editorStore.applicationStore,
           embeddedQueryBuilderState.editorStore.graphManagerState,

@@ -112,7 +112,7 @@ const MappingTestQueryEditor = observer(
         const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
         await flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-            setupQueryBuilderState: (): QueryBuilderState => {
+            setupQueryBuilderState: async () => {
               const queryBuilderState = new MappingExecutionQueryBuilderState(
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,

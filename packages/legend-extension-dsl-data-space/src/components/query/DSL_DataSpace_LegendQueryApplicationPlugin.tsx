@@ -17,7 +17,7 @@
 import packageJson from '../../../package.json' assert { type: 'json' };
 import {
   type QuerySetupActionConfiguration,
-  type ExistingQueryEditorStore,
+  ExistingQueryEditorStore,
   LegendQueryApplicationPlugin,
   generateExistingQueryEditorRoute,
   LEGEND_QUERY_APP_EVENT,
@@ -25,7 +25,8 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
   type ExistingQueryEditorStateBuilder,
-  type ExistingQueryGraphBuilderChecker,
+  type QueryGraphBuilderGetter,
+  type QueryEditorStore,
 } from '@finos/legend-application-query';
 import { SquareIcon } from '@finos/legend-art';
 import {
@@ -43,7 +44,6 @@ import {
   Query,
   isValidFullPath,
   GRAPH_MANAGER_EVENT,
-  type V1_PureModelContextData,
   createGraphBuilderReport,
 } from '@finos/legend-graph';
 import {
@@ -58,11 +58,11 @@ import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import {
   assertErrorThrown,
-  guaranteeNonNullable,
   isString,
   LogEvent,
   StopWatch,
   uuid,
+  type GeneratorFn,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
@@ -72,6 +72,11 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
+import { flowResult } from 'mobx';
+
+function* buildGraph(): GeneratorFn<void> {
+  // do nothing
+}
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
@@ -118,9 +123,10 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
   override getExtraExistingQueryEditorStateBuilders(): ExistingQueryEditorStateBuilder[] {
     return [
       async (
+        query: Query,
         editorStore: ExistingQueryEditorStore,
       ): Promise<QueryBuilderState | undefined> => {
-        const dataSpaceTaggedValue = editorStore.lightQuery?.taggedValues?.find(
+        const dataSpaceTaggedValue = query.taggedValues?.find(
           (taggedValue) =>
             taggedValue.profile === QUERY_PROFILE_PATH &&
             taggedValue.tag === QUERY_PROFILE_TAG_DATA_SPACE &&
@@ -129,11 +135,10 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
         let isLightGraphEnabled = true;
         if (dataSpaceTaggedValue) {
           const dataSpacePath = dataSpaceTaggedValue.value;
-          const mappingPath = editorStore.lightQuery?.mapping;
-          let dataSpaceAnalysisResult;
-          let dataSpaceAnalysisResultMetaModel;
+          const mappingPath = query.mapping;
           const { groupId, artifactId, versionId } =
             editorStore.getProjectInfo();
+          let dataSpaceAnalysisResult;
           if (dataSpacePath && isString(mappingPath)) {
             try {
               editorStore.initState.setMessage(
@@ -145,6 +150,15 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                   artifactId,
                 ),
               );
+              const graph_buildReport = createGraphBuilderReport();
+              const stopWatch = new StopWatch();
+              // initialize system
+              stopWatch.record();
+              await editorStore.graphManagerState.initializeSystem();
+              stopWatch.record(
+                GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS,
+              );
+              const dependency_buildReport = createGraphBuilderReport();
               dataSpaceAnalysisResult =
                 await DSL_DataSpace_getGraphManagerExtension(
                   editorStore.graphManagerState.graphManager,
@@ -163,37 +177,15 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                       dataSpacePath,
                       editorStore.depotServerClient,
                     ),
-                );
-              const stopWatch = new StopWatch();
-              // initialize system
-              stopWatch.record();
-              await editorStore.graphManagerState.initializeSystem();
-              stopWatch.record(
-                GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS,
-              );
-
-              // build graph
-              let pmcd: V1_PureModelContextData | undefined = undefined;
-              if (dataSpaceAnalysisResult) {
-                const mappingModelCoverageAnalysisResult =
-                  dataSpaceAnalysisResult?.executionContexts.find(
-                    (value) => value.mapping === mappingPath,
-                  )?.mappingModelCoverageAnalysisResult;
-                pmcd = mappingModelCoverageAnalysisResult?.model;
-              }
-              const graph_buildReport = createGraphBuilderReport();
-              dataSpaceAnalysisResultMetaModel =
-                await DSL_DataSpace_getGraphManagerExtension(
-                  editorStore.graphManagerState.graphManager,
-                ).buildDataSpaceAnalytics(
-                  dataSpaceAnalysisResult,
-                  editorStore.graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+                  undefined,
                   graph_buildReport,
                   editorStore.graphManagerState.graph,
-                  pmcd,
+                  undefined,
+                  mappingPath,
                   editorStore.getProjectInfo(),
+                  editorStore.applicationStore.notificationService,
                 );
-              const dependency_buildReport = createGraphBuilderReport();
+
               // report
               stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
               const graphBuilderReportData = {
@@ -221,7 +213,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
               isLightGraphEnabled = false;
               editorStore.graphManagerState.graph =
                 editorStore.graphManagerState.createNewGraph();
-              await editorStore.buildGraph();
+              await flowResult(editorStore.buildFullGraph());
             }
 
             const dataSpace = getOwnDataSpace(
@@ -238,8 +230,6 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
               // properly created from a data space, therefore, we cannot support this case
               return undefined;
             }
-            await editorStore.setupQuery();
-            const query = guaranteeNonNullable(editorStore.query);
             const projectInfo = new DataSpaceProjectInfo(
               query.groupId,
               query.artifactId,
@@ -257,7 +247,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
               dataSpace,
               matchingExecutionContext,
               isLightGraphEnabled,
-              (dataSpaceInfo: DataSpaceInfo) => {
+              async (dataSpaceInfo: DataSpaceInfo) => {
                 if (dataSpaceInfo.defaultExecutionContext) {
                   const createQuery = async (): Promise<void> => {
                     // prepare the new query to save
@@ -354,14 +344,14 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                 }
               },
               true,
-              dataSpaceAnalysisResultMetaModel,
+              dataSpaceAnalysisResult,
               undefined,
               undefined,
               undefined,
               projectInfo,
             );
             const mappingModelCoverageAnalysisResult =
-              dataSpaceAnalysisResultMetaModel?.executionContextsIndex.get(
+              dataSpaceAnalysisResult?.executionContextsIndex.get(
                 matchingExecutionContext.name,
               )?.mappingModelCoverageAnalysisResult;
             if (mappingModelCoverageAnalysisResult) {
@@ -376,19 +366,24 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
     ];
   }
 
-  override getExtraExistingQueryGraphBuilderCheckers(): ExistingQueryGraphBuilderChecker[] {
+  override getExtraQueryGraphBuilderGetters(): QueryGraphBuilderGetter[] {
     return [
-      (editorStore: ExistingQueryEditorStore): boolean | undefined => {
-        const dataSpaceTaggedValue = editorStore.lightQuery?.taggedValues?.find(
-          (taggedValue) =>
-            taggedValue.profile === QUERY_PROFILE_PATH &&
-            taggedValue.tag === QUERY_PROFILE_TAG_DATA_SPACE &&
-            isValidFullPath(taggedValue.value),
-        );
-        if (dataSpaceTaggedValue) {
-          return false;
+      (
+        editorStore: QueryEditorStore,
+      ): ((editorStore: QueryEditorStore) => GeneratorFn<void>) | undefined => {
+        if (editorStore instanceof ExistingQueryEditorStore) {
+          const query = editorStore.query;
+          const dataSpaceTaggedValue = query?.taggedValues?.find(
+            (taggedValue) =>
+              taggedValue.profile === QUERY_PROFILE_PATH &&
+              taggedValue.tag === QUERY_PROFILE_TAG_DATA_SPACE &&
+              isValidFullPath(taggedValue.value),
+          );
+          if (dataSpaceTaggedValue) {
+            return buildGraph;
+          }
         }
-        return true;
+        return undefined;
       },
     ];
   }

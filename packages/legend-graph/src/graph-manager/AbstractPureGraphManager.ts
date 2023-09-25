@@ -255,6 +255,17 @@ export abstract class AbstractPureGraphManager {
   ): Promise<void>;
 
   /**
+   * Process entities and build the main graph for query.
+   */
+  abstract buildGraphForQuery(
+    graph: PureModel,
+    entities: Entity[],
+    buildState: ActionState,
+    options?: GraphBuilderOptions,
+    report?: GraphManagerOperationReport,
+  ): Promise<void>;
+
+  /**
    * Process entities and build the main graph.
    */
   abstract buildGraph(
@@ -263,7 +274,6 @@ export abstract class AbstractPureGraphManager {
     buildState: ActionState,
     options?: GraphBuilderOptions,
     report?: GraphManagerOperationReport,
-    buildRequiredGraph?: boolean | undefined,
   ): Promise<void>;
 
   /**

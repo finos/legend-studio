@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
-import type { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
-
 export class QueryTaggedValue {
   profile!: string;
   tag!: string;
@@ -40,8 +36,9 @@ export class Query {
   versionId!: string;
   groupId!: string;
   artifactId!: string;
-  mapping!: PackageableElementReference<Mapping>;
-  runtime!: PackageableElementReference<PackageableRuntime>;
+  // NOTE: Query can be built before the actual graph is built so we can't have the reference of metamodels here
+  mapping!: string;
+  runtime!: string;
   // We enforce a single owner, for collaboration on query, use Studio
   // if not owner is specified, any user can own the query
   // NOTE: the owner is managed automatically by the backend
@@ -67,8 +64,6 @@ export class LightQuery {
   artifactId!: string;
   owner?: string | undefined;
   lastUpdatedAt?: number | undefined;
-  mapping?: string | PackageableElementReference<Mapping> | undefined;
-  taggedValues?: QueryTaggedValue[] | undefined;
 
   isCurrentUserQuery = false;
 }
@@ -82,8 +77,6 @@ export const toLightQuery = (query: Query): LightQuery => {
   lightQuery.versionId = query.versionId;
   lightQuery.owner = query.owner;
   lightQuery.isCurrentUserQuery = query.isCurrentUserQuery;
-  lightQuery.mapping = query.mapping.value.path;
-  lightQuery.taggedValues = query.taggedValues;
   return lightQuery;
 };
 

@@ -30,7 +30,7 @@ type EmbeddedQueryBuilderActionConfiguration = {
 };
 
 type EmbeddedQueryBuilderConfiguration = {
-  setupQueryBuilderState: () => QueryBuilderState;
+  setupQueryBuilderState: () => Promise<QueryBuilderState>;
   disableCompile?: boolean | undefined;
   actionConfigs: EmbeddedQueryBuilderActionConfiguration[];
 };
@@ -100,7 +100,8 @@ export class EmbeddedQueryBuilderState {
         }
       }
       if (!this.editorStore.graphState.error) {
-        this.queryBuilderState = config.setupQueryBuilderState();
+        this.queryBuilderState =
+          (yield config.setupQueryBuilderState()) as QueryBuilderState;
         this.actionConfigs = config.actionConfigs;
         this.editorStore.applicationStore.layoutService.setBackdropContainerElementID(
           QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER,

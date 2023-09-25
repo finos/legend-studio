@@ -32,7 +32,6 @@ import {
   V1_QueryParameterValue,
 } from './query/V1_Query.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
-import { PackageableElementExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { DEPRECATED__ServiceTestResult } from '../../../../../graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
 import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
@@ -97,29 +96,10 @@ export const V1_buildLightQuery = (
     protocol.artifactId,
     `Query 'artifactId' field is missing`,
   );
-  metamodel.mapping = protocol.mapping;
   metamodel.owner = protocol.owner;
   metamodel.lastUpdatedAt = protocol.lastUpdatedAt;
   metamodel.isCurrentUserQuery =
     currentUserId !== undefined && protocol.owner === currentUserId;
-  // NOTE: we don't properly process tagged values and stereotypes for query
-  // because these profiles/tags/stereotypes can come from external systems.
-  metamodel.taggedValues = protocol.taggedValues?.map((taggedValueProtocol) => {
-    const taggedValue = new QueryTaggedValue();
-    taggedValue.profile = guaranteeNonEmptyString(
-      taggedValueProtocol.tag.profile,
-      `Tagged value 'tag.profile' field is missing or empty`,
-    );
-    taggedValue.tag = guaranteeNonEmptyString(
-      taggedValueProtocol.tag.value,
-      `Tagged value 'tag.value' field is missing or empty`,
-    );
-    taggedValue.value = guaranteeNonEmptyString(
-      taggedValueProtocol.value,
-      `Tagged value 'value' field is missing or empty`,
-    );
-    return taggedValue;
-  });
   return metamodel;
 };
 
@@ -149,22 +129,8 @@ export const V1_buildQuery = (
     protocol.artifactId,
     `Query 'artifactId' field is missing`,
   );
-  metamodel.mapping = PackageableElementExplicitReference.create(
-    graph.getMapping(
-      guaranteeNonNullable(
-        protocol.mapping,
-        `Query 'mapping' field is missing`,
-      ),
-    ),
-  );
-  metamodel.runtime = PackageableElementExplicitReference.create(
-    graph.getRuntime(
-      guaranteeNonNullable(
-        protocol.runtime,
-        `Query 'runtime' field is missing`,
-      ),
-    ),
-  );
+  metamodel.mapping = protocol.mapping;
+  metamodel.runtime = protocol.runtime;
   metamodel.content = guaranteeNonNullable(
     protocol.content,
     `Query 'content' field is missing`,
@@ -229,8 +195,8 @@ export const V1_transformQuery = (metamodel: Query): V1_Query => {
   protocol.versionId = metamodel.versionId;
   protocol.groupId = metamodel.groupId;
   protocol.artifactId = metamodel.artifactId;
-  protocol.mapping = metamodel.mapping.valueForSerialization ?? '';
-  protocol.runtime = metamodel.runtime.valueForSerialization ?? '';
+  protocol.mapping = metamodel.mapping;
+  protocol.runtime = metamodel.runtime;
   protocol.content = metamodel.content;
   protocol.owner = metamodel.owner;
   protocol.taggedValues = metamodel.taggedValues?.map((_taggedValue) => {

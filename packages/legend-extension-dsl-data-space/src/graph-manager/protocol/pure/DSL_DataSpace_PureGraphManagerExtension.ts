@@ -17,8 +17,6 @@
 import {
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
-  type PureProtocolProcessorPlugin,
-  type V1_PureModelContextData,
   type PureModel,
   type GraphManagerOperationReport,
 } from '@finos/legend-graph';
@@ -29,7 +27,7 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import type { DataSpaceAnalysisResult } from '../../action/analytics/DataSpaceAnalysis.js';
-import type { V1_DataSpaceAnalysisResult } from './v1/engine/analytics/V1_DataSpaceAnalysis.js';
+import type { NotificationService } from '@finos/legend-application';
 
 export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract analyzeDataSpace(
@@ -44,17 +42,12 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
     entitiesRetriever: () => Promise<Entity[]>,
     cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
-  ): Promise<V1_DataSpaceAnalysisResult>;
-
-  abstract buildDataSpaceAnalytics(
-    analytics:
-      | PlainObject<V1_DataSpaceAnalysisResult>
-      | V1_DataSpaceAnalysisResult,
-    plugins: PureProtocolProcessorPlugin[],
     graphReport?: GraphManagerOperationReport | undefined,
     pureGraph?: PureModel | undefined,
-    pmcd?: V1_PureModelContextData | undefined,
+    executionContext?: string | undefined,
+    mappingPath?: string | undefined,
     projectInfo?: ProjectGAVCoordinates,
+    notificationService?: NotificationService | undefined,
   ): Promise<DataSpaceAnalysisResult>;
 }
 

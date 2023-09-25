@@ -174,8 +174,10 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           queryBuilderState.dataSpace.defaultExecutionContext.name,
       },
     };
-    const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
-      queryBuilderState.onDataSpaceChange(option.value);
+    const onDataSpaceOptionChange = async (
+      option: DataSpaceOption,
+    ): Promise<void> => {
+      await queryBuilderState.onDataSpaceChange(option.value);
     };
 
     // data space search text
@@ -206,14 +208,14 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
     );
-    const onExecutionContextOptionChange = (
+    const onExecutionContextOptionChange = async (
       option: ExecutionContextOption,
-    ): void => {
+    ): Promise<void> => {
       if (option.value === queryBuilderState.executionContext) {
         return;
       }
       queryBuilderState.setExecutionContext(option.value);
-      queryBuilderState.propagateExecutionContextChange(
+      await queryBuilderState.propagateExecutionContextChange(
         option.value,
         editorStore,
       );
@@ -422,7 +424,7 @@ export const queryDataSpace = async (
   const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-      setupQueryBuilderState: () => {
+      setupQueryBuilderState: async () => {
         const queryBuilderState = new DataSpaceQueryBuilderState(
           editorStore.applicationStore,
           editorStore.graphManagerState,
@@ -430,7 +432,7 @@ export const queryDataSpace = async (
           dataSpace,
           dataSpace.defaultExecutionContext,
           false,
-          (dataSpaceInfo: DataSpaceInfo) => {
+          async (dataSpaceInfo: DataSpaceInfo) => {
             queryBuilderState.dataSpace = guaranteeType(
               queryBuilderState.graphManagerState.graph.getElement(
                 dataSpaceInfo.path,
@@ -440,7 +442,7 @@ export const queryDataSpace = async (
             queryBuilderState.setExecutionContext(
               queryBuilderState.dataSpace.defaultExecutionContext,
             );
-            queryBuilderState.propagateExecutionContextChange(
+            await queryBuilderState.propagateExecutionContextChange(
               queryBuilderState.dataSpace.defaultExecutionContext,
             );
           },
@@ -455,7 +457,7 @@ export const queryDataSpace = async (
         queryBuilderState.setExecutionContext(
           dataSpace.defaultExecutionContext,
         );
-        queryBuilderState.propagateExecutionContextChange(
+        await queryBuilderState.propagateExecutionContextChange(
           dataSpace.defaultExecutionContext,
         );
         return queryBuilderState;
