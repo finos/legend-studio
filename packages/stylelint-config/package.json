@@ -36,8 +36,8 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.49.0",
-    "rimraf": "5.0.1"
+    "eslint": "8.50.0",
+    "rimraf": "5.0.4"
   },
   "peerDependencies": {
     "stylelint": "^15.0.0"
