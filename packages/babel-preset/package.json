@@ -34,14 +34,14 @@
     "@babel/plugin-syntax-import-attributes": "7.22.5",
     "@babel/preset-env": "7.22.20",
     "@babel/preset-react": "7.22.15",
-    "@babel/preset-typescript": "7.22.15",
-    "@babel/runtime": "7.22.15",
+    "@babel/preset-typescript": "7.23.0",
+    "@babel/runtime": "7.23.1",
     "react-refresh": "0.14.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.49.0",
-    "rimraf": "5.0.1",
+    "eslint": "8.50.0",
+    "rimraf": "5.0.4",
     "typescript": "5.2.2"
   },
   "peerDependencies": {
