@@ -24,6 +24,10 @@ import {
   buildSourceInformationSourceId,
   ParserError,
   GRAPH_MANAGER_EVENT,
+  RawLambda,
+  PureModel,
+  CoreModel,
+  SystemModel,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -40,7 +44,7 @@ import {
   assertTrue,
   ActionState,
 } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -260,6 +264,7 @@ export class QueryBuilderCalculatedConstantExpressionState
       lambdaState: observable,
       value: observable,
       setValue: action,
+      updateVariableExpressionType: flow,
     });
     this.value = value;
     this.lambdaState = new QueryBuilderConstantLambdaEditorState(this);
@@ -271,6 +276,32 @@ export class QueryBuilderCalculatedConstantExpressionState
 
   setValue(val: PlainObject): void {
     this.value = val;
+  }
+
+  *updateVariableExpressionType(): GeneratorFn<void> {
+    try {
+      if (this.lambdaState.lambdaString) {
+        yield flowResult(this.lambdaState.convertLambdaGrammarStringToObject());
+      }
+      const rawLambda = new RawLambda([], [this.value]);
+      const type =
+        (yield this.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
+          rawLambda,
+          new PureModel(new CoreModel([]), new SystemModel([]), []),
+        )) as string;
+      const resolvedType =
+        this.queryBuilderState.graphManagerState.graph.getType(type);
+      valueSpecification_setGenericType(
+        this.variable,
+        GenericTypeExplicitReference.create(new GenericType(resolvedType)),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
+        error,
+      );
+    }
   }
 }
 

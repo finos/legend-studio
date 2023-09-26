@@ -22,6 +22,7 @@ import {
   uniq,
   returnUndefOnError,
   assertTrue,
+  isString,
 } from '@finos/legend-shared';
 import {
   PRIMITIVE_TYPE,
@@ -82,7 +83,7 @@ import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CI
 import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate.js';
 import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection.js';
 import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate.js';
-import { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString.js';
+import type { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString.js';
 import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue.js';
 import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression.js';
 import { V1_getAppliedProperty } from './V1_DomainBuilderHelper.js';
@@ -107,6 +108,7 @@ import {
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 import { V1_SubTypeGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 import { findMappingLocalProperty } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
+import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -223,34 +225,6 @@ export class V1_ValueSpecificationBuilder
     this.processingContext.push(
       `Applying function '${appliedFunction.function}'`,
     );
-    if (matchFunctionName(appliedFunction.function, SUPPORTED_FUNCTIONS.LET)) {
-      // We will build the let parameters to assign the right side of the expression to the left side
-      const parameters = appliedFunction.parameters.map((expression) =>
-        returnUndefOnError(() =>
-          expression.accept_ValueSpecificationVisitor(
-            new V1_ValueSpecificationBuilder(
-              this.context,
-              this.processingContext,
-              this.openVariables,
-            ),
-          ),
-        ),
-      );
-      const letName = guaranteeType(
-        appliedFunction.parameters[0],
-        V1_CString,
-      ).value;
-      // right side (value spec)
-      const rightSide = parameters[1];
-      const variableExpression = new VariableExpression(
-        letName,
-        rightSide?.multiplicity ?? Multiplicity.ONE,
-      );
-
-      variableExpression.genericType = rightSide?.genericType;
-      this.processingContext.addInferredVariables(letName, variableExpression);
-      this.openVariables.push(letName);
-    }
     const func = V1_buildFunctionExpression(
       appliedFunction.function,
       appliedFunction.parameters,
@@ -627,21 +601,98 @@ export const V1_buildGenericFunctionExpression = (
     compileContext,
   );
 
-export const V1_buildGenericLetFunctionExpression = (
+const resolveIfType = (
+  type1: Type | undefined,
+  type2: Type | undefined,
+): Type | undefined => {
+  if (type1 === type2) {
+    return type1;
+  }
+  const dateTypes = [
+    PrimitiveType.STRICTDATE,
+    PrimitiveType.DATETIME,
+    PrimitiveType.STRICTDATE,
+  ];
+  if (
+    type1 &&
+    dateTypes.includes(type1) &&
+    type2 &&
+    dateTypes.includes(type2)
+  ) {
+    return PrimitiveType.DATE;
+  }
+  return undefined;
+};
+
+export const V1_buildLetFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
   openVariables: string[],
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): SimpleFunctionExpression => {
+  let result: SimpleFunctionExpression;
   try {
-    return V1_buildGenericFunctionExpression(
+    const compiledLetFunc = V1_buildGenericFunctionExpression(
       functionName,
       parameters,
       openVariables,
       compileContext,
       processingContext,
     );
+    if (compiledLetFunc.parametersValues.length === 2) {
+      const potentialIfFunction = compiledLetFunc.parametersValues[1];
+      if (
+        potentialIfFunction instanceof SimpleFunctionExpression &&
+        matchFunctionName(
+          potentialIfFunction.functionName,
+          SUPPORTED_FUNCTIONS.IF,
+        )
+      ) {
+        const unknownValue = new INTERNAL__UnknownValueSpecification(
+          V1_serializeValueSpecification(
+            guaranteeNonNullable(parameters[1]),
+            compileContext.extensions.plugins,
+          ),
+        );
+        compiledLetFunc.parametersValues[1] = unknownValue;
+        if (
+          potentialIfFunction.parametersValues.length === 3 &&
+          potentialIfFunction.parametersValues[1] instanceof
+            LambdaFunctionInstanceValue &&
+          potentialIfFunction.parametersValues[2] instanceof
+            LambdaFunctionInstanceValue
+        ) {
+          const trueExp = guaranteeType(
+            potentialIfFunction.parametersValues[1],
+            LambdaFunctionInstanceValue,
+          );
+          const falseExp = guaranteeType(
+            potentialIfFunction.parametersValues[2],
+            LambdaFunctionInstanceValue,
+          );
+          const trueType =
+            trueExp.values[0]?.expressionSequence[0]?.genericType?.value
+              .rawType;
+          const falseType =
+            falseExp.values[0]?.expressionSequence[0]?.genericType?.value
+              .rawType;
+          const resolvedTYpe = resolveIfType(trueType, falseType);
+          if (resolvedTYpe) {
+            unknownValue.genericType = GenericTypeExplicitReference.create(
+              new GenericType(resolvedTYpe),
+            );
+            const variable = compiledLetFunc.parametersValues[0];
+            if (variable instanceof VariableExpression) {
+              variable.genericType = GenericTypeExplicitReference.create(
+                new GenericType(resolvedTYpe),
+              );
+            }
+          }
+        }
+      }
+    }
+    result = compiledLetFunc;
   } catch (error) {
     // let statement
     assertTrue(
@@ -676,12 +727,33 @@ export const V1_buildGenericLetFunctionExpression = (
           compileContext.extensions.plugins,
         ),
       );
-    return V1_buildBaseSimpleFunctionExpression(
+    result = V1_buildBaseSimpleFunctionExpression(
       [leftSide, rightSide],
       functionName,
       compileContext,
     );
   }
+  // post process let var with type
+  if (result.parametersValues.length === 2) {
+    const varSide = result.parametersValues[0];
+    if (varSide instanceof PrimitiveInstanceValue) {
+      const letName = varSide.values[0];
+      if (
+        isString(letName) &&
+        varSide.genericType.value.rawType === PrimitiveType.STRING
+      ) {
+        const rightSide = result.parametersValues[1];
+        const variableExpression = new VariableExpression(
+          letName,
+          rightSide?.multiplicity ?? Multiplicity.ONE,
+        );
+        variableExpression.genericType = rightSide?.genericType;
+        processingContext.addInferredVariables(letName, variableExpression);
+        openVariables.push(letName);
+      }
+    }
+  }
+  return result;
 };
 /**
  * This is fairly similar to how engine does function matching in a way.
@@ -712,7 +784,7 @@ export function V1_buildFunctionExpression(
   }
   if (matchFunctionName(functionName, Object.values(SUPPORTED_FUNCTIONS))) {
     if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.LET)) {
-      return V1_buildGenericLetFunctionExpression(
+      return V1_buildLetFunctionExpression(
         functionName,
         parameters,
         openVariables,

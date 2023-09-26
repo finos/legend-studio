@@ -44,6 +44,8 @@ import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json' assert { type: 'json' };
 import TEST_DATA__BindingM2MModel from './TEST_DATA__QueryBuilder_Model_BindingM2M.json' assert { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M from './TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M.json' assert { type: 'json' };
+import TEST_DATA__SimpleRelationalWithDates from './TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
+
 import {
   TEST_DATA__lambda_simpleSingleConditionFilterWithParameter,
   TEST_DATA__lambda_enumerationOperatorFilter,
@@ -56,6 +58,7 @@ import {
   TEST_DATA__lambda_simpleSingleConditionFilter,
   TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday,
   TEST_DATA__lambda_isOperatorFilterForDate,
+  TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import {
   TEST_DATA__lambda_input_filterWithExists,
@@ -203,6 +206,10 @@ const milestoningCtx = {
   entities: TEST_MilestoningModel,
 };
 
+const datesCtx = {
+  entities: TEST_DATA__SimpleRelationalWithDates,
+};
+
 const cases: RoundtripTestCase[] = [
   // projection
   ['Simple projection', projectionCtx, TEST_DATA__simpleProjection, undefined],
@@ -327,6 +334,12 @@ const cases: RoundtripTestCase[] = [
     'Simple filter with parameter',
     relationalFilterCtx,
     TEST_DATA__lambda_simpleSingleConditionFilterWithParameter,
+    undefined,
+  ],
+  [
+    'Date/String/Integer and Calculated Constants in Simple Filters',
+    datesCtx,
+    TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
     undefined,
   ],
   // group condition
