@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.9.0
+
+### Minor Changes
+
+- [#2637](https://github.com/finos/legend-studio/pull/2637) [`b8b1dfabb`](https://github.com/finos/legend-studio/commit/b8b1dfabb44760069bca2de9cef0512c0f61599a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add processing of if functions for calculated constants to resolve type.
+
+### Patch Changes
+
+- [#2639](https://github.com/finos/legend-studio/pull/2639) [`2116cc8f3`](https://github.com/finos/legend-studio/commit/2116cc8f3398d9f99714642e2879de2319da682a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering null values and empty strings in query results.
+
 ## 4.8.0
 
 ### Minor Changes
