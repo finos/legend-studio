@@ -2549,7 +2549,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       mapping,
       lambda,
       runtime,
-      V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+      this.engine.config.useDevClientProtocol
+        ? V1_PureGraphManager.DEV_PROTOCOL_VERSION
+        : V1_PureGraphManager.PROD_PROTOCOL_VERSION,
       options?.parameterValues,
     );
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
