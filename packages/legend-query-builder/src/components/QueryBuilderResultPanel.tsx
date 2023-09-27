@@ -68,6 +68,8 @@ import {
   prettyDuration,
   filterByType,
   isValidURL,
+  isString,
+  isNumber,
 } from '@finos/legend-shared';
 import { forwardRef, useRef, useState } from 'react';
 import {
@@ -482,15 +484,18 @@ const QueryResultCellRenderer = observer(
     const tdsExecutionResult = params.tdsExecutionResult;
     const fetchStructureImplementation =
       resultState.queryBuilderState.fetchStructureState.implementation;
-
-    const cellValue = params.value as string;
-    const formattedCellValue = !isNaN(Number(cellValue))
-      ? Intl.NumberFormat(DEFAULT_LOCALE, { maximumFractionDigits: 4 }).format(
-          Number(cellValue),
-        )
-      : cellValue;
+    const cellValue = params.value as string | null | number | undefined;
+    const formattedCellValue = (): string | null | number | undefined => {
+      if (isNumber(cellValue)) {
+        return Intl.NumberFormat(DEFAULT_LOCALE, {
+          maximumFractionDigits: 4,
+        }).format(Number(cellValue));
+      }
+      return cellValue;
+    };
+    const cellValueUrlLink =
+      isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
     const columnName = params.column?.getColId() ?? '';
-
     const findCoordinatesFromResultValue = (
       colId: string,
       rowNumber: number,
@@ -498,7 +503,6 @@ const QueryResultCellRenderer = observer(
       const colIndex = tdsExecutionResult.result.columns.findIndex(
         (col) => col === colId,
       );
-
       return { rowIndex: rowNumber, colIndex: colIndex };
     };
 
@@ -710,12 +714,12 @@ const QueryResultCellRenderer = observer(
           onMouseUp={(event) => mouseUp(event)}
           onMouseOver={(event) => mouseOver(event)}
         >
-          {isValidURL(cellValue) ? (
-            <a href={cellValue} target="_blank" rel="noreferrer">
-              {cellValue}
+          {cellValueUrlLink ? (
+            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+              {cellValueUrlLink}
             </a>
           ) : (
-            <span>{formattedCellValue}</span>
+            <span>{formattedCellValue()}</span>
           )}
         </div>
       </ContextMenu>
