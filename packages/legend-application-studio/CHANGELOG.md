@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.5.8
+
+### Patch Changes
+
+- [#2643](https://github.com/finos/legend-studio/pull/2643) [`ddaf77c4c`](https://github.com/finos/legend-studio/commit/ddaf77c4c7b6ba56fc1b314049450f3b4b353ddd) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add tests for testing project viewer mode to increase stability
+
 ## 28.5.7
 
 ## 28.5.6
