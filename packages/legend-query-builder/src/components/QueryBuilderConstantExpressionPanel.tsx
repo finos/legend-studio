@@ -218,8 +218,12 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
     const { constantState } = props;
     const queryBuilderState = constantState.queryBuilderState;
     const lambdaState = constantState.lambdaState;
-    const close = (): void =>
+    const close = (): void => {
       queryBuilderState.constantState.setSelectedConstant(undefined);
+      flowResult(constantState.updateVariableExpressionType()).catch(
+        queryBuilderState.applicationStore.alertUnhandledError,
+      );
+    };
     const applicationStore = queryBuilderState.applicationStore;
     const changeConstantName: React.ChangeEventHandler<HTMLInputElement> = (
       event,

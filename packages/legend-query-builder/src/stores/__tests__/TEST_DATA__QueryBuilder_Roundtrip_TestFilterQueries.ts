@@ -1165,6 +1165,452 @@ export const TEST_DATA__lambda_simpleSingleConditionFilterWithParameter = {
   ],
 };
 
+export const TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'dateConst',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'today',
+                  parameters: [],
+                },
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'previousDayOfWeek',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'packageableElementPtr',
+                          fullPath: 'meta::pure::functions::date::DayOfWeek',
+                        },
+                      ],
+                      property: 'Saturday',
+                    },
+                  ],
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'previousDayOfWeek',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'previousDayOfWeek',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'packageableElementPtr',
+                              fullPath:
+                                'meta::pure::functions::date::DayOfWeek',
+                            },
+                          ],
+                          property: 'Saturday',
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'packageableElementPtr',
+                          fullPath: 'meta::pure::functions::date::DayOfWeek',
+                        },
+                      ],
+                      property: 'Saturday',
+                    },
+                  ],
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'dateFunction',
+        },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::now',
+          parameters: [],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'intConst',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'boolean',
+              value: true,
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 2,
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'stringConst',
+        },
+        {
+          _type: 'string',
+          value: 'mine',
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'filter',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::Person',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'and',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'lessThan',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'dobDate',
+                        },
+                        {
+                          _type: 'var',
+                          name: 'dateConst',
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'func',
+                      function: 'and',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'greaterThan',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'dobStrictDate',
+                            },
+                            {
+                              _type: 'var',
+                              name: 'dateConst',
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'func',
+                          function: 'and',
+                          parameters: [
+                            {
+                              _type: 'func',
+                              function: 'isOnOrBeforeDay',
+                              parameters: [
+                                {
+                                  _type: 'property',
+                                  parameters: [
+                                    {
+                                      _type: 'var',
+                                      name: 'x',
+                                    },
+                                  ],
+                                  property: 'dobTime',
+                                },
+                                {
+                                  _type: 'var',
+                                  name: 'dateConst',
+                                },
+                              ],
+                            },
+                            {
+                              _type: 'func',
+                              function: 'and',
+                              parameters: [
+                                {
+                                  _type: 'func',
+                                  function: 'equal',
+                                  parameters: [
+                                    {
+                                      _type: 'property',
+                                      parameters: [
+                                        {
+                                          _type: 'var',
+                                          name: 'x',
+                                        },
+                                      ],
+                                      property: 'dobDate',
+                                    },
+                                    {
+                                      _type: 'var',
+                                      name: 'dateFunction',
+                                    },
+                                  ],
+                                },
+                                {
+                                  _type: 'func',
+                                  function: 'and',
+                                  parameters: [
+                                    {
+                                      _type: 'func',
+                                      function: 'equal',
+                                      parameters: [
+                                        {
+                                          _type: 'property',
+                                          parameters: [
+                                            {
+                                              _type: 'var',
+                                              name: 'x',
+                                            },
+                                          ],
+                                          property: 'dobStrictDate',
+                                        },
+                                        {
+                                          _type: 'var',
+                                          name: 'dateConst',
+                                        },
+                                      ],
+                                    },
+                                    {
+                                      _type: 'func',
+                                      function: 'and',
+                                      parameters: [
+                                        {
+                                          _type: 'func',
+                                          function: 'isOnDay',
+                                          parameters: [
+                                            {
+                                              _type: 'property',
+                                              parameters: [
+                                                {
+                                                  _type: 'var',
+                                                  name: 'x',
+                                                },
+                                              ],
+                                              property: 'dobTime',
+                                            },
+                                            {
+                                              _type: 'var',
+                                              name: 'dateConst',
+                                            },
+                                          ],
+                                        },
+                                        {
+                                          _type: 'func',
+                                          function: 'and',
+                                          parameters: [
+                                            {
+                                              _type: 'func',
+                                              function: 'equal',
+                                              parameters: [
+                                                {
+                                                  _type: 'property',
+                                                  parameters: [
+                                                    {
+                                                      _type: 'var',
+                                                      name: 'x',
+                                                    },
+                                                  ],
+                                                  property: 'age',
+                                                },
+                                                {
+                                                  _type: 'var',
+                                                  name: 'intConst',
+                                                },
+                                              ],
+                                            },
+                                            {
+                                              _type: 'func',
+                                              function: 'equal',
+                                              parameters: [
+                                                {
+                                                  _type: 'property',
+                                                  parameters: [
+                                                    {
+                                                      _type: 'var',
+                                                      name: 'x',
+                                                    },
+                                                  ],
+                                                  property: 'firstName',
+                                                },
+                                                {
+                                                  _type: 'var',
+                                                  name: 'stringConst',
+                                                },
+                                              ],
+                                            },
+                                          ],
+                                        },
+                                      ],
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'age',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'Age',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday = {
   _type: 'lambda',
   body: [
