@@ -1,0 +1,351 @@
+[
+  {
+    "path": "model::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "age",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "dobDate",
+          "type": "Date"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "dobStrictDate",
+          "type": "StrictDate"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "dobTime",
+          "type": "DateTime"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::MyDatabase",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [],
+      "name": "MyDatabase",
+      "package": "model",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firm_id",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firstName",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "lastName",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "age",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "dob",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Date"
+                  }
+                },
+                {
+                  "name": "dobTime",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Timestamp"
+                  }
+                }
+              ],
+              "name": "PersonTable",
+              "primaryKey": ["id"]
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "model::RelationalMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "model::Person",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::MyDatabase",
+            "mainTableDb": "model::MyDatabase",
+            "schema": "default",
+            "table": "PersonTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::MyDatabase",
+                "mainTableDb": "model::MyDatabase",
+                "schema": "default",
+                "table": "PersonTable"
+              },
+              "tableAlias": "PersonTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "firstName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "firstName",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::MyDatabase",
+                  "mainTableDb": "model::MyDatabase",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "lastName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "lastName",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::MyDatabase",
+                  "mainTableDb": "model::MyDatabase",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "age"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "age",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::MyDatabase",
+                  "mainTableDb": "model::MyDatabase",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "dobDate"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "dob",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::MyDatabase",
+                  "mainTableDb": "model::MyDatabase",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "dobStrictDate"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "dob",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::MyDatabase",
+                  "mainTableDb": "model::MyDatabase",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "dobTime"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "dobTime",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::MyDatabase",
+                  "mainTableDb": "model::MyDatabase",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "RelationalMapping",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "model::Runtime",
+    "content": {
+      "_type": "runtime",
+      "name": "Runtime",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "model::MyDatabase",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "model::MyConnection"
+                },
+                "id": "my_connection"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "model::RelationalMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    "classifierPath": "meta::pure::runtime::PackageableRuntime"
+  },
+  {
+    "path": "model::MyConnection",
+    "content": {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+          "_type": "h2Default"
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+          "_type": "h2Local"
+        },
+        "element": "model::MyDatabase",
+        "type": "H2"
+      },
+      "name": "MyConnection",
+      "package": "model"
+    },
+    "classifierPath": "meta::pure::runtime::PackageableConnection"
+  }
+]

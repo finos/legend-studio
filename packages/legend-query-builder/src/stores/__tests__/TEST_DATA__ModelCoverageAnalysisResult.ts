@@ -1489,6 +1489,41 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists =
     ],
   };
 
+export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates =
+  {
+    mappedEntities: [
+      {
+        path: 'model::Person',
+        properties: [
+          {
+            _type: 'MappedProperty',
+            name: 'age',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'dobDate',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'dobStrictDate',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'dobTime',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'firstName',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'lastName',
+          },
+        ],
+      },
+    ],
+  };
+
 export const TEST_DATA__ModelCoverageAnalysisResult_Milestoning = {
   mappedEntities: [
     {
