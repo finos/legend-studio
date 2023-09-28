@@ -22,7 +22,11 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_TDS = 'query__builder__tds',
   QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT = 'query-builder__tds__result-modifier-prompt',
   QUERY_BUILDER_GRAPH_FETCH = 'query__builder__graph__fetch',
-  QUERY_BUILDER_FILTER = 'query__builder__filter',
+  // filter panel
+  QUERY_BUILDER_FILTER_PANEL = 'query__builder__filter__panel',
+  QUERY_BUILDER_FILTER_TREE = 'query__builder__filter__tree',
+  QUERY_BUILDER_FILTER_TREE_NODE = 'query__builder__filter__tree__node',
+  QUERY_BUILDER_FILTER_TREE_NODE_CONTENT = 'query__builder__filter__tree__node-content',
   QUERY_BUILDER_POST_FILTER = 'query__builder__post-filter',
   QUERY_BUILDER_WINDOW_GROUPBY = 'query__builder__window',
   QUERY_BUILDER_EXPLORER = 'query__builder__explorer',

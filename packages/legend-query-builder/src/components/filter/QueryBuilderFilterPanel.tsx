@@ -932,6 +932,9 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       >
         <div
           ref={ref}
+          data-testid={
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT
+          }
           className={clsx(
             'tree-view__node__container query-builder-filter-tree__node__container',
             {
@@ -1036,7 +1039,10 @@ const QueryBuilderFilterTreeNodeView = observer(
       innerProps,
     } = props;
     return (
-      <div className="tree-view__node__block">
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE}
+        className="tree-view__node__block"
+      >
         <QueryBuilderFilterTreeNodeContainer
           node={node}
           level={level + 1}
@@ -1079,7 +1085,10 @@ const QueryBuilderFilterTree = observer(
         ? node.childrenIds.map((id) => filterState.getNode(id))
         : [];
     return (
-      <div className="tree-view__node__root query-builder-filter-tree__root">
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE}
+        className="tree-view__node__root query-builder-filter-tree__root"
+      >
         {rootNodes.map((node) => (
           <QueryBuilderFilterTreeNodeView
             key={node.id}
@@ -1248,7 +1257,7 @@ export const QueryBuilderFilterPanel = observer(
 
     return (
       <div
-        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER}
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL}
         className="panel"
       >
         <div className="panel__header">

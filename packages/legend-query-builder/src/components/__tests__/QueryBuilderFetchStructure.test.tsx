@@ -348,7 +348,9 @@ test(
     );
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() => getByText(filterPanel, filterValue));
 
@@ -376,7 +378,9 @@ test(
       QueryBuilderTDSState,
     );
     filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() =>
       expect(getAllByText(filterPanel, 'is')).toHaveLength(2),
@@ -623,7 +627,9 @@ test(
     );
 
     const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() => getByText(filterPanel, 'Age'));
     await waitFor(() => getByText(filterPanel, 'is'));
@@ -676,7 +682,9 @@ test(
       CollectionInstanceValue,
     );
     const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() => getByText(filterPanel, 'is in'));
 
@@ -743,7 +751,9 @@ test(
     );
 
     const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() => getByText(filterPanel, 'Firm/Average Employees Age'));
     await waitFor(() => getByText(filterPanel, 'is'));
