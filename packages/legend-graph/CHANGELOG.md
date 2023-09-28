@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.3.4
+
+### Patch Changes
+
+- [#2648](https://github.com/finos/legend-studio/pull/2648) [`b27267f04`](https://github.com/finos/legend-studio/commit/b27267f04ec011ffbccc5cb81b17f85f44a61a0b) ([@AFine-gs](https://github.com/AFine-gs)) - Add developer option to set dev protocol version
+
 ## 31.3.3
 
 ## 31.3.2

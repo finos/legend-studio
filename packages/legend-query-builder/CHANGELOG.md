@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.9.3
+
+### Patch Changes
+
+- [#2598](https://github.com/finos/legend-studio/pull/2598) [`c73c7cee6`](https://github.com/finos/legend-studio/commit/c73c7cee649b909850b8ddbed2f582edff1ff483) ([@gayathrir11](https://github.com/gayathrir11)) - Fix issue with casting of subType when property mapping points to class mapping of subType
+
 ## 4.9.2
 
 ## 4.9.1
