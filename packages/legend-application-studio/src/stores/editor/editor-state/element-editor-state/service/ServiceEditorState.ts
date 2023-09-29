@@ -38,6 +38,8 @@ import {
   Service,
   PureSingleExecution,
   PureMultiExecution,
+  DeploymentOwnership,
+  UserListOwnership,
   isStubbed_RawLambda,
   getValueSpecificationReturnType,
   type Type,
@@ -48,6 +50,7 @@ import { ServiceTestableState } from './testable/ServiceTestableState.js';
 import { User } from '@finos/legend-server-sdlc';
 import { ServicePostValidationsState } from './ServicePostValidationState.js';
 import { valueSpecReturnTDS } from '@finos/legend-query-builder';
+import { service_setOwnership } from '../../../../graph-modifier/DSL_Service_GraphModifierHelper.js';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
@@ -55,6 +58,11 @@ export enum SERVICE_TAB {
   TEST = 'TEST',
   REGISTRATION = 'REGISTRATION',
   POST_VALIDATION = 'POST_VALIDATION',
+}
+
+enum ServiceOwnershipType {
+  DEPLOYMENT_OWNERSHIP = 'deploymentOwnership',
+  USERLIST_OWNERSHIP = 'userListOwnership',
 }
 
 export const resolveServiceQueryValueSpec = (
@@ -101,6 +109,24 @@ export const isServiceQueryTDS = (
 };
 
 export const MINIMUM_SERVICE_OWNERS = 2;
+export const DeploymentOwnershipLabel = 'Deployment';
+export const UserlistOwnershipLabel = 'User List';
+export const OWNERSHIP_OPTIONS = [
+  {
+    label: DeploymentOwnershipLabel,
+    value: ServiceOwnershipType.DEPLOYMENT_OWNERSHIP,
+  },
+  {
+    label: UserlistOwnershipLabel,
+    value: ServiceOwnershipType.USERLIST_OWNERSHIP,
+  },
+];
+
+export type ServiceOwnerOption = {
+  label: string;
+  value: string;
+};
+
 export class ServiceEditorState extends ElementEditorState {
   executionState: ServiceExecutionState;
   registrationState: ServiceRegistrationState;
@@ -113,10 +139,12 @@ export class ServiceEditorState extends ElementEditorState {
 
     makeObservable(this, {
       executionState: observable,
+      selectedOwnership: computed,
       registrationState: observable,
       selectedTab: observable,
       postValidationState: observable,
       setSelectedTab: action,
+      setSelectedOwnership: action,
       resetExecutionState: action,
       openToTestTab: action,
       service: computed,
@@ -151,6 +179,52 @@ export class ServiceEditorState extends ElementEditorState {
 
   openToTestTab(): void {
     this.selectedTab = SERVICE_TAB.TEST;
+  }
+
+  get selectedOwnership(): ServiceOwnerOption | undefined {
+    const ownership = this.service.ownership;
+    if (ownership instanceof DeploymentOwnership) {
+      return {
+        label: DeploymentOwnershipLabel,
+        value: ServiceOwnershipType.DEPLOYMENT_OWNERSHIP,
+      };
+    } else if (ownership instanceof UserListOwnership) {
+      return {
+        label: UserlistOwnershipLabel,
+        value: ServiceOwnershipType.USERLIST_OWNERSHIP,
+      };
+    }
+    return undefined;
+  }
+
+  setSelectedOwnership(o: ServiceOwnerOption): void {
+    switch (o.value) {
+      case ServiceOwnershipType.DEPLOYMENT_OWNERSHIP: {
+        service_setOwnership(
+          this.service,
+          new DeploymentOwnership('', this.service),
+        );
+        break;
+      }
+      case ServiceOwnershipType.USERLIST_OWNERSHIP: {
+        const currentUserId =
+          this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
+            .currentUserId;
+        service_setOwnership(
+          this.service,
+          new UserListOwnership(
+            currentUserId ? [currentUserId] : [],
+            this.service,
+          ),
+        );
+        break;
+      }
+      default: {
+        this.editorStore.applicationStore.notificationService.notifyError(
+          'Unsupported ownership type',
+        );
+      }
+    }
   }
 
   resetExecutionState(): void {

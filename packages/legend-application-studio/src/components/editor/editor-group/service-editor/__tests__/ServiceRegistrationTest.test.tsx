@@ -316,7 +316,7 @@ test(
     await waitFor(() => getByText(editorGroup, 'myParam'));
     await waitFor(() => getByText(editorGroup, 'Documentation'));
     await waitFor(() => getByText(editorGroup, 'Auto Activate Updates'));
-    await waitFor(() => getByText(editorGroup, 'Owners'));
+    await waitFor(() => getByText(editorGroup, 'Owners (deprecated)'));
     await waitFor(() => getByText(editorGroup, 'owner1'));
     await waitFor(() => getByText(editorGroup, 'owner2'));
     // add owner
