@@ -23,7 +23,6 @@ import {
   AbstractPropertyExpression,
   INTERNAL__UnknownValueSpecification,
   LambdaFunctionInstanceValue,
-  type PrimitiveInstanceValue,
   type SimpleFunctionExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
@@ -42,7 +41,7 @@ export abstract class QueryBuilderAggregateCalendarFunction
 {
   dateColumn?: AbstractPropertyExpression | undefined;
   calendarType!: QUERY_BUILDER_CALENDAR_TYPE;
-  endDate!: PrimitiveInstanceValue;
+  endDate!: ValueSpecification;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
 
   constructor() {
@@ -122,7 +121,7 @@ export abstract class QueryBuilderAggregateCalendarFunction
     this.calendarType = val;
   }
 
-  setEndDate(val: PrimitiveInstanceValue): void {
+  setEndDate(val: ValueSpecification): void {
     this.endDate = val;
   }
 

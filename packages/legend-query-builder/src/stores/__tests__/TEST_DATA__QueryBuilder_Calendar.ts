@@ -240,6 +240,133 @@ export const TEST_DATA__simpleProjectionWithCalendarAggregation = {
   parameters: [],
 };
 
+export const TEST_DATA__simpleProjectionWithCalendarAggregationWithDateFunction =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'groupBy',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'getAll',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'test::Employee',
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 0,
+              upperBound: 0,
+            },
+            values: [],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'func',
+                function: 'agg',
+                parameters: [
+                  {
+                    _type: 'lambda',
+                    body: [
+                      {
+                        _type: 'func',
+                        function: 'ytd',
+                        parameters: [
+                          {
+                            _type: 'property',
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                            property: 'hireDate',
+                          },
+                          {
+                            _type: 'string',
+                            value: 'NY',
+                          },
+                          {
+                            _type: 'func',
+                            function: 'meta::pure::functions::date::today',
+                            parameters: [],
+                          },
+                          {
+                            _type: 'property',
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                            property: 'fteFactor',
+                          },
+                        ],
+                      },
+                    ],
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'x',
+                      },
+                    ],
+                  },
+                  {
+                    _type: 'lambda',
+                    body: [
+                      {
+                        _type: 'func',
+                        function: 'sum',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                        ],
+                      },
+                    ],
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'x',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'string',
+                value: 'ytd',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  };
+
 export const TEST_DATA__simpleDerivationWithCalendarAggregation = {
   _type: 'lambda',
   body: [
