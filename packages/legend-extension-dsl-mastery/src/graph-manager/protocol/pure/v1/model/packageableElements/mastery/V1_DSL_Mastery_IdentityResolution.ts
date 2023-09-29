@@ -38,13 +38,14 @@ export class V1_ResolutionQuery implements Hashable {
    * @discrepancy model
    */
   queries!: V1_RawLambda[];
-  keyType!: string;
+  keyType?: string | undefined;
+  optional?: boolean | undefined;
   precedence!: number;
 
   get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.RESOLUTION_QUERY,
-      this.keyType,
+      this.keyType ?? '',
       this.precedence.toString(),
       hashArray(this.queries),
     ]);
