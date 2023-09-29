@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.9.4
+
+### Patch Changes
+
+- [#2655](https://github.com/finos/legend-studio/pull/2655) [`22c1fe964`](https://github.com/finos/legend-studio/commit/22c1fe96447713a0a2c32a9523716772a2ebbb51) ([@gayathrir11](https://github.com/gayathrir11)) - Support calendar aggregation end Date to accept Date functions
+
+- [#2654](https://github.com/finos/legend-studio/pull/2654) [`1ae9ce88a`](https://github.com/finos/legend-studio/commit/1ae9ce88ab62d2db8706f40f4d779abb392a85b9) ([@gayathrir11](https://github.com/gayathrir11)) - Fix issue with casting of subType when property mapping points to class mapping of subType in projection and graph-fetch
+
 ## 4.9.3
 
 ### Patch Changes
