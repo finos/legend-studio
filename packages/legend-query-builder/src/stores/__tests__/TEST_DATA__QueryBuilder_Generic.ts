@@ -646,6 +646,289 @@ export const TEST_DATA_projectionWithInvalidWindowFunction = {
   parameters: [],
 };
 
+export const TEST_DATA__simpleGraphFetchWithSubtype = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'serialize',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'graphFetch',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::Person',
+                },
+              ],
+            },
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'rootGraphFetchTree',
+              value: {
+                _type: 'rootGraphFetchTree',
+                class: 'model::Person',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'address',
+                    subTrees: [
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'zipcode',
+                        subTrees: [],
+                        subTypeTrees: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'streetName',
+                        subTrees: [],
+                        subTypeTrees: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'id',
+                        subTrees: [],
+                        subTypeTrees: [],
+                      },
+                    ],
+                    subTypeTrees: [],
+                    subType: 'model::Colony',
+                  },
+                ],
+                subTypeTrees: [],
+              },
+            },
+          ],
+        },
+        {
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'rootGraphFetchTree',
+          value: {
+            _type: 'rootGraphFetchTree',
+            class: 'model::Person',
+            subTrees: [
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [],
+                property: 'address',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'zipcode',
+                    subTrees: [],
+                    subTypeTrees: [],
+                  },
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'streetName',
+                    subTrees: [],
+                    subTypeTrees: [],
+                  },
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'id',
+                    subTrees: [],
+                    subTypeTrees: [],
+                  },
+                ],
+                subTypeTrees: [],
+                subType: 'model::Colony',
+              },
+            ],
+            subTypeTrees: [],
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__simpleProjectWithSubtype = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 3,
+            upperBound: 3,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'address',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'zipcode',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'address',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'streetName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'address',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'id',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 3,
+            upperBound: 3,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'Address/@(Colony)Zipcode',
+            },
+            {
+              _type: 'string',
+              value: 'Address/@(Colony)Street Name',
+            },
+            {
+              _type: 'string',
+              value: 'Address/@(Colony)Id',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__simpleProjectionWithSubtype = {
   _type: 'lambda',
   body: [
@@ -2599,6 +2882,152 @@ export const TEST_DATA__graphFetchWithSubtype = {
             ],
             subTypeTrees: [],
           },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__simpleProjectionWithSubType = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 3,
+            upperBound: 3,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'streetName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'id',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'zipcode',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 3,
+            upperBound: 3,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: '@(Colony)Street Name',
+            },
+            {
+              _type: 'string',
+              value: '@(Colony)Id',
+            },
+            {
+              _type: 'string',
+              value: '@(Colony)Zipcode',
+            },
+          ],
         },
       ],
     },
