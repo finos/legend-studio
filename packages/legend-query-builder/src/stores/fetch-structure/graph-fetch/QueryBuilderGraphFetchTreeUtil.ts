@@ -303,6 +303,16 @@ export const addQueryBuilderPropertyNode = (
       );
     }
     if (
+      parentExplorerTreeNode instanceof
+        QueryBuilderExplorerTreePropertyNodeData &&
+      parentExplorerTreeNode.mappingData.entityMappedProperty?.subType &&
+      parentExplorerTreeNode.type instanceof Class
+    ) {
+      subType = PackageableElementExplicitReference.create(
+        parentExplorerTreeNode.type,
+      );
+    }
+    if (
       parentExplorerTreeNode instanceof QueryBuilderExplorerTreePropertyNodeData
     ) {
       const propertyGraphFetchTree = new PropertyGraphFetchTree(
