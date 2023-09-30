@@ -140,9 +140,7 @@ const dragAndDrop = async (
 };
 
 test(
-  integrationTest(
-    'Query builder loads grouped filter and post filter panels using constants',
-  ),
+  integrationTest('Query builder loads grouped filter panels using constants'),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,

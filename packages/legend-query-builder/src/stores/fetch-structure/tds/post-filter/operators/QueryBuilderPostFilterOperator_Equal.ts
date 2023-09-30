@@ -27,6 +27,7 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -36,14 +37,14 @@ import {
 } from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
-import type {
-  PostFilterConditionState,
-  QueryBuilderPostFilterState,
+import {
+  PostFilterValueSpecConditionValueState,
+  type PostFilterConditionState,
+  type QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
 import {
   buildNotExpression,
   generateDefaultValueForPrimitiveType,
-  getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
@@ -84,15 +85,21 @@ export class QueryBuilderPostFilterOperator_Equal
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
-    const valueSpecification = postFilterConditionState.value;
-    if (valueSpecification) {
+    const rightConditionValue = postFilterConditionState.rightConditionValue;
+    if (
+      rightConditionValue instanceof PostFilterValueSpecConditionValueState &&
+      rightConditionValue.value
+    ) {
       return isTypeCompatibleForAssignment(
-        getNonCollectionValueSpecificationType(valueSpecification),
+        !rightConditionValue.isCollection
+          ? rightConditionValue.type
+          : undefined,
         guaranteeNonNullable(
-          postFilterConditionState.columnState.getColumnType(),
+          postFilterConditionState.leftConditionValue.getColumnType(),
         ),
       );
     }
+
     return false;
   }
 
@@ -100,7 +107,7 @@ export class QueryBuilderPostFilterOperator_Equal
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const propertyType = guaranteeNonNullable(
-      postFilterConditionState.columnState.getColumnType(),
+      postFilterConditionState.leftConditionValue.getColumnType(),
     );
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING:
@@ -170,10 +177,10 @@ export class QueryBuilderPostFilterOperator_Equal
     return buildPostFilterConditionExpression(
       postFilterConditionState,
       this,
-      postFilterConditionState.columnState.getColumnType()?.path ===
-        PRIMITIVE_TYPE.DATETIME &&
-        postFilterConditionState.value?.genericType?.value.rawType.path !==
-          PRIMITIVE_TYPE.DATETIME
+      postFilterConditionState.leftConditionValue.getColumnType() ===
+        PrimitiveType.DATETIME &&
+        postFilterConditionState.rightConditionValue.type !==
+          PrimitiveType.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
     );

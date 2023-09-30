@@ -27,6 +27,7 @@ import {
   type PostFilterConditionState,
   type QueryBuilderPostFilterState,
   TDS_COLUMN_GETTER,
+  PostFilterValueSpecConditionValueState,
 } from '../QueryBuilderPostFilterState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../projection/QueryBuilderProjectionColumnState.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
@@ -53,20 +54,27 @@ export class QueryBuilderPostFilterOperator_IsEmpty
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
-    return postFilterConditionState.value === undefined;
+    if (
+      postFilterConditionState.rightConditionValue instanceof
+        PostFilterValueSpecConditionValueState &&
+      postFilterConditionState.rightConditionValue.value === undefined
+    ) {
+      return true;
+    }
+    return false;
   }
 
   override isCompatibleWithPostFilterColumn(
     postFilterState: PostFilterConditionState,
   ): boolean {
-    const columnType = postFilterState.columnState.getColumnType();
+    const columnType = postFilterState.leftConditionValue.getColumnType();
     if (columnType && this.isCompatibleWithType(columnType)) {
       if (
-        postFilterState.columnState instanceof
+        postFilterState.leftConditionValue instanceof
         QueryBuilderSimpleProjectionColumnState
       ) {
         return isPropertyExpressionChainOptional(
-          postFilterState.columnState.propertyExpressionState
+          postFilterState.leftConditionValue.propertyExpressionState
             .propertyExpression,
         );
       }

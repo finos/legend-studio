@@ -27,7 +27,9 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_FILTER_TREE = 'query__builder__filter__tree',
   QUERY_BUILDER_FILTER_TREE_NODE = 'query__builder__filter__tree__node',
   QUERY_BUILDER_FILTER_TREE_NODE_CONTENT = 'query__builder__filter__tree__node-content',
-  QUERY_BUILDER_POST_FILTER = 'query__builder__post-filter',
+  // post filter
+  QUERY_BUILDER_POST_FILTER_PANEL = 'query__builder__post__filter-panel',
+  QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT = 'query__builder__post__filter-tree-node__content',
   QUERY_BUILDER_WINDOW_GROUPBY = 'query__builder__window',
   QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
   QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',

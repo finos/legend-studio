@@ -36,7 +36,6 @@ import type {
 import {
   buildNotExpression,
   generateDefaultValueForPrimitiveType,
-  getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
@@ -59,16 +58,17 @@ export class QueryBuilderPostFilterOperator_StartWith
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
-    const type = postFilterConditionState.value
-      ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
-      : undefined;
-    return PrimitiveType.STRING === type;
+    return (
+      !postFilterConditionState.rightConditionValue.isCollection &&
+      PrimitiveType.STRING === postFilterConditionState.rightConditionValue.type
+    );
   }
 
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
-    const propertyType = postFilterConditionState.columnState.getColumnType();
+    const propertyType =
+      postFilterConditionState.leftConditionValue.getColumnType();
     switch (propertyType?.path) {
       case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(

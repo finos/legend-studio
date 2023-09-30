@@ -34,6 +34,7 @@ import {
   type PostFilterConditionState,
   type TDS_COLUMN_GETTER,
   getTDSColumnDerivedProperyFromType,
+  PostFilterValueSpecConditionValueState,
 } from '../QueryBuilderPostFilterState.js';
 import { QUERY_BUILDER_PURE_PATH } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 
@@ -53,7 +54,7 @@ export const buildPostFilterConditionExpression = (
     filterConditionState.postFilterState.tdsState.queryBuilderState
       .graphManagerState.graph;
   // property expression
-  const colState = filterConditionState.columnState;
+  const colState = filterConditionState.leftConditionValue;
   const tdsPropertyExpression = new AbstractPropertyExpression('');
   let tdsDerivedPropertyName: TDS_COLUMN_GETTER;
   const correspondingTDSDerivedProperty = operator.getTDSColumnGetter();
@@ -85,8 +86,14 @@ export const buildPostFilterConditionExpression = (
       extractElementNameFromPath(operatorFunctionFullPath),
     );
     expression.parametersValues.push(tdsPropertyExpression);
-    if (filterConditionState.value) {
-      expression.parametersValues.push(filterConditionState.value);
+    if (
+      filterConditionState.rightConditionValue instanceof
+        PostFilterValueSpecConditionValueState &&
+      filterConditionState.rightConditionValue.value
+    ) {
+      expression.parametersValues.push(
+        filterConditionState.rightConditionValue.value,
+      );
     }
     return expression;
   } else {

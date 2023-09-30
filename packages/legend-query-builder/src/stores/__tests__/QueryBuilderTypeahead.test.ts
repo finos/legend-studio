@@ -27,7 +27,10 @@ import {
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import { TEST_DATA__lambda_derivationPostFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { QueryBuilderFilterTreeConditionNodeData } from '../filter/QueryBuilderFilterState.js';
-import { QueryBuilderPostFilterTreeConditionNodeData } from '../fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
+import {
+  PostFilterValueSpecConditionValueState,
+  QueryBuilderPostFilterTreeConditionNodeData,
+} from '../fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import type { Entity } from '@finos/legend-storage';
 import {
   TEST_DATA__lambda_expected_typeahead_filter,
@@ -163,18 +166,21 @@ describe(integrationTest('Query builder type ahead: post-filter'), () => {
         QueryBuilderPostFilterTreeConditionNodeData,
       );
       const columnState =
-        postFilterNode.condition.columnState instanceof
+        postFilterNode.condition.leftConditionValue instanceof
           QueryBuilderProjectionColumnState ||
-        postFilterNode.condition.columnState instanceof
+        postFilterNode.condition.leftConditionValue instanceof
           QueryBuilderAggregateColumnState
-          ? postFilterNode.condition.columnState
+          ? postFilterNode.condition.leftConditionValue
           : undefined;
       const jsonQuery =
         queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
           buildProjectionColumnTypeaheadQuery(
             queryBuilderState,
             guaranteeNonNullable(columnState),
-            postFilterNode.condition.value,
+            guaranteeType(
+              postFilterNode.condition.rightConditionValue,
+              PostFilterValueSpecConditionValueState,
+            ).value,
           ),
         );
       expect(expectedTypeaheadLambda).toEqual(jsonQuery);
