@@ -80,6 +80,7 @@ import {
   type QueryBuilderPostFilterTreeNodeData,
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
+  PostFilterValueSpecConditionValueState,
 } from '../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
@@ -171,13 +172,13 @@ const QueryBuilderGridResultContextMenu = observer(
         .filter(
           (v) =>
             v instanceof QueryBuilderPostFilterTreeConditionNodeData &&
-            v.condition.columnState instanceof
+            v.condition.leftConditionValue instanceof
               QueryBuilderProjectionColumnState,
         )
         .filter(
           (n) =>
             (n as QueryBuilderPostFilterTreeConditionNodeData).condition
-              .columnState.columnName ===
+              .leftConditionValue.columnName ===
               (projectionColumnName ?? projectionColumnState?.columnName) &&
             operators
               .map((op) => op.getLabel())
@@ -249,7 +250,9 @@ const QueryBuilderGridResultContextMenu = observer(
               postFilterConditionState,
             );
 
-          postFilterConditionState.setValue(defaultFilterConditionValue);
+          postFilterConditionState.buildFromValueSpec(
+            defaultFilterConditionValue,
+          );
           updateFilterConditionValue(
             defaultFilterConditionValue as InstanceValue,
             cellData,
@@ -293,62 +296,65 @@ const QueryBuilderGridResultContextMenu = observer(
         existingPostFilterNode as QueryBuilderPostFilterTreeConditionNodeData
       ).condition;
 
-      if (conditionState.operator.getLabel() === operator.getLabel()) {
-        const doesValueAlreadyExist =
-          conditionState.value instanceof InstanceValue &&
-          (conditionState.value instanceof EnumValueInstanceValue
-            ? conditionState.value.values.map((ef) => ef.value.name)
-            : conditionState.value.values
-          ).includes(cellData.value);
+      const rightSide = conditionState.rightConditionValue;
+      if (rightSide instanceof PostFilterValueSpecConditionValueState) {
+        if (conditionState.operator.getLabel() === operator.getLabel()) {
+          const doesValueAlreadyExist =
+            rightSide.value instanceof InstanceValue &&
+            (rightSide.value instanceof EnumValueInstanceValue
+              ? rightSide.value.values.map((ef) => ef.value.name)
+              : rightSide.value.values
+            ).includes(cellData.value);
 
-        if (!doesValueAlreadyExist) {
-          const currentValueSpecificaton = conditionState.value;
-          const newValueSpecification =
-            conditionState.operator.getDefaultFilterConditionValue(
-              conditionState,
+          if (!doesValueAlreadyExist) {
+            const currentValueSpecificaton = rightSide.value;
+            const newValueSpecification =
+              conditionState.operator.getDefaultFilterConditionValue(
+                conditionState,
+              );
+            updateFilterConditionValue(
+              newValueSpecification as InstanceValue,
+              cellData,
             );
-          updateFilterConditionValue(
-            newValueSpecification as InstanceValue,
-            cellData,
-          );
-          conditionState.changeOperator(
-            isFilterBy ? postFilterInOperator : postFilterNotInOperator,
-          );
-          instanceValue_setValues(
-            conditionState.value as InstanceValue,
-            [currentValueSpecificaton, newValueSpecification],
-            tdsState.queryBuilderState.observerContext,
-          );
-        }
-      } else {
-        const doesValueAlreadyExist =
-          conditionState.value instanceof InstanceValue &&
-          conditionState.value.values
-            .filter((v) => v instanceof InstanceValue)
-            .map((v) =>
-              v instanceof EnumValueInstanceValue
-                ? v.values.map((ef) => ef.value.name)
-                : (v as InstanceValue).values,
-            )
-            .flat()
-            .includes(cellData.value ?? data?.value);
+            conditionState.changeOperator(
+              isFilterBy ? postFilterInOperator : postFilterNotInOperator,
+            );
+            instanceValue_setValues(
+              rightSide.value as InstanceValue,
+              [currentValueSpecificaton, newValueSpecification],
+              tdsState.queryBuilderState.observerContext,
+            );
+          }
+        } else {
+          const doesValueAlreadyExist =
+            rightSide.value instanceof InstanceValue &&
+            rightSide.value.values
+              .filter((v) => v instanceof InstanceValue)
+              .map((v) =>
+                v instanceof EnumValueInstanceValue
+                  ? v.values.map((ef) => ef.value.name)
+                  : (v as InstanceValue).values,
+              )
+              .flat()
+              .includes(cellData.value ?? data?.value);
 
-        if (!doesValueAlreadyExist) {
-          const newValueSpecification = (
-            isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
-          ).getDefaultFilterConditionValue(conditionState);
-          updateFilterConditionValue(
-            newValueSpecification as InstanceValue,
-            cellData,
-          );
-          instanceValue_setValues(
-            conditionState.value as InstanceValue,
-            [
-              ...(conditionState.value as InstanceValue).values,
-              newValueSpecification,
-            ],
-            tdsState.queryBuilderState.observerContext,
-          );
+          if (!doesValueAlreadyExist) {
+            const newValueSpecification = (
+              isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
+            ).getDefaultFilterConditionValue(conditionState);
+            updateFilterConditionValue(
+              newValueSpecification as InstanceValue,
+              cellData,
+            );
+            instanceValue_setValues(
+              rightSide.value as InstanceValue,
+              [
+                ...(rightSide.value as InstanceValue).values,
+                newValueSpecification,
+              ],
+              tdsState.queryBuilderState.observerContext,
+            );
+          }
         }
       }
     };
