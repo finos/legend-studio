@@ -132,3 +132,18 @@ test(unitTest('Test mock data with classes cycle'), () => {
   // should not continue on to next depth
   expect(secondApplicantInstance).not.toContain('previousApplication');
 });
+
+test(unitTest('Class with miestoning'), () => {
+  const VehicleOwner = editorStore.graphManagerState.graph.getClass(
+    'myPackage::test::shared::dest::VehicleOwner',
+  );
+  const VehicleOwner_Instance = createMockClassInstance(VehicleOwner, true, 2);
+  const vehicleOwner_properties = [
+    'name',
+    'businessDate',
+    'vehicleAllVersions',
+  ];
+  (expect(VehicleOwner_Instance) as TEMPORARY__JestMatcher).toContainAllKeys(
+    vehicleOwner_properties,
+  );
+});
