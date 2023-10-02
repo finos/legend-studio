@@ -27,10 +27,12 @@ import {
   getByDisplayValue,
   getByTitle,
   queryAllByTitle,
+  getByTestId,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_builtPostFilterQuery,
   TEST_DATA__lambda_expectedModifiedPostFilterQuery,
+  TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
   TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
   TEST_DATA__simplePostFilterWithDateTimeWithSeconds,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
@@ -556,5 +558,44 @@ test(
         queryBuilderState.buildQuery(),
       ),
     );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder renders correctly condition with right side as column state',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__lambda_postFilterQueryWithRightValAsCol.parameters,
+          TEST_DATA__lambda_postFilterQueryWithRightValAsCol.body,
+        ),
+      );
+    });
+
+    // gather all nodes
+    const postFilterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+      ),
+    );
+
+    const node = getByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+    );
+    expect(queryByText(node, 'First Name')).not.toBeNull();
+    expect(queryByText(node, 'Last Name')).not.toBeNull();
+    expect(queryByText(node, 'starts with')).not.toBeNull();
   },
 );

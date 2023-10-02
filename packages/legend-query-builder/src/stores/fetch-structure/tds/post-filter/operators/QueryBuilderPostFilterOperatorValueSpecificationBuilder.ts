@@ -27,6 +27,7 @@ import {
   PropertyExplicitReference,
   Multiplicity,
   PrimitiveType,
+  type PureModel,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
@@ -34,30 +35,21 @@ import {
   type PostFilterConditionState,
   type TDS_COLUMN_GETTER,
   getTDSColumnDerivedProperyFromType,
-  PostFilterValueSpecConditionValueState,
 } from '../QueryBuilderPostFilterState.js';
 import { QUERY_BUILDER_PURE_PATH } from '../../../../../graph/QueryBuilderMetaModelConst.js';
+import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState.js';
 
-export const buildPostFilterConditionExpression = (
+export const buildtdsPropertyExpressionFromColState = (
   filterConditionState: PostFilterConditionState,
-  operator: QueryBuilderPostFilterOperator,
-  /**
-   * If provided, this will be used to construct the simple
-   * function expression for the function with the specified
-   * name. If not provided, we will fall back to use the TDS column getter function expression.
-   * This is the case because with TDS, we are provided some filter-like operators, e.g. IS_NULL, IS_NOT_NULL, etc.
-   */
-  operatorFunctionFullPath: string | undefined,
-): FunctionExpression => {
-  // primitives
-  const graph =
-    filterConditionState.postFilterState.tdsState.queryBuilderState
-      .graphManagerState.graph;
-  // property expression
-  const colState = filterConditionState.leftConditionValue;
+  colState: QueryBuilderTDSColumnState,
+  graph: PureModel,
+  operator: QueryBuilderPostFilterOperator | undefined,
+): AbstractPropertyExpression => {
   const tdsPropertyExpression = new AbstractPropertyExpression('');
   let tdsDerivedPropertyName: TDS_COLUMN_GETTER;
-  const correspondingTDSDerivedProperty = operator.getTDSColumnGetter();
+  const correspondingTDSDerivedProperty = operator
+    ? operator.getTDSColumnGetter()
+    : undefined;
   if (correspondingTDSDerivedProperty) {
     tdsDerivedPropertyName = correspondingTDSDerivedProperty;
   } else {
@@ -80,21 +72,38 @@ export const buildPostFilterConditionExpression = (
   );
   colInstanceValue.values = [colState.columnName];
   tdsPropertyExpression.parametersValues = [variableName, colInstanceValue];
+  return tdsPropertyExpression;
+};
+
+export const buildPostFilterConditionExpression = (
+  filterConditionState: PostFilterConditionState,
+  operator: QueryBuilderPostFilterOperator,
+  /**
+   * If provided, this will be used to construct the simple
+   * function expression for the function with the specified
+   * name. If not provided, we will fall back to use the TDS column getter function expression.
+   * This is the case because with TDS, we are provided some filter-like operators, e.g. IS_NULL, IS_NOT_NULL, etc.
+   */
+  operatorFunctionFullPath: string | undefined,
+): FunctionExpression => {
+  // primitives
+  const graph =
+    filterConditionState.postFilterState.tdsState.queryBuilderState
+      .graphManagerState.graph;
+  // property expression
+  const tdsPropertyExpression = buildtdsPropertyExpressionFromColState(
+    filterConditionState,
+    filterConditionState.leftConditionValue,
+    graph,
+    operator,
+  );
 
   if (operatorFunctionFullPath) {
     const expression = new SimpleFunctionExpression(
       extractElementNameFromPath(operatorFunctionFullPath),
     );
     expression.parametersValues.push(tdsPropertyExpression);
-    if (
-      filterConditionState.rightConditionValue instanceof
-        PostFilterValueSpecConditionValueState &&
-      filterConditionState.rightConditionValue.value
-    ) {
-      expression.parametersValues.push(
-        filterConditionState.rightConditionValue.value,
-      );
-    }
+    filterConditionState.rightConditionValue.appendConditionValue(expression);
     return expression;
   } else {
     return tdsPropertyExpression;

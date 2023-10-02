@@ -38,7 +38,6 @@ import {
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import {
-  PostFilterValueSpecConditionValueState,
   type PostFilterConditionState,
   type QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
@@ -85,21 +84,14 @@ export class QueryBuilderPostFilterOperator_Equal
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
-    const rightConditionValue = postFilterConditionState.rightConditionValue;
-    if (
-      rightConditionValue instanceof PostFilterValueSpecConditionValueState &&
-      rightConditionValue.value
-    ) {
+    if (!postFilterConditionState.rightConditionValue.isCollection) {
       return isTypeCompatibleForAssignment(
-        !rightConditionValue.isCollection
-          ? rightConditionValue.type
-          : undefined,
+        postFilterConditionState.rightConditionValue.type,
         guaranteeNonNullable(
           postFilterConditionState.leftConditionValue.getColumnType(),
         ),
       );
     }
-
     return false;
   }
 
