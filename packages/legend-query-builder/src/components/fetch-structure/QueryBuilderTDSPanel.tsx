@@ -688,7 +688,6 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [handleDrop],
     );
-
     return (
       <PanelDnDEntry
         ref={ref}
@@ -732,7 +731,12 @@ const QueryBuilderProjectionColumnEditor = observer(
           onOpen={onContextMenuOpen}
           onClose={onContextMenuClose}
         >
-          <div className="query-builder__projection__column__container">
+          <div
+            data-testid={
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION_COLUMN
+            }
+            className="query-builder__projection__column__container"
+          >
             <PanelEntryDragHandle
               isDragging={false}
               dragSourceConnector={dragHandleRef}

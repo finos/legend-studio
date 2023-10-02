@@ -27,7 +27,6 @@ import {
   queryByTitle,
   queryByDisplayValue,
   getByDisplayValue,
-  findByText,
   getByTestId,
 } from '@testing-library/react';
 import {
@@ -43,7 +42,10 @@ import {
 import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import {
+  TEST__setUpQueryBuilder,
+  dragAndDrop,
+} from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
@@ -120,24 +122,6 @@ test(
     ).not.toBeNull();
   },
 );
-
-// TODO: move out to test utils ?
-const dragAndDrop = async (
-  source: HTMLElement,
-  drop: HTMLElement,
-  panel: HTMLElement,
-  draggingHoverText?: string,
-): Promise<void> => {
-  fireEvent.dragStart(source);
-  fireEvent.dragEnter(drop);
-  fireEvent.dragOver(drop);
-  if (draggingHoverText) {
-    await findByText(panel, draggingHoverText);
-    fireEvent.drop(getByText(panel, draggingHoverText));
-  } else {
-    fireEvent.dragOver(drop);
-  }
-};
 
 test(
   integrationTest('Query builder loads grouped filter panels using constants'),

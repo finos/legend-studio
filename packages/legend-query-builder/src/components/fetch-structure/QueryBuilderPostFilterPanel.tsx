@@ -974,7 +974,7 @@ const QueryBuilderPostFilterPanelContent = observer(
           <div className="panel__header__actions">
             <DropdownMenu
               className="panel__header__action"
-              title="Show Filter Options Menu..."
+              title="Show Post-Filter Options Menu..."
               content={
                 <MenuContent>
                   <MenuContentItem onClick={createCondition}>
