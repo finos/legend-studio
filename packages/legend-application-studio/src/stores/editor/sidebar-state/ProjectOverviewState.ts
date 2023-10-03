@@ -67,7 +67,7 @@ export class ProjectOverviewState {
   isCreatingVersion = false;
   isFetchingProjectWorkspaces = false;
   isDeletingWorkspace = false;
-  isUpdatingProject = false;
+  updatingProjectState = ActionState.create();
   isFetchingLatestVersion = false;
   isFetchingCurrentProjectRevision = false;
 
@@ -85,7 +85,7 @@ export class ProjectOverviewState {
       isCreatingVersion: observable,
       isFetchingProjectWorkspaces: observable,
       isDeletingWorkspace: observable,
-      isUpdatingProject: observable,
+      updatingProjectState: observable,
       isFetchingLatestVersion: observable,
       isFetchingCurrentProjectRevision: observable,
       setActivityMode: action,
@@ -193,7 +193,7 @@ export class ProjectOverviewState {
     tags: string[],
   ): GeneratorFn<void> {
     try {
-      this.isUpdatingProject = true;
+      this.updatingProjectState.inProgress();
       yield this.editorStore.sdlcServerClient.updateProject(
         this.sdlcState.activeProject.projectId,
         {
@@ -214,7 +214,7 @@ export class ProjectOverviewState {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.isUpdatingProject = false;
+      this.updatingProjectState.complete();
     }
   }
 

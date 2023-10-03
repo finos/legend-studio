@@ -79,6 +79,9 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   QUESTION_HOW_TO_WRITE_SERVICE_CONNECTION_TEST_DATA = 'question.how-to-write-service-connection-test-data',
   QUESTION_HOW_TO_CREATE_A_DATA_ELEMENT = 'question.how-to-create-a-data-element',
 
+  // sdlc
+  QUESTION_WHAT_ARE_PROJECT_ROLES = 'question.what-are-project-roles',
+
   // contexts
   CONTEXT_CLASS_EDITOR = 'context.class-editor',
   CONTEXT_SERVICE_TEST_EDITOR = 'context.service-editor.test',

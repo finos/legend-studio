@@ -23,7 +23,6 @@ import {
   ShareIcon,
   PanelLoadingIndicator,
   ContextMenu,
-  SyncIcon,
   PencilIcon,
   InfoCircleIcon,
   TimesIcon,
@@ -338,7 +337,15 @@ const ReleaseEditor = observer(() => {
   const canCreateVersion =
     !isCurrentProjectVersionLatest &&
     !isDispatchingAction &&
-    editorStore.sdlcServerClient.features.canCreateVersion;
+    editorStore.sdlcServerClient.features.canCreateVersion &&
+    editorStore.sdlcState.canCreateVersion;
+  const disabledCreateVersionTitle = isCurrentProjectVersionLatest
+    ? `Can't create version: project version not the latest`
+    : !editorStore.sdlcServerClient.features.canCreateVersion
+    ? `Can't create version: current svn system does not support creating versions`
+    : !editorStore.sdlcState.canCreateVersion
+    ? `Can't create version: You do not have the rights to create a version`
+    : undefined;
 
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
@@ -381,6 +388,7 @@ const ReleaseEditor = observer(() => {
               onClick={createMajorRelease}
               disabled={!canCreateVersion}
               title={
+                disabledCreateVersionTitle ??
                 'Create a major release which comes with backward-incompatible features'
               }
             >
@@ -391,6 +399,7 @@ const ReleaseEditor = observer(() => {
               onClick={createMinorRelease}
               disabled={!canCreateVersion}
               title={
+                disabledCreateVersionTitle ??
                 'Create a minor release which comes with backward-compatible features'
               }
             >
@@ -401,6 +410,7 @@ const ReleaseEditor = observer(() => {
               onClick={createPatchRelease}
               disabled={!canCreateVersion}
               title={
+                disabledCreateVersionTitle ??
                 'Create a patch release which comes with backward-compatible bug fixes'
               }
             >
@@ -637,7 +647,9 @@ const PatchEditor = observer(() => {
             Create Patch
             <DocumentationLink
               className="project-overview__patch__documentation"
-              documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PATCH}
+              documentationKey={
+                LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_ARE_PROJECT_ROLES
+              }
             />
           </div>
         </div>
@@ -883,7 +895,8 @@ const OverviewViewer = observer(() => {
   const initialName = sdlcState.currentProject?.name ?? '';
   const initialDescription = sdlcState.currentProject?.description ?? '';
   const initialTags = sdlcState.currentProject?.tags ?? [];
-  const isDispatchingAction = projectOverviewState.isUpdatingProject;
+  const isDispatchingAction =
+    projectOverviewState.updatingProjectState.isInProgress;
   const [projectIdentifier, setProjectIdentifier] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
   const [itemValue, setItemValue] = useState<string>('');
@@ -948,7 +961,6 @@ const OverviewViewer = observer(() => {
       ),
     ).catch(applicationStore.alertUnhandledError);
   };
-
   return (
     <div className="panel side-bar__panel project-overview__panel project-overview__overview">
       <div className="panel__header">
@@ -957,14 +969,20 @@ const OverviewViewer = observer(() => {
             {PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW}
           </div>
         </div>
-        <button
-          className="panel__header__action side-bar__header__action local-changes__sync-btn"
-          onClick={handleUpdate}
-          tabIndex={-1}
-          title="Update project"
-        >
-          <SyncIcon />
-        </button>
+        <div className="panel__header__actions">
+          <button
+            className="panel__header__action project-overview__update-btn"
+            onClick={handleUpdate}
+            title="Update Project"
+            tabIndex={-1}
+          >
+            <div className="project-overview__update-btn__label">
+              <div className="project-overview__update-btn__label__title">
+                Update
+              </div>
+            </div>
+          </button>
+        </div>
       </div>
       <div className="panel__content project-overview__panel__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
@@ -981,6 +999,25 @@ const OverviewViewer = observer(() => {
               onChange={changeProjectIdentifier}
             />
           </div>
+          {
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Project User Role
+                <DocumentationLink
+                  documentationKey={
+                    LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_MAPPING_TEST
+                  }
+                />
+              </div>
+              <input
+                className="panel__content__form__section__input"
+                title="Project User Role"
+                disabled={true}
+                spellCheck={false}
+                value={sdlcState.accessRole?.accessRole ?? '(unknown)'}
+              />
+            </div>
+          }
         </div>
         <div className="panel__content__form">
           <div className="panel__content__form__section">
