@@ -4278,6 +4278,686 @@ export const TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted = {
     },
   ],
 };
+
+export const TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'intIf',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'today',
+                  parameters: [],
+                },
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 2,
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'dateFunction',
+        },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::now',
+          parameters: [],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'stringConst',
+        },
+        {
+          _type: 'string',
+          value: 'mine',
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 4,
+            upperBound: 4,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'plus',
+                  parameters: [
+                    {
+                      _type: 'collection',
+                      multiplicity: {
+                        lowerBound: 2,
+                        upperBound: 2,
+                      },
+                      values: [
+                        {
+                          _type: 'string',
+                          value: 'simple no param or ',
+                        },
+                        {
+                          _type: 'string',
+                          value: 'const',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'var',
+                  name: 'intIf',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'var',
+                  name: 'testing',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'plus',
+                  parameters: [
+                    {
+                      _type: 'collection',
+                      multiplicity: {
+                        lowerBound: 2,
+                        upperBound: 2,
+                      },
+                      values: [
+                        {
+                          _type: 'var',
+                          name: 'stringConst',
+                        },
+                        {
+                          _type: 'var',
+                          name: 'testing',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 4,
+            upperBound: 4,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'simple',
+            },
+            {
+              _type: 'string',
+              value: 'withConst',
+            },
+            {
+              _type: 'string',
+              value: 'withParam',
+            },
+            {
+              _type: 'string',
+              value: 'withBoth',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      name: 'testing',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      class: 'String',
+    },
+  ],
+};
+
+export const TEST_DATA__lambda_returnTypeSimple = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        { _type: 'string', value: 'intIf' },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                { _type: 'func', function: 'today', parameters: [] },
+                { _type: 'integer', value: 1 },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [{ _type: 'integer', value: 1 }],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [{ _type: 'integer', value: 2 }],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        { _type: 'string', value: 'dateFunction' },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::now',
+          parameters: [],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        { _type: 'string', value: 'stringConst' },
+        { _type: 'string', value: 'mine' },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'plus',
+      parameters: [
+        {
+          _type: 'collection',
+          multiplicity: { lowerBound: 2, upperBound: 2 },
+          values: [
+            { _type: 'string', value: 'simple no param or ' },
+            { _type: 'string', value: 'const' },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'model::Person',
+      multiplicity: { lowerBound: 1, upperBound: 1 },
+      name: 'x',
+    },
+    {
+      _type: 'var',
+      class: 'String',
+      multiplicity: { lowerBound: 1, upperBound: 1 },
+      name: 'testing',
+    },
+  ],
+};
+
+export const TEST_DATA__lambda_returnTypeWithConst = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'intIf',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'today',
+                  parameters: [],
+                },
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 2,
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'dateFunction',
+        },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::now',
+          parameters: [],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'stringConst',
+        },
+        {
+          _type: 'string',
+          value: 'mine',
+        },
+      ],
+    },
+    {
+      _type: 'var',
+      name: 'intIf',
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'model::Person',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'x',
+    },
+    {
+      _type: 'var',
+      class: 'String',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'testing',
+    },
+  ],
+};
+
+export const TEST_DATA__lambda_returnTypeWithParam = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'intIf',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'today',
+                  parameters: [],
+                },
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 2,
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'dateFunction',
+        },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::now',
+          parameters: [],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'stringConst',
+        },
+        {
+          _type: 'string',
+          value: 'mine',
+        },
+      ],
+    },
+    {
+      _type: 'var',
+      name: 'testing',
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'model::Person',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'x',
+    },
+    {
+      _type: 'var',
+      class: 'String',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'testing',
+    },
+  ],
+};
+
+export const TEST_DATA__lambda_returnTypeWithConstAndParam = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'intIf',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'today',
+                  parameters: [],
+                },
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 2,
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'dateFunction',
+        },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::now',
+          parameters: [],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'stringConst',
+        },
+        {
+          _type: 'string',
+          value: 'mine',
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'plus',
+      parameters: [
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+          values: [
+            {
+              _type: 'var',
+              name: 'stringConst',
+            },
+            {
+              _type: 'var',
+              name: 'testing',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'model::Person',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'x',
+    },
+    {
+      _type: 'var',
+      class: 'String',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'testing',
+    },
+  ],
+};
+
 export const TEST_DATA__lambda_postFilterQueryWithRightValAsCol = {
   _type: 'lambda',
   body: [

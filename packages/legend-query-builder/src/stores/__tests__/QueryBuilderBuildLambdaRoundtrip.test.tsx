@@ -751,7 +751,6 @@ test(
   integrationTest(
     'Query builder lambda processing roundtrip test with exporting result',
   ),
-
   async () => {
     const context = projectionCtx;
     const { entities } = context;
