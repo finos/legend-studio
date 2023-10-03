@@ -30,9 +30,14 @@ import {
   getByTestId,
 } from '@testing-library/react';
 import {
+  TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
   TEST_DATA__lambda_builtPostFilterQuery,
   TEST_DATA__lambda_expectedModifiedPostFilterQuery,
   TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
+  TEST_DATA__lambda_returnTypeSimple,
+  TEST_DATA__lambda_returnTypeWithConst,
+  TEST_DATA__lambda_returnTypeWithConstAndParam,
+  TEST_DATA__lambda_returnTypeWithParam,
   TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
   TEST_DATA__simplePostFilterWithDateTimeWithSeconds,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
@@ -43,7 +48,9 @@ import {
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import {
+  Core_GraphManagerPreset,
   PRIMITIVE_TYPE,
+  RawLambda,
   create_RawLambda,
   stub_RawLambda,
 } from '@finos/legend-graph';
@@ -53,7 +60,24 @@ import {
   dragAndDrop,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  filterByType,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderDerivationProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import {
+  TEST__LegendApplicationPluginManager,
+  TEST__getGenericApplicationConfig,
+} from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
+import { ApplicationStore } from '@finos/legend-application';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '@finos/legend-graph/test';
+import { INTERNAL__BasicQueryBuilderState } from '../../stores/QueryBuilderState.js';
 
 test(
   integrationTest('Query builder loads simple post-filter with DateTime value'),
@@ -597,5 +621,89 @@ test(
     expect(queryByText(node, 'First Name')).not.toBeNull();
     expect(queryByText(node, 'Last Name')).not.toBeNull();
     expect(queryByText(node, 'starts with')).not.toBeNull();
+  },
+);
+
+type LambdaReturnTypeTestCase = [
+  string,
+  string,
+  { parameters?: object; body?: object },
+];
+
+const cases: LambdaReturnTypeTestCase[] = [
+  [
+    'simple derived projection column',
+    'simple',
+    TEST_DATA__lambda_returnTypeSimple,
+  ],
+  [
+    'derived property with const',
+    'withConst',
+    TEST_DATA__lambda_returnTypeWithConst,
+  ],
+  [
+    'derived property with param',
+    'withParam',
+    TEST_DATA__lambda_returnTypeWithParam,
+  ],
+  [
+    'derived property with const and param',
+    'withBoth',
+    TEST_DATA__lambda_returnTypeWithConstAndParam,
+  ],
+];
+
+test(
+  integrationTest(
+    'Derived Projection Columns Lambdas are build correctly to fetch correct return type',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+    );
+    const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
+      applicationStore,
+      graphManagerState,
+      undefined,
+    );
+    // do the check using input and output lambda
+    queryBuilderState.initializeWithQuery(
+      new RawLambda(
+        TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams.parameters,
+        TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams.body,
+      ),
+    );
+    const derivedProjCols = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    ).projectionColumns.filter(
+      filterByType(QueryBuilderDerivationProjectionColumnState),
+    );
+    cases.forEach((_c) => {
+      const colName = _c[1];
+      const expectedLambda = _c[2];
+      const actualLambda = guaranteeNonNullable(
+        derivedProjCols.find((col) => col.columnName === colName),
+        `Unable to find derived projection column '${colName}'`,
+      ).getIsolatedRawLambda();
+      const jsonQuery =
+        queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+          actualLambda,
+        );
+      expect(expectedLambda).toEqual(jsonQuery);
+    });
   },
 );
