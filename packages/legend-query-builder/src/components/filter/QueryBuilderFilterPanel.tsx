@@ -113,6 +113,7 @@ import {
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 
 const isCollectionProperty = (
   propertyExpression: AbstractPropertyExpression,
@@ -151,7 +152,7 @@ const isCollectionProperty = (
 export const buildFilterTreeWithExists = (
   propertyExpression: AbstractPropertyExpression,
   filterState: QueryBuilderFilterState,
-  targetDropNode?: QueryBuilderFilterTreeOperationNodeData,
+  targetDropNode?: QueryBuilderFilterTreeNodeData,
 ): void => {
   // 1. Decompose property expression
   const expressions: (AbstractPropertyExpression | SimpleFunctionExpression)[] =
@@ -294,7 +295,21 @@ export const buildFilterTreeWithExists = (
                 .value.path,
         );
         if (parentPropertyChainIndex >= 0) {
-          parentNode = targetDropNode;
+          // Here we choose parentNode based on what the type of targetDropNode
+          // 1. QueryBuilderFilterTreeConditionNodeData: In this case we would want to
+          // add a new group condition from the targetDropNode and add new exists node
+          // getting created as it's child so the parent would be the new group node
+          // 2. QueryBuilderFilterTreeGroupNodeData: Parent node would be same as
+          // targetDropNode
+          // 3. QueryBuilderFilterTreeBlankConditionNodeData: parentNode would be the
+          // parent of the targetDropNode. At the end we would deelete this blank node
+          // that got created.
+          parentNode =
+            targetDropNode instanceof QueryBuilderFilterTreeConditionNodeData
+              ? filterState.newGroupConditionFromNode(targetDropNode)
+              : targetDropNode instanceof QueryBuilderFilterTreeGroupNodeData
+              ? targetDropNode
+              : filterState.getParentNode(targetDropNode);
           existsLambdaPropertyChains = existsLambdaPropertyChains.slice(
             parentPropertyChainIndex + 1,
           );
@@ -303,7 +318,12 @@ export const buildFilterTreeWithExists = (
           );
         }
       } else if (!parentId) {
-        parentNode = targetDropNode;
+        parentNode =
+          targetDropNode instanceof QueryBuilderFilterTreeConditionNodeData
+            ? filterState.newGroupConditionFromNode(targetDropNode)
+            : targetDropNode instanceof QueryBuilderFilterTreeGroupNodeData
+            ? targetDropNode
+            : filterState.getParentNode(targetDropNode);
       }
     }
   }
@@ -332,6 +352,127 @@ export const buildFilterTreeWithExists = (
     filterConditionState,
   );
   filterState.addNodeFromNode(treeNode, parentNode);
+  if (targetDropNode instanceof QueryBuilderFilterTreeBlankConditionNodeData) {
+    filterState.removeNodeAndPruneBranch(targetDropNode);
+  }
+};
+
+export const buildPropertyExpressionFromExistsNode = (
+  filterState: QueryBuilderFilterState,
+  existsNode: QueryBuilderFilterTreeExistsNodeData,
+  node: QueryBuilderFilterTreeConditionNodeData,
+): AbstractPropertyExpression => {
+  let nodeParent = filterState.getParentNode(node);
+  let existsLambdaParameterNames: string[] = [];
+  let existsLambdaExpressions: AbstractPropertyExpression[] = [];
+  existsLambdaExpressions.push(
+    node.condition.propertyExpressionState.propertyExpression,
+  );
+  existsLambdaParameterNames.push(
+    nodeParent?.lambdaParameterName ?? filterState.lambdaParameterName,
+  );
+  while (nodeParent && nodeParent.id !== existsNode.id) {
+    if (nodeParent instanceof QueryBuilderFilterTreeExistsNodeData) {
+      existsLambdaExpressions.push(
+        nodeParent.propertyExpressionState.propertyExpression,
+      );
+      existsLambdaParameterNames.push(
+        nodeParent.lambdaParameterName ?? filterState.lambdaParameterName,
+      );
+    }
+    nodeParent = filterState.getParentNode(nodeParent);
+  }
+  if (nodeParent?.id === existsNode.id) {
+    existsLambdaExpressions.push(
+      existsNode.propertyExpressionState.propertyExpression,
+    );
+    existsLambdaParameterNames.push(
+      existsNode.lambdaParameterName ?? filterState.lambdaParameterName,
+    );
+  }
+  existsLambdaParameterNames = existsLambdaParameterNames.reverse();
+  existsLambdaExpressions = existsLambdaExpressions.reverse();
+
+  const initialPropertyExpression = guaranteeNonNullable(
+    existsLambdaExpressions[0],
+  );
+  existsLambdaParameterNames = existsLambdaParameterNames.slice(1);
+  existsLambdaExpressions = existsLambdaExpressions.slice(1);
+
+  let flattenedPropertyExpressionChain = new AbstractPropertyExpression('');
+  flattenedPropertyExpressionChain.func = initialPropertyExpression.func;
+  flattenedPropertyExpressionChain.parametersValues = [
+    ...initialPropertyExpression.parametersValues,
+  ];
+  for (const exp of existsLambdaExpressions) {
+    // when rebuilding the property expression chain, disregard the initial variable that starts the chain
+    const expressions: (
+      | AbstractPropertyExpression
+      | SimpleFunctionExpression
+    )[] = [];
+    let currentExpression: ValueSpecification = exp;
+    while (
+      currentExpression instanceof AbstractPropertyExpression ||
+      (currentExpression instanceof SimpleFunctionExpression &&
+        matchFunctionName(
+          currentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+        ))
+    ) {
+      if (currentExpression instanceof SimpleFunctionExpression) {
+        const functionExpression = new SimpleFunctionExpression(
+          extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
+        );
+        functionExpression.parametersValues.unshift(
+          guaranteeNonNullable(currentExpression.parametersValues[1]),
+        );
+        expressions.push(functionExpression);
+      } else if (currentExpression instanceof AbstractPropertyExpression) {
+        const propertyExp = new AbstractPropertyExpression('');
+        propertyExp.func = currentExpression.func;
+        // NOTE: we must retain the rest of the parameters as those are derived property parameters
+        propertyExp.parametersValues =
+          currentExpression.parametersValues.length > 1
+            ? currentExpression.parametersValues.slice(1)
+            : [];
+        expressions.push(propertyExp);
+      }
+      currentExpression = guaranteeNonNullable(
+        currentExpression.parametersValues[0],
+      );
+    }
+    assertTrue(
+      expressions.length > 0,
+      `Can't process exists() expression: exists() usage with non-chain property expression is not supported`,
+    );
+    for (let i = 0; i < expressions.length - 1; ++i) {
+      (
+        expressions[i] as AbstractPropertyExpression | SimpleFunctionExpression
+      ).parametersValues.unshift(
+        expressions[i + 1] as
+          | AbstractPropertyExpression
+          | SimpleFunctionExpression,
+      );
+    }
+    (
+      expressions[expressions.length - 1] as
+        | AbstractPropertyExpression
+        | SimpleFunctionExpression
+    ).parametersValues.unshift(flattenedPropertyExpressionChain);
+    flattenedPropertyExpressionChain = guaranteeType(
+      expressions[0],
+      AbstractPropertyExpression,
+      `Can't process exists() expression: can't flatten to a property expression`,
+    );
+  }
+  return guaranteeType(
+    buildPropertyExpressionChain(
+      flattenedPropertyExpressionChain,
+      filterState.queryBuilderState,
+      existsNode.lambdaParameterName ?? filterState.lambdaParameterName,
+    ),
+    AbstractPropertyExpression,
+  );
 };
 
 /**
@@ -340,7 +481,7 @@ export const buildFilterTreeWithExists = (
 const buildFilterTree = (
   propertyExpression: AbstractPropertyExpression,
   filterState: QueryBuilderFilterState,
-  targetDropNode?: QueryBuilderFilterTreeOperationNodeData | undefined,
+  targetDropNode?: QueryBuilderFilterTreeNodeData | undefined,
 ): void => {
   if (isCollectionProperty(propertyExpression)) {
     const propertyChainName = getPropertyChainName(
@@ -383,12 +524,88 @@ const buildFilterTree = (
       undefined,
       filterConditionState,
     );
-    filterState.addNodeFromNode(
-      treeNode,
-      targetDropNode instanceof QueryBuilderFilterTreeGroupNodeData
-        ? targetDropNode
-        : undefined,
-    );
+    // Check if there are any exists node present in the parent nodes of the target.
+    // This would change the way we build the filter tree
+    let cn: QueryBuilderFilterTreeNodeData | undefined = targetDropNode;
+    let existsNode: QueryBuilderFilterTreeExistsNodeData | undefined =
+      undefined;
+    let parentId = targetDropNode?.parentId;
+    while (parentId) {
+      cn = filterState.nodes.get(parentId);
+      parentId = cn?.parentId;
+      if (cn instanceof QueryBuilderFilterTreeExistsNodeData) {
+        existsNode = cn;
+      }
+    }
+    if (cn instanceof QueryBuilderFilterTreeExistsNodeData) {
+      existsNode = cn;
+    }
+    if (targetDropNode instanceof QueryBuilderFilterTreeGroupNodeData) {
+      if (existsNode) {
+        filterState.newGroupConditionFromNode(
+          existsNode,
+          treeNode,
+          targetDropNode.groupOperation,
+        );
+      } else {
+        filterState.addNodeFromNode(treeNode, targetDropNode);
+      }
+    } else if (
+      targetDropNode instanceof QueryBuilderFilterTreeBlankConditionNodeData
+    ) {
+      if (existsNode) {
+        filterState.queryBuilderState.applicationStore.notificationService.notifyError(
+          `Can't drag and drop here: property expression of target and source doesn't match`,
+        );
+      } else {
+        filterState.replaceBlankNodeWithNode(treeNode, targetDropNode);
+      }
+    } else if (
+      existsNode &&
+      targetDropNode instanceof QueryBuilderFilterTreeExistsNodeData
+    ) {
+      filterState.newGroupConditionFromNode(existsNode, treeNode);
+    } else if (
+      targetDropNode instanceof QueryBuilderFilterTreeConditionNodeData
+    ) {
+      const parentNode = filterState.getParentNode(targetDropNode);
+      if (
+        existsNode &&
+        parentNode instanceof QueryBuilderFilterTreeExistsNodeData &&
+        parentNode.childrenIds.length === 1
+      ) {
+        filterState.newGroupConditionFromNode(
+          existsNode,
+          treeNode,
+          QUERY_BUILDER_GROUP_OPERATION.AND,
+        );
+      } else if (
+        existsNode &&
+        parentNode instanceof QueryBuilderFilterTreeGroupNodeData
+      ) {
+        const propertyExpression1 = buildPropertyExpressionFromExistsNode(
+          filterState,
+          existsNode,
+          targetDropNode,
+        );
+        filterState.removeNodeAndPruneBranch(targetDropNode);
+        filterState.newGroupConditionFromNode(
+          existsNode,
+          treeNode,
+          parentNode.groupOperation,
+        );
+        const newParentNode = filterState.getParentNode(treeNode);
+        buildFilterTreeWithExists(
+          propertyExpression1,
+          filterState,
+          newParentNode,
+        );
+      } else {
+        filterState.newGroupWithConditionFromNode(treeNode, targetDropNode);
+      }
+    } else {
+      filterState.addNodeFromNode(treeNode, undefined);
+    }
   }
 };
 
@@ -845,21 +1062,17 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               node,
             );
           } else if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-            filterState.newGroupWithConditionFromNode(
-              new QueryBuilderFilterTreeConditionNodeData(
-                undefined,
-                filterConditionState,
-              ),
+            buildFilterTree(
+              filterConditionState.propertyExpressionState.propertyExpression,
+              filterState,
               node,
             );
           } else if (
             node instanceof QueryBuilderFilterTreeBlankConditionNodeData
           ) {
-            filterState.replaceBlankNodeWithNode(
-              new QueryBuilderFilterTreeConditionNodeData(
-                undefined,
-                filterConditionState,
-              ),
+            buildFilterTree(
+              filterConditionState.propertyExpressionState.propertyExpression,
+              filterState,
               node,
             );
           }
