@@ -134,16 +134,16 @@ test(unitTest('Test mock data with classes cycle'), () => {
 });
 
 test(unitTest('Class with miestoning'), () => {
-  const VehicleOwner = editorStore.graphManagerState.graph.getClass(
-    'myPackage::test::shared::dest::VehicleOwner',
+  const vehicleOwner = editorStore.graphManagerState.graph.getClass(
+    'myPackage::test::shared::dest::vehicleOwner',
   );
-  const VehicleOwner_Instance = createMockClassInstance(VehicleOwner, true, 2);
+  const vehicleOwner_Instance = createMockClassInstance(vehicleOwner, true, 2);
   const vehicleOwner_properties = [
     'name',
     'businessDate',
     'vehicleAllVersions',
   ];
-  (expect(VehicleOwner_Instance) as TEMPORARY__JestMatcher).toContainAllKeys(
+  (expect(vehicleOwner_Instance) as TEMPORARY__JestMatcher).toContainAllKeys(
     vehicleOwner_properties,
   );
 });
