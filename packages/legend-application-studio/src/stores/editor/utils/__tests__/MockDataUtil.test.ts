@@ -135,7 +135,7 @@ test(unitTest('Test mock data with classes cycle'), () => {
 
 test(unitTest('Class with miestoning'), () => {
   const vehicleOwner = editorStore.graphManagerState.graph.getClass(
-    'myPackage::test::shared::dest::vehicleOwner',
+    'myPackage::test::shared::dest::VehicleOwner',
   );
   const vehicleOwner_Instance = createMockClassInstance(vehicleOwner, true, 2);
   const vehicleOwner_properties = [
