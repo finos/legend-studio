@@ -61,7 +61,13 @@ import {
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useDrop, useDrag, useDragLayer } from 'react-dnd';
 import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import type { QueryBuilderPostFilterOperator } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterOperator.js';
@@ -75,6 +81,7 @@ import {
   QueryBuilderPostFilterTreeBlankConditionNodeData,
   QUERY_BUILDER_POST_FILTER_DND_TYPE,
   PostFilterValueSpecConditionValueState,
+  PostFilterTDSColumnValueConditionValueState,
 } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   type QueryBuilderProjectionColumnState,
@@ -204,14 +211,14 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
 
 export const QueryBuilderColumnBadge = observer(
   (props: {
-    postFilterConditionState: PostFilterConditionState;
+    colState: QueryBuilderTDSColumnState;
     onColumnChange: (
       columnState: QueryBuilderProjectionColumnState,
     ) => Promise<void>;
   }) => {
-    const { postFilterConditionState, onColumnChange } = props;
+    const { colState, onColumnChange } = props;
     const applicationStore = useApplicationStore();
-    const type = postFilterConditionState.leftConditionValue.getColumnType();
+    const type = colState.getColumnType();
     const handleDrop = useCallback(
       (item: QueryBuilderProjectionColumnDragSource): Promise<void> =>
         onColumnChange(item.columnState),
@@ -262,12 +269,12 @@ export const QueryBuilderColumnBadge = observer(
             )}
             <div
               className="query-builder-column-badge__property"
-              title={`${postFilterConditionState.columnName}`}
+              title={`${colState.columnName}`}
             >
-              {postFilterConditionState.columnName}
+              {colState.columnName}
             </div>
             <QueryBuilderColumnInfoTooltip
-              columnState={postFilterConditionState.leftConditionValue}
+              columnState={colState}
               placement="bottom-end"
             >
               <div className="query-builder-column-badge__property__info">
@@ -293,10 +300,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
     const changeOperator = (val: QueryBuilderPostFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const rightConditionValue = node.condition.rightConditionValue;
-    const rightSideValueSpec =
-      rightConditionValue instanceof PostFilterValueSpecConditionValueState
-        ? rightConditionValue.value
-        : undefined;
     const changeColumn = async (
       columnState: QueryBuilderProjectionColumnState,
     ): Promise<void> => {
@@ -379,6 +382,70 @@ const QueryBuilderPostFilterConditionEditor = observer(
           monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
     }));
 
+    const renderRightVal = (): React.ReactNode => {
+      if (
+        rightConditionValue instanceof PostFilterValueSpecConditionValueState &&
+        rightConditionValue.value
+      ) {
+        return (
+          <div
+            ref={dropConnector}
+            className="query-builder-post-filter-tree__condition-node__value"
+          >
+            <PanelEntryDropZonePlaceholder
+              isDragOver={isFilterValueDragOver}
+              label="Change Filter Value"
+            >
+              <BasicValueSpecificationEditor
+                valueSpecification={rightConditionValue.value}
+                setValueSpecification={changeValueSpecification}
+                graph={graph}
+                obseverContext={queryBuilderState.observerContext}
+                typeCheckOption={{
+                  expectedType: guaranteeNonNullable(
+                    node.condition.leftConditionValue.getColumnType(),
+                  ),
+                }}
+                resetValue={resetNode}
+                selectorConfig={selectorConfig}
+                isConstant={queryBuilderState.constantState.isValueSpecConstant(
+                  rightConditionValue.value,
+                )}
+              />
+            </PanelEntryDropZonePlaceholder>
+          </div>
+        );
+      } else if (
+        rightConditionValue instanceof
+        PostFilterTDSColumnValueConditionValueState
+      ) {
+        const changeRightCol = async (
+          columnState: QueryBuilderProjectionColumnState,
+        ): Promise<void> => {
+          rightConditionValue.changeCol(columnState);
+        };
+        return (
+          <div
+            ref={dropConnector}
+            className="query-builder-post-filter-tree__condition-node__value"
+          >
+            <PanelEntryDropZonePlaceholder
+              isDragOver={isFilterValueDragOver}
+              label="Change Filter Value"
+            >
+              <div className="query-builder-post-filter-tree__condition-node__property">
+                <QueryBuilderColumnBadge
+                  colState={rightConditionValue.tdsColumn}
+                  onColumnChange={changeRightCol}
+                />
+              </div>
+            </PanelEntryDropZonePlaceholder>
+          </div>
+        );
+      }
+      return null;
+    };
+
     return (
       <div className="query-builder-post-filter-tree__node__label__content dnd__entry__container">
         <PanelEntryDropZonePlaceholder
@@ -389,7 +456,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
           <div className="query-builder-post-filter-tree__condition-node">
             <div className="query-builder-post-filter-tree__condition-node__property">
               <QueryBuilderColumnBadge
-                postFilterConditionState={node.condition}
+                colState={node.condition.leftConditionValue}
                 onColumnChange={changeColumn}
               />
             </div>
@@ -422,34 +489,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                 <CaretDownIcon />
               </div>
             </DropdownMenu>
-            {rightSideValueSpec && (
-              <div
-                ref={dropConnector}
-                className="query-builder-post-filter-tree__condition-node__value"
-              >
-                <PanelEntryDropZonePlaceholder
-                  isDragOver={isFilterValueDragOver}
-                  label="Change Filter Value"
-                >
-                  <BasicValueSpecificationEditor
-                    valueSpecification={rightSideValueSpec}
-                    setValueSpecification={changeValueSpecification}
-                    graph={graph}
-                    obseverContext={queryBuilderState.observerContext}
-                    typeCheckOption={{
-                      expectedType: guaranteeNonNullable(
-                        node.condition.leftConditionValue.getColumnType(),
-                      ),
-                    }}
-                    resetValue={resetNode}
-                    selectorConfig={selectorConfig}
-                    isConstant={queryBuilderState.constantState.isValueSpecConstant(
-                      rightSideValueSpec,
-                    )}
-                  />
-                </PanelEntryDropZonePlaceholder>
-              </div>
-            )}
+            {renderRightVal()}
           </div>
         </PanelEntryDropZonePlaceholder>
       </div>
@@ -545,7 +585,6 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
             conditionState = new PostFilterConditionState(
               postFilterState,
               columnState,
-              undefined,
               undefined,
             );
             conditionState.buildFromValueSpec(
@@ -909,7 +948,6 @@ const QueryBuilderPostFilterPanelContent = observer(
             postFilterState,
             aggregateColumnState ?? columnState,
             undefined,
-            undefined,
           );
           postFilterConditionState.buildFromValueSpec(
             postFilterConditionState.operator.getDefaultFilterConditionValue(
@@ -974,7 +1012,7 @@ const QueryBuilderPostFilterPanelContent = observer(
           <div className="panel__header__actions">
             <DropdownMenu
               className="panel__header__action"
-              title="Show Filter Options Menu..."
+              title="Show Post-Filter Options Menu..."
               content={
                 <MenuContent>
                   <MenuContentItem onClick={createCondition}>

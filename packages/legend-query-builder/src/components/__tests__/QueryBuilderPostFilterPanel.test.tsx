@@ -25,12 +25,14 @@ import {
   queryByDisplayValue,
   fireEvent,
   getByDisplayValue,
-  findByText,
   getByTitle,
   queryAllByTitle,
+  getByTestId,
 } from '@testing-library/react';
 import {
+  TEST_DATA__lambda_builtPostFilterQuery,
   TEST_DATA__lambda_expectedModifiedPostFilterQuery,
+  TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
   TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
   TEST_DATA__simplePostFilterWithDateTimeWithSeconds,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
@@ -40,9 +42,16 @@ import {
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
-import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  create_RawLambda,
+  stub_RawLambda,
+} from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import {
+  TEST__setUpQueryBuilder,
+  dragAndDrop,
+} from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
@@ -77,23 +86,6 @@ test(
     ).not.toBeNull();
   },
 );
-
-const dragAndDrop = async (
-  source: HTMLElement,
-  drop: HTMLElement,
-  panel: HTMLElement,
-  draggingHoverText?: string,
-): Promise<void> => {
-  fireEvent.dragStart(source);
-  fireEvent.dragEnter(drop);
-  fireEvent.dragOver(drop);
-  if (draggingHoverText) {
-    await findByText(panel, draggingHoverText);
-    fireEvent.drop(getByText(panel, draggingHoverText));
-  } else {
-    fireEvent.dragOver(drop);
-  }
-};
 
 test(
   integrationTest(
@@ -381,5 +373,229 @@ test(
         `This column is used and can't be removed`,
       ),
     ).toHaveLength(0);
+  },
+);
+
+const EXPECTED_STRING_TYPES: Record<string, string[]> = {
+  [PRIMITIVE_TYPE.STRING]: [
+    'is',
+    'is not',
+    'starts with',
+    `doesn't start with`,
+    'contains',
+    `doesn't contain`,
+    'ends with',
+    `doesn't end with`,
+    'is in',
+    'is not in',
+  ],
+  [PRIMITIVE_TYPE.INTEGER]: [
+    'is',
+    'is not',
+    '<',
+    '<=',
+    '>',
+    '>=',
+    'is in',
+    'is not in',
+  ],
+};
+
+test(
+  integrationTest(
+    'Query builder builds post filter and shows correct operations',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted.parameters,
+          TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted.body,
+        ),
+      );
+    });
+
+    // gather all nodes
+    const postFilterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+      ),
+    );
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    fireEvent.click(
+      getByTitle(
+        guaranteeNonNullable(
+          queryAllByTestId(
+            filterPanel,
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+          ).find((node) => queryByText(node, 'and') !== null),
+        ),
+        'Remove',
+      ),
+    );
+    expect(
+      queryAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    ).toHaveLength(0);
+    fireEvent.click(
+      getByTitle(
+        guaranteeNonNullable(
+          queryAllByTestId(
+            postFilterPanel,
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+          ).find((node) => queryByText(node, 'and') !== null),
+        ),
+        'Remove',
+      ),
+    );
+    expect(
+      queryAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      ),
+    ).toHaveLength(0);
+    const cols = queryAllByTestId(
+      tdsPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION_COLUMN,
+    );
+    expect(cols).toHaveLength(5);
+    const firstNameCol = guaranteeNonNullable(
+      cols.find((q) => queryByText(q, 'First Name')),
+      `Can't find first name projectioncol`,
+    );
+    let dragSource = getByTitle(firstNameCol, 'Drag Element');
+    const postFilterDrop = getByText(
+      postFilterPanel,
+      `Add a post-filter condition`,
+    );
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(postFilterDrop);
+    fireEvent.dragOver(postFilterDrop);
+    fireEvent.drop(getByText(postFilterPanel, 'Add a post-filter condition'));
+    expect(
+      queryAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      ),
+    ).toHaveLength(1);
+    expect(queryByText(postFilterPanel, 'Fist Name'));
+    expect(queryByText(postFilterPanel, 'is'));
+
+    fireEvent.click(getByTitle(postFilterPanel, 'Choose Operator...'));
+    let switchMenu = renderResult.getByRole('menu');
+    guaranteeNonNullable(EXPECTED_STRING_TYPES[PRIMITIVE_TYPE.STRING]).forEach(
+      (expectedOp) => getByText(switchMenu, expectedOp),
+    );
+    fireEvent.click(getByText(switchMenu, 'is in'));
+    expect(queryByText(postFilterPanel, 'List(empty)'));
+    fireEvent.click(getByTitle(postFilterPanel, 'Choose Operator...'));
+    fireEvent.click(
+      getByText(renderResult.getByRole('menu'), `doesn't contain`),
+    );
+    const inputNode = getByDisplayValue(postFilterPanel, '');
+    fireEvent.change(inputNode, {
+      target: { value: 'basic string filter test' },
+    });
+    getByDisplayValue(postFilterPanel, 'basic string filter test');
+    const ageNameCol = guaranteeNonNullable(
+      cols.find((q) => queryByText(q, 'Age')),
+      `Can't find age projection col`,
+    );
+    dragSource = getByTitle(ageNameCol, 'Drag Element');
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(postFilterPanel);
+    fireEvent.dragOver(postFilterPanel);
+    fireEvent.drop(getByText(postFilterPanel, 'Add New Logical Group'));
+    const postFilterNodes = queryAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+    );
+    expect(postFilterNodes).toHaveLength(3);
+    guaranteeNonNullable(
+      postFilterNodes.find((e) => queryByText(e, 'and') !== null),
+      `Expected an 'and' post filter node to be created`,
+    );
+    const ageNodeCreated = guaranteeNonNullable(
+      postFilterNodes.find((e) => queryByText(e, 'Age') !== null),
+      `Expected an 'Age' post filter node to be created`,
+    );
+    fireEvent.click(getByTitle(ageNodeCreated, 'Choose Operator...'));
+    switchMenu = renderResult.getByRole('menu');
+    guaranteeNonNullable(EXPECTED_STRING_TYPES[PRIMITIVE_TYPE.INTEGER]).forEach(
+      (expectedOp) => getByText(switchMenu, expectedOp),
+    );
+    const ageInupNode = getByDisplayValue(postFilterPanel, 0);
+    fireEvent.change(ageInupNode, {
+      target: { value: 55 },
+    });
+    getByDisplayValue(postFilterPanel, 55);
+    expect(
+      queryByTitle(firstNameCol, `This column is used and can't be removed`),
+    ).not.toBeNull();
+    expect(
+      queryByTitle(ageNameCol, `This column is used and can't be removed`),
+    ).not.toBeNull();
+    expect(TEST_DATA__lambda_builtPostFilterQuery).toEqual(
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      ),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder renders correctly condition with right side as column state',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__lambda_postFilterQueryWithRightValAsCol.parameters,
+          TEST_DATA__lambda_postFilterQueryWithRightValAsCol.body,
+        ),
+      );
+    });
+
+    // gather all nodes
+    const postFilterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+      ),
+    );
+
+    const node = getByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+    );
+    expect(queryByText(node, 'First Name')).not.toBeNull();
+    expect(queryByText(node, 'Last Name')).not.toBeNull();
+    expect(queryByText(node, 'starts with')).not.toBeNull();
   },
 );

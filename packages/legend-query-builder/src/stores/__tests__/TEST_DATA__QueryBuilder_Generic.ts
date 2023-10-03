@@ -4278,7 +4278,589 @@ export const TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted = {
     },
   ],
 };
+export const TEST_DATA__lambda_postFilterQueryWithRightValAsCol = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'firstName',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'lastName',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+                {
+                  _type: 'string',
+                  value: 'Last Name',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'startsWith',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                    {
+                      _type: 'string',
+                      value: 'First Name',
+                    },
+                  ],
+                  property: 'getString',
+                },
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                    {
+                      _type: 'string',
+                      value: 'Last Name',
+                    },
+                  ],
+                  property: 'getString',
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'row',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
 
+export const TEST_DATA__lambda_builtPostFilterQuery = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'dateConst',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'today',
+                  parameters: [],
+                },
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'previousDayOfWeek',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'packageableElementPtr',
+                          fullPath: 'meta::pure::functions::date::DayOfWeek',
+                        },
+                      ],
+                      property: 'Saturday',
+                    },
+                  ],
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'previousDayOfWeek',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'previousDayOfWeek',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'packageableElementPtr',
+                              fullPath:
+                                'meta::pure::functions::date::DayOfWeek',
+                            },
+                          ],
+                          property: 'Saturday',
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'packageableElementPtr',
+                          fullPath: 'meta::pure::functions::date::DayOfWeek',
+                        },
+                      ],
+                      property: 'Saturday',
+                    },
+                  ],
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'dateFunction',
+        },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::today',
+          parameters: [],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'intConst',
+        },
+        {
+          _type: 'func',
+          function: 'if',
+          parameters: [
+            {
+              _type: 'boolean',
+              value: true,
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+              parameters: [],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'integer',
+                  value: 2,
+                },
+              ],
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'stringConst',
+        },
+        {
+          _type: 'string',
+          value: 'mine',
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'absoluteDate',
+        },
+        {
+          _type: 'strictDate',
+          value: '2023-09-28',
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'integerConst',
+        },
+        {
+          _type: 'integer',
+          value: 0,
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 5,
+                upperBound: 5,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'age',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'dobDate',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'dobStrictDate',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'dobTime',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'firstName',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 5,
+                upperBound: 5,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Age',
+                },
+                {
+                  _type: 'string',
+                  value: 'Dob Date',
+                },
+                {
+                  _type: 'string',
+                  value: 'Dob Strict Date',
+                },
+                {
+                  _type: 'string',
+                  value: 'Dob Time',
+                },
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'and',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'not',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'contains',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'row',
+                            },
+                            {
+                              _type: 'string',
+                              value: 'First Name',
+                            },
+                          ],
+                          property: 'getString',
+                        },
+                        {
+                          _type: 'string',
+                          value: 'basic string filter test',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'row',
+                        },
+                        {
+                          _type: 'string',
+                          value: 'Age',
+                        },
+                      ],
+                      property: 'getInteger',
+                    },
+                    {
+                      _type: 'integer',
+                      value: 55,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'row',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'Date',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'dateParam',
+    },
+  ],
+};
 export const TEST_DATA__lambda_expectedModifiedPostFilterQuery = {
   _type: 'lambda',
   body: [

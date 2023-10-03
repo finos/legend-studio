@@ -232,7 +232,6 @@ const QueryBuilderGridResultContextMenu = observer(
           postFilterConditionState = new PostFilterConditionState(
             postFilterState,
             possibleProjectionColumnState,
-            undefined,
             operator,
           );
 
