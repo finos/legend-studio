@@ -68,6 +68,14 @@
           },
           "name": "address",
           "type": "model::Address"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Number"
         }
       ]
     },
@@ -550,6 +558,26 @@
                 ]
               },
               "target": "model_Address"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Firm",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "store::TestDB",
+                  "mainTableDb": "store::TestDB",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              },
+              "source": "model_Firm"
             }
           ],
           "root": true

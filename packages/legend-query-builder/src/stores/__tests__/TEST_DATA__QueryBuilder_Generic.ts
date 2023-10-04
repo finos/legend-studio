@@ -3433,6 +3433,193 @@ export const TEST_DATA__simpeDateParametersForUnsupportedQuery = {
   ],
 };
 
+export const TEST_DATA__simpleFilterWithGroupOperationAndExists = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::Firm',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'and',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'id',
+                    },
+                    {
+                      _type: 'decimal',
+                      value: 0,
+                    },
+                  ],
+                },
+                {
+                  _type: 'func',
+                  function: 'exists',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'employees',
+                    },
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'func',
+                          function: 'equal',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x_1',
+                                },
+                              ],
+                              property: 'firstName',
+                            },
+                            {
+                              _type: 'string',
+                              value: '',
+                            },
+                          ],
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x_1',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__simpleFilterWithAndCondition = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::Firm',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'and',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'legalName',
+                    },
+                    {
+                      _type: 'string',
+                      value: '',
+                    },
+                  ],
+                },
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'id',
+                    },
+                    {
+                      _type: 'decimal',
+                      value: 0,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__simpeFilterWithMilestonedExists = {
   _type: 'lambda',
   body: [

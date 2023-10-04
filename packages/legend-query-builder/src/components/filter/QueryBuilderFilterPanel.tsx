@@ -821,7 +821,12 @@ const QueryBuilderFilterConditionEditor = observer(
     };
 
     return (
-      <div className="query-builder-filter-tree__node__label__content dnd__entry__container">
+      <div
+        className="query-builder-filter-tree__node__label__content dnd__entry__container"
+        data-testid={
+          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT
+        }
+      >
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
           label="Add New Logical Group"
