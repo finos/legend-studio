@@ -1005,7 +1005,7 @@ const OverviewViewer = observer(() => {
                 Project User Role
                 <DocumentationLink
                   documentationKey={
-                    LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_MAPPING_TEST
+                    LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_ARE_PROJECT_ROLES
                   }
                 />
               </div>
