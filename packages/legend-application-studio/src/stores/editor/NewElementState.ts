@@ -559,9 +559,6 @@ export class NewServiceDriver extends NewElementDriver<Service> {
       this.editorStore.changeDetectionState.observerContext,
     );
     service_initNewService(service);
-    const currentUserId =
-      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
-        .currentUserId;
     service.ownership = new DeploymentOwnership('', service);
     return service;
   }
