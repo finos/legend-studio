@@ -162,12 +162,20 @@ export const service_deleteTestSuite = action(
   },
 );
 
+export const service_setOwnership = action(
+  (service: Service, value: ServiceOwnership | undefined): void => {
+    service.ownership = value ? observe_Ownership(value) : undefined;
+  },
+);
+
 export const service_initNewService = action(
   (service: Service, userId?: string): void => {
     service.pattern = `/${uuid()}`; // initialize the service pattern with an UUID to avoid people leaving the pattern as /
     if (userId) {
-      service.ownership = new DeploymentOwnership('', service);
-    } // this is used to add the current user as the first owner by default
+      service.owners = [userId];
+    } else {
+      service_setOwnership(service, new DeploymentOwnership('', service));
+    }
   },
 );
 export const service_setExecution = action(
@@ -185,11 +193,6 @@ export const service_setPattern = action(
   },
 );
 
-export const service_setOwnership = action(
-  (service: Service, value: ServiceOwnership | undefined): void => {
-    service.ownership = value ? observe_Ownership(value) : undefined;
-  },
-);
 export const service_deploymentOwnership = action(
   (deployment: DeploymentOwnership, value: string): void => {
     deployment.identifier = value;
