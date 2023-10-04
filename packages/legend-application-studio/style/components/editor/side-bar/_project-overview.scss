@@ -95,6 +95,30 @@
     }
   }
 
+  &__update-btn {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 8rem;
+    padding-right: 0.5rem;
+
+    &__label {
+      display: flex;
+      align-items: center;
+      height: 2.2rem;
+      background: var(--color-blue-200);
+      padding: 1rem;
+      border-radius: 0.2rem;
+
+      &__title {
+        margin-left: 0.5rem;
+        color: var(--color-light-grey-180);
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+    }
+  }
+
   &__panel {
     width: calc(100% - 3rem);
   }

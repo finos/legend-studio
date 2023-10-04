@@ -506,9 +506,51 @@ export const TEST_DATA__roundtrip = [
             _type: 'manualTrigger',
           },
           dataProvider: 'org::legend::TestDataProvider',
+          raiseExceptionWorkflow: true,
+          runProfile: 'Medium',
+          timeoutInMinutes: 100,
+          dependencies: [
+            {
+              dependentRecordSourceId: 'widget-file-source',
+            },
+          ],
+        },
+        {
+          createBlockedException: false,
+          createPermitted: true,
+          description: 'File source',
+          id: 'widget-file-source',
+          recordService: {
+            acquisitionProtocol: {
+              _type: 'fileAcquisitionProtocol',
+              fileType: 'CSV',
+              filePath: '/download/day-file.csv',
+              headerLines: 0,
+              maxRetryTimeInMinutes: 180,
+              encoding: 'Windows-1252',
+              connection: 'alloy::mastery::connection::FTPConnection',
+            },
+            parseService: 'org::legend::PersonParseService',
+            transformService: 'org::legend::PersonTransformService',
+          },
+          sequentialData: true,
+          stagedLoad: false,
+          status: 'Development',
+          trigger: {
+            _type: 'manualTrigger',
+          },
         },
       ],
       postCurationEnrichmentService: 'org::legend::PersonEnrichmentService',
+      collectionEqualities: [
+        {
+          modelClass: 'org::legend::Person',
+          equalityFunction: 'org::legend::PersonEnrichmentService',
+        },
+      ],
+      publishToElasticSearch: true,
+      elasticSearchTransformService: 'org::legend::PersonEnrichmentService',
+      exceptionWorkflowTransformService: 'org::legend::PersonEnrichmentService',
     },
   },
 ];

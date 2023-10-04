@@ -21,6 +21,7 @@ import {
   getMultiplicityDescription,
   CORE_PURE_PATH,
   PURE_DOC_TAG,
+  type Type,
 } from '@finos/legend-graph';
 
 export const QueryBuilderPropertyInfoTooltip: React.FC<{
@@ -29,8 +30,9 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
   isMapped: boolean;
   children: React.ReactElement;
   placement?: TooltipPlacement | undefined;
+  type?: Type | undefined;
 }> = (props) => {
-  const { property, path, isMapped, children, placement } = props;
+  const { property, path, isMapped, children, placement, type } = props;
   const documentation = property.taggedValues
     .filter(
       (taggedValue) =>
@@ -60,7 +62,7 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
           <div className="query-builder__tooltip__item">
             <div className="query-builder__tooltip__item__label">Type</div>
             <div className="query-builder__tooltip__item__value">
-              {property.genericType.value.rawType.path}
+              {type?.path ?? property.genericType.value.rawType.path}
             </div>
           </div>
           <div className="query-builder__tooltip__item">

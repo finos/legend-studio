@@ -111,6 +111,10 @@ export const getBaseJestConfig = (isGlobal) => {
           '!<rootDir>/packages/legend-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
           '!<rootDir>/packages/legend-manual-tests/cypress/**', // TODO: update this when restructure `e2e` test suite
         ],
+        // Do not use `babel` when generating coverage report to avoid various errors
+        // See https://jestjs.io/docs/configuration#coverageprovider-string
+        // See https://github.com/jestjs/jest/issues/13186
+        coverageProvider: 'v8',
         coverageDirectory: '<rootDir>/build/coverage',
         watchPathIgnorePatterns: [
           ...baseConfig.watchPathIgnorePatterns,

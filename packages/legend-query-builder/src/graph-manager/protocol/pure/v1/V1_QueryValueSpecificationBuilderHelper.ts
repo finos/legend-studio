@@ -26,7 +26,7 @@ import {
 import {
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,
-  type V1_ValueSpecification,
+  V1_ValueSpecification,
   type ValueSpecification,
   type SimpleFunctionExpression,
   type Type,
@@ -50,7 +50,6 @@ import {
   VariableExpression,
   Multiplicity,
   PrimitiveType,
-  V1_CStrictDate,
   V1_CString,
   CORE_PURE_PATH,
   FunctionType,
@@ -203,8 +202,8 @@ const buildCalendarFunctionExpression = (
   );
   guaranteeType(
     currentPropertyExpression.parameters[2],
-    V1_CStrictDate,
-    `Can't build calendar aggregation column: only support third parameter of calendar function as StrictDate`,
+    V1_ValueSpecification,
+    `Can't build calendar aggregation column: only support third parameter of calendar function as Date`,
   );
   const dateColumn =
     currentPropertyExpression.parameters[0].accept_ValueSpecificationVisitor(

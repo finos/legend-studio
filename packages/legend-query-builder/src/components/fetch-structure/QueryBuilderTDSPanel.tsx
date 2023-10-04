@@ -30,7 +30,6 @@ import {
   PanelDropZone,
   DragPreviewLayer,
   useDragPreviewLayer,
-  OptionsIcon,
   PlusIcon,
   PanelContent,
   TrashIcon,
@@ -175,7 +174,17 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
   }) => {
     const { projectionColumnState } = props;
     const hasParserError = projectionColumnState.tdsState.hasParserError;
-
+    const onEditorBlur = (): void => {
+      flowResult(
+        projectionColumnState.fetchDerivationLambdaReturnType({
+          forceConversionStringToLambda: true,
+          forceRefresh: true,
+        }),
+      ).catch(
+        projectionColumnState.tdsState.queryBuilderState.applicationStore
+          .alertUnhandledError,
+      );
+    };
     const handleDrop = useCallback(
       (
         item:
@@ -248,6 +257,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           }
           lambdaEditorState={projectionColumnState.derivationLambdaEditorState}
           forceBackdrop={hasParserError}
+          onEditorBlur={onEditorBlur}
         />
       </div>
     );
@@ -255,24 +265,28 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
 );
 
 type CalendarFunctionOption = {
-  label: string | React.ReactNode;
+  label: string;
   value: QueryBuilderAggregateCalendarFunction;
 };
+
+const formatCalendarFunctionOptionLabel = (
+  option: CalendarFunctionOption,
+): React.ReactNode => (
+  <div
+    className="query-builder__projection__calendar__function__label"
+    title={option.value.getLabel()}
+  >
+    <FunctionIcon className="query-builder__projection__calendar__function__label__icon" />
+    <div className="query-builder__projection__calendar__function__label__title">
+      {option.value.getLabel()}
+    </div>
+  </div>
+);
 
 const buildCalendarFunctionOption = (
   calendarFunction: QueryBuilderAggregateCalendarFunction,
 ): CalendarFunctionOption => ({
-  label: (
-    <div
-      className="query-builder__projection__calendar__function__label"
-      title={calendarFunction.getLabel()}
-    >
-      <FunctionIcon className="query-builder__projection__calendar__function__label__icon" />
-      <div className="query-builder__projection__calendar__function__label__title">
-        {calendarFunction.getLabel()}
-      </div>
-    </div>
-  ),
+  label: calendarFunction.getLabel(),
   value: calendarFunction,
 });
 
@@ -674,7 +688,6 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [handleDrop],
     );
-
     return (
       <PanelDnDEntry
         ref={ref}
@@ -718,7 +731,12 @@ const QueryBuilderProjectionColumnEditor = observer(
           onOpen={onContextMenuOpen}
           onClose={onContextMenuClose}
         >
-          <div className="query-builder__projection__column__container">
+          <div
+            data-testid={
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION_COLUMN
+            }
+            className="query-builder__projection__column__container"
+          >
             <PanelEntryDragHandle
               isDragging={false}
               dragSourceConnector={dragHandleRef}
@@ -855,6 +873,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                   options={calendarFunctionOptions}
                   onChange={onCalendarFunctionOptionChange}
                   value={selectedCalendarFunctionOption}
+                  formatOptionLabel={formatCalendarFunctionOptionLabel}
                   placeholder="Select Calendar Function"
                   isClearable={true}
                   escapeClearsValue={true}
@@ -870,9 +889,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                       defaultEndDate
                     }
                     setValueSpecification={(val: ValueSpecification): void => {
-                      if (val instanceof PrimitiveInstanceValue) {
-                        aggregateColumnState.calendarFunction?.setEndDate(val);
-                      }
+                      aggregateColumnState.calendarFunction?.setEndDate(val);
                     }}
                     graph={tdsState.queryBuilderState.graphManagerState.graph}
                     obseverContext={tdsState.queryBuilderState.observerContext}
@@ -1063,97 +1080,92 @@ export const QueryBuilderTDSPanel = observer(
     return (
       <PanelContent>
         <div className="query-builder__projection__toolbar">
-          <button
-            className="panel__header__action"
-            onClick={openResultSetModifierEditor}
-            tabIndex={-1}
-            title="Configure result set modifiers..."
-          >
-            <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
-          </button>
-          <button
-            className="panel__header__action"
-            disabled={isEmpty}
-            onClick={clearAllProjectionColumns}
-            tabIndex={-1}
-            title={
-              isEmpty
-                ? 'No projection columns to clear'
-                : 'Clear all projection columns'
+          <div
+            className="query-builder__projection__result-modifier-prompt"
+            data-testid={
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT
             }
           >
-            <TrashIcon className="query-builder__icon query-builder__icon__query-option--small" />
-          </button>
-          <button
-            className="panel__header__action"
-            onClick={addNewBlankDerivation}
-            tabIndex={-1}
-            title="Add a new derivation"
-          >
-            <PlusIcon />
-          </button>
-        </div>
-        <div
-          className="query-builder__projection__result-modifier-prompt"
-          data-testid={
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT
-          }
-        >
-          <div className="query-builder__projection__result-modifier-prompt__header">
-            <button
-              className="query-builder__projection__result-modifier-prompt__header__label"
-              onClick={openResultSetModifierEditor}
-            >
-              <CogIcon className="query-builder__projection__result-modifier-prompt__header__label__icon" />
-              <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                Query Options
+            <div className="query-builder__projection__result-modifier-prompt__header">
+              <button
+                className="query-builder__projection__result-modifier-prompt__header__label"
+                onClick={openResultSetModifierEditor}
+                title="Configure result set modifiers..."
+              >
+                <CogIcon className="query-builder__projection__result-modifier-prompt__header__label__icon" />
+                <div className="query-builder__projection__result-modifier-prompt__header__label__title">
+                  Query Options
+                </div>
+              </button>
+            </div>
+            {tdsState.resultSetModifierState.limit && (
+              <div className="query-builder__projection__result-modifier-prompt__group">
+                <div className="query-builder__projection__result-modifier-prompt__group__label">
+                  Max Rows
+                </div>
+                <div
+                  className="query-builder__projection__result-modifier-prompt__group__content"
+                  onClick={openResultSetModifierEditor}
+                >
+                  {tdsState.resultSetModifierState.limit}
+                </div>
               </div>
+            )}
+            {tdsState.resultSetModifierState.distinct && (
+              <div className="query-builder__projection__result-modifier-prompt__group">
+                <div className="query-builder__projection__result-modifier-prompt__group__label">
+                  Eliminate Duplicate Rows
+                </div>
+                <div
+                  className="query-builder__projection__result-modifier-prompt__group__content"
+                  onClick={openResultSetModifierEditor}
+                >
+                  Yes
+                </div>
+              </div>
+            )}
+            {tdsState.resultSetModifierState.sortColumns.length > 0 && (
+              <div className="query-builder__projection__result-modifier-prompt__group">
+                <div className="query-builder__projection__result-modifier-prompt__group__label">
+                  Sort
+                </div>
+                {tdsState.resultSetModifierState.sortColumns.map(
+                  (columnState) => (
+                    <div
+                      className="query-builder__projection__result-modifier-prompt__group__content"
+                      key={columnState.columnState.uuid}
+                      onClick={openResultSetModifierEditor}
+                    >
+                      {`${columnState.columnState.columnName} ${columnState.sortType}`}
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
+          </div>
+          <div className="query-builder__projection__toolbar__actions">
+            <button
+              className="panel__header__action"
+              disabled={isEmpty}
+              onClick={clearAllProjectionColumns}
+              tabIndex={-1}
+              title={
+                isEmpty
+                  ? 'No projection columns to clear'
+                  : 'Clear all projection columns'
+              }
+            >
+              <TrashIcon className="query-builder__icon query-builder__icon__query-option--small" />
+            </button>
+            <button
+              className="panel__header__action"
+              onClick={addNewBlankDerivation}
+              tabIndex={-1}
+              title="Add a new derivation"
+            >
+              <PlusIcon />
             </button>
           </div>
-          {tdsState.resultSetModifierState.limit && (
-            <div className="query-builder__projection__result-modifier-prompt__group">
-              <div className="query-builder__projection__result-modifier-prompt__group__label">
-                Max Rows
-              </div>
-              <div
-                className="query-builder__projection__result-modifier-prompt__group__content"
-                onClick={openResultSetModifierEditor}
-              >
-                {tdsState.resultSetModifierState.limit}
-              </div>
-            </div>
-          )}
-          {tdsState.resultSetModifierState.distinct && (
-            <div className="query-builder__projection__result-modifier-prompt__group">
-              <div className="query-builder__projection__result-modifier-prompt__group__label">
-                Eliminate Duplicate Rows
-              </div>
-              <div
-                className="query-builder__projection__result-modifier-prompt__group__content"
-                onClick={openResultSetModifierEditor}
-              >
-                Yes
-              </div>
-            </div>
-          )}
-          {tdsState.resultSetModifierState.sortColumns.length > 0 && (
-            <div className="query-builder__projection__result-modifier-prompt__group">
-              <div className="query-builder__projection__result-modifier-prompt__group__label">
-                Sort
-              </div>
-              {tdsState.resultSetModifierState.sortColumns.map(
-                (columnState) => (
-                  <div
-                    className="query-builder__projection__result-modifier-prompt__group__content"
-                    key={columnState.columnState.uuid}
-                    onClick={openResultSetModifierEditor}
-                  >
-                    {`${columnState.columnState.columnName} ${columnState.sortType}`}
-                  </div>
-                ),
-              )}
-            </div>
-          )}
         </div>
         <div className="query-builder__projection__content">
           <PanelDropZone

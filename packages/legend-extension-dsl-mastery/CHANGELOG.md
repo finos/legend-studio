@@ -1,5 +1,27 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.91
+
+## 3.0.90
+
+## 3.0.89
+
+## 3.0.88
+
+## 3.0.87
+
+## 3.0.86
+
+## 3.0.85
+
+## 3.0.84
+
+## 3.0.83
+
+### Patch Changes
+
+- [#2613](https://github.com/finos/legend-studio/pull/2613) [`03f58c386`](https://github.com/finos/legend-studio/commit/03f58c386dc927f5c6eaf1216232f5a5f22b7ec7) ([@sahil37](https://github.com/sahil37)) - adding additional fields to mastery spec
+
 ## 3.0.82
 
 ## 3.0.81

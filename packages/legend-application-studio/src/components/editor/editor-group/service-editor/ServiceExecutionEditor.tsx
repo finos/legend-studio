@@ -79,6 +79,7 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
+import { CUSTOM_LABEL } from '../../../../stores/editor/NewElementState.js';
 
 const PureExecutionContextConfigurationEditor = observer(
   (props: {
@@ -132,7 +133,7 @@ const PureExecutionContextConfigurationEditor = observer(
       <div className="service-execution-editor__configuration__runtime-option--custom">
         <CogIcon />
         <div className="service-execution-editor__configuration__runtime-option--custom__label">
-          (custom)
+          {CUSTOM_LABEL}
         </div>
       </div>
     );

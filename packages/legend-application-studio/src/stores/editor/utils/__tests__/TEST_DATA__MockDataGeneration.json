@@ -870,5 +870,79 @@
         }
       ]
     }
+  },
+  {
+    "path": "myPackage::test::shared::dest::MilestonedVehicle",
+    "content": {
+      "_type": "class",
+      "name": "MilestonedVehicle",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "description",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "temporal",
+          "value": "businesstemporal"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "myPackage::test::shared::dest::VehicleOwner",
+    "content": {
+      "_type": "class",
+      "name": "VehicleOwner",
+      "package": "myPackage::test::shared::dest",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "vehicle",
+          "type": "myPackage::test::shared::dest::MilestonedVehicle"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "temporal",
+          "value": "businesstemporal"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
   }
 ]

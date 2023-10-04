@@ -24,6 +24,19 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
 import type { V1_PrecedenceRule } from './V1_DSL_Mastery_PrecedenceRule.js';
 
+export class V1_CollectionEquality implements Hashable {
+  modelClass!: string;
+  equalityFunction!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      MASTERY_HASH_STRUCTURE.COLLECTION_EQUALITY,
+      this.modelClass,
+      this.equalityFunction,
+    ]);
+  }
+}
+
 export class V1_MasterRecordDefinition
   extends V1_PackageableElement
   implements Hashable
@@ -33,6 +46,10 @@ export class V1_MasterRecordDefinition
   sources: V1_RecordSource[] = [];
   precedenceRules: V1_PrecedenceRule[] | undefined;
   postCurationEnrichmentService?: string | undefined;
+  collectionEqualities: V1_CollectionEquality[] | undefined;
+  publishToElasticSearch?: boolean | undefined;
+  elasticSearchTransformService?: string | undefined;
+  exceptionWorkflowTransformService?: string | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -42,6 +59,10 @@ export class V1_MasterRecordDefinition
       hashArray(this.sources),
       this.precedenceRules ? hashArray(this.precedenceRules) : '',
       this.postCurationEnrichmentService ?? '',
+      this.collectionEqualities ? hashArray(this.collectionEqualities) : '',
+      this.publishToElasticSearch?.toString() ?? '',
+      this.elasticSearchTransformService ?? '',
+      this.exceptionWorkflowTransformService ?? '',
     ]);
   }
 

@@ -19,6 +19,7 @@ import {
   type ValueSpecification,
   AbstractPropertyExpression,
   PRIMITIVE_TYPE,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import type {
@@ -42,10 +43,10 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
     return buildPostFilterConditionExpression(
       postFilterConditionState,
       this,
-      postFilterConditionState.columnState.getColumnType()?.path ===
-        PRIMITIVE_TYPE.DATETIME &&
-        postFilterConditionState.value?.genericType?.value.rawType.path !==
-          PRIMITIVE_TYPE.DATETIME
+      postFilterConditionState.leftConditionValue.getColumnType() ===
+        PrimitiveType.DATETIME &&
+        postFilterConditionState.rightConditionValue.type !==
+          PrimitiveType.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
     );

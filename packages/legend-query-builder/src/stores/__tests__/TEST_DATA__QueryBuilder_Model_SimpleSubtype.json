@@ -1,5 +1,110 @@
 [
   {
+    "path": "model::Street",
+    "content": {
+      "_type": "class",
+      "name": "Street",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "zipcode",
+          "type": "Integer"
+        }
+      ],
+      "superTypes": ["model::Address"]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "address",
+          "type": "model::Address"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Firm",
+    "content": {
+      "_type": "class",
+      "constraints": [
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "startsWith",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ],
+                    "property": "legalName"
+                  },
+                  {
+                    "_type": "string",
+                    "value": "_"
+                  }
+                ]
+              }
+            ],
+            "parameters": []
+          },
+          "name": "validName"
+        }
+      ],
+      "name": "Firm",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "employees",
+          "type": "model::Person"
+        }
+      ],
+      "superTypes": ["model::LegalEntity"]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
     "path": "model::LegalEntity",
     "content": {
       "_type": "class",
@@ -27,29 +132,29 @@
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
   {
-    "path": "model::Firm",
+    "path": "model::Address",
     "content": {
       "_type": "class",
-      "name": "Firm",
+      "name": "Address",
       "package": "model",
       "properties": [
         {
           "multiplicity": {
-            "lowerBound": 1
+            "lowerBound": 1,
+            "upperBound": 1
           },
-          "name": "employees",
-          "type": "model::Person"
+          "name": "streetName",
+          "type": "String"
         }
-      ],
-      "superTypes": ["model::LegalEntity"]
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
   {
-    "path": "model::Person",
+    "path": "model::Colony",
     "content": {
       "_type": "class",
-      "name": "Person",
+      "name": "Colony",
       "package": "model",
       "properties": [
         {
@@ -57,18 +162,11 @@
             "lowerBound": 1,
             "upperBound": 1
           },
-          "name": "firstName",
-          "type": "String"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "lastName",
+          "name": "id",
           "type": "String"
         }
-      ]
+      ],
+      "superTypes": ["model::Street"]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -81,6 +179,39 @@
       "joins": [
         {
           "name": "FirmPerson",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "firm_id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              },
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            ]
+          }
+        },
+        {
+          "name": "FirmAddress",
           "operation": {
             "_type": "dynaFunc",
             "funcName": "equal",
@@ -175,6 +306,34 @@
               ],
               "name": "PersonTable",
               "primaryKey": ["id"]
+            },
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firm_id",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "name",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "name": "AddressTable",
+              "primaryKey": ["id"]
             }
           ],
           "views": []
@@ -234,7 +393,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::LegalEntity",
+                "class": "model::Firm",
                 "property": "Name"
               },
               "relationalOperation": {
@@ -245,9 +404,7 @@
                     "name": "FirmPerson"
                   }
                 ]
-              },
-              "source": "model_Firm",
-              "target": "model_Person"
+              }
             }
           ],
           "root": true
@@ -315,6 +472,14 @@
                 },
                 "tableAlias": "PersonTable"
               }
+            },
+            {
+              "_type": "inlineEmbeddedPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "address"
+              },
+              "setImplementationId": "colony"
             }
           ],
           "root": true
@@ -324,6 +489,96 @@
           "class": "model::LegalEntity",
           "operation": "INHERITANCE",
           "parameters": [],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "model::Colony",
+          "distinct": false,
+          "id": "colony",
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "AddressTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "AddressTable"
+              },
+              "tableAlias": "AddressTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Colony",
+                "property": "zipcode"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "AddressTable"
+                },
+                "tableAlias": "AddressTable"
+              },
+              "source": "colony"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Colony",
+                "property": "streetName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "AddressTable"
+                },
+                "tableAlias": "AddressTable"
+              },
+              "source": "colony"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Colony",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "AddressTable"
+                },
+                "tableAlias": "AddressTable"
+              },
+              "source": "colony"
+            }
+          ],
           "root": true
         }
       ],

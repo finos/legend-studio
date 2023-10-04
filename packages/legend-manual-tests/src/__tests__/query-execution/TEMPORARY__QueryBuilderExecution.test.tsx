@@ -115,7 +115,7 @@ test(integrationTest('test query execution with parameters'), async () => {
         ),
       );
       value.multiplicity = Multiplicity.ZERO_ONE;
-      value.values = [20];
+      value.values = [10000];
 
       queryParamState.setValue(value);
     }
@@ -161,18 +161,6 @@ test(integrationTest('test query execution with parameters'), async () => {
   const parameterValueDialog = await waitFor(() =>
     renderResult.getByRole('dialog'),
   );
-  await waitFor(() =>
-    fireEvent.change(
-      guaranteeNonNullable(
-        parameterValueDialog.getElementsByClassName(
-          'value-spec-editor__input',
-        )[0],
-      ),
-      {
-        target: { value: 20 },
-      },
-    ),
-  );
   await waitFor(() => fireEvent.click(getByText(parameterValueDialog, 'Run')));
   await waitFor(() => findByText(queryBuilderResultPanel, 'Age'));
   const queryBuilderResultAnalytics = await waitFor(() =>
@@ -181,16 +169,25 @@ test(integrationTest('test query execution with parameters'), async () => {
     ),
   );
   expect(queryBuilderResultAnalytics.innerHTML).toContain('1 row(s)');
+  // Test formatting numbers that have more than 4 digits with commas for readability
   expect(
     queryBuilderResultPanel.getElementsByClassName('ag-cell')[0]?.innerHTML,
-  ).toContain('20');
+  ).toContain('10,000');
 
   // Test drag and drop a new property to Projection panel and ag-grid is updated after re-running query
   const queryBuilderExploreTree = await waitFor(() =>
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
   );
-  const propertyNode = getByText(queryBuilderExploreTree, 'First Name');
-  await waitFor(() => fireEvent.contextMenu(propertyNode));
+  const FirstNamePropertyNode = getByText(
+    queryBuilderExploreTree,
+    'First Name',
+  );
+  await waitFor(() => fireEvent.contextMenu(FirstNamePropertyNode));
+  await waitFor(() =>
+    fireEvent.click(renderResult.getByText('Add Property to Fetch Structure')),
+  );
+  const LastNamePropertyNode = getByText(queryBuilderExploreTree, 'Last Name');
+  await waitFor(() => fireEvent.contextMenu(LastNamePropertyNode));
   await waitFor(() =>
     fireEvent.click(renderResult.getByText('Add Property to Fetch Structure')),
   );
@@ -244,7 +241,16 @@ test(integrationTest('test query execution with parameters'), async () => {
   expect(queryBuilderResultAnalytics1.innerHTML).toContain('1 row(s)');
   await waitFor(() => findByText(queryBuilderResultPanel1, 'Age'));
   await waitFor(() => findByText(queryBuilderResultPanel1, 'First Name'));
+  await waitFor(() => findByText(queryBuilderResultPanel1, 'Last Name'));
   expect(
-    queryBuilderResultPanel1.getElementsByClassName('ag-cell')[1]?.innerHTML,
-  ).toContain('An');
+    Array.from(
+      queryBuilderResultPanel1.getElementsByClassName('ag-cell'),
+    ).filter((el) => el.getAttribute('col-id') === 'First Name')[0]?.innerHTML,
+  ).toContain('John');
+  // Test null is rendered successfully
+  expect(
+    Array.from(
+      queryBuilderResultPanel1.getElementsByClassName('ag-cell'),
+    ).filter((el) => el.getAttribute('col-id') === 'Last Name')[0]?.innerHTML,
+  ).toContain('');
 });

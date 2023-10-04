@@ -37,6 +37,7 @@ export class QueryBuilderFetchStructureState {
     makeObservable(this, {
       implementation: observable,
       changeImplementation: action,
+      initializeWithQuery: action,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -75,6 +76,10 @@ export class QueryBuilderFetchStructureState {
         );
     }
     this.implementation.initialize();
+  }
+
+  initializeWithQuery(): void {
+    this.implementation.initializeWithQuery();
   }
 
   fetchProperty(node: QueryBuilderExplorerTreeNodeData): void {

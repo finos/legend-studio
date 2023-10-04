@@ -56,6 +56,7 @@ import {
   Date as ColumnDate,
   SemiStructured,
   Json,
+  MILESTONING_VERSION_PROPERTY_SUFFIX,
 } from '@finos/legend-graph';
 import {
   CLASS_PROPERTY_TYPE,
@@ -116,10 +117,23 @@ export const createMockClassInstance = (
   depth = 0,
 ): PlainObject => {
   const properties = traverseNonRequiredProperties
-    ? getAllClassProperties(_class)
-    : getAllClassProperties(_class).filter((p) => p.multiplicity.lowerBound);
+    ? getAllClassProperties(_class, true)
+    : getAllClassProperties(_class, true).filter(
+        (p) => p.multiplicity.lowerBound,
+      );
+  const propertyNames = properties.map((property) => property.name);
+  const filteredProperties = properties.filter(
+    (prop) =>
+      prop.name.endsWith(MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS) ||
+      (!propertyNames.includes(
+        prop.name + MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS,
+      ) &&
+        !prop.name.endsWith(
+          MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS_IN_RANGE,
+        )),
+  );
   const mockData: Record<string, object | string | number | boolean> = {};
-  properties.forEach((property) => {
+  filteredProperties.forEach((property) => {
     const propertyType = property.genericType.value.rawType;
     let propertyMockData: PlainObject | string | number | boolean | undefined;
     switch (getClassPropertyType(propertyType)) {

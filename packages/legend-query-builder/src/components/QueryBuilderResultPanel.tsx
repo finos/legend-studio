@@ -39,7 +39,6 @@ import {
   PanelDivider,
 } from '@finos/legend-art';
 import { format as formatSQL } from 'sql-formatter';
-
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -69,6 +68,8 @@ import {
   prettyDuration,
   filterByType,
   isValidURL,
+  isString,
+  isNumber,
 } from '@finos/legend-shared';
 import { forwardRef, useRef, useState } from 'react';
 import {
@@ -79,6 +80,7 @@ import {
   type QueryBuilderPostFilterTreeNodeData,
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
+  PostFilterValueSpecConditionValueState,
 } from '../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
@@ -99,6 +101,7 @@ import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import {
   DataGrid,
   type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
 import {
   CODE_EDITOR_LANGUAGE,
@@ -115,6 +118,7 @@ import {
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { QueryUsageViewer } from './QueryUsageViewer.js';
+import { DEFAULT_LOCALE } from '../graph-manager/QueryBuilderConst.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -168,13 +172,13 @@ const QueryBuilderGridResultContextMenu = observer(
         .filter(
           (v) =>
             v instanceof QueryBuilderPostFilterTreeConditionNodeData &&
-            v.condition.columnState instanceof
+            v.condition.leftConditionValue instanceof
               QueryBuilderProjectionColumnState,
         )
         .filter(
           (n) =>
             (n as QueryBuilderPostFilterTreeConditionNodeData).condition
-              .columnState.columnName ===
+              .leftConditionValue.columnName ===
               (projectionColumnName ?? projectionColumnState?.columnName) &&
             operators
               .map((op) => op.getLabel())
@@ -228,7 +232,6 @@ const QueryBuilderGridResultContextMenu = observer(
           postFilterConditionState = new PostFilterConditionState(
             postFilterState,
             possibleProjectionColumnState,
-            undefined,
             operator,
           );
 
@@ -246,7 +249,9 @@ const QueryBuilderGridResultContextMenu = observer(
               postFilterConditionState,
             );
 
-          postFilterConditionState.setValue(defaultFilterConditionValue);
+          postFilterConditionState.buildFromValueSpec(
+            defaultFilterConditionValue,
+          );
           updateFilterConditionValue(
             defaultFilterConditionValue as InstanceValue,
             cellData,
@@ -290,62 +295,65 @@ const QueryBuilderGridResultContextMenu = observer(
         existingPostFilterNode as QueryBuilderPostFilterTreeConditionNodeData
       ).condition;
 
-      if (conditionState.operator.getLabel() === operator.getLabel()) {
-        const doesValueAlreadyExist =
-          conditionState.value instanceof InstanceValue &&
-          (conditionState.value instanceof EnumValueInstanceValue
-            ? conditionState.value.values.map((ef) => ef.value.name)
-            : conditionState.value.values
-          ).includes(cellData.value);
+      const rightSide = conditionState.rightConditionValue;
+      if (rightSide instanceof PostFilterValueSpecConditionValueState) {
+        if (conditionState.operator.getLabel() === operator.getLabel()) {
+          const doesValueAlreadyExist =
+            rightSide.value instanceof InstanceValue &&
+            (rightSide.value instanceof EnumValueInstanceValue
+              ? rightSide.value.values.map((ef) => ef.value.name)
+              : rightSide.value.values
+            ).includes(cellData.value);
 
-        if (!doesValueAlreadyExist) {
-          const currentValueSpecificaton = conditionState.value;
-          const newValueSpecification =
-            conditionState.operator.getDefaultFilterConditionValue(
-              conditionState,
+          if (!doesValueAlreadyExist) {
+            const currentValueSpecificaton = rightSide.value;
+            const newValueSpecification =
+              conditionState.operator.getDefaultFilterConditionValue(
+                conditionState,
+              );
+            updateFilterConditionValue(
+              newValueSpecification as InstanceValue,
+              cellData,
             );
-          updateFilterConditionValue(
-            newValueSpecification as InstanceValue,
-            cellData,
-          );
-          conditionState.changeOperator(
-            isFilterBy ? postFilterInOperator : postFilterNotInOperator,
-          );
-          instanceValue_setValues(
-            conditionState.value as InstanceValue,
-            [currentValueSpecificaton, newValueSpecification],
-            tdsState.queryBuilderState.observerContext,
-          );
-        }
-      } else {
-        const doesValueAlreadyExist =
-          conditionState.value instanceof InstanceValue &&
-          conditionState.value.values
-            .filter((v) => v instanceof InstanceValue)
-            .map((v) =>
-              v instanceof EnumValueInstanceValue
-                ? v.values.map((ef) => ef.value.name)
-                : (v as InstanceValue).values,
-            )
-            .flat()
-            .includes(cellData.value ?? data?.value);
+            conditionState.changeOperator(
+              isFilterBy ? postFilterInOperator : postFilterNotInOperator,
+            );
+            instanceValue_setValues(
+              rightSide.value as InstanceValue,
+              [currentValueSpecificaton, newValueSpecification],
+              tdsState.queryBuilderState.observerContext,
+            );
+          }
+        } else {
+          const doesValueAlreadyExist =
+            rightSide.value instanceof InstanceValue &&
+            rightSide.value.values
+              .filter((v) => v instanceof InstanceValue)
+              .map((v) =>
+                v instanceof EnumValueInstanceValue
+                  ? v.values.map((ef) => ef.value.name)
+                  : (v as InstanceValue).values,
+              )
+              .flat()
+              .includes(cellData.value ?? data?.value);
 
-        if (!doesValueAlreadyExist) {
-          const newValueSpecification = (
-            isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
-          ).getDefaultFilterConditionValue(conditionState);
-          updateFilterConditionValue(
-            newValueSpecification as InstanceValue,
-            cellData,
-          );
-          instanceValue_setValues(
-            conditionState.value as InstanceValue,
-            [
-              ...(conditionState.value as InstanceValue).values,
-              newValueSpecification,
-            ],
-            tdsState.queryBuilderState.observerContext,
-          );
+          if (!doesValueAlreadyExist) {
+            const newValueSpecification = (
+              isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
+            ).getDefaultFilterConditionValue(conditionState);
+            updateFilterConditionValue(
+              newValueSpecification as InstanceValue,
+              cellData,
+            );
+            instanceValue_setValues(
+              rightSide.value as InstanceValue,
+              [
+                ...(rightSide.value as InstanceValue).values,
+                newValueSpecification,
+              ],
+              tdsState.queryBuilderState.observerContext,
+            );
+          }
         }
       }
     };
@@ -479,10 +487,20 @@ const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
     const resultState = params.resultState;
     const tdsExecutionResult = params.tdsExecutionResult;
-
-    const cellValue = params.value as string;
+    const fetchStructureImplementation =
+      resultState.queryBuilderState.fetchStructureState.implementation;
+    const cellValue = params.value as string | null | number | undefined;
+    const formattedCellValue = (): string | null | number | undefined => {
+      if (isNumber(cellValue)) {
+        return Intl.NumberFormat(DEFAULT_LOCALE, {
+          maximumFractionDigits: 4,
+        }).format(Number(cellValue));
+      }
+      return cellValue;
+    };
+    const cellValueUrlLink =
+      isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
     const columnName = params.column?.getColId() ?? '';
-
     const findCoordinatesFromResultValue = (
       colId: string,
       rowNumber: number,
@@ -490,7 +508,6 @@ const QueryResultCellRenderer = observer(
       const colIndex = tdsExecutionResult.result.columns.findIndex(
         (col) => col === colId,
       );
-
       return { rowIndex: rowNumber, colIndex: colIndex };
     };
 
@@ -498,7 +515,6 @@ const QueryResultCellRenderer = observer(
       columnName,
       params.rowIndex,
     );
-
     const cellInFilteredResults = resultState.selectedCells.some(
       (result) =>
         result.coordinates.colIndex === currentCellCoordinates.colIndex &&
@@ -564,7 +580,7 @@ const QueryResultCellRenderer = observer(
           coordinates.rowIndex,
           coordinates.colIndex,
         ]);
-        resultState.addCellData({
+        resultState.addSelectedCell({
           value: actualValue,
           columnName: columnName,
           coordinates: coordinates,
@@ -583,9 +599,6 @@ const QueryResultCellRenderer = observer(
           coordinates.rowIndex,
           coordinates.colIndex,
         ]);
-
-        const rowNode = params.api.getRowNode(params.rowIndex.toString());
-
         resultState.setSelectedCells([
           {
             value: actualValue,
@@ -593,15 +606,6 @@ const QueryResultCellRenderer = observer(
             coordinates: coordinates,
           },
         ]);
-
-        if (rowNode) {
-          params.api.refreshCells({
-            force: true,
-            columns: [columnName],
-            rowNodes: [rowNode],
-          });
-        }
-
         resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
       }
 
@@ -616,7 +620,6 @@ const QueryResultCellRenderer = observer(
             coordinates.rowIndex,
             coordinates.colIndex,
           ]);
-
           resultState.setSelectedCells([
             {
               value: actualValue,
@@ -624,19 +627,11 @@ const QueryResultCellRenderer = observer(
               coordinates: coordinates,
             },
           ]);
-          const rowNode = params.api.getRowNode(params.rowIndex.toString());
-
-          if (rowNode) {
-            params.api.refreshCells({
-              force: true,
-              columns: [columnName],
-              rowNodes: [rowNode],
-            });
-          }
           resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
         }
       }
     };
+
     const mouseUp: React.MouseEventHandler = (event) => {
       resultState.setIsSelectingCells(false);
     };
@@ -684,7 +679,7 @@ const QueryResultCellRenderer = observer(
                   result.coordinates.rowIndex === x,
               )
             ) {
-              resultState.addCellData(valueAndColumnId);
+              resultState.addSelectedCell(valueAndColumnId);
             }
           }
         }
@@ -692,9 +687,6 @@ const QueryResultCellRenderer = observer(
 
       resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
     };
-
-    const fetchStructureImplementation =
-      resultState.queryBuilderState.fetchStructureState.implementation;
 
     return (
       <ContextMenu
@@ -716,7 +708,6 @@ const QueryResultCellRenderer = observer(
           !resultState.mousedOverCell
         }
         menuProps={{ elevation: 7 }}
-        key={params.value as string}
         className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
       >
         <div
@@ -728,12 +719,12 @@ const QueryResultCellRenderer = observer(
           onMouseUp={(event) => mouseUp(event)}
           onMouseOver={(event) => mouseOver(event)}
         >
-          {isValidURL(cellValue) ? (
-            <a href={cellValue} target="_blank" rel="noreferrer">
-              {cellValue}
+          {cellValueUrlLink ? (
+            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+              {cellValueUrlLink}
             </a>
           ) : (
-            <span>{cellValue}</span>
+            <span>{formattedCellValue()}</span>
           )}
         </div>
       </ContextMenu>
@@ -775,23 +766,29 @@ const QueryBuilderGridResult = observer(
             rowData={rowData}
             gridOptions={{
               suppressScrollOnNewData: true,
-              getRowId: function (data) {
-                return data.data.rowNumber as string;
-              },
+              getRowId: (data) => data.data.rowNumber,
+            }}
+            // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+            // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
             }}
             suppressFieldDotNotation={true}
-            columnDefs={executionResult.result.columns.map((colName) => ({
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              field: colName,
-              flex: 1,
-              cellRenderer: QueryResultCellRenderer,
-              cellRendererParams: {
-                resultState: resultState,
-                tdsExecutionResult: executionResult,
-              },
-            }))}
+            columnDefs={executionResult.result.columns.map(
+              (colName) =>
+                ({
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  field: colName,
+                  flex: 1,
+                  cellRenderer: QueryResultCellRenderer,
+                  cellRendererParams: {
+                    resultState: resultState,
+                    tdsExecutionResult: executionResult,
+                  },
+                }) as DataGridColumnDefinition,
+            )}
           />
         </div>
       </div>
