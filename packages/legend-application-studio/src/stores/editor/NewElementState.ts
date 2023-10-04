@@ -54,6 +54,7 @@ import {
   Mapping,
   FlatData,
   Service,
+  DeploymentOwnership,
   PackageableConnection,
   PackageableRuntime,
   PureSingleExecution,
@@ -561,9 +562,7 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     const currentUserId =
       this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
         .currentUserId;
-    if (currentUserId) {
-      service.owners = [currentUserId];
-    }
+    service.ownership = new DeploymentOwnership('', service);
     return service;
   }
 }

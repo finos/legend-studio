@@ -354,7 +354,9 @@ export class ServiceRegistrationState extends ServiceConfigState {
       assertNonEmptyString(owner, `Service can't have an empty owner name`),
     );
     assertTrue(
-      this.service.owners.length >= MINIMUM_SERVICE_OWNERS,
+      this.service.ownership
+        ? true
+        : this.service.owners.length >= MINIMUM_SERVICE_OWNERS,
       `Service needs to have at least 2 owners in order to be registered`,
     );
     guaranteeNonNullable(
