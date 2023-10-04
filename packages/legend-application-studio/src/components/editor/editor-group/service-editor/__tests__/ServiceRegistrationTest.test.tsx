@@ -40,9 +40,9 @@ import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor/editor-sta
 import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
 import {
+  DeploymentOwnership,
   ServiceExecutionMode,
   ServiceRegistrationSuccess,
-  UserListOwnership,
 } from '@finos/legend-graph';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import {
@@ -370,7 +370,7 @@ test(
     //check ownership doesnt trigger owner check criteria
     service_setOwnership(
       serviceEditorState.service,
-      new UserListOwnership(['owner1'], serviceEditorState.service),
+      new DeploymentOwnership('test1', serviceEditorState.service),
     );
     fireEvent.click(getByTitle(registrationEditor, 'Register Service'));
     const actionAlertDialogForRegistration = await waitFor(() =>

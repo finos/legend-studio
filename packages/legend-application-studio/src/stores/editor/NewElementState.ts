@@ -54,7 +54,6 @@ import {
   Mapping,
   FlatData,
   Service,
-  DeploymentOwnership,
   PackageableConnection,
   PackageableRuntime,
   PureSingleExecution,
@@ -559,7 +558,6 @@ export class NewServiceDriver extends NewElementDriver<Service> {
       this.editorStore.changeDetectionState.observerContext,
     );
     service_initNewService(service);
-    service.ownership = new DeploymentOwnership('', service);
     return service;
   }
 }
