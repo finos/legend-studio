@@ -24,6 +24,12 @@ import {
   buildSourceInformationSourceId,
   ParserError,
   GRAPH_MANAGER_EVENT,
+  SimpleFunctionExpression,
+  PrimitiveInstanceValue,
+  PrimitiveType,
+  extractElementNameFromPath,
+  SUPPORTED_FUNCTIONS,
+  INTERNAL__UnknownValueSpecification,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -70,6 +76,22 @@ export abstract class QueryBuilderConstantExpressionState implements Hashable {
       this.variable.name,
     ]);
   }
+
+  buildLetExpression(): SimpleFunctionExpression {
+    const leftSide = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRING),
+      ),
+    );
+    leftSide.values = [this.variable.name];
+    const letFunc = new SimpleFunctionExpression(
+      extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
+    );
+    letFunc.parametersValues = [leftSide, this.buildLetAssignmentValue()];
+    return letFunc;
+  }
+
+  abstract buildLetAssignmentValue(): ValueSpecification;
 }
 
 export class QueryBuilderSimpleConstantExpressionState
@@ -139,6 +161,10 @@ export class QueryBuilderSimpleConstantExpressionState
         GenericTypeExplicitReference.create(new GenericType(valueSpecType)),
       );
     }
+  }
+
+  override buildLetAssignmentValue(): ValueSpecification {
+    return this.value;
   }
 
   override get hashCode(): string {
@@ -271,6 +297,10 @@ export class QueryBuilderCalculatedConstantExpressionState
 
   setValue(val: PlainObject): void {
     this.value = val;
+  }
+
+  override buildLetAssignmentValue(): ValueSpecification {
+    return new INTERNAL__UnknownValueSpecification(this.value);
   }
 }
 

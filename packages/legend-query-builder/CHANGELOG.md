@@ -1,5 +1,23 @@
 # @finos/legend-query-builder
 
+## 4.10.0
+
+### Minor Changes
+
+- [#2661](https://github.com/finos/legend-studio/pull/2661) [`6e5d37bc7`](https://github.com/finos/legend-studio/commit/6e5d37bc7b2d179ccc8039eae597e1cbe922b10f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Post-filter conditions to accept right vals to be column states.
+
+### Patch Changes
+
+- [#2664](https://github.com/finos/legend-studio/pull/2664) [`fbaf61fe8`](https://github.com/finos/legend-studio/commit/fbaf61fe8518670a8f987fcbe935283f85eb5f92) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix calculating return type for derived projections containing const/params
+
+## 4.9.4
+
+### Patch Changes
+
+- [#2655](https://github.com/finos/legend-studio/pull/2655) [`22c1fe964`](https://github.com/finos/legend-studio/commit/22c1fe96447713a0a2c32a9523716772a2ebbb51) ([@gayathrir11](https://github.com/gayathrir11)) - Support calendar aggregation end Date to accept Date functions
+
+- [#2654](https://github.com/finos/legend-studio/pull/2654) [`1ae9ce88a`](https://github.com/finos/legend-studio/commit/1ae9ce88ab62d2db8706f40f4d779abb392a85b9) ([@gayathrir11](https://github.com/gayathrir11)) - Fix issue with casting of subType when property mapping points to class mapping of subType in projection and graph-fetch
+
 ## 4.9.3
 
 ### Patch Changes

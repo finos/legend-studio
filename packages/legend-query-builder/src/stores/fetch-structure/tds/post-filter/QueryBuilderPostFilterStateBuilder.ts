@@ -23,6 +23,7 @@ import {
   VariableExpression,
   FunctionExpression,
   type SimpleFunctionExpression,
+  type ValueSpecification,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -30,6 +31,7 @@ import {
   guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
+  returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QueryBuilderDerivationProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
@@ -44,6 +46,8 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
   TDS_COLUMN_GETTER,
   getTypeFromDerivedProperty,
+  PostFilterValueSpecConditionValueState,
+  PostFilterTDSColumnValueConditionValueState,
 } from './QueryBuilderPostFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
@@ -102,6 +106,36 @@ const findProjectionColumnState = (
   return columnState;
 };
 
+const buildPostFilterConditionValueState = (
+  rightVal: ValueSpecification | undefined,
+  conditionState: PostFilterConditionState,
+): void => {
+  if (rightVal instanceof AbstractPropertyExpression) {
+    const rightCol = returnUndefOnError(() =>
+      findProjectionColumnState(rightVal, conditionState.postFilterState),
+    );
+    if (rightCol) {
+      conditionState.setRightConditionVal(
+        new PostFilterTDSColumnValueConditionValueState(
+          conditionState,
+          rightCol,
+        ),
+      );
+      return;
+    }
+  }
+  const val = rightVal
+    ? simplifyValueExpression(
+        rightVal,
+        conditionState.postFilterState.tdsState.queryBuilderState
+          .observerContext,
+      )
+    : undefined;
+  conditionState.setRightConditionVal(
+    new PostFilterValueSpecConditionValueState(conditionState, val),
+  );
+};
+
 export const buildPostFilterConditionState = (
   postFilterState: QueryBuilderPostFilterState,
   expression: FunctionExpression,
@@ -119,7 +153,6 @@ export const buildPostFilterConditionState = (
     postConditionState = new PostFilterConditionState(
       postFilterState,
       columnState,
-      undefined,
       operator,
     );
     return postConditionState;
@@ -150,20 +183,16 @@ export const buildPostFilterConditionState = (
     );
 
     // get operation value specification
-    const value = expression.parametersValues[1];
+    const rightSide = expression.parametersValues[1];
 
     // create state
     postConditionState = new PostFilterConditionState(
       postFilterState,
       columnState,
-      value
-        ? simplifyValueExpression(
-            value,
-            postFilterState.tdsState.queryBuilderState.observerContext,
-          )
-        : undefined,
       operator,
     );
+
+    buildPostFilterConditionValueState(rightSide, postConditionState);
 
     //post checks
     assertTrue(
@@ -174,7 +203,7 @@ export const buildPostFilterConditionState = (
     );
     assertTrue(
       operator.isCompatibleWithConditionValue(postConditionState),
-      `Operator '${operator.getLabel()}' not compatible with value specification ${value?.toString()}`,
+      `Operator '${operator.getLabel()}' not compatible with value specification ${rightSide?.toString()}`,
     );
   }
   return postConditionState;

@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, flowResult, observable, flow } from 'mobx';
+import {
+  action,
+  makeObservable,
+  flowResult,
+  observable,
+  flow,
+  computed,
+} from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
@@ -36,6 +43,7 @@ import {
   Review,
   ReviewState,
   RevisionAlias,
+  AuthorizableProjectAction,
 } from '@finos/legend-server-sdlc';
 import { ActionAlertActionType } from '@finos/legend-application';
 
@@ -69,6 +77,8 @@ export class WorkspaceReviewState {
       isCreatingWorkspaceReview: observable,
       isCommittingWorkspaceReview: observable,
       isRecreatingWorkspaceAfterCommittingReview: observable,
+      canCreateReview: computed,
+      canMergeReview: computed,
       setReviewTitle: action,
       openReviewChange: action,
       refreshWorkspaceChanges: flow,
@@ -81,6 +91,18 @@ export class WorkspaceReviewState {
 
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
+  }
+
+  get canCreateReview(): boolean {
+    return this.sdlcState.userCanPerformAction(
+      AuthorizableProjectAction.SUBMIT_REVIEW,
+    );
+  }
+
+  get canMergeReview(): boolean {
+    return this.sdlcState.userCanPerformAction(
+      AuthorizableProjectAction.COMMIT_REVIEW,
+    );
   }
 
   setReviewTitle(val: string): void {

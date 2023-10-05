@@ -33,6 +33,7 @@ import {
   guaranteeNonNullable,
   assertTrue,
   ActionState,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig.js';
 import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
@@ -47,6 +48,8 @@ import {
   Workspace,
   WorkspaceAccessType,
   Patch,
+  ProjectAccessRole,
+  AuthorizableProjectAction,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 
@@ -73,6 +76,8 @@ export class EditorSDLCState {
   workspaceWorkflows: Workflow[] = [];
   projectVersions: Version[] = [];
   projectPublishedVersions: string[] = [];
+  authorizedActions: AuthorizableProjectAction[] | undefined;
+  accessRole: ProjectAccessRole | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -88,11 +93,15 @@ export class EditorSDLCState {
       isFetchingProjectVersions: observable,
       isFetchingProject: observable,
       projectPublishedVersions: observable,
+      authorizedActions: observable,
+      accessRole: observable,
       activeProject: computed,
       activeWorkspace: computed,
       activeRevision: computed,
       activePatch: computed,
       activeRemoteWorkspaceRevision: computed,
+      canCreateWorkspace: computed,
+      canCreateVersion: computed,
       isWorkspaceOutOfSync: computed,
       setCurrentProject: action,
       setCurrentPatch: action,
@@ -112,6 +121,7 @@ export class EditorSDLCState {
       buildProjectLatestRevisionEntityHashesIndex: flow,
       fetchWorkspaceWorkflows: flow,
       fetchPublishedProjectVersions: flow,
+      fetchAuthorizedActions: flow,
     });
 
     this.editorStore = editorStore;
@@ -151,6 +161,32 @@ export class EditorSDLCState {
 
   get isWorkspaceOutOfSync(): boolean {
     return this.activeRemoteWorkspaceRevision.id !== this.activeRevision.id;
+  }
+
+  get canCreateWorkspace(): boolean {
+    return this.userCanPerformAction(
+      AuthorizableProjectAction.CREATE_WORKSPACE,
+    );
+  }
+
+  get canCreateVersion(): boolean {
+    return this.userCanPerformAction(AuthorizableProjectAction.CREATE_VERSION);
+  }
+
+  unAuthorizedActionMessage(_action: AuthorizableProjectAction): string {
+    if (this.accessRole) {
+      return `Your role ${
+        this.accessRole.accessRole
+      } does not allow you to perform the action '${prettyCONSTName(_action)}'`;
+    }
+    return `Your are not entitled to perform the action: ${_action}`;
+  }
+
+  userCanPerformAction(authorizedAction: AuthorizableProjectAction): boolean {
+    return Boolean(
+      this.authorizedActions === undefined ||
+        this.authorizedActions.includes(authorizedAction),
+    );
   }
 
   setCurrentProject(val: Project): void {
@@ -522,6 +558,31 @@ export class EditorSDLCState {
       ).map((v) => Workflow.serialization.fromJson(v));
     } catch (error) {
       assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    }
+  }
+
+  *fetchAuthorizedActions(): GeneratorFn<void> {
+    try {
+      const [authorizedActions, accessRoleRaw] = (yield Promise.all([
+        this.editorStore.sdlcServerClient.getAutorizedActions(
+          this.activeProject.projectId,
+        ),
+        this.editorStore.sdlcServerClient.getAccessRole(
+          this.activeProject.projectId,
+        ),
+      ])) as [AuthorizableProjectAction[], PlainObject<ProjectAccessRole>];
+      this.authorizedActions = authorizedActions;
+      this.accessRole = ProjectAccessRole.serialization.fromJson(accessRoleRaw);
+    } catch (error) {
+      assertErrorThrown(error);
+      // if there is an error fetching authorized actions we should set undefined
+      this.authorizedActions = undefined;
+      this.accessRole = undefined;
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,

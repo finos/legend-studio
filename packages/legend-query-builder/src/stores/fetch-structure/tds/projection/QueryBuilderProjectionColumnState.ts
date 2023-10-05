@@ -372,20 +372,42 @@ export class QueryBuilderDerivationProjectionColumnState
     const variable = projectionParameter[0] as VariableExpression;
     assertNonEmptyString(variable.name);
     // assign variable to query class
+    const queryBuilderState = this.tdsState.queryBuilderState;
     const rawVariableExpression = new RawVariableExpression(
       variable.name,
       Multiplicity.ONE,
       PackageableElementExplicitReference.create(
-        guaranteeNonNullable(this.tdsState.queryBuilderState.class),
+        guaranteeNonNullable(queryBuilderState.class),
       ),
     );
     const _rawVariableExpression =
-      this.tdsState.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
         rawVariableExpression,
       );
+    const parameters = queryBuilderState.parametersState.parameterStates.map(
+      (_param) =>
+        queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
+          _param.parameter,
+        ),
+    );
+    const letExpressions = queryBuilderState.constantState.constants
+      .map((_const) => _const.buildLetExpression())
+      .map((expres) =>
+        queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
+          expres,
+        ),
+      );
+    let lambdaBody = this.lambda.body;
+    if (letExpressions.length) {
+      if (Array.isArray(this.lambda.body)) {
+        lambdaBody = [...letExpressions, ...(this.lambda.body as object[])];
+      } else {
+        lambdaBody = [...letExpressions, this.lambda.body];
+      }
+    }
     const isolatedLambda = new RawLambda(
-      [_rawVariableExpression],
-      this.lambda.body,
+      [_rawVariableExpression, ...parameters],
+      lambdaBody,
     );
     return isolatedLambda;
   }

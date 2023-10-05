@@ -15,7 +15,7 @@
  */
 
 import {
-  type ValueSpecification,
+  ValueSpecification,
   SimpleFunctionExpression,
   extractElementNameFromPath,
   matchFunctionName,
@@ -44,7 +44,7 @@ export const buildCalendarFunctionExpression = (
   calendarFunctionFullPath: string,
   dateColumn: AbstractPropertyExpression | undefined,
   calendarType: QUERY_BUILDER_CALENDAR_TYPE,
-  endDate: PrimitiveInstanceValue,
+  endDate: ValueSpecification,
   targetColumn:
     | AbstractPropertyExpression
     | INTERNAL__UnknownValueSpecification,
@@ -165,15 +165,16 @@ export const updateAggregateColumnState = (
 
     const endDate = guaranteeType(
       expression.parametersValues[2],
-      PrimitiveInstanceValue,
+      ValueSpecification,
       `Can't process ${extractElementNameFromPath(
         calendarFunctionFullPath,
       )}() expression: only support ${extractElementNameFromPath(
         calendarFunctionFullPath,
-      )}() with third parameter as PrimitiveInstancevalue`,
+      )}() with third parameter as ValueSpecification`,
     );
     assertTrue(
-      endDate.genericType.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE ||
+      endDate.genericType?.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE ||
+        endDate.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATE ||
         dateColumn.func.value.genericType.value.rawType.name ===
           PRIMITIVE_TYPE.DATE,
 
@@ -181,7 +182,7 @@ export const updateAggregateColumnState = (
         calendarFunctionFullPath,
       )}() expression: only support ${extractElementNameFromPath(
         calendarFunctionFullPath,
-      )}() with third parameter of type StrictDate`,
+      )}() with third parameter of type Date`,
     );
 
     calendarFunction.calendarType = calendarTypeParameter

@@ -55,6 +55,7 @@ import {
   V1_buildServiceExecution,
   V1_buildLegacyServiceTest,
   V1_buildPostValidation,
+  V1_buildServiceOwnership,
 } from './helpers/V1_ServiceBuilderHelper.js';
 import {
   V1_buildEnumerationMapping,
@@ -386,6 +387,9 @@ export class V1_ElementSecondPassBuilder
     service.owners = element.owners.slice();
     service.documentation = element.documentation;
     service.autoActivateUpdates = element.autoActivateUpdates;
+    if (element.ownership) {
+      service.ownership = V1_buildServiceOwnership(element.ownership, service);
+    }
     // NOTE: process execution before the test, so we can do some check between test and execution (such matching type, keys, etc.)
     service.execution = V1_buildServiceExecution(
       element.execution,

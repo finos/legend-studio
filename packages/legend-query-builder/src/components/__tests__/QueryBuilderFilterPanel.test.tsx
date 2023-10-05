@@ -26,6 +26,8 @@ import {
   queryAllByTestId,
   queryByTitle,
   queryByDisplayValue,
+  getByDisplayValue,
+  getByTestId,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
@@ -40,7 +42,10 @@ import {
 import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import {
+  TEST__setUpQueryBuilder,
+  dragAndDrop,
+} from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
@@ -119,9 +124,7 @@ test(
 );
 
 test(
-  integrationTest(
-    'Query builder loads grouped filter and post filter panels using constants',
-  ),
+  integrationTest('Query builder loads grouped filter panels using constants'),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
@@ -260,16 +263,49 @@ test(
     contentOrNode = guaranteeNonNullable(
       contentNodes.find((e) => queryByText(e, 'or') !== null),
     );
-    const toReset = guaranteeNonNullable(
+    const ageFilterCondition = guaranteeNonNullable(
       contentNodes.filter((e) => queryByText(e, 'Age') !== null)[0],
     );
-
-    expect(queryByText(toReset, 'integerConst')).not.toBeNull();
-
-    fireEvent.click(getByTitle(toReset, 'Reset'));
-    expect(queryByDisplayValue(toReset, 0)).not.toBeNull();
-    expect(queryByTitle(toReset, 'Evaluate Expression (Enter)')).not.toBeNull();
-
-    // TODO: test operation list and post filte
+    expect(queryByText(ageFilterCondition, 'integerConst')).not.toBeNull();
+    fireEvent.click(getByTitle(ageFilterCondition, 'Reset'));
+    expect(queryByDisplayValue(ageFilterCondition, 0)).not.toBeNull();
+    expect(
+      queryByTitle(ageFilterCondition, 'Evaluate Expression (Enter)'),
+    ).not.toBeNull();
+    // delete all nodes expect age (should auto delete or node)
+    queryAllByTestId(
+      filterTree,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+    ).forEach((_node) => {
+      if (
+        queryByText(_node, 'or') === null &&
+        queryByText(_node, 'Age') === null
+      ) {
+        fireEvent.click(getByTitle(_node, 'Remove'));
+      }
+    });
+    contentNodes = queryAllByTestId(
+      filterTree,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+    );
+    expect(contentNodes.length).toBe(1);
+    const ageNode = guaranteeNonNullable(contentNodes[0]);
+    expect(getByText(ageNode, 'Age')).not.toBeNull();
+    const ageValue = getByDisplayValue(ageNode, 0);
+    // drag and drop
+    const constantPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const intConst = getByText(constantPanel, 'integerConst');
+    await dragAndDrop(intConst, ageValue, filterTree, 'Change Filter Value');
+    const alteredNode = getByTestId(
+      filterTree,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+    );
+    // check node has been altered by dropped constant
+    expect(getByText(alteredNode, 'Age')).not.toBeNull();
+    expect(getByText(alteredNode, '<')).not.toBeNull();
+    expect(getByText(alteredNode, 'integerConst')).not.toBeNull();
+    expect(getByText(alteredNode, 'C')).not.toBeNull();
   },
 );

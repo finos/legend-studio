@@ -75,6 +75,16 @@ import type { PostValidation } from '../../../../../../../graph/metamodel/pure/p
 import { V1_PostValidation } from '../../../model/packageableElements/service/V1_PostValidation.js';
 import type { PostValidationAssertion } from '../../../../../../../graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
 import { V1_PostValidationAssertion } from '../../../model/packageableElements/service/V1_PostValidationAssertion.js';
+import {
+  DeploymentOwnership,
+  type ServiceOwnership,
+  UserListOwnership,
+} from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceOwnership.js';
+import {
+  V1_DeploymentOwnership,
+  type V1_ServiceOwnership,
+  V1_UserListOwnership,
+} from '../../../model/packageableElements/service/V1_ServiceOwnership.js';
 
 const transformConnectionTestData = (
   element: ConnectionTestData,
@@ -223,6 +233,35 @@ const transformServiceExecution = (
     metamodel,
   );
 };
+const transformDeploymentOwnership = (
+  element: DeploymentOwnership,
+): V1_DeploymentOwnership => {
+  const ownership = new V1_DeploymentOwnership();
+  ownership.identifier = element.identifier;
+  return ownership;
+};
+
+const transformUserListOwnership = (
+  element: UserListOwnership,
+): V1_UserListOwnership => {
+  const ownership = new V1_UserListOwnership();
+  ownership.users = element.users;
+  return ownership;
+};
+
+const transformServiceOwnership = (
+  metamodel: ServiceOwnership,
+): V1_ServiceOwnership => {
+  if (metamodel instanceof DeploymentOwnership) {
+    return transformDeploymentOwnership(metamodel);
+  } else if (metamodel instanceof UserListOwnership) {
+    return transformUserListOwnership(metamodel);
+  }
+  throw new UnsupportedOperationError(
+    "Can't transform service ownership",
+    metamodel,
+  );
+};
 
 const transformTestContainer = (
   element: DEPRECATED__TestContainer,
@@ -295,6 +334,9 @@ export const V1_transformService = (
   service.autoActivateUpdates = element.autoActivateUpdates;
   service.documentation = element.documentation;
   service.execution = transformServiceExecution(element.execution, context);
+  if (element.ownership) {
+    service.ownership = transformServiceOwnership(element.ownership);
+  }
   service.owners = element.owners;
   service.pattern = element.pattern;
   if (element.test) {

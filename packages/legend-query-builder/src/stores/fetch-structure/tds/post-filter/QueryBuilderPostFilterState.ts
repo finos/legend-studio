@@ -21,10 +21,12 @@ import {
   type ValueSpecification,
   type ExecutionResult,
   type VariableExpression,
+  type SimpleFunctionExpression,
   Enumeration,
   PRIMITIVE_TYPE,
   observe_ValueSpecification,
   PrimitiveType,
+  CollectionInstanceValue,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -70,7 +72,12 @@ import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperati
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
-import { isValueExpressionReferencedInValue } from '../../../QueryBuilderValueSpecificationHelper.js';
+import {
+  getCollectionValueSpecificationType,
+  getNonCollectionValueSpecificationType,
+  isValueExpressionReferencedInValue,
+} from '../../../QueryBuilderValueSpecificationHelper.js';
+import { buildtdsPropertyExpressionFromColState } from './operators/QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -207,8 +214,8 @@ export class QueryBuilderPostFilterTreeGroupNodeData
     super(parentId);
     makeObservable(this, {
       groupOperation: observable,
-      childrenIds: observable,
       setGroupOperation: action,
+      childrenIds: observable,
       addChildNode: action,
       removeChildNode: action,
       dragPreviewLabel: computed,
@@ -307,10 +314,130 @@ export class QueryBuilderPostFilterTreeBlankConditionNodeData
   }
 }
 
+export abstract class PostFilterConditionValueState implements Hashable {
+  conditionState: PostFilterConditionState;
+
+  constructor(conditionState: PostFilterConditionState) {
+    this.conditionState = conditionState;
+  }
+
+  get type(): Type | undefined {
+    return undefined;
+  }
+
+  get isCollection(): boolean {
+    return false;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_CONDITION_RIGHT_VALUE,
+    ]);
+  }
+
+  abstract appendConditionValue(expressionVal: SimpleFunctionExpression): void;
+}
+
+export class PostFilterValueSpecConditionValueState extends PostFilterConditionValueState {
+  value?: ValueSpecification | undefined;
+
+  constructor(
+    conditionState: PostFilterConditionState,
+    value?: ValueSpecification | undefined,
+  ) {
+    super(conditionState);
+    makeObservable(this, {
+      value: observable,
+      setValue: action,
+    });
+    this.value = this.setValue(value);
+  }
+
+  override get type(): Type | undefined {
+    if (this.value instanceof CollectionInstanceValue) {
+      return getCollectionValueSpecificationType(
+        this.conditionState.postFilterState.tdsState.queryBuilderState
+          .graphManagerState.graph,
+        this.value.values,
+      );
+    }
+    return this.value
+      ? getNonCollectionValueSpecificationType(this.value)
+      : undefined;
+  }
+
+  setValue(
+    val: ValueSpecification | undefined,
+  ): ValueSpecification | undefined {
+    this.value = val
+      ? observe_ValueSpecification(
+          val,
+          this.conditionState.postFilterState.tdsState.queryBuilderState
+            .observerContext,
+        )
+      : undefined;
+    return this.value;
+  }
+  override appendConditionValue(expressionVal: SimpleFunctionExpression): void {
+    if (this.value) {
+      expressionVal.parametersValues.push(this.value);
+    }
+  }
+
+  override get isCollection(): boolean {
+    return this.value instanceof CollectionInstanceValue;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_CONDITION_RIGHT_VALUE_SPEC,
+      this.value,
+    ]);
+  }
+}
+
+export class PostFilterTDSColumnValueConditionValueState extends PostFilterConditionValueState {
+  tdsColumn: QueryBuilderTDSColumnState;
+
+  constructor(
+    conditionState: PostFilterConditionState,
+    tdsColumn: QueryBuilderTDSColumnState,
+  ) {
+    super(conditionState);
+    makeObservable(this, {
+      tdsColumn: observable,
+      changeCol: action,
+    });
+    this.tdsColumn = tdsColumn;
+  }
+
+  override get type(): Type | undefined {
+    return this.tdsColumn.getColumnType();
+  }
+
+  override get isCollection(): boolean {
+    return false;
+  }
+  override appendConditionValue(expressionVal: SimpleFunctionExpression): void {
+    const tdsPropertyExpression = buildtdsPropertyExpressionFromColState(
+      this.conditionState,
+      this.tdsColumn,
+      this.conditionState.postFilterState.tdsState.queryBuilderState
+        .graphManagerState.graph,
+      undefined,
+    );
+    expressionVal.parametersValues.push(tdsPropertyExpression);
+  }
+
+  changeCol(col: QueryBuilderTDSColumnState): void {
+    this.tdsColumn = col;
+  }
+}
+
 export class PostFilterConditionState implements Hashable {
   readonly postFilterState: QueryBuilderPostFilterState;
-  columnState: QueryBuilderTDSColumnState;
-  value?: ValueSpecification | undefined;
+  leftConditionValue: QueryBuilderTDSColumnState;
+  rightConditionValue: PostFilterConditionValueState;
   operator: QueryBuilderPostFilterOperator;
   typeaheadSearchResults: string[] | undefined;
   typeaheadSearchState = ActionState.create();
@@ -318,18 +445,18 @@ export class PostFilterConditionState implements Hashable {
   constructor(
     postFilterState: QueryBuilderPostFilterState,
     colState: QueryBuilderTDSColumnState,
-    value: ValueSpecification | undefined,
     operator: QueryBuilderPostFilterOperator | undefined,
   ) {
     makeObservable(this, {
       postFilterState: observable,
-      value: observable,
+      rightConditionValue: observable,
       operator: observable,
-      columnState: observable,
+      leftConditionValue: observable,
       typeaheadSearchResults: observable,
       changeOperator: action,
       setColumnState: action,
-      setValue: action,
+      setRightConditionVal: action,
+      buildFromValueSpec: action,
       setOperator: action,
       changeColumn: flow,
       handleTypeaheadSearch: flow,
@@ -338,21 +465,24 @@ export class PostFilterConditionState implements Hashable {
     });
 
     this.postFilterState = postFilterState;
-    this.columnState = colState;
-    this.setValue(value);
+    this.leftConditionValue = colState;
+    this.rightConditionValue = new PostFilterValueSpecConditionValueState(
+      this,
+      undefined,
+    );
     if (operator) {
       this.operator = operator;
     } else {
       assertTrue(
         this.operators.length !== 0,
-        `Can't find an operator for column '${this.columnState.columnName}`,
+        `Can't find an operator for column '${this.leftConditionValue.columnName}`,
       );
       this.operator = guaranteeNonNullable(this.operators[0]);
     }
   }
 
   get columnName(): string {
-    return this.columnState.columnName;
+    return this.leftConditionValue.columnName;
   }
 
   get operators(): QueryBuilderPostFilterOperator[] {
@@ -361,23 +491,43 @@ export class PostFilterConditionState implements Hashable {
     );
   }
 
+  setRightConditionVal(val: PostFilterConditionValueState): void {
+    this.rightConditionValue = val;
+  }
+
+  buildFromValueSpec(val: ValueSpecification | undefined): void {
+    if (
+      this.rightConditionValue instanceof PostFilterValueSpecConditionValueState
+    ) {
+      this.rightConditionValue.setValue(val);
+      return;
+    } else {
+      this.setRightConditionVal(
+        new PostFilterValueSpecConditionValueState(this, val),
+      );
+    }
+  }
   *handleTypeaheadSearch(): GeneratorFn<void> {
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
       const _columnState =
-        this.columnState instanceof QueryBuilderProjectionColumnState ||
-        this.columnState instanceof QueryBuilderAggregateColumnState
-          ? this.columnState
+        this.leftConditionValue instanceof QueryBuilderProjectionColumnState ||
+        this.leftConditionValue instanceof QueryBuilderAggregateColumnState
+          ? this.leftConditionValue
           : undefined;
       const columnState = guaranteeNonNullable(_columnState);
-      if (performTypeahead(this.value)) {
+      const rightConditionValue = guaranteeType(
+        this.rightConditionValue,
+        PostFilterValueSpecConditionValueState,
+      );
+      if (performTypeahead(rightConditionValue.value)) {
         const result =
           (yield this.postFilterState.tdsState.queryBuilderState.graphManagerState.graphManager.runQuery(
             buildProjectionColumnTypeaheadQuery(
               this.postFilterState.tdsState.queryBuilderState,
               columnState,
-              this.value,
+              rightConditionValue.value,
             ),
             guaranteeNonNullable(
               this.postFilterState.tdsState.queryBuilderState
@@ -404,23 +554,15 @@ export class PostFilterConditionState implements Hashable {
   changeOperator(val: QueryBuilderPostFilterOperator): void {
     this.setOperator(val);
     if (!this.operator.isCompatibleWithConditionValue(this)) {
-      this.setValue(this.operator.getDefaultFilterConditionValue(this));
+      this.buildFromValueSpec(
+        this.operator.getDefaultFilterConditionValue(this),
+      );
     }
   }
-
-  setValue(val: ValueSpecification | undefined): void {
-    this.value = val
-      ? observe_ValueSpecification(
-          val,
-          this.postFilterState.tdsState.queryBuilderState.observerContext,
-        )
-      : undefined;
-  }
-
   setColumnState(
     val: QueryBuilderProjectionColumnState | QueryBuilderAggregateColumnState,
   ): void {
-    this.columnState = val;
+    this.leftConditionValue = val;
   }
 
   setOperator(val: QueryBuilderPostFilterOperator): void {
@@ -450,7 +592,9 @@ export class PostFilterConditionState implements Hashable {
 
       // value
       if (!this.operator.isCompatibleWithConditionValue(this)) {
-        this.setValue(this.operator.getDefaultFilterConditionValue(this));
+        this.buildFromValueSpec(
+          this.operator.getDefaultFilterConditionValue(this),
+        );
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -463,8 +607,8 @@ export class PostFilterConditionState implements Hashable {
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.POST_FILTER_CONDITION_STATE,
-      this.columnState,
-      this.value ?? '',
+      this.leftConditionValue,
+      this.rightConditionValue,
       this.operator,
     ]);
   }
@@ -555,7 +699,7 @@ export class QueryBuilderPostFilterState
     return uniq(
       Array.from(this.nodes.values())
         .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
-        .map((n) => n.condition.columnState),
+        .map((n) => n.condition.leftConditionValue),
     );
   }
 
@@ -883,7 +1027,9 @@ export class QueryBuilderPostFilterState
     return Boolean(
       Array.from(this.nodes.values())
         .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
-        .map((node) => node.condition.value)
+        .map((node) => node.condition.rightConditionValue)
+        .filter(filterByType(PostFilterValueSpecConditionValueState))
+        .map((condition) => condition.value)
         .filter(isNonNullable)
         .find((value) => isValueExpressionReferencedInValue(variable, value)),
     );

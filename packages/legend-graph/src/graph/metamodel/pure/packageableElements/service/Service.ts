@@ -17,6 +17,7 @@
 import { hashArray, uniq, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { ServiceExecution } from './ServiceExecution.js';
+import type { ServiceOwnership } from './ServiceOwnership.js';
 import {
   type PackageableElementVisitor,
   PackageableElement,
@@ -31,6 +32,7 @@ export const DEFAULT_SERVICE_PATTERN = '/';
 export class Service extends PackageableElement implements Hashable, Testable {
   pattern = '/';
   owners: string[] = [];
+  ownership: ServiceOwnership | undefined;
   documentation = '';
   autoActivateUpdates = true;
   execution!: ServiceExecution;
@@ -56,6 +58,7 @@ export class Service extends PackageableElement implements Hashable, Testable {
       this.path,
       this.pattern,
       hashArray(this.owners),
+      this.ownership,
       this.documentation,
       this.autoActivateUpdates.toString(),
       this.execution,
