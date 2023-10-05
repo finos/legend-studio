@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.10.0
+
+### Minor Changes
+
+- [#2661](https://github.com/finos/legend-studio/pull/2661) [`6e5d37bc7`](https://github.com/finos/legend-studio/commit/6e5d37bc7b2d179ccc8039eae597e1cbe922b10f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Post-filter conditions to accept right vals to be column states.
+
+### Patch Changes
+
+- [#2664](https://github.com/finos/legend-studio/pull/2664) [`fbaf61fe8`](https://github.com/finos/legend-studio/commit/fbaf61fe8518670a8f987fcbe935283f85eb5f92) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix calculating return type for derived projections containing const/params
+
 ## 4.9.4
 
 ### Patch Changes
