@@ -33,7 +33,10 @@ import { ACTIVITY_MODE } from '../../../stores/editor/EditorConfig.js';
 import { generateReviewRoute } from '../../../__lib__/LegendStudioNavigation.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
-import type { EntityDiff } from '@finos/legend-server-sdlc';
+import {
+  AuthorizableProjectAction,
+  type EntityDiff,
+} from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
@@ -128,6 +131,19 @@ export const WorkspaceReview = observer(() => {
       applicationStore.alertUnhandledError,
     );
   };
+  // commit Review
+  const isCommitReviewDisabled =
+    isDispatchingAction ||
+    Boolean(!workspaceReview) ||
+    workspaceContainsSnapshotDependencies ||
+    !workspaceReviewState.canMergeReview;
+  const commitReviewTitle = workspaceContainsSnapshotDependencies
+    ? `Can't commit review: workspace has snapshot dependencies`
+    : !workspaceReviewState.canMergeReview
+    ? workspaceReviewState.sdlcState.unAuthorizedActionMessage(
+        AuthorizableProjectAction.COMMIT_REVIEW,
+      )
+    : 'Commit review';
   const commitReview = (): void => {
     if (workspaceReview && !isDispatchingAction) {
       editorStore.localChangesState.alertUnsavedChanges((): void => {
@@ -138,6 +154,20 @@ export const WorkspaceReview = observer(() => {
       });
     }
   };
+  // create Review
+  const isCreateReviewDisabled =
+    isDispatchingAction ||
+    Boolean(workspaceReview) ||
+    !workspaceReviewState.reviewTitle ||
+    workspaceContainsSnapshotDependencies ||
+    !workspaceReviewState.canCreateReview;
+  const createReviewTitle = workspaceContainsSnapshotDependencies
+    ? `Can't create review: workspace has snapshot dependencies`
+    : !workspaceReviewState.canCreateReview
+    ? workspaceReviewState.sdlcState.unAuthorizedActionMessage(
+        AuthorizableProjectAction.SUBMIT_REVIEW,
+      )
+    : 'Create review';
   const createReview = (): void => {
     if (
       workspaceReviewState.reviewTitle &&
@@ -229,17 +259,8 @@ export const WorkspaceReview = observer(() => {
                     'btn--error': workspaceContainsSnapshotDependencies,
                   })}
                   onClick={createReview}
-                  disabled={
-                    isDispatchingAction ||
-                    Boolean(workspaceReview) ||
-                    !workspaceReviewState.reviewTitle ||
-                    workspaceContainsSnapshotDependencies
-                  }
-                  title={
-                    !workspaceContainsSnapshotDependencies
-                      ? 'Create review'
-                      : `Can't create review: workspace has snapshot dependencies`
-                  }
+                  disabled={isCreateReviewDisabled}
+                  title={createReviewTitle}
                 >
                   <PlusIcon />
                 </button>
@@ -283,17 +304,9 @@ export const WorkspaceReview = observer(() => {
                     { 'btn--error': workspaceContainsSnapshotDependencies },
                   )}
                   onClick={commitReview}
-                  disabled={
-                    isDispatchingAction ||
-                    Boolean(!workspaceReview) ||
-                    workspaceContainsSnapshotDependencies
-                  }
+                  disabled={isCommitReviewDisabled}
                   tabIndex={-1}
-                  title={
-                    !workspaceContainsSnapshotDependencies
-                      ? 'Commit review'
-                      : `Can't commit review: workspace has snapshot dependencies`
-                  }
+                  title={commitReviewTitle}
                 >
                   <TruncatedGitMergeIcon />
                 </button>

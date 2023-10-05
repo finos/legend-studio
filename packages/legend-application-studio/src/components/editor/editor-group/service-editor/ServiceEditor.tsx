@@ -20,6 +20,8 @@ import {
   MINIMUM_SERVICE_OWNERS,
   ServiceEditorState,
   SERVICE_TAB,
+  OWNERSHIP_OPTIONS,
+  type ServiceOwnerOption,
 } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   clsx,
@@ -46,12 +48,20 @@ import {
   service_setDocumentation,
   service_setPattern,
   service_updateOwner,
+  service_deploymentOwnership,
+  service_addUserOwnership,
+  service_updateUserOwnership,
+  service_deleteValueFromUserOwnership,
 } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 import {
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
-import { validate_ServicePattern } from '@finos/legend-graph';
+import {
+  validate_ServicePattern,
+  DeploymentOwnership,
+  UserListOwnership,
+} from '@finos/legend-graph';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { flowResult } from 'mobx';
@@ -66,6 +76,7 @@ const ServiceGeneralEditor = observer(() => {
   const serviceState =
     editorStore.tabManagerState.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
+  const ownership = service.ownership;
   const isReadOnly = serviceState.isReadOnly;
   // Pattern
   const patternRef = useRef<HTMLInputElement>(null);
@@ -142,6 +153,61 @@ const ServiceGeneralEditor = observer(() => {
         }
       }
     };
+
+  const changeUserOwnerInputValue: React.ChangeEventHandler<
+    HTMLInputElement
+  > = (event) => setOwnerInputValue(event.target.value);
+
+  const updateDeploymentIdentifier: React.ChangeEventHandler<
+    HTMLInputElement
+  > = (event) => {
+    if (!isReadOnly && ownership instanceof DeploymentOwnership) {
+      service_deploymentOwnership(ownership, event.target.value);
+    }
+  };
+
+  const addUser = (): void => {
+    ownerInputs.forEach((value) => {
+      if (
+        value &&
+        !isReadOnly &&
+        ownership instanceof UserListOwnership &&
+        !ownership.users.includes(value)
+      ) {
+        service_addUserOwnership(ownership, value);
+      }
+    });
+    hideAddOrEditOwnerInput();
+  };
+
+  const updateUser =
+    (idx: number): (() => void) =>
+    (): void => {
+      if (
+        ownerInputValue &&
+        !isReadOnly &&
+        ownership instanceof UserListOwnership &&
+        !ownership.users.includes(ownerInputValue)
+      ) {
+        service_updateUserOwnership(ownership, ownerInputValue, idx);
+      }
+    };
+
+  const deleteUser =
+    (idx: number): (() => void) =>
+    (): void => {
+      if (!isReadOnly && ownership instanceof UserListOwnership) {
+        service_deleteValueFromUserOwnership(ownership, idx);
+        // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
+        if (
+          typeof showOwnerEditInput === 'number' &&
+          showOwnerEditInput > idx
+        ) {
+          setShowOwnerEditInput(showOwnerEditInput - 1);
+        }
+      }
+    };
+
   // Other
   const changeDocumentation: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
@@ -191,6 +257,12 @@ const ServiceGeneralEditor = observer(() => {
     setUserOptions([]);
     debouncedSearchUsers.cancel();
     setIsLoadingUsers(false);
+  };
+
+  const onOwnershipChange = (val: ServiceOwnerOption | undefined): void => {
+    if (val) {
+      serviceState.setSelectedOwnership(val);
+    }
   };
 
   useEffect(() => {
@@ -285,157 +357,350 @@ const ServiceGeneralEditor = observer(() => {
         registration"
           update={toggleAutoActivateUpdates}
         />
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Owners
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            {`Specifies who can manage and operate the service (requires minimum ${MINIMUM_SERVICE_OWNERS}
-          owners).`}
-          </div>
-          <div className="panel__content__form__section__list">
-            <div
-              className="panel__content__form__section__list__items"
-              data-testid={
-                LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
-              }
-            >
-              {owners.map((value, idx) => (
-                <div
-                  key={value}
-                  className={
-                    showOwnerEditInput === idx
-                      ? 'panel__content__form__section__list__new-item'
-                      : 'panel__content__form__section__list__item'
-                  }
-                >
-                  {showOwnerEditInput === idx ? (
-                    <>
-                      <input
-                        className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                        spellCheck={false}
-                        disabled={isReadOnly}
-                        value={ownerInputValue}
-                        onChange={changeOwnerInputValue}
-                      />
-                      <div className="panel__content__form__section__list__new-item__actions">
+      </PanelForm>
+      <PanelForm>
+        {owners.length === 0 && (
+          <div>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Ownership
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                The ownership model you want to use to control your service.
+              </div>
+              <CustomSelectorInput
+                options={OWNERSHIP_OPTIONS}
+                onChange={onOwnershipChange}
+                value={serviceState.selectedOwnership}
+                darkMode={true}
+              />
+            </div>
+            {ownership instanceof DeploymentOwnership && (
+              <div className="panel__content__form__section">
+                <div>
+                  <div className="panel__content__form__section__header__label">
+                    Deployment Identifier :
+                  </div>
+                  <input
+                    className="panel__content__form__section__input"
+                    spellCheck={false}
+                    disabled={isReadOnly}
+                    value={ownership.identifier}
+                    onChange={updateDeploymentIdentifier}
+                  />
+                </div>
+              </div>
+            )}
+            {ownership instanceof UserListOwnership && (
+              <div className="panel__content__form__section">
+                <div>
+                  <div className="panel__content__form__section__header__label">
+                    Users :
+                  </div>
+                  <div className="panel__content__form__section__list">
+                    <div
+                      className="panel__content__form__section__list__items"
+                      data-testid={
+                        LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+                      }
+                    >
+                      {ownership.users.map((value, idx) => (
+                        <div
+                          key={value}
+                          className={
+                            showOwnerEditInput === idx
+                              ? 'panel__content__form__section__list__new-item'
+                              : 'panel__content__form__section__list__item'
+                          }
+                        >
+                          {showOwnerEditInput === idx ? (
+                            <>
+                              <input
+                                className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                                spellCheck={false}
+                                disabled={isReadOnly}
+                                value={ownerInputValue}
+                                onChange={changeUserOwnerInputValue}
+                              />
+                              <div className="panel__content__form__section__list__new-item__actions">
+                                <button
+                                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                                  disabled={
+                                    isReadOnly ||
+                                    ownership.users.includes(ownerInputValue)
+                                  }
+                                  onClick={updateUser(idx)}
+                                  tabIndex={-1}
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                                  disabled={isReadOnly}
+                                  onClick={hideAddOrEditOwnerInput}
+                                  tabIndex={-1}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="panel__content__form__section__list__item__value">
+                                {value}
+                              </div>
+                              <div className="panel__content__form__section__list__item__actions">
+                                <button
+                                  className="panel__content__form__section__list__item__edit-btn"
+                                  disabled={isReadOnly}
+                                  onClick={showEditOwnerInput(value, idx)}
+                                  tabIndex={-1}
+                                >
+                                  <PencilIcon />
+                                </button>
+                                <button
+                                  className="panel__content__form__section__list__item__remove-btn"
+                                  disabled={isReadOnly}
+                                  onClick={deleteUser(idx)}
+                                  tabIndex={-1}
+                                >
+                                  <TimesIcon />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                      {showOwnerEditInput === true && (
+                        <div className="panel__content__form__section__list__new-item">
+                          <CustomSelectorInput
+                            className="service-editor__owner__selector"
+                            placeholder="Enter an owner..."
+                            spellCheck={false}
+                            inputValue={searchText}
+                            options={userOptions}
+                            allowCreating={true}
+                            isLoading={isLoadingUsers}
+                            disabled={isReadOnly}
+                            darkMode={
+                              !applicationStore.layoutService
+                                .TEMPORARY__isLightColorThemeEnabled
+                            }
+                            onInputChange={onSearchTextChange}
+                            onChange={onUserOptionChange}
+                            isMulti={true}
+                          />
+                          <div className="panel__content__form__section__list__new-item__actions">
+                            <button
+                              className="panel__content__form__section__list__new-item__add-btn btn btn--dark service-editor__owner__action"
+                              disabled={
+                                isReadOnly ||
+                                ownerInputs.some((i) =>
+                                  ownership.users.includes(i),
+                                )
+                              }
+                              onClick={addUser}
+                              tabIndex={-1}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark service-editor__owner__action"
+                              disabled={isReadOnly}
+                              onClick={hideAddOrEditOwnerInput}
+                              tabIndex={-1}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {ownership.users.length < MINIMUM_SERVICE_OWNERS &&
+                      showOwnerEditInput !== true && (
+                        <div
+                          className="service-editor__owner__validation"
+                          title={`${MINIMUM_SERVICE_OWNERS} owners required`}
+                        >
+                          <ErrorIcon />
+                          <div className="service-editor__owner__validation-label">
+                            Service requires at least {MINIMUM_SERVICE_OWNERS}{' '}
+                            owners
+                          </div>
+                        </div>
+                      )}
+                    {showOwnerEditInput !== true && (
+                      <div className="panel__content__form__section__list__new-item__add">
                         <button
                           className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                          disabled={
-                            isReadOnly || owners.includes(ownerInputValue)
-                          }
-                          onClick={updateOwner(idx)}
-                          tabIndex={-1}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
                           disabled={isReadOnly}
-                          onClick={hideAddOrEditOwnerInput}
+                          onClick={showAddOwnerInput}
                           tabIndex={-1}
+                          title="Add owner"
                         >
-                          Cancel
+                          Add Value
                         </button>
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="panel__content__form__section__list__item__value">
-                        {value}
-                      </div>
-                      <div className="panel__content__form__section__list__item__actions">
-                        <button
-                          className="panel__content__form__section__list__item__edit-btn"
-                          disabled={isReadOnly}
-                          onClick={showEditOwnerInput(value, idx)}
-                          tabIndex={-1}
-                        >
-                          <PencilIcon />
-                        </button>
-                        <button
-                          className="panel__content__form__section__list__item__remove-btn"
-                          disabled={isReadOnly}
-                          onClick={deleteOwner(idx)}
-                          tabIndex={-1}
-                        >
-                          <TimesIcon />
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
-              {showOwnerEditInput === true && (
-                <div className="panel__content__form__section__list__new-item">
-                  <CustomSelectorInput
-                    className="service-editor__owner__selector"
-                    placeholder="Enter an owner..."
-                    spellCheck={false}
-                    inputValue={searchText}
-                    options={userOptions}
-                    allowCreating={true}
-                    isLoading={isLoadingUsers}
-                    disabled={isReadOnly}
-                    darkMode={
-                      !applicationStore.layoutService
-                        .TEMPORARY__isLightColorThemeEnabled
-                    }
-                    onInputChange={onSearchTextChange}
-                    onChange={onUserOptionChange}
-                    isMulti={true}
-                  />
-                  <div className="panel__content__form__section__list__new-item__actions">
-                    <button
-                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark service-editor__owner__action"
-                      disabled={
-                        isReadOnly ||
-                        ownerInputs.some((i) => owners.includes(i))
-                      }
-                      onClick={addOwner}
-                      tabIndex={-1}
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark service-editor__owner__action"
-                      disabled={isReadOnly}
-                      onClick={hideAddOrEditOwnerInput}
-                      tabIndex={-1}
-                    >
-                      Cancel
-                    </button>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
-            {owners.length < MINIMUM_SERVICE_OWNERS &&
-              showOwnerEditInput !== true && (
-                <div
-                  className="service-editor__owner__validation"
-                  title={`${MINIMUM_SERVICE_OWNERS} owners required`}
-                >
-                  <ErrorIcon />
-                  <div className="service-editor__owner__validation-label">
-                    Service requires at least {MINIMUM_SERVICE_OWNERS} owners
-                  </div>
-                </div>
-              )}
-            {showOwnerEditInput !== true && (
-              <div className="panel__content__form__section__list__new-item__add">
-                <button
-                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                  disabled={isReadOnly}
-                  onClick={showAddOwnerInput}
-                  tabIndex={-1}
-                  title="Add owner"
-                >
-                  Add Value
-                </button>
               </div>
             )}
           </div>
-        </div>
+        )}
+        {owners.length > 0 && (
+          <div className="panel__content__form__section">
+            <div className="panel__content__form__section__header__label">
+              Owners (deprecated)
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              {`Specifies who can manage and operate the service (requires minimum ${MINIMUM_SERVICE_OWNERS}
+          owners).`}
+            </div>
+            <div className="panel__content__form__section__list">
+              <div
+                className="panel__content__form__section__list__items"
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+                }
+              >
+                {owners.map((value, idx) => (
+                  <div
+                    key={value}
+                    className={
+                      showOwnerEditInput === idx
+                        ? 'panel__content__form__section__list__new-item'
+                        : 'panel__content__form__section__list__item'
+                    }
+                  >
+                    {showOwnerEditInput === idx ? (
+                      <>
+                        <input
+                          className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                          spellCheck={false}
+                          disabled={isReadOnly}
+                          value={ownerInputValue}
+                          onChange={changeOwnerInputValue}
+                        />
+                        <div className="panel__content__form__section__list__new-item__actions">
+                          <button
+                            className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                            disabled={
+                              isReadOnly || owners.includes(ownerInputValue)
+                            }
+                            onClick={updateOwner(idx)}
+                            tabIndex={-1}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                            disabled={isReadOnly}
+                            onClick={hideAddOrEditOwnerInput}
+                            tabIndex={-1}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="panel__content__form__section__list__item__value">
+                          {value}
+                        </div>
+                        <div className="panel__content__form__section__list__item__actions">
+                          <button
+                            className="panel__content__form__section__list__item__edit-btn"
+                            disabled={isReadOnly}
+                            onClick={showEditOwnerInput(value, idx)}
+                            tabIndex={-1}
+                          >
+                            <PencilIcon />
+                          </button>
+                          <button
+                            className="panel__content__form__section__list__item__remove-btn"
+                            disabled={isReadOnly}
+                            onClick={deleteOwner(idx)}
+                            tabIndex={-1}
+                          >
+                            <TimesIcon />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+                {showOwnerEditInput === true && (
+                  <div className="panel__content__form__section__list__new-item">
+                    <CustomSelectorInput
+                      className="service-editor__owner__selector"
+                      placeholder="Enter an owner..."
+                      spellCheck={false}
+                      inputValue={searchText}
+                      options={userOptions}
+                      allowCreating={true}
+                      isLoading={isLoadingUsers}
+                      disabled={isReadOnly}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
+                      onInputChange={onSearchTextChange}
+                      onChange={onUserOptionChange}
+                      isMulti={true}
+                    />
+                    <div className="panel__content__form__section__list__new-item__actions">
+                      <button
+                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark service-editor__owner__action"
+                        disabled={
+                          isReadOnly ||
+                          ownerInputs.some((i) => owners.includes(i))
+                        }
+                        onClick={addOwner}
+                        tabIndex={-1}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark service-editor__owner__action"
+                        disabled={isReadOnly}
+                        onClick={hideAddOrEditOwnerInput}
+                        tabIndex={-1}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {owners.length < MINIMUM_SERVICE_OWNERS &&
+                showOwnerEditInput !== true && (
+                  <div
+                    className="service-editor__owner__validation"
+                    title={`${MINIMUM_SERVICE_OWNERS} owners required`}
+                  >
+                    <ErrorIcon />
+                    <div className="service-editor__owner__validation-label">
+                      Service requires at least {MINIMUM_SERVICE_OWNERS} owners
+                    </div>
+                  </div>
+                )}
+              {showOwnerEditInput !== true && (
+                <div className="panel__content__form__section__list__new-item__add">
+                  <button
+                    className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                    disabled={isReadOnly}
+                    onClick={showAddOwnerInput}
+                    tabIndex={-1}
+                    title="Add owner"
+                  >
+                    Add Value
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </PanelForm>
     </PanelContentLists>
   );

@@ -15,6 +15,7 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
+import TEST_DATA__SimpleSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
 import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json' assert { type: 'json' };
 import { type PlainObject } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
@@ -26,6 +27,7 @@ import {
 import {
   TEST_DATA__ModelCoverageAnalysisResult_HighlightProperties,
   TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__QueryBuilder_Model_HighlightProperties from './TEST_DATA__QueryBuilder_Model_HiglightProperties.json' assert { type: 'json' };
 import {
@@ -40,6 +42,10 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { isExplorerTreeNodeAlreadyUsed } from '../explorer/QueryBuilderExplorerPanel.js';
 import type { Entity } from '@finos/legend-storage';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import {
+  TEST_DATA__simpleGraphFetchWithSubtype,
+  TEST_DATA__simpleProjectWithSubtype,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 
 type TestCase = [
   string,
@@ -112,6 +118,34 @@ const cases: TestCase[] = [
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
       nodesToExpand: ['Address', '@Address Type 1', '@Address Type 2'],
+      expectedNumberOfUsedPropertyNode: 5,
+    },
+  ],
+  [
+    'Simple projection (with subType) when propery mapping points to class mapping of subType',
+    {
+      mappingPath: 'model::NewMapping',
+      runtimePath: 'model::Runtime',
+      classPath: 'model::Person',
+      entities: TEST_DATA__SimpleSubTypeModel,
+      rawLambda: TEST_DATA__simpleProjectWithSubtype,
+      rawMappingModelCoverageAnalysisResult:
+        TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+      nodesToExpand: ['Address'],
+      expectedNumberOfUsedPropertyNode: 5,
+    },
+  ],
+  [
+    'Simple graphFetch (with subType) when propery mapping points to class mapping of subType',
+    {
+      mappingPath: 'model::NewMapping',
+      runtimePath: 'model::Runtime',
+      classPath: 'model::Person',
+      entities: TEST_DATA__SimpleSubTypeModel,
+      rawLambda: TEST_DATA__simpleGraphFetchWithSubtype,
+      rawMappingModelCoverageAnalysisResult:
+        TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+      nodesToExpand: ['Address'],
       expectedNumberOfUsedPropertyNode: 5,
     },
   ],

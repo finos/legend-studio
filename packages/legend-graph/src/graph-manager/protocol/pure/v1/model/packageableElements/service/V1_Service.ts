@@ -26,12 +26,14 @@ import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V
 import type { V1_DEPRECATED__ServiceTest } from './V1_DEPRECATED__ServiceTest.js';
 import type { V1_TestSuite } from '../../test/V1_TestSuite.js';
 import type { V1_PostValidation } from './V1_PostValidation.js';
+import type { V1_ServiceOwnership } from './V1_ServiceOwnership.js';
 
 export class V1_Service extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
   pattern!: string;
   owners: string[] = [];
+  ownership?: V1_ServiceOwnership | undefined;
   documentation!: string;
   autoActivateUpdates = true;
   execution!: V1_ServiceExecution;
@@ -47,6 +49,7 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
       this.path,
       this.pattern,
       hashArray(this.owners),
+      this.ownership,
       this.documentation,
       this.autoActivateUpdates.toString(),
       this.execution,

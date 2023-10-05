@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { type RenderResult, render, waitFor } from '@testing-library/react';
+import {
+  type RenderResult,
+  render,
+  waitFor,
+  fireEvent,
+  findByText,
+  getByText,
+} from '@testing-library/react';
 import { LogService } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import {
@@ -42,6 +49,23 @@ import {
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
 } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
+
+export const dragAndDrop = async (
+  source: HTMLElement,
+  drop: HTMLElement,
+  panel: HTMLElement,
+  draggingHoverText?: string,
+): Promise<void> => {
+  fireEvent.dragStart(source);
+  fireEvent.dragEnter(drop);
+  fireEvent.dragOver(drop);
+  if (draggingHoverText) {
+    await findByText(panel, draggingHoverText);
+    fireEvent.drop(getByText(panel, draggingHoverText));
+  } else {
+    fireEvent.dragOver(drop);
+  }
+};
 
 export const TEST__setUpQueryBuilder = async (
   entities: Entity[],

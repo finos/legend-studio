@@ -55,6 +55,11 @@ import {
 } from './Testable_ObserverHelper.js';
 import type { PostValidation } from '../../../graph/metamodel/pure/packageableElements/service/PostValidation.js';
 import type { PostValidationAssertion } from '../../../graph/metamodel/pure/packageableElements/service/PostValidationAssertion.js';
+import {
+  DeploymentOwnership,
+  type ServiceOwnership,
+  UserListOwnership,
+} from '../../../graph/metamodel/pure/packageableElements/service/ServiceOwnership.js';
 
 export const observe_ConnectionTestData = skipObservedWithContext(
   (
@@ -224,6 +229,37 @@ export const observe_MultiExecutionTest = skipObserved(
   },
 );
 
+export const observe_deploymentOwnership = skipObserved(
+  (metamodel: DeploymentOwnership): DeploymentOwnership => {
+    makeObservable(metamodel, {
+      identifier: observable,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_userListOwnership = skipObserved(
+  (metamodel: UserListOwnership): UserListOwnership => {
+    makeObservable(metamodel, {
+      users: observable,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_Ownership = (
+  metamodel: ServiceOwnership,
+): ServiceOwnership => {
+  if (metamodel instanceof DeploymentOwnership) {
+    return observe_deploymentOwnership(metamodel);
+  } else if (metamodel instanceof UserListOwnership) {
+    return observe_userListOwnership(metamodel);
+  }
+  return metamodel;
+};
+
 export const observe_ServiceTest_Legacy = (
   metamodel: DEPRECATED__ServiceTest,
 ): DEPRECATED__ServiceTest => {
@@ -314,6 +350,7 @@ export const observe_Service = skipObservedWithContext(
     makeObservable<Service, '_elementHashCode'>(metamodel, {
       pattern: observable,
       owners: observable,
+      ownership: observable,
       documentation: observable,
       autoActivateUpdates: observable,
       execution: observable,
@@ -329,6 +366,9 @@ export const observe_Service = skipObservedWithContext(
     observe_ServiceExecution(metamodel.execution, context);
     if (metamodel.test) {
       observe_ServiceTest_Legacy(metamodel.test);
+    }
+    if (metamodel.ownership) {
+      observe_Ownership(metamodel.ownership);
     }
     metamodel.tests.forEach((m) => observe_ServiceTestSuite(m, context));
     metamodel.postValidations.forEach((m) => observe_PostValidation(m));

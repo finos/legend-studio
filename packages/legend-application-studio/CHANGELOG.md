@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.6.0
+
+### Minor Changes
+
+- [#2606](https://github.com/finos/legend-studio/pull/2606) [`8460bc2a5`](https://github.com/finos/legend-studio/commit/8460bc2a5ea29d11eac501b85f87f9765e869443) ([@Yasirmod17](https://github.com/Yasirmod17)) - Service Element Ownership Uplift
+
 ## 28.5.9
 
 ### Patch Changes
