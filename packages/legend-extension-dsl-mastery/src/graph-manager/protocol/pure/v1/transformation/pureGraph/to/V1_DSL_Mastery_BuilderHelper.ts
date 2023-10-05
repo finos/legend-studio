@@ -152,6 +152,8 @@ import {
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
 import { CollectionEquality } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import { V1_Runtime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import { Runtime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider
@@ -828,4 +830,29 @@ export const V1_buildMasterRecordDefinition = (
     protocol.elasticSearchTransformService;
   masterRecordDefinition.exceptionWorkflowTransformService =
     protocol.exceptionWorkflowTransformService;
+};
+
+/**********
+ * runtime
+ **********/
+
+export const V1_buildRuntime = (
+  element: V1_Runtime,
+  context: V1_GraphBuilderContext,
+): Runtime => {
+  const extraRuntimeBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraRuntimeBuilders?.() ?? [],
+  );
+  for (const builder of extraRuntimeBuilders) {
+    const metamodel = builder(element, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't build runtime '${typeof element}'`,
+  );
 };

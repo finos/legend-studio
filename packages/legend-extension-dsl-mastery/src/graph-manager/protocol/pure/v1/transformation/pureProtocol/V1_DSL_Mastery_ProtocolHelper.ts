@@ -95,6 +95,7 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+import { V1_Runtime } from '../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime';
 
 /********************
  * connection
@@ -925,3 +926,50 @@ export const V1_masterRecordDefinitionModelSchema = (
       ),
     ),
   });
+
+/**********
+ * runtime
+ **********/
+
+export const V1_serializeRuntime = (
+  protocol: V1_Runtime,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Runtime> => {
+  const extraRuntimeSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraRuntimeProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraRuntimeSerializers) {
+    const runtimeJson = serializer(protocol, plugins);
+    if (runtimeJson) {
+      return runtimeJson;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize runtime Json: no compatible serializer available from plugins`,
+    protocol,
+  );
+};
+
+export const V1_deserializeRuntime = (
+  json: PlainObject<V1_Runtime>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Runtime => {
+  const extraRuntimeDeserializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraRuntimeProtocolDeserializers?.() ?? [],
+  );
+  for (const deserializer of extraRuntimeDeserializers) {
+    const runtimeProtocol = deserializer(json, plugins);
+    if (runtimeProtocol) {
+      return runtimeProtocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize runtime of type '${json._type}': no compatible deserializer available from plugins`,
+  );
+};

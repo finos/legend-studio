@@ -56,6 +56,8 @@ export {
 export {
   V1_serializeCredentialSecret,
   V1_deserializeCredentialSecret,
+  V1_serializeRuntime,
+  V1_deserializeRuntime,
 } from './protocol/pure/v1/transformation/pureProtocol/V1_DSL_Mastery_ProtocolHelper.js';
 
 // ---------- TRANSFORMATION ----------
@@ -67,6 +69,7 @@ export {
   V1_transformFTPConnection,
   V1_transformHTTPConnection,
   V1_transformCredentialSecret,
+  V1_transformRuntime,
 } from './protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
 
 export {
@@ -76,6 +79,7 @@ export {
   V1_buildFTPConnection,
   V1_buildHTTPConnection,
   V1_buildCredentialSecret,
+  V1_buildRuntime,
 } from './protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
 
 // extension
