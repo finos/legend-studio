@@ -46,6 +46,7 @@ export class V1_ResolutionQuery implements Hashable {
     return hashArray([
       MASTERY_HASH_STRUCTURE.RESOLUTION_QUERY,
       this.keyType ?? '',
+      this.optional?.toString() ?? '',
       this.precedence.toString(),
       hashArray(this.queries),
     ]);
