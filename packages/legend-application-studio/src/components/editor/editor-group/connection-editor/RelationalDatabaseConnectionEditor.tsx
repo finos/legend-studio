@@ -1567,12 +1567,13 @@ const renderAuthenticationStrategyEditor = (
   }
 };
 
-const RelationalConnectionGeneralEditor = observer(
+export const RelationalConnectionGeneralEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
     isReadOnly: boolean;
+    hideHeader?: boolean;
   }) => {
-    const { connectionValueState, isReadOnly } = props;
+    const { connectionValueState, isReadOnly, hideHeader } = props;
     const connection = connectionValueState.connection;
     const editorStore = useEditorStore();
     const plugins = editorStore.pluginManager.getApplicationPlugins();
@@ -1603,9 +1604,14 @@ const RelationalConnectionGeneralEditor = observer(
           connectionValueState.selectedValidDatasources[0],
         );
       }
-      if (connectionValueState.selectedValidAuthenticationStrategies[0]) {
+      //wrong wrong
+      const selectedValidAuthenticationStrategies =
+        connectionValueState.selectedValidAuthenticationStrategies.filter(
+          (c) => c !== 'test',
+        );
+      if (selectedValidAuthenticationStrategies[0]) {
         connectionValueState.changeAuthenticationStrategy(
-          connectionValueState.selectedValidAuthenticationStrategies[0],
+          selectedValidAuthenticationStrategies[0],
         );
       }
     };
@@ -1692,7 +1698,7 @@ const RelationalConnectionGeneralEditor = observer(
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel size={200} minSize={15}>
             <Panel>
-              <PanelHeader title="general"></PanelHeader>
+              {!hideHeader && <PanelHeader title="general"></PanelHeader>}
               <PanelContent className="relational-connection-editor__general">
                 <PanelFormSection>
                   <div className="panel__content__form__section__header__label">

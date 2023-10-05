@@ -26,6 +26,7 @@ import { WorkflowManager } from './WorkflowManager.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { GlobalTestRunner } from './testable/GlobalTestRunner.js';
 import { RegisterService } from './RegisterService.js';
+import { EndToEndWorkflow } from './end-to-end-workflow/EndToEndWorkflows.js';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.
@@ -64,6 +65,14 @@ export const SideBar = observer(() => {
           <RegisterService
             globalBulkServiceRegistrationState={
               editorStore.globalBulkServiceRegistrationState
+            }
+          />
+        );
+      case ACTIVITY_MODE.END_TO_END_WORKFLOWS:
+        return (
+          <EndToEndWorkflow
+            globalEndToEndWorkflowState={
+              editorStore.globalEndToEndWorkflowState
             }
           />
         );

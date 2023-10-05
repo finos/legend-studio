@@ -50,7 +50,103 @@ import {
 import type { DatabaseBuilderWizardState } from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderWizardState.js';
 import { DatabaseSchemaExplorer } from './DatabaseSchemaExplorer.js';
 
-export const DatabaseBuilderWizard = observer(
+export const DatabaseBuilderModalContent = observer(
+  (props: { databaseBuilderState: DatabaseBuilderWizardState }) => {
+    const { databaseBuilderState } = props;
+    const applicationStore = useApplicationStore();
+    const schemaExplorerState = databaseBuilderState.schemaExplorerState;
+    const isCreatingNewDatabase = schemaExplorerState.isCreatingNewDatabase;
+    const elementAlreadyExistsMessage =
+      isCreatingNewDatabase &&
+      databaseBuilderState.editorStore.graphManagerState.graph.allElements
+        .map((s) => s.path)
+        .includes(schemaExplorerState.targetDatabasePath)
+        ? 'Element with same path already exists'
+        : undefined;
+
+    const isExecutingAction =
+      schemaExplorerState.isGeneratingDatabase ||
+      schemaExplorerState.isUpdatingDatabase;
+
+    const onTargetPathChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      schemaExplorerState.setTargetDatabasePath(event.target.value);
+    };
+
+    useEffect(() => {
+      flowResult(schemaExplorerState.fetchDatabaseMetadata()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    }, [applicationStore, schemaExplorerState]);
+
+    useConditionedApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATABASE_BUILDER,
+      databaseBuilderState.showModal,
+    );
+
+    return (
+      <ModalBody className="database-builder__content">
+        <PanelLoadingIndicator isLoading={isExecutingAction} />
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel size={450}>
+            <div className="database-builder__config">
+              <PanelHeader title="schema explorer" />
+              <PanelContent className="database-builder__config__content">
+                {schemaExplorerState.treeData && (
+                  <DatabaseSchemaExplorer
+                    treeData={schemaExplorerState.treeData}
+                    isReadOnly={false}
+                    schemaExplorerState={
+                      databaseBuilderState.schemaExplorerState
+                    }
+                  />
+                )}
+              </PanelContent>
+            </div>
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel>
+            <Panel className="database-builder__model">
+              <PanelHeader title="database model" />
+              <PanelContent>
+                <div className="database-builder__modeler">
+                  <div className="panel__content__form__section database-builder__modeler__path">
+                    <div className="panel__content__form__section__header__label">
+                      Target Database Path
+                    </div>
+                    <InputWithInlineValidation
+                      className="panel__content__form__section__input"
+                      spellCheck={false}
+                      onChange={onTargetPathChange}
+                      disabled={isExecutingAction} // heads up: this is changed
+                      value={schemaExplorerState.targetDatabasePath} // heads up: this is changed
+                      error={elementAlreadyExistsMessage}
+                    />
+                  </div>
+                  <div className="database-builder__modeler__preview">
+                    {databaseBuilderState.databaseGrammarCode && (
+                      <CodeEditor
+                        language={CODE_EDITOR_LANGUAGE.PURE}
+                        inputValue={databaseBuilderState.databaseGrammarCode}
+                        isReadOnly={true}
+                      />
+                    )}
+                    {!databaseBuilderState.databaseGrammarCode && (
+                      <BlankPanelContent>No database preview</BlankPanelContent>
+                    )}
+                  </div>
+                </div>
+              </PanelContent>
+            </Panel>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </ModalBody>
+    );
+  },
+);
+
+export const DatabaseBuilderModal = observer(
   (props: {
     databaseBuilderState: DatabaseBuilderWizardState;
     isReadOnly: boolean;
@@ -70,11 +166,7 @@ export const DatabaseBuilderWizard = observer(
     const preview = applicationStore.guardUnhandledError(() =>
       flowResult(databaseBuilderState.previewDatabaseModel()),
     );
-    const onTargetPathChange: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      schemaExplorerState.setTargetDatabasePath(event.target.value);
-    };
+
     const updateDatabase = applicationStore.guardUnhandledError(() =>
       flowResult(databaseBuilderState.updateDatabase()),
     );
@@ -88,16 +180,55 @@ export const DatabaseBuilderWizard = observer(
       schemaExplorerState.isGeneratingDatabase ||
       schemaExplorerState.isUpdatingDatabase;
 
-    useEffect(() => {
-      flowResult(schemaExplorerState.fetchDatabaseMetadata()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    }, [applicationStore, schemaExplorerState]);
-
-    useConditionedApplicationNavigationContext(
-      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATABASE_BUILDER,
-      databaseBuilderState.showModal,
+    return (
+      <Modal darkMode={true} className="database-builder">
+        <ModalHeader>
+          <ModalTitle title="Database Builder" />
+          <ModalHeaderActions>
+            <button
+              className="modal__header__action"
+              tabIndex={-1}
+              onClick={closeModal}
+            >
+              <TimesIcon />
+            </button>
+          </ModalHeaderActions>
+        </ModalHeader>
+        <DatabaseBuilderModalContent
+          databaseBuilderState={databaseBuilderState}
+        />
+        <ModalFooter>
+          <ModalFooterButton
+            className="database-builder__action--btn"
+            disabled={isReadOnly || isExecutingAction}
+            onClick={preview}
+            title="Preview database model..."
+          >
+            Preview
+          </ModalFooterButton>
+          <ModalFooterButton
+            className="database-builder__action--btn"
+            disabled={
+              isReadOnly ||
+              isExecutingAction ||
+              Boolean(elementAlreadyExistsMessage)
+            }
+            onClick={updateDatabase}
+          >
+            Update Database
+          </ModalFooterButton>
+        </ModalFooter>
+      </Modal>
     );
+  },
+);
+
+export const DatabaseBuilderWizard = observer(
+  (props: {
+    databaseBuilderState: DatabaseBuilderWizardState;
+    isReadOnly: boolean;
+  }) => {
+    const { databaseBuilderState, isReadOnly } = props;
 
     return (
       <Dialog
@@ -110,105 +241,10 @@ export const DatabaseBuilderWizard = observer(
           },
         }}
       >
-        <Modal darkMode={true} className="database-builder">
-          <ModalHeader>
-            <ModalTitle title="Database Builder" />
-            <ModalHeaderActions>
-              <button
-                className="modal__header__action"
-                tabIndex={-1}
-                onClick={closeModal}
-              >
-                <TimesIcon />
-              </button>
-            </ModalHeaderActions>
-          </ModalHeader>
-          <ModalBody className="database-builder__content">
-            <PanelLoadingIndicator isLoading={isExecutingAction} />
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel size={450}>
-                <div className="database-builder__config">
-                  <PanelHeader title="schema explorer" />
-                  <PanelContent className="database-builder__config__content">
-                    {schemaExplorerState.treeData && (
-                      <DatabaseSchemaExplorer
-                        treeData={schemaExplorerState.treeData}
-                        isReadOnly={false}
-                        schemaExplorerState={
-                          databaseBuilderState.schemaExplorerState
-                        }
-                      />
-                    )}
-                  </PanelContent>
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter />
-              <ResizablePanel>
-                <Panel className="database-builder__model">
-                  <PanelHeader title="database model" />
-                  <PanelContent>
-                    <div className="database-builder__modeler">
-                      <div className="panel__content__form__section database-builder__modeler__path">
-                        <div className="panel__content__form__section__header__label">
-                          Target Database Path
-                        </div>
-                        <InputWithInlineValidation
-                          className="panel__content__form__section__input"
-                          spellCheck={false}
-                          onChange={onTargetPathChange}
-                          disabled={!isCreatingNewDatabase}
-                          value={
-                            isCreatingNewDatabase
-                              ? schemaExplorerState.targetDatabasePath
-                              : schemaExplorerState.database.path
-                          }
-                          error={elementAlreadyExistsMessage}
-                        />
-                      </div>
-                      <div className="database-builder__modeler__preview">
-                        {databaseBuilderState.databaseGrammarCode && (
-                          <CodeEditor
-                            language={CODE_EDITOR_LANGUAGE.PURE}
-                            inputValue={
-                              databaseBuilderState.databaseGrammarCode
-                            }
-                            isReadOnly={true}
-                          />
-                        )}
-                        {!databaseBuilderState.databaseGrammarCode && (
-                          <BlankPanelContent>
-                            No database preview
-                          </BlankPanelContent>
-                        )}
-                      </div>
-                    </div>
-                  </PanelContent>
-                </Panel>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ModalBody>
-          <ModalFooter>
-            <ModalFooterButton
-              className="database-builder__action--btn"
-              disabled={isReadOnly || isExecutingAction}
-              onClick={preview}
-              title="Preview database model..."
-            >
-              Preview
-            </ModalFooterButton>
-            <ModalFooterButton
-              className="database-builder__action--btn"
-              disabled={
-                isReadOnly ||
-                isExecutingAction ||
-                Boolean(elementAlreadyExistsMessage)
-              }
-              onClick={updateDatabase}
-            >
-              Update Database
-            </ModalFooterButton>
-          </ModalFooter>
-        </Modal>
+        <DatabaseBuilderModal
+          databaseBuilderState={databaseBuilderState}
+          isReadOnly={isReadOnly}
+        />
       </Dialog>
     );
   },

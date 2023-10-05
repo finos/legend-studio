@@ -36,6 +36,7 @@ import {
   MenuContentDivider,
   FlaskIcon,
   RobotIcon,
+  WorkflowIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
@@ -360,9 +361,20 @@ export const ActivityBar = observer(() => {
           </>
         ),
       },
+      !editorStore.isInConflictResolutionMode &&
+        editorStore.applicationStore.config.options
+          .TEMPORARY__enableEndtoEndWorkflow && {
+          mode: ACTIVITY_MODE.END_TO_END_WORKFLOWS,
+          title: 'End to End Workflows (Beta)',
+          icon: (
+            <div>
+              <WorkflowIcon className="activity-bar__icon--service-registrar" />
+              <ActivityBarItemExperimentalBadge />
+            </div>
+          ),
+        },
     ] as (ActivityBarItemConfig | boolean)[]
   ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
-
   return (
     <div className="activity-bar">
       <ActivityBarMenu />

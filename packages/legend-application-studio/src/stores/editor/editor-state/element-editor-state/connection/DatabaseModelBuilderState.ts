@@ -25,22 +25,22 @@ import {
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../../../EditorStore.js';
-import type { Database } from '@finos/legend-graph';
+import type { Database, PureModel } from '@finos/legend-graph';
 import { EntityChangeType, type EntityChange } from '@finos/legend-server-sdlc';
 
 export const GENERATED = 'generated';
 
 export class DatabaseModelBuilderState {
   readonly editorStore: EditorStore;
-  readonly database: Database;
   readonly isReadOnly: boolean;
   generatingModelState = ActionState.create();
   saveModelState = ActionState.create();
-
+  database: Database;
   showModal = false;
   generatedGrammarCode = '';
   entities: Entity[] | undefined;
   targetPackage: string;
+  graph?: PureModel;
 
   constructor(
     editorStore: EditorStore,
@@ -49,13 +49,16 @@ export class DatabaseModelBuilderState {
   ) {
     makeObservable(this, {
       showModal: observable,
+      database: observable,
       generatedGrammarCode: observable,
       generatingModelState: observable,
+      graph: observable,
       saveModelState: observable,
       targetPackage: observable,
       close: action,
       setShowModal: action,
       setEntities: action,
+      setDatabase: action,
       setDatabaseGrammarCode: action,
       setTargetPackage: action,
       saveModels: flow,
@@ -79,6 +82,10 @@ export class DatabaseModelBuilderState {
     this.entities = val;
   }
 
+  setDatabase(val: Database): void {
+    this.database = val;
+  }
+
   close(): void {
     this.setShowModal(false);
     this.editorStore.explorerTreeState.setDatabaseModelBuilderState(undefined);
@@ -96,9 +103,8 @@ export class DatabaseModelBuilderState {
         (yield this.editorStore.graphManagerState.graphManager.generateModelsFromDatabaseSpecification(
           this.database.path,
           this.targetPackage,
-          this.editorStore.graphManagerState.graph,
+          this.graph ?? this.editorStore.graphManagerState.graph,
         )) as Entity[];
-
       this.setEntities(entities);
       this.setDatabaseGrammarCode(
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
@@ -125,11 +131,8 @@ export class DatabaseModelBuilderState {
       const newEntities: EntityChange[] = [];
       for (const entity of entities) {
         let entityChangeType: EntityChangeType;
-        if (
-          this.editorStore.graphManagerState.graph.getNullableElement(
-            entity.path,
-          ) === undefined
-        ) {
+        const graph = this.graph ?? this.editorStore.graphManagerState.graph;
+        if (graph.getNullableElement(entity.path) === undefined) {
           entityChangeType = EntityChangeType.CREATE;
         } else {
           entityChangeType = EntityChangeType.MODIFY;

@@ -167,6 +167,7 @@ export const WorkspaceReviewPanel = observer(() => {
           </DropdownMenu>
         </div>
       </div>
+      {/* here */}
       <div className="panel__content workspace-review-panel__content">
         <EntityDiffView entityDiffViewState={currentTabState} />
       </div>

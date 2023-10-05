@@ -95,8 +95,7 @@ export class DatabaseBuilderWizardState {
     if (!this.schemaExplorerState.treeData) {
       return;
     }
-
-    yield flowResult(this.schemaExplorerState.updateDatabase());
+    yield flowResult(this.schemaExplorerState.updateDatabaseAndGraph());
     this.setShowModal(false);
   }
 }

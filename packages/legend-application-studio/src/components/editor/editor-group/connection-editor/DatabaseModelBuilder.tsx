@@ -50,12 +50,9 @@ import {
 import { debounce, noop } from '@finos/legend-shared';
 import { isValidPath } from '@finos/legend-graph';
 
-export const DatabaseModelBuilder = observer(
-  (props: {
-    databaseModelBuilderState: DatabaseModelBuilderState;
-    isReadOnly: boolean;
-  }) => {
-    const { databaseModelBuilderState, isReadOnly } = props;
+export const DatabaseModelContent = observer(
+  (props: { databaseModelBuilderState: DatabaseModelBuilderState }) => {
+    const { databaseModelBuilderState } = props;
 
     const applicationStore = useApplicationStore();
     const debouncedRegenerate = useMemo(
@@ -66,17 +63,6 @@ export const DatabaseModelBuilder = observer(
         ),
       [databaseModelBuilderState],
     );
-    const preview = (): void => {
-      debouncedRegenerate.cancel();
-      debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
-    };
-
-    const saveModels = applicationStore.guardUnhandledError(() =>
-      flowResult(databaseModelBuilderState.saveModels()),
-    );
-    const closeModal = (): void => {
-      databaseModelBuilderState.close();
-    };
 
     const targetPackageValidationMessage =
       !databaseModelBuilderState.targetPackage
@@ -107,6 +93,141 @@ export const DatabaseModelBuilder = observer(
     );
 
     return (
+      <ModalBody className="database-builder__content">
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel size={450}>
+            <div className="database-builder__config">
+              <PanelHeader title="schema explorer" />
+              <PanelContent className="database-builder__config__content">
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__label">
+                    {'Target Package'}
+                  </div>
+                  <div className="panel__content__form__section__header__prompt">
+                    {'Target Package of Mapping and Models Generated'}
+                  </div>
+                  <InputWithInlineValidation
+                    className="query-builder__variables__variable__name__input input-group__input"
+                    spellCheck={false}
+                    value={databaseModelBuilderState.targetPackage}
+                    onChange={changeTargetPackage}
+                    placeholder="Target package path"
+                    error={targetPackageValidationMessage}
+                  />
+                </div>
+              </PanelContent>
+            </div>
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel>
+            <Panel className="database-builder__model">
+              <PanelHeader title="database model" />
+              <PanelContent>
+                <PanelLoadingIndicator isLoading={isExecutingAction} />
+                <div className="database-builder__modeler">
+                  <div className="database-builder__modeler__preview">
+                    {databaseModelBuilderState.generatedGrammarCode && (
+                      <CodeEditor
+                        language={CODE_EDITOR_LANGUAGE.PURE}
+                        inputValue={
+                          databaseModelBuilderState.generatedGrammarCode
+                        }
+                        isReadOnly={true}
+                      />
+                    )}
+                    {!databaseModelBuilderState.generatedGrammarCode && (
+                      <BlankPanelContent>No model preview</BlankPanelContent>
+                    )}
+                  </div>
+                </div>
+              </PanelContent>
+            </Panel>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </ModalBody>
+    );
+  },
+);
+
+export const DatabaseModel = observer(
+  (props: {
+    databaseModelBuilderState: DatabaseModelBuilderState;
+    isReadOnly: boolean;
+  }) => {
+    const { databaseModelBuilderState, isReadOnly } = props;
+
+    const applicationStore = useApplicationStore();
+    const debouncedRegenerate = useMemo(
+      () =>
+        debounce(
+          () => flowResult(databaseModelBuilderState.previewDatabaseModels()),
+          500,
+        ),
+      [databaseModelBuilderState],
+    );
+    const preview = (): void => {
+      debouncedRegenerate.cancel();
+      debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
+    };
+
+    const saveModels = applicationStore.guardUnhandledError(() =>
+      flowResult(databaseModelBuilderState.saveModels()),
+    );
+    const closeModal = (): void => {
+      databaseModelBuilderState.close();
+    };
+
+    const isExecutingAction =
+      databaseModelBuilderState.generatingModelState.isInProgress ||
+      databaseModelBuilderState.saveModelState.isInProgress;
+
+    return (
+      <Modal darkMode={true} className="database-builder">
+        <ModalHeader>
+          <ModalTitle title="Database Model Builder" />
+          <ModalHeaderActions>
+            <button
+              className="modal__header__action"
+              tabIndex={-1}
+              onClick={closeModal}
+            >
+              <TimesIcon />
+            </button>
+          </ModalHeaderActions>
+        </ModalHeader>
+        <DatabaseModelContent
+          databaseModelBuilderState={databaseModelBuilderState}
+        />
+        <ModalFooter>
+          <ModalFooterButton
+            className="database-builder__action--btn"
+            disabled={isReadOnly || isExecutingAction}
+            onClick={preview}
+            title="Preview models..."
+          >
+            Preview
+          </ModalFooterButton>
+          <ModalFooterButton
+            className="database-builder__action--btn"
+            disabled={isReadOnly || isExecutingAction}
+            onClick={saveModels}
+          >
+            Save Models
+          </ModalFooterButton>
+        </ModalFooter>
+      </Modal>
+    );
+  },
+);
+
+export const DatabaseModelBuilder = observer(
+  (props: {
+    databaseModelBuilderState: DatabaseModelBuilderState;
+    isReadOnly: boolean;
+  }) => {
+    const { databaseModelBuilderState, isReadOnly } = props;
+
+    return (
       <Dialog
         open={databaseModelBuilderState.showModal}
         classes={{ container: 'search-modal__container' }}
@@ -117,91 +238,10 @@ export const DatabaseModelBuilder = observer(
           },
         }}
       >
-        <Modal darkMode={true} className="database-builder">
-          <ModalHeader>
-            <ModalTitle title="Database Model Builder" />
-            <ModalHeaderActions>
-              <button
-                className="modal__header__action"
-                tabIndex={-1}
-                onClick={closeModal}
-              >
-                <TimesIcon />
-              </button>
-            </ModalHeaderActions>
-          </ModalHeader>
-          <ModalBody className="database-builder__content">
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel size={450}>
-                <div className="database-builder__config">
-                  <PanelHeader title="schema explorer" />
-                  <PanelContent className="database-builder__config__content">
-                    <div className="panel__content__form__section">
-                      <div className="panel__content__form__section__header__label">
-                        {'Target Package'}
-                      </div>
-                      <div className="panel__content__form__section__header__prompt">
-                        {'Target Package of Mapping and Models Generated'}
-                      </div>
-                      <InputWithInlineValidation
-                        className="query-builder__variables__variable__name__input input-group__input"
-                        spellCheck={false}
-                        value={databaseModelBuilderState.targetPackage}
-                        onChange={changeTargetPackage}
-                        placeholder="Target package path"
-                        error={targetPackageValidationMessage}
-                      />
-                    </div>
-                  </PanelContent>
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter />
-              <ResizablePanel>
-                <Panel className="database-builder__model">
-                  <PanelHeader title="database model" />
-                  <PanelContent>
-                    <PanelLoadingIndicator isLoading={isExecutingAction} />
-                    <div className="database-builder__modeler">
-                      <div className="database-builder__modeler__preview">
-                        {databaseModelBuilderState.generatedGrammarCode && (
-                          <CodeEditor
-                            language={CODE_EDITOR_LANGUAGE.PURE}
-                            inputValue={
-                              databaseModelBuilderState.generatedGrammarCode
-                            }
-                            isReadOnly={true}
-                          />
-                        )}
-                        {!databaseModelBuilderState.generatedGrammarCode && (
-                          <BlankPanelContent>
-                            No model preview
-                          </BlankPanelContent>
-                        )}
-                      </div>
-                    </div>
-                  </PanelContent>
-                </Panel>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ModalBody>
-          <ModalFooter>
-            <ModalFooterButton
-              className="database-builder__action--btn"
-              disabled={isReadOnly || isExecutingAction}
-              onClick={preview}
-              title="Preview models..."
-            >
-              Preview
-            </ModalFooterButton>
-            <ModalFooterButton
-              className="database-builder__action--btn"
-              disabled={isReadOnly || isExecutingAction}
-              onClick={saveModels}
-            >
-              Save Models
-            </ModalFooterButton>
-          </ModalFooter>
-        </Modal>
+        <DatabaseModel
+          databaseModelBuilderState={databaseModelBuilderState}
+          isReadOnly={isReadOnly}
+        />
       </Dialog>
     );
   },
