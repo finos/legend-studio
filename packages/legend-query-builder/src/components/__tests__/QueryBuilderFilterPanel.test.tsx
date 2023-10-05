@@ -28,11 +28,15 @@ import {
   queryByDisplayValue,
   getByDisplayValue,
   getByTestId,
+  getAllByTestId,
+  findByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
   TEST_DATA__simpeFilterWithMilestonedExists,
+  TEST_DATA__simpleFilterWithAndCondition,
   TEST_DATA__simpleFilterWithDateTimeWithSeconds,
+  TEST_DATA__simpleFilterWithGroupOperationAndExists,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -307,5 +311,320 @@ test(
     expect(getByText(alteredNode, '<')).not.toBeNull();
     expect(getByText(alteredNode, 'integerConst')).not.toBeNull();
     expect(getByText(alteredNode, 'C')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(`Query builder loads simple filter node when we DnD it`),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter with 'AND' condition when we DnD`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    let dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    let dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    let contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    const filterTree = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE),
+    );
+    dropZone = filterTree;
+    dragSource = await waitFor(() => getByText(explorerPanel, 'Id'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add filter to main group',
+    );
+    await waitFor(() => getByText(filterPanel, 'Id'));
+    contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(3);
+    const idFilterNode = guaranteeNonNullable(contentNodes[2]);
+    await waitFor(() => getByText(idFilterNode, 'Id'));
+    await waitFor(() => getByText(idFilterNode, 'is'));
+    await waitFor(() => getByDisplayValue(idFilterNode, '0'));
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple exists filter node when we DnD it to create new group condition with property that doesn't require exists`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleFilterWithAndCondition.parameters,
+          TEST_DATA__simpleFilterWithAndCondition.body,
+        ),
+      );
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'Id'));
+
+    let filterTreeNodes = await waitFor(() =>
+      renderResult.getAllByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(3);
+
+    // Drag and drop
+    const legalNameFilterTreeNode = guaranteeNonNullable(
+      filterTreeNodes.find((n) => queryByText(n, 'Legal Name') !== null),
+    );
+    const dropZone = await waitFor(() =>
+      getByTestId(
+        legalNameFilterTreeNode,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    await waitFor(() => getByText(explorerPanel, 'Employees'));
+    fireEvent.click(getByText(explorerPanel, 'Employees'));
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(legalNameFilterTreeNode, 'Add New Logical Group');
+    fireEvent.drop(getByText(legalNameFilterTreeNode, 'Add New Logical Group'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+    await waitFor(() => getByText(filterPanel, 'Employees'));
+    await waitFor(() => getByText(filterPanel, 'First Name'));
+    filterTreeNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(6);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[0]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[1]), 'Id'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[2]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[3]), 'Legal Name'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[4]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[4]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[5]), 'First Name'),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter node when we DnD it to create new group condition with property that requires exists`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleFilterWithGroupOperationAndExists.parameters,
+          TEST_DATA__simpleFilterWithGroupOperationAndExists.body,
+        ),
+      );
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    await waitFor(() => getByText(filterPanel, 'Employees'));
+    await waitFor(() => getByText(filterPanel, 'First Name'));
+    await waitFor(() => getByText(filterPanel, 'Id'));
+
+    let filterTreeNodes = await waitFor(() =>
+      renderResult.getAllByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(4);
+
+    // Drag and drop
+    const firstNameFilterTreeNode = guaranteeNonNullable(
+      filterTreeNodes.find((n) => queryByText(n, 'First Name') !== null),
+    );
+    const dropZone = await waitFor(() =>
+      getByTestId(
+        firstNameFilterTreeNode,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      firstNameFilterTreeNode,
+      'Add New Logical Group',
+    );
+    await waitFor(() => getByText(filterPanel, 'Employees'));
+    await waitFor(() => getByText(filterPanel, 'First Name'));
+    filterTreeNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(6);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[0]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[1]), 'Id'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[2]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[3]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[3]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[4]), 'First Name'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[5]), 'Legal Name'),
+    );
   },
 );

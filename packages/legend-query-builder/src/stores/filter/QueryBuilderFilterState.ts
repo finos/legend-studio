@@ -466,6 +466,7 @@ export class QueryBuilderFilterState
       addNodeFromNode: action,
       replaceBlankNodeWithNode: action,
       addGroupConditionNodeFromNode: action,
+      newGroupConditionFromNode: action,
       newGroupWithConditionFromNode: action,
       removeNodeAndPruneBranch: action,
       pruneTree: action,
@@ -514,7 +515,7 @@ export class QueryBuilderFilterState
     return rootId ? this.getNode(rootId) : undefined;
   }
 
-  private getParentNode(
+  getParentNode(
     node: QueryBuilderFilterTreeNodeData,
   ): QueryBuilderFilterTreeOperationNodeData | undefined {
     return node.parentId
@@ -633,6 +634,44 @@ export class QueryBuilderFilterState
     newGroupNode.addChildNode(newBlankConditionNode1);
     newGroupNode.addChildNode(newBlankConditionNode2);
     this.addNodeFromNode(newGroupNode, fromNode);
+  }
+
+  /**
+   *
+   * Function to create group condition from node where either of the
+   * child nodes of group condition is `exists` node
+   */
+  newGroupConditionFromNode(
+    fromNode:
+      | QueryBuilderFilterTreeConditionNodeData
+      | QueryBuilderFilterTreeExistsNodeData,
+    node?:
+      | QueryBuilderFilterTreeConditionNodeData
+      | QueryBuilderFilterTreeExistsNodeData
+      | undefined,
+    operation?: QUERY_BUILDER_GROUP_OPERATION | undefined,
+  ): QueryBuilderFilterTreeGroupNodeData {
+    const fromNodeParent = this.getParentNode(fromNode);
+    const newGroupNode = new QueryBuilderFilterTreeGroupNodeData(
+      undefined,
+      operation ?? QUERY_BUILDER_GROUP_OPERATION.AND,
+    );
+    this.nodes.set(newGroupNode.id, newGroupNode);
+    fromNodeParent?.removeChildNode(fromNode);
+    newGroupNode.addChildNode(fromNode);
+    if (node) {
+      this.nodes.set(node.id, node);
+      newGroupNode.addChildNode(node);
+    }
+    newGroupNode.lambdaParameterName =
+      fromNodeParent?.lambdaParameterName ?? this.lambdaParameterName;
+    if (fromNodeParent) {
+      fromNodeParent.addChildNode(newGroupNode);
+    } else {
+      deleteEntry(this.rootIds, fromNode.id);
+      this.addRootNode(newGroupNode);
+    }
+    return newGroupNode;
   }
 
   newGroupWithConditionFromNode(
