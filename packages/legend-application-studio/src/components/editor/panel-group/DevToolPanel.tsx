@@ -51,6 +51,10 @@ export const DevToolPanel = observer(() => {
     engineConfig.setUseBase64ForAdhocConnectionDataUrls(
       !engineConfig.useBase64ForAdhocConnectionDataUrls,
     );
+
+  const toggleSetUseDevClientProtocol = (): void =>
+    engineConfig.setUseDevClientProtocol(!engineConfig.useDevClientProtocol);
+
   // Graph Manager
   const toggleStrictMode = (): void => {
     editorStore.graphState.setEnableStrictMode(
@@ -140,6 +144,13 @@ export const DevToolPanel = observer(() => {
           errorMessage={
             !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
           }
+        />
+        <PanelFormBooleanField
+          name="Use Dev client protocol version"
+          prompt="Specifies if development client porotocl (v_X_X_X) version should be used for execution"
+          value={engineConfig.useDevClientProtocol}
+          isReadOnly={false}
+          update={toggleSetUseDevClientProtocol}
         />
         {Boolean(
           editorStore.applicationStore.config.options

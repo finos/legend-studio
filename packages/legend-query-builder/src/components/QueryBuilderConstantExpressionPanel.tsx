@@ -25,6 +25,7 @@ import {
   CustomSelectorInput,
   Dialog,
   InfoCircleIcon,
+  InputWithInlineValidation,
   Modal,
   ModalBody,
   ModalFooter,
@@ -42,10 +43,7 @@ import {
   Multiplicity,
   isValidIdentifier,
 } from '@finos/legend-graph';
-import {
-  debounce,
-  generateEnumerableNameFromToken,
-} from '@finos/legend-shared';
+import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { DEFAULT_CONSTANT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -58,10 +56,11 @@ import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEd
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
-import { LambdaEditor_PopUp } from './shared/LambdaEditor.js';
+import { LambdaEditor } from './shared/LambdaEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
+import { flowResult } from 'mobx';
 
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
@@ -219,26 +218,84 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
     const { constantState } = props;
     const queryBuilderState = constantState.queryBuilderState;
     const lambdaState = constantState.lambdaState;
-    const closePopUp = (): void =>
+    const close = (): void =>
       queryBuilderState.constantState.setSelectedConstant(undefined);
-    const debouncedTransformStringToLambda = useMemo(
-      () =>
-        debounce(() => lambdaState.convertLambdaGrammarStringToObject(), 1000),
-      [lambdaState],
-    );
-    const canDrop = true;
+    const applicationStore = queryBuilderState.applicationStore;
+    const changeConstantName: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      variableExpression_setName(constantState.variable, event.target.value);
+    };
+    useEffect(() => {
+      flowResult(
+        lambdaState.convertLambdaObjectToGrammarString({
+          pretty: true,
+        }),
+      ).catch(applicationStore.alertUnhandledError);
+    }, [applicationStore, lambdaState]);
     return (
-      <>
-        <div className="lambda-editor" />
-        <LambdaEditor_PopUp
-          title={`Edit Constant ${constantState.variable.name}`}
-          className={clsx({ 'lambda-editor--dnd-match': canDrop })}
-          disabled={false}
-          lambdaEditorState={lambdaState}
-          transformStringToLambda={debouncedTransformStringToLambda}
-          onClose={closePopUp}
-        />
-      </>
+      <Dialog
+        open={true}
+        onClose={close}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal
+          darkMode={true}
+          className={clsx('editor-modal query-builder__constants__modal', {
+            'query-builder__constants__modal--has-error': Boolean(
+              lambdaState.parserError,
+            ),
+          })}
+        >
+          <ModalHeader>
+            <div className="modal__title">Update Calculated Constants</div>
+            {lambdaState.parserError && (
+              <div className="modal__title__error-badge">
+                Failed to parse query
+              </div>
+            )}
+          </ModalHeader>
+          <ModalBody>
+            <div
+              className={clsx('query-builder__constants__modal__content', {
+                backdrop__element: Boolean(lambdaState.parserError),
+              })}
+            >
+              <div className="query-builder__constants__modal__name">
+                <InputWithInlineValidation
+                  className="query-builder__constants__modal__name__input input--dark"
+                  spellCheck={false}
+                  value={constantState.variable.name}
+                  onChange={changeConstantName}
+                  placeholder="Constant Name"
+                />
+              </div>
+              <LambdaEditor
+                className="query-builder__constants__lambda-editor"
+                disabled={
+                  lambdaState.convertingLambdaToStringState.isInProgress
+                }
+                lambdaEditorState={lambdaState}
+                forceBackdrop={false}
+                autoFocus={true}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <button
+              className="btn btn--dark"
+              onClick={close}
+              disabled={Boolean(lambdaState.parserError)}
+            >
+              Close
+            </button>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
     );
   },
 );

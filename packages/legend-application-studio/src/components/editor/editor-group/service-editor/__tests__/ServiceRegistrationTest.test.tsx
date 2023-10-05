@@ -40,11 +40,15 @@ import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor/editor-sta
 import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
 import {
+  DeploymentOwnership,
   ServiceExecutionMode,
   ServiceRegistrationSuccess,
 } from '@finos/legend-graph';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
-import { service_deleteOwner } from '../../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
+import {
+  service_deleteOwner,
+  service_setOwnership,
+} from '../../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { ApplicationStore } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
@@ -316,7 +320,7 @@ test(
     await waitFor(() => getByText(editorGroup, 'myParam'));
     await waitFor(() => getByText(editorGroup, 'Documentation'));
     await waitFor(() => getByText(editorGroup, 'Auto Activate Updates'));
-    await waitFor(() => getByText(editorGroup, 'Owners'));
+    await waitFor(() => getByText(editorGroup, 'Owners (deprecated)'));
     await waitFor(() => getByText(editorGroup, 'owner1'));
     await waitFor(() => getByText(editorGroup, 'owner2'));
     // add owner
@@ -363,5 +367,22 @@ test(
         'Service needs to have at least 2 owners in order to be registered',
       ),
     );
+    //check ownership doesnt trigger owner check criteria
+    service_setOwnership(
+      serviceEditorState.service,
+      new DeploymentOwnership('test1', serviceEditorState.service),
+    );
+    fireEvent.click(getByTitle(registrationEditor, 'Register Service'));
+    const actionAlertDialogForRegistration = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+    await waitFor(() =>
+      getByText(actionAlertDialogForRegistration, 'Launch Service'),
+    );
+    getByText(
+      actionAlertDialogForRegistration,
+      'Service with pattern /myservice registered and activated',
+    );
+    fireEvent.click(renderResult.getByText('Close'));
   },
 );

@@ -104,6 +104,7 @@ import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js'
 import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
 import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
+import type { EngineError } from './action/EngineError.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -369,6 +370,14 @@ export abstract class AbstractPureGraphManager {
     options?: { keepSourceInformation?: boolean },
   ): Promise<string>;
 
+  abstract getLambdasReturnType(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+  ): Promise<{
+    results: Map<string, string>;
+    errors: Map<string, EngineError>;
+  }>;
+
   // ------------------------------------------- Test -------------------------------------------
 
   abstract runTests(
@@ -614,6 +623,7 @@ export abstract class AbstractPureGraphManager {
 
   abstract generateModelsFromDatabaseSpecification(
     databasePath: string,
+    targetPackage: undefined | string,
     graph: PureModel,
   ): Promise<Entity[]>;
 

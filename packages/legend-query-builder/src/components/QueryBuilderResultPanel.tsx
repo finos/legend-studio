@@ -68,6 +68,8 @@ import {
   prettyDuration,
   filterByType,
   isValidURL,
+  isString,
+  isNumber,
 } from '@finos/legend-shared';
 import { forwardRef, useRef, useState } from 'react';
 import {
@@ -78,6 +80,7 @@ import {
   type QueryBuilderPostFilterTreeNodeData,
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
+  PostFilterValueSpecConditionValueState,
 } from '../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
@@ -169,13 +172,13 @@ const QueryBuilderGridResultContextMenu = observer(
         .filter(
           (v) =>
             v instanceof QueryBuilderPostFilterTreeConditionNodeData &&
-            v.condition.columnState instanceof
+            v.condition.leftConditionValue instanceof
               QueryBuilderProjectionColumnState,
         )
         .filter(
           (n) =>
             (n as QueryBuilderPostFilterTreeConditionNodeData).condition
-              .columnState.columnName ===
+              .leftConditionValue.columnName ===
               (projectionColumnName ?? projectionColumnState?.columnName) &&
             operators
               .map((op) => op.getLabel())
@@ -229,7 +232,6 @@ const QueryBuilderGridResultContextMenu = observer(
           postFilterConditionState = new PostFilterConditionState(
             postFilterState,
             possibleProjectionColumnState,
-            undefined,
             operator,
           );
 
@@ -247,7 +249,9 @@ const QueryBuilderGridResultContextMenu = observer(
               postFilterConditionState,
             );
 
-          postFilterConditionState.setValue(defaultFilterConditionValue);
+          postFilterConditionState.buildFromValueSpec(
+            defaultFilterConditionValue,
+          );
           updateFilterConditionValue(
             defaultFilterConditionValue as InstanceValue,
             cellData,
@@ -291,62 +295,65 @@ const QueryBuilderGridResultContextMenu = observer(
         existingPostFilterNode as QueryBuilderPostFilterTreeConditionNodeData
       ).condition;
 
-      if (conditionState.operator.getLabel() === operator.getLabel()) {
-        const doesValueAlreadyExist =
-          conditionState.value instanceof InstanceValue &&
-          (conditionState.value instanceof EnumValueInstanceValue
-            ? conditionState.value.values.map((ef) => ef.value.name)
-            : conditionState.value.values
-          ).includes(cellData.value);
+      const rightSide = conditionState.rightConditionValue;
+      if (rightSide instanceof PostFilterValueSpecConditionValueState) {
+        if (conditionState.operator.getLabel() === operator.getLabel()) {
+          const doesValueAlreadyExist =
+            rightSide.value instanceof InstanceValue &&
+            (rightSide.value instanceof EnumValueInstanceValue
+              ? rightSide.value.values.map((ef) => ef.value.name)
+              : rightSide.value.values
+            ).includes(cellData.value);
 
-        if (!doesValueAlreadyExist) {
-          const currentValueSpecificaton = conditionState.value;
-          const newValueSpecification =
-            conditionState.operator.getDefaultFilterConditionValue(
-              conditionState,
+          if (!doesValueAlreadyExist) {
+            const currentValueSpecificaton = rightSide.value;
+            const newValueSpecification =
+              conditionState.operator.getDefaultFilterConditionValue(
+                conditionState,
+              );
+            updateFilterConditionValue(
+              newValueSpecification as InstanceValue,
+              cellData,
             );
-          updateFilterConditionValue(
-            newValueSpecification as InstanceValue,
-            cellData,
-          );
-          conditionState.changeOperator(
-            isFilterBy ? postFilterInOperator : postFilterNotInOperator,
-          );
-          instanceValue_setValues(
-            conditionState.value as InstanceValue,
-            [currentValueSpecificaton, newValueSpecification],
-            tdsState.queryBuilderState.observerContext,
-          );
-        }
-      } else {
-        const doesValueAlreadyExist =
-          conditionState.value instanceof InstanceValue &&
-          conditionState.value.values
-            .filter((v) => v instanceof InstanceValue)
-            .map((v) =>
-              v instanceof EnumValueInstanceValue
-                ? v.values.map((ef) => ef.value.name)
-                : (v as InstanceValue).values,
-            )
-            .flat()
-            .includes(cellData.value ?? data?.value);
+            conditionState.changeOperator(
+              isFilterBy ? postFilterInOperator : postFilterNotInOperator,
+            );
+            instanceValue_setValues(
+              rightSide.value as InstanceValue,
+              [currentValueSpecificaton, newValueSpecification],
+              tdsState.queryBuilderState.observerContext,
+            );
+          }
+        } else {
+          const doesValueAlreadyExist =
+            rightSide.value instanceof InstanceValue &&
+            rightSide.value.values
+              .filter((v) => v instanceof InstanceValue)
+              .map((v) =>
+                v instanceof EnumValueInstanceValue
+                  ? v.values.map((ef) => ef.value.name)
+                  : (v as InstanceValue).values,
+              )
+              .flat()
+              .includes(cellData.value ?? data?.value);
 
-        if (!doesValueAlreadyExist) {
-          const newValueSpecification = (
-            isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
-          ).getDefaultFilterConditionValue(conditionState);
-          updateFilterConditionValue(
-            newValueSpecification as InstanceValue,
-            cellData,
-          );
-          instanceValue_setValues(
-            conditionState.value as InstanceValue,
-            [
-              ...(conditionState.value as InstanceValue).values,
-              newValueSpecification,
-            ],
-            tdsState.queryBuilderState.observerContext,
-          );
+          if (!doesValueAlreadyExist) {
+            const newValueSpecification = (
+              isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
+            ).getDefaultFilterConditionValue(conditionState);
+            updateFilterConditionValue(
+              newValueSpecification as InstanceValue,
+              cellData,
+            );
+            instanceValue_setValues(
+              rightSide.value as InstanceValue,
+              [
+                ...(rightSide.value as InstanceValue).values,
+                newValueSpecification,
+              ],
+              tdsState.queryBuilderState.observerContext,
+            );
+          }
         }
       }
     };
@@ -482,15 +489,18 @@ const QueryResultCellRenderer = observer(
     const tdsExecutionResult = params.tdsExecutionResult;
     const fetchStructureImplementation =
       resultState.queryBuilderState.fetchStructureState.implementation;
-
-    const cellValue = params.value as string;
-    const formattedCellValue = !isNaN(Number(cellValue))
-      ? Intl.NumberFormat(DEFAULT_LOCALE, { maximumFractionDigits: 4 }).format(
-          Number(cellValue),
-        )
-      : cellValue;
+    const cellValue = params.value as string | null | number | undefined;
+    const formattedCellValue = (): string | null | number | undefined => {
+      if (isNumber(cellValue)) {
+        return Intl.NumberFormat(DEFAULT_LOCALE, {
+          maximumFractionDigits: 4,
+        }).format(Number(cellValue));
+      }
+      return cellValue;
+    };
+    const cellValueUrlLink =
+      isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
     const columnName = params.column?.getColId() ?? '';
-
     const findCoordinatesFromResultValue = (
       colId: string,
       rowNumber: number,
@@ -498,7 +508,6 @@ const QueryResultCellRenderer = observer(
       const colIndex = tdsExecutionResult.result.columns.findIndex(
         (col) => col === colId,
       );
-
       return { rowIndex: rowNumber, colIndex: colIndex };
     };
 
@@ -710,12 +719,12 @@ const QueryResultCellRenderer = observer(
           onMouseUp={(event) => mouseUp(event)}
           onMouseOver={(event) => mouseOver(event)}
         >
-          {isValidURL(cellValue) ? (
-            <a href={cellValue} target="_blank" rel="noreferrer">
-              {cellValue}
+          {cellValueUrlLink ? (
+            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+              {cellValueUrlLink}
             </a>
           ) : (
-            <span>{formattedCellValue}</span>
+            <span>{formattedCellValue()}</span>
           )}
         </div>
       </ContextMenu>

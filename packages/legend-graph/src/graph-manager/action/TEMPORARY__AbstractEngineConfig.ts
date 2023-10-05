@@ -31,6 +31,7 @@ export class TEMPORARY__AbstractEngineConfig {
   useClientRequestPayloadCompression = false;
   useBase64ForAdhocConnectionDataUrls = false;
   enableDebuggingPayload = false;
+  useDevClientProtocol = false;
 
   constructor() {
     makeObservable(this, {
@@ -41,6 +42,7 @@ export class TEMPORARY__AbstractEngineConfig {
       useClientRequestPayloadCompression: observable,
       useBase64ForAdhocConnectionDataUrls: observable,
       enableDebuggingPayload: observable,
+      useDevClientProtocol: observable,
       setEnv: action,
       setCurrentUserId: action,
       setBaseUrl: action,
@@ -48,6 +50,7 @@ export class TEMPORARY__AbstractEngineConfig {
       setUseClientRequestPayloadCompression: action,
       setUseBase64ForAdhocConnectionDataUrls: action,
       setEnableDebuggingPayload: action,
+      setUseDevClientProtocol: action,
     });
   }
 
@@ -81,5 +84,9 @@ export class TEMPORARY__AbstractEngineConfig {
 
   setEnableDebuggingPayload(val: boolean): void {
     this.enableDebuggingPayload = val;
+  }
+
+  setUseDevClientProtocol(val: boolean): void {
+    this.useDevClientProtocol = val;
   }
 }

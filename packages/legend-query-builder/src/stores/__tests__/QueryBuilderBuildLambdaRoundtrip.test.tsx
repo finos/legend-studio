@@ -35,6 +35,7 @@ import {
   TEST_DATA__simpleProjectionWithOutPreviewLimit,
   TEST_DATA__simpleProjectionWithPreviewLimit,
   TEST_DATA__simpleFromFunction,
+  TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
@@ -87,6 +88,7 @@ import {
   TEST_DATA__lambda_aggregationPostFilter,
   TEST_DATA__lambda_derivationPostFilter,
   TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday,
+  TEST_DATA__lambda_postFilterWithRightValAsColEnums,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
 import {
@@ -141,6 +143,7 @@ import { DEFAULT_LIMIT } from '../QueryBuilderResultState.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' assert { type: 'json' };
 import { TEST_DATA__simpleProjectionWithBusinessMilestonedColumn } from './TEST_DATA__QueryBuilder_Milestoning.js';
+import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
 
 type RoundtripTestCase = [
   string,
@@ -201,6 +204,10 @@ const existsCtx = {
 
 const milestoningCtx = {
   entities: TEST_MilestoningModel,
+};
+
+const filtersCtx = {
+  entities: TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -441,6 +448,18 @@ const cases: RoundtripTestCase[] = [
     'Post-filter with result set modifier',
     postFilterCtx,
     TEST_DATA__lambda_derivationPostFilter,
+    undefined,
+  ],
+  [
+    'Post-filter with right condition as tds col',
+    filtersCtx,
+    TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
+    undefined,
+  ],
+  [
+    'Post-filter with left and right val as tds cols with enums',
+    postFilterCtx,
+    TEST_DATA__lambda_postFilterWithRightValAsColEnums,
     undefined,
   ],
   // date compabilty, today(), yesterday() etc
@@ -732,7 +751,6 @@ test(
   integrationTest(
     'Query builder lambda processing roundtrip test with exporting result',
   ),
-
   async () => {
     const context = projectionCtx;
     const { entities } = context;

@@ -111,6 +111,7 @@ import {
   runtime_deleteIdentifiedConnection,
 } from '../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import { CUSTOM_LABEL } from '../../../stores/editor/NewElementState.js';
 
 const getConnectionTooltipText = (
   connection: Connection,
@@ -379,7 +380,7 @@ const RuntimeExplorer = observer(
     const runtimeName =
       runtime instanceof RuntimePointer
         ? runtime.packageableRuntime.value.name
-        : '(custom)';
+        : CUSTOM_LABEL;
     // explorer tree data
     const treeData = runtimeEditorState.explorerTreeData;
     const onNodeSelect = (node: RuntimeExplorerTreeNodeData): void =>
@@ -494,7 +495,7 @@ const IdentifiedConnectionEditor = observer(
       <div className="runtime-connection-editor__connection-option--custom">
         <CogIcon />
         <div className="runtime-connection-editor__connection-option--custom__label">
-          (custom)
+          {CUSTOM_LABEL}
         </div>
       </div>
     );

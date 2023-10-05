@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram",
-  "version": "8.0.82",
+  "version": "8.0.90",
   "description": "Legend extension for Diagram DSL",
   "keywords": [
     "legend",
@@ -54,7 +54,7 @@
     "@finos/legend-storage": "workspace:*",
     "@types/react": "18.2.22",
     "mobx": "6.10.2",
-    "mobx-react-lite": "4.0.4",
+    "mobx-react-lite": "3.4.3",
     "react": "18.2.0",
     "react-dnd": "16.0.1",
     "react-dom": "18.2.0",

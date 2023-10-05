@@ -413,6 +413,10 @@ export class QueryBuilderGraphFetchTreeState
     }
   }
 
+  override initializeWithQuery(): void {
+    return;
+  }
+
   onClassChange(_class: Class | undefined): void {
     this.updateTreeData(_class);
   }

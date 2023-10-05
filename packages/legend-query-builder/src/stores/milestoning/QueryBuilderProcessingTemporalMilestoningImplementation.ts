@@ -20,9 +20,12 @@ import {
   type SimpleFunctionExpression,
   type AbstractPropertyExpression,
   INTERNAL__PropagatedValue,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { assertTrue, guaranteeNonNullable } from '@finos/legend-shared';
 import { getParameterValue } from '../../components/QueryBuilderSideBar.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import { createSupportedFunctionExpression } from '../shared/ValueSpecificationEditorHelper.js';
 import { QueryBuilderMilestoningImplementation } from './QueryBuilderMilestoningImplementation.js';
 
 export class QueryBuilderProcessingTemporalMilestoningImplementation extends QueryBuilderMilestoningImplementation {
@@ -61,6 +64,16 @@ export class QueryBuilderProcessingTemporalMilestoningImplementation extends Que
         `Milestoning class should have a parameter of type 'Date'`,
       ),
     );
+  }
+
+  buildGetAllWithDefaultParameters(
+    getAllFunction: SimpleFunctionExpression,
+  ): void {
+    const parameterValue = createSupportedFunctionExpression(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
+      PrimitiveType.DATETIME,
+    );
+    getAllFunction.parametersValues.push(parameterValue);
   }
 
   generateMilestoningDate(

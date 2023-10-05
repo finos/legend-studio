@@ -44,6 +44,7 @@ import {
   type LambdaFunction,
   type ValueSpecification,
   type VariableExpression,
+  type EngineError,
   GRAPH_MANAGER_EVENT,
   extractSourceInformationCoordinates,
   LAMBDA_PIPE,
@@ -150,9 +151,11 @@ export class QueryBuilderTDSState
       removeAllColumns: action,
       replaceColumn: action,
       initialize: action,
+      initializeWithQuery: action,
       setShowPostFilterPanel: action,
       setShowWindowFuncPanel: action,
       convertDerivationProjectionObjects: flow,
+      fetchDerivedReturnTypes: flow,
     });
 
     this.resultSetModifierState = new QueryResultSetModifierState(this);
@@ -356,6 +359,12 @@ export class QueryBuilderTDSState
     this.queryBuilderState.filterState.setShowPanel(true);
     this.setShowPostFilterPanel(false);
     this.setShowWindowFuncPanel(false);
+  }
+
+  override initializeWithQuery(): void {
+    flowResult(this.fetchDerivedReturnTypes()).catch(
+      this.queryBuilderState.applicationStore.alertUnhandledError,
+    );
   }
 
   isColumnInUse(tdsCol: QueryBuilderTDSColumnState): boolean {
@@ -741,7 +750,7 @@ export class QueryBuilderTDSState
       filterByType(QueryBuilderDerivationProjectionColumnState),
     );
     if (derivationColumns.length) {
-      // we will return false if any derivation cols are present as we can't verify is the variable is ued
+      // we will return false if any derivation cols are present as we can't verify is the variable is used
       return false;
     }
     const usedInProjection = columns
@@ -759,5 +768,38 @@ export class QueryBuilderTDSState
       this.postFilterState,
       this.resultSetModifierState,
     ]);
+  }
+
+  *fetchDerivedReturnTypes(): GeneratorFn<void> {
+    try {
+      const input = new Map<string, RawLambda>();
+      const graph = this.queryBuilderState.graphManagerState.graph;
+      const derivedCols = this.projectionColumns.filter(
+        filterByType(QueryBuilderDerivationProjectionColumnState),
+      );
+      derivedCols.forEach((col) =>
+        input.set(col.columnName, col.getIsolatedRawLambda()),
+      );
+      const result =
+        (yield this.queryBuilderState.graphManagerState.graphManager.getLambdasReturnType(
+          input,
+          graph,
+        )) as {
+          results: Map<string, string>;
+          errors: Map<string, EngineError>;
+        };
+      Array.from(result.results.entries()).forEach((res) => {
+        const col = derivedCols.find((d) => d.columnName === res[0]);
+        if (col) {
+          col.setLambdaReturnType(res[1]);
+        }
+      });
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.logService.info(
+        LogEvent.create('Unable to fetch derived return types'),
+        error,
+      );
+    }
   }
 }

@@ -1,5 +1,47 @@
 # @finos/legend-query-builder
 
+## 4.9.4
+
+### Patch Changes
+
+- [#2655](https://github.com/finos/legend-studio/pull/2655) [`22c1fe964`](https://github.com/finos/legend-studio/commit/22c1fe96447713a0a2c32a9523716772a2ebbb51) ([@gayathrir11](https://github.com/gayathrir11)) - Support calendar aggregation end Date to accept Date functions
+
+- [#2654](https://github.com/finos/legend-studio/pull/2654) [`1ae9ce88a`](https://github.com/finos/legend-studio/commit/1ae9ce88ab62d2db8706f40f4d779abb392a85b9) ([@gayathrir11](https://github.com/gayathrir11)) - Fix issue with casting of subType when property mapping points to class mapping of subType in projection and graph-fetch
+
+## 4.9.3
+
+### Patch Changes
+
+- [#2598](https://github.com/finos/legend-studio/pull/2598) [`c73c7cee6`](https://github.com/finos/legend-studio/commit/c73c7cee649b909850b8ddbed2f582edff1ff483) ([@gayathrir11](https://github.com/gayathrir11)) - Fix issue with casting of subType when property mapping points to class mapping of subType
+
+## 4.9.2
+
+## 4.9.1
+
+## 4.9.0
+
+### Minor Changes
+
+- [#2637](https://github.com/finos/legend-studio/pull/2637) [`b8b1dfabb`](https://github.com/finos/legend-studio/commit/b8b1dfabb44760069bca2de9cef0512c0f61599a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add processing of if functions for calculated constants to resolve type.
+
+### Patch Changes
+
+- [#2639](https://github.com/finos/legend-studio/pull/2639) [`2116cc8f3`](https://github.com/finos/legend-studio/commit/2116cc8f3398d9f99714642e2879de2319da682a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering null values and empty strings in query results.
+
+## 4.8.0
+
+### Minor Changes
+
+- [#2617](https://github.com/finos/legend-studio/pull/2617) [`a2de12f1e`](https://github.com/finos/legend-studio/commit/a2de12f1e8fa16dbf8c708988f5b831b02ccb6fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enhance query derivaed projection performance by fetching lambda return types on initialization of query as well as updating when editing via lambda editor.
+
+- [#2617](https://github.com/finos/legend-studio/pull/2617) [`a2de12f1e`](https://github.com/finos/legend-studio/commit/a2de12f1e8fa16dbf8c708988f5b831b02ccb6fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `onEditorBlur` to LambdaEditor when leaving editor.
+
+### Patch Changes
+
+- [#2612](https://github.com/finos/legend-studio/pull/2612) [`f69c77947`](https://github.com/finos/legend-studio/commit/f69c779476cc66100936ef46ab1e8fc22a145a5a) ([@gayathrir11](https://github.com/gayathrir11)) - Fix typeahead search for milestoned properties
+
+## 4.7.4
+
 ## 4.7.3
 
 ### Patch Changes

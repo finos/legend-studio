@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable, flow, computed } from 'mobx';
+import {
+  action,
+  makeObservable,
+  observable,
+  flow,
+  computed,
+  flowResult,
+} from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
@@ -24,6 +31,7 @@ import {
   assertNonEmptyString,
   type Hashable,
   hashArray,
+  ActionState,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -275,6 +283,7 @@ export class QueryBuilderDerivationProjectionColumnState
   derivationLambdaEditorState: QueryBuilderDerivationProjectionLambdaState;
   lambda: RawLambda;
   returnType: Type | undefined;
+  fetchingLambdaReturnTypeState = ActionState.create();
 
   constructor(tdsState: QueryBuilderTDSState, lambda: RawLambda) {
     super(tdsState, '(derivation)');
@@ -282,8 +291,10 @@ export class QueryBuilderDerivationProjectionColumnState
     makeObservable(this, {
       lambda: observable,
       returnType: observable,
+      fetchingLambdaReturnTypeState: observable,
       setLambda: action,
       fetchDerivationLambdaReturnType: flow,
+      setLambdaReturnType: action,
     });
 
     this.derivationLambdaEditorState =
@@ -307,35 +318,103 @@ export class QueryBuilderDerivationProjectionColumnState
    * Throws error if unable to fetch type or if type is not primitive or an enumeration
    * as expected by a projection column
    */
-  *fetchDerivationLambdaReturnType(): GeneratorFn<void> {
+  *fetchDerivationLambdaReturnType(options?: {
+    forceRefresh?: boolean;
+    forceConversionStringToLambda?: boolean;
+    isBeingDropped?: boolean;
+  }): GeneratorFn<void> {
+    if (!options?.forceRefresh && this.returnType !== undefined) {
+      return;
+    }
+    try {
+      assertTrue(
+        !this.fetchingLambdaReturnTypeState.isInProgress,
+        'Fetching lambda return type already in progress',
+      );
+      this.fetchingLambdaReturnTypeState.inProgress();
+      if (options?.isBeingDropped) {
+        this.tdsState.postFilterState.setDerivedColumnBeingDropped(this);
+      }
+      if (options?.forceConversionStringToLambda) {
+        yield flowResult(
+          this.derivationLambdaEditorState.convertLambdaGrammarStringToObject(),
+        ).catch(
+          this.tdsState.queryBuilderState.applicationStore.alertUnhandledError,
+        );
+      }
+      assertTrue(Array.isArray(this.lambda.parameters));
+      const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
+      const isolatedLambda = this.getIsolatedRawLambda();
+      const type =
+        (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
+          isolatedLambda,
+          graph,
+        )) as string;
+      this.setLambdaReturnType(type);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.tdsState.queryBuilderState.applicationStore.logService.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
+        error,
+      );
+    } finally {
+      this.fetchingLambdaReturnTypeState.complete();
+      if (options?.isBeingDropped) {
+        this.tdsState.postFilterState.setDerivedColumnBeingDropped(undefined);
+      }
+    }
+  }
+
+  getIsolatedRawLambda(): RawLambda {
     assertTrue(Array.isArray(this.lambda.parameters));
     const projectionParameter = this.lambda.parameters as object[];
-    const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
     assertTrue(projectionParameter.length === 1);
     const variable = projectionParameter[0] as VariableExpression;
     assertNonEmptyString(variable.name);
     // assign variable to query class
+    const queryBuilderState = this.tdsState.queryBuilderState;
     const rawVariableExpression = new RawVariableExpression(
       variable.name,
       Multiplicity.ONE,
       PackageableElementExplicitReference.create(
-        guaranteeNonNullable(this.tdsState.queryBuilderState.class),
+        guaranteeNonNullable(queryBuilderState.class),
       ),
     );
     const _rawVariableExpression =
-      this.tdsState.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
         rawVariableExpression,
       );
-    const isolatedLambda = new RawLambda(
-      [_rawVariableExpression],
-      this.lambda.body,
+    const parameters = queryBuilderState.parametersState.parameterStates.map(
+      (_param) =>
+        queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
+          _param.parameter,
+        ),
     );
-    const type =
-      (yield this.tdsState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
-        isolatedLambda,
-        graph,
-      )) as string;
-    const resolvedType = graph.getType(type);
+    const letExpressions = queryBuilderState.constantState.constants
+      .map((_const) => _const.buildLetExpression())
+      .map((expres) =>
+        queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
+          expres,
+        ),
+      );
+    let lambdaBody = this.lambda.body;
+    if (letExpressions.length) {
+      if (Array.isArray(this.lambda.body)) {
+        lambdaBody = [...letExpressions, ...(this.lambda.body as object[])];
+      } else {
+        lambdaBody = [...letExpressions, this.lambda.body];
+      }
+    }
+    const isolatedLambda = new RawLambda(
+      [_rawVariableExpression, ...parameters],
+      lambdaBody,
+    );
+    return isolatedLambda;
+  }
+
+  setLambdaReturnType(type: string): void {
+    const resolvedType =
+      this.tdsState.queryBuilderState.graphManagerState.graph.getType(type);
     assertTrue(
       resolvedType instanceof PrimitiveType ||
         resolvedType instanceof Enumeration,

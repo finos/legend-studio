@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-pure-ide",
-  "version": "8.0.82",
+  "version": "8.0.90",
   "description": "Legend Pure IDE application core",
   "keywords": [
     "legend",
@@ -52,7 +52,7 @@
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
     "mobx": "6.10.2",
-    "mobx-react-lite": "4.0.4",
+    "mobx-react-lite": "3.4.3",
     "monaco-editor": "0.43.0",
     "react": "18.2.0",
     "react-dnd": "16.0.1",

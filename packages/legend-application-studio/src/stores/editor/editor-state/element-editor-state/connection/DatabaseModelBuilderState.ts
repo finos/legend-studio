@@ -28,6 +28,8 @@ import type { EditorStore } from '../../../EditorStore.js';
 import type { Database } from '@finos/legend-graph';
 import { EntityChangeType, type EntityChange } from '@finos/legend-server-sdlc';
 
+export const GENERATED = 'generated';
+
 export class DatabaseModelBuilderState {
   readonly editorStore: EditorStore;
   readonly database: Database;
@@ -38,6 +40,7 @@ export class DatabaseModelBuilderState {
   showModal = false;
   generatedGrammarCode = '';
   entities: Entity[] | undefined;
+  targetPackage: string;
 
   constructor(
     editorStore: EditorStore,
@@ -49,16 +52,19 @@ export class DatabaseModelBuilderState {
       generatedGrammarCode: observable,
       generatingModelState: observable,
       saveModelState: observable,
+      targetPackage: observable,
       close: action,
       setShowModal: action,
       setEntities: action,
       setDatabaseGrammarCode: action,
+      setTargetPackage: action,
       saveModels: flow,
       previewDatabaseModels: flow,
     });
     this.editorStore = editorStore;
     this.database = database;
     this.isReadOnly = isReadOnly;
+    this.targetPackage = database.package?.path ?? GENERATED;
   }
 
   setShowModal(val: boolean): void {
@@ -78,14 +84,18 @@ export class DatabaseModelBuilderState {
     this.editorStore.explorerTreeState.setDatabaseModelBuilderState(undefined);
   }
 
+  setTargetPackage(val: string): void {
+    this.targetPackage = val;
+  }
+
   *previewDatabaseModels(): GeneratorFn<void> {
     try {
       this.generatingModelState.isInProgress;
       this.entities = [];
-      this.setDatabaseGrammarCode('');
       const entities =
         (yield this.editorStore.graphManagerState.graphManager.generateModelsFromDatabaseSpecification(
           this.database.path,
+          this.targetPackage,
           this.editorStore.graphManagerState.graph,
         )) as Entity[];
 
@@ -93,6 +103,7 @@ export class DatabaseModelBuilderState {
       this.setDatabaseGrammarCode(
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
           entities,
+          { pretty: true },
         )) as string,
       );
     } catch (error) {
