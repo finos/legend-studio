@@ -17,14 +17,15 @@
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
+  type ContentType,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
-  type ContentType,
   downloadFileUsingDataURI,
   ActionState,
   StopWatch,
   getContentTypeFileExtension,
+  isBoolean,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -37,6 +38,7 @@ import {
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   extractExecutionResultValues,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -81,6 +83,7 @@ export class QueryBuilderResultState {
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
   isQueryUsageViewerOpened = false;
+  rowData: Record<string, string | number | boolean | null>[] = [];
 
   selectedCells: QueryBuilderTDSResultCellData[];
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
@@ -110,6 +113,8 @@ export class QueryBuilderResultState {
       setQueryRunPromise: action,
       setIsQueryUsageViewerOpened: action,
       exportData: flow,
+      getRowData: action,
+      setRowData: action,
       runQuery: flow,
       cancelQuery: flow,
       generatePlan: flow,
@@ -122,6 +127,36 @@ export class QueryBuilderResultState {
       this.queryBuilderState.applicationStore,
       this.queryBuilderState.graphManagerState,
     );
+  }
+
+  getRowData(): Record<string, string | number | boolean | null>[] {
+    if (
+      this.executionResult &&
+      this.executionResult instanceof TDSExecutionResult
+    ) {
+      const data = this.executionResult.result.rows.map((_row, rowIdx) => {
+        const row: Record<string, string | number | boolean | null> = {};
+        const cols = (this.executionResult as TDSExecutionResult).result
+          .columns;
+        _row.values.forEach((value, colIdx) => {
+          // `ag-grid` shows `false` value as empty string so we have
+          // call `.toString()` to avoid this behavior.
+          // See https://github.com/finos/legend-studio/issues/1008
+          row[cols[colIdx] as string] = isBoolean(value)
+            ? String(value)
+            : value;
+        });
+        row.rowNumber = rowIdx;
+        return row;
+      });
+      this.rowData = data;
+      return data;
+    }
+    return [];
+  }
+
+  setRowData(val: Record<string, string | number | boolean | null>[]): void {
+    this.rowData = val;
   }
 
   setIsSelectingCells(val: boolean): void {
