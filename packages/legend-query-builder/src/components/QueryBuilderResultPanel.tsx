@@ -435,7 +435,7 @@ const QueryBuilderGridResultContextMenu = observer(
       );
       // try to get the entire row value separated by comma
       // rowData is in format of {columnName: value, columnName1: value, ...., rowNumber:value}
-      const valueArr: unknown[] = [];
+      const valueArr: (string | number | boolean | null | undefined)[] = [];
       if (rowData) {
         Object.entries(rowData).forEach((entry) => {
           if (entry[0] !== 'rowNumber') {
