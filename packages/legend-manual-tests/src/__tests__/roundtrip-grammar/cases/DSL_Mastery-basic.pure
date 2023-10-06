@@ -147,7 +147,7 @@ Service org::dataeng::ElasticSearchTransformService
 MasterRecordDefinition alloy::mastery::WidgetMasterRecord
 {
   modelClass: org::dataeng::Widget;
-  identityResolution: 
+  identityResolution:
   {
     resolutionQueries:
       [
@@ -165,40 +165,6 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
         }
       ]
   }
-  precedenceRules: [
-    DeleteRule: {
-      path: org::dataeng::Widget.identifiers;
-      ruleScope: [
-        RecordSourceScope {widget-rest-source}
-      ];
-    },
-    CreateRule: {
-      path: org::dataeng::Widget{$.widgetId == 1234}.identifiers.identifierType;
-      ruleScope: [
-        RecordSourceScope {widget-file-source-ftp},
-        DataProviderTypeScope {Aggregator}
-      ];
-    },
-    ConditionalRule: {
-      predicate: {incoming: org::dataeng::Widget[1],current: org::dataeng::Widget[1]|$incoming.widgetId == $current.widgetId};
-      path: org::dataeng::Widget.identifiers.identifierType;
-    },
-    SourcePrecedenceRule: {
-      path: org::dataeng::Widget.identifiers{$.identifier == 'XLON'};
-      action: Overwrite;
-      ruleScope: [
-        RecordSourceScope {widget-file-source-sftp, precedence: 1},
-        DataProviderTypeScope {Exchange, precedence: 2}
-      ];
-    },
-    SourcePrecedenceRule: {
-      path: org::dataeng::Widget.identifiers;
-      action: Overwrite;
-      ruleScope: [
-        RecordSourceScope {widget-rest-source, precedence: 2}
-      ];
-    }
-  ]
   postCurationEnrichmentService: org::dataeng::PostCurationWidget;
   publishToElasticSearch: true;
   elasticSearchTransformService: org::dataeng::ElasticSearchTransformService;
