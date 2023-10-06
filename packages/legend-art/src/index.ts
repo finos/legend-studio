@@ -39,6 +39,8 @@ export * from './menu/MenuContent.js';
 export * from './menu/ContextMenu.js';
 export * from './menu/DropdownMenu.js';
 
+export * from './stepper/BaseStepper.js';
+
 export * from './popover/BasePopover.js';
 export * from './popover/BasePopper.js';
 

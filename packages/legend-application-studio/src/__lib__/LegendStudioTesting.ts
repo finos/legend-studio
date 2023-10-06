@@ -33,6 +33,8 @@ export enum LEGEND_STUDIO_TEST_ID {
   TEST_RUNNER = 'test-runner',
   BULK_REGISTRATION = 'bulk-service-registration',
 
+  END_TO_END_WORKFLOW = 'end-to-end-workflow',
+
   STATUS_BAR = 'status-bar',
   EDITOR__STATUS_BAR__RIGHT = 'editor__status-bar__right',
 
