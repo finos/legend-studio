@@ -62,7 +62,6 @@ import {
 import {
   assertErrorThrown,
   guaranteeNonNullable,
-  type PlainObject,
   prettyDuration,
   filterByType,
   isValidURL,
@@ -436,9 +435,14 @@ const QueryBuilderGridResultContextMenu = observer(
       );
       // try to get the entire row value separated by comma
       // rowData is in format of {columnName: value, columnName1: value, ...., rowNumber:value}
+      const valueArr: unknown[] = [];
       if (rowData) {
-        const value = Object.values(rowData).toString();
-        return value.substring(0, value.lastIndexOf(','));
+        Object.entries(rowData).forEach((entry) => {
+          if (entry[0] !== 'rowNumber') {
+            valueArr.push(entry[1]);
+          }
+        });
+        return valueArr.join(',');
       }
       return '';
     };
@@ -735,7 +739,10 @@ const QueryBuilderGridResult = observer(
           <DataGrid
             rowData={queryBuilderState.resultState.getRowData()}
             onSortChanged={(params) => {
-              const sortedData: PlainObject<unknown>[] = [];
+              const sortedData: Record<
+                string,
+                string | number | boolean | null
+              >[] = [];
               params.api.forEachNodeAfterFilterAndSort((node, index) => {
                 node.rowIndex = index;
                 // rowNumber has to be manually updated after sorting the column

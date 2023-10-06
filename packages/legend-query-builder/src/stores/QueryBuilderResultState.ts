@@ -17,15 +17,14 @@
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
+  type ContentType,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
-  type ContentType,
   downloadFileUsingDataURI,
   ActionState,
   StopWatch,
   getContentTypeFileExtension,
-  type PlainObject,
   isBoolean,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -84,7 +83,7 @@ export class QueryBuilderResultState {
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
   isQueryUsageViewerOpened = false;
-  rowData: PlainObject<unknown>[] = [];
+  rowData: Record<string, string | number | boolean | null>[] = [];
 
   selectedCells: QueryBuilderTDSResultCellData[];
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
@@ -130,13 +129,13 @@ export class QueryBuilderResultState {
     );
   }
 
-  getRowData(): PlainObject<unknown>[] {
+  getRowData(): Record<string, string | number | boolean | null>[] {
     if (
       this.executionResult &&
       this.executionResult instanceof TDSExecutionResult
     ) {
       const data = this.executionResult.result.rows.map((_row, rowIdx) => {
-        const row: PlainObject = {};
+        const row: Record<string, string | number | boolean | null> = {};
         const cols = (this.executionResult as TDSExecutionResult).result
           .columns;
         _row.values.forEach((value, colIdx) => {
@@ -156,7 +155,7 @@ export class QueryBuilderResultState {
     return [];
   }
 
-  setRowData(val: PlainObject<unknown>[]): void {
+  setRowData(val: Record<string, string | number | boolean | null>[]): void {
     this.rowData = val;
   }
 
