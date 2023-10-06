@@ -290,8 +290,8 @@ export const V1_buildProxyConfiguration = (
   context: V1_GraphBuilderContext,
 ): ProxyConfiguration => {
   const proxyConfiguration = new ProxyConfiguration();
-  proxyConfiguration.authentication = element.authentication
-    ? V1_buildAuthenticationStrategy(element.authentication, context)
+  proxyConfiguration.authenticationStrategy = element.authenticationStrategy
+    ? V1_buildAuthenticationStrategy(element.authenticationStrategy, context)
     : undefined;
   proxyConfiguration.host = element.host;
   proxyConfiguration.port = element.port;
@@ -304,8 +304,8 @@ export const V1_buildFTPConnection = (
 ): FTPConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const ftpConnection = getOwnFTPConnection(path, context.currentSubGraph);
-  ftpConnection.authentication = element.authentication
-    ? V1_buildAuthenticationStrategy(element.authentication, context)
+  ftpConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_buildAuthenticationStrategy(element.authenticationStrategy, context)
     : undefined;
   ftpConnection.host = element.host;
   ftpConnection.port = element.port;
@@ -319,8 +319,8 @@ export const V1_buildHTTPConnection = (
 ): HTTPConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const httpConnection = getOwnHTTPConnection(path, context.currentSubGraph);
-  httpConnection.authentication = element.authentication
-    ? V1_buildAuthenticationStrategy(element.authentication, context)
+  httpConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_buildAuthenticationStrategy(element.authenticationStrategy, context)
     : undefined;
   httpConnection.proxy = element.proxy
     ? V1_buildProxyConfiguration(element.proxy, context)
@@ -335,8 +335,8 @@ export const V1_buildKafkaConnection = (
 ): KafkaConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const kafkaConnection = getOwnKafkaConnection(path, context.currentSubGraph);
-  kafkaConnection.authentication = element.authentication
-    ? V1_buildAuthenticationStrategy(element.authentication, context)
+  kafkaConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_buildAuthenticationStrategy(element.authenticationStrategy, context)
     : undefined;
   kafkaConnection.topicName = element.topicName;
   kafkaConnection.topicUrls = element.topicUrls;
@@ -581,6 +581,7 @@ export const V1_buildResolutionQuery = (
 ): ResolutionQuery => {
   const resolutionQuery = new ResolutionQuery();
   resolutionQuery.keyType = protocol.keyType;
+  resolutionQuery.optional = protocol.optional;
   resolutionQuery.precedence = protocol.precedence;
   resolutionQuery.queries = protocol.queries.map((rq) =>
     V1_buildRawLambdaWithResolvedPaths(rq.parameters, rq.body, context),
