@@ -1438,6 +1438,10 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists =
           },
           {
             _type: 'MappedProperty',
+            name: 'id',
+          },
+          {
+            _type: 'MappedProperty',
             name: 'legalName',
           },
         ],
