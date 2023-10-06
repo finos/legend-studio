@@ -70,7 +70,34 @@
   }
 }
 
+.mui-stepper {
+  height: 4rem;
+  background-color: var(--color-dark-grey-250);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: scroll;
+
+  &__step {
+    &__step-label {
+      &__label {
+        padding: 0 0.5rem;
+        color: var(--color-light-grey-100);
+        font-size: 1.1rem;
+        cursor: default;
+        margin-right: 0.5rem;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
 // override global style
+
+.MuiSvgIcon-root {
+  color: var(--color-dark-grey-500);
+  font-size: 2.5rem;
+}
 
 .MuiDialog-root {
   margin-top: 3.4rem;

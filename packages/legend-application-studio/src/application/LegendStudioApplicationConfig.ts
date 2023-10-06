@@ -101,6 +101,12 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
+  // TODO- change it to false
+  /**
+   * This flag can be removed when the support for end-to-end workflow is official
+   */
+  TEMPORARY__enableEndtoEndWorkflow = true;
+
   /**
    * Config specific to query builder
    */
