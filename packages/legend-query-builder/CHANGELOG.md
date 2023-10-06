@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.10.1
+
+### Patch Changes
+
+- [#2622](https://github.com/finos/legend-studio/pull/2622) [`cd3c88660`](https://github.com/finos/legend-studio/commit/cd3c886604dd84e17d8f2c7370bf7db9a4ec9c86) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fixed the issue where fails to target the correct row after sorting columns in query builder result panel
+
+- [#2662](https://github.com/finos/legend-studio/pull/2662) [`351f356ec`](https://github.com/finos/legend-studio/commit/351f356ecbdb8a9ed0c0c0cdffa28fffa98e6707) ([@gayathrir11](https://github.com/gayathrir11)) - Fix DnD of nested group operation with exists filter
+
 ## 4.10.0
 
 ### Minor Changes

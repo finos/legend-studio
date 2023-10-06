@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.0
+
+### Minor Changes
+
+- [#2679](https://github.com/finos/legend-studio/pull/2679) [`f63ddd7f0`](https://github.com/finos/legend-studio/commit/f63ddd7f07dcda6166d96eea811f5faa33872830) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Introduce Muistepper component
+
 ## 7.0.45
 
 ## 7.0.44
