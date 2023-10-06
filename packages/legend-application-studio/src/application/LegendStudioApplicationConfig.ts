@@ -84,12 +84,6 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__enableLocalConnectionBuilder = false;
 
   /**
-   * This flag can be removed when the support for raw SQL execution is official
-   * See https://github.com/finos/legend-engine/pull/1841
-   */
-  TEMPORARY__enableRawSQLExecutor = false;
-
-  /**
    * Provides service registration environment configs.
    *
    * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
@@ -112,7 +106,6 @@ class LegendStudioApplicationCoreOptions {
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
-      TEMPORARY__enableRawSQLExecutor: optional(primitive()),
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
