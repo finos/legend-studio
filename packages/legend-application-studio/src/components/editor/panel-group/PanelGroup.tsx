@@ -95,14 +95,9 @@ export const PanelGroup = observer(() => {
     },
   };
 
-  const tabsToShow = Object.values(PANEL_MODE)
-    .filter((tab) => isNonNullable(tabs[tab]) && tabs[tab].isVisible)
-    .filter(
-      (tab) =>
-        tab !== PANEL_MODE.SQL_PLAYGROUND ||
-        editorStore.applicationStore.config.options
-          .TEMPORARY__enableRawSQLExecutor,
-    );
+  const tabsToShow = Object.values(PANEL_MODE).filter(
+    (tab) => isNonNullable(tabs[tab]) && tabs[tab].isVisible,
+  );
   const isTabVisible = (tabType: PANEL_MODE): boolean =>
     editorStore.activePanelMode === tabType && tabsToShow.includes(tabType);
 

@@ -77,7 +77,6 @@ export class EditorSDLCState {
   projectVersions: Version[] = [];
   projectPublishedVersions: string[] = [];
   authorizedActions: AuthorizableProjectAction[] | undefined;
-  accessRole: ProjectAccessRole | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -94,7 +93,6 @@ export class EditorSDLCState {
       isFetchingProject: observable,
       projectPublishedVersions: observable,
       authorizedActions: observable,
-      accessRole: observable,
       activeProject: computed,
       activeWorkspace: computed,
       activeRevision: computed,
@@ -174,12 +172,9 @@ export class EditorSDLCState {
   }
 
   unAuthorizedActionMessage(_action: AuthorizableProjectAction): string {
-    if (this.accessRole) {
-      return `Your role ${
-        this.accessRole.accessRole
-      } does not allow you to perform the action '${prettyCONSTName(_action)}'`;
-    }
-    return `Your are not entitled to perform the action: ${_action}`;
+    return `Your are not entitled to perform the action: ${prettyCONSTName(
+      _action,
+    )}`;
   }
 
   userCanPerformAction(authorizedAction: AuthorizableProjectAction): boolean {
@@ -568,26 +563,19 @@ export class EditorSDLCState {
 
   *fetchAuthorizedActions(): GeneratorFn<void> {
     try {
-      const [authorizedActions, accessRoleRaw] = (yield Promise.all([
-        this.editorStore.sdlcServerClient.getAutorizedActions(
+      const authorizedActions =
+        (yield this.editorStore.sdlcServerClient.getAutorizedActions(
           this.activeProject.projectId,
-        ),
-        this.editorStore.sdlcServerClient.getAccessRole(
-          this.activeProject.projectId,
-        ),
-      ])) as [AuthorizableProjectAction[], PlainObject<ProjectAccessRole>];
+        )) as AuthorizableProjectAction[];
       this.authorizedActions = authorizedActions;
-      this.accessRole = ProjectAccessRole.serialization.fromJson(accessRoleRaw);
     } catch (error) {
       assertErrorThrown(error);
       // if there is an error fetching authorized actions we should set undefined
       this.authorizedActions = undefined;
-      this.accessRole = undefined;
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
     }
   }
 

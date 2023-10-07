@@ -884,12 +884,10 @@ const ExplorerContextMenu = observer(
         )}
         {isRelationalDatabaseConnection(node.packageableElement) && (
           <>
-            {editorStore.applicationStore.config.options
-              .TEMPORARY__enableRawSQLExecutor && (
-              <MenuContentItem onClick={openSQLPlayground}>
-                Execute SQL...
-              </MenuContentItem>
-            )}
+            <MenuContentItem onClick={openSQLPlayground}>
+              Execute SQL...
+            </MenuContentItem>
+
             <MenuContentItem onClick={buildDatabase}>
               Build Database...
             </MenuContentItem>
