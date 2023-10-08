@@ -31,13 +31,13 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
+import { type PostFilterConditionState } from '../QueryBuilderPostFilterState.js';
 import {
-  type PostFilterConditionState,
+  QUERY_BUILDER_PURE_PATH,
   type TDS_COLUMN_GETTER,
-  getTDSColumnDerivedProperyFromType,
-} from '../QueryBuilderPostFilterState.js';
-import { QUERY_BUILDER_PURE_PATH } from '../../../../../graph/QueryBuilderMetaModelConst.js';
+} from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState.js';
+import { getTDSColumnDerivedProperyFromType } from '../../QueryBuilderTDSHelper.js';
 
 export const buildtdsPropertyExpressionFromColState = (
   filterConditionState: PostFilterConditionState,

@@ -29,8 +29,8 @@ import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
-import type { COLUMN_SORT_TYPE } from '../QueryResultSetModifierState.js';
 import type { QueryBuilderTDS_WindowOperator } from './operators/QueryBuilderTDS_WindowOperator.js';
+import type { COLUMN_SORT_TYPE } from '../../../../graph/QueryBuilderMetaModelConst.js';
 
 export const QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE = 'WINDOW_COLUMN';
 

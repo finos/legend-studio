@@ -36,20 +36,24 @@ import {
 } from '@finos/legend-shared';
 import { QueryBuilderDerivationProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
-import { getTDSColumnState } from '../QueryBuilderTDSHelper.js';
+import {
+  getTDSColumnDerivedProperyFromType,
+  getTDSColumnState,
+} from '../QueryBuilderTDSHelper.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterState,
-  getTDSColumnDerivedProperyFromType,
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
   QueryBuilderPostFilterTreeGroupNodeData,
-  TDS_COLUMN_GETTER,
   getTypeFromDerivedProperty,
   PostFilterValueSpecConditionValueState,
   PostFilterTDSColumnValueConditionValueState,
 } from './QueryBuilderPostFilterState.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
+import {
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  TDS_COLUMN_GETTER,
+} from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { toGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';

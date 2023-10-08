@@ -23,8 +23,8 @@ import { type Hashable, uuid } from '@finos/legend-shared';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-  TDS_COLUMN_GETTER,
 } from './QueryBuilderPostFilterState.js';
+import type { TDS_COLUMN_GETTER } from '../../../../graph/QueryBuilderMetaModelConst.js';
 
 export abstract class QueryBuilderPostFilterOperator implements Hashable {
   readonly uuid = uuid();
