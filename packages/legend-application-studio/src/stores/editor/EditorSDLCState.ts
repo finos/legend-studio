@@ -48,7 +48,6 @@ import {
   Workspace,
   WorkspaceAccessType,
   Patch,
-  ProjectAccessRole,
   AuthorizableProjectAction,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';

@@ -238,6 +238,7 @@ export {
   TDSExecutionResult as TDSExecutionResult,
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
+  TDSRow,
 } from './graph-manager/action/execution/ExecutionResult.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';
 export * from './graph-manager/action/generation/ArtifactGenerationExtensionResult.js';

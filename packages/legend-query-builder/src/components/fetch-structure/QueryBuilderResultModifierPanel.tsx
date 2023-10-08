@@ -32,14 +32,12 @@ import {
   MenuContentItem,
   ModalFooterButton,
 } from '@finos/legend-art';
-import {
-  COLUMN_SORT_TYPE,
-  SortColumnState,
-} from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
+import { SortColumnState } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
+import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
 
 const ColumnSortEditor = observer(
   (props: { tdsState: QueryBuilderTDSState; sortState: SortColumnState }) => {

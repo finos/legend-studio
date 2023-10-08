@@ -24,11 +24,7 @@ import {
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
-
-export enum COLUMN_SORT_TYPE {
-  ASC = 'ASC',
-  DESC = 'DESC',
-}
+import { COLUMN_SORT_TYPE } from '../../../graph/QueryBuilderMetaModelConst.js';
 
 export class SortColumnState implements Hashable {
   columnState: QueryBuilderTDSColumnState;

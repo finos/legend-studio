@@ -40,7 +40,6 @@ import {
 } from './QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import {
-  COLUMN_SORT_TYPE,
   type QueryResultSetModifierState,
   type SortColumnState,
 } from '../QueryResultSetModifierState.js';
@@ -49,24 +48,15 @@ import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderVa
 import { buildPropertyExpressionChain } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendOLAPGroupByState } from '../window/QueryBuilderWindowValueSpecificationBuilder.js';
 import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
+import { buildTDSSortTypeExpression } from '../QueryBuilderTDSHelper.js';
 
 const buildSortExpression = (
   sortColumnState: SortColumnState,
-): SimpleFunctionExpression => {
-  const sortColumnFunction = new SimpleFunctionExpression(
-    extractElementNameFromPath(
-      sortColumnState.sortType === COLUMN_SORT_TYPE.ASC
-        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC
-        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DESC,
-    ),
+): SimpleFunctionExpression =>
+  buildTDSSortTypeExpression(
+    sortColumnState.sortType,
+    sortColumnState.columnState.columnName,
   );
-  const sortColumnName = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
-  );
-  sortColumnName.values = [sortColumnState.columnState.columnName];
-  sortColumnFunction.parametersValues[0] = sortColumnName;
-  return sortColumnFunction;
-};
 
 const appendResultSetModifier = (
   resultModifierState: QueryResultSetModifierState,

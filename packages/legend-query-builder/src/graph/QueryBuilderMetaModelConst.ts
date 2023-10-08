@@ -105,6 +105,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   TDS_GROUP_BY = 'meta::pure::tds::groupBy',
   TDS_SORT = 'meta::pure::tds::sort',
   TDS_TAKE = 'meta::pure::tds::take',
+  TDS_RESTRICT = 'meta::pure::tds::restrict',
   TDS_FUNC = 'meta::pure::tds::func',
 
   // filter
@@ -149,4 +150,28 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   FROM = 'meta::pure::mapping::from',
   CHECKED = 'meta::pure::dataQuality::checked',
   MERGERUNTIMES = 'meta::pure::runtime::mergeRuntimes',
+
+  // TOTDS
+  TABLE_TO_TDS = 'meta::pure::tds::tableToTDS',
+  TABLE_REFERENCE = 'meta::relational::functions::database::tableReference',
+}
+
+export enum TDS_COLUMN_GETTER {
+  GET_STRING = 'getString',
+  GET_NUMBER = 'getNumber',
+  GET_INTEGER = 'getInteger',
+  GET_FLOAT = 'getFloat',
+  GET_DECIMAL = 'getDecimal',
+  GET_DATE = 'getDate',
+  GET_DATETIME = 'getDateTime',
+  GET_STRICTDATE = 'getStrictDate',
+  GET_BOOLEAN = 'getBoolean',
+  GET_ENUM = 'getEnum',
+  IS_NULL = 'isNull',
+  IS_NOT_NULL = 'isNotNull',
+}
+
+export enum COLUMN_SORT_TYPE {
+  ASC = 'ASC',
+  DESC = 'DESC',
 }
