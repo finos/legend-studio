@@ -89,6 +89,7 @@ import {
   TEST_DATA__lambda_derivationPostFilter,
   TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday,
   TEST_DATA__lambda_postFilterWithRightValAsColEnums,
+  TEST_DATA_lambda__postFilterOnAggregatedColWithDerivation,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
 import {
@@ -448,6 +449,12 @@ const cases: RoundtripTestCase[] = [
     'Post-filter with result set modifier',
     postFilterCtx,
     TEST_DATA__lambda_derivationPostFilter,
+    undefined,
+  ],
+  [
+    'Post-filter with on aggregation column with derivation col',
+    postFilterCtx,
+    TEST_DATA_lambda__postFilterOnAggregatedColWithDerivation,
     undefined,
   ],
   [

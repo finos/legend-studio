@@ -58,6 +58,7 @@ import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { toGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
 import { simplifyValueExpression } from '../../../QueryBuilderValueSpecificationHelper.js';
+import { QueryBuilderAggregateColumnState } from '../aggregation/QueryBuilderAggregationState.js';
 
 const findProjectionColumnState = (
   propertyExpression: AbstractPropertyExpression,
@@ -95,6 +96,19 @@ const findProjectionColumnState = (
       );
       if (type) {
         columnState.setReturnType(type);
+      }
+      return columnState;
+    } else if (
+      columnState instanceof QueryBuilderAggregateColumnState &&
+      columnState.projectionColumnState instanceof
+        QueryBuilderDerivationProjectionColumnState
+    ) {
+      const type = getTypeFromDerivedProperty(
+        tdsColumnGetter,
+        postFilterState.tdsState.queryBuilderState.graphManagerState.graph,
+      );
+      if (type) {
+        columnState.handleUsedPostFilterType(type);
       }
       return columnState;
     }

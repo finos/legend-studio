@@ -26,6 +26,7 @@ export enum QUERY_BUILDER_EVENT {
 
   MAPPING_MODEL_COVERAGE_ANALYSYS__LAUNCH = 'query-builder.mapping-model-coverage-analysis.launch',
   MAPPING_MODEL_COVERAGE_ANALYSYS__SUCCESS = 'query-builder.mapping-model-coverage-analysis.success',
+  UNSUPPORTED_QUERY_LAUNCH = 'query-builder.unsupported-query.lanuch',
 }
 
 export enum QUERY_BUILDER_FILTER_EVENT {
