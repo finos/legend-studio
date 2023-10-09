@@ -100,6 +100,7 @@ import {
   type QueryBuilderExecutionContextState,
 } from './QueryBuilderExecutionContextState.js';
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
+import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -555,6 +556,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.fetchStructureState.initializeWithQuery();
     } catch (error) {
       assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(QUERY_BUILDER_EVENT.UNSUPPORTED_QUERY_LAUNCH),
+        error,
+      );
       this.resetQueryResult({ preserveResult: options?.preserveResult });
       this.resetQueryContent();
       this.unsupportedQueryState.setLambdaError(error);
