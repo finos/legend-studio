@@ -910,6 +910,148 @@ export const TEST_DATA__lambda_derivationPostFilter = {
   parameters: [],
 };
 
+export const TEST_DATA__lambda_postFilterWithRightValAsColEnums = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::postFilter::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'myEnum',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'myOptionalEnum',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'My Enum',
+                },
+                {
+                  _type: 'string',
+                  value: 'My Optional Enum',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                    {
+                      _type: 'string',
+                      value: 'My Enum',
+                    },
+                  ],
+                  property: 'getEnum',
+                },
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                    {
+                      _type: 'string',
+                      value: 'My Optional Enum',
+                    },
+                  ],
+                  property: 'getEnum',
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'row',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
   _type: 'lambda',
   body: [
@@ -1199,6 +1341,193 @@ export const TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday = {
                   _type: 'func',
                   function: 'meta::pure::functions::date::today',
                   parameters: [],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'row',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA_lambda__postFilterOnAggregatedColWithDerivation = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'groupBy',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::postFilter::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      property: 'age',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'func',
+                  function: 'agg',
+                  parameters: [
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'func',
+                          function: 'plus',
+                          parameters: [
+                            {
+                              _type: 'collection',
+                              multiplicity: {
+                                lowerBound: 2,
+                                upperBound: 2,
+                              },
+                              values: [
+                                {
+                                  _type: 'property',
+                                  property: 'age',
+                                  parameters: [
+                                    {
+                                      _type: 'var',
+                                      name: 'x',
+                                    },
+                                  ],
+                                },
+                                {
+                                  _type: 'integer',
+                                  value: 1,
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'func',
+                          function: 'sum',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Age',
+                },
+                {
+                  _type: 'string',
+                  value: 'Sum',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  property: 'getInteger',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                    {
+                      _type: 'string',
+                      value: 'Sum',
+                    },
+                  ],
+                },
+                {
+                  _type: 'integer',
+                  value: 0,
                 },
               ],
             },

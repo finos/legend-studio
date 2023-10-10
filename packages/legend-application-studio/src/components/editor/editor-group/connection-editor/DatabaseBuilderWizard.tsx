@@ -20,6 +20,7 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
   PanelLoadingIndicator,
   PanelContent,
   Modal,
@@ -34,9 +35,10 @@ import {
   PanelHeader,
   Panel,
   InputWithInlineValidation,
+  clsx,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
-import { noop } from '@finos/legend-shared';
+import { isBoolean, noop, type PlainObject } from '@finos/legend-shared';
 import {
   useApplicationStore,
   useConditionedApplicationNavigationContext,
@@ -49,6 +51,81 @@ import {
 } from '@finos/legend-lego/code-editor';
 import type { DatabaseBuilderWizardState } from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderWizardState.js';
 import { DatabaseSchemaExplorer } from './DatabaseSchemaExplorer.js';
+import {
+  DataGrid,
+  type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
+} from '@finos/legend-lego/data-grid';
+import type { TDSExecutionResult } from '@finos/legend-graph';
+
+type IQueryRendererParamsWithGridType = DataGridCellRendererParams & {
+  tdsExecutionResult: TDSExecutionResult;
+};
+
+const QueryResultCellRenderer = observer(
+  (params: IQueryRendererParamsWithGridType) => {
+    const cellValue = params.value as string | null | number | undefined;
+    return (
+      <div className={clsx('query-builder__result__values__table__cell')}>
+        <span>{cellValue}</span>
+      </div>
+    );
+  },
+);
+
+const QueryBuilderGridResult = observer(
+  (props: { executionResult: TDSExecutionResult }) => {
+    const { executionResult } = props;
+
+    const rowData = executionResult.result.rows.map((_row, rowIdx) => {
+      const row: PlainObject = {};
+      const cols = executionResult.result.columns;
+      _row.values.forEach((value, colIdx) => {
+        row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
+      });
+      row.rowNumber = rowIdx;
+      return row;
+    });
+
+    return (
+      <div className="query-builder__result__values__table">
+        <div
+          className={clsx(
+            'ag-theme-balham-dark query-builder__result__tds-grid',
+          )}
+        >
+          <DataGrid
+            rowData={rowData}
+            gridOptions={{
+              suppressScrollOnNewData: true,
+              getRowId: (data) => data.data.rowNumber,
+            }}
+            // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+            // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            columnDefs={executionResult.result.columns.map(
+              (colName) =>
+                ({
+                  minWidth: 50,
+                  sortable: true,
+                  resizable: true,
+                  field: colName,
+                  flex: 1,
+                  cellRenderer: QueryResultCellRenderer,
+                  cellRendererParams: {
+                    tdsExecutionResult: executionResult,
+                  },
+                }) as DataGridColumnDefinition,
+            )}
+          />
+        </div>
+      </div>
+    );
+  },
+);
 
 export const DatabaseBuilderWizard = observer(
   (props: {
@@ -86,7 +163,8 @@ export const DatabaseBuilderWizard = observer(
     };
     const isExecutingAction =
       schemaExplorerState.isGeneratingDatabase ||
-      schemaExplorerState.isUpdatingDatabase;
+      schemaExplorerState.isUpdatingDatabase ||
+      schemaExplorerState.previewDataState.isInProgress;
 
     useEffect(() => {
       flowResult(schemaExplorerState.fetchDatabaseMetadata()).catch(
@@ -127,20 +205,43 @@ export const DatabaseBuilderWizard = observer(
             <PanelLoadingIndicator isLoading={isExecutingAction} />
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel size={450}>
-                <div className="database-builder__config">
-                  <PanelHeader title="schema explorer" />
-                  <PanelContent className="database-builder__config__content">
-                    {schemaExplorerState.treeData && (
-                      <DatabaseSchemaExplorer
-                        treeData={schemaExplorerState.treeData}
-                        isReadOnly={false}
-                        schemaExplorerState={
-                          databaseBuilderState.schemaExplorerState
-                        }
-                      />
-                    )}
-                  </PanelContent>
-                </div>
+                <ResizablePanelGroup>
+                  <ResizablePanel>
+                    <div className="database-builder__config">
+                      <PanelHeader title="schema explorer" />
+                      <PanelContent className="database-builder__config__content">
+                        {schemaExplorerState.treeData && (
+                          <DatabaseSchemaExplorer
+                            treeData={schemaExplorerState.treeData}
+                            isReadOnly={false}
+                            schemaExplorerState={
+                              databaseBuilderState.schemaExplorerState
+                            }
+                          />
+                        )}
+                      </PanelContent>
+                    </div>
+                  </ResizablePanel>
+                  <ResizablePanelSplitter>
+                    <ResizablePanelSplitterLine
+                      color={'var(--color-dark-grey-250)'}
+                    />
+                  </ResizablePanelSplitter>
+                  <ResizablePanel>
+                    <div className="database-builder__config">
+                      <PanelHeader title="preview" />
+                      <PanelContent className="database-builder__config__content">
+                        {databaseBuilderState.schemaExplorerState.previewer && (
+                          <QueryBuilderGridResult
+                            executionResult={
+                              databaseBuilderState.schemaExplorerState.previewer
+                            }
+                          />
+                        )}
+                      </PanelContent>
+                    </div>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </ResizablePanel>
               <ResizablePanelSplitter />
               <ResizablePanel>

@@ -621,6 +621,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     property={node.property}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
+                    type={node.type}
                   >
                     <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
                       <InfoCircleIcon />

@@ -32,7 +32,8 @@ export class IdentityResolution implements Hashable {
 }
 
 export class ResolutionQuery implements Hashable {
-  keyType!: string;
+  keyType?: string | undefined;
+  optional?: boolean | undefined;
   precedence!: number;
   /**
    * Studio does not process value specification, they are left in raw JSON form
@@ -44,7 +45,8 @@ export class ResolutionQuery implements Hashable {
   get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.RESOLUTION_QUERY,
-      this.keyType,
+      this.keyType ?? '',
+      this.optional?.toString() ?? '',
       this.precedence.toString(),
       hashArray(this.queries),
     ]);

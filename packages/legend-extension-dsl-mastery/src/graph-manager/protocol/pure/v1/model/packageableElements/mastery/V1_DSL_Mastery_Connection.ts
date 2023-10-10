@@ -26,12 +26,12 @@ export abstract class V1_Connection
   extends V1_PackageableElement
   implements Hashable
 {
-  authentication?: V1_AuthenticationStrategy | undefined;
+  authenticationStrategy?: V1_AuthenticationStrategy | undefined;
 
   override get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.MASTERY_CONNECTION,
-      this.authentication ?? '',
+      this.authenticationStrategy ?? '',
     ]);
   }
 }
@@ -89,7 +89,7 @@ export class V1_HTTPConnection extends V1_FileConnection {
 }
 
 export class V1_ProxyConfiguration implements Hashable {
-  authentication?: V1_AuthenticationStrategy | undefined;
+  authenticationStrategy?: V1_AuthenticationStrategy | undefined;
   host!: string;
   port!: number;
 
@@ -98,7 +98,7 @@ export class V1_ProxyConfiguration implements Hashable {
       MASTERY_HASH_STRUCTURE.PROXY_CONFIGURATION,
       this.host,
       this.port,
-      this.authentication ?? '',
+      this.authenticationStrategy ?? '',
     ]);
   }
 }

@@ -17,6 +17,10 @@
 import { LambdaFunctionInstanceValue } from '../metamodel/pure/valueSpecification/LambdaFunction.js';
 import type { ValueSpecification } from '../metamodel/pure/valueSpecification/ValueSpecification.js';
 import type { Type } from '../metamodel/pure/packageableElements/domain/Type.js';
+import { GenericTypeExplicitReference } from '../metamodel/pure/packageableElements/domain/GenericTypeReference.js';
+import { PrimitiveInstanceValue } from '../metamodel/pure/valueSpecification/InstanceValue.js';
+import { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
+import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 export const getValueSpecificationReturnType = (
   val: ValueSpecification,
@@ -26,4 +30,24 @@ export const getValueSpecificationReturnType = (
     return lastExpression?.genericType?.value.rawType;
   }
   return undefined;
+};
+
+export const createPrimitiveInstance_String = (
+  val: string,
+): PrimitiveInstanceValue => {
+  const colInstanceValue = new PrimitiveInstanceValue(
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
+  );
+  colInstanceValue.values = [val];
+  return colInstanceValue;
+};
+
+export const createPrimitiveInstance_Integer = (
+  val: number,
+): PrimitiveInstanceValue => {
+  const colInstanceValue = new PrimitiveInstanceValue(
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.INTEGER)),
+  );
+  colInstanceValue.values = [val];
+  return colInstanceValue;
 };

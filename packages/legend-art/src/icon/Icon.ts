@@ -315,3 +315,6 @@ export const Snowflake_BrandIcon = TB.TbBrandSnowflake;
 const HI = ReactIcons.HI;
 export const CodeIcon = HI.HiCode;
 export const HomeIcon = HI.HiHome;
+
+const LU = ReactIcons.LU;
+export const WorkflowIcon = LU.LuWorkflow;

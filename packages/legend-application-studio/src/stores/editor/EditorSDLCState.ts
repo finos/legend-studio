@@ -33,6 +33,7 @@ import {
   guaranteeNonNullable,
   assertTrue,
   ActionState,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig.js';
 import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
@@ -47,6 +48,7 @@ import {
   Workspace,
   WorkspaceAccessType,
   Patch,
+  AuthorizableProjectAction,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 
@@ -73,6 +75,7 @@ export class EditorSDLCState {
   workspaceWorkflows: Workflow[] = [];
   projectVersions: Version[] = [];
   projectPublishedVersions: string[] = [];
+  authorizedActions: AuthorizableProjectAction[] | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -88,11 +91,14 @@ export class EditorSDLCState {
       isFetchingProjectVersions: observable,
       isFetchingProject: observable,
       projectPublishedVersions: observable,
+      authorizedActions: observable,
       activeProject: computed,
       activeWorkspace: computed,
       activeRevision: computed,
       activePatch: computed,
       activeRemoteWorkspaceRevision: computed,
+      canCreateWorkspace: computed,
+      canCreateVersion: computed,
       isWorkspaceOutOfSync: computed,
       setCurrentProject: action,
       setCurrentPatch: action,
@@ -112,6 +118,7 @@ export class EditorSDLCState {
       buildProjectLatestRevisionEntityHashesIndex: flow,
       fetchWorkspaceWorkflows: flow,
       fetchPublishedProjectVersions: flow,
+      fetchAuthorizedActions: flow,
     });
 
     this.editorStore = editorStore;
@@ -151,6 +158,29 @@ export class EditorSDLCState {
 
   get isWorkspaceOutOfSync(): boolean {
     return this.activeRemoteWorkspaceRevision.id !== this.activeRevision.id;
+  }
+
+  get canCreateWorkspace(): boolean {
+    return this.userCanPerformAction(
+      AuthorizableProjectAction.CREATE_WORKSPACE,
+    );
+  }
+
+  get canCreateVersion(): boolean {
+    return this.userCanPerformAction(AuthorizableProjectAction.CREATE_VERSION);
+  }
+
+  unAuthorizedActionMessage(_action: AuthorizableProjectAction): string {
+    return `Your are not entitled to perform the action: ${prettyCONSTName(
+      _action,
+    )}`;
+  }
+
+  userCanPerformAction(authorizedAction: AuthorizableProjectAction): boolean {
+    return Boolean(
+      this.authorizedActions === undefined ||
+        this.authorizedActions.includes(authorizedAction),
+    );
   }
 
   setCurrentProject(val: Project): void {
@@ -527,6 +557,24 @@ export class EditorSDLCState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
+    }
+  }
+
+  *fetchAuthorizedActions(): GeneratorFn<void> {
+    try {
+      const authorizedActions =
+        (yield this.editorStore.sdlcServerClient.getAutorizedActions(
+          this.activeProject.projectId,
+        )) as AuthorizableProjectAction[];
+      this.authorizedActions = authorizedActions;
+    } catch (error) {
+      assertErrorThrown(error);
+      // if there is an error fetching authorized actions we should set undefined
+      this.authorizedActions = undefined;
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
     }
   }
 

@@ -299,7 +299,7 @@ export const V1_ProxyConfigurationSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ProxyConfiguration> =>
   createModelSchema(V1_ProxyConfiguration, {
-    authentication: optionalCustom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
@@ -318,7 +318,7 @@ export const V1_KafkaConnectionSchema = (
 ): ModelSchema<V1_KafkaConnection> =>
   createModelSchema(V1_KafkaConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.KAFKA),
-    authentication: optionalCustom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
@@ -333,7 +333,7 @@ export const V1_FTPConnectionSchema = (
 ): ModelSchema<V1_FTPConnection> =>
   createModelSchema(V1_FTPConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.FTP),
-    authentication: optionalCustom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
@@ -349,7 +349,7 @@ export const V1_HTTPConnectionSchema = (
 ): ModelSchema<V1_HTTPConnection> =>
   createModelSchema(V1_HTTPConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.HTTP),
-    authentication: optionalCustom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
@@ -666,7 +666,8 @@ const V1_recordSourceSchema = (
  **********/
 
 const V1_resolutionQuerySchema = createModelSchema(V1_ResolutionQuery, {
-  keyType: primitive(),
+  keyType: optional(primitive()),
+  optional: optional(primitive()),
   precedence: primitive(),
   queries: list(usingModelSchema(V1_rawLambdaModelSchema)),
 });

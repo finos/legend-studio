@@ -1019,8 +1019,43 @@ export const TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational = {
 export const TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype = {
   mappedEntities: [
     {
+      path: 'model::Colony',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'id',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'streetName',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zipcode',
+        },
+      ],
+    },
+    {
+      path: 'model::Firm',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'Name',
+        },
+        {
+          _type: 'entity',
+          entityPath: 'model::Person',
+          name: 'employees',
+        },
+      ],
+    },
+    {
       path: 'model::LegalEntity',
       properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'Name',
+        },
         {
           _type: 'entity',
           entityPath: 'model::Person',
@@ -1032,25 +1067,15 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype = {
           name: 'firm',
           subType: 'model::Firm',
         },
-        {
-          _type: 'MappedProperty',
-          name: 'Name',
-        },
       ],
     },
     {
       path: '@model::Firm',
       properties: [
         {
-          _type: 'entity',
-          entityPath: 'model::Person',
-          name: 'employees',
+          _type: 'MappedProperty',
+          name: 'Name',
         },
-      ],
-    },
-    {
-      path: 'model::Firm',
-      properties: [
         {
           _type: 'entity',
           entityPath: 'model::Person',
@@ -1062,14 +1087,24 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype = {
       path: 'model::Person',
       properties: [
         {
-          _type: 'MappedProperty',
-          name: 'lastName',
+          _type: 'entity',
+          entityPath: 'model::Colony',
+          name: 'address',
+          subType: 'model::Colony',
         },
         {
           _type: 'MappedProperty',
           name: 'firstName',
         },
+        {
+          _type: 'MappedProperty',
+          name: 'lastName',
+        },
       ],
+    },
+    {
+      path: 'model_Person_address',
+      properties: [],
     },
   ],
 };
@@ -1119,11 +1154,144 @@ export const TEST_DATA__ModelCoverageAnalysisResult_HighlightProperties = {
 export const TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype = {
   mappedEntities: [
     {
+      path: 'model::Address',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'streetName',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zip',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zipcode',
+        },
+        {
+          _type: 'entity',
+          entityPath: '@model::AddressType1',
+          name: 'addressType1',
+          subType: 'model::AddressType1',
+        },
+      ],
+    },
+    {
+      path: '@model::AddressType1',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'streetName',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zip',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zipcode',
+        },
+        {
+          _type: 'entity',
+          entityPath: '@model::AddressType2',
+          name: 'addressType2',
+          subType: 'model::AddressType2',
+        },
+        {
+          _type: 'entity',
+          entityPath: '@model::AddressType3',
+          name: 'addressType3',
+          subType: 'model::AddressType3',
+        },
+      ],
+    },
+    {
+      path: '@model::AddressType2',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'streetName',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zip',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zipcode',
+        },
+      ],
+    },
+    {
+      path: '@model::AddressType3',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'streetName',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zipcode',
+        },
+      ],
+    },
+    {
+      path: 'model::AddressType1',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'streetName',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zip',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zipcode',
+        },
+        {
+          _type: 'entity',
+          entityPath: '@model::AddressType2',
+          name: 'addressType2',
+          subType: 'model::AddressType2',
+        },
+        {
+          _type: 'entity',
+          entityPath: '@model::AddressType3',
+          name: 'addressType3',
+          subType: 'model::AddressType3',
+        },
+      ],
+    },
+    {
       path: 'model::AddressType2',
       properties: [
-        { _type: 'MappedProperty', name: 'streetName' },
-        { _type: 'MappedProperty', name: 'zip' },
-        { _type: 'MappedProperty', name: 'zipcode' },
+        {
+          _type: 'MappedProperty',
+          name: 'streetName',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zip',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zipcode',
+        },
+      ],
+    },
+    {
+      path: 'model::AddressType3',
+      properties: [
+        {
+          _type: 'MappedProperty',
+          name: 'streetName',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'zipcode',
+        },
       ],
     },
     {
@@ -1131,11 +1299,13 @@ export const TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype = {
       properties: [
         {
           _type: 'entity',
-          entityPath: 'model::AddressType2',
+          entityPath: 'model::Address',
           name: 'address',
-          subType: 'model::AddressType2',
         },
-        { _type: 'MappedProperty', name: 'name' },
+        {
+          _type: 'MappedProperty',
+          name: 'name',
+        },
       ],
     },
   ],
@@ -1268,6 +1438,10 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists =
           },
           {
             _type: 'MappedProperty',
+            name: 'id',
+          },
+          {
+            _type: 'MappedProperty',
             name: 'legalName',
           },
         ],
@@ -1319,6 +1493,41 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists =
     ],
   };
 
+export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates =
+  {
+    mappedEntities: [
+      {
+        path: 'model::Person',
+        properties: [
+          {
+            _type: 'MappedProperty',
+            name: 'age',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'dobDate',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'dobStrictDate',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'dobTime',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'firstName',
+          },
+          {
+            _type: 'MappedProperty',
+            name: 'lastName',
+          },
+        ],
+      },
+    ],
+  };
+
 export const TEST_DATA__ModelCoverageAnalysisResult_Milestoning = {
   mappedEntities: [
     {
@@ -1333,6 +1542,10 @@ export const TEST_DATA__ModelCoverageAnalysisResult_Milestoning = {
           _type: 'entity',
           entityPath: 'my::Person',
           name: 'businessTemporal',
+        },
+        {
+          _type: 'MappedProperty',
+          name: 'firmID',
         },
         {
           _type: 'entity',

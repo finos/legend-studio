@@ -82,3 +82,42 @@ test(integrationTest('Test Explorer tree context menu '), async () => {
   });
   expect(getByText(projectExplorer, 'PersonRenamed')).not.toBeNull();
 });
+
+test(integrationTest('Test Explorer tree is open in viewer mode'), async () => {
+  const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+    MOCK__editorStore,
+    {
+      entities: TEST_DATA__ClassQueryBuilder,
+    },
+    true,
+  );
+  const classPath = 'model::Person';
+  const MOCK__GlobalCompileInFormModeFn = createMock();
+  MOCK__editorStore.graphEditorMode.globalCompile =
+    MOCK__GlobalCompileInFormModeFn;
+  MOCK__editorStore.graphState.setMostRecentCompilationOutcome(
+    GraphCompilationOutcome.SUCCEEDED,
+  );
+  MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
+    createMock();
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+
+  await TEST__openElementFromExplorerTree(classPath, renderResult);
+
+  const projectExplorer = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+  );
+  const elementInExplorer = getByText(
+    projectExplorer,
+    extractElementNameFromPath(classPath),
+  );
+  fireEvent.contextMenu(elementInExplorer);
+
+  const explorerContextMenu = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
+  );
+  await waitFor(() =>
+    fireEvent.click(getByText(explorerContextMenu, 'Copy Path')),
+  );
+});

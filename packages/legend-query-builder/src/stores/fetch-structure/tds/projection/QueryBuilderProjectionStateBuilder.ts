@@ -37,7 +37,10 @@ import {
   isNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
+import {
+  COLUMN_SORT_TYPE,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../../QueryBuilderStateBuilder.js';
 import {
@@ -51,10 +54,7 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
-import {
-  COLUMN_SORT_TYPE,
-  SortColumnState,
-} from '../QueryResultSetModifierState.js';
+import { SortColumnState } from '../QueryResultSetModifierState.js';
 
 export const processTDSProjectExpression = (
   expression: SimpleFunctionExpression,

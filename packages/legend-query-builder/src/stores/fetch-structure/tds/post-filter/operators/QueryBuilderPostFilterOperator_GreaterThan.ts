@@ -20,6 +20,7 @@ import {
   type FunctionExpression,
   AbstractPropertyExpression,
   PRIMITIVE_TYPE,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -35,7 +36,6 @@ import type {
 } from '../QueryBuilderPostFilterState.js';
 import {
   generateDefaultValueForPrimitiveType,
-  getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
@@ -69,11 +69,11 @@ export class QueryBuilderPostFilterOperator_GreaterThan
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
     return isTypeCompatibleForAssignment(
-      postFilterConditionState.value
-        ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
+      !postFilterConditionState.rightConditionValue.isCollection
+        ? postFilterConditionState.rightConditionValue.type
         : undefined,
       guaranteeNonNullable(
-        postFilterConditionState.columnState.getColumnType(),
+        postFilterConditionState.leftConditionValue.getColumnType(),
       ),
     );
   }
@@ -81,7 +81,8 @@ export class QueryBuilderPostFilterOperator_GreaterThan
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
-    const propertyType = postFilterConditionState.columnState.getColumnType();
+    const propertyType =
+      postFilterConditionState.leftConditionValue.getColumnType();
     switch (propertyType?.path) {
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL:
@@ -121,10 +122,10 @@ export class QueryBuilderPostFilterOperator_GreaterThan
     return buildPostFilterConditionExpression(
       postFilterConditionState,
       this,
-      postFilterConditionState.columnState.getColumnType()?.path ===
-        PRIMITIVE_TYPE.DATETIME &&
-        postFilterConditionState.value?.genericType?.value.rawType.path !==
-          PRIMITIVE_TYPE.DATETIME
+      postFilterConditionState.leftConditionValue.getColumnType() ===
+        PrimitiveType.DATETIME &&
+        postFilterConditionState.rightConditionValue.type !==
+          PrimitiveType.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_AFTER_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN,
     );

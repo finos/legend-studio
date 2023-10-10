@@ -265,24 +265,28 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
 );
 
 type CalendarFunctionOption = {
-  label: string | React.ReactNode;
+  label: string;
   value: QueryBuilderAggregateCalendarFunction;
 };
+
+const formatCalendarFunctionOptionLabel = (
+  option: CalendarFunctionOption,
+): React.ReactNode => (
+  <div
+    className="query-builder__projection__calendar__function__label"
+    title={option.value.getLabel()}
+  >
+    <FunctionIcon className="query-builder__projection__calendar__function__label__icon" />
+    <div className="query-builder__projection__calendar__function__label__title">
+      {option.value.getLabel()}
+    </div>
+  </div>
+);
 
 const buildCalendarFunctionOption = (
   calendarFunction: QueryBuilderAggregateCalendarFunction,
 ): CalendarFunctionOption => ({
-  label: (
-    <div
-      className="query-builder__projection__calendar__function__label"
-      title={calendarFunction.getLabel()}
-    >
-      <FunctionIcon className="query-builder__projection__calendar__function__label__icon" />
-      <div className="query-builder__projection__calendar__function__label__title">
-        {calendarFunction.getLabel()}
-      </div>
-    </div>
-  ),
+  label: calendarFunction.getLabel(),
   value: calendarFunction,
 });
 
@@ -684,7 +688,6 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [handleDrop],
     );
-
     return (
       <PanelDnDEntry
         ref={ref}
@@ -728,7 +731,12 @@ const QueryBuilderProjectionColumnEditor = observer(
           onOpen={onContextMenuOpen}
           onClose={onContextMenuClose}
         >
-          <div className="query-builder__projection__column__container">
+          <div
+            data-testid={
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION_COLUMN
+            }
+            className="query-builder__projection__column__container"
+          >
             <PanelEntryDragHandle
               isDragging={false}
               dragSourceConnector={dragHandleRef}
@@ -865,6 +873,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                   options={calendarFunctionOptions}
                   onChange={onCalendarFunctionOptionChange}
                   value={selectedCalendarFunctionOption}
+                  formatOptionLabel={formatCalendarFunctionOptionLabel}
                   placeholder="Select Calendar Function"
                   isClearable={true}
                   escapeClearsValue={true}
@@ -880,9 +889,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                       defaultEndDate
                     }
                     setValueSpecification={(val: ValueSpecification): void => {
-                      if (val instanceof PrimitiveInstanceValue) {
-                        aggregateColumnState.calendarFunction?.setEndDate(val);
-                      }
+                      aggregateColumnState.calendarFunction?.setEndDate(val);
                     }}
                     graph={tdsState.queryBuilderState.graphManagerState.graph}
                     obseverContext={tdsState.queryBuilderState.observerContext}

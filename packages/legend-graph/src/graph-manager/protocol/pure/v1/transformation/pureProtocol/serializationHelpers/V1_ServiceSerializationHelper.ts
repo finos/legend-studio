@@ -82,6 +82,11 @@ import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { ATOMIC_TEST_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 import { V1_PostValidation } from '../../../model/packageableElements/service/V1_PostValidation.js';
 import { V1_PostValidationAssertion } from '../../../model/packageableElements/service/V1_PostValidationAssertion.js';
+import {
+  V1_DeploymentOwnership,
+  type V1_ServiceOwnership,
+  V1_UserListOwnership,
+} from '../../../model/packageableElements/service/V1_ServiceOwnership.js';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
 
@@ -93,6 +98,11 @@ enum V1_ServiceTestType {
 enum V1_ServiceExecutionType {
   PURE_SINGLE_EXECUTION = 'pureSingleExecution',
   PURE_MULTI_EXECUTION = 'pureMultiExecution',
+}
+
+enum V1_ServiceOwnershipType {
+  DEPLOYMENT_OWNERSHIP = 'deploymentOwnership',
+  USERLIST_OWNERSHIP = 'userListOwnership',
 }
 
 export const V1_connectionTestDataModelSchema = (
@@ -186,6 +196,16 @@ const pureSingleExecutionModelSchema = createModelSchema(
   },
 );
 
+const deploymentOwnershipSchema = createModelSchema(V1_DeploymentOwnership, {
+  _type: usingConstantValueSchema(V1_ServiceOwnershipType.DEPLOYMENT_OWNERSHIP),
+  identifier: primitive(),
+});
+
+const userListOwnershipSchema = createModelSchema(V1_UserListOwnership, {
+  _type: usingConstantValueSchema(V1_ServiceOwnershipType.USERLIST_OWNERSHIP),
+  users: list(primitive()),
+});
+
 const keyedExecutionParamaterModelSchema = createModelSchema(
   V1_KeyedExecutionParameter,
   {
@@ -213,7 +233,7 @@ const V1_serializeServiceExecution = (
     return serialize(pureMultiExecutionModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize service excution`,
+    `Can't serialize service execution`,
     protocol,
   );
 };
@@ -228,7 +248,36 @@ const V1_deserializeServiceExecution = (
       return deserialize(pureMultiExecutionModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Can't deserialize service excution of type '${json._type}'`,
+        `Can't deserialize service execution of type '${json._type}'`,
+      );
+  }
+};
+
+const V1_serializeOwnership = (
+  protocol: V1_ServiceOwnership,
+): PlainObject<V1_ServiceOwnership> => {
+  if (protocol instanceof V1_DeploymentOwnership) {
+    return serialize(deploymentOwnershipSchema, protocol);
+  } else if (protocol instanceof V1_UserListOwnership) {
+    return serialize(userListOwnershipSchema, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize service ownership`,
+    protocol,
+  );
+};
+
+const V1_deserializeOwnership = (
+  json: PlainObject<V1_ServiceOwnership>,
+): V1_ServiceOwnership => {
+  switch (json._type) {
+    case V1_ServiceOwnershipType.DEPLOYMENT_OWNERSHIP:
+      return deserialize(deploymentOwnershipSchema, json);
+    case V1_ServiceOwnershipType.USERLIST_OWNERSHIP:
+      return deserialize(userListOwnershipSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize service ownership of type '${json._type}'`,
       );
   }
 };
@@ -308,6 +357,10 @@ export const V1_serviceModelSchema = (
     ),
     name: primitive(),
     owners: list(primitive()),
+    ownership: optionalCustom(
+      (val) => V1_serializeOwnership(val),
+      (val) => V1_deserializeOwnership(val),
+    ),
     package: primitive(),
     pattern: primitive(),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {

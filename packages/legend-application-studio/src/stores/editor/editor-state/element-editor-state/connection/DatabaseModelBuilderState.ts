@@ -25,10 +25,8 @@ import {
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { EditorStore } from '../../../EditorStore.js';
-import type { Database } from '@finos/legend-graph';
+import { type Database, DEFAULT_GENERATION_PACKAGE } from '@finos/legend-graph';
 import { EntityChangeType, type EntityChange } from '@finos/legend-server-sdlc';
-
-export const GENERATED = 'generated';
 
 export class DatabaseModelBuilderState {
   readonly editorStore: EditorStore;
@@ -64,7 +62,7 @@ export class DatabaseModelBuilderState {
     this.editorStore = editorStore;
     this.database = database;
     this.isReadOnly = isReadOnly;
-    this.targetPackage = database.package?.path ?? GENERATED;
+    this.targetPackage = database.package?.path ?? DEFAULT_GENERATION_PACKAGE;
   }
 
   setShowModal(val: boolean): void {
@@ -98,7 +96,6 @@ export class DatabaseModelBuilderState {
           this.targetPackage,
           this.editorStore.graphManagerState.graph,
         )) as Entity[];
-
       this.setEntities(entities);
       this.setDatabaseGrammarCode(
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(

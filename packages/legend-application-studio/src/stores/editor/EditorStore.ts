@@ -748,6 +748,7 @@ export class EditorStore implements CommandRegistrar {
       this.graphState.fetchAvailableRelationalDatabseTypeConfigurations(),
       this.sdlcState.fetchProjectVersions(),
       this.sdlcState.fetchPublishedProjectVersions(),
+      this.sdlcState.fetchAuthorizedActions(),
     ]);
   }
 
@@ -790,6 +791,7 @@ export class EditorStore implements CommandRegistrar {
       this.graphState.fetchAvailableRelationalDatabseTypeConfigurations(),
       this.sdlcState.fetchProjectVersions(),
       this.sdlcState.fetchPublishedProjectVersions(),
+      this.sdlcState.fetchAuthorizedActions(),
     ]);
   }
 

@@ -100,7 +100,6 @@ export const setup = (outputDir) => {
             //   },
             // ],
             TEMPORARY__enableFunctionActivatorSupport: false,
-            TEMPORARY__enableRawSQLExecutor: false,
             TEMPORARY__enableLocalConnectionBuilder: false,
           },
         },

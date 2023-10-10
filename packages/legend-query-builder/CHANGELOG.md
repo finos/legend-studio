@@ -1,5 +1,51 @@
 # @finos/legend-query-builder
 
+## 4.10.1
+
+### Patch Changes
+
+- [#2622](https://github.com/finos/legend-studio/pull/2622) [`cd3c88660`](https://github.com/finos/legend-studio/commit/cd3c886604dd84e17d8f2c7370bf7db9a4ec9c86) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fixed the issue where fails to target the correct row after sorting columns in query builder result panel
+
+- [#2662](https://github.com/finos/legend-studio/pull/2662) [`351f356ec`](https://github.com/finos/legend-studio/commit/351f356ecbdb8a9ed0c0c0cdffa28fffa98e6707) ([@gayathrir11](https://github.com/gayathrir11)) - Fix DnD of nested group operation with exists filter
+
+## 4.10.0
+
+### Minor Changes
+
+- [#2661](https://github.com/finos/legend-studio/pull/2661) [`6e5d37bc7`](https://github.com/finos/legend-studio/commit/6e5d37bc7b2d179ccc8039eae597e1cbe922b10f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Post-filter conditions to accept right vals to be column states.
+
+### Patch Changes
+
+- [#2664](https://github.com/finos/legend-studio/pull/2664) [`fbaf61fe8`](https://github.com/finos/legend-studio/commit/fbaf61fe8518670a8f987fcbe935283f85eb5f92) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix calculating return type for derived projections containing const/params
+
+## 4.9.4
+
+### Patch Changes
+
+- [#2655](https://github.com/finos/legend-studio/pull/2655) [`22c1fe964`](https://github.com/finos/legend-studio/commit/22c1fe96447713a0a2c32a9523716772a2ebbb51) ([@gayathrir11](https://github.com/gayathrir11)) - Support calendar aggregation end Date to accept Date functions
+
+- [#2654](https://github.com/finos/legend-studio/pull/2654) [`1ae9ce88a`](https://github.com/finos/legend-studio/commit/1ae9ce88ab62d2db8706f40f4d779abb392a85b9) ([@gayathrir11](https://github.com/gayathrir11)) - Fix issue with casting of subType when property mapping points to class mapping of subType in projection and graph-fetch
+
+## 4.9.3
+
+### Patch Changes
+
+- [#2598](https://github.com/finos/legend-studio/pull/2598) [`c73c7cee6`](https://github.com/finos/legend-studio/commit/c73c7cee649b909850b8ddbed2f582edff1ff483) ([@gayathrir11](https://github.com/gayathrir11)) - Fix issue with casting of subType when property mapping points to class mapping of subType
+
+## 4.9.2
+
+## 4.9.1
+
+## 4.9.0
+
+### Minor Changes
+
+- [#2637](https://github.com/finos/legend-studio/pull/2637) [`b8b1dfabb`](https://github.com/finos/legend-studio/commit/b8b1dfabb44760069bca2de9cef0512c0f61599a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add processing of if functions for calculated constants to resolve type.
+
+### Patch Changes
+
+- [#2639](https://github.com/finos/legend-studio/pull/2639) [`2116cc8f3`](https://github.com/finos/legend-studio/commit/2116cc8f3398d9f99714642e2879de2319da682a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering null values and empty strings in query results.
+
 ## 4.8.0
 
 ### Minor Changes

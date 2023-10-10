@@ -29,7 +29,10 @@ export { QueryBuilderNavigationBlocker } from './components/QueryBuilderNavigati
 export { QueryBuilder } from './components/QueryBuilder.js';
 export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderComponentElement.js';
 export { QueryBuilderState } from './stores/QueryBuilderState.js';
-
+export {
+  getTDSColumnDerivedProperyFromType,
+  buildTDSSortTypeExpression,
+} from './stores/fetch-structure/tds/QueryBuilderTDSHelper.js';
 export { QueryBuilderPropertySearchState } from './stores/explorer/QueryBuilderPropertySearchState.js';
 export {
   QueryBuilderClassSelector,
@@ -43,7 +46,11 @@ export {
   type ServiceExecutionContext,
   ServiceQueryBuilderState,
 } from './stores/workflows/ServiceQueryBuilderState.js';
-export { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from './graph/QueryBuilderMetaModelConst.js';
+export {
+  TDS_COLUMN_GETTER,
+  COLUMN_SORT_TYPE,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from './graph/QueryBuilderMetaModelConst.js';
 export { getQueryBuilderGraphManagerExtension } from './graph-manager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 export type { ServiceExecutionAnalysisResult } from './graph-manager/action/analytics/ServiceExecutionAnalysis.js';
 export type { MappingRuntimeCompatibilityAnalysisResult } from './graph-manager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';

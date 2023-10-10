@@ -152,13 +152,14 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     parentId: string,
     isPartOfDerivedPropertyBranch: boolean,
     mappingData: QueryBuilderExplorerTreeNodeMappingData,
+    type?: Type | undefined,
   ) {
     super(
       id,
       label,
       dndText,
       isPartOfDerivedPropertyBranch,
-      property.genericType.value.rawType,
+      type ?? property.genericType.value.rawType,
       mappingData,
     );
     this.property = property;
@@ -217,10 +218,11 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   let parentNode =
     treeData.nodes.get(node.parentId) ??
     propertySearchIndexedTreeNodes.find((n) => n.id === node.parentId);
-  let currentNode: QueryBuilderExplorerTreeNodeData = node;
+  let currentNode: QueryBuilderExplorerTreeNodeData | undefined = node;
   while (
-    parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
-    parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+    currentNode &&
+    (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+      parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData)
   ) {
     // NOTE: here, we deliberately simplify subtypes chain
     // $x.employees->subType(@Person)->subType(@Staff).department will be simplified to $x.employees->subType(@Staff).department
@@ -237,6 +239,24 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       parentPropertyExpression = new SimpleFunctionExpression(
         extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
       );
+    } else if (
+      parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+      parentNode.mappingData.entityMappedProperty?.subType
+    ) {
+      parentPropertyExpression = new SimpleFunctionExpression(
+        extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
+      );
+      currentExpression.parametersValues.push(parentPropertyExpression);
+      currentExpression = parentPropertyExpression;
+      parentPropertyExpression = new AbstractPropertyExpression('');
+      propertyExpression_setFunc(
+        parentPropertyExpression,
+        PropertyExplicitReference.create(
+          guaranteeNonNullable(parentNode.property),
+        ),
+      );
+      currentNode = parentNode;
+      parentNode = treeData.nodes.get(parentNode.parentId);
     } else {
       parentPropertyExpression = new AbstractPropertyExpression('');
       propertyExpression_setFunc(
@@ -262,7 +282,11 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     }
     currentExpression = parentPropertyExpression;
     currentNode = parentNode;
-    parentNode = treeData.nodes.get(parentNode.parentId);
+    parentNode =
+      parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+      parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+        ? treeData.nodes.get(parentNode.parentId)
+        : undefined;
     if (
       !parentNode &&
       (currentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
@@ -277,7 +301,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     }
   }
   currentExpression.parametersValues.push(projectionColumnLambdaVariable);
-  if (currentExpression instanceof SimpleFunctionExpression) {
+  if (currentNode && currentExpression instanceof SimpleFunctionExpression) {
     const subclass = new InstanceValue(
       Multiplicity.ONE,
       GenericTypeExplicitReference.create(new GenericType(currentNode.type)),
@@ -444,13 +468,32 @@ export const getQueryBuilderPropertyNodeData = (
   ) {
     return undefined;
   }
+  const _subclasses =
+    property.genericType.value.rawType instanceof Class
+      ? getAllSubclasses(property.genericType.value.rawType)
+      : [];
+  const subClass = mappingNodeData.entityMappedProperty?.subType
+    ? _subclasses.find(
+        (c) => c.path === mappingNodeData.entityMappedProperty?.subType,
+      )
+    : undefined;
   const propertyNode = new QueryBuilderExplorerTreePropertyNodeData(
-    generateExplorerTreePropertyNodeID(
-      parentNode instanceof QueryBuilderExplorerTreeRootNodeData
-        ? ''
-        : parentNode.id,
-      property.name,
-    ),
+    subClass
+      ? generateExplorerTreeSubtypeNodeID(
+          generateExplorerTreePropertyNodeID(
+            parentNode instanceof QueryBuilderExplorerTreeRootNodeData
+              ? ''
+              : parentNode.id,
+            property.name,
+          ),
+          subClass.path,
+        )
+      : generateExplorerTreePropertyNodeID(
+          parentNode instanceof QueryBuilderExplorerTreeRootNodeData
+            ? ''
+            : parentNode.id,
+          property.name,
+        ),
     property.name,
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
@@ -461,6 +504,9 @@ export const getQueryBuilderPropertyNodeData = (
     parentNode.id,
     isPartOfDerivedPropertyBranch,
     mappingNodeData,
+    // Inorder to cast the properties to the right subType based on what mapping analysis
+    // returns we assign the type of the property node to the mapped subClass
+    subClass,
   );
   if (propertyNode.type instanceof Class) {
     propertyNode.childrenIds =

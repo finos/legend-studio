@@ -1,5 +1,43 @@
 # @finos/legend-application-studio
 
+## 28.7.1
+
+## 28.7.0
+
+### Minor Changes
+
+- [#2666](https://github.com/finos/legend-studio/pull/2666) [`d1c0756ba`](https://github.com/finos/legend-studio/commit/d1c0756baaeb5e1250c690956813308041a043f0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add authorized actions and access role checks in create/commit reviews + create version
+
+### Patch Changes
+
+- [#2670](https://github.com/finos/legend-studio/pull/2670) [`2294346f0`](https://github.com/finos/legend-studio/commit/2294346f024cdffa5904321055c2b59bec61265c) ([@Yasirmod17](https://github.com/Yasirmod17)) - Bypass owner size check for services using ownership
+
+- [#2663](https://github.com/finos/legend-studio/pull/2663) [`03c3c495e`](https://github.com/finos/legend-studio/commit/03c3c495eac3222d485bfff0ad2317b77a2e62cf) ([@siaka-Akash](https://github.com/siaka-Akash)) - fixed dataGeneration for milestoned class
+
+## 28.6.0
+
+### Minor Changes
+
+- [#2606](https://github.com/finos/legend-studio/pull/2606) [`8460bc2a5`](https://github.com/finos/legend-studio/commit/8460bc2a5ea29d11eac501b85f87f9765e869443) ([@Yasirmod17](https://github.com/Yasirmod17)) - Service Element Ownership Uplift
+
+## 28.5.9
+
+### Patch Changes
+
+- [#2648](https://github.com/finos/legend-studio/pull/2648) [`b27267f04`](https://github.com/finos/legend-studio/commit/b27267f04ec011ffbccc5cb81b17f85f44a61a0b) ([@AFine-gs](https://github.com/AFine-gs)) - Add developer option to set dev protocol version
+
+## 28.5.8
+
+### Patch Changes
+
+- [#2643](https://github.com/finos/legend-studio/pull/2643) [`ddaf77c4c`](https://github.com/finos/legend-studio/commit/ddaf77c4c7b6ba56fc1b314049450f3b4b353ddd) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add tests for testing project viewer mode to increase stability
+
+## 28.5.7
+
+## 28.5.6
+
+## 28.5.5
+
 ## 28.5.4
 
 ### Patch Changes

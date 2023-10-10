@@ -59,10 +59,6 @@ import {
 import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_StartWith.js';
 import type { QueryBuilderAggregateColumnState } from './fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import {
-  getTDSColumnDerivedProperyFromType,
-  type TDS_COLUMN_GETTER,
-} from './fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
-import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
@@ -75,6 +71,7 @@ import {
 import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  type TDS_COLUMN_GETTER,
 } from '../graph/QueryBuilderMetaModelConst.js';
 import {
   functionExpression_setParametersValues,
@@ -89,6 +86,7 @@ import {
   DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME,
 } from './QueryBuilderConfig.js';
 import type { QueryBuilderAggregateOperator } from './fetch-structure/tds/aggregation/QueryBuilderAggregateOperator.js';
+import { getTDSColumnDerivedProperyFromType } from './fetch-structure/tds/QueryBuilderTDSHelper.js';
 
 const buildPropertyExpressionChainWithDefaultMilestoningDates = (
   propertyExpression: AbstractPropertyExpression,

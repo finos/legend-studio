@@ -40,6 +40,8 @@ import {
   TEST_DATA_getAllWithOneFloatConditionFilter,
   TEST_DATA_projectionWithWindowFunction,
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
+  TEST_DATA__simpleProjectWithSubtype,
+  TEST_DATA__simpleGraphFetchWithSubtype,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -68,11 +70,12 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
-import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
+import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
+import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
 
 test(
   integrationTest(
@@ -348,7 +351,9 @@ test(
     );
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() => getByText(filterPanel, filterValue));
 
@@ -376,7 +381,9 @@ test(
       QueryBuilderTDSState,
     );
     filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() =>
       expect(getAllByText(filterPanel, 'is')).toHaveLength(2),
@@ -623,7 +630,9 @@ test(
     );
 
     const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() => getByText(filterPanel, 'Age'));
     await waitFor(() => getByText(filterPanel, 'is'));
@@ -676,7 +685,9 @@ test(
       CollectionInstanceValue,
     );
     const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() => getByText(filterPanel, 'is in'));
 
@@ -743,7 +754,9 @@ test(
     );
 
     const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
     );
     await waitFor(() => getByText(filterPanel, 'Firm/Average Employees Age'));
     await waitFor(() => getByText(filterPanel, 'is'));
@@ -892,3 +905,111 @@ test(integrationTest('Query builder query cancellation'), async () => {
   fireEvent.click(await waitFor(() => renderResult.getByText('Stop')));
   await waitFor(() => renderResult.getByText('Run Query'));
 });
+
+test(
+  integrationTest(
+    'Query builder state is properly set after creating a projection query with subType when propery mapping points to class mapping of subType',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA_SimpleSubtypeModel,
+      stub_RawLambda(),
+      'model::NewMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+    );
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Person'));
+
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    //Add properties to fetch-structure
+    const element = await waitFor(() => getByText(explorerPanel, 'Address'));
+    fireEvent.contextMenu(element);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+    const tdsStateOne = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsStateOne.projectionColumns.length).toBe(3);
+    const fetchStructure = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    await waitFor(() => getByText(fetchStructure, 'Address/@(Colony)Id'));
+    await waitFor(() =>
+      getByText(fetchStructure, 'Address/@(Colony)Street Name'),
+    );
+    await waitFor(() => getByText(fetchStructure, 'Address/@(Colony)Zipcode'));
+
+    expect(
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      ),
+    ).toStrictEqual(TEST_DATA__simpleProjectWithSubtype);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after creating a graph fetch query with subType when propery mapping points to class mapping of subType',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA_SimpleSubtypeModel,
+      stub_RawLambda(),
+      'model::NewMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+    );
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Person'));
+
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    await act(async () => {
+      queryBuilderState.fetchStructureState.changeImplementation(
+        FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH,
+      );
+    });
+
+    //Add properties to fetch-structure
+    const element = await waitFor(() => getByText(explorerPanel, 'Address'));
+    fireEvent.contextMenu(element);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+    const fetchStructure = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_GRAPH_FETCH),
+    );
+    await waitFor(() => getByText(fetchStructure, 'Colony'));
+    await waitFor(() => getByText(fetchStructure, 'id'));
+    await waitFor(() => getByText(fetchStructure, 'streetName'));
+    await waitFor(() => getByText(fetchStructure, 'zipcode'));
+
+    expect(
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      ),
+    ).toStrictEqual(TEST_DATA__simpleGraphFetchWithSubtype);
+  },
+);
