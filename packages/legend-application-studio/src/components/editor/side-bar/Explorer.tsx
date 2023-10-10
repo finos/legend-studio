@@ -147,6 +147,7 @@ import { DatabaseBuilderWizard } from '../editor-group/connection-editor/Databas
 import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
 import { queryService } from '../editor-group/service-editor/ServiceExecutionQueryEditor.js';
+import { QueryDatabaseState } from '../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -529,6 +530,19 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const buildDatabaseQuery = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (node?.packageableElement instanceof Database) {
+          const state = new QueryDatabaseState(
+            node.packageableElement,
+            editorStore,
+          );
+          flowResult(state.init()).catch(
+            editorStore.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+    );
     const generateSampleData = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (node?.packageableElement instanceof Class) {
@@ -898,6 +912,9 @@ const ExplorerContextMenu = observer(
           <>
             <MenuContentItem onClick={generateModelsFromDatabaseSpecification}>
               Build Models
+            </MenuContentItem>
+            <MenuContentItem onClick={buildDatabaseQuery}>
+              Query (Beta)...
             </MenuContentItem>
             <MenuContentDivider />
           </>
