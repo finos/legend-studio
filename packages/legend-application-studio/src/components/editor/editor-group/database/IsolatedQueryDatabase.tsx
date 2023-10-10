@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { PackageableConnection } from '@finos/legend-graph';
-import { getMappingCompatibleClasses } from '@finos/legend-graph';
+import {
+  type PackageableConnection,
+  getMappingCompatibleClasses,
+} from '@finos/legend-graph';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import type { IsolatedDatabaseBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
 import { observer } from 'mobx-react-lite';

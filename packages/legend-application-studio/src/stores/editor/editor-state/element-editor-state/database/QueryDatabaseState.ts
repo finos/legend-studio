@@ -32,7 +32,6 @@ import {
   guaranteeNonNullable,
   type GeneratorFn,
   assertTrue,
-  filterByType,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { Entity } from '@finos/legend-storage';
