@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.10.2
+
+### Patch Changes
+
+- [#2685](https://github.com/finos/legend-studio/pull/2685) [`b398638ad`](https://github.com/finos/legend-studio/commit/b398638ad8755f4500a7371c4d05425df3eaf794) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix post filter on aggregation col with derivation
+
 ## 4.10.1
 
 ### Patch Changes
