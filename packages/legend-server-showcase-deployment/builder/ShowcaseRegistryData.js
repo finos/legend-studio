@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { resolve, join, relative } from 'path';
+import { resolve, join, relative, sep } from 'path';
 import { readFileSync, statSync, readdirSync, writeFileSync } from 'fs';
 import { parse } from 'yaml';
 
@@ -44,14 +44,22 @@ const extractShowcaseInfo = (file) => {
     }
   }
   const metadata = parse(frontMatter ?? '');
-  return {
+  const data = {
     title: typeof metadata.title === 'string' ? metadata.title : 'Untitled',
     description:
       typeof metadata.description === 'string'
         ? metadata.description
         : undefined,
-    documnetation: markdownText?.trim(),
+    documentation: markdownText?.trim(),
   };
+  const development =
+    typeof metadata.development === 'boolean'
+      ? metadata.development
+      : undefined;
+  if (development !== undefined) {
+    data.development = development;
+  }
+  return data;
 };
 
 export const buildShowcaseRegistryData = (showcaseDirectoryPath) => {
@@ -61,9 +69,12 @@ export const buildShowcaseRegistryData = (showcaseDirectoryPath) => {
     const files = readdirSync(directory);
     for (const file of files) {
       const absolutePath = join(directory, file);
+      const systemSeparator = sep;
       if (statSync(absolutePath).isDirectory()) {
         resolveShowcasePaths(absolutePath);
-      } else if (absolutePath.endsWith(`/${SHOWCASE_INFO_FILE}`)) {
+      } else if (
+        absolutePath.endsWith(`${systemSeparator}${SHOWCASE_INFO_FILE}`)
+      ) {
         if (!uniqueShowcasePaths.has(directory)) {
           uniqueShowcasePaths.add(directory);
           showcasePaths.push(directory);

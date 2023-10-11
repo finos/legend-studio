@@ -69,6 +69,6 @@ export const DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG: CommandConfigData
       title: 'Data Space Models Documentation: Search',
       defaultKeyboardShortcut: 'Control+Shift+KeyF',
       additionalKeyboardShortcuts: ['Meta+Shift+KeyF'],
-      when: 'When models documnetation viewer is active',
+      when: 'When models documentation viewer is active',
     },
   };
