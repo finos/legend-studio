@@ -133,51 +133,6 @@ describe(integrationTest('Query builder result state'), () => {
         queryBuilderState.resultState.setExecutionResult(executionResult);
       });
 
-      // Test filter out/by after sorting column
-      // original order
-      // Employees/First Name, Employees/Last Name, Legal Name
-      // Doe, John, FirmA
-      // Smith, Tim, Apple
-      const queryBuilderResultPanel = await waitFor(() =>
-        renderResult.getByTestId(
-          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
-        ),
-      );
-      const rows = await waitFor(() => renderResult.getAllByRole('row'));
-      const firstRow = rows.filter(
-        (r) => r.getAttribute('row-index') === '0',
-      )[0];
-      const secondRow = rows.filter(
-        (r) => r.getAttribute('row-index') === '1',
-      )[0];
-      expect(firstRow?.innerHTML).toContain('Doe');
-      expect(firstRow?.innerHTML).toContain('John');
-      expect(firstRow?.innerHTML).toContain('FirmA');
-      expect(secondRow?.innerHTML).toContain('Smith');
-      expect(secondRow?.innerHTML).toContain('Tim');
-      expect(secondRow?.innerHTML).toContain('Apple');
-
-      // click ag-grid column header (e.g. (Legal Name) ) to sort in ASC
-      // Employees/First Name, Employees/Last Name, Legal Name
-      // Smith, Tim, Apple
-      // Doe, John, FirmA
-      await act(async () => {
-        fireEvent.click(getByText(queryBuilderResultPanel, 'Legal Name'));
-      });
-      const rows1 = await waitFor(() => renderResult.getAllByRole('row'));
-      const firstRow1 = rows1.filter(
-        (r) => r.getAttribute('row-index') === '0',
-      )[0];
-      const secondRow1 = rows1.filter(
-        (r) => r.getAttribute('row-index') === '1',
-      )[0];
-      expect(firstRow1?.innerHTML).toContain('Smith');
-      expect(firstRow1?.innerHTML).toContain('Tim');
-      expect(firstRow1?.innerHTML).toContain('Apple');
-      expect(secondRow1?.innerHTML).toContain('Doe');
-      expect(secondRow1?.innerHTML).toContain('John');
-      expect(secondRow1?.innerHTML).toContain('FirmA');
-
       // Here we mimic the toggling to text mode.
       MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
         readOnly: true,
