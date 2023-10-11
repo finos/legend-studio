@@ -28,17 +28,17 @@ export const TEST_DATA__result = {
         type: 'String',
         relationalType: 'VARCHAR(200)',
       },
-      { name: 'Legal Name', type: 'String', relationalType: 'VARCHAR(200)' },
+      { name: 'Legal Namer', type: 'String', relationalType: 'VARCHAR(200)' },
     ],
   },
   activities: [
     {
       _type: 'relational',
-      sql: 'select top 1000 "persontable_0".firstName as "Employees/First Name", "persontable_0".lastName as "Employees/Last Name", "root".legal_name as "Legal Name" from FirmTable as "root" left outer join PersonTable as "persontable_0" on ("persontable_0".firm_id = "root".id)',
+      sql: 'select top 1000 "persontable_0".firstName as "Employees/First Name", "persontable_0".lastName as "Employees/Last Name", "root".legal_name as "Legal Namer" from FirmTable as "root" left outer join PersonTable as "persontable_0" on ("persontable_0".firm_id = "root".id)',
     },
   ],
   result: {
-    columns: ['Employees/First Name', 'Employees/Last Name', 'Legal Name'],
+    columns: ['Employees/First Name', 'Employees/Last Name', 'Legal Namer'],
     rows: [
       { values: ['Doe', 'John', 'FirmA'] },
       { values: ['Smith', 'Tim', 'Apple'] },
@@ -168,7 +168,7 @@ export const TEST_DATA__simpleProjectionQuery = {
             },
             {
               _type: 'string',
-              value: 'Legal Name',
+              value: 'Legal Namer',
             },
           ],
         },

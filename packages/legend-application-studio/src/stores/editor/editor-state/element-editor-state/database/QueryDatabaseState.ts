@@ -32,9 +32,8 @@ import {
   guaranteeNonNullable,
   type GeneratorFn,
   assertTrue,
-  filterByType,
 } from '@finos/legend-shared';
-import { flow, flowResult, makeObservable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { Entity } from '@finos/legend-storage';
 import {
   QueryBuilderConfig,
@@ -47,10 +46,33 @@ import {
 import { payloadDebugger } from '../../../panel-group/DevToolPanelState.js';
 import { renderDatabaseQueryBuilderSetupPanelContent } from '../../../../../components/editor/editor-group/database/IsolatedQueryDatabase.js';
 
+const replaceConnectionInEngineRuntime = (
+  engineRuntime: EngineRuntime,
+  connection: RelationalDatabaseConnection,
+  databse: Database,
+): void => {
+  const _storeConnection = new StoreConnections(
+    PackageableElementExplicitReference.create(databse),
+  );
+  const newconnection = new RelationalDatabaseConnection(
+    PackageableElementExplicitReference.create(databse),
+    connection.type,
+    connection.datasourceSpecification,
+    connection.authenticationStrategy,
+  );
+  newconnection.localMode = connection.localMode;
+  newconnection.timeZone = connection.timeZone;
+  _storeConnection.storeConnections = [
+    new IdentifiedConnection('connection1', newconnection),
+  ];
+  engineRuntime.connections = [_storeConnection];
+};
 export class IsolatedDatabaseBuilderState extends QueryBuilderState {
   readonly database: Database;
   globalGraphManagerState: GraphManagerState;
   engineRuntime: EngineRuntime;
+  connectionKey: string;
+  compatibleConnections: Map<string, RelationalDatabaseConnection>;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDatabaseQueryBuilderSetupPanelContent(this);
@@ -60,14 +82,23 @@ export class IsolatedDatabaseBuilderState extends QueryBuilderState {
     isolatedGraphManagerState: GraphManagerState,
     globalGraphManagerState: GraphManagerState,
     database: Database,
+    connectionKey: string,
     runtime: EngineRuntime,
+    compatibleConnections: Map<string, RelationalDatabaseConnection>,
     acceptedElementPaths?: string[],
     config?: QueryBuilderConfig | undefined,
   ) {
     super(applicationStore, isolatedGraphManagerState, config);
+    makeObservable(this, {
+      connectionKey: observable,
+      engineRuntime: observable,
+      changeConnection: action,
+    });
     this.database = database;
     this.globalGraphManagerState = globalGraphManagerState;
     this.engineRuntime = runtime;
+    this.compatibleConnections = compatibleConnections;
+    this.connectionKey = connectionKey;
     const classes = isolatedGraphManagerState.usableClasses;
     const electedMapping = guaranteeNonNullable(
       isolatedGraphManagerState.graph.mappings.filter((m) =>
@@ -83,6 +114,18 @@ export class IsolatedDatabaseBuilderState extends QueryBuilderState {
 
     this.executionContextState.mapping = electedMapping;
     this.executionContextState.runtimeValue = runtime;
+  }
+
+  changeConnection(key: string): void {
+    const connection = this.compatibleConnections.get(key);
+    if (connection) {
+      replaceConnectionInEngineRuntime(
+        this.engineRuntime,
+        connection,
+        this.database,
+      );
+      this.connectionKey = key;
+    }
   }
 }
 
@@ -100,16 +143,16 @@ export class QueryDatabaseState {
   }
   *init(): GeneratorFn<void> {
     try {
+      const compConnections = new Map<string, RelationalDatabaseConnection>();
+      this.editorStore.graphManagerState.usableConnections.forEach((conn) => {
+        const val = conn.connectionValue;
+        if (val instanceof RelationalDatabaseConnection) {
+          compConnections.set(conn.path, val);
+        }
+      });
       assertTrue(
-        !this.database.includes.length,
-        `Querying database with includes not supported`,
-      );
-      const connection = guaranteeNonNullable(
-        this.editorStore.graphManagerState.usableConnections
-          .map((e) => e.connectionValue)
-          .filter(filterByType(RelationalDatabaseConnection))
-          .find((e) => e.store.value === this.database),
-        'No compatible connection found for db',
+        compConnections.size > 0,
+        `No compatible connections found for database ${this.database.path}`,
       );
       const embeddedQueryBuilderState =
         this.editorStore.embeddedQueryBuilderState;
@@ -154,34 +197,24 @@ export class QueryDatabaseState {
         entities,
         ActionState.create(),
       );
-
       const engineRuntime = new EngineRuntime();
       engineRuntime.mappings = databaseGraphManagerState.graph.mappings.map(
         (e) => PackageableElementExplicitReference.create(e),
       );
-      const _storeConnection = new StoreConnections(
-        PackageableElementExplicitReference.create(copiedDb),
+      const connectionEntry = guaranteeNonNullable(
+        Array.from(compConnections.entries())[0],
       );
-      // copy over new connection
-      const newconnection = new RelationalDatabaseConnection(
-        PackageableElementExplicitReference.create(copiedDb),
-        connection.type,
-        connection.datasourceSpecification,
-        connection.authenticationStrategy,
-      );
-      newconnection.localMode = connection.localMode;
-      newconnection.timeZone = connection.timeZone;
-      _storeConnection.storeConnections = [
-        new IdentifiedConnection('connection1', newconnection),
-      ];
-      engineRuntime.connections = [_storeConnection];
+      const connection = connectionEntry[1];
+      replaceConnectionInEngineRuntime(engineRuntime, connection, copiedDb);
       const config = new QueryBuilderConfig();
       const queryBuilderState = new IsolatedDatabaseBuilderState(
         this.editorStore.applicationStore,
         databaseGraphManagerState,
         this.editorStore.graphManagerState,
-        this.database,
+        copiedDb,
+        connectionEntry[0],
         engineRuntime,
+        compConnections,
         entities.map((e) => e.path),
         config,
       );
