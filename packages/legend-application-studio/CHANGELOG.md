@@ -1,5 +1,19 @@
 # @finos/legend-application-studio
 
+## 28.8.0
+
+### Minor Changes
+
+- [#2680](https://github.com/finos/legend-studio/pull/2680) [`4cd67547f`](https://github.com/finos/legend-studio/commit/4cd67547f44e77750c5aea79ce8408808eef6071) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - **BREAKING** remove `TEMPORARY__enableRawSQLExecutor` and include raw executor as a default feature.
+
+- [#2676](https://github.com/finos/legend-studio/pull/2676) [`f813d192e`](https://github.com/finos/legend-studio/commit/f813d192e2ccb60474d204a00ef3f5636e529e22) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add preview data to databse builder from connection.
+
+### Patch Changes
+
+- [#2686](https://github.com/finos/legend-studio/pull/2686) [`9c25a0159`](https://github.com/finos/legend-studio/commit/9c25a01590db489c2f5257da9d162fa2aeb90fd1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Query Database using model generation.
+
+- [#2688](https://github.com/finos/legend-studio/pull/2688) [`6bc2a3cde`](https://github.com/finos/legend-studio/commit/6bc2a3cdec3195267bcb90f94e8a4ae0cbeefed7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle more than one compatible connections in query db.
+
 ## 28.7.1
 
 ## 28.7.0
