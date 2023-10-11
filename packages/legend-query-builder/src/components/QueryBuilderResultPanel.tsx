@@ -52,6 +52,7 @@ import {
   EnumValueInstanceValue,
   EnumValueExplicitReference,
   RelationalExecutionActivities,
+  getTDSRowRankByColumnInAsc,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -62,6 +63,8 @@ import {
 import {
   assertErrorThrown,
   guaranteeNonNullable,
+  isBoolean,
+  type PlainObject,
   prettyDuration,
   filterByType,
   isValidURL,
@@ -417,7 +420,9 @@ const QueryBuilderGridResultContextMenu = observer(
       ),
     );
 
-    const findSelectedCellRowData = (): string => {
+    const findRowFromRowIndex = (
+      rowIndex: number,
+    ): (string | number | boolean | null)[] => {
       if (
         !tdsState.queryBuilderState.resultState.executionResult ||
         !(
@@ -425,31 +430,21 @@ const QueryBuilderGridResultContextMenu = observer(
           TDSExecutionResult
         )
       ) {
-        return '';
+        return [''];
       }
-      const rowData = tdsState.queryBuilderState.resultState.rowData.find(
-        (rData) =>
-          rData.rowNumber ===
-          tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
-            .rowIndex,
+      return (
+        tdsState.queryBuilderState.resultState.executionResult.result.rows[
+          rowIndex
+        ]?.values ?? ['']
       );
-      // try to get the entire row value separated by comma
-      // rowData is in format of {columnName: value, columnName1: value, ...., rowNumber:value}
-      const valueArr: (string | number | boolean | null | undefined)[] = [];
-      if (rowData) {
-        Object.entries(rowData).forEach((entry) => {
-          if (entry[0] !== 'rowNumber') {
-            valueArr.push(entry[1]);
-          }
-        });
-        return valueArr.join(',');
-      }
-      return '';
     };
 
     const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
       applicationStore.clipboardService.copyTextToClipboard(
-        findSelectedCellRowData(),
+        findRowFromRowIndex(
+          tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
+            .rowIndex ?? 0,
+        ).toString(),
       ),
     );
 
@@ -507,18 +502,18 @@ const QueryResultCellRenderer = observer(
       isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
     const columnName = params.column?.getColId() ?? '';
     const findCoordinatesFromResultValue = (
-      colName: string,
+      colId: string,
       rowNumber: number,
     ): QueryBuilderTDSResultCellCoordinate => {
       const colIndex = tdsExecutionResult.result.columns.findIndex(
-        (col) => col === colName,
+        (col) => col === colId,
       );
       return { rowIndex: rowNumber, colIndex: colIndex };
     };
 
     const currentCellCoordinates = findCoordinatesFromResultValue(
       columnName,
-      params.data.rowNumber,
+      params.rowIndex,
     );
     const cellInFilteredResults = resultState.selectedCells.some(
       (result) =>
@@ -526,9 +521,9 @@ const QueryResultCellRenderer = observer(
         result.coordinates.rowIndex === currentCellCoordinates.rowIndex,
     );
 
-    const findColumnNameFromColumnIndex = (
+    const findColumnFromCoordinates = (
       colIndex: number,
-    ): string | undefined => {
+    ): string | number | boolean | null | undefined => {
       if (
         !resultState.executionResult ||
         !(resultState.executionResult instanceof TDSExecutionResult)
@@ -539,12 +534,30 @@ const QueryResultCellRenderer = observer(
     };
 
     const findResultValueFromCoordinates = (
-      rowIndex: number,
-      colName: string,
-    ): string | number | boolean | null | undefined =>
-      resultState.rowData.find((data) => data.rowNumber === rowIndex)![
-        colName
-      ] as string | number | boolean | null | undefined;
+      resultCoordinate: [number, number],
+    ): string | number | boolean | null | undefined => {
+      const rowIndex = resultCoordinate[0];
+      const colIndex = resultCoordinate[1];
+
+      if (
+        !resultState.executionResult ||
+        !(resultState.executionResult instanceof TDSExecutionResult)
+      ) {
+        return undefined;
+      }
+      if (params.columnApi.getColumnState()[colIndex]?.sort === 'asc') {
+        resultState.executionResult.result.rows.sort((a, b) =>
+          getTDSRowRankByColumnInAsc(a, b, colIndex),
+        );
+      } else if (params.columnApi.getColumnState()[colIndex]?.sort === 'desc') {
+        resultState.executionResult.result.rows.sort((a, b) =>
+          getTDSRowRankByColumnInAsc(b, a, colIndex),
+        );
+      }
+      return resultState.executionResult.result.rows[rowIndex]?.values[
+        colIndex
+      ];
+    };
 
     const isCoordinatesSelected = (
       resultCoordinate: QueryBuilderTDSResultCellCoordinate,
@@ -561,12 +574,12 @@ const QueryResultCellRenderer = observer(
       if (event.shiftKey) {
         const coordinates = findCoordinatesFromResultValue(
           columnName,
-          params.data.rowNumber,
+          params.rowIndex,
         );
-        const actualValue = findResultValueFromCoordinates(
+        const actualValue = findResultValueFromCoordinates([
           coordinates.rowIndex,
-          columnName,
-        );
+          coordinates.colIndex,
+        ]);
         resultState.addSelectedCell({
           value: actualValue,
           columnName: columnName,
@@ -580,12 +593,12 @@ const QueryResultCellRenderer = observer(
         resultState.setSelectedCells([]);
         const coordinates = findCoordinatesFromResultValue(
           columnName,
-          params.data.rowNumber,
+          params.rowIndex,
         );
-        const actualValue = findResultValueFromCoordinates(
+        const actualValue = findResultValueFromCoordinates([
           coordinates.rowIndex,
-          columnName,
-        );
+          coordinates.colIndex,
+        ]);
         resultState.setSelectedCells([
           {
             value: actualValue,
@@ -599,14 +612,14 @@ const QueryResultCellRenderer = observer(
       if (event.button === 2) {
         const coordinates = findCoordinatesFromResultValue(
           columnName,
-          params.data.rowNumber,
+          params.rowIndex,
         );
         const isInSelected = isCoordinatesSelected(coordinates);
         if (!isInSelected) {
-          const actualValue = findResultValueFromCoordinates(
+          const actualValue = findResultValueFromCoordinates([
             coordinates.rowIndex,
-            columnName,
-          );
+            coordinates.colIndex,
+          ]);
           resultState.setSelectedCells([
             {
               value: actualValue,
@@ -636,7 +649,7 @@ const QueryResultCellRenderer = observer(
         const firstCorner = results.coordinates;
         const secondCorner = findCoordinatesFromResultValue(
           columnName,
-          params.data.rowNumber,
+          params.rowIndex,
         );
 
         resultState.setSelectedCells([results]);
@@ -648,13 +661,11 @@ const QueryResultCellRenderer = observer(
 
         for (let x = minRow; x <= maxRow; x++) {
           for (let y = minCol; y <= maxCol; y++) {
-            const actualValue = findResultValueFromCoordinates(
-              x,
-              findColumnNameFromColumnIndex(y) as string,
-            );
+            const actualValue = findResultValueFromCoordinates([x, y]);
+
             const valueAndColumnId = {
               value: actualValue,
-              columnName: findColumnNameFromColumnIndex(y),
+              columnName: findColumnFromCoordinates(y),
               coordinates: {
                 rowIndex: x,
                 colIndex: y,
@@ -673,6 +684,7 @@ const QueryResultCellRenderer = observer(
           }
         }
       }
+
       resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
     };
 
@@ -729,6 +741,20 @@ const QueryBuilderGridResult = observer(
 
     const resultState = queryBuilderState.resultState;
 
+    const rowData = executionResult.result.rows.map((_row, rowIdx) => {
+      const row: PlainObject = {};
+      const cols = executionResult.result.columns;
+      _row.values.forEach((value, colIdx) => {
+        // `ag-grid` shows `false` value as empty string so we have
+        // call `.toString()` to avoid this behavior.
+        // See https://github.com/finos/legend-studio/issues/1008
+        row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
+      });
+
+      row.rowNumber = rowIdx;
+      return row;
+    });
+
     return (
       <div className="query-builder__result__values__table">
         <div
@@ -737,20 +763,7 @@ const QueryBuilderGridResult = observer(
           )}
         >
           <DataGrid
-            rowData={queryBuilderState.resultState.getRowData()}
-            onSortChanged={(params) => {
-              const sortedData: Record<
-                string,
-                string | number | boolean | null
-              >[] = [];
-              params.api.forEachNodeAfterFilterAndSort((node, index) => {
-                node.rowIndex = index;
-                // rowNumber has to be manually updated after sorting the column
-                node.data.rowNumber = index;
-                sortedData.push(node.data);
-              });
-              queryBuilderState.resultState.setRowData(sortedData);
-            }}
+            rowData={rowData}
             gridOptions={{
               suppressScrollOnNewData: true,
               getRowId: (data) => data.data.rowNumber,
