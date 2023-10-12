@@ -66,8 +66,9 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
       | ((val: ServiceExecutionContext) => void)
       | undefined,
     config?: QueryBuilderConfig | undefined,
+    sourceInfo?: object | undefined,
   ) {
-    super(applicationStore, graphManagerState, config);
+    super(applicationStore, graphManagerState, config, sourceInfo);
 
     makeObservable(this, {
       selectedExecutionContext: observable,

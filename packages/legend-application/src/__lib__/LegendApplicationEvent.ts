@@ -48,4 +48,6 @@ export enum APPLICATION_EVENT {
   APPLICATION_CONTEXT__ACCESS = 'application.context.access',
 
   APPLICATION_USAGE__INTERRUPT = 'application.usage.interrupt',
+
+  APPLICATION_TELEMETRY_EVENT__FAILURE = 'application.telemetry-event.failure',
 }
