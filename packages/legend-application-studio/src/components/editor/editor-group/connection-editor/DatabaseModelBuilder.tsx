@@ -50,6 +50,92 @@ import {
 import { debounce, noop } from '@finos/legend-shared';
 import { isValidPath } from '@finos/legend-graph';
 
+export const DatabaseModelPackageInput = observer(
+  (props: { databaseModelBuilderState: DatabaseModelBuilderState }) => {
+    const { databaseModelBuilderState } = props;
+
+    const applicationStore = useApplicationStore();
+    const debouncedRegenerate = useMemo(
+      () =>
+        debounce(
+          () => flowResult(databaseModelBuilderState.previewDatabaseModels()),
+          500,
+        ),
+      [databaseModelBuilderState],
+    );
+
+    const changeTargetPackage: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      databaseModelBuilderState.setTargetPackage(event.target.value);
+      debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
+    };
+
+    const targetPackageValidationMessage =
+      !databaseModelBuilderState.targetPackage
+        ? `Target package path can't be empty`
+        : !isValidPath(databaseModelBuilderState.targetPackage)
+        ? 'Invalid target package path'
+        : undefined;
+
+    return (
+      <div className="panel__content__form__section">
+        <div className="panel__content__form__section__header__label">
+          Target Package
+        </div>
+        <div className="panel__content__form__section__header__prompt">
+          Target Package of Mapping and Models Generated
+        </div>
+        <InputWithInlineValidation
+          className="query-builder__variables__variable__name__input input-group__input"
+          spellCheck={false}
+          value={databaseModelBuilderState.targetPackage}
+          onChange={changeTargetPackage}
+          placeholder="Target package path"
+          error={targetPackageValidationMessage}
+          showEditableIcon={true}
+        />
+      </div>
+    );
+  },
+);
+
+export const DatabaseModelPreviewEditor = observer(
+  (props: {
+    databaseModelBuilderState: DatabaseModelBuilderState;
+    grammarCode: string;
+  }) => {
+    const { databaseModelBuilderState, grammarCode } = props;
+
+    const isExecutingAction =
+      databaseModelBuilderState.generatingModelState.isInProgress ||
+      databaseModelBuilderState.saveModelState.isInProgress;
+
+    return (
+      <Panel className="database-builder__model">
+        <PanelHeader title="database model" />
+        <PanelContent>
+          <PanelLoadingIndicator isLoading={isExecutingAction} />
+          <div className="database-builder__modeler">
+            <div className="database-builder__modeler__preview">
+              {databaseModelBuilderState.generatedGrammarCode && (
+                <CodeEditor
+                  language={CODE_EDITOR_LANGUAGE.PURE}
+                  inputValue={grammarCode}
+                  isReadOnly={true}
+                />
+              )}
+              {!databaseModelBuilderState.generatedGrammarCode && (
+                <BlankPanelContent>No model preview</BlankPanelContent>
+              )}
+            </div>
+          </div>
+        </PanelContent>
+      </Panel>
+    );
+  },
+);
+
 export const DatabaseModelBuilder = observer(
   (props: {
     databaseModelBuilderState: DatabaseModelBuilderState;
@@ -66,6 +152,7 @@ export const DatabaseModelBuilder = observer(
         ),
       [databaseModelBuilderState],
     );
+
     const preview = (): void => {
       debouncedRegenerate.cancel();
       debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
@@ -78,19 +165,6 @@ export const DatabaseModelBuilder = observer(
       databaseModelBuilderState.close();
     };
 
-    const targetPackageValidationMessage =
-      !databaseModelBuilderState.targetPackage
-        ? `Target package path can't be empty`
-        : !isValidPath(databaseModelBuilderState.targetPackage)
-        ? 'Invalid target package path'
-        : undefined;
-
-    const changeTargetPackage: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      databaseModelBuilderState.setTargetPackage(event.target.value);
-      debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
-    };
     const isExecutingAction =
       databaseModelBuilderState.generatingModelState.isInProgress ||
       databaseModelBuilderState.saveModelState.isInProgress;
@@ -136,51 +210,18 @@ export const DatabaseModelBuilder = observer(
                 <div className="database-builder__config">
                   <PanelHeader title="schema explorer" />
                   <PanelContent className="database-builder__config__content">
-                    <div className="panel__content__form__section">
-                      <div className="panel__content__form__section__header__label">
-                        {'Target Package'}
-                      </div>
-                      <div className="panel__content__form__section__header__prompt">
-                        {'Target Package of Mapping and Models Generated'}
-                      </div>
-                      <InputWithInlineValidation
-                        className="query-builder__variables__variable__name__input input-group__input"
-                        spellCheck={false}
-                        value={databaseModelBuilderState.targetPackage}
-                        onChange={changeTargetPackage}
-                        placeholder="Target package path"
-                        error={targetPackageValidationMessage}
-                      />
-                    </div>
+                    <DatabaseModelPackageInput
+                      databaseModelBuilderState={databaseModelBuilderState}
+                    />
                   </PanelContent>
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter />
               <ResizablePanel>
-                <Panel className="database-builder__model">
-                  <PanelHeader title="database model" />
-                  <PanelContent>
-                    <PanelLoadingIndicator isLoading={isExecutingAction} />
-                    <div className="database-builder__modeler">
-                      <div className="database-builder__modeler__preview">
-                        {databaseModelBuilderState.generatedGrammarCode && (
-                          <CodeEditor
-                            language={CODE_EDITOR_LANGUAGE.PURE}
-                            inputValue={
-                              databaseModelBuilderState.generatedGrammarCode
-                            }
-                            isReadOnly={true}
-                          />
-                        )}
-                        {!databaseModelBuilderState.generatedGrammarCode && (
-                          <BlankPanelContent>
-                            No model preview
-                          </BlankPanelContent>
-                        )}
-                      </div>
-                    </div>
-                  </PanelContent>
-                </Panel>
+                <DatabaseModelPreviewEditor
+                  databaseModelBuilderState={databaseModelBuilderState}
+                  grammarCode={databaseModelBuilderState.generatedGrammarCode}
+                />
               </ResizablePanel>
             </ResizablePanelGroup>
           </ModalBody>

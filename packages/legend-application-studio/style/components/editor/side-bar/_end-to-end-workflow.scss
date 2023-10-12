@@ -1,0 +1,211 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.end-to-end-workflow {
+  &__container {
+    @include flexVCenter;
+
+    height: 2.2rem;
+    cursor: pointer;
+
+    &__icon {
+      @include flexHCenter;
+
+      width: 2rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    &__name {
+      @include ellipsisTextOverflow;
+
+      margin-left: 0.5rem;
+    }
+  }
+}
+
+.query-connection-workflow-panel {
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-50);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-400) !important;
+    }
+
+    &__content {
+      height: calc(100% - 2.8rem);
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
+    }
+  }
+}
+
+.query-connection-workflow {
+  &__content {
+    background: var(--color-dark-grey-50);
+  }
+
+  &__actions {
+    @include flexVCenter;
+
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    border-top: none;
+
+    &__action-btn {
+      width: 12rem;
+      margin-left: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 3.6rem;
+      border-radius: 0.2rem;
+      color: var(--color-light-grey-50);
+      border-color: var(--color-light-grey-400);
+      background: var(--color-dark-grey-500);
+    }
+
+    &__action-btn--primary {
+      border-color: var(--color-blue-200);
+      background: var(--color-blue-300);
+    }
+  }
+}
+
+.query-connection-relational-connection-editor {
+  height: 100%;
+  width: 100%;
+  position: relative;
+
+  &__connection-builder {
+    height: 100%;
+    width: 100%;
+
+    &__path {
+      height: 8rem;
+      padding: 1rem;
+      margin-left: 1rem;
+    }
+  }
+
+  &__editor {
+    height: 80rem;
+    overflow-y: scroll;
+  }
+}
+
+.query-connection-database-builder-editor {
+  &__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    background: var(--color-dark-grey-50);
+
+    &__action {
+      @include flexVCenter;
+
+      justify-content: space-evenly;
+      border-radius: 0.2rem;
+      height: 3.6rem;
+      width: 12rem;
+      margin-right: 24px;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      font-size: 1.4rem;
+      color: var(--color-light-grey-50);
+      border-color: var(--color-blue-200);
+      background: var(--color-blue-300);
+
+      &__icon {
+        height: 1.5rem;
+        width: 1.5rem;
+      }
+    }
+  }
+
+  &__prompt {
+    @include flexVCenter;
+
+    background: var(--color-dark-grey-300);
+    margin-bottom: 0 !important;
+    padding-left: 1rem;
+    border: 0.1rem solid var(--color-dark-grey-350);
+    height: 4rem;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    color: var(--color-light-grey-50);
+  }
+
+  &__editor {
+    height: 84rem;
+  }
+
+  &__modal {
+    border: none !important;
+    height: 84rem;
+
+    &__content {
+      height: calc(100% - 4rem);
+    }
+  }
+}
+
+.query-connection-database-grammar-editor {
+  &__modal {
+    border: none !important;
+    height: calc(100% - 7rem);
+  }
+}
+
+.query-connection-connection-model-editor {
+  &__modal {
+    border: none !important;
+    height: 84rem;
+
+    &__content {
+      height: calc(100% - 4rem);
+    }
+  }
+}

@@ -107,6 +107,21 @@
       height: calc(100% - 8rem);
       width: 100%;
       position: relative;
+
+      &__header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-yellow-300);
+        height: 1.8rem;
+        margin-left: 0.5rem;
+        margin-top: 0.5rem;
+        border-radius: 0.2rem;
+        color: var(--color-light-grey-0);
+        white-space: nowrap;
+        width: 5rem;
+        font-size: 1.1rem;
+      }
     }
   }
 
