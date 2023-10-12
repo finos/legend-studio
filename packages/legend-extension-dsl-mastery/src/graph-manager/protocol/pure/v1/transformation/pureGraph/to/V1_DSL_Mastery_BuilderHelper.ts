@@ -152,8 +152,8 @@ import {
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
 import { CollectionEquality } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
-import { V1_Runtime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
-import { Runtime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
+import { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider
@@ -837,17 +837,17 @@ export const V1_buildMasterRecordDefinition = (
  * runtime
  **********/
 
-export const V1_buildRuntime = (
-  element: V1_Runtime,
+export const V1_buildMasteryRuntime = (
+  element: V1_MasteryRuntime,
   context: V1_GraphBuilderContext,
-): Runtime => {
-  const extraRuntimeBuilders = context.extensions.plugins.flatMap(
+): MasteryRuntime => {
+  const extraMasteryRuntimeBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
       (
         plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraRuntimeBuilders?.() ?? [],
+      ).V1_getExtraMasteryRuntimeBuilders?.() ?? [],
   );
-  for (const builder of extraRuntimeBuilders) {
+  for (const builder of extraMasteryRuntimeBuilders) {
     const metamodel = builder(element, context);
     if (metamodel) {
       return metamodel;

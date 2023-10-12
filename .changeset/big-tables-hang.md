@@ -2,4 +2,4 @@
 '@finos/legend-extension-dsl-mastery': patch
 ---
 
-Protocol and Metamodel changes for Mastery Runtime
+Add support for Mastery Runtime

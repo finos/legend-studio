@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-import { Hashable, hashArray } from '@finos/legend-shared';
-import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils';
-import { PackageableElement } from '../../../../../../../../legend-graph/src/graph/metamodel/pure/packageableElements/PackageableElement';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
+import { PackageableElement } from '@finos/legend-graph';
 
-export abstract class Runtime extends PackageableElement implements Hashable {
+export abstract class MasteryRuntime
+  extends PackageableElement
+  implements Hashable
+{
   masterRecordDefinitions!: string[];
 
   override get hashCode(): string {

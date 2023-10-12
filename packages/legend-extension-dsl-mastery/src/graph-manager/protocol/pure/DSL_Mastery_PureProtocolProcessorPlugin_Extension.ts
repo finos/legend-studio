@@ -20,8 +20,8 @@ import type { V1_AcquisitionProtocol } from './v1/model/packageableElements/mast
 import type { AcquisitionProtocol } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AcquisitionProtocol.js';
 import type { V1_Authorization } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Authorization.js';
 import type { Authorization } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Authorization.js';
-import type { V1_Runtime } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
-import type { Runtime } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
+import type { V1_MasteryRuntime } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { MasteryRuntime } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 import type {
   V1_AuthenticationStrategy,
   V1_CredentialSecret,
@@ -130,25 +130,25 @@ export type V1_AuthenticationStrategyProtocolDeserializer = (
 ) => V1_AuthenticationStrategy | undefined;
 
 // types: mastery runtime
-export type V1_RuntimeBuilder = (
-  protocol: V1_Runtime,
+export type V1_MasteryRuntimeBuilder = (
+  protocol: V1_MasteryRuntime,
   context: V1_GraphBuilderContext,
-) => Runtime | undefined;
+) => MasteryRuntime | undefined;
 
-export type V1_RuntimeTransformer = (
-  metamodel: Runtime,
+export type V1_MasteryRuntimeTransformer = (
+  metamodel: MasteryRuntime,
   context: V1_GraphTransformerContext,
-) => V1_Runtime | undefined;
+) => V1_MasteryRuntime | undefined;
 
-export type V1_RuntimeProtocolSerializer = (
-  protocol: V1_Runtime,
+export type V1_MasteryRuntimeProtocolSerializer = (
+  protocol: V1_MasteryRuntime,
   plugins: PureProtocolProcessorPlugin[],
-) => PlainObject<V1_Runtime> | undefined;
+) => PlainObject<V1_MasteryRuntime> | undefined;
 
-export type V1_RuntimeProtocolDeserializer = (
-  json: PlainObject<V1_Runtime>,
+export type V1_MasteryRuntimeProtocolDeserializer = (
+  json: PlainObject<V1_MasteryRuntime>,
   plugins: PureProtocolProcessorPlugin[],
-) => V1_Runtime | undefined;
+) => V1_MasteryRuntime | undefined;
 
 export interface DSL_Mastery_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
@@ -194,11 +194,13 @@ export interface DSL_Mastery_PureProtocolProcessorPlugin_Extension
   V1_getExtraAuthenticationStrategyProtocolDeserializers?(): V1_AuthenticationStrategyProtocolDeserializer[];
 
   // extension hooks: runtime
-  V1_getExtraRuntimeBuilders?(): V1_RuntimeBuilder[];
+  V1_getExtraMasteryRuntimeBuilders?(): V1_MasteryRuntimeBuilder[];
 
-  V1_getExtraRuntimeTransformers?(): V1_RuntimeTransformer[];
+  V1_getExtraMasteryRuntimeFirstPassBuilders?(): V1_MasteryRuntimeBuilder[];
 
-  V1_getExtraRuntimeProtocolSerializers?(): V1_RuntimeProtocolSerializer[];
+  V1_getExtraMasteryRuntimeTransformers?(): V1_MasteryRuntimeTransformer[];
 
-  V1_getExtraRuntimeProtocolDeserializers?(): V1_RuntimeProtocolDeserializer[];
+  V1_getExtraMasteryRuntimeProtocolSerializers?(): V1_MasteryRuntimeProtocolSerializer[];
+
+  V1_getExtraMasteryRuntimeProtocolDeserializers?(): V1_MasteryRuntimeProtocolDeserializer[];
 }

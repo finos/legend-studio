@@ -95,7 +95,7 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
-import { V1_Runtime } from '../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime';
+import { V1_MasteryRuntime } from '../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
 
 /********************
  * connection
@@ -932,42 +932,44 @@ export const V1_masterRecordDefinitionModelSchema = (
  * runtime
  **********/
 
-export const V1_serializeRuntime = (
-  protocol: V1_Runtime,
+export const V1_MASTERY_RUNTIME_ELEMENT_PROTOCOL_TYPE = 'masteryRuntime';
+
+export const V1_serializeMasteryRuntime = (
+  protocol: V1_MasteryRuntime,
   plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_Runtime> => {
-  const extraRuntimeSerializers = plugins.flatMap(
+): PlainObject<V1_MasteryRuntime> => {
+  const extraMasteryRuntimeSerializers = plugins.flatMap(
     (plugin) =>
       (
         plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraRuntimeProtocolSerializers?.() ?? [],
+      ).V1_getExtraMasteryRuntimeProtocolSerializers?.() ?? [],
   );
-  for (const serializer of extraRuntimeSerializers) {
-    const runtimeJson = serializer(protocol, plugins);
-    if (runtimeJson) {
-      return runtimeJson;
+  for (const serializer of extraMasteryRuntimeSerializers) {
+    const masteryRuntimeJson = serializer(protocol, plugins);
+    if (masteryRuntimeJson) {
+      return masteryRuntimeJson;
     }
   }
   throw new UnsupportedOperationError(
-    `Can't serialize runtime Json: no compatible serializer available from plugins`,
+    `Can't serialize mastery runtime: no compatible serializer available from plugins`,
     protocol,
   );
 };
 
-export const V1_deserializeRuntime = (
-  json: PlainObject<V1_Runtime>,
+export const V1_deserializeMasteryRuntime = (
+  json: PlainObject<V1_MasteryRuntime>,
   plugins: PureProtocolProcessorPlugin[],
-): V1_Runtime => {
-  const extraRuntimeDeserializers = plugins.flatMap(
+): V1_MasteryRuntime => {
+  const extraMasteryRuntimeDeserializers = plugins.flatMap(
     (plugin) =>
       (
         plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraRuntimeProtocolDeserializers?.() ?? [],
+      ).V1_getExtraMasteryRuntimeProtocolDeserializers?.() ?? [],
   );
-  for (const deserializer of extraRuntimeDeserializers) {
-    const runtimeProtocol = deserializer(json, plugins);
-    if (runtimeProtocol) {
-      return runtimeProtocol;
+  for (const deserializer of extraMasteryRuntimeDeserializers) {
+    const masteryRuntimeProtocol = deserializer(json, plugins);
+    if (masteryRuntimeProtocol) {
+      return masteryRuntimeProtocol;
     }
   }
   throw new UnsupportedOperationError(

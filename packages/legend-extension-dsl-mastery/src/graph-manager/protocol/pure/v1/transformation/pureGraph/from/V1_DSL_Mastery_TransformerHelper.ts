@@ -149,8 +149,8 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
-import { V1_Runtime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
-import { Runtime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
+import { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider
@@ -826,17 +826,17 @@ export const V1_transformMasterRecordDefinition = (
  * runtime
  **********/
 
-export const V1_transformRuntime = (
-  element: Runtime,
+export const V1_transformMasteryRuntime = (
+  element: MasteryRuntime,
   context: V1_GraphTransformerContext,
-): V1_Runtime => {
-  const extraRuntimeTransformers = context.plugins.flatMap(
+): V1_MasteryRuntime => {
+  const extraMasteryRuntimeTransformers = context.plugins.flatMap(
     (plugin) =>
       (
         plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraRuntimeTransformers?.() ?? [],
+      ).V1_getExtraMasteryRuntimeTransformers?.() ?? [],
   );
-  for (const transformer of extraRuntimeTransformers) {
+  for (const transformer of extraMasteryRuntimeTransformers) {
     const protocol = transformer(element, context);
     if (protocol) {
       return protocol;
