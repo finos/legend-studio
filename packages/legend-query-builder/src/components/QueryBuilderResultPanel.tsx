@@ -37,6 +37,8 @@ import {
   ModalFooterButton,
   ModalHeader,
   PanelDivider,
+  SquareIcon,
+  CheckSquareIcon,
 } from '@finos/legend-art';
 import { format as formatSQL } from 'sql-formatter';
 import { observer } from 'mobx-react-lite';
@@ -53,6 +55,7 @@ import {
   EnumValueExplicitReference,
   RelationalExecutionActivities,
   getTDSRowRankByColumnInAsc,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -732,6 +735,40 @@ const QueryResultCellRenderer = observer(
   },
 );
 
+const getColumnCustomizations = (
+  result: TDSExecutionResult,
+  columnName: string,
+): object | undefined => {
+  const columnType = result.builder.columns.find(
+    (col) => col.name === columnName,
+  )?.type;
+  switch (columnType) {
+    case PRIMITIVE_TYPE.STRING:
+      return {
+        filter: 'agTextColumnFilter',
+        allowedAggFuncs: ['count'],
+      };
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return {
+        filter: 'agDateColumnFilter',
+        allowedAggFuncs: ['count'],
+      };
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.FLOAT:
+      return {
+        filter: 'agNumberColumnFilter',
+        allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
+      };
+    default:
+      return {
+        allowedAggFuncs: ['count'],
+      };
+  }
+};
+
 const QueryBuilderGridResult = observer(
   (props: {
     executionResult: TDSExecutionResult;
@@ -740,6 +777,38 @@ const QueryBuilderGridResult = observer(
     const { executionResult, queryBuilderState } = props;
 
     const resultState = queryBuilderState.resultState;
+    const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
+    const colDefs = isAdvancedModeEnabled
+      ? executionResult.result.columns.map(
+          (colName) =>
+            ({
+              minWidth: 50,
+              sortable: true,
+              resizable: true,
+              field: colName,
+              flex: 1,
+              enablePivot: true,
+              enableRowGroup: true,
+              enableValue: true,
+              ...getColumnCustomizations(executionResult, colName),
+            }) as DataGridColumnDefinition,
+        )
+      : executionResult.result.columns.map(
+          (colName) =>
+            ({
+              minWidth: 50,
+              sortable: true,
+              resizable: true,
+              field: colName,
+              flex: 1,
+              cellRenderer: QueryResultCellRenderer,
+              cellRendererParams: {
+                resultState: resultState,
+                tdsExecutionResult: executionResult,
+              },
+            }) as DataGridColumnDefinition,
+        );
+    const sideBar = isAdvancedModeEnabled ? ['columns', 'filters'] : null;
 
     const rowData = executionResult.result.rows.map((_row, rowIdx) => {
       const row: PlainObject = {};
@@ -767,6 +836,9 @@ const QueryBuilderGridResult = observer(
             gridOptions={{
               suppressScrollOnNewData: true,
               getRowId: (data) => data.data.rowNumber,
+              rowSelection: 'multiple',
+              pivotPanelShow: isAdvancedModeEnabled ? 'always' : 'never',
+              rowGroupPanelShow: isAdvancedModeEnabled ? 'always' : 'never',
             }}
             // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
             // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
@@ -774,21 +846,9 @@ const QueryBuilderGridResult = observer(
               params.api.refreshCells({ force: true });
             }}
             suppressFieldDotNotation={true}
-            columnDefs={executionResult.result.columns.map(
-              (colName) =>
-                ({
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  field: colName,
-                  flex: 1,
-                  cellRenderer: QueryResultCellRenderer,
-                  cellRendererParams: {
-                    resultState: resultState,
-                    tdsExecutionResult: executionResult,
-                  },
-                }) as DataGridColumnDefinition,
-            )}
+            suppressContextMenu={!isAdvancedModeEnabled}
+            columnDefs={colDefs}
+            sideBar={sideBar}
           />
         </div>
       </div>
@@ -936,6 +996,10 @@ export const QueryBuilderResultPanel = observer(
     );
 
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
+    const allowSettingAdvancedMode =
+      queryBuilderState.isQuerySupported ||
+      queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderTDSState;
 
     const copyExpression = (value: string): void => {
       applicationStore.clipboardService
@@ -1006,6 +1070,13 @@ export const QueryBuilderResultPanel = observer(
       } else if (event.code === 'Escape') {
         inputRef.current?.select();
       }
+    };
+
+    const toggleIsAdvancedModeEnabled = (): void => {
+      resultState.setExecutionResult(undefined);
+      queryBuilderState.setIsAdvancedModeEnabled(
+        !queryBuilderState.isAdvancedModeEnabled,
+      );
     };
 
     return (
@@ -1084,6 +1155,33 @@ export const QueryBuilderResultPanel = observer(
             )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
+            {queryBuilderState.config?.TEMPORARY__enableAdvancedGridMode &&
+              allowSettingAdvancedMode && (
+                <div className="query-builder__result__advanced__mode">
+                  <div className="query-builder__result__advanced__mode__label">
+                    Advanced Mode
+                  </div>
+                  <button
+                    className={clsx(
+                      'query-builder__result__advanced__mode__toggler__btn',
+                      {
+                        'query-builder__result__advanced__mode__toggler__btn--toggled':
+                          queryBuilderState.isAdvancedModeEnabled,
+                      },
+                    )}
+                    disabled={!isQueryValid}
+                    onClick={toggleIsAdvancedModeEnabled}
+                    tabIndex={-1}
+                  >
+                    {queryBuilderState.isAdvancedModeEnabled ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                </div>
+              )}
+
             {allowSettingPreviewLimit && (
               <div className="query-builder__result__limit">
                 <div className="query-builder__result__limit__label">
