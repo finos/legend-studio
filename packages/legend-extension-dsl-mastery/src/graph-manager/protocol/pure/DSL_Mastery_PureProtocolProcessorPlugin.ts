@@ -377,10 +377,8 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
           return deserialize(V1_FTPConnectionSchema(plugins), json);
         } else if (json._type === V1_ConnectionType.HTTP) {
           return deserialize(V1_HTTPConnectionSchema(plugins), json);
-        } else if (json._type === V1_MASTERY_RUNTIME_ELEMENT_PROTOCOL_TYPE) {
-          return V1_deserializeMasteryRuntime(json, plugins);
         }
-        return undefined;
+        return this.V1_callExtraDeserializers(json, plugins);
       },
     ];
   }
@@ -451,4 +449,23 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
       },
     ];
   }
+
+  V1_callExtraDeserializers = (
+    json: PlainObject<V1_PackageableElement>,
+    plugins: PureProtocolProcessorPlugin[],
+  ): V1_PackageableElement | undefined => {
+    const extraMasteryRuntimeDeserializers = plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraMasteryRuntimeProtocolDeserializers?.() ?? [],
+    );
+    for (const deserializer of extraMasteryRuntimeDeserializers) {
+      const masteryRuntimeProtocol = deserializer(json, plugins);
+      if (masteryRuntimeProtocol) {
+        return masteryRuntimeProtocol;
+      }
+    }
+    return undefined;
+  };
 }
