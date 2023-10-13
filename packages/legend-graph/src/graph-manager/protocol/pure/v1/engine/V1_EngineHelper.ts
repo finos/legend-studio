@@ -268,6 +268,8 @@ export const V1_transformQuerySearchSpecification = (
     stereotype.value = _stereotype.stereotype;
     return stereotype;
   });
+  protocol.combineTaggedValuesCondition =
+    metamodel.combineTaggedValuesCondition;
   return protocol;
 };
 
