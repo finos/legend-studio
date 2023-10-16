@@ -20,6 +20,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { generatePath } from '@finos/legend-application/browser';
 
 export enum LEGEND_STUDIO_ROUTE_PATTERN_TOKEN {
+  SHOWCASE_PATH = 'showcasePath',
   PROJECT_ID = 'projectId',
   PATCH_RELEASE_VERSION_ID = 'patchReleaseVersionId',
   WORKSPACE_ID = 'workspaceId',
@@ -58,6 +59,7 @@ export const LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN = Object.freeze({
   VIEW_BY_GAV: `/view/archive/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}`,
   VIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}/entity/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH}`,
   PREVIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}/entity/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH}/preview`,
+  SHOWCASE_PROJECT: `/showcase/*`,
 });
 
 export type WorkspaceReviewPathParams = {
@@ -71,6 +73,10 @@ export type ProjectViewerPathParams = {
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.VERSION_ID]?: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.REVISION_ID]?: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH]?: string;
+};
+
+export type ShowcaseViewerPathParams = {
+  [0]?: string;
 };
 
 export type WorkspaceEditorPathParams = {
@@ -347,3 +353,8 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl = (
     artifactId,
     versionId,
   )}/${servicePath}`;
+
+export const generateShowcasePath = (projectPath: string): string =>
+  generatePath(LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE_PROJECT, {
+    0: projectPath,
+  });

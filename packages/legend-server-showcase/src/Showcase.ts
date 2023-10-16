@@ -41,6 +41,7 @@ export class Showcase {
   description?: string | undefined;
   code!: string;
   documentation?: string | undefined;
+  development?: boolean;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Showcase, {
@@ -49,6 +50,7 @@ export class Showcase {
       documentation: optional(primitive()),
       path: primitive(),
       title: primitive(),
+      development: optional(primitive()),
     }),
   );
 }
