@@ -58,4 +58,11 @@ export class StandardEditorMode extends EditorMode {
       elementPath,
     );
   }
+
+  override get isInitialized(): boolean {
+    return Boolean(
+      this.editorStore.sdlcState.currentProject &&
+        this.editorStore.sdlcState.currentWorkspace,
+    );
+  }
 }

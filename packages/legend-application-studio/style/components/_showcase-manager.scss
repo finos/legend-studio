@@ -384,9 +384,22 @@
     }
 
     &__title {
-      @include ellipsisTextOverflow;
+      @include flexVCenter;
 
       height: 3.4rem;
+    }
+
+    &__title__action {
+      padding-left: 0.5rem;
+
+      &-btn {
+        width: 8rem;
+      }
+    }
+
+    &__title__label {
+      @include ellipsisTextOverflow;
+
       line-height: 3.4rem;
       font-size: 2.4rem;
       font-weight: 700;

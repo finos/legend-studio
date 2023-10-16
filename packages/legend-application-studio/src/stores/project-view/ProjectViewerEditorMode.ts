@@ -76,4 +76,21 @@ export class ProjectViewerEditorMode extends EditorMode {
       elementPath,
     );
   }
+
+  override get isInitialized(): boolean {
+    return (
+      Boolean(
+        this.viewerStore.editorStore.sdlcState.currentProject &&
+          this.viewerStore.editorStore.sdlcState.currentWorkspace,
+      ) || Boolean(this.viewerStore.projectGAVCoordinates)
+    );
+  }
+
+  override get disableEditing(): boolean {
+    return true;
+  }
+
+  override get supportSdlcOperations(): boolean {
+    return !this.viewerStore.projectGAVCoordinates;
+  }
 }

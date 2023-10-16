@@ -102,7 +102,6 @@ import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from '../../__lib__/LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
-import type { ProjectViewerEditorMode } from '../project-view/ProjectViewerEditorMode.js';
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
@@ -296,13 +295,7 @@ export class EditorStore implements CommandRegistrar {
   get isInitialized(): boolean {
     if (this.isInViewerMode) {
       return (
-        (Boolean(
-          this.sdlcState.currentProject && this.sdlcState.currentWorkspace,
-        ) ||
-          Boolean(
-            (this.sdlcState.editorStore.editorMode as ProjectViewerEditorMode)
-              .viewerStore.projectGAVCoordinates,
-          )) &&
+        this.editorMode.isInitialized &&
         this.graphManagerState.systemBuildState.hasSucceeded
       );
     } else {

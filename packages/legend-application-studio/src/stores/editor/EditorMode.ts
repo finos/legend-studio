@@ -29,4 +29,18 @@ export abstract class EditorMode {
     elementPath: string,
     dependencyProject: ProjectDependency,
   ): string;
+
+  abstract get isInitialized(): boolean;
+
+  get supportSdlcOperations(): boolean {
+    return true;
+  }
+
+  get disableEditing(): boolean {
+    return false;
+  }
+
+  get label(): string | undefined {
+    return undefined;
+  }
 }
