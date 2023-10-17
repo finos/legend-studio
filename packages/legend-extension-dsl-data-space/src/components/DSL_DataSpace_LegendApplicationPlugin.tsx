@@ -107,6 +107,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
               createQueryDataSpaceTaggedValue(queryBuilderState.dataSpace.path),
               createQueryClassTaggedValue(queryBuilderState.class.path),
             ];
+            searchSpecification.combineTaggedValuesCondition = true;
           }
           return searchSpecification;
         },

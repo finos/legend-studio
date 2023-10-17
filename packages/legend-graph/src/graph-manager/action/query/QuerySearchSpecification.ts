@@ -29,4 +29,5 @@ export class QuerySearchSpecification {
   limit?: number | undefined;
   showCurrentUserQueriesOnly?: boolean | undefined;
   exactMatchName?: boolean | undefined;
+  combineTaggedValuesCondition?: boolean | undefined;
 }
