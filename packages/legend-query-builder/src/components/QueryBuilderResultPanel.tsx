@@ -103,6 +103,7 @@ import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.j
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import {
   DataGrid,
+  type DataGridColumnApi,
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
@@ -122,6 +123,8 @@ import {
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { QueryUsageViewer } from './QueryUsageViewer.js';
 import { DEFAULT_LOCALE } from '../graph-manager/QueryBuilderConst.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -776,23 +779,40 @@ const QueryBuilderGridResult = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
 
+    const [columnAPi, setColumnApi] = useState<DataGridColumnApi | undefined>(
+      undefined,
+    );
     const resultState = queryBuilderState.resultState;
     const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
     const colDefs = isAdvancedModeEnabled
-      ? executionResult.result.columns.map(
-          (colName) =>
-            ({
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              field: colName,
-              flex: 1,
-              enablePivot: true,
-              enableRowGroup: true,
-              enableValue: true,
-              ...getColumnCustomizations(executionResult, colName),
-            }) as DataGridColumnDefinition,
-        )
+      ? executionResult.result.columns.map((colName) => {
+          const col = {
+            minWidth: 50,
+            sortable: true,
+            resizable: true,
+            field: colName,
+            flex: 1,
+            enablePivot: true,
+            enableRowGroup: true,
+            enableValue: true,
+            ...getColumnCustomizations(executionResult, colName),
+          } as DataGridColumnDefinition;
+          const persistedColumn = resultState.gridConfig.columns.find(
+            (c) => c.colId === colName,
+          );
+          if (persistedColumn) {
+            if (persistedColumn.width) {
+              col.width = persistedColumn.width;
+            }
+            col.pinned = persistedColumn.pinned ?? null;
+            col.rowGroup = persistedColumn.rowGroup ?? false;
+            col.rowGroupIndex = persistedColumn.rowGroupIndex ?? null;
+            col.aggFunc = persistedColumn.aggFunc ?? null;
+            col.pivot = persistedColumn.pivot ?? false;
+            col.hide = persistedColumn.hide ?? false;
+          }
+          return col;
+        })
       : executionResult.result.columns.map(
           (colName) =>
             ({
@@ -823,6 +843,15 @@ const QueryBuilderGridResult = observer(
       row.rowNumber = rowIdx;
       return row;
     });
+    const onSaveGridColumnState = (): void => {
+      if (!columnAPi) {
+        return;
+      }
+      resultState.setGridConfig({
+        columns: columnAPi.getColumnState(),
+        isPivotModeEnabled: columnAPi.isPivotMode(),
+      });
+    };
 
     return (
       <div className="query-builder__result__values__table">
@@ -833,6 +862,12 @@ const QueryBuilderGridResult = observer(
         >
           <DataGrid
             rowData={rowData}
+            onGridReady={(params): void => {
+              setColumnApi(params.columnApi);
+              params.columnApi.setPivotMode(
+                resultState.gridConfig.isPivotModeEnabled,
+              );
+            }}
             gridOptions={{
               suppressScrollOnNewData: true,
               getRowId: (data) => data.data.rowNumber,
@@ -849,6 +884,13 @@ const QueryBuilderGridResult = observer(
             suppressContextMenu={!isAdvancedModeEnabled}
             columnDefs={colDefs}
             sideBar={sideBar}
+            onColumnVisible={onSaveGridColumnState}
+            onColumnPinned={onSaveGridColumnState}
+            onColumnResized={onSaveGridColumnState}
+            onColumnRowGroupChanged={onSaveGridColumnState}
+            onColumnValueChanged={onSaveGridColumnState}
+            onColumnPivotChanged={onSaveGridColumnState}
+            onColumnPivotModeChanged={onSaveGridColumnState}
           />
         </div>
       </div>
@@ -1155,32 +1197,37 @@ export const QueryBuilderResultPanel = observer(
             )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
-            {queryBuilderState.config?.TEMPORARY__enableAdvancedGridMode &&
-              allowSettingAdvancedMode && (
-                <div className="query-builder__result__advanced__mode">
-                  <div className="query-builder__result__advanced__mode__label">
-                    Advanced Mode
-                  </div>
-                  <button
-                    className={clsx(
-                      'query-builder__result__advanced__mode__toggler__btn',
-                      {
-                        'query-builder__result__advanced__mode__toggler__btn--toggled':
-                          queryBuilderState.isAdvancedModeEnabled,
-                      },
-                    )}
-                    disabled={!isQueryValid}
-                    onClick={toggleIsAdvancedModeEnabled}
-                    tabIndex={-1}
-                  >
-                    {queryBuilderState.isAdvancedModeEnabled ? (
-                      <CheckSquareIcon />
-                    ) : (
-                      <SquareIcon />
-                    )}
-                  </button>
+            {allowSettingAdvancedMode && (
+              <div className="query-builder__result__advanced__mode">
+                <div className="query-builder__result__advanced__mode__label">
+                  Advanced Mode
+                  <DocumentationLink
+                    title="The grid in advanced mode performs all operations like grouping, sorting, filtering, etc after initial query execution locally withought reaching out to server. This limits the number of rows to smaller number so they can fit in memory"
+                    documentationKey={
+                      QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_GRID_MODE
+                    }
+                  />
                 </div>
-              )}
+                <button
+                  className={clsx(
+                    'query-builder__result__advanced__mode__toggler__btn',
+                    {
+                      'query-builder__result__advanced__mode__toggler__btn--toggled':
+                        queryBuilderState.isAdvancedModeEnabled,
+                    },
+                  )}
+                  disabled={!isQueryValid}
+                  onClick={toggleIsAdvancedModeEnabled}
+                  tabIndex={-1}
+                >
+                  {queryBuilderState.isAdvancedModeEnabled ? (
+                    <CheckSquareIcon />
+                  ) : (
+                    <SquareIcon />
+                  )}
+                </button>
+              </div>
+            )}
 
             {allowSettingPreviewLimit && (
               <div className="query-builder__result__limit">

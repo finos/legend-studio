@@ -23,15 +23,9 @@ export class QueryBuilderConfig {
    */
   TEMPORARY__disableQueryBuilderChat = false;
 
-  /**
-   * This flag is to enable enterprise features of ag-grid
-   */
-  TEMPORARY__enableAdvancedGridMode = false;
-
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
-      TEMPORARY__enableAdvancedGridMode: optional(primitive()),
     }),
   );
 }

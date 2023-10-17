@@ -35,7 +35,9 @@ import {
   type CellMouseOverEvent,
   type ICellRendererParams,
   type GridOptions,
+  type ColumnApi,
   type ColDef,
+  type ColumnState,
   ModuleRegistry,
 } from '@ag-grid-community/core';
 import { LicenseManager } from '@ag-grid-enterprise/core';
@@ -88,4 +90,6 @@ export type {
   ICellRendererParams as DataGridCellRendererParams,
   GridOptions as DataGridOptions,
   ColDef as DataGridColumnDefinition,
+  ColumnState as DataGridColumnState,
+  ColumnApi as DataGridColumnApi,
 };
