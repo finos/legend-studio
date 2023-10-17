@@ -37,6 +37,8 @@ import {
   ModalFooterButton,
   ModalHeader,
   PanelDivider,
+  SquareIcon,
+  CheckSquareIcon,
 } from '@finos/legend-art';
 import { format as formatSQL } from 'sql-formatter';
 import { observer } from 'mobx-react-lite';
@@ -53,6 +55,7 @@ import {
   EnumValueExplicitReference,
   RelationalExecutionActivities,
   getTDSRowRankByColumnInAsc,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -100,6 +103,7 @@ import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.j
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import {
   DataGrid,
+  type DataGridColumnApi,
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
@@ -119,6 +123,8 @@ import {
 } from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { QueryUsageViewer } from './QueryUsageViewer.js';
 import { DEFAULT_LOCALE } from '../graph-manager/QueryBuilderConst.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -732,6 +738,40 @@ const QueryResultCellRenderer = observer(
   },
 );
 
+const getColumnCustomizations = (
+  result: TDSExecutionResult,
+  columnName: string,
+): object | undefined => {
+  const columnType = result.builder.columns.find(
+    (col) => col.name === columnName,
+  )?.type;
+  switch (columnType) {
+    case PRIMITIVE_TYPE.STRING:
+      return {
+        filter: 'agTextColumnFilter',
+        allowedAggFuncs: ['count'],
+      };
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return {
+        filter: 'agDateColumnFilter',
+        allowedAggFuncs: ['count'],
+      };
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.FLOAT:
+      return {
+        filter: 'agNumberColumnFilter',
+        allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
+      };
+    default:
+      return {
+        allowedAggFuncs: ['count'],
+      };
+  }
+};
+
 const QueryBuilderGridResult = observer(
   (props: {
     executionResult: TDSExecutionResult;
@@ -739,7 +779,56 @@ const QueryBuilderGridResult = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
 
+    const [columnAPi, setColumnApi] = useState<DataGridColumnApi | undefined>(
+      undefined,
+    );
     const resultState = queryBuilderState.resultState;
+    const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
+    const colDefs = isAdvancedModeEnabled
+      ? executionResult.result.columns.map((colName) => {
+          const col = {
+            minWidth: 50,
+            sortable: true,
+            resizable: true,
+            field: colName,
+            flex: 1,
+            enablePivot: true,
+            enableRowGroup: true,
+            enableValue: true,
+            ...getColumnCustomizations(executionResult, colName),
+          } as DataGridColumnDefinition;
+          const persistedColumn = resultState.gridConfig.columns.find(
+            (c) => c.colId === colName,
+          );
+          if (persistedColumn) {
+            if (persistedColumn.width) {
+              col.width = persistedColumn.width;
+            }
+            col.pinned = persistedColumn.pinned ?? null;
+            col.rowGroup = persistedColumn.rowGroup ?? false;
+            col.rowGroupIndex = persistedColumn.rowGroupIndex ?? null;
+            col.aggFunc = persistedColumn.aggFunc ?? null;
+            col.pivot = persistedColumn.pivot ?? false;
+            col.hide = persistedColumn.hide ?? false;
+          }
+          return col;
+        })
+      : executionResult.result.columns.map(
+          (colName) =>
+            ({
+              minWidth: 50,
+              sortable: true,
+              resizable: true,
+              field: colName,
+              flex: 1,
+              cellRenderer: QueryResultCellRenderer,
+              cellRendererParams: {
+                resultState: resultState,
+                tdsExecutionResult: executionResult,
+              },
+            }) as DataGridColumnDefinition,
+        );
+    const sideBar = isAdvancedModeEnabled ? ['columns', 'filters'] : null;
 
     const rowData = executionResult.result.rows.map((_row, rowIdx) => {
       const row: PlainObject = {};
@@ -754,6 +843,15 @@ const QueryBuilderGridResult = observer(
       row.rowNumber = rowIdx;
       return row;
     });
+    const onSaveGridColumnState = (): void => {
+      if (!columnAPi) {
+        return;
+      }
+      resultState.setGridConfig({
+        columns: columnAPi.getColumnState(),
+        isPivotModeEnabled: columnAPi.isPivotMode(),
+      });
+    };
 
     return (
       <div className="query-builder__result__values__table">
@@ -762,34 +860,57 @@ const QueryBuilderGridResult = observer(
             'ag-theme-balham-dark query-builder__result__tds-grid',
           )}
         >
-          <DataGrid
-            rowData={rowData}
-            gridOptions={{
-              suppressScrollOnNewData: true,
-              getRowId: (data) => data.data.rowNumber,
-            }}
-            // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
-            // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
-            onRowDataUpdated={(params) => {
-              params.api.refreshCells({ force: true });
-            }}
-            suppressFieldDotNotation={true}
-            columnDefs={executionResult.result.columns.map(
-              (colName) =>
-                ({
-                  minWidth: 50,
-                  sortable: true,
-                  resizable: true,
-                  field: colName,
-                  flex: 1,
-                  cellRenderer: QueryResultCellRenderer,
-                  cellRendererParams: {
-                    resultState: resultState,
-                    tdsExecutionResult: executionResult,
-                  },
-                }) as DataGridColumnDefinition,
-            )}
-          />
+          {isAdvancedModeEnabled ? (
+            <DataGrid
+              rowData={rowData}
+              onGridReady={(params): void => {
+                setColumnApi(params.columnApi);
+                params.columnApi.setPivotMode(
+                  resultState.gridConfig.isPivotModeEnabled,
+                );
+              }}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => data.data.rowNumber,
+                rowSelection: 'multiple',
+                pivotPanelShow: 'always',
+                rowGroupPanelShow: 'always',
+              }}
+              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+              suppressFieldDotNotation={true}
+              suppressContextMenu={!isAdvancedModeEnabled}
+              columnDefs={colDefs}
+              sideBar={sideBar}
+              onColumnVisible={onSaveGridColumnState}
+              onColumnPinned={onSaveGridColumnState}
+              onColumnResized={onSaveGridColumnState}
+              onColumnRowGroupChanged={onSaveGridColumnState}
+              onColumnValueChanged={onSaveGridColumnState}
+              onColumnPivotChanged={onSaveGridColumnState}
+              onColumnPivotModeChanged={onSaveGridColumnState}
+            />
+          ) : (
+            <DataGrid
+              rowData={rowData}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => data.data.rowNumber,
+                rowSelection: 'multiple',
+              }}
+              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+              suppressFieldDotNotation={true}
+              suppressContextMenu={!isAdvancedModeEnabled}
+              columnDefs={colDefs}
+            />
+          )}
         </div>
       </div>
     );
@@ -936,6 +1057,10 @@ export const QueryBuilderResultPanel = observer(
     );
 
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
+    const allowSettingAdvancedMode =
+      queryBuilderState.isQuerySupported &&
+      queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderTDSState;
 
     const copyExpression = (value: string): void => {
       applicationStore.clipboardService
@@ -1006,6 +1131,13 @@ export const QueryBuilderResultPanel = observer(
       } else if (event.code === 'Escape') {
         inputRef.current?.select();
       }
+    };
+
+    const toggleIsAdvancedModeEnabled = (): void => {
+      resultState.setExecutionResult(undefined);
+      queryBuilderState.setIsAdvancedModeEnabled(
+        !queryBuilderState.isAdvancedModeEnabled,
+      );
     };
 
     return (
@@ -1084,6 +1216,38 @@ export const QueryBuilderResultPanel = observer(
             )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
+            {allowSettingAdvancedMode && (
+              <div className="query-builder__result__advanced__mode">
+                <div className="query-builder__result__advanced__mode__label">
+                  Advanced Mode
+                  <DocumentationLink
+                    title="The grid in advanced mode performs all operations like grouping, sorting, filtering, etc after initial query execution locally withought reaching out to server. This limits the number of rows to smaller number so they can fit in memory"
+                    documentationKey={
+                      QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_GRID_MODE
+                    }
+                  />
+                </div>
+                <button
+                  className={clsx(
+                    'query-builder__result__advanced__mode__toggler__btn',
+                    {
+                      'query-builder__result__advanced__mode__toggler__btn--toggled':
+                        queryBuilderState.isAdvancedModeEnabled,
+                    },
+                  )}
+                  disabled={!isQueryValid}
+                  onClick={toggleIsAdvancedModeEnabled}
+                  tabIndex={-1}
+                >
+                  {queryBuilderState.isAdvancedModeEnabled ? (
+                    <CheckSquareIcon />
+                  ) : (
+                    <SquareIcon />
+                  )}
+                </button>
+              </div>
+            )}
+
             {allowSettingPreviewLimit && (
               <div className="query-builder__result__limit">
                 <div className="query-builder__result__limit__label">

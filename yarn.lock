@@ -59,6 +59,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ag-grid-community/csv-export@npm:30.1.0, @ag-grid-community/csv-export@npm:~30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-community/csv-export@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+  checksum: db01b306e664c40bf26aadf1be2c0feedbc42f5852e1ad27bd7a4bd5215d7784ec5eb8cb4ed806b5cfc6e7b0bf67c789ab5efef975f371981238cd594c637419
+  languageName: node
+  linkType: hard
+
 "@ag-grid-community/react@npm:30.1.0":
   version: 30.1.0
   resolution: "@ag-grid-community/react@npm:30.1.0"
@@ -76,6 +85,121 @@ __metadata:
   version: 30.1.0
   resolution: "@ag-grid-community/styles@npm:30.1.0"
   checksum: cb2bc2e38d103cfdd2b389f4697a4e925a7db50978216b4b480cecc0c1a00f49feb2bbdd77055be515a7254e8e05539a57ab31664f3e0b7769df511a54499060
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/clipboard@npm:30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/clipboard@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-community/csv-export": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+  checksum: c6fa732dd57ded94b1f74fa7e4ed03f0ab7420c243066868cfe4ecc4a210fc9047a8cef749db525cd32a26335857cbd6b17c701cde4544b1444020b37edbf215
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/column-tool-panel@npm:30.1.0, @ag-grid-enterprise/column-tool-panel@npm:~30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/column-tool-panel@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+    "@ag-grid-enterprise/row-grouping": ~30.1.0
+    "@ag-grid-enterprise/side-bar": ~30.1.0
+  checksum: e9f4223d7dc8e4281d86e308f38ab2e20331ce5d1d0f2315d2b2b7004f297d9b67c064c175ee8dbb9839e27c4357388acbd77fa512b00a730903a9fc73e12d6f
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/core@npm:30.1.0, @ag-grid-enterprise/core@npm:~30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/core@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+  checksum: b58dadd13b33cce278282117a1ff898ea72a7437b4d790222e60f4573a296bfd98d57114db6252c285b6bf8fa54e205551fa1b1161099e07d28ef6f97ab67dec
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/excel-export@npm:30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/excel-export@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-community/csv-export": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+  checksum: e829a41ea0138a1164edee8d535ee83b4d3af53997dc8f9bb8a9f14f08305f226d3f5efdbf8d3fb64452b40cd8ed83f93fb9abda99c9c1a2b8147639479604d0
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/filter-tool-panel@npm:30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/filter-tool-panel@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+    "@ag-grid-enterprise/side-bar": ~30.1.0
+  checksum: 4357a6abd90084f26164de33c2e10f0af1647240f9121a353894f242a81fc9807683cd6eeeab2852d389703f199cc8120cf9df057af97a8e91fea2def20e0928
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/menu@npm:30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/menu@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-enterprise/column-tool-panel": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+  checksum: 107146889137a6623557df45181a7bf20b8eb8a32d36cc7047c08010db2d0f4148dca2a355d5656afc323c1791ace1f92808f0aaaeac315f1f1f1e2246bf26c8
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/range-selection@npm:30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/range-selection@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+  checksum: ac99ad16e4b83c3662e3bea60ef22febba1e321818ee3f00bde81804f6048b541c005ff71fd119829ef3024d7faec4be52af205f5e96fcba4a4a7a54e0b07a44
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/row-grouping@npm:30.1.0, @ag-grid-enterprise/row-grouping@npm:~30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/row-grouping@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+  checksum: 07b7dd85bba2713275a7084fe688c9eebd87d930b1788f51807d595762e88a2a71e39b3f1624e9fe204a898a0b4046cc85d1256671bc4d5f556bd1fdd080a03b
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/server-side-row-model@npm:30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/server-side-row-model@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+  checksum: aca4a85c179f86a695b7d0d45533387d769a08532f75ca7ed5468d1aacc0f41520fd4a945763563461a272ae934611731b60fc2d19aa4b73d269b57e40e6429d
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/side-bar@npm:30.1.0, @ag-grid-enterprise/side-bar@npm:~30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/side-bar@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+  checksum: 9196e4b6493e2cd52c5b6e711919b381ccc3910349a2dfce20c3d1daee82616299e1ecc1f8e6e014f0a55ad520e94abcbec2ca8e98fd4d3b238ce5ba6d461b25
+  languageName: node
+  linkType: hard
+
+"@ag-grid-enterprise/status-bar@npm:30.1.0":
+  version: 30.1.0
+  resolution: "@ag-grid-enterprise/status-bar@npm:30.1.0"
+  dependencies:
+    "@ag-grid-community/core": ~30.1.0
+    "@ag-grid-enterprise/core": ~30.1.0
+  checksum: a7266fc7f6758c2f0060aec7646df3ef9d8674b5631be727a0dd9a3382c21c61582c2cbb3a7ad1504e09eb431eeffa20c9003479e7ee4f94f04823f262435686
   languageName: node
   linkType: hard
 
@@ -2854,8 +2978,20 @@ __metadata:
   dependencies:
     "@ag-grid-community/client-side-row-model": 30.1.0
     "@ag-grid-community/core": 30.1.0
+    "@ag-grid-community/csv-export": 30.1.0
     "@ag-grid-community/react": 30.1.0
     "@ag-grid-community/styles": 30.1.0
+    "@ag-grid-enterprise/clipboard": 30.1.0
+    "@ag-grid-enterprise/column-tool-panel": 30.1.0
+    "@ag-grid-enterprise/core": 30.1.0
+    "@ag-grid-enterprise/excel-export": 30.1.0
+    "@ag-grid-enterprise/filter-tool-panel": 30.1.0
+    "@ag-grid-enterprise/menu": 30.1.0
+    "@ag-grid-enterprise/range-selection": 30.1.0
+    "@ag-grid-enterprise/row-grouping": 30.1.0
+    "@ag-grid-enterprise/server-side-row-model": 30.1.0
+    "@ag-grid-enterprise/side-bar": 30.1.0
+    "@ag-grid-enterprise/status-bar": 30.1.0
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"

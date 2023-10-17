@@ -1242,6 +1242,54 @@
     }
   }
 
+  &__advanced__mode {
+    @include flexVCenter;
+
+    height: 100%;
+    padding: 0.5rem;
+
+    &__label {
+      @include flexCenter;
+
+      background: var(--color-dark-grey-280);
+      padding: 0 1rem;
+      height: 2.2rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    &__toggler__btn {
+      align-self: flex-start;
+      background: var(--color-dark-grey-280);
+      padding: 0 0.5rem 0 0;
+
+      svg {
+        font-size: 2rem;
+        color: var(--color-dark-grey-100);
+      }
+
+      &[disabled] svg,
+      &[disabled]:hover svg {
+        cursor: not-allowed;
+        color: var(--color-dark-grey-180);
+      }
+    }
+
+    &__toggler__btn--toggled {
+      svg {
+        font-size: 2rem;
+        color: var(--color-blue-150);
+      }
+
+      &[disabled] svg,
+      &[disabled]:hover svg {
+        cursor: not-allowed;
+        color: var(--color-dark-grey-100);
+      }
+    }
+  }
+
   &__limit {
     @include flexVCenter;
 

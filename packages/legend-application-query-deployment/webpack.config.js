@@ -15,6 +15,7 @@
  */
 
 import { resolve, dirname } from 'path';
+import webpack from 'webpack';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import appConfig from './query.config.js';
 import {
@@ -24,6 +25,8 @@ import {
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const { DefinePlugin } = webpack;
 
 export default (env, arg) => {
   const { isEnvDevelopment } = getEnvInfo(env, arg);
@@ -43,6 +46,9 @@ export default (env, arg) => {
     },
     plugins: [
       ...baseConfig.plugins,
+      new DefinePlugin({
+        AG_GRID_LICENSE: null,
+      }),
       // For development, we want to serve the `config.json` and `version.json` files at the `/baseUrl`
       isEnvDevelopment &&
         new CopyWebpackPlugin({

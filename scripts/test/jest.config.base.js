@@ -49,6 +49,7 @@ export const getBaseJestConfig = (isGlobal) => {
 
       // ag-grid
       '@ag-grid-community',
+      '@ag-grid-enterprise',
     ],
   });
 
@@ -174,6 +175,9 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
       '^react-markdown$':
         '@finos/legend-art/markdown/test/MockedReactMarkdown.js',
       '^remark-gfm$': '@finos/legend-art/markdown/test/MockedRemarkGFM.js',
+    },
+    globals: {
+      AG_GRID_LICENSE: null,
     },
   };
 };
