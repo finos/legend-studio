@@ -219,8 +219,17 @@ export const DatabaseBuilderModalContent = observer(
                       className="panel__content__form__section__input"
                       spellCheck={false}
                       onChange={onTargetPathChange}
-                      disabled={isExecutingAction} // heads up: this is changed
-                      value={schemaExplorerState.targetDatabasePath} // heads up: this is changed
+                      disabled={
+                        schemaExplorerState.makeTargetDatabasePathEditable
+                          ? false
+                          : !isCreatingNewDatabase
+                      }
+                      value={
+                        schemaExplorerState.makeTargetDatabasePathEditable ||
+                        isCreatingNewDatabase
+                          ? schemaExplorerState.targetDatabasePath
+                          : schemaExplorerState.database.path
+                      }
                       error={elementAlreadyExistsMessage}
                       showEditableIcon={true}
                     />

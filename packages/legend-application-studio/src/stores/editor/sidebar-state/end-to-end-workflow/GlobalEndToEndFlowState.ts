@@ -191,6 +191,9 @@ export class QueryConnectionEndToEndWorkflowState {
       this.connectionValueState.connection,
       false,
     );
+    this.databaseBuilderWizardState.schemaExplorerState.setMakeTargetDatabasePathEditable(
+      true,
+    );
   }
 
   setCompileError(err: ParserError | CompilationError | undefined): void {
@@ -463,7 +466,6 @@ export class QueryConnectionEndToEndWorkflowState {
         extractPackagePathFromPath(this.targetRuntimePath),
       );
       this.graph = newGraph;
-
       this.setRuntimeGrammarCode(
         (yield this.globalEndToEndWorkflowState.editorStore.graphManagerState.graphManager.entitiesToPureCode(
           [

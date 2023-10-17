@@ -311,6 +311,7 @@ export class DatabaseSchemaExplorerState {
   readonly connection: RelationalDatabaseConnection;
   database: Database;
   targetDatabasePath: string;
+  makeTargetDatabasePathEditable?: boolean;
 
   isGeneratingDatabase = false;
   isUpdatingDatabase = false;
@@ -329,10 +330,12 @@ export class DatabaseSchemaExplorerState {
       targetDatabasePath: observable,
       previewer: observable,
       previewDataState: observable,
+      makeTargetDatabasePathEditable: observable,
       isCreatingNewDatabase: computed,
       resolveDatabasePackageAndName: computed,
       setTreeData: action,
       setTargetDatabasePath: action,
+      setMakeTargetDatabasePathEditable: action,
       onNodeSelect: flow,
       fetchDatabaseMetadata: flow,
       fetchSchemaMetadata: flow,
@@ -353,7 +356,17 @@ export class DatabaseSchemaExplorerState {
     return isStubbed_PackageableElement(this.connection.store.value);
   }
 
+  setMakeTargetDatabasePathEditable(val: boolean): void {
+    this.makeTargetDatabasePathEditable = val;
+  }
+
   get resolveDatabasePackageAndName(): [string, string] {
+    if (!this.isCreatingNewDatabase && !this.makeTargetDatabasePathEditable) {
+      return [
+        guaranteeNonNullable(this.database.package).path,
+        this.database.name,
+      ];
+    }
     assertNonEmptyString(this.targetDatabasePath, 'Must specify database path');
     assertTrue(
       isValidFullPath(this.targetDatabasePath),
