@@ -860,38 +860,57 @@ const QueryBuilderGridResult = observer(
             'ag-theme-balham-dark query-builder__result__tds-grid',
           )}
         >
-          <DataGrid
-            rowData={rowData}
-            onGridReady={(params): void => {
-              setColumnApi(params.columnApi);
-              params.columnApi.setPivotMode(
-                resultState.gridConfig.isPivotModeEnabled,
-              );
-            }}
-            gridOptions={{
-              suppressScrollOnNewData: true,
-              getRowId: (data) => data.data.rowNumber,
-              rowSelection: 'multiple',
-              pivotPanelShow: isAdvancedModeEnabled ? 'always' : 'never',
-              rowGroupPanelShow: isAdvancedModeEnabled ? 'always' : 'never',
-            }}
-            // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
-            // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
-            onRowDataUpdated={(params) => {
-              params.api.refreshCells({ force: true });
-            }}
-            suppressFieldDotNotation={true}
-            suppressContextMenu={!isAdvancedModeEnabled}
-            columnDefs={colDefs}
-            sideBar={sideBar}
-            onColumnVisible={onSaveGridColumnState}
-            onColumnPinned={onSaveGridColumnState}
-            onColumnResized={onSaveGridColumnState}
-            onColumnRowGroupChanged={onSaveGridColumnState}
-            onColumnValueChanged={onSaveGridColumnState}
-            onColumnPivotChanged={onSaveGridColumnState}
-            onColumnPivotModeChanged={onSaveGridColumnState}
-          />
+          {isAdvancedModeEnabled ? (
+            <DataGrid
+              rowData={rowData}
+              onGridReady={(params): void => {
+                setColumnApi(params.columnApi);
+                params.columnApi.setPivotMode(
+                  resultState.gridConfig.isPivotModeEnabled,
+                );
+              }}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => data.data.rowNumber,
+                rowSelection: 'multiple',
+                pivotPanelShow: 'always',
+                rowGroupPanelShow: 'always',
+              }}
+              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+              suppressFieldDotNotation={true}
+              suppressContextMenu={!isAdvancedModeEnabled}
+              columnDefs={colDefs}
+              sideBar={sideBar}
+              onColumnVisible={onSaveGridColumnState}
+              onColumnPinned={onSaveGridColumnState}
+              onColumnResized={onSaveGridColumnState}
+              onColumnRowGroupChanged={onSaveGridColumnState}
+              onColumnValueChanged={onSaveGridColumnState}
+              onColumnPivotChanged={onSaveGridColumnState}
+              onColumnPivotModeChanged={onSaveGridColumnState}
+            />
+          ) : (
+            <DataGrid
+              rowData={rowData}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => data.data.rowNumber,
+                rowSelection: 'multiple',
+              }}
+              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+              suppressFieldDotNotation={true}
+              suppressContextMenu={!isAdvancedModeEnabled}
+              columnDefs={colDefs}
+            />
+          )}
         </div>
       </div>
     );
@@ -1039,7 +1058,7 @@ export const QueryBuilderResultPanel = observer(
 
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
     const allowSettingAdvancedMode =
-      queryBuilderState.isQuerySupported ||
+      queryBuilderState.isQuerySupported &&
       queryBuilderState.fetchStructureState.implementation instanceof
         QueryBuilderTDSState;
 
