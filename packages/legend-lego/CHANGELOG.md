@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 1.1.42
+
+### Patch Changes
+
+- [#2691](https://github.com/finos/legend-studio/pull/2691) [`67766982e`](https://github.com/finos/legend-studio/commit/67766982e7062d9f2e9e53ec78d96218c96aa5c8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable showing error markers in CodeEditor
+
 ## 1.1.41
 
 ## 1.1.40

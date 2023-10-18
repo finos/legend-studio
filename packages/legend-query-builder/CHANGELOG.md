@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.11.0
+
+### Minor Changes
+
+- [#2696](https://github.com/finos/legend-studio/pull/2696) [`479320c40`](https://github.com/finos/legend-studio/commit/479320c404aa75822e0dfc655e132943d8af28b0) ([@gayathrir11](https://github.com/gayathrir11)) - Unlock Ag grid enterprise features in query
+
+### Patch Changes
+
+- [#2703](https://github.com/finos/legend-studio/pull/2703) [`58a622da6`](https://github.com/finos/legend-studio/commit/58a622da62c425bbe045bdca2f78595aeb80e7e3) ([@gayathrir11](https://github.com/gayathrir11)) - Minor fixes to advanced query grid operations
+
 ## 4.10.2
 
 ### Patch Changes

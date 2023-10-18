@@ -1,5 +1,11 @@
 # @finos/legend-server-showcase
 
+## 0.2.0
+
+### Minor Changes
+
+- [#2698](https://github.com/finos/legend-studio/pull/2698) [`fe4551640`](https://github.com/finos/legend-studio/commit/fe45516404a2f0bdd9e4faacb40d6b88b4aad856) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add ability to launch showcase project. Will open showcase viewer with showcase clicked.
+
 ## 0.1.0
 
 ### Minor Changes
