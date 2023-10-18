@@ -14,95 +14,67 @@
  * limitations under the License.
  */
 
-import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { EditorGroup } from '../editor/editor-group/EditorGroup.js';
-import { GrammarTextEditor } from '../editor/editor-group/GrammarTextEditor.js';
-import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
-import {
-  ACTIVITY_MODE,
-  GRAPH_EDITOR_MODE,
-} from '../../stores/editor/EditorConfig.js';
-import {
-  type ResizablePanelHandlerProps,
-  clsx,
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizablePanelSplitter,
-  getCollapsiblePanelGroupProps,
-  RepoIcon,
-  CodeBranchIcon,
-  HackerIcon,
-  WrenchIcon,
-  FileTrayIcon,
-  AssistantIcon,
-  useResizeDetector,
-  FireIcon,
-  TrashIcon,
-  HammerIcon,
-  TerminalIcon,
-  ResizablePanelSplitterLine,
-} from '@finos/legend-art';
-import { isNonNullable } from '@finos/legend-shared';
-import {
-  useProjectViewerStore,
-  withProjectViewerStore,
-} from './ProjectViewerStoreProvider.js';
-import {
-  type ProjectViewerPathParams,
-  generateSetupRoute,
-} from '../../__lib__/LegendStudioNavigation.js';
-import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
-import { flowResult } from 'mobx';
 import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import { useApplicationStore, useCommands } from '@finos/legend-application';
-import { useParams } from '@finos/legend-application/browser';
-import { Explorer } from '../editor/side-bar/Explorer.js';
-import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
-import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
 import {
-  useLegendStudioApplicationStore,
-  useLegendStudioBaseStore,
-} from '../LegendStudioFrameworkProvider.js';
+  useShowcaseViewerStore,
+  withShowcaseViewerStore,
+} from './ShowcaseViewerStoreProvider.js';
+import { useParams } from '@finos/legend-application/browser';
+import type { ShowcaseViewerPathParams } from '../../__lib__/LegendStudioNavigation.js';
+import { isNonNullable } from '@finos/legend-shared';
+import { Fragment, useEffect } from 'react';
+import {
+  getCollapsiblePanelGroupProps,
+  useResizeDetector,
+  type ResizablePanelHandlerProps,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelGroup,
+  FileTrayIcon,
+  clsx,
+  HackerIcon,
+  AssistantIcon,
+  ReadMeIcon,
+  FireIcon,
+  HammerIcon,
+  TerminalIcon,
+  TrashIcon,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-art';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
+import { flowResult } from 'mobx';
+import { EditorGroup } from '../editor/editor-group/EditorGroup.js';
+import { GrammarTextEditor } from '../editor/editor-group/GrammarTextEditor.js';
+import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { EmbeddedQueryBuilder } from '../editor/EmbeddedQueryBuilder.js';
-import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
+import {
+  ACTIVITY_MODE,
+  GRAPH_EDITOR_MODE,
+} from '../../stores/editor/EditorConfig.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
+import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
+import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
+import { Explorer } from '../editor/side-bar/Explorer.js';
 import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
 
-const ProjectViewerStatusBar = observer(() => {
-  const params = useParams<ProjectViewerPathParams>();
-  const viewerStore = useProjectViewerStore();
+const ShowcaseViewerStatusBar = observer(() => {
   const editorStore = useEditorStore();
+  const showcaseStore = useShowcaseViewerStore();
+  const showcase = showcaseStore._showcase;
   const applicationStore = useLegendStudioApplicationStore();
-  const latestVersion = viewerStore.onLatestVersion;
-  const currentRevision = viewerStore.onCurrentRevision;
-  const extraSDLCInfo = params.revisionId ?? params.versionId ?? 'HEAD';
-  const projectId = params.projectId;
-  const currentProject = editorStore.sdlcState.currentProject;
-  const versionBehindProjectHead =
-    viewerStore.currentRevision &&
-    viewerStore.version &&
-    params.versionId &&
-    viewerStore.currentRevision.id !== viewerStore.version.revisionId;
-  const description = `${
-    latestVersion
-      ? versionBehindProjectHead
-        ? 'latest behind project'
-        : 'latest'
-      : currentRevision
-      ? 'current'
-      : ''
-  }`;
-
-  const editable =
-    editorStore.graphManagerState.graphBuildState.hasCompleted &&
-    editorStore.isInitialized;
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
+  const editable =
+    editorStore.graphManagerState.graphBuildState.hasCompleted &&
+    editorStore.isInitialized;
+  const togglePanel = (): void => editorStore.panelGroupDisplayState.toggle();
+
   const compile = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.graphEditorMode.globalCompile()),
   );
@@ -112,10 +84,8 @@ const ProjectViewerStatusBar = observer(() => {
   const emptyGenerationEntities = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.graphState.graphGenerationState.clearGenerations()),
   );
-
   const toggleAssistant = (): void =>
     applicationStore.assistantService.toggleAssistant();
-  const togglePanel = (): void => editorStore.panelGroupDisplayState.toggle();
 
   return (
     <div
@@ -123,36 +93,19 @@ const ProjectViewerStatusBar = observer(() => {
       className="editor__status-bar project-view__status-bar"
     >
       <div className="editor__status-bar__left">
-        {currentProject && (
+        {showcase && (
           <div className="editor__status-bar__workspace">
             <div className="editor__status-bar__workspace__icon">
-              <CodeBranchIcon />
+              <ReadMeIcon />
             </div>
             <div className="editor__status-bar__workspace__project">
               <button
                 className="editor__status-bar__workspace__project"
-                title="Go back to workspace setup using the specified project"
                 tabIndex={-1}
-                onClick={(): void =>
-                  applicationStore.navigationService.navigator.visitAddress(
-                    applicationStore.navigationService.navigator.generateAddress(
-                      generateSetupRoute(projectId, undefined),
-                    ),
-                  )
-                }
               >
-                {currentProject.name}
+                {`Showcase : ${showcase.title}`}
               </button>
             </div>
-            /
-            <div className="editor__status-bar__workspace__workspace">
-              {extraSDLCInfo}
-            </div>
-            {description && (
-              <div className="editor__status-bar__workspace__workspace">
-                ({description})
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -261,35 +214,7 @@ const ProjectViewerStatusBar = observer(() => {
   );
 });
 
-const ProjectViewerSideBar = observer(() => {
-  const viewerStore = useProjectViewerStore();
-  const editorStore = useEditorStore();
-  const renderSideBar = (): React.ReactNode => {
-    switch (editorStore.activeActivity) {
-      case ACTIVITY_MODE.EXPLORER:
-        return <Explorer />;
-      case ACTIVITY_MODE.PROJECT_OVERVIEW:
-        return <ProjectOverview />;
-      case ACTIVITY_MODE.WORKFLOW_MANAGER:
-        return viewerStore.workflowManagerState ? (
-          <WorkflowManager
-            workflowManagerState={viewerStore.workflowManagerState}
-          />
-        ) : null;
-      default:
-        return null;
-    }
-  };
-  return (
-    <div className="side-bar">
-      <div className="side-bar__view">{renderSideBar()}</div>
-    </div>
-  );
-});
-
-const ProjectViewerActivityBar = observer(() => {
-  const viewerStore = useProjectViewerStore();
-  const baseStore = useLegendStudioBaseStore();
+const ShowcaseViewerActivityBar = observer(() => {
   const editorStore = useEditorStore();
 
   const changeActivity =
@@ -303,20 +228,6 @@ const ProjectViewerActivityBar = observer(() => {
         mode: ACTIVITY_MODE.EXPLORER,
         title: 'Explorer (Ctrl + Shift + X)',
         icon: <FileTrayIcon />,
-      },
-      baseStore.isSDLCAuthorized !== undefined && {
-        mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
-        title: 'Project',
-        icon: (
-          <div className="activity-bar__project-overview-icon">
-            <RepoIcon />
-          </div>
-        ),
-      },
-      viewerStore.workflowManagerState && {
-        mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
-        title: 'WORKFLOW MANAGER',
-        icon: <WrenchIcon />,
       },
     ] as (ActivityBarItemConfig | boolean)[]
   ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
@@ -345,13 +256,30 @@ const ProjectViewerActivityBar = observer(() => {
   );
 });
 
-export const ProjectViewer = withEditorStore(
-  withProjectViewerStore(
+const ShowcaseViewerSideBar = observer(() => {
+  const editorStore = useEditorStore();
+  const renderSideBar = (): React.ReactNode => {
+    switch (editorStore.activeActivity) {
+      case ACTIVITY_MODE.EXPLORER:
+        return <Explorer />;
+      default:
+        return null;
+    }
+  };
+  return (
+    <div className="side-bar">
+      <div className="side-bar__view">{renderSideBar()}</div>
+    </div>
+  );
+});
+
+export const ShowcaseViewer = withEditorStore(
+  withShowcaseViewerStore(
     observer(() => {
-      const params = useParams<ProjectViewerPathParams>();
-      const viewerStore = useProjectViewerStore();
-      const editorStore = useEditorStore();
+      const params = useParams<ShowcaseViewerPathParams>();
+      const showcaseStore = useShowcaseViewerStore();
       const applicationStore = useApplicationStore();
+      const editorStore = useEditorStore();
 
       // Extensions
       const extraEditorExtensionComponents = editorStore.pluginManager
@@ -384,15 +312,22 @@ export const ProjectViewer = withEditorStore(
           (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
             .height,
         );
-      const maximizedCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
-        editorStore.panelGroupDisplayState.isMaximized,
-      );
       const collapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
         editorStore.panelGroupDisplayState.size === 0,
         {
           onStopResize: resizePanel,
           size: editorStore.panelGroupDisplayState.size,
         },
+      );
+      const collapsibleSideBarGroupProps = getCollapsiblePanelGroupProps(
+        editorStore.sideBarDisplayState.size === 0,
+        {
+          onStopResize: resizeSideBar,
+          size: editorStore.sideBarDisplayState.size,
+        },
+      );
+      const maximizedCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+        editorStore.panelGroupDisplayState.isMaximized,
       );
       const { ref, width, height } = useResizeDetector<HTMLDivElement>();
       useEffect(() => {
@@ -405,15 +340,10 @@ export const ProjectViewer = withEditorStore(
 
       // initialize
       useEffect(() => {
-        viewerStore.internalizeEntityPath(params);
-      }, [viewerStore, params]);
-      // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
-      // on the second call when we remove entity path from the route
-      useEffect(() => {
-        flowResult(viewerStore.initialize(params)).catch(
+        flowResult(showcaseStore.initialize(params)).catch(
           applicationStore.alertUnhandledError,
         );
-      }, [applicationStore, viewerStore, params]);
+      }, [applicationStore, showcaseStore, params]);
 
       useCommands(editorStore);
 
@@ -421,7 +351,7 @@ export const ProjectViewer = withEditorStore(
         <div className="app__page">
           <div className="editor viewer">
             <div className="editor__body">
-              <ProjectViewerActivityBar />
+              <ShowcaseViewerActivityBar />
               <div ref={ref} className="editor__content-container">
                 <div className="editor__content">
                   <ResizablePanelGroup orientation="vertical">
@@ -429,11 +359,11 @@ export const ProjectViewer = withEditorStore(
                       {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
                       direction={1}
                     >
-                      <ProjectViewerSideBar />
+                      <ShowcaseViewerSideBar />
                     </ResizablePanel>
                     <ResizablePanelSplitter />
                     <ResizablePanel
-                      {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+                      {...collapsibleSideBarGroupProps.remainingPanel}
                       minSize={300}
                     >
                       <ResizablePanelGroup orientation="horizontal">
@@ -477,7 +407,7 @@ export const ProjectViewer = withEditorStore(
             {editorStore.graphManagerState.graphBuildState.hasSucceeded && (
               <ProjectSearchCommand />
             )}
-            <ProjectViewerStatusBar />
+            <ShowcaseViewerStatusBar />
             <EmbeddedQueryBuilder />
             {extraEditorExtensionComponents}
           </div>

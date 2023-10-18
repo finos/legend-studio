@@ -48,6 +48,7 @@ import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificati
 import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
+import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 
 export const DEFAULT_LIMIT = 1000;
 
@@ -66,6 +67,11 @@ export interface QueryBuilderTDSResultCellCoordinate {
   rowIndex: number;
   colIndex: number;
 }
+
+type QueryBuilderDataGridConfig = {
+  columns: DataGridColumnState[];
+  isPivotModeEnabled: boolean;
+};
 
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
@@ -86,6 +92,8 @@ export class QueryBuilderResultState {
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
   isSelectingCells: boolean;
 
+  gridConfig!: QueryBuilderDataGridConfig;
+
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       executionResult: observable,
@@ -99,6 +107,8 @@ export class QueryBuilderResultState {
       isRunningQuery: observable,
       isSelectingCells: observable,
       isQueryUsageViewerOpened: observable,
+      gridConfig: observable,
+      setGridConfig: action,
       setIsSelectingCells: action,
       setIsRunningQuery: action,
       setExecutionResult: action,
@@ -117,11 +127,19 @@ export class QueryBuilderResultState {
     this.isSelectingCells = false;
 
     this.selectedCells = [];
+    this.gridConfig = {
+      columns: [],
+      isPivotModeEnabled: false,
+    };
     this.queryBuilderState = queryBuilderState;
     this.executionPlanState = new ExecutionPlanState(
       this.queryBuilderState.applicationStore,
       this.queryBuilderState.graphManagerState,
     );
+  }
+
+  setGridConfig(val: QueryBuilderDataGridConfig): void {
+    this.gridConfig = val;
   }
 
   setIsSelectingCells(val: boolean): void {

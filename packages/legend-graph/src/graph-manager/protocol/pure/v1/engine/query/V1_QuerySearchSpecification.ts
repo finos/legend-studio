@@ -42,9 +42,11 @@ export class V1_QuerySearchSpecification {
   stereotypes?: V1_StereotypePtr[] | undefined;
   limit?: number | undefined;
   showCurrentUserQueriesOnly?: boolean | undefined;
+  combineTaggedValuesCondition?: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_QuerySearchSpecification, {
+      combineTaggedValuesCondition: optional(primitive()),
       limit: optional(primitive()),
       projectCoordinates: optional(
         list(usingModelSchema(V1_QueryProjectCoordinates.serialization.schema)),

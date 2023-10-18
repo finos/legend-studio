@@ -45,6 +45,7 @@ import {
   PropertyGraphFetchTree,
   PropertyExplicitReference,
   type ObserverContext,
+  Database,
 } from '@finos/legend-graph';
 import {
   buildGetAllFunction,
@@ -61,6 +62,7 @@ import {
 import {
   assertErrorThrown,
   assertTrue,
+  filterByType,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
@@ -101,6 +103,27 @@ export const createStoreBareModelStoreData = (
     ModelStore.INSTANCE,
   );
   return testData;
+};
+
+export const isRelationalStoreTestData = (val: StoreTestData): boolean =>
+  val.store.value instanceof Database;
+
+export const isRelationalMappingTest = (val: MappingTest): boolean => {
+  if (!val.storeTestData.length) {
+    return false;
+  }
+  return val.storeTestData.some((e) => isRelationalStoreTestData(e));
+};
+
+export const isRelationalMappingTestSuite = (
+  val: MappingTestSuite,
+): boolean => {
+  if (!val.tests.length) {
+    return false;
+  }
+  return val.tests
+    .filter(filterByType(MappingTest))
+    .some((e) => isRelationalMappingTest(e));
 };
 
 export const generateStoreTestDataFromSetImpl = (

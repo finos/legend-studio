@@ -23,6 +23,8 @@ import {
   getCodeEditorValue,
   normalizeLineEnding,
   type CODE_EDITOR_LANGUAGE,
+  setErrorMarkers,
+  clearMarkers,
 } from './CodeEditorUtils.js';
 import {
   DEFAULT_TAB_SIZE,
@@ -30,6 +32,7 @@ import {
 } from '@finos/legend-application';
 import { CODE_EDITOR_THEME } from './CodeEditorTheme.js';
 import { clsx, WordWrapIcon } from '@finos/legend-art';
+import type { CompilationError, ParserError } from '@finos/legend-graph';
 
 export const CodeEditor: React.FC<{
   inputValue: string;
@@ -45,6 +48,7 @@ export const CodeEditor: React.FC<{
   extraEditorOptions?:
     | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
     | undefined;
+  error?: ParserError | CompilationError | undefined;
 }> = (props) => {
   const {
     inputValue,
@@ -58,6 +62,7 @@ export const CodeEditor: React.FC<{
     hideActionBar,
     lineToScroll,
     extraEditorOptions,
+    error,
   } = props;
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
@@ -158,6 +163,21 @@ export const CodeEditor: React.FC<{
     });
     const model = editor.getModel();
     model?.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
+    if (model) {
+      if (error?.sourceInformation) {
+        setErrorMarkers(model, [
+          {
+            message: error.message,
+            startLineNumber: error.sourceInformation.startLine,
+            startColumn: error.sourceInformation.startColumn,
+            endLineNumber: error.sourceInformation.endLine,
+            endColumn: error.sourceInformation.endColumn,
+          },
+        ]);
+      } else {
+        clearMarkers();
+      }
+    }
   }
 
   // dispose editor

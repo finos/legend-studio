@@ -131,6 +131,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isCheckingEntitlments = false;
   isCalendarEnabled = false;
   isQueryChatOpened = false;
+  isAdvancedModeEnabled = false;
 
   class?: Class | undefined;
   executionContextState: QueryBuilderExecutionContextState;
@@ -166,6 +167,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       executionContextState: observable,
       class: observable,
       isQueryChatOpened: observable,
+      isAdvancedModeEnabled: observable,
 
       sideBarClassName: computed,
       isQuerySupported: computed,
@@ -178,6 +180,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setIsCheckingEntitlments: action,
       setClass: action,
       setIsQueryChatOpened: action,
+      setIsAdvancedModeEnabled: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -258,6 +261,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setIsQueryChatOpened(val: boolean): void {
     this.isQueryChatOpened = val;
+  }
+
+  setIsAdvancedModeEnabled(val: boolean): void {
+    this.isAdvancedModeEnabled = val;
   }
 
   setInternalize(val: QueryBuilderInternalizeState | undefined): void {

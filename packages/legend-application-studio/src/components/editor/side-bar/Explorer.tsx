@@ -1376,7 +1376,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
 
   return (
     <div className="panel__header__actions">
-      {!editorStore.isInViewerMode && (
+      {
         <button
           className="panel__header__action"
           disabled={disabled}
@@ -1385,15 +1385,17 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         >
           <FileImportIcon />
         </button>
+      }
+      {editorStore.editorMode.supportSdlcOperations && (
+        <button
+          className="panel__header__action panel__header__action--config"
+          disabled={disabled}
+          title="Project Configuration Panel"
+          onClick={openConfigurationEditor}
+        >
+          <SettingsEthernetIcon />
+        </button>
       )}
-      <button
-        className="panel__header__action panel__header__action--config"
-        disabled={disabled}
-        title="Project Configuration Panel"
-        onClick={openConfigurationEditor}
-      >
-        <SettingsEthernetIcon />
-      </button>
       {!editorStore.isInViewerMode && (
         <DropdownMenu
           className="panel__header__action"
@@ -1477,10 +1479,16 @@ export const Explorer = observer(() => {
             EXPLORER
           </div>
         </div>
-        {editorStore.isInViewerMode && (
+        {editorStore.editorMode.disableEditing &&
+          !editorStore.editorMode.label && (
+            <div className="panel__header__title side-bar__header__title__viewer-mode-badge">
+              <LockIcon />
+              READ-ONLY
+            </div>
+          )}
+        {editorStore.editorMode.label && (
           <div className="panel__header__title side-bar__header__title__viewer-mode-badge">
-            <LockIcon />
-            READ-ONLY
+            {editorStore.editorMode.label}
           </div>
         )}
       </div>

@@ -81,6 +81,7 @@ import {
   createBareMappingTest,
   createGraphFetchQueryFromMappingAnalysis,
   generateStoreTestDataFromSetImpl,
+  isRelationalMappingTestSuite,
 } from './MappingTestingHelper.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
 
@@ -729,15 +730,36 @@ export class MappingTestableState {
       this.selectedTestSuite?.testStates.forEach((t) =>
         t.runningTestAction.inProgress(),
       );
-      const input = new RunTestsTestableInput(this.mapping);
-      suite.tests.forEach((t) =>
-        input.unitTestIds.push(new UniqueTestId(suite, t)),
-      );
-      const testResults =
-        (yield this.editorStore.graphManagerState.graphManager.runTests(
-          [input],
-          this.editorStore.graphManagerState.graph,
-        )) as TestResult[];
+      let testResults: TestResult[];
+      if (isRelationalMappingTestSuite(suite)) {
+        // TEMPORARY RUN each test separately. This is done to help with performance
+        // specifically with running realtional mapping tests as we generate a plan during each test.
+        // with this change we would still do this but in parallel reducing the time to run the suite
+        const inputs = suite.tests.map((t) => {
+          const input = new RunTestsTestableInput(this.mapping);
+          input.unitTestIds.push(new UniqueTestId(suite, t));
+          return input;
+        });
+        const _testResults = (yield Promise.all(
+          inputs.map((i) =>
+            this.editorStore.graphManagerState.graphManager.runTests(
+              [i],
+              this.editorStore.graphManagerState.graph,
+            ),
+          ),
+        )) as TestResult[][];
+        testResults = _testResults.flat();
+      } else {
+        const input = new RunTestsTestableInput(this.mapping);
+        suite.tests.forEach((t) =>
+          input.unitTestIds.push(new UniqueTestId(suite, t)),
+        );
+        testResults =
+          (yield this.editorStore.graphManagerState.graphManager.runTests(
+            [input],
+            this.editorStore.graphManagerState.graph,
+          )) as TestResult[];
+      }
       this.handleNewResults(testResults);
     } catch (error) {
       assertErrorThrown(error);
