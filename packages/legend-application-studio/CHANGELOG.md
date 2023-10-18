@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.9.0
+
+### Minor Changes
+
+- [#2698](https://github.com/finos/legend-studio/pull/2698) [`fe4551640`](https://github.com/finos/legend-studio/commit/fe45516404a2f0bdd9e4faacb40d6b88b4aad856) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enhance viewer modes to show all supported status icons such as terminal, compilation generation etc.
+
+- [#2698](https://github.com/finos/legend-studio/pull/2698) [`fe4551640`](https://github.com/finos/legend-studio/commit/fe45516404a2f0bdd9e4faacb40d6b88b4aad856) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `/studio/showcase` route to showcase project viewer.
+
 ## 28.8.0
 
 ### Minor Changes
