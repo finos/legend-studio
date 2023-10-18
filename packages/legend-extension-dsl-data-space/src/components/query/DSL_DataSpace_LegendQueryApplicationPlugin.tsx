@@ -34,6 +34,7 @@ import {
 } from '@finos/legend-application';
 import {
   DATA_SPACE_QUERY_ROUTE_PATTERN,
+  generateDataSpaceQueryCreatorRoute,
   generateDataSpaceQuerySetupRoute,
 } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
@@ -49,12 +50,18 @@ import {
 } from '../../stores/query/DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
-import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  LogEvent,
+  uuid,
+} from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
 import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import { StoreProjectData } from '@finos/legend-server-depot';
 import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
+import { flowResult } from 'mobx';
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
@@ -166,56 +173,26 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             matchingExecutionContext,
             (dataSpaceInfo: DataSpaceInfo) => {
               if (dataSpaceInfo.defaultExecutionContext) {
-                const createQuery = async (): Promise<void> => {
-                  // prepare the new query to save
-                  const _query = new Query();
-                  _query.name = query.name;
-                  _query.id = query.id;
-                  _query.groupId = query.groupId;
-                  _query.artifactId = query.artifactId;
-                  _query.versionId = query.versionId;
-                  _query.mapping = query.mapping;
-                  _query.runtime = query.runtime;
-                  _query.taggedValues = [
-                    createQueryDataSpaceTaggedValue(dataSpaceInfo.path),
-                  ].concat(
-                    (query.taggedValues ?? []).filter(
-                      (taggedValue) => taggedValue !== dataSpaceTaggedValue,
+                const proceed = (): void =>
+                  editorStore.applicationStore.navigationService.navigator.goToLocation(
+                    generateDataSpaceQueryCreatorRoute(
+                      guaranteeNonNullable(dataSpaceInfo.groupId),
+                      guaranteeNonNullable(dataSpaceInfo.artifactId),
+                      guaranteeNonNullable(dataSpaceInfo.versionId),
+                      dataSpaceInfo.path,
+                      guaranteeNonNullable(
+                        dataSpaceInfo.defaultExecutionContext,
+                      ),
+                      undefined,
+                      undefined,
                     ),
                   );
-                  _query.stereotypes = query.stereotypes;
-                  _query.content = query.content;
-                  _query.owner = query.owner;
-                  _query.lastUpdatedAt = query.lastUpdatedAt;
-
+                const updateQueryAndProceed = async (): Promise<void> => {
                   try {
-                    if (!query.isCurrentUserQuery) {
-                      _query.id = uuid();
-                      const newQuery =
-                        await editorStore.graphManagerState.graphManager.createQuery(
-                          _query,
-                          editorStore.graphManagerState.graph,
-                        );
-                      editorStore.applicationStore.notificationService.notifySuccess(
-                        `Successfully created query!`,
-                      );
-                      LegendQueryEventHelper.notify_QueryCreateSucceeded(
-                        editorStore.applicationStore.eventService,
-                        { queryId: newQuery.id },
-                      );
-                      editorStore.applicationStore.navigationService.navigator.goToLocation(
-                        generateExistingQueryEditorRoute(newQuery.id),
-                      );
-                    } else {
-                      await editorStore.graphManagerState.graphManager.updateQuery(
-                        _query,
-                        editorStore.graphManagerState.graph,
-                      );
-                      editorStore.applicationStore.notificationService.notifySuccess(
-                        `Successfully updated query!`,
-                      );
-                      editorStore.applicationStore.navigationService.navigator.reload();
-                    }
+                    await flowResult(
+                      editorStore.updateState.updateQuery(undefined),
+                    );
+                    proceed();
                   } catch (error) {
                     assertErrorThrown(error);
                     editorStore.applicationStore.logService.error(
@@ -227,33 +204,33 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                     );
                   }
                 };
-
-                editorStore.applicationStore.alertService.setActionAlertInfo({
-                  message: `To change the data space associated with this query, you need to ${
-                    query.isCurrentUserQuery
-                      ? 'update the query'
-                      : 'create a new query'
-                  } to proceed`,
-                  type: ActionAlertType.CAUTION,
-                  actions: [
-                    {
-                      label: query.isCurrentUserQuery
-                        ? 'Update query'
-                        : 'Create new query',
-                      type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                      handler: () => {
-                        createQuery().catch(
-                          editorStore.applicationStore.alertUnhandledError,
-                        );
+                if (
+                  !query.isCurrentUserQuery ||
+                  !editorStore.queryBuilderState?.changeDetectionState
+                    .hasChanged
+                ) {
+                  proceed();
+                } else {
+                  editorStore.applicationStore.alertService.setActionAlertInfo({
+                    message: `To change the data space, you need to save the current query
+                       to proceed`,
+                    type: ActionAlertType.CAUTION,
+                    actions: [
+                      {
+                        label: 'Save query and Proceed',
+                        type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                        handler: () => {
+                          updateQueryAndProceed();
+                        },
                       },
-                    },
-                    {
-                      label: 'Abort',
-                      type: ActionAlertActionType.PROCEED,
-                      default: true,
-                    },
-                  ],
-                });
+                      {
+                        label: 'Abort',
+                        type: ActionAlertActionType.PROCEED,
+                        default: true,
+                      },
+                    ],
+                  });
+                }
               } else {
                 editorStore.applicationStore.notificationService.notifyWarning(
                   `Can't switch data space: default execution context not specified`,
