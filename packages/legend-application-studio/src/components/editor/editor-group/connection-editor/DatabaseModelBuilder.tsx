@@ -118,6 +118,9 @@ export const DatabaseModelPreviewEditor = observer(
           <PanelLoadingIndicator isLoading={isExecutingAction} />
           <div className="database-builder__modeler">
             <div className="database-builder__modeler__preview">
+              <div className="database-builder__modeler__preview__header">
+                readonly
+              </div>
               {databaseModelBuilderState.generatedGrammarCode && (
                 <CodeEditor
                   language={CODE_EDITOR_LANGUAGE.PURE}

@@ -278,10 +278,10 @@ const QueryConnectionModelsEditor = observer(
                       />
                       <div className="panel__content__form__section">
                         <div className="panel__content__form__section__header__label">
-                          {'Target Runtime Path'}
+                          Target Runtime Path
                         </div>
                         <div className="panel__content__form__section__header__prompt">
-                          {'Target path for runtime'}
+                          Target path for runtime
                         </div>
                         <InputWithInlineValidation
                           className="query-builder__variables__variable__name__input input-group__input"
