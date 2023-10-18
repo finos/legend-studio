@@ -64,7 +64,6 @@ export class QueryBuilderFetchStructureState {
       }
       case FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH: {
         this.queryBuilderState.setIsCalendarEnabled(false);
-        this.queryBuilderState.setIsAdvancedModeEnabled(false);
         this.implementation = new QueryBuilderGraphFetchTreeState(
           this.queryBuilderState,
           this,
