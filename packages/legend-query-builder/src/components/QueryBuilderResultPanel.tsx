@@ -1027,6 +1027,11 @@ export const QueryBuilderResultPanel = observer(
     const isQueryValid =
       !queryBuilderState.isQuerySupported || isSupportedQueryValid;
 
+    const isQueryValidForAdvancedMode =
+      isQueryValid &&
+      queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderTDSState;
+
     const runQuery = (): void => {
       resultState.setSelectedCells([]);
       resultState.pressedRunQuery.inProgress();
@@ -1057,10 +1062,7 @@ export const QueryBuilderResultPanel = observer(
     );
 
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
-    const allowSettingAdvancedMode =
-      queryBuilderState.isQuerySupported &&
-      queryBuilderState.fetchStructureState.implementation instanceof
-        QueryBuilderTDSState;
+    const allowSettingAdvancedMode = queryBuilderState.isQuerySupported;
 
     const copyExpression = (value: string): void => {
       applicationStore.clipboardService
@@ -1235,7 +1237,7 @@ export const QueryBuilderResultPanel = observer(
                         queryBuilderState.isAdvancedModeEnabled,
                     },
                   )}
-                  disabled={!isQueryValid}
+                  disabled={!isQueryValidForAdvancedMode}
                   onClick={toggleIsAdvancedModeEnabled}
                   tabIndex={-1}
                 >
