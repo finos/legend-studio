@@ -395,6 +395,11 @@
       &-btn {
         width: 8rem;
       }
+
+      &-icon {
+        color: var(--color-light-grey-400);
+        cursor: pointer;
+      }
     }
 
     &__title__label {

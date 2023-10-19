@@ -32,6 +32,7 @@ import {
   TimesIcon,
   CodeIcon,
   clsx,
+  CopyIcon,
 } from '@finos/legend-art';
 import {
   SHOWCASE_MANAGER_SEARCH_CATEGORY,
@@ -545,6 +546,15 @@ const ShowcaseViewer = observer(
         ),
       );
     };
+    const handleCopy =
+      showcaseManagerState.applicationStore.guardUnhandledError(() =>
+        showcaseManagerState.applicationStore.clipboardService.copyTextToClipboard(
+          showcase.code,
+          {
+            notifySuccessMessage: 'Showcase grammar copied to clipboard',
+          },
+        ),
+      );
     return (
       <div className="showcase-manager__view">
         <div className="showcase-manager__view__header">
@@ -606,6 +616,14 @@ const ShowcaseViewer = observer(
                     Launch
                   </div>
                 </button>
+              </div>
+            </div>
+            <div className="showcase-manager__viewer__title__action">
+              <div
+                onClick={handleCopy}
+                className="showcase-manager__viewer__title__action-icon"
+              >
+                <CopyIcon />
               </div>
             </div>
           </div>
