@@ -168,6 +168,7 @@ export class ShowcaseRegistry {
                 title: showcase.title,
                 path: showcase.path,
                 description: showcase.description,
+                development: showcase.development,
               });
             }
           });

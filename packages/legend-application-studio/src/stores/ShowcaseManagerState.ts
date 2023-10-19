@@ -307,7 +307,9 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     this.initState.inProgress();
 
     try {
-      this.showcases = (yield this.client.getShowcases()) as ShowcaseMetadata[];
+      this.showcases = (
+        (yield this.client.getShowcases()) as ShowcaseMetadata[]
+      ).filter((showcase) => !showcase.development);
       this.explorerTreeData = buildShowcasesExplorerTreeData(this.showcases);
       // expand all the root nodes by default
       this.explorerTreeData.rootIds.forEach((rootId) => {

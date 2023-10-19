@@ -122,6 +122,10 @@ export class ShowcaseViewerStore {
       const entities =
         (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
           grammar,
+          // we want to keep section index so we read imports correctly
+          {
+            TEMPORARY__keepSectionIndex: true,
+          },
         )) as Entity[];
       this.editorStore.initState.setMessage(undefined);
       stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
