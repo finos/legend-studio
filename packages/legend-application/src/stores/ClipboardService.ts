@@ -23,11 +23,25 @@ export class ClipboardService {
     this.applicationStore = applicationStore;
   }
 
-  async copyTextToClipboard(text: string): Promise<void> {
+  async copyTextToClipboard(
+    text: string,
+    options?: {
+      notifySuccessMessage?: string;
+    },
+  ): Promise<void> {
     // This is a much cleaner way which requires HTTPS
     // See https://developers.google.com/web/updates/2018/03/clipboardapi
-    await navigator.clipboard.writeText(text).catch((error) => {
-      this.applicationStore.notificationService.notifyError(error);
-    });
+    await navigator.clipboard
+      .writeText(text)
+      .catch((error) => {
+        this.applicationStore.notificationService.notifyError(error);
+      })
+      .finally(() => {
+        if (options?.notifySuccessMessage) {
+          this.applicationStore.notificationService.notifySuccess(
+            options?.notifySuccessMessage,
+          );
+        }
+      });
   }
 }

@@ -41,6 +41,7 @@ import {
   FlaskIcon,
   RobotIcon,
   WorkflowIcon,
+  ReadMeIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
@@ -52,8 +53,10 @@ import {
   ActivityBarItemExperimentalBadge,
   type ActivityBarItemConfig,
 } from '@finos/legend-lego/application';
-import { ShowcaseManagerState } from '../../stores/ShowcaseManagerState.js';
-import { SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY } from '../extensions/Core_LegendStudioApplicationPlugin.js';
+import {
+  ShowcaseManagerState,
+  openShowcaseManager,
+} from '../../stores/ShowcaseManagerState.js';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
@@ -108,17 +111,6 @@ export const ActivityBarMenu: React.FC = () => {
   // showcases
   const showcaseManagerState =
     ShowcaseManagerState.retrieveNullableState(applicationStore);
-  const openShowcaseManager = (): void => {
-    if (showcaseManagerState?.isEnabled) {
-      applicationStore.assistantService.setIsHidden(false);
-      applicationStore.assistantService.setIsOpen(true);
-      applicationStore.assistantService.setIsPanelMaximized(true);
-      applicationStore.assistantService.setSelectedTab(
-        SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY,
-      );
-    }
-  };
-
   return (
     <>
       <div className="activity-bar__menu">
@@ -133,7 +125,9 @@ export const ActivityBarMenu: React.FC = () => {
             <MenuContent>
               <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
               {showcaseManagerState?.isEnabled && (
-                <MenuContentItem onClick={openShowcaseManager}>
+                <MenuContentItem
+                  onClick={() => openShowcaseManager(applicationStore)}
+                >
                   See Showcases
                 </MenuContentItem>
               )}
@@ -421,8 +415,17 @@ export const ActivityBar = observer(() => {
           </button>
         ))}
       </div>
+      <button
+        className={clsx('activity-bar__item')}
+        onClick={() => openShowcaseManager(editorStore.applicationStore)}
+        tabIndex={-1}
+        title={'Open Showcases'}
+      >
+        <ReadMeIcon />
+      </button>
       <DropdownMenu
         className="activity-bar__item"
+        title="Settings"
         content={<SettingsMenu />}
         menuProps={{
           anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
