@@ -77,8 +77,8 @@ import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/e
 import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
 import { getElementIcon } from '../../ElementIconUtils.js';
 import { ArtifactGenerationViewerState } from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
-import { QueryConnectionEndToEndWorkflowEditorState } from '../../../stores/editor/editor-state/end-to-end-workflow-state/EndToEndWorkflowEditorState.js';
-import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/QueryConnectionWorkflowEditor.js';
+import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/ConnectionToQueryWorkflowEditor.js';
+import { QueryConnectionEndToEndWorkflowEditorState } from '../../../stores/editor/editor-state/end-to-end-workflow-state/QueryConnectionEndToEndWorkflowEditorState.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -329,9 +329,9 @@ export const EditorGroup = observer(() => {
     ) {
       return (
         <QueryConnectionWorflowEditor
-          queryConnectionEndToEndWorkflowState={
+          connectionToQueryWorkflowState={
             editorStore.globalEndToEndWorkflowState
-              .queryConnectionEndToEndWorkflowState
+              .queryToConnectionWorkflowEditorState
           }
         />
       );
