@@ -20,9 +20,7 @@ import {
   type ExistingQueryEditorStateBuilder,
   type ExistingQueryEditorStore,
   LegendQueryApplicationPlugin,
-  generateExistingQueryEditorRoute,
   LEGEND_QUERY_APP_EVENT,
-  LegendQueryEventHelper,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '@finos/legend-application-query';
@@ -38,8 +36,7 @@ import {
   generateDataSpaceQuerySetupRoute,
 } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
-import { createQueryDataSpaceTaggedValue } from '../../stores/query/DataSpaceQueryCreatorStore.js';
-import { Query, isValidFullPath } from '@finos/legend-graph';
+import { type Query, isValidFullPath } from '@finos/legend-graph';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
@@ -54,7 +51,6 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   LogEvent,
-  uuid,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
@@ -220,7 +216,9 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                         label: 'Save query and Proceed',
                         type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                         handler: () => {
-                          updateQueryAndProceed();
+                          updateQueryAndProceed().catch(
+                            editorStore.applicationStore.alertUnhandledError,
+                          );
                         },
                       },
                       {
