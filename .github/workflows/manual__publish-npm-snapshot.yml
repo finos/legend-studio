@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3.8.1
         with:
-          node-version: 16
+          node-version: 18
           # The registry URL and `NODE_AUTH_TOKEN` are needed for `npm publish` to work properly
           # See https://github.com/actions/setup-node/blob/main/docs/advanced-usage.md#publish-to-npmjs-and-gpr-with-npm
           registry-url: 'https://registry.npmjs.org'

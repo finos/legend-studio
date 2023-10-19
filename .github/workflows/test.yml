@@ -43,7 +43,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3.8.1
         with:
-          node-version: 16
+          node-version: 18
       - name: Install dependencies
         run: yarn
       - name: Build
@@ -85,7 +85,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3.8.1
         with:
-          node-version: 16
+          node-version: 18
       - name: Run engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: docker compose --file=grammar-test-setup-docker-compose.yml up --detach
