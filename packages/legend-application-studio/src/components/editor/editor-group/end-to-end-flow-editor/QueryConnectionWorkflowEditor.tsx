@@ -24,13 +24,19 @@ import {
   ModalBody,
   InputWithInlineValidation,
   PanelHeader,
-  BlankPanelContent,
   PanelLoadingIndicator,
   ResizablePanelSplitter,
   EyeIcon,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import type { QueryConnectionEndToEndWorkflowState } from '../../../../stores/editor/sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
+import type {
+  ConnectionValueStepperState,
+  DatabaseGrammarEditorStepperState,
+  DatabaseModelBuilderStepperState,
+  QueryConnectionConfirmationAndGrammarEditorStepperState,
+  QueryConnectionEndToEndWorkflowState,
+} from '../../../../stores/editor/sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
 import { useEffect, useMemo } from 'react';
 import { RelationalConnectionGeneralEditor } from '../connection-editor/RelationalDatabaseConnectionEditor.js';
 import { flowResult } from 'mobx';
@@ -42,37 +48,38 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import type { DatabaseBuilderWizardState } from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderWizardState.js';
-import type { DatabaseModelBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseModelBuilderState.js';
 import {
   DatabaseModelPackageInput,
   DatabaseModelPreviewEditor,
 } from '../connection-editor/DatabaseModelBuilder.js';
 
-const QUERY_CONNECTION_WORKFLOW_STEPS = [
-  'Create Connection',
-  'Create Database',
-  'Edit Database',
-  'Create Class/Mapping/Runtime',
-  'Confirmation',
-];
+export enum QUERY_CONNECTION_WORKFLOW_STEPS {
+  CREATE_CONNECTION = 'Create Connection',
+  CREATE_DATABASE = 'Create Database',
+  EDIT_DATABASE = 'Edit Database',
+  CREATE_CLASS_MAPPING_RUNTIME = 'Create Class/Mapping/Runtime',
+  CONFIRMATION = 'Confirmation',
+}
 
-const QueryConnectionRelationalConnectionEditor = observer(
+export const QueryConnectionRelationalConnectionEditor = observer(
   (props: {
     queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+    connectionValueStepperState: ConnectionValueStepperState;
   }) => {
-    const { queryConnectionEndToEndWorkflowState } = props;
+    const {
+      queryConnectionEndToEndWorkflowState,
+      connectionValueStepperState,
+    } = props;
     const elementAlreadyExistsMessage =
       queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore.graphManagerState.graph.allElements
         .map((s) => s.path)
-        .includes(queryConnectionEndToEndWorkflowState.targetConnectionPath)
+        .includes(connectionValueStepperState.targetConnectionPath)
         ? 'Element with same path already exists'
         : undefined;
     const onTargetPathChange: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
-      queryConnectionEndToEndWorkflowState.setTargetConnectionPath(
-        event.target.value,
-      );
+      connectionValueStepperState.setTargetConnectionPath(event.target.value);
     };
 
     return (
@@ -88,9 +95,7 @@ const QueryConnectionRelationalConnectionEditor = observer(
                 className="panel__content__form__section__input"
                 spellCheck={false}
                 onChange={onTargetPathChange}
-                value={
-                  queryConnectionEndToEndWorkflowState.targetConnectionPath
-                }
+                value={connectionValueStepperState.targetConnectionPath}
                 error={elementAlreadyExistsMessage}
                 showEditableIcon={true}
               />
@@ -98,7 +103,7 @@ const QueryConnectionRelationalConnectionEditor = observer(
             <div className="query-connection-relational-connection-editor__editor">
               <RelationalConnectionGeneralEditor
                 connectionValueState={
-                  queryConnectionEndToEndWorkflowState.connectionValueState
+                  connectionValueStepperState.connectionValueState
                 }
                 isReadOnly={false}
                 hideHeader={true}
@@ -111,7 +116,7 @@ const QueryConnectionRelationalConnectionEditor = observer(
   },
 );
 
-const QueryConnectionDatabaseBuilderEditor = observer(
+export const QueryConnectionDatabaseBuilderEditor = observer(
   (props: { databaseBuilderState: DatabaseBuilderWizardState }) => {
     const { databaseBuilderState } = props;
     const applicationStore = useApplicationStore();
@@ -149,16 +154,20 @@ const QueryConnectionDatabaseBuilderEditor = observer(
   },
 );
 
-const QueryConnectionDatabaseGrammarEditor = observer(
+export const QueryConnectionDatabaseGrammarEditor = observer(
   (props: {
     queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+    databaseGrammarEditorStepperState: DatabaseGrammarEditorStepperState;
   }) => {
-    const { queryConnectionEndToEndWorkflowState } = props;
+    const {
+      queryConnectionEndToEndWorkflowState,
+      databaseGrammarEditorStepperState,
+    } = props;
     const applicationStore = useApplicationStore();
 
     const compile = (): void => {
       flowResult(
-        queryConnectionEndToEndWorkflowState.compileDatabaseGrammarCode(),
+        databaseGrammarEditorStepperState.compileDatabaseGrammarCode(),
       ).catch(applicationStore.alertUnhandledError);
     };
 
@@ -180,7 +189,7 @@ const QueryConnectionDatabaseGrammarEditor = observer(
         </div>
         <PanelLoadingIndicator
           isLoading={
-            queryConnectionEndToEndWorkflowState.isGeneratingDatabaseGrammarCode
+            databaseGrammarEditorStepperState.isCompilingGrammarCode
               .isInProgress
           }
         />
@@ -203,13 +212,15 @@ const QueryConnectionDatabaseGrammarEditor = observer(
   },
 );
 
-const QueryConnectionModelsEditor = observer(
+export const QueryConnectionModelsEditor = observer(
   (props: {
-    databaseModelBuilderState: DatabaseModelBuilderState;
+    databaseModelBuilderStepperState: DatabaseModelBuilderStepperState;
     queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
   }) => {
-    const { databaseModelBuilderState, queryConnectionEndToEndWorkflowState } =
-      props;
+    const {
+      databaseModelBuilderStepperState,
+      queryConnectionEndToEndWorkflowState,
+    } = props;
     const applicationStore = useApplicationStore();
 
     const runtimeElementAlreadyExistsMessage =
@@ -243,17 +254,23 @@ const QueryConnectionModelsEditor = observer(
     };
 
     useEffect(() => {
-      flowResult(databaseModelBuilderState.previewDatabaseModels())
+      flowResult(
+        databaseModelBuilderStepperState.databaseModelBuilderState.previewDatabaseModels(),
+      )
         .then(() =>
-          queryConnectionEndToEndWorkflowState.updateGraphWithModels(
-            guaranteeNonNullable(databaseModelBuilderState.entities),
+          databaseModelBuilderStepperState.updateGraphWithModels(
+            guaranteeNonNullable(
+              databaseModelBuilderStepperState.databaseModelBuilderState
+                .entities,
+            ),
           ),
         )
         .catch(applicationStore.alertUnhandledError);
     }, [
       applicationStore,
-      databaseModelBuilderState,
-      databaseModelBuilderState.targetPackage,
+      databaseModelBuilderStepperState,
+      databaseModelBuilderStepperState.databaseModelBuilderState,
+      databaseModelBuilderStepperState.databaseModelBuilderState.targetPackage,
       queryConnectionEndToEndWorkflowState,
     ]);
 
@@ -274,7 +291,9 @@ const QueryConnectionModelsEditor = observer(
                     <PanelHeader title="schema explorer" />
                     <PanelContent className="database-builder__config__content">
                       <DatabaseModelPackageInput
-                        databaseModelBuilderState={databaseModelBuilderState}
+                        databaseModelBuilderState={
+                          databaseModelBuilderStepperState.databaseModelBuilderState
+                        }
                       />
                       <div className="panel__content__form__section">
                         <div className="panel__content__form__section__header__label">
@@ -301,8 +320,10 @@ const QueryConnectionModelsEditor = observer(
                 <ResizablePanelSplitter />
                 <ResizablePanel>
                   <DatabaseModelPreviewEditor
-                    databaseModelBuilderState={databaseModelBuilderState}
-                    grammarCode={databaseModelBuilderState.generatedGrammarCode.concat(
+                    databaseModelBuilderState={
+                      databaseModelBuilderStepperState.databaseModelBuilderState
+                    }
+                    grammarCode={databaseModelBuilderStepperState.databaseModelBuilderState.generatedGrammarCode.concat(
                       queryConnectionEndToEndWorkflowState.runtimeGrammarCode,
                     )}
                   />
@@ -316,17 +337,21 @@ const QueryConnectionModelsEditor = observer(
   },
 );
 
-const QueryConnectionConfirmationAndGrammarEditor = observer(
+export const QueryConnectionConfirmationAndGrammarEditor = observer(
   (props: {
     queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+    queryConnectionConfirmationAndGrammarEditorStepperState: QueryConnectionConfirmationAndGrammarEditorStepperState;
   }) => {
-    const { queryConnectionEndToEndWorkflowState } = props;
+    const {
+      queryConnectionEndToEndWorkflowState,
+      queryConnectionConfirmationAndGrammarEditorStepperState,
+    } = props;
     const applicationStore = useApplicationStore();
 
     const compile = (): void => {
-      flowResult(queryConnectionEndToEndWorkflowState.compile()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      flowResult(
+        queryConnectionConfirmationAndGrammarEditorStepperState.compile(),
+      ).catch(applicationStore.alertUnhandledError);
     };
 
     const updateInput = (val: string): void => {
@@ -347,8 +372,8 @@ const QueryConnectionConfirmationAndGrammarEditor = observer(
         </div>
         <PanelLoadingIndicator
           isLoading={
-            queryConnectionEndToEndWorkflowState.isGeneratingDatabaseGrammarCode
-              .isInProgress
+            queryConnectionConfirmationAndGrammarEditorStepperState
+              .isCompilingCode.isInProgress
           }
         />
         <div className="panel__content__form__section__header__prompt  query-connection-database-builder-editor__prompt">
@@ -374,6 +399,10 @@ export const QueryConnectionWorflowEditor = observer(
   }) => {
     const { queryConnectionEndToEndWorkflowState } = props;
     const applicationStore = useApplicationStore();
+    const stepLabel =
+      queryConnectionEndToEndWorkflowState.activeStepToStepLabel.get(
+        queryConnectionEndToEndWorkflowState.activeStep,
+      );
     const increaseActiveStep = (): void => {
       if (queryConnectionEndToEndWorkflowState.isValid) {
         queryConnectionEndToEndWorkflowState.setActiveStep(
@@ -382,67 +411,14 @@ export const QueryConnectionWorflowEditor = observer(
       }
     };
     const handleNext = (): void => {
-      switch (queryConnectionEndToEndWorkflowState.activeStep) {
-        case 0:
-          {
-            queryConnectionEndToEndWorkflowState.buildDatabaseBuilderWizardState();
-            increaseActiveStep();
-          }
-          break;
-        case 1:
-          {
-            flowResult(queryConnectionEndToEndWorkflowState.buildDatabase())
-              .then(() => {
-                queryConnectionEndToEndWorkflowState.generateDatabaseGrammarCode();
-              })
-              .then(() => {
-                increaseActiveStep();
-              })
-              .catch(applicationStore.alertUnhandledError);
-          }
-          break;
-        case 2:
-          {
-            flowResult(
-              queryConnectionEndToEndWorkflowState.compileDatabaseGrammarCode(),
-            )
-              .then(() => {
-                queryConnectionEndToEndWorkflowState.buildDatabaseModelBuilderState();
-              })
-              .then(() => {
-                increaseActiveStep();
-              })
-              .catch(applicationStore.alertUnhandledError);
-          }
-          break;
-        case 3:
-          {
-            queryConnectionEndToEndWorkflowState.setFinalGrammarCode(
-              guaranteeNonNullable(
-                queryConnectionEndToEndWorkflowState.databaseModelBuilderState
-                  ?.generatedGrammarCode,
-              )
-                .concat(queryConnectionEndToEndWorkflowState.runtimeGrammarCode)
-                .concat(
-                  queryConnectionEndToEndWorkflowState.databaseGrammarCode,
-                )
-                .concat(
-                  queryConnectionEndToEndWorkflowState.connectionGrammarCode,
-                ),
-            );
-            increaseActiveStep();
-          }
-          break;
-        case 4: {
-          flowResult(queryConnectionEndToEndWorkflowState.query())
-            .then(() => {
-              queryConnectionEndToEndWorkflowState.reset();
-            })
-            .catch(applicationStore.alertUnhandledError);
-          break;
-        }
-        default:
-          increaseActiveStep();
+      if (stepLabel) {
+        flowResult(
+          queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState
+            .get(stepLabel)
+            ?.handleNext(),
+        )
+          .then(() => increaseActiveStep())
+          .catch(applicationStore.alertUnhandledError);
       }
     };
     const handleBack = (): void => {
@@ -453,52 +429,12 @@ export const QueryConnectionWorflowEditor = observer(
     };
 
     const renderStepContent = (): React.ReactNode => {
-      switch (queryConnectionEndToEndWorkflowState.activeStep) {
-        case 0:
-          return (
-            <QueryConnectionRelationalConnectionEditor
-              queryConnectionEndToEndWorkflowState={
-                queryConnectionEndToEndWorkflowState
-              }
-            />
-          );
-        case 1:
-          return (
-            <QueryConnectionDatabaseBuilderEditor
-              databaseBuilderState={guaranteeNonNullable(
-                queryConnectionEndToEndWorkflowState.databaseBuilderWizardState,
-              )}
-            />
-          );
-        case 2:
-          return (
-            <QueryConnectionDatabaseGrammarEditor
-              queryConnectionEndToEndWorkflowState={
-                queryConnectionEndToEndWorkflowState
-              }
-            />
-          );
-        case 3:
-          return (
-            <QueryConnectionModelsEditor
-              databaseModelBuilderState={guaranteeNonNullable(
-                queryConnectionEndToEndWorkflowState.databaseModelBuilderState,
-              )}
-              queryConnectionEndToEndWorkflowState={
-                queryConnectionEndToEndWorkflowState
-              }
-            />
-          );
-        case 4:
-          return (
-            <QueryConnectionConfirmationAndGrammarEditor
-              queryConnectionEndToEndWorkflowState={
-                queryConnectionEndToEndWorkflowState
-              }
-            />
-          );
-        default:
-          return <BlankPanelContent> </BlankPanelContent>;
+      if (stepLabel) {
+        return queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState
+          .get(stepLabel)
+          ?.renderStepContent();
+      } else {
+        return <BlankPanelContent> </BlankPanelContent>;
       }
     };
 
@@ -507,7 +443,7 @@ export const QueryConnectionWorflowEditor = observer(
         <Panel>
           <PanelContent className="test-runner-panel__result">
             <BaseStepper
-              steps={QUERY_CONNECTION_WORKFLOW_STEPS}
+              steps={Object.values(QUERY_CONNECTION_WORKFLOW_STEPS)}
               activeStep={queryConnectionEndToEndWorkflowState.activeStep}
             ></BaseStepper>
             <PanelContent>
@@ -530,7 +466,7 @@ export const QueryConnectionWorflowEditor = observer(
               onClick={handleNext}
             >
               {queryConnectionEndToEndWorkflowState.activeStep ===
-              QUERY_CONNECTION_WORKFLOW_STEPS.length - 1
+              Object.values(QUERY_CONNECTION_WORKFLOW_STEPS).length - 1
                 ? 'Import And Query'
                 : 'Next'}
             </button>

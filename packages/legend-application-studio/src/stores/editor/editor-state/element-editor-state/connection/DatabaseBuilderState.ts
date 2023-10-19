@@ -326,6 +326,7 @@ export class DatabaseSchemaExplorerState {
     makeObservable(this, {
       isGeneratingDatabase: observable,
       isUpdatingDatabase: observable,
+      database: observable,
       treeData: observable,
       targetDatabasePath: observable,
       previewer: observable,

@@ -40,6 +40,7 @@ export * from './menu/ContextMenu.js';
 export * from './menu/DropdownMenu.js';
 
 export * from './stepper/BaseStepper.js';
+export * from './stepper/BaseStepperState.js';
 
 export * from './popover/BasePopover.js';
 export * from './popover/BasePopper.js';
