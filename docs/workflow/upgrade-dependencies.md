@@ -41,7 +41,7 @@ Update Node version used for pipeline workflow
 - name: Setup Node
   uses: actions/setup-node@v3.6.0
   with:
-    node-version: 16
+    node-version: 18
 ```
 
 ### Docker

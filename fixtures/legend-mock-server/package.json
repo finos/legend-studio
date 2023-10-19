@@ -27,15 +27,15 @@
   },
   "dependencies": {
     "@fastify/cors": "8.4.0",
-    "fastify": "4.23.2"
+    "fastify": "4.24.3"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.50.0",
+    "eslint": "8.51.0",
     "nodemon": "3.0.1",
     "npm-run-all": "4.1.5",
-    "rimraf": "5.0.4",
+    "rimraf": "5.0.5",
     "typescript": "5.2.2"
   }
 }
