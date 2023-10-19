@@ -39,7 +39,7 @@ export class ClipboardService {
       .finally(() => {
         if (options?.notifySuccessMessage) {
           this.applicationStore.notificationService.notifySuccess(
-            options?.notifySuccessMessage,
+            options.notifySuccessMessage,
           );
         }
       });
