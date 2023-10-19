@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.38
+
+### Patch Changes
+
+- [#2695](https://github.com/finos/legend-studio/pull/2695) [`e38dba9fb`](https://github.com/finos/legend-studio/commit/e38dba9fb6452882ab6fb1b76ce0010926508b87) ([@gayathrir11](https://github.com/gayathrir11)) - Fix filtering by current class in query loader.
+
 ## 10.1.37
 
 ## 10.1.36
