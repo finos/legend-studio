@@ -20,13 +20,13 @@ import {
 } from '@finos/legend-application';
 import {
   type PackageableElement,
-  GRAPH_MANAGER_EVENT,
+  type SourceInformation,
   type TextCompilationResult,
+  type GraphManagerOperationReport,
+  GRAPH_MANAGER_EVENT,
   EngineError,
   GraphBuilderError,
-  type GraphManagerOperationReport,
   reportGraphAnalytics,
-  type SourceInformation,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,

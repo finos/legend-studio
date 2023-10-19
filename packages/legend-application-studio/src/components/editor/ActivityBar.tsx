@@ -15,7 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ACTIVITY_MODE, PANEL_MODE } from '../../stores/editor/EditorConfig.js';
+import {
+  ACTIVITY_MODE,
+  PANEL_MODE,
+  USER_JOURNEYS,
+} from '../../stores/editor/EditorConfig.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   clsx,
@@ -36,6 +40,7 @@ import {
   MenuContentDivider,
   FlaskIcon,
   RobotIcon,
+  WorkflowIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
@@ -363,11 +368,44 @@ export const ActivityBar = observer(() => {
     ] as (ActivityBarItemConfig | boolean)[]
   ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
 
+  const userJourneys: ActivityBarItemConfig[] = (
+    [
+      !editorStore.isInConflictResolutionMode &&
+        editorStore.applicationStore.config.options
+          .TEMPORARY__enableEndtoEndWorkflow && {
+          mode: USER_JOURNEYS.END_TO_END_WORKFLOWS,
+          title: 'End to End Workflows (Beta)',
+          icon: (
+            <div>
+              <WorkflowIcon className="activity-bar__icon--service-registrar" />
+              <ActivityBarItemExperimentalBadge />
+            </div>
+          ),
+        },
+    ] as (ActivityBarItemConfig | boolean)[]
+  ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
+
   return (
     <div className="activity-bar">
       <ActivityBarMenu />
       <div className="activity-bar__items">
         {activities.map((activity) => (
+          <button
+            key={activity.mode}
+            className={clsx('activity-bar__item', {
+              'activity-bar__item--active':
+                editorStore.sideBarDisplayState.isOpen &&
+                editorStore.activeActivity === activity.mode,
+            })}
+            onClick={changeActivity(activity.mode)}
+            tabIndex={-1}
+            title={activity.title}
+          >
+            {activity.icon}
+          </button>
+        ))}
+        <MenuContentDivider />
+        {userJourneys.map((activity) => (
           <button
             key={activity.mode}
             className={clsx('activity-bar__item', {

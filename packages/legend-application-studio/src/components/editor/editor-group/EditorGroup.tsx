@@ -77,6 +77,8 @@ import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/e
 import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
 import { getElementIcon } from '../../ElementIconUtils.js';
 import { ArtifactGenerationViewerState } from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
+import { QueryConnectionEndToEndWorkflowEditorState } from '../../../stores/editor/editor-state/end-to-end-workflow-state/EndToEndWorkflowEditorState.js';
+import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/QueryConnectionWorkflowEditor.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -315,6 +317,17 @@ export const EditorGroup = observer(() => {
       return <ModelImporter />;
     } else if (currentTabState instanceof ProjectConfigurationEditorState) {
       return <ProjectConfigurationEditor />;
+    } else if (
+      currentTabState instanceof QueryConnectionEndToEndWorkflowEditorState
+    ) {
+      return (
+        <QueryConnectionWorflowEditor
+          queryConnectionEndToEndWorkflowState={
+            editorStore.globalEndToEndWorkflowState
+              .queryConnectionEndToEndWorkflowState
+          }
+        />
+      );
     }
     // TODO: create an editor for unsupported tab
     return null;
