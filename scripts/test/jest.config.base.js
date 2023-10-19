@@ -175,6 +175,7 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
       '^react-markdown$':
         '@finos/legend-art/markdown/test/MockedReactMarkdown.js',
       '^remark-gfm$': '@finos/legend-art/markdown/test/MockedRemarkGFM.js',
+      '^mermaid$': '@finos/legend-art/markdown/test/MockedMermaid.js',
     },
     globals: {
       AG_GRID_LICENSE: null,

@@ -22,6 +22,7 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
+    "./markdown/test/MockedMermaid.js": "./lib/markdown/__test-utils__/MockedMermaid.js",
     "./markdown/test/MockedReactMarkdown.js": "./lib/markdown/__test-utils__/MockedReactMarkdown.js",
     "./markdown/test/MockedRemarkGFM.js": "./lib/markdown/__test-utils__/MockedRemarkGFM.js",
     "./lib/index.css": "./lib/index.css"

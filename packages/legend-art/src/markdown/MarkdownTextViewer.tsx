@@ -42,7 +42,7 @@ export const MarkdownTextViewer: React.FC<{
           // the class name must include `mermaid` and it will get picked up by the mermaid renderer
           code: (_props) => {
             const { children, className, node, ...rest } = _props;
-            const match = /language-(?<language>\w+)/.exec(className || '');
+            const match = /language-(?<language>\w+)/.exec(className ?? '');
             return match?.groups?.language ? (
               <code {...rest} className={clsx(match.groups.language)}>
                 {children}
