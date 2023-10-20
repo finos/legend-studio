@@ -60,7 +60,7 @@
     "setup": "yarn install && node ./scripts/workflow/checkNodeVersion.js && yarn git:install-hooks && yarn workspaces foreach --all --parallel --verbose run setup && yarn build",
     "start": "yarn dev",
     "test": "jest",
-    "test:ci": "node --max_old_space_size=6000 ./node_modules/jest/bin/jest.js --coverage --maxWorkers=100%",
+    "test:ci": "node --max_old_space_size=5120 ./node_modules/jest/bin/jest.js --coverage --maxWorkers=100%",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "test:report-failure": "jest 2>&1 | grep 'FAIL'",
     "test:watch": "jest --watch"
