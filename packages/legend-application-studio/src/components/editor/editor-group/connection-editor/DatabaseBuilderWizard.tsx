@@ -143,7 +143,8 @@ export const DatabaseBuilderModalContent = observer(
 
     const isExecutingAction =
       schemaExplorerState.isGeneratingDatabase ||
-      schemaExplorerState.isUpdatingDatabase;
+      schemaExplorerState.isUpdatingDatabase ||
+      schemaExplorerState.previewDataState.isInProgress;
 
     const onTargetPathChange: React.ChangeEventHandler<HTMLInputElement> = (
       event,
