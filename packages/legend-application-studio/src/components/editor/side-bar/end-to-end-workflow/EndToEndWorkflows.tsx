@@ -20,14 +20,13 @@ import {
   PURE_UnknownElementTypeIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import {
-  type GlobalEndToEndWorkflowState,
-  SupportedEndToEndWorkflow,
-} from '../../../../stores/editor/sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
+import { type GlobalEndToEndWorkflowState } from '../../../../stores/editor/sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
+import { END_TO_END_WORKFLOWS } from '../../../../stores/editor/editor-state/end-to-end-workflow-state/EndToEndWorkflowEditorState.js';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 export const getWorkflowIcon = (currentFlow: string): React.ReactNode => {
-  if (currentFlow === SupportedEndToEndWorkflow.CREATE_QUERY_FROM_CONNECTION) {
+  if (currentFlow === END_TO_END_WORKFLOWS.CREATE_QUERY_FROM_CONNECTION) {
     return (
       <div
         title="Create Query From Connection"
@@ -60,7 +59,7 @@ export const EndToEndWorkflow = observer(
 
     const endToEndWorkflow = (): React.ReactNode => (
       <>
-        {Object.values(SupportedEndToEndWorkflow).map((flow) => (
+        {Object.values(END_TO_END_WORKFLOWS).map((flow) => (
           <div className="side-bar__panel__item" key={flow}>
             <div
               className="end-to-end-workflow__container"
@@ -71,7 +70,9 @@ export const EndToEndWorkflow = observer(
               <div className="end-to-end-workflow__container__icon">
                 {getWorkflowIcon(flow)}
               </div>
-              <div className="end-to-end-workflow__container__name">{flow}</div>
+              <div className="end-to-end-workflow__container__name">
+                {prettyCONSTName(flow)}
+              </div>
             </div>
           </div>
         ))}

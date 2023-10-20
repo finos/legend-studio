@@ -15,11 +15,9 @@
  */
 
 import { EditorState } from '../../editor-state/EditorState.js';
-import { SupportedEndToEndWorkflow } from '../../sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
+
+export enum END_TO_END_WORKFLOWS {
+  CREATE_QUERY_FROM_CONNECTION = 'CREATE_QUERY_FROM_CONNECTION',
+}
 
 export abstract class EndToEndWorkflowEditorState extends EditorState {}
-export class QueryConnectionEndToEndWorkflowEditorState extends EndToEndWorkflowEditorState {
-  override get label(): string {
-    return SupportedEndToEndWorkflow.CREATE_QUERY_FROM_CONNECTION;
-  }
-}

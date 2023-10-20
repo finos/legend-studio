@@ -15,18 +15,16 @@
  */
 
 import type { GeneratorFn } from '@finos/legend-shared';
-import { BlankPanelContent } from '../panel/BlankPanelContent.js';
 
-export class BaseStepperState {
-  stepLabel: string;
+export abstract class BaseStepperState {
+  abstract label: string;
 
-  constructor(stepLabel: string) {
-    this.stepLabel = stepLabel;
+  get nextLabel(): string {
+    return 'Next';
   }
 
-  *handleNext(): GeneratorFn<void> {}
-
-  renderStepContent(): React.ReactNode {
-    return <BlankPanelContent> </BlankPanelContent>;
+  get backLabel(): string {
+    return 'Back';
   }
+  abstract handleNext(): GeneratorFn<void>;
 }

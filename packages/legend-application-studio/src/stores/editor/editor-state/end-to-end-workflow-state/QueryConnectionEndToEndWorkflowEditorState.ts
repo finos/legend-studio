@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import type { EditorStore } from '../../EditorStore.js';
-import { QueryConnectionEndToEndWorkflowEditorState } from '../../editor-state/end-to-end-workflow-state/EndToEndWorkflowEditorState.js';
-import { RelationalDatabaseConnectionValueState } from '../../editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import { action, flow, flowResult, observable, makeObservable } from 'mobx';
+import {
+  guaranteeNonNullable,
+  type GeneratorFn,
+  LogEvent,
+  assertErrorThrown,
+  ActionState,
+  getNonNullableEntry,
+} from '@finos/legend-shared';
+import {
+  END_TO_END_WORKFLOWS,
+  EndToEndWorkflowEditorState,
+} from './EndToEndWorkflowEditorState.js';
 import {
   RelationalDatabaseConnection,
   LocalH2DatasourceSpecification,
@@ -41,42 +50,32 @@ import {
   CompilationError,
   observe_RelationalDatabaseConnection,
 } from '@finos/legend-graph';
-import { DEFAULT_H2_SQL } from '../../NewElementState.js';
-import {
-  guaranteeNonNullable,
-  type GeneratorFn,
-  LogEvent,
-  assertErrorThrown,
-  ActionState,
-  getNonNullableEntry,
-} from '@finos/legend-shared';
-import { DatabaseBuilderWizardState } from '../../editor-state/element-editor-state/connection/DatabaseBuilderWizardState.js';
+import type { EditorStore } from '../../EditorStore.js';
+import { BaseStepperState } from '@finos/legend-art';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
-import { DatabaseModelBuilderState } from '../../editor-state/element-editor-state/connection/DatabaseModelBuilderState.js';
 import { EntityChangeType, type EntityChange } from '@finos/legend-server-sdlc';
 import type { Entity } from '@finos/legend-storage';
+import {
+  ClassQueryBuilderState,
+  QueryBuilderConfig,
+} from '@finos/legend-query-builder';
 import {
   packageableConnection_setConnectionValue,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
   runtime_setMappings,
 } from '../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
-import {
-  ClassQueryBuilderState,
-  QueryBuilderConfig,
-} from '@finos/legend-query-builder';
-import { BaseStepperState } from '@finos/legend-art';
-import {
-  QUERY_CONNECTION_WORKFLOW_STEPS,
-  QueryConnectionConfirmationAndGrammarEditor,
-  QueryConnectionDatabaseBuilderEditor,
-  QueryConnectionDatabaseGrammarEditor,
-  QueryConnectionModelsEditor,
-  QueryConnectionRelationalConnectionEditor,
-} from '../../../../components/editor/editor-group/end-to-end-flow-editor/QueryConnectionWorkflowEditor.js';
+import { DatabaseModelBuilderState } from '../element-editor-state/connection/DatabaseModelBuilderState.js';
+import { DatabaseBuilderWizardState } from '../element-editor-state/connection/DatabaseBuilderWizardState.js';
+import { RelationalDatabaseConnectionValueState } from '../element-editor-state/connection/ConnectionEditorState.js';
+import { DEFAULT_H2_SQL } from '../../NewElementState.js';
 
-export enum SupportedEndToEndWorkflow {
-  CREATE_QUERY_FROM_CONNECTION = 'Create Query From Connection',
+export enum QUERY_CONNECTION_WORKFLOW_STEPS {
+  CREATE_CONNECTION = 'Create Connection',
+  CREATE_DATABASE = 'Create Database',
+  EDIT_DATABASE = 'Edit Database',
+  CREATE_CLASS_MAPPING_RUNTIME = 'Create Class/Mapping/Runtime',
+  CONFIRMATION = 'Confirmation',
 }
 
 const DEFAULT_CONNECTION_PATH = 'store::MyConnection';
@@ -87,29 +86,32 @@ const JOIN_CODE_SYNTAX =
   '// Join join_name(Table1.column1 = Table2.column2);' +
   '\n';
 
+export abstract class ConnectionToQueryStepperState extends BaseStepperState {
+  abstract override label: QUERY_CONNECTION_WORKFLOW_STEPS;
+}
 // step5 - confirm/update final grammar and query
-export class QueryConnectionConfirmationAndGrammarEditorStepperState extends BaseStepperState {
-  queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+export class QueryConnectionConfirmationAndGrammarEditorStepperState extends ConnectionToQueryStepperState {
+  workflowEditorState: QueryConnectionEndToEndWorkflowEditorState;
   isCompilingCode = ActionState.create();
   editorStore: EditorStore;
 
   constructor(
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState,
-    stepLabel: string,
+    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowEditorState,
   ) {
-    super(stepLabel);
+    super();
     makeObservable(this, {
-      queryConnectionEndToEndWorkflowState: false,
-      stepLabel: observable,
+      workflowEditorState: false,
       isCompilingCode: observable,
       handleNext: flow,
       query: flow,
       compile: flow,
     });
-    this.queryConnectionEndToEndWorkflowState =
-      queryConnectionEndToEndWorkflowState;
-    this.editorStore =
-      this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore;
+    this.workflowEditorState = queryConnectionEndToEndWorkflowState;
+    this.editorStore = this.workflowEditorState.editorStore;
+  }
+
+  get label(): QUERY_CONNECTION_WORKFLOW_STEPS {
+    return QUERY_CONNECTION_WORKFLOW_STEPS.CONFIRMATION;
   }
 
   *compile(): GeneratorFn<void> {
@@ -117,8 +119,8 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Bas
       this.isCompilingCode.inProgress();
       const compilationResult = (yield flowResult(
         yield this.editorStore.graphManagerState.graphManager.compileText(
-          this.queryConnectionEndToEndWorkflowState.finalGrammarCode,
-          this.queryConnectionEndToEndWorkflowState.graph,
+          this.workflowEditorState.finalGrammarCode,
+          this.workflowEditorState.workflowGraph,
         ),
       )) as TextCompilationResult;
       this.editorStore.applicationStore.notificationService.notifySuccess(
@@ -133,11 +135,11 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Bas
           ActionState.create(),
         ),
       );
-      this.queryConnectionEndToEndWorkflowState.graph = newGraph;
-      this.queryConnectionEndToEndWorkflowState.setCompileError(undefined);
+      this.workflowEditorState.workflowGraph = newGraph;
+      this.workflowEditorState.setCompileError(undefined);
     } catch (error) {
       if (error instanceof ParserError || error instanceof CompilationError) {
-        this.queryConnectionEndToEndWorkflowState.setCompileError(error);
+        this.workflowEditorState.setCompileError(error);
       }
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -154,7 +156,7 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Bas
   *query(): GeneratorFn<void> {
     const entities =
       (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
-        this.queryConnectionEndToEndWorkflowState.finalGrammarCode,
+        this.workflowEditorState.finalGrammarCode,
       )) as Entity[];
     const newEntities: EntityChange[] = [];
     for (const entity of entities) {
@@ -171,19 +173,16 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Bas
       ),
     );
     this.editorStore.tabManagerState.openTab(
-      this.queryConnectionEndToEndWorkflowState
-        .queryConnectionEndToEndWorkflowEditorState,
+      this.editorStore.globalEndToEndWorkflowState
+        .queryToConnectionWorkflowEditorState,
     );
     this.editorStore.tabManagerState.closeTab(
-      this.queryConnectionEndToEndWorkflowState
-        .queryConnectionEndToEndWorkflowEditorState,
+      this.editorStore.globalEndToEndWorkflowState
+        .queryToConnectionWorkflowEditorState,
     );
     const theClass = getMappingCompatibleClasses(
-      getNonNullableEntry(
-        this.queryConnectionEndToEndWorkflowState.graph.mappings,
-        0,
-      ),
-      this.queryConnectionEndToEndWorkflowState.graph.classes,
+      getNonNullableEntry(this.workflowEditorState.workflowGraph.mappings, 0),
+      this.workflowEditorState.workflowGraph.classes,
     )[0];
     if (theClass) {
       const config = new QueryBuilderConfig();
@@ -194,13 +193,13 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Bas
       );
       queryBuilderState.class = theClass;
       queryBuilderState.executionContextState.mapping = getNonNullableEntry(
-        this.queryConnectionEndToEndWorkflowState.graph.mappings,
+        this.workflowEditorState.workflowGraph.mappings,
         0,
       );
       queryBuilderState.executionContextState.runtimeValue = new RuntimePointer(
         PackageableElementExplicitReference.create(
           getNonNullableEntry(
-            this.queryConnectionEndToEndWorkflowState.graph.runtimes,
+            this.workflowEditorState.workflowGraph.runtimes,
             0,
           ),
         ),
@@ -218,59 +217,45 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Bas
 
   override *handleNext(): GeneratorFn<void> {
     yield flowResult(this.query()).then(() => {
-      this.queryConnectionEndToEndWorkflowState.reset();
+      this.workflowEditorState.reset();
     });
-  }
-
-  override renderStepContent(): React.ReactNode {
-    return (
-      <QueryConnectionConfirmationAndGrammarEditor
-        queryConnectionEndToEndWorkflowState={
-          this.queryConnectionEndToEndWorkflowState
-        }
-        queryConnectionConfirmationAndGrammarEditorStepperState={this}
-      />
-    );
   }
 }
 
 // step 4 - build class/mapping/runtime from database
-export class DatabaseModelBuilderStepperState extends BaseStepperState {
-  queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+export class DatabaseModelBuilderStepperState extends ConnectionToQueryStepperState {
+  workflowEditorState: QueryConnectionEndToEndWorkflowEditorState;
   databaseModelBuilderState: DatabaseModelBuilderState;
   editorStore: EditorStore;
 
   constructor(
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState,
-    stepLabel: string,
+    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowEditorState,
     databaseModelBuilderState: DatabaseModelBuilderState,
   ) {
-    super(stepLabel);
+    super();
     makeObservable(this, {
-      queryConnectionEndToEndWorkflowState: false,
-      stepLabel: observable,
+      workflowEditorState: false,
       updateGraphWithModels: flow,
       handleNext: flow,
     });
-    this.queryConnectionEndToEndWorkflowState =
-      queryConnectionEndToEndWorkflowState;
+    this.workflowEditorState = queryConnectionEndToEndWorkflowState;
     this.databaseModelBuilderState = databaseModelBuilderState;
-    this.editorStore =
-      this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore;
+    this.editorStore = this.workflowEditorState.editorStore;
+  }
+
+  get label(): QUERY_CONNECTION_WORKFLOW_STEPS {
+    return QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CLASS_MAPPING_RUNTIME;
   }
 
   *updateGraphWithModels(entities: Entity[]): GeneratorFn<void> {
     try {
       const newGraph = this.editorStore.graphManagerState.createNewGraph();
       newGraph.addElement(
-        guaranteeNonNullable(
-          this.queryConnectionEndToEndWorkflowState.packageableConnection,
-        ),
-        this.queryConnectionEndToEndWorkflowState.packageableConnection?.package
-          ?.path,
+        guaranteeNonNullable(this.workflowEditorState.packageableConnection),
+        this.workflowEditorState.packageableConnection?.package?.path,
       );
       const databaseBuilderStepperState =
-        this.queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState.get(
+        this.workflowEditorState.activeStepToBaseStepperState.get(
           QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_DATABASE,
         ) as DatabaseBuilderStepperState;
 
@@ -288,10 +273,9 @@ export class DatabaseModelBuilderStepperState extends BaseStepperState {
         ),
       );
       // create a runtime
-      if (this.queryConnectionEndToEndWorkflowState.packageableRuntime) {
+      if (this.workflowEditorState.packageableRuntime) {
         runtime_setMappings(
-          this.queryConnectionEndToEndWorkflowState.packageableRuntime
-            .runtimeValue,
+          this.workflowEditorState.packageableRuntime.runtimeValue,
           [
             PackageableElementExplicitReference.create(
               getNonNullableEntry(newGraph.mappings, 0),
@@ -301,7 +285,7 @@ export class DatabaseModelBuilderStepperState extends BaseStepperState {
       } else {
         const runtime = new PackageableRuntime(
           extractElementNameFromPath(
-            this.queryConnectionEndToEndWorkflowState.targetRuntimePath,
+            this.workflowEditorState.targetRuntimePath,
           ),
         );
         runtime.runtimeValue = new EngineRuntime();
@@ -316,26 +300,24 @@ export class DatabaseModelBuilderStepperState extends BaseStepperState {
           new IdentifiedConnection(
             generateIdentifiedConnectionId(runtime.runtimeValue),
             guaranteeNonNullable(
-              this.queryConnectionEndToEndWorkflowState.packageableConnection,
+              this.workflowEditorState.packageableConnection,
             ).connectionValue,
           ),
-          this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState
-            .editorStore.changeDetectionState.observerContext,
+          this.workflowEditorState.editorStore.changeDetectionState
+            .observerContext,
         );
-        this.queryConnectionEndToEndWorkflowState.packageableRuntime = runtime;
+        this.workflowEditorState.packageableRuntime = runtime;
       }
       newGraph.addElement(
-        this.queryConnectionEndToEndWorkflowState.packageableRuntime,
-        extractPackagePathFromPath(
-          this.queryConnectionEndToEndWorkflowState.targetRuntimePath,
-        ),
+        this.workflowEditorState.packageableRuntime,
+        extractPackagePathFromPath(this.workflowEditorState.targetRuntimePath),
       );
-      this.queryConnectionEndToEndWorkflowState.graph = newGraph;
-      this.queryConnectionEndToEndWorkflowState.setRuntimeGrammarCode(
+      this.workflowEditorState.workflowGraph = newGraph;
+      this.workflowEditorState.setRuntimeGrammarCode(
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
           [
             this.editorStore.graphManagerState.graphManager.elementToEntity(
-              this.queryConnectionEndToEndWorkflowState.packageableRuntime,
+              this.workflowEditorState.packageableRuntime,
             ),
           ],
           { pretty: true },
@@ -346,14 +328,13 @@ export class DatabaseModelBuilderStepperState extends BaseStepperState {
           [
             this.editorStore.graphManagerState.graphManager.elementToEntity(
               guaranteeNonNullable(
-                this.queryConnectionEndToEndWorkflowState.packageableConnection,
+                this.workflowEditorState.packageableConnection,
               ),
             ),
           ],
           { pretty: true },
         )) as string;
-      this.queryConnectionEndToEndWorkflowState.connectionGrammarCode =
-        connectionGrammarCode;
+      this.workflowEditorState.connectionGrammarCode = connectionGrammarCode;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -365,75 +346,61 @@ export class DatabaseModelBuilderStepperState extends BaseStepperState {
   }
 
   override *handleNext(): GeneratorFn<void> {
-    this.queryConnectionEndToEndWorkflowState.setFinalGrammarCode(
+    this.workflowEditorState.setFinalGrammarCode(
       this.databaseModelBuilderState.generatedGrammarCode
-        .concat(this.queryConnectionEndToEndWorkflowState.runtimeGrammarCode)
-        .concat(this.queryConnectionEndToEndWorkflowState.databaseGrammarCode)
-        .concat(
-          this.queryConnectionEndToEndWorkflowState.connectionGrammarCode,
-        ),
+        .concat(this.workflowEditorState.runtimeGrammarCode)
+        .concat(this.workflowEditorState.databaseGrammarCode)
+        .concat(this.workflowEditorState.connectionGrammarCode),
     );
-    this.queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState.set(
+    this.workflowEditorState.activeStepToBaseStepperState.set(
       QUERY_CONNECTION_WORKFLOW_STEPS.CONFIRMATION,
       new QueryConnectionConfirmationAndGrammarEditorStepperState(
-        this.queryConnectionEndToEndWorkflowState,
-        QUERY_CONNECTION_WORKFLOW_STEPS.CONFIRMATION,
+        this.workflowEditorState,
       ),
-    );
-  }
-
-  override renderStepContent(): React.ReactNode {
-    return (
-      <QueryConnectionModelsEditor
-        databaseModelBuilderStepperState={this}
-        queryConnectionEndToEndWorkflowState={
-          this.queryConnectionEndToEndWorkflowState
-        }
-      />
     );
   }
 }
 
 // step 3 - database grammar editor
-export class DatabaseGrammarEditorStepperState extends BaseStepperState {
-  queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+export class DatabaseGrammarEditorStepperState extends ConnectionToQueryStepperState {
+  workflowEditorState: QueryConnectionEndToEndWorkflowEditorState;
   isCompilingGrammarCode = ActionState.create();
   editorStore: EditorStore;
 
   constructor(
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState,
-    stepLabel: string,
+    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowEditorState,
   ) {
-    super(stepLabel);
+    super();
     makeObservable(this, {
-      queryConnectionEndToEndWorkflowState: false,
-      stepLabel: observable,
+      workflowEditorState: false,
       isCompilingGrammarCode: observable,
       buildDatabaseModelBuilderState: action,
       compileDatabaseGrammarCode: flow,
       handleNext: flow,
     });
-    this.queryConnectionEndToEndWorkflowState =
-      queryConnectionEndToEndWorkflowState;
-    this.editorStore =
-      this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore;
+    this.workflowEditorState = queryConnectionEndToEndWorkflowState;
+    this.editorStore = this.workflowEditorState.editorStore;
+  }
+
+  get label(): QUERY_CONNECTION_WORKFLOW_STEPS {
+    return QUERY_CONNECTION_WORKFLOW_STEPS.EDIT_DATABASE;
   }
 
   *compileDatabaseGrammarCode(): GeneratorFn<void> {
     try {
       this.isCompilingGrammarCode.inProgress();
       const databaseBuilderStepperState =
-        this.queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState.get(
+        this.workflowEditorState.activeStepToBaseStepperState.get(
           QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_DATABASE,
         ) as DatabaseBuilderStepperState;
       const connectionValueStepperState =
-        this.queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState.get(
+        this.workflowEditorState.activeStepToBaseStepperState.get(
           QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CONNECTION,
         ) as ConnectionValueStepperState;
       const compilationResult = (yield flowResult(
         yield this.editorStore.graphManagerState.graphManager.compileText(
-          this.queryConnectionEndToEndWorkflowState.databaseGrammarCode,
-          this.queryConnectionEndToEndWorkflowState.graph,
+          this.workflowEditorState.databaseGrammarCode,
+          this.workflowEditorState.workflowGraph,
         ),
       )) as TextCompilationResult;
       this.editorStore.applicationStore.notificationService.notifySuccess(
@@ -449,17 +416,17 @@ export class DatabaseGrammarEditorStepperState extends BaseStepperState {
         ),
       );
       if (newGraph.databases.length > 1) {
-        this.queryConnectionEndToEndWorkflowState.isValid = false;
+        this.workflowEditorState.isValid = false;
         this.editorStore.applicationStore.notificationService.notifyError(
           'Please make sure there is only one databse',
         );
       } else {
-        this.queryConnectionEndToEndWorkflowState.isValid = true;
+        this.workflowEditorState.isValid = true;
       }
       // databaseBuilderWizardState.schemaExplorerState.database needs to be updated
       databaseBuilderStepperState.databaseBuilderWizardState.schemaExplorerState.database =
         getNonNullableEntry(newGraph.databases, 0);
-      this.queryConnectionEndToEndWorkflowState.graph = newGraph;
+      this.workflowEditorState.workflowGraph = newGraph;
       // start building packageableConnection based on database and adding it to current graph
       const packageableConnection = new PackageableConnection(
         extractElementNameFromPath(
@@ -472,7 +439,7 @@ export class DatabaseGrammarEditorStepperState extends BaseStepperState {
             .schemaExplorerState.database,
         );
       packageableConnection.package = getOrCreatePackage(
-        this.queryConnectionEndToEndWorkflowState.graph.root,
+        this.workflowEditorState.workflowGraph.root,
         connectionValueStepperState.targetConnectionPath,
         true,
         new Map(),
@@ -480,24 +447,23 @@ export class DatabaseGrammarEditorStepperState extends BaseStepperState {
       packageableConnection_setConnectionValue(
         packageableConnection,
         connectionValueStepperState.connectionValueState.connection,
-        this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState
-          .editorStore.changeDetectionState.observerContext,
+        this.workflowEditorState.editorStore.changeDetectionState
+          .observerContext,
       );
-      this.queryConnectionEndToEndWorkflowState.packageableConnection =
-        packageableConnection;
-      this.queryConnectionEndToEndWorkflowState.graph.addElement(
+      this.workflowEditorState.packageableConnection = packageableConnection;
+      this.workflowEditorState.workflowGraph.addElement(
         packageableConnection,
         extractPackagePathFromPath(
           connectionValueStepperState.targetConnectionPath,
         ),
       );
-      this.queryConnectionEndToEndWorkflowState.setCompileError(undefined);
+      this.workflowEditorState.setCompileError(undefined);
       this.isCompilingGrammarCode.pass();
     } catch (error) {
       if (error instanceof ParserError || error instanceof CompilationError) {
-        this.queryConnectionEndToEndWorkflowState.setCompileError(error);
+        this.workflowEditorState.setCompileError(error);
       }
-      this.queryConnectionEndToEndWorkflowState.isValid = false;
+      this.workflowEditorState.isValid = false;
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_MODEL_BUILDER_FAILURE),
@@ -512,20 +478,19 @@ export class DatabaseGrammarEditorStepperState extends BaseStepperState {
 
   buildDatabaseModelBuilderState(): void {
     const databaseBuilderStepperState =
-      this.queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState.get(
+      this.workflowEditorState.activeStepToBaseStepperState.get(
         QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_DATABASE,
       ) as DatabaseBuilderStepperState;
     const databaseModelBuilderState = new DatabaseModelBuilderState(
       this.editorStore,
       databaseBuilderStepperState.databaseBuilderWizardState.schemaExplorerState.database,
       false,
-      this.queryConnectionEndToEndWorkflowState.graph,
+      this.workflowEditorState.workflowGraph,
     );
-    this.queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState.set(
+    this.workflowEditorState.activeStepToBaseStepperState.set(
       QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CLASS_MAPPING_RUNTIME,
       new DatabaseModelBuilderStepperState(
-        this.queryConnectionEndToEndWorkflowState,
-        QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CLASS_MAPPING_RUNTIME,
+        this.workflowEditorState,
         databaseModelBuilderState,
       ),
     );
@@ -536,46 +501,35 @@ export class DatabaseGrammarEditorStepperState extends BaseStepperState {
       this.buildDatabaseModelBuilderState();
     });
   }
-
-  override renderStepContent(): React.ReactNode {
-    return (
-      <QueryConnectionDatabaseGrammarEditor
-        queryConnectionEndToEndWorkflowState={
-          this.queryConnectionEndToEndWorkflowState
-        }
-        databaseGrammarEditorStepperState={this}
-      />
-    );
-  }
 }
 
 // step 2 - build database
-export class DatabaseBuilderStepperState extends BaseStepperState {
-  queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+export class DatabaseBuilderStepperState extends ConnectionToQueryStepperState {
+  workflowEditorState: QueryConnectionEndToEndWorkflowEditorState;
   databaseBuilderWizardState: DatabaseBuilderWizardState;
   isGeneratingDatabaseGrammarCode = ActionState.create();
   editorStore: EditorStore;
 
   constructor(
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState,
-    stepLabel: string,
+    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowEditorState,
     databaseBuilderWizardState: DatabaseBuilderWizardState,
   ) {
-    super(stepLabel);
+    super();
     makeObservable(this, {
-      queryConnectionEndToEndWorkflowState: false,
-      stepLabel: observable,
+      workflowEditorState: false,
       databaseBuilderWizardState: observable,
       isGeneratingDatabaseGrammarCode: observable,
       handleNext: flow,
       generateDatabaseGrammarCode: flow,
       buildDatabase: flow,
     });
-    this.queryConnectionEndToEndWorkflowState =
-      queryConnectionEndToEndWorkflowState;
+    this.workflowEditorState = queryConnectionEndToEndWorkflowState;
     this.databaseBuilderWizardState = databaseBuilderWizardState;
-    this.editorStore =
-      this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore;
+    this.editorStore = this.workflowEditorState.editorStore;
+  }
+
+  get label(): QUERY_CONNECTION_WORKFLOW_STEPS {
+    return QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_DATABASE;
   }
 
   *buildDatabase(): GeneratorFn<void> {
@@ -601,7 +555,7 @@ export class DatabaseBuilderStepperState extends BaseStepperState {
     try {
       this.isGeneratingDatabaseGrammarCode.inProgress();
       // can't use this.databaseBuilderState.databaseGrammarCode as databaseGrammarCode might not be up to date
-      this.queryConnectionEndToEndWorkflowState.setDatabaseGrammarCode(
+      this.workflowEditorState.setDatabaseGrammarCode(
         JOIN_CODE_SYNTAX +
           ((yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
             [
@@ -627,51 +581,35 @@ export class DatabaseBuilderStepperState extends BaseStepperState {
   override *handleNext(): GeneratorFn<void> {
     yield flowResult(this.buildDatabase());
     yield flowResult(this.generateDatabaseGrammarCode());
-    this.queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState.set(
+    this.workflowEditorState.activeStepToBaseStepperState.set(
       QUERY_CONNECTION_WORKFLOW_STEPS.EDIT_DATABASE,
-      new DatabaseGrammarEditorStepperState(
-        this.queryConnectionEndToEndWorkflowState,
-        QUERY_CONNECTION_WORKFLOW_STEPS.EDIT_DATABASE,
-      ),
-    );
-  }
-
-  override renderStepContent(): React.ReactNode {
-    return (
-      <QueryConnectionDatabaseBuilderEditor
-        databaseBuilderState={this.databaseBuilderWizardState}
-      />
+      new DatabaseGrammarEditorStepperState(this.workflowEditorState),
     );
   }
 }
 
 // step 1 - build connection
-export class ConnectionValueStepperState extends BaseStepperState {
-  queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+export class ConnectionValueStepperState extends ConnectionToQueryStepperState {
+  workflowEditorState: QueryConnectionEndToEndWorkflowEditorState;
   targetConnectionPath = DEFAULT_CONNECTION_PATH;
   connectionValueState: RelationalDatabaseConnectionValueState;
 
-  constructor(
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState,
-    stepLabel: string,
-  ) {
-    super(stepLabel);
+  constructor(workflowEditorState: QueryConnectionEndToEndWorkflowEditorState) {
+    super();
     makeObservable(this, {
-      queryConnectionEndToEndWorkflowState: false,
-      stepLabel: observable,
+      workflowEditorState: false,
       targetConnectionPath: observable,
       connectionValueState: observable,
       setTargetConnectionPath: action,
       handleNext: flow,
     });
-    this.queryConnectionEndToEndWorkflowState =
-      queryConnectionEndToEndWorkflowState;
+    this.workflowEditorState = workflowEditorState;
     this.connectionValueState = new RelationalDatabaseConnectionValueState(
-      this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore,
+      this.workflowEditorState.editorStore,
       observe_RelationalDatabaseConnection(
         this.createConnection,
-        this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState
-          .editorStore.changeDetectionState.observerContext,
+        this.workflowEditorState.editorStore.changeDetectionState
+          .observerContext,
       ),
     );
   }
@@ -689,47 +627,37 @@ export class ConnectionValueStepperState extends BaseStepperState {
     return connection;
   }
 
+  get label(): QUERY_CONNECTION_WORKFLOW_STEPS {
+    return QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CONNECTION;
+  }
+
   setTargetConnectionPath(val: string): void {
     this.targetConnectionPath = val;
   }
 
   override *handleNext(): GeneratorFn<void> {
     const databaseBuilderWizardState = new DatabaseBuilderWizardState(
-      this.queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore,
+      this.workflowEditorState.editorStore,
       this.connectionValueState.connection,
       false,
     );
     databaseBuilderWizardState.schemaExplorerState.setMakeTargetDatabasePathEditable(
       true,
     );
-    this.queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState.set(
+    this.workflowEditorState.activeStepToBaseStepperState.set(
       QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_DATABASE,
       new DatabaseBuilderStepperState(
-        this.queryConnectionEndToEndWorkflowState,
-        QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_DATABASE,
+        this.workflowEditorState,
         databaseBuilderWizardState,
       ),
     );
   }
-
-  override renderStepContent(): React.ReactNode {
-    return (
-      <QueryConnectionRelationalConnectionEditor
-        queryConnectionEndToEndWorkflowState={
-          this.queryConnectionEndToEndWorkflowState
-        }
-        connectionValueStepperState={this}
-      />
-    );
-  }
 }
 
-export class QueryConnectionEndToEndWorkflowState {
+export class QueryConnectionEndToEndWorkflowEditorState extends EndToEndWorkflowEditorState {
   activeStep: number;
   activeStepToBaseStepperState = new Map<string, BaseStepperState>();
   activeStepToStepLabel = new Map<number, string>();
-  globalEndToEndWorkflowState: GlobalEndToEndWorkflowState;
-  queryConnectionEndToEndWorkflowEditorState: QueryConnectionEndToEndWorkflowEditorState;
   targetRuntimePath = DEFAULT_RUNTIME_PATH;
   packageableConnection: PackageableConnection | undefined;
   packageableRuntime: PackageableRuntime | undefined;
@@ -737,13 +665,13 @@ export class QueryConnectionEndToEndWorkflowState {
   runtimeGrammarCode = '';
   connectionGrammarCode = '';
   finalGrammarCode = '';
-  graph: PureModel;
+  workflowGraph: PureModel;
   isValid: boolean;
   compileError: ParserError | CompilationError | undefined;
 
-  constructor(globalEndToEndWorkflowState: GlobalEndToEndWorkflowState) {
+  constructor(editorStore: EditorStore) {
+    super(editorStore);
     makeObservable(this, {
-      globalEndToEndWorkflowState: false,
       activeStep: observable,
       activeStepToBaseStepperState: observable,
       compileError: observable,
@@ -753,7 +681,6 @@ export class QueryConnectionEndToEndWorkflowState {
       finalGrammarCode: observable,
       targetRuntimePath: observable,
       isValid: observable,
-      queryConnectionEndToEndWorkflowEditorState: observable,
       packageableConnection: observable,
       setActiveStep: action,
       setDatabaseGrammarCode: action,
@@ -766,21 +693,16 @@ export class QueryConnectionEndToEndWorkflowState {
     });
     this.activeStep = 0;
     this.isValid = true;
-    this.globalEndToEndWorkflowState = globalEndToEndWorkflowState;
     this.activeStepToBaseStepperState.set(
       QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CONNECTION,
-      new ConnectionValueStepperState(
-        this,
-        QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CONNECTION,
-      ),
+      new ConnectionValueStepperState(this),
     );
-    this.queryConnectionEndToEndWorkflowEditorState =
-      new QueryConnectionEndToEndWorkflowEditorState(
-        this.globalEndToEndWorkflowState.editorStore,
-      );
-    this.graph =
-      this.globalEndToEndWorkflowState.editorStore.graphManagerState.createNewGraph();
+    this.workflowGraph = this.editorStore.graphManagerState.createNewGraph();
     this.initactiveStepToStepLabel();
+  }
+
+  override get label(): string {
+    return END_TO_END_WORKFLOWS.CREATE_QUERY_FROM_CONNECTION;
   }
 
   initactiveStepToStepLabel(): void {
@@ -816,7 +738,7 @@ export class QueryConnectionEndToEndWorkflowState {
   *updateRuntime(newPath: string): GeneratorFn<void> {
     if (this.packageableRuntime) {
       this.packageableRuntime.package = getOrCreatePackage(
-        this.graph.root,
+        this.workflowGraph.root,
         extractPackagePathFromPath(newPath) ?? newPath,
         true,
         new Map(),
@@ -828,9 +750,9 @@ export class QueryConnectionEndToEndWorkflowState {
       }
       this.packageableRuntime.name = extractElementNameFromPath(newPath);
       this.setRuntimeGrammarCode(
-        (yield this.globalEndToEndWorkflowState.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+        (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
           [
-            this.globalEndToEndWorkflowState.editorStore.graphManagerState.graphManager.elementToEntity(
+            this.editorStore.graphManagerState.graphManager.elementToEntity(
               this.packageableRuntime,
             ),
           ],
@@ -842,43 +764,12 @@ export class QueryConnectionEndToEndWorkflowState {
 
   reset(): void {
     this.activeStep = -1;
-    this.graph =
-      this.globalEndToEndWorkflowState.editorStore.graphManagerState.createNewGraph();
+    this.workflowGraph = this.editorStore.graphManagerState.createNewGraph();
     this.packageableConnection = undefined;
     this.packageableRuntime = undefined;
     this.activeStepToBaseStepperState.set(
       QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CONNECTION,
-      new ConnectionValueStepperState(
-        this,
-        QUERY_CONNECTION_WORKFLOW_STEPS.CREATE_CONNECTION,
-      ),
+      new ConnectionValueStepperState(this),
     );
-  }
-}
-
-export class GlobalEndToEndWorkflowState {
-  editorStore: EditorStore;
-  queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
-  queryConnectionEndToEndWorkflowEditorState: QueryConnectionEndToEndWorkflowEditorState;
-
-  constructor(editorStore: EditorStore) {
-    makeObservable(this, {
-      editorStore: false,
-      queryConnectionEndToEndWorkflowState: observable,
-      queryConnectionEndToEndWorkflowEditorState: observable,
-    });
-    this.editorStore = editorStore;
-    this.queryConnectionEndToEndWorkflowState =
-      new QueryConnectionEndToEndWorkflowState(this);
-    this.queryConnectionEndToEndWorkflowEditorState =
-      new QueryConnectionEndToEndWorkflowEditorState(this.editorStore);
-  }
-
-  visitWorkflow(workflow: string): void {
-    if (workflow === SupportedEndToEndWorkflow.CREATE_QUERY_FROM_CONNECTION) {
-      this.editorStore.tabManagerState.openTab(
-        this.queryConnectionEndToEndWorkflowEditorState,
-      );
-    }
   }
 }

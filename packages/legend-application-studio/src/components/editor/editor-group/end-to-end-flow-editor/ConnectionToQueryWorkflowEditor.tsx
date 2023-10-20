@@ -30,13 +30,6 @@ import {
   BlankPanelContent,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import type {
-  ConnectionValueStepperState,
-  DatabaseGrammarEditorStepperState,
-  DatabaseModelBuilderStepperState,
-  QueryConnectionConfirmationAndGrammarEditorStepperState,
-  QueryConnectionEndToEndWorkflowState,
-} from '../../../../stores/editor/sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
 import { useEffect, useMemo } from 'react';
 import { RelationalConnectionGeneralEditor } from '../connection-editor/RelationalDatabaseConnectionEditor.js';
 import { flowResult } from 'mobx';
@@ -52,18 +45,19 @@ import {
   DatabaseModelPackageInput,
   DatabaseModelPreviewEditor,
 } from '../connection-editor/DatabaseModelBuilder.js';
-
-export enum QUERY_CONNECTION_WORKFLOW_STEPS {
-  CREATE_CONNECTION = 'Create Connection',
-  CREATE_DATABASE = 'Create Database',
-  EDIT_DATABASE = 'Edit Database',
-  CREATE_CLASS_MAPPING_RUNTIME = 'Create Class/Mapping/Runtime',
-  CONFIRMATION = 'Confirmation',
-}
+import {
+  ConnectionValueStepperState,
+  DatabaseBuilderStepperState,
+  DatabaseGrammarEditorStepperState,
+  DatabaseModelBuilderStepperState,
+  QUERY_CONNECTION_WORKFLOW_STEPS,
+  QueryConnectionConfirmationAndGrammarEditorStepperState,
+  type QueryConnectionEndToEndWorkflowEditorState,
+} from '../../../../stores/editor/editor-state/end-to-end-workflow-state/QueryConnectionEndToEndWorkflowEditorState.js';
 
 export const QueryConnectionRelationalConnectionEditor = observer(
   (props: {
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowEditorState;
     connectionValueStepperState: ConnectionValueStepperState;
   }) => {
     const {
@@ -71,7 +65,7 @@ export const QueryConnectionRelationalConnectionEditor = observer(
       connectionValueStepperState,
     } = props;
     const elementAlreadyExistsMessage =
-      queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore.graphManagerState.graph.allElements
+      queryConnectionEndToEndWorkflowState.editorStore.graphManagerState.graph.allElements
         .map((s) => s.path)
         .includes(connectionValueStepperState.targetConnectionPath)
         ? 'Element with same path already exists'
@@ -156,7 +150,7 @@ export const QueryConnectionDatabaseBuilderEditor = observer(
 
 export const QueryConnectionDatabaseGrammarEditor = observer(
   (props: {
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowEditorState;
     databaseGrammarEditorStepperState: DatabaseGrammarEditorStepperState;
   }) => {
     const {
@@ -215,7 +209,7 @@ export const QueryConnectionDatabaseGrammarEditor = observer(
 export const QueryConnectionModelsEditor = observer(
   (props: {
     databaseModelBuilderStepperState: DatabaseModelBuilderStepperState;
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowEditorState;
   }) => {
     const {
       databaseModelBuilderStepperState,
@@ -224,7 +218,7 @@ export const QueryConnectionModelsEditor = observer(
     const applicationStore = useApplicationStore();
 
     const runtimeElementAlreadyExistsMessage =
-      queryConnectionEndToEndWorkflowState.globalEndToEndWorkflowState.editorStore.graphManagerState.graph.allElements
+      queryConnectionEndToEndWorkflowState.editorStore.graphManagerState.graph.allElements
         .map((s) => s.path)
         .includes(queryConnectionEndToEndWorkflowState.targetRuntimePath)
         ? 'Element with same path already exists or must contain ::'
@@ -339,7 +333,7 @@ export const QueryConnectionModelsEditor = observer(
 
 export const QueryConnectionConfirmationAndGrammarEditor = observer(
   (props: {
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowEditorState;
     queryConnectionConfirmationAndGrammarEditorStepperState: QueryConnectionConfirmationAndGrammarEditorStepperState;
   }) => {
     const {
@@ -395,25 +389,24 @@ export const QueryConnectionConfirmationAndGrammarEditor = observer(
 
 export const QueryConnectionWorflowEditor = observer(
   (props: {
-    queryConnectionEndToEndWorkflowState: QueryConnectionEndToEndWorkflowState;
+    connectionToQueryWorkflowState: QueryConnectionEndToEndWorkflowEditorState;
   }) => {
-    const { queryConnectionEndToEndWorkflowState } = props;
+    const { connectionToQueryWorkflowState } = props;
     const applicationStore = useApplicationStore();
-    const stepLabel =
-      queryConnectionEndToEndWorkflowState.activeStepToStepLabel.get(
-        queryConnectionEndToEndWorkflowState.activeStep,
-      );
+    const stepLabel = connectionToQueryWorkflowState.activeStepToStepLabel.get(
+      connectionToQueryWorkflowState.activeStep,
+    );
     const increaseActiveStep = (): void => {
-      if (queryConnectionEndToEndWorkflowState.isValid) {
-        queryConnectionEndToEndWorkflowState.setActiveStep(
-          queryConnectionEndToEndWorkflowState.activeStep + 1,
+      if (connectionToQueryWorkflowState.isValid) {
+        connectionToQueryWorkflowState.setActiveStep(
+          connectionToQueryWorkflowState.activeStep + 1,
         );
       }
     };
     const handleNext = (): void => {
       if (stepLabel) {
         flowResult(
-          queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState
+          connectionToQueryWorkflowState.activeStepToBaseStepperState
             .get(stepLabel)
             ?.handleNext(),
         )
@@ -422,29 +415,76 @@ export const QueryConnectionWorflowEditor = observer(
       }
     };
     const handleBack = (): void => {
-      queryConnectionEndToEndWorkflowState.setCompileError(undefined);
-      queryConnectionEndToEndWorkflowState.setActiveStep(
-        queryConnectionEndToEndWorkflowState.activeStep - 1,
+      connectionToQueryWorkflowState.setCompileError(undefined);
+      connectionToQueryWorkflowState.setActiveStep(
+        connectionToQueryWorkflowState.activeStep - 1,
       );
     };
 
     const renderStepContent = (): React.ReactNode => {
       if (stepLabel) {
-        return queryConnectionEndToEndWorkflowState.activeStepToBaseStepperState
-          .get(stepLabel)
-          ?.renderStepContent();
-      } else {
-        return <BlankPanelContent> </BlankPanelContent>;
+        const currentState =
+          connectionToQueryWorkflowState.activeStepToBaseStepperState.get(
+            stepLabel,
+          );
+        if (currentState instanceof ConnectionValueStepperState) {
+          return (
+            <QueryConnectionRelationalConnectionEditor
+              queryConnectionEndToEndWorkflowState={
+                currentState.workflowEditorState
+              }
+              connectionValueStepperState={currentState}
+            />
+          );
+        } else if (currentState instanceof DatabaseBuilderStepperState) {
+          return (
+            <QueryConnectionDatabaseBuilderEditor
+              databaseBuilderState={currentState.databaseBuilderWizardState}
+            />
+          );
+        } else if (currentState instanceof DatabaseGrammarEditorStepperState) {
+          return (
+            <QueryConnectionDatabaseGrammarEditor
+              queryConnectionEndToEndWorkflowState={
+                currentState.workflowEditorState
+              }
+              databaseGrammarEditorStepperState={currentState}
+            />
+          );
+        } else if (currentState instanceof DatabaseModelBuilderStepperState) {
+          return (
+            <QueryConnectionModelsEditor
+              databaseModelBuilderStepperState={currentState}
+              queryConnectionEndToEndWorkflowState={
+                currentState.workflowEditorState
+              }
+            />
+          );
+        } else if (
+          currentState instanceof
+          QueryConnectionConfirmationAndGrammarEditorStepperState
+        ) {
+          return (
+            <QueryConnectionConfirmationAndGrammarEditor
+              queryConnectionEndToEndWorkflowState={
+                currentState.workflowEditorState
+              }
+              queryConnectionConfirmationAndGrammarEditorStepperState={
+                currentState
+              }
+            />
+          );
+        }
       }
+      return <BlankPanelContent> </BlankPanelContent>;
     };
-
     return (
       <div>
         <Panel>
           <PanelContent className="test-runner-panel__result">
             <BaseStepper
               steps={Object.values(QUERY_CONNECTION_WORKFLOW_STEPS)}
-              activeStep={queryConnectionEndToEndWorkflowState.activeStep}
+              activeStep={connectionToQueryWorkflowState.activeStep}
             ></BaseStepper>
             <PanelContent>
               <div className="query-connection-workflow__content">
@@ -455,7 +495,7 @@ export const QueryConnectionWorflowEditor = observer(
           <div className="query-connection-workflow__actions">
             <button
               className="query-connection-workflow__actions__action-btn"
-              disabled={queryConnectionEndToEndWorkflowState.activeStep === 0}
+              disabled={connectionToQueryWorkflowState.activeStep === 0}
               onClick={handleBack}
               title="Go to previous step..."
             >
@@ -465,7 +505,7 @@ export const QueryConnectionWorflowEditor = observer(
               className="query-connection-workflow__actions__action-btn query-connection-workflow__actions__action-btn--primary"
               onClick={handleNext}
             >
-              {queryConnectionEndToEndWorkflowState.activeStep ===
+              {connectionToQueryWorkflowState.activeStep ===
               Object.values(QUERY_CONNECTION_WORKFLOW_STEPS).length - 1
                 ? 'Import And Query'
                 : 'Next'}

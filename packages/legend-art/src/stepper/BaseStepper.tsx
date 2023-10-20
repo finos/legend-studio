@@ -31,7 +31,6 @@ export const BaseStepper: React.FC<
 > = (props) => {
   const { children, className, steps, stepCompleteStatus, ...otherProps } =
     props;
-
   return (
     <div className={clsx('mui-stepper', className)}>
       <MuiStepper className="mui-stepper__container" {...otherProps}>
