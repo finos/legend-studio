@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 28.10.0
+
+### Minor Changes
+
+- [#2705](https://github.com/finos/legend-studio/pull/2705) [`89428545c`](https://github.com/finos/legend-studio/commit/89428545c6f3fbd49c58deb60af7fe22f7c04067) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable query from connection workflow
+
+### Patch Changes
+
+- [#2709](https://github.com/finos/legend-studio/pull/2709) [`897d43371`](https://github.com/finos/legend-studio/commit/897d4337182c5c891cc3d3491884fd32394b2a1a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Copy Button next to launch for showcase to copy showcase grammar. Add keyboard shortcut F7 to show showcases. Add open showcases to splash screen. Add showcase icon to activity panel.
+
+- [#2708](https://github.com/finos/legend-studio/pull/2708) [`532fbc82e`](https://github.com/finos/legend-studio/commit/532fbc82ecabb17b7939a75394e871f3e684fb12) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Hide showcase projects in development from tree.
+
 ## 28.9.0
 
 ### Minor Changes

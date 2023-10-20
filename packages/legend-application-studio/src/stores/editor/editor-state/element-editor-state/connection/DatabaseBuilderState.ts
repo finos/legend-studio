@@ -72,6 +72,9 @@ import {
   EngineRuntime,
   StoreConnections,
   IdentifiedConnection,
+  getOrCreateGraphPackage,
+  extractElementNameFromPath,
+  extractPackagePathFromPath,
 } from '@finos/legend-graph';
 import { GraphEditFormModeState } from '../../../GraphEditFormModeState.js';
 import { connection_setStore } from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
@@ -301,13 +304,14 @@ export interface DatabaseExplorerTreeData
   database: Database;
 }
 
-const DEFAULT_DATABASE_PATH = 'store::MyDatabase';
+export const DEFAULT_DATABASE_PATH = 'store::MyDatabase';
 
 export class DatabaseSchemaExplorerState {
   readonly editorStore: EditorStore;
   readonly connection: RelationalDatabaseConnection;
-  readonly database: Database;
+  database: Database;
   targetDatabasePath: string;
+  makeTargetDatabasePathEditable?: boolean;
 
   isGeneratingDatabase = false;
   isUpdatingDatabase = false;
@@ -322,20 +326,24 @@ export class DatabaseSchemaExplorerState {
     makeObservable(this, {
       isGeneratingDatabase: observable,
       isUpdatingDatabase: observable,
+      database: observable,
       treeData: observable,
       targetDatabasePath: observable,
       previewer: observable,
       previewDataState: observable,
+      makeTargetDatabasePathEditable: observable,
       isCreatingNewDatabase: computed,
       resolveDatabasePackageAndName: computed,
       setTreeData: action,
       setTargetDatabasePath: action,
+      setMakeTargetDatabasePathEditable: action,
       onNodeSelect: flow,
       fetchDatabaseMetadata: flow,
       fetchSchemaMetadata: flow,
       fetchTableMetadata: flow,
       generateDatabase: flow,
       updateDatabase: flow,
+      updateDatabaseAndGraph: flow,
       previewData: flow,
     });
 
@@ -349,8 +357,12 @@ export class DatabaseSchemaExplorerState {
     return isStubbed_PackageableElement(this.connection.store.value);
   }
 
+  setMakeTargetDatabasePathEditable(val: boolean): void {
+    this.makeTargetDatabasePathEditable = val;
+  }
+
   get resolveDatabasePackageAndName(): [string, string] {
-    if (!this.isCreatingNewDatabase) {
+    if (!this.isCreatingNewDatabase && !this.makeTargetDatabasePathEditable) {
       return [
         guaranteeNonNullable(this.database.package).path,
         this.database.name,
@@ -799,61 +811,77 @@ export class DatabaseSchemaExplorerState {
     }
   }
 
-  *updateDatabase(): GeneratorFn<void> {
+  // this method just updates database
+  *updateDatabase(): GeneratorFn<Database> {
+    this.isUpdatingDatabase = true;
+    const graph = this.editorStore.graphManagerState.createNewGraph();
+    (yield this.editorStore.graphManagerState.graphManager.buildGraph(
+      graph,
+      [(yield flowResult(this.generateDatabase())) as Entity],
+      ActionState.create(),
+    )) as Entity[];
+    const database = getNonNullableEntry(
+      graph.ownDatabases,
+      0,
+      'Expected one database to be generated from input',
+    );
+    // remove undefined schemas
+    const schemas = Array.from(
+      guaranteeNonNullable(this.treeData).nodes.values(),
+    )
+      .map((schemaNode) => {
+        if (schemaNode instanceof DatabaseSchemaExplorerTreeSchemaNodeData) {
+          return schemaNode.schema;
+        }
+        return undefined;
+      })
+      .filter(isNonNullable);
+
+    // update this.database packge and name
+    this.database.package = getOrCreateGraphPackage(
+      graph,
+      extractPackagePathFromPath(this.targetDatabasePath),
+      undefined,
+    );
+    this.database.name = extractElementNameFromPath(this.targetDatabasePath);
+    this.database.schemas = this.database.schemas.filter((schema) => {
+      if (
+        schemas.find((item) => item.name === schema.name) &&
+        !database.schemas.find((s) => s.name === schema.name)
+      ) {
+        return false;
+      }
+      return true;
+    });
+    // update existing schemas
+    database.schemas.forEach((schema) => {
+      (schema as Writable<Schema>)._OWNER = this.database;
+      const currentSchemaIndex = this.database.schemas.findIndex(
+        (item) => item.name === schema.name,
+      );
+      if (currentSchemaIndex !== -1) {
+        this.database.schemas[currentSchemaIndex] = schema;
+      } else {
+        this.database.schemas.push(schema);
+      }
+    });
+    this.isUpdatingDatabase = false;
+    return database;
+  }
+
+  // this method updates database and add database to the graph
+  *updateDatabaseAndGraph(): GeneratorFn<void> {
     if (!this.treeData) {
       return;
     }
-
     try {
-      this.isUpdatingDatabase = true;
       const createDatabase =
         this.isCreatingNewDatabase &&
         !this.editorStore.graphManagerState.graph.databases.includes(
           this.database,
         );
-      const graph = this.editorStore.graphManagerState.createNewGraph();
-      (yield this.editorStore.graphManagerState.graphManager.buildGraph(
-        graph,
-        [(yield flowResult(this.generateDatabase())) as Entity],
-        ActionState.create(),
-      )) as Entity[];
-      const database = getNonNullableEntry(
-        graph.ownDatabases,
-        0,
-        'Expected one database to be generated from input',
-      );
-
-      // remove undefined schemas
-      const schemas = Array.from(this.treeData.nodes.values())
-        .map((schemaNode) => {
-          if (schemaNode instanceof DatabaseSchemaExplorerTreeSchemaNodeData) {
-            return schemaNode.schema;
-          }
-          return undefined;
-        })
-        .filter(isNonNullable);
-      this.database.schemas = this.database.schemas.filter((schema) => {
-        if (
-          schemas.find((item) => item.name === schema.name) &&
-          !database.schemas.find((s) => s.name === schema.name)
-        ) {
-          return false;
-        }
-        return true;
-      });
-
-      // update existing schemas
-      database.schemas.forEach((schema) => {
-        (schema as Writable<Schema>)._OWNER = this.database;
-        const currentSchemaIndex = this.database.schemas.findIndex(
-          (item) => item.name === schema.name,
-        );
-        if (currentSchemaIndex !== -1) {
-          this.database.schemas[currentSchemaIndex] = schema;
-        } else {
-          this.database.schemas.push(schema);
-        }
-      });
+      this.isUpdatingDatabase = true;
+      const database = (yield flowResult(this.updateDatabase())) as Database;
       if (createDatabase) {
         connection_setStore(
           this.connection,

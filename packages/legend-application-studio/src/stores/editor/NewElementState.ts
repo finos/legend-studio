@@ -317,7 +317,7 @@ export class NewFlatDataConnectionDriver extends NewConnectionValueDriver<FlatDa
   }
 }
 
-const DEFAULT_H2_SQL =
+export const DEFAULT_H2_SQL =
   '-- loads sample data for getting started. See https://github.com/pthom/northwind_psql for more info\n call loadNorthwindData()';
 export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDriver<RelationalDatabaseConnection> {
   constructor(editorStore: EditorStore) {

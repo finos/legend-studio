@@ -108,6 +108,8 @@ import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
 import type { QuickInputState } from './QuickInputState.js';
+import { GlobalEndToEndWorkflowState } from './sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
+import { openShowcaseManager } from '../ShowcaseManagerState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -162,6 +164,7 @@ export class EditorStore implements CommandRegistrar {
   localChangesState: LocalChangesState;
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
   globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
+  globalEndToEndWorkflowState: GlobalEndToEndWorkflowState;
   devToolState: DevToolPanelState;
   sqlPlaygroundState: SQLPlaygroundPanelState;
 
@@ -257,6 +260,7 @@ export class EditorStore implements CommandRegistrar {
       this,
       this.sdlcState,
     );
+    this.globalEndToEndWorkflowState = new GlobalEndToEndWorkflowState(this);
     this.workspaceWorkflowManagerState = new WorkspaceWorkflowManagerState(
       this,
       this.sdlcState,
@@ -411,6 +415,18 @@ export class EditorStore implements CommandRegistrar {
         flowResult(this.toggleTextMode()).catch(
           this.applicationStore.alertUnhandledError,
         );
+      },
+    });
+    this.applicationStore.commandService.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.OPEN_SHOWCASES,
+      trigger: this.createEditorCommandTrigger(
+        () =>
+          this.isInitialized &&
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
+      ),
+      action: () => {
+        openShowcaseManager(this.applicationStore);
       },
     });
     this.applicationStore.commandService.registerCommand({

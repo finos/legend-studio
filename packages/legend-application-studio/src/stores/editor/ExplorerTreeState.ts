@@ -203,6 +203,7 @@ export class ExplorerTreeState {
       this.editorStore,
       val,
       isReadOnly,
+      this.editorStore.graphManagerState.graph,
     );
     dbBuilderState.setShowModal(true);
     this.setDatabaseModelBuilderState(dbBuilderState);

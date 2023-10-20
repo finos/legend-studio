@@ -77,6 +77,8 @@ import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/e
 import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
 import { getElementIcon } from '../../ElementIconUtils.js';
 import { ArtifactGenerationViewerState } from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
+import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/ConnectionToQueryWorkflowEditor.js';
+import { QueryConnectionEndToEndWorkflowEditorState } from '../../../stores/editor/editor-state/end-to-end-workflow-state/QueryConnectionEndToEndWorkflowEditorState.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -119,7 +121,6 @@ export const EditorGroupSplashScreen: React.FC = () => {
   const commandListHeight = 180;
   const [showCommandList, setShowCommandList] = useState(false);
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
   useEffect(() => {
     setShowCommandList(
       (width ?? 0) > commandListWidth && (height ?? 0) > commandListHeight,
@@ -155,6 +156,14 @@ export const EditorGroupSplashScreen: React.FC = () => {
               <PlusIcon />
             </div>
             <div className="hotkey__key">S</div>
+          </div>
+        </div>
+        <div className="editor-group__splash-screen__content__item">
+          <div className="editor-group__splash-screen__content__item__label">
+            Open Showcases
+          </div>
+          <div className="editor-group__splash-screen__content__item__hot-keys">
+            <div className="hotkey__key">F7</div>
           </div>
         </div>
         <div className="editor-group__splash-screen__content__item">
@@ -315,6 +324,17 @@ export const EditorGroup = observer(() => {
       return <ModelImporter />;
     } else if (currentTabState instanceof ProjectConfigurationEditorState) {
       return <ProjectConfigurationEditor />;
+    } else if (
+      currentTabState instanceof QueryConnectionEndToEndWorkflowEditorState
+    ) {
+      return (
+        <QueryConnectionWorflowEditor
+          connectionToQueryWorkflowState={
+            editorStore.globalEndToEndWorkflowState
+              .queryToConnectionWorkflowEditorState
+          }
+        />
+      );
     }
     // TODO: create an editor for unsupported tab
     return null;

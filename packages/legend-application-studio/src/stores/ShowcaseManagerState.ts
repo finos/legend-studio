@@ -39,6 +39,7 @@ import {
 } from '@finos/legend-application';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
+import { SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY } from '../components/extensions/Core_LegendStudioApplicationPlugin.js';
 
 export enum SHOWCASE_MANAGER_VIEW {
   EXPLORER = 'EXPLORER',
@@ -307,7 +308,9 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     this.initState.inProgress();
 
     try {
-      this.showcases = (yield this.client.getShowcases()) as ShowcaseMetadata[];
+      this.showcases = (
+        (yield this.client.getShowcases()) as ShowcaseMetadata[]
+      ).filter((showcase) => !showcase.development);
       this.explorerTreeData = buildShowcasesExplorerTreeData(this.showcases);
       // expand all the root nodes by default
       this.explorerTreeData.rootIds.forEach((rootId) => {
@@ -372,3 +375,18 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     }
   }
 }
+
+export const openShowcaseManager = (
+  applicationStore: LegendStudioApplicationStore,
+): void => {
+  const showcaseManagerState =
+    ShowcaseManagerState.retrieveNullableState(applicationStore);
+  if (showcaseManagerState?.isEnabled) {
+    applicationStore.assistantService.setIsHidden(false);
+    applicationStore.assistantService.setIsOpen(true);
+    applicationStore.assistantService.setIsPanelMaximized(true);
+    applicationStore.assistantService.setSelectedTab(
+      SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY,
+    );
+  }
+};
