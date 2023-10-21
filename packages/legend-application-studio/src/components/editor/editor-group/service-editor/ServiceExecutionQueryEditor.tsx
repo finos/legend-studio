@@ -523,7 +523,7 @@ export const queryService = async (
               <button
                 className="query-builder__dialog__header__custom-action"
                 tabIndex={-1}
-                disabled={editorStore.isInViewerMode}
+                disabled={editorStore.disableGraphEditing}
                 onClick={save}
               >
                 Save Query

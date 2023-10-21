@@ -496,7 +496,8 @@ const ExplorerContextMenu = observer(
       })
       .filter(isNonNullable);
     const projectId = editorStore.sdlcState.currentProject?.projectId;
-    const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
+    const isReadOnly =
+      editorStore.disableGraphEditing || Boolean(nodeIsImmutable);
     const isDependencyProjectElement =
       node && isDependencyElement(node.packageableElement);
     const _package = node
@@ -578,7 +579,7 @@ const ExplorerContextMenu = observer(
                   handler: () => {
                     editorStore.explorerTreeState.buildDatabaseModels(
                       database,
-                      editorStore.isInViewerMode,
+                      editorStore.disableGraphEditing,
                     );
                   },
                 },
@@ -592,7 +593,7 @@ const ExplorerContextMenu = observer(
           } else {
             editorStore.explorerTreeState.buildDatabaseModels(
               database,
-              editorStore.isInViewerMode,
+              editorStore.disableGraphEditing,
             );
           }
         }
@@ -1142,7 +1143,7 @@ const ExplorerDropdownMenu = observer(() => {
 
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
-  const { isInViewerMode } = editorStore;
+  const { disableGraphEditing } = editorStore;
   const isInGrammarTextMode =
     editorStore.graphEditorMode.mode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
   const openModelImport = (): void =>
@@ -1224,7 +1225,7 @@ const ExplorerTrees = observer(() => {
   return (
     <ContextMenu
       className="explorer__content"
-      disabled={isInGrammarTextMode || isInViewerMode}
+      disabled={isInGrammarTextMode || disableGraphEditing}
       content={<ExplorerContextMenu />}
       menuProps={{ elevation: 7 }}
     >
@@ -1396,7 +1397,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           <SettingsEthernetIcon />
         </button>
       )}
-      {!editorStore.isInViewerMode && (
+      {!editorStore.disableGraphEditing && (
         <DropdownMenu
           className="panel__header__action"
           title="New Element... (Ctrl + Shift + N)"
