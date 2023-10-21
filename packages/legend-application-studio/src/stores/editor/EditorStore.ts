@@ -213,6 +213,7 @@ export class EditorStore implements CommandRegistrar {
       quickInputState: observable,
 
       isInViewerMode: computed,
+      disableGraphEditing: computed,
       isInConflictResolutionMode: computed,
       isInitialized: computed,
 
@@ -316,6 +317,10 @@ export class EditorStore implements CommandRegistrar {
 
   get isInViewerMode(): boolean {
     return this.mode === EDITOR_MODE.VIEWER;
+  }
+
+  get disableGraphEditing(): boolean {
+    return this.isInViewerMode && this.editorMode.disableEditing;
   }
 
   get isInConflictResolutionMode(): boolean {

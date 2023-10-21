@@ -121,7 +121,8 @@ export abstract class ElementEditorState extends EditorState {
     });
 
     this.element = element;
-    this.isReadOnly = isElementReadOnly(element) || editorStore.isInViewerMode;
+    this.isReadOnly =
+      isElementReadOnly(element) || editorStore.disableGraphEditing;
   }
 
   get label(): string {
