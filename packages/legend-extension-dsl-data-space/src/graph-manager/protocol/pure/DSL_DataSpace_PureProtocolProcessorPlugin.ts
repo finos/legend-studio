@@ -144,6 +144,29 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               );
             return execContext;
           });
+          if (elementProtocol.elements) {
+            element.elements = elementProtocol.elements.map((pointer) => {
+              const elementReference = context.resolveElement(
+                pointer.path,
+                true,
+              );
+              if (
+                elementReference.value instanceof Package ||
+                elementReference.value instanceof Class ||
+                elementReference.value instanceof Enumeration ||
+                elementReference.value instanceof Association
+              ) {
+                const elementPointer = new DataSpaceElementPointer();
+                elementPointer.element =
+                  elementReference as unknown as PackageableElementReference<DataSpaceElement>;
+                elementPointer.exclude = pointer.exclude;
+                return elementPointer;
+              }
+              throw new UnsupportedOperationError(
+                `Can't find data space element (only allow packages, classes, enumerations, and associations) '${pointer.path}'`,
+              );
+            });
+          }
           element.defaultExecutionContext = guaranteeNonNullable(
             element.executionContexts.find(
               (execContext) =>
@@ -180,29 +203,6 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
             .filter(isNonNullable);
           element.title = elementProtocol.title;
           element.description = elementProtocol.description;
-          if (elementProtocol.elements) {
-            element.elements = elementProtocol.elements.map((pointer) => {
-              const elementReference = context.resolveElement(
-                pointer.path,
-                true,
-              );
-              if (
-                elementReference.value instanceof Package ||
-                elementReference.value instanceof Class ||
-                elementReference.value instanceof Enumeration ||
-                elementReference.value instanceof Association
-              ) {
-                const elementPointer = new DataSpaceElementPointer();
-                elementPointer.element =
-                  elementReference as unknown as PackageableElementReference<DataSpaceElement>;
-                elementPointer.exclude = pointer.exclude;
-                return elementPointer;
-              }
-              throw new UnsupportedOperationError(
-                `Can't find data space element (only allow packages, classes, enumerations, and associations) '${pointer.path}'`,
-              );
-            });
-          }
           if (elementProtocol.executables) {
             element.executables = elementProtocol.executables.map(
               (executableProtocol) => {

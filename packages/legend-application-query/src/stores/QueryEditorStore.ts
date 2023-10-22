@@ -293,6 +293,7 @@ export abstract class QueryEditorStore {
       setExistingQueryName: action,
       initialize: flow,
       buildGraph: flow,
+      buildFullGraph: flow,
       searchExistingQueryName: flow,
     });
 
@@ -381,6 +382,10 @@ export abstract class QueryEditorStore {
     // do nothing
   }
 
+  requiresGraphBuilding(): boolean {
+    return true;
+  }
+
   async buildQueryForPersistence(
     query: Query,
     rawLambda: RawLambda,
@@ -401,10 +406,9 @@ export abstract class QueryEditorStore {
         RuntimePointer,
         'Query runtime must be of type runtime pointer',
       );
-      query.mapping = PackageableElementExplicitReference.create(
-        this.queryBuilderState.executionContextState.mapping,
-      );
-      query.runtime = runtimeValue.packageableRuntime;
+      (query.mapping =
+        this.queryBuilderState.executionContextState.mapping.path),
+        (query.runtime = runtimeValue.packageableRuntime.value.path);
       query.content =
         await this.graphManagerState.graphManager.lambdaToPureCode(rawLambda);
       config?.decorator?.(query);
@@ -486,6 +490,7 @@ export abstract class QueryEditorStore {
 
       yield this.setUpEditorState();
       yield flowResult(this.buildGraph());
+
       this.queryBuilderState = (yield this.initializeQueryBuilderState(
         stopWatch,
       )) as QueryBuilderState;
@@ -537,7 +542,7 @@ export abstract class QueryEditorStore {
     );
   }
 
-  *buildGraph(): GeneratorFn<void> {
+  *buildFullGraph(): GeneratorFn<void> {
     const stopWatch = new StopWatch();
 
     const { groupId, artifactId, versionId } = this.getProjectInfo();
@@ -625,6 +630,20 @@ export abstract class QueryEditorStore {
       LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
       graphBuilderReportData,
     );
+  }
+
+  *buildGraph(): GeneratorFn<void> {
+    const queryGraphBuilderGetters = this.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap((plugin) => plugin.getExtraQueryGraphBuilderGetters?.() ?? []);
+    for (const getter of queryGraphBuilderGetters) {
+      const builderFunction = getter(this);
+      if (builderFunction) {
+        yield flowResult(builderFunction(this));
+        return;
+      }
+    }
+    yield flowResult(this.buildFullGraph());
   }
 }
 
@@ -986,23 +1005,22 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   }
 
   override async setUpEditorState(): Promise<void> {
-    this.setLightQuery(
-      await this.graphManagerState.graphManager.getLightQuery(this.queryId),
+    const query = await this.graphManagerState.graphManager.getQuery(
+      this.queryId,
+      this.graphManagerState.graph,
+    );
+    this.setQuery(query);
+    this.setLightQuery(toLightQuery(query));
+    LegendQueryUserDataHelper.addRecentlyViewedQuery(
+      this.applicationStore.userDataService,
+      query.id,
     );
   }
 
   async initializeQueryBuilderState(
     stopWatch: StopWatch,
   ): Promise<QueryBuilderState> {
-    const query = await this.graphManagerState.graphManager.getQuery(
-      this.queryId,
-      this.graphManagerState.graph,
-    );
-    this.setQuery(query);
-    LegendQueryUserDataHelper.addRecentlyViewedQuery(
-      this.applicationStore.userDataService,
-      query.id,
-    );
+    const query = guaranteeNonNullable(this.query);
     let queryBuilderState: QueryBuilderState | undefined;
     const existingQueryEditorStateBuilders = this.applicationStore.pluginManager
       .getApplicationPlugins()
@@ -1025,11 +1043,11 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         this.applicationStore.config.options.queryBuilderConfig,
       );
 
-    queryBuilderState.executionContextState.setMapping(query.mapping.value);
+    const mapping = this.graphManagerState.graph.getMapping(query.mapping);
+    const runtime = this.graphManagerState.graph.getRuntime(query.runtime);
+    queryBuilderState.executionContextState.setMapping(mapping);
     queryBuilderState.executionContextState.setRuntimeValue(
-      new RuntimePointer(
-        PackageableElementExplicitReference.create(query.runtime.value),
-      ),
+      new RuntimePointer(PackageableElementExplicitReference.create(runtime)),
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries

@@ -1105,8 +1105,7 @@ export const FunctionEditor = observer(() => {
         );
         await flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-            setupQueryBuilderState: (): QueryBuilderState =>
-              functionQueryBuilderState,
+            setupQueryBuilderState: async () => functionQueryBuilderState,
             actionConfigs: [
               {
                 key: 'save-query-btn',

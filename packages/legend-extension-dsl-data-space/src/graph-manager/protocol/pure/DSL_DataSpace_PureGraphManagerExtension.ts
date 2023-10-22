@@ -17,14 +17,17 @@
 import {
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
+  type PureModel,
+  type GraphManagerOperationReport,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
+import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   guaranteeNonNullable,
   type ActionState,
   type PlainObject,
 } from '@finos/legend-shared';
 import type { DataSpaceAnalysisResult } from '../../action/analytics/DataSpaceAnalysis.js';
+import type { NotificationService } from '@finos/legend-application';
 
 export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract analyzeDataSpace(
@@ -34,10 +37,18 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult>;
 
-  abstract retrieveDataSpaceAnalysisFromCache(
-    cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+  abstract analyzeDataSpaceCoverage(
+    dataSpacePath: string,
+    entitiesRetriever: () => Promise<Entity[]>,
+    cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
-  ): Promise<DataSpaceAnalysisResult | undefined>;
+    graphReport?: GraphManagerOperationReport | undefined,
+    pureGraph?: PureModel | undefined,
+    executionContext?: string | undefined,
+    mappingPath?: string | undefined,
+    projectInfo?: ProjectGAVCoordinates,
+    notificationService?: NotificationService | undefined,
+  ): Promise<DataSpaceAnalysisResult>;
 }
 
 export const DSL_DataSpace_getGraphManagerExtension = (

@@ -44,11 +44,16 @@ import {
   getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
   RuntimePointer,
+  type PackageableRuntime,
 } from '@finos/legend-graph';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useEffect, useMemo, useState } from 'react';
-import { debounce, guaranteeType } from '@finos/legend-shared';
+import {
+  debounce,
+  guaranteeType,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
   DataSpace,
@@ -57,6 +62,7 @@ import {
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
 import type { EditorStore } from '@finos/legend-application-studio';
+import { useQueryEditorStore } from '@finos/legend-application-query';
 
 export type DataSpaceOption = {
   label: string;
@@ -105,6 +111,25 @@ export const formatDataSpaceOptionLabel = (
   </div>
 );
 
+const resolveExecutionContextRuntimes = (
+  queryBuilderState: DataSpaceQueryBuilderState,
+): PackageableRuntime[] => {
+  if (queryBuilderState.dataSpaceAnalysisResult) {
+    const executionContext = Array.from(
+      queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
+    ).find(
+      (e) =>
+        e.mapping.path ===
+        queryBuilderState.executionContext.mapping.value.path,
+    );
+    return guaranteeNonNullable(executionContext).compatibleRuntimes;
+  }
+  return getMappingCompatibleRuntimes(
+    queryBuilderState.executionContext.mapping.value,
+    queryBuilderState.graphManagerState.usableRuntimes,
+  );
+};
+
 type ExecutionContextOption = {
   label: string;
   value: DataSpaceExecutionContext;
@@ -129,6 +154,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: DataSpaceQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
+    const editorStore = useQueryEditorStore();
     const [dataSpaceSearchText, setDataSpaceSearchText] = useState('');
 
     // data space
@@ -148,8 +174,10 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           queryBuilderState.dataSpace.defaultExecutionContext.name,
       },
     };
-    const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
-      queryBuilderState.onDataSpaceChange(option.value);
+    const onDataSpaceOptionChange = async (
+      option: DataSpaceOption,
+    ): Promise<void> => {
+      await queryBuilderState.onDataSpaceChange(option.value);
     };
 
     // data space search text
@@ -180,22 +208,22 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
     );
-    const onExecutionContextOptionChange = (
+    const onExecutionContextOptionChange = async (
       option: ExecutionContextOption,
-    ): void => {
+    ): Promise<void> => {
       if (option.value === queryBuilderState.executionContext) {
         return;
       }
       queryBuilderState.setExecutionContext(option.value);
-      queryBuilderState.propagateExecutionContextChange(option.value);
+      await queryBuilderState.propagateExecutionContextChange(
+        option.value,
+        editorStore,
+      );
       queryBuilderState.onExecutionContextChange?.(option.value);
     };
 
     // runtime
-    const runtimeOptions = getMappingCompatibleRuntimes(
-      queryBuilderState.executionContext.mapping.value,
-      queryBuilderState.graphManagerState.usableRuntimes,
-    )
+    const runtimeOptions = resolveExecutionContextRuntimes(queryBuilderState)
       .map(
         (rt) =>
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
@@ -225,11 +253,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     });
 
     // class
-    const classes = resolveUsableDataSpaceClasses(
-      queryBuilderState.dataSpace,
-      queryBuilderState.executionContext.mapping.value,
-      queryBuilderState.graphManagerState,
-    );
+    const classes = resolveUsableDataSpaceClasses(queryBuilderState);
 
     useEffect(() => {
       flowResult(queryBuilderState.loadDataSpaces('')).catch(
@@ -400,14 +424,15 @@ export const queryDataSpace = async (
   const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-      setupQueryBuilderState: () => {
+      setupQueryBuilderState: async () => {
         const queryBuilderState = new DataSpaceQueryBuilderState(
           editorStore.applicationStore,
           editorStore.graphManagerState,
           editorStore.depotServerClient,
           dataSpace,
           dataSpace.defaultExecutionContext,
-          (dataSpaceInfo: DataSpaceInfo) => {
+          false,
+          async (dataSpaceInfo: DataSpaceInfo) => {
             queryBuilderState.dataSpace = guaranteeType(
               queryBuilderState.graphManagerState.graph.getElement(
                 dataSpaceInfo.path,
@@ -417,7 +442,7 @@ export const queryDataSpace = async (
             queryBuilderState.setExecutionContext(
               queryBuilderState.dataSpace.defaultExecutionContext,
             );
-            queryBuilderState.propagateExecutionContextChange(
+            await queryBuilderState.propagateExecutionContextChange(
               queryBuilderState.dataSpace.defaultExecutionContext,
             );
           },
@@ -432,7 +457,7 @@ export const queryDataSpace = async (
         queryBuilderState.setExecutionContext(
           dataSpace.defaultExecutionContext,
         );
-        queryBuilderState.propagateExecutionContextChange(
+        await queryBuilderState.propagateExecutionContextChange(
           dataSpace.defaultExecutionContext,
         );
         return queryBuilderState;

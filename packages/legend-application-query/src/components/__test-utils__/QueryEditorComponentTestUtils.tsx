@@ -22,7 +22,6 @@ import {
   Query,
   LightQuery,
   RawLambda,
-  PackageableElementExplicitReference,
   type RawMappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
@@ -128,10 +127,8 @@ export const TEST__setUpQueryEditor = async (
   query.owner = lightQuery.owner;
   query.isCurrentUserQuery = lightQuery.isCurrentUserQuery;
   const _mapping = graphManagerState.graph.getMapping(mappingPath);
-  query.mapping = PackageableElementExplicitReference.create(_mapping);
-  query.runtime = PackageableElementExplicitReference.create(
-    graphManagerState.graph.getRuntime(runtimePath),
-  );
+  query.mapping = mappingPath;
+  query.runtime = runtimePath;
   query.content = 'some content';
 
   createSpy(
