@@ -20,7 +20,7 @@
     "check:ci": "yarn check:pkg && yarn check:ts && yarn check:format && yarn check:copyright && yarn check:changeset",
     "check:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js",
     "check:format": "prettier --list-different \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json --check \"package.json\" \"packages/*/package.json\"",
-    "check:pkg": "yarn constraints && echo \"Checking for circular dependencies...\" && yarn workspaces foreach --topological-dev exec \"echo '' >/dev/null\" && node ./scripts/workflow/checkPackageManifests.js",
+    "check:pkg": "yarn constraints && echo \"Checking for circular dependencies...\" && yarn workspaces foreach --topological-dev --all exec \"echo '' >/dev/null\" && node ./scripts/workflow/checkPackageManifests.js",
     "check:ts": "tsc --build && node ./scripts/workflow/checkProjectReferenceConfigs.js",
     "check:update": "yarn upgrade-interactive",
     "clean": "rimraf \"build\" && node ./scripts/workflow/clean.js",
@@ -117,7 +117,7 @@
     "typescript": "5.2.2",
     "yargs": "17.7.2"
   },
-  "packageManager": "yarn@3.6.4",
+  "packageManager": "yarn@4.0.0",
   "engines": {
     "node": ">=18.0.0",
     "yarn": ">=1.22.10"
