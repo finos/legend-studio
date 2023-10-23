@@ -99,7 +99,7 @@
     "chalk": "5.3.0",
     "cross-env": "7.0.3",
     "envinfo": "7.10.0",
-    "eslint": "8.51.0",
+    "eslint": "8.52.0",
     "fs-extra": "11.1.1",
     "husky": "8.0.3",
     "inquirer": "9.2.11",

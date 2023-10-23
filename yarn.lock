@@ -2141,10 +2141,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:8.51.0":
-  version: 8.51.0
-  resolution: "@eslint/js@npm:8.51.0"
-  checksum: 0228bf1e1e0414843e56d9ff362a2a72d579c078f93174666f29315690e9e30a8633ad72c923297f7fd7182381b5a476805ff04dac8debe638953eb1ded3ac73
+"@eslint/js@npm:8.52.0":
+  version: 8.52.0
+  resolution: "@eslint/js@npm:8.52.0"
+  checksum: 490893b8091a66415f4ac98b963d23eb287264ea3bd6af7ec788f0570705cf64fd6ab84b717785980f55e39d08ff5c7fde6d8e4391ccb507169370ce3a6d091a
   languageName: node
   linkType: hard
 
@@ -2210,7 +2210,7 @@ __metadata:
     "@babel/preset-typescript": 7.23.2
     "@babel/runtime": 7.23.2
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     react-refresh: 0.14.0
     rimraf: 5.0.5
     typescript: 5.2.2
@@ -2253,7 +2253,7 @@ __metadata:
     "@finos/legend-lego": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     npm-run-all: 4.1.5
     rimraf: 5.0.5
     typescript: 5.2.2
@@ -2276,10 +2276,10 @@ __metadata:
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     "@types/react-dom": 18.2.14
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2316,9 +2316,9 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.5
@@ -2335,7 +2335,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     npm-run-all: 4.1.5
     rimraf: 5.0.5
     typescript: 5.2.2
@@ -2361,10 +2361,10 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     "@types/react-dom": 18.2.14
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2399,9 +2399,9 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     npm-run-all: 4.1.5
     react: 18.2.0
     rimraf: 5.0.5
@@ -2418,7 +2418,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     npm-run-all: 4.1.5
     rimraf: 5.0.5
     typescript: 5.2.2
@@ -2446,10 +2446,10 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     "@types/react-dom": 18.2.14
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     fast-xml-parser: 4.3.2
     jest: 29.7.0
     mobx: 6.10.2
@@ -2479,11 +2479,11 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     "@types/react-dom": 18.2.14
     "@types/react-router-dom": 5.3.3
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     history: 5.3.0
     jest: 29.7.0
     mobx: 6.10.2
@@ -2518,20 +2518,20 @@ __metadata:
     "@emotion/styled": 11.11.0
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@fontsource/raleway": 5.0.14
+    "@fontsource/raleway": 5.0.15
     "@fontsource/roboto": 5.0.8
-    "@fontsource/roboto-condensed": 5.0.12
-    "@fontsource/roboto-mono": 5.0.14
+    "@fontsource/roboto-condensed": 5.0.13
+    "@fontsource/roboto-mono": 5.0.15
     "@jest/globals": 29.7.0
     "@mui/material": 5.14.14
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     "@types/react-select": 4.0.18
     "@types/react-window": 1.8.7
     clsx: 2.0.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
-    mermaid: 10.5.0
+    mermaid: 10.5.1
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
     npm-run-all: 4.1.5
@@ -2581,7 +2581,7 @@ __metadata:
     cross-env: 7.0.3
     css-loader: 6.8.1
     cssnano: 6.0.1
-    eslint: 8.51.0
+    eslint: 8.52.0
     html-webpack-plugin: 5.5.3
     isbinaryfile: 5.0.0
     jest: 29.7.0
@@ -2618,9 +2618,9 @@ __metadata:
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2652,9 +2652,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2684,9 +2684,9 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2716,9 +2716,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     npm-run-all: 4.1.5
@@ -2745,9 +2745,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     npm-run-all: 4.1.5
@@ -2778,9 +2778,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2809,9 +2809,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2838,9 +2838,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2867,9 +2867,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2897,9 +2897,9 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -2923,7 +2923,7 @@ __metadata:
     "@jest/globals": 29.7.0
     "@types/zipkin-javascript-opentracing": 1.6.1
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     npm-run-all: 4.1.5
     opentracing: 0.14.7
@@ -2942,7 +2942,7 @@ __metadata:
     "@fastify/cors": 8.4.0
     "@finos/legend-dev-utils": "workspace:*"
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     fastify: 4.24.3
     nodemon: 3.0.1
     npm-run-all: 4.1.5
@@ -2960,7 +2960,7 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     npm-run-all: 4.1.5
@@ -3008,10 +3008,10 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.7.0
     "@types/css-font-loading-module": 0.0.10
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     "@types/react-dom": 18.2.14
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     mobx-react-lite: 4.0.5
@@ -3047,7 +3047,7 @@ __metadata:
     "@testing-library/react": 14.0.0
     axios: 1.5.1
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     npm-run-all: 4.1.5
     react: 18.2.0
@@ -3071,11 +3071,11 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
     "@testing-library/react": 14.0.0
-    "@types/react": 18.2.30
+    "@types/react": 18.2.31
     "@types/react-dom": 18.2.14
     chart.js: 4.4.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mathjs: 11.11.2
     mobx: 6.10.2
@@ -3105,7 +3105,7 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     npm-run-all: 4.1.5
     rimraf: 5.0.5
@@ -3123,7 +3123,7 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.7.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     mobx: 6.10.2
     npm-run-all: 4.1.5
@@ -3143,7 +3143,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.7.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     fastify: 4.24.3
     jest: 29.7.0
     nodemon: 3.0.1
@@ -3164,7 +3164,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.7.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     fastify: 4.24.3
     jest: 29.7.0
     mobx: 6.10.2
@@ -3191,7 +3191,7 @@ __metadata:
     "@types/uuid": 9.0.6
     cross-env: 7.0.3
     date-fns: 2.30.0
-    eslint: 8.51.0
+    eslint: 8.52.0
     fuse.js: 6.6.2
     hash.js: 1.1.7
     http-status-codes: 2.3.0
@@ -3222,7 +3222,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.7.0
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     jest: 29.7.0
     lodash: 4.17.21
     npm-run-all: 4.1.5
@@ -3236,7 +3236,7 @@ __metadata:
   resolution: "@finos/stylelint-config-legend-studio@workspace:packages/stylelint-config"
   dependencies:
     cross-env: 7.0.3
-    eslint: 8.51.0
+    eslint: 8.52.0
     postcss: 8.4.31
     postcss-scss: 4.0.9
     rimraf: 5.0.5
@@ -3285,24 +3285,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fontsource/raleway@npm:5.0.14":
-  version: 5.0.14
-  resolution: "@fontsource/raleway@npm:5.0.14"
-  checksum: 7506a06ba56db218de063288bd65e1f51910a1b0fef8c6a559e7ff8a4e385aa3fc324c4f464fb49ac08891068a4eeb9fd319c72480b03ee8da5cfdd0f6b1d039
+"@fontsource/raleway@npm:5.0.15":
+  version: 5.0.15
+  resolution: "@fontsource/raleway@npm:5.0.15"
+  checksum: edb1acb22dcc6df48ed62682f64f35f5c138a94f88e4bf8daad3fc2f28f694f65fa05bb55240f685899f40b04b26e6f04e396b31cde48d060274ff553d06c76d
   languageName: node
   linkType: hard
 
-"@fontsource/roboto-condensed@npm:5.0.12":
-  version: 5.0.12
-  resolution: "@fontsource/roboto-condensed@npm:5.0.12"
-  checksum: f151f884a67d6f345fb9e1a635d7356d3d88c05d62d54471eb3500ab34a1bee3ea6c09715af066234bfcce53a3216dc1811579d7d9a130028212f1aea3d65753
+"@fontsource/roboto-condensed@npm:5.0.13":
+  version: 5.0.13
+  resolution: "@fontsource/roboto-condensed@npm:5.0.13"
+  checksum: c694c252a0166794e12c414821db746c037dcb65f14b343bd248a7317433e78c2cfb149abca7fa70fd9d16a8f98d0ce2fa7ba09f82c92f23c6bd1c14e17986ad
   languageName: node
   linkType: hard
 
-"@fontsource/roboto-mono@npm:5.0.14":
-  version: 5.0.14
-  resolution: "@fontsource/roboto-mono@npm:5.0.14"
-  checksum: 5f2b353cb6a943afb5e4a23b142fa861da57fe63d4887a018d69154cb3c46935e43fddf09b8ea105ffb32fbc2e1b7805634f9f689eb43a7318bf211d7cede529
+"@fontsource/roboto-mono@npm:5.0.15":
+  version: 5.0.15
+  resolution: "@fontsource/roboto-mono@npm:5.0.15"
+  checksum: 7907fccf128dc96364ab7e3540c1ff3300dca936b7f74aa7bf261896c811fe789b1b318a9c10318713c0ffe9074be28027e0a4032d79711d47eae26c6acda2d1
   languageName: node
   linkType: hard
 
@@ -3313,14 +3313,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@humanwhocodes/config-array@npm:^0.11.11":
-  version: 0.11.12
-  resolution: "@humanwhocodes/config-array@npm:0.11.12"
+"@humanwhocodes/config-array@npm:^0.11.13":
+  version: 0.11.13
+  resolution: "@humanwhocodes/config-array@npm:0.11.13"
   dependencies:
-    "@humanwhocodes/object-schema": ^2.0.0
+    "@humanwhocodes/object-schema": ^2.0.1
     debug: ^4.1.1
     minimatch: ^3.0.5
-  checksum: 8eab5a7c7e4948aa07cf26d0b6cca103298ab9bbb70f897c7cfbb3ee5fd5431a0d9f2ff5efd4d712dae7fd8fa941f09b1b22da842b9d87367ccb75b86bbd715b
+  checksum: f8ea57b0d7ed7f2d64cd3944654976829d9da91c04d9c860e18804729a33f7681f78166ef4c761850b8c324d362f7d53f14c5c44907a6b38b32c703ff85e4805
   languageName: node
   linkType: hard
 
@@ -3331,10 +3331,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@humanwhocodes/object-schema@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@humanwhocodes/object-schema@npm:2.0.0"
-  checksum: e0558acd035198a69adfa3edce33ec385bb664c92478a08a91b3e8082acd2d96ef7bf43189d848e4b0bdd75092f9d494a55a4efaf5bed45101c9e83d28379d83
+"@humanwhocodes/object-schema@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@humanwhocodes/object-schema@npm:2.0.1"
+  checksum: 24929487b1ed48795d2f08346a0116cc5ee4634848bce64161fb947109352c562310fd159fc64dda0e8b853307f5794605191a9547f7341158559ca3c8262a45
   languageName: node
   linkType: hard
 
@@ -4679,14 +4679,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:18.2.30":
-  version: 18.2.30
-  resolution: "@types/react@npm:18.2.30"
+"@types/react@npm:*, @types/react@npm:18.2.31":
+  version: 18.2.31
+  resolution: "@types/react@npm:18.2.31"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: 962fa67e4ff439a2eb621ad74e58cb975d2882afa06bb7c9e9823606f6dcc3cd37d5cce143ec3c95b3856549f48ee0382e8c4628267cdcc5c5343d979ad9d92f
+  checksum: b11be8e39174d3303e308461400889e353e422d22b01d09795b2c35b7b99d5351716503d9ec5c58e4c2c871249603fa52840d45a34fb5901dd7a26e06129c716
   languageName: node
   linkType: hard
 
@@ -4946,7 +4946,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ungap/structured-clone@npm:^1.0.0":
+"@ungap/structured-clone@npm:^1.0.0, @ungap/structured-clone@npm:^1.2.0":
   version: 1.2.0
   resolution: "@ungap/structured-clone@npm:1.2.0"
   checksum: 4f656b7b4672f2ce6e272f2427d8b0824ed11546a601d8d5412b9d7704e83db38a8d9f402ecdf2b9063fc164af842ad0ec4a55819f621ed7e7ea4d1efcc74524
@@ -6082,13 +6082,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"call-bind@npm:^1.0.0, call-bind@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "call-bind@npm:1.0.2"
+"call-bind@npm:^1.0.0, call-bind@npm:^1.0.2, call-bind@npm:^1.0.4, call-bind@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "call-bind@npm:1.0.5"
   dependencies:
-    function-bind: ^1.1.1
-    get-intrinsic: ^1.0.2
-  checksum: f8e31de9d19988a4b80f3e704788c4a2d6b6f3d17cfec4f57dc29ced450c53a49270dc66bf0fbd693329ee948dd33e6c90a329519aef17474a4d961e8d6426b0
+    function-bind: ^1.1.2
+    get-intrinsic: ^1.2.1
+    set-function-length: ^1.1.1
+  checksum: 449e83ecbd4ba48e7eaac5af26fea3b50f8f6072202c2dd7c5a6e7a6308f2421abe5e13a3bbd55221087f76320c5e09f25a8fdad1bab2b77c68ae74d92234ea5
   languageName: node
   linkType: hard
 
@@ -6159,9 +6160,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001538, caniuse-lite@npm:^1.0.30001541":
-  version: 1.0.30001551
-  resolution: "caniuse-lite@npm:1.0.30001551"
-  checksum: ffdee85b1c130cbebf0aa978ba839f3525f8e304855ba9bf0fbefaac8dd8c40051a7e19ac84a7cf4ba026410abcbe6f8b45560b22ee417c52daecaf955108e65
+  version: 1.0.30001553
+  resolution: "caniuse-lite@npm:1.0.30001553"
+  checksum: 45d6a2a3c3a098c8093a4c8883fceafb4bbf59d96f6fd5bb381ba4581d07eecbe0ede4f55383f0d49374154ff6a808bd90fbe32b17ccd1738034d2579787b33c
   languageName: node
   linkType: hard
 
@@ -6656,18 +6657,18 @@ __metadata:
   linkType: hard
 
 "core-js-compat@npm:^3.31.0, core-js-compat@npm:^3.32.2":
-  version: 3.33.0
-  resolution: "core-js-compat@npm:3.33.0"
+  version: 3.33.1
+  resolution: "core-js-compat@npm:3.33.1"
   dependencies:
     browserslist: ^4.22.1
-  checksum: 83ae54008c09b8e0ae3c59457039866c342c7e28b0d30eebb638a5b51c01432e63fe97695c90645cbc6a8b073a4f9a8b0e75f0818bbf8b4b054e01f4c17d3181
+  checksum: 39329daf135a3d8fdd86cf61d4fb2e868d1d9a60308cd98fccd0296d5e40b040c107e9aaa8a87163d8c058c69fbd441bc0a7a035aebd2d0978275bd0b257df15
   languageName: node
   linkType: hard
 
 "core-js-pure@npm:^3.23.3":
-  version: 3.33.0
-  resolution: "core-js-pure@npm:3.33.0"
-  checksum: d47084a4de9a0cef9779eccd3ac9f435cf9fd7aa71794150cd4c6b305036bcc392d94766d4a7b6456bdd08faba7752d55c2ec40185bda161c3563081c9fa1e17
+  version: 3.33.1
+  resolution: "core-js-pure@npm:3.33.1"
+  checksum: 8accbdf5449b5e8c368a0a3569f281ef6ad3369c023766fe4f4cd8336af671852f0fa123a0172cd47b193b7d522d72eb01bd0c5c1620f0bac21150a91c2f72a1
   languageName: node
   linkType: hard
 
@@ -7623,7 +7624,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"define-data-property@npm:^1.0.1":
+"define-data-property@npm:^1.0.1, define-data-property@npm:^1.1.1":
   version: 1.1.1
   resolution: "define-data-property@npm:1.1.1"
   dependencies:
@@ -8001,9 +8002,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.535":
-  version: 1.4.560
-  resolution: "electron-to-chromium@npm:1.4.560"
-  checksum: 30ba099592544235f1cc79c56d0ce370d4e5309072e02e099e7714a4de370286e635853f0b9c6f16bedbcc65c979352128dde8607895d6cbb901a42c9cae0a70
+  version: 1.4.563
+  resolution: "electron-to-chromium@npm:1.4.563"
+  checksum: 50512b9662688291b1c4e921def7206bab1ebd57f5bf5bdbb7961842ae69b4baad5df1293084b62ea07686c578e42ed17546434d7c9102960914240770921a5b
   languageName: node
   linkType: hard
 
@@ -8134,24 +8135,24 @@ __metadata:
   linkType: hard
 
 "es-abstract@npm:^1.22.1":
-  version: 1.22.2
-  resolution: "es-abstract@npm:1.22.2"
+  version: 1.22.3
+  resolution: "es-abstract@npm:1.22.3"
   dependencies:
     array-buffer-byte-length: ^1.0.0
     arraybuffer.prototype.slice: ^1.0.2
     available-typed-arrays: ^1.0.5
-    call-bind: ^1.0.2
+    call-bind: ^1.0.5
     es-set-tostringtag: ^2.0.1
     es-to-primitive: ^1.2.1
     function.prototype.name: ^1.1.6
-    get-intrinsic: ^1.2.1
+    get-intrinsic: ^1.2.2
     get-symbol-description: ^1.0.0
     globalthis: ^1.0.3
     gopd: ^1.0.1
-    has: ^1.0.3
     has-property-descriptors: ^1.0.0
     has-proto: ^1.0.1
     has-symbols: ^1.0.3
+    hasown: ^2.0.0
     internal-slot: ^1.0.5
     is-array-buffer: ^3.0.2
     is-callable: ^1.2.7
@@ -8161,7 +8162,7 @@ __metadata:
     is-string: ^1.0.7
     is-typed-array: ^1.1.12
     is-weakref: ^1.0.2
-    object-inspect: ^1.12.3
+    object-inspect: ^1.13.1
     object-keys: ^1.1.1
     object.assign: ^4.1.4
     regexp.prototype.flags: ^1.5.1
@@ -8175,8 +8176,8 @@ __metadata:
     typed-array-byte-offset: ^1.0.0
     typed-array-length: ^1.0.4
     unbox-primitive: ^1.0.2
-    which-typed-array: ^1.1.11
-  checksum: cc70e592d360d7d729859013dee7a610c6b27ed8630df0547c16b0d16d9fe6505a70ee14d1af08d970fdd132b3f88c9ca7815ce72c9011608abf8ab0e55fc515
+    which-typed-array: ^1.1.13
+  checksum: b1bdc962856836f6e72be10b58dc128282bdf33771c7a38ae90419d920fc3b36cc5d2b70a222ad8016e3fc322c367bf4e9e89fc2bc79b7e933c05b218e83d79a
   languageName: node
   linkType: hard
 
@@ -8227,22 +8228,22 @@ __metadata:
   linkType: hard
 
 "es-set-tostringtag@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "es-set-tostringtag@npm:2.0.1"
+  version: 2.0.2
+  resolution: "es-set-tostringtag@npm:2.0.2"
   dependencies:
-    get-intrinsic: ^1.1.3
-    has: ^1.0.3
+    get-intrinsic: ^1.2.2
     has-tostringtag: ^1.0.0
-  checksum: ec416a12948cefb4b2a5932e62093a7cf36ddc3efd58d6c58ca7ae7064475ace556434b869b0bbeb0c365f1032a8ccd577211101234b69837ad83ad204fff884
+    hasown: ^2.0.0
+  checksum: afcec3a4c9890ae14d7ec606204858441c801ff84f312538e1d1ccf1e5493c8b17bd672235df785f803756472cb4f2d49b87bde5237aef33411e74c22f194e07
   languageName: node
   linkType: hard
 
 "es-shim-unscopables@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "es-shim-unscopables@npm:1.0.0"
+  version: 1.0.2
+  resolution: "es-shim-unscopables@npm:1.0.2"
   dependencies:
-    has: ^1.0.3
-  checksum: 83e95cadbb6ee44d3644dfad60dcad7929edbc42c85e66c3e99aefd68a3a5c5665f2686885cddb47dfeabfd77bd5ea5a7060f2092a955a729bbd8834f0d86fa1
+    hasown: ^2.0.0
+  checksum: 432bd527c62065da09ed1d37a3f8e623c423683285e6188108286f4a1e8e164a5bcbfbc0051557c7d14633cd2a41ce24c7048e6bbb66a985413fd32f1be72626
   languageName: node
   linkType: hard
 
@@ -8473,17 +8474,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:8.51.0":
-  version: 8.51.0
-  resolution: "eslint@npm:8.51.0"
+"eslint@npm:8.52.0":
+  version: 8.52.0
+  resolution: "eslint@npm:8.52.0"
   dependencies:
     "@eslint-community/eslint-utils": ^4.2.0
     "@eslint-community/regexpp": ^4.6.1
     "@eslint/eslintrc": ^2.1.2
-    "@eslint/js": 8.51.0
-    "@humanwhocodes/config-array": ^0.11.11
+    "@eslint/js": 8.52.0
+    "@humanwhocodes/config-array": ^0.11.13
     "@humanwhocodes/module-importer": ^1.0.1
     "@nodelib/fs.walk": ^1.2.8
+    "@ungap/structured-clone": ^1.2.0
     ajv: ^6.12.4
     chalk: ^4.0.0
     cross-spawn: ^7.0.2
@@ -8516,7 +8518,7 @@ __metadata:
     text-table: ^0.2.0
   bin:
     eslint: bin/eslint.js
-  checksum: 214fa5d1fcb67af1b8992ce9584ccd85e1aa7a482f8b8ea5b96edc28fa838a18a3b69456db45fc1ed3ef95f1e9efa9714f737292dc681e572d471d02fda9649c
+  checksum: fd22d1e9bd7090e31b00cbc7a3b98f3b76020a4c4641f987ae7d0c8f52e1b88c3b268bdfdabac2e1a93513e5d11339b718ff45cbff48a44c35d7e52feba510ed
   languageName: node
   linkType: hard
 
@@ -9231,7 +9233,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"function-bind@npm:^1.1.1":
+"function-bind@npm:^1.1.1, function-bind@npm:^1.1.2":
   version: 1.1.2
   resolution: "function-bind@npm:1.1.2"
   checksum: 2b0ff4ce708d99715ad14a6d1f894e2a83242e4a52ccfcefaee5e40050562e5f6dafc1adbb4ce2d4ab47279a45dc736ab91ea5042d843c3c092820dfe032efb1
@@ -9294,15 +9296,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-intrinsic@npm:^1.0.2, get-intrinsic@npm:^1.1.1, get-intrinsic@npm:^1.1.3, get-intrinsic@npm:^1.2.0, get-intrinsic@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "get-intrinsic@npm:1.2.1"
+"get-intrinsic@npm:^1.0.2, get-intrinsic@npm:^1.1.1, get-intrinsic@npm:^1.1.3, get-intrinsic@npm:^1.2.0, get-intrinsic@npm:^1.2.1, get-intrinsic@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "get-intrinsic@npm:1.2.2"
   dependencies:
-    function-bind: ^1.1.1
-    has: ^1.0.3
+    function-bind: ^1.1.2
     has-proto: ^1.0.1
     has-symbols: ^1.0.3
-  checksum: 5b61d88552c24b0cf6fa2d1b3bc5459d7306f699de060d76442cce49a4721f52b8c560a33ab392cf5575b7810277d54ded9d4d39a1ea61855619ebc005aa7e5f
+    hasown: ^2.0.0
+  checksum: 447ff0724df26829908dc033b62732359596fcf66027bc131ab37984afb33842d9cd458fd6cecadfe7eac22fd8a54b349799ed334cf2726025c921c7250e7417
   languageName: node
   linkType: hard
 
@@ -9577,11 +9579,11 @@ __metadata:
   linkType: hard
 
 "has-property-descriptors@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "has-property-descriptors@npm:1.0.0"
+  version: 1.0.1
+  resolution: "has-property-descriptors@npm:1.0.1"
   dependencies:
-    get-intrinsic: ^1.1.1
-  checksum: a6d3f0a266d0294d972e354782e872e2fe1b6495b321e6ef678c9b7a06a40408a6891817350c62e752adced73a94ac903c54734fee05bf65b1905ee1368194bb
+    get-intrinsic: ^1.2.2
+  checksum: 2bcc6bf6ec6af375add4e4b4ef586e43674850a91ad4d46666d0b28ba8e1fd69e424c7677d24d60f69470ad0afaa2f3197f508b20b0bb7dd99a8ab77ffc4b7c4
   languageName: node
   linkType: hard
 
@@ -9629,6 +9631,15 @@ __metadata:
     inherits: ^2.0.3
     minimalistic-assert: ^1.0.1
   checksum: e350096e659c62422b85fa508e4b3669017311aa4c49b74f19f8e1bc7f3a54a584fdfd45326d4964d6011f2b2d882e38bea775a96046f2a61b7779a979629d8f
+  languageName: node
+  linkType: hard
+
+"hasown@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "hasown@npm:2.0.0"
+  dependencies:
+    function-bind: ^1.1.2
+  checksum: 6151c75ca12554565098641c98a40f4cc86b85b0fd5b6fe92360967e4605a4f9610f7757260b4e8098dd1c2ce7f4b095f2006fe72a570e3b6d2d28de0298c176
   languageName: node
   linkType: hard
 
@@ -10131,13 +10142,13 @@ __metadata:
   linkType: hard
 
 "internal-slot@npm:^1.0.4, internal-slot@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "internal-slot@npm:1.0.5"
+  version: 1.0.6
+  resolution: "internal-slot@npm:1.0.6"
   dependencies:
-    get-intrinsic: ^1.2.0
-    has: ^1.0.3
+    get-intrinsic: ^1.2.2
+    hasown: ^2.0.0
     side-channel: ^1.0.4
-  checksum: 97e84046bf9e7574d0956bd98d7162313ce7057883b6db6c5c7b5e5f05688864b0978ba07610c726d15d66544ffe4b1050107d93f8a39ebc59b15d8b429b497a
+  checksum: 7872454888047553ce97a3fa1da7cc054a28ec5400a9c2e9f4dbe4fe7c1d041cb8e8301467614b80d4246d50377aad2fb58860b294ed74d6700cc346b6f89549
   languageName: node
   linkType: hard
 
@@ -10267,11 +10278,11 @@ __metadata:
   linkType: hard
 
 "is-core-module@npm:^2.13.0, is-core-module@npm:^2.5.0":
-  version: 2.13.0
-  resolution: "is-core-module@npm:2.13.0"
+  version: 2.13.1
+  resolution: "is-core-module@npm:2.13.1"
   dependencies:
-    has: ^1.0.3
-  checksum: 053ab101fb390bfeb2333360fd131387bed54e476b26860dc7f5a700bbf34a0ec4454f7c8c4d43e8a0030957e4b3db6e16d35e1890ea6fb654c833095e040355
+    hasown: ^2.0.0
+  checksum: 256559ee8a9488af90e4bad16f5583c6d59e92f0742e9e8bb4331e758521ee86b810b93bae44f390766ffbc518a0488b18d9dab7da9a5ff997d499efc9403f7c
   languageName: node
   linkType: hard
 
@@ -11573,7 +11584,7 @@ __metadata:
     chalk: 5.3.0
     cross-env: 7.0.3
     envinfo: 7.10.0
-    eslint: 8.51.0
+    eslint: 8.52.0
     fs-extra: 11.1.1
     husky: 8.0.3
     inquirer: 9.2.11
@@ -12341,9 +12352,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mermaid@npm:10.5.0":
-  version: 10.5.0
-  resolution: "mermaid@npm:10.5.0"
+"mermaid@npm:10.5.1":
+  version: 10.5.1
+  resolution: "mermaid@npm:10.5.1"
   dependencies:
     "@braintree/sanitize-url": ^6.0.1
     "@types/d3-scale": ^4.0.3
@@ -12365,7 +12376,7 @@ __metadata:
     ts-dedent: ^2.2.0
     uuid: ^9.0.0
     web-worker: ^1.2.0
-  checksum: 443a84f517045342dac8f8968229eaaf7c6d83a88dfd996e17ac5fe04cd4a44710f4324634fbff2d7af5c1136f28cab1db84eb58ecb042f5e2635c26c620fafc
+  checksum: bf1fb1e4e9a3b2fa600fb82f6606dd608da92146b80a1cade11b8cd86512945b71af19797a1ba6f15b1aed59b6a3f504af1dcf5428e4f5abc1756e8fe4ca538e
   languageName: node
   linkType: hard
 
@@ -13577,7 +13588,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-inspect@npm:^1.12.3, object-inspect@npm:^1.9.0":
+"object-inspect@npm:^1.13.1, object-inspect@npm:^1.9.0":
   version: 1.13.1
   resolution: "object-inspect@npm:1.13.1"
   checksum: 7d9fa9221de3311dcb5c7c307ee5dc011cdd31dc43624b7c184b3840514e118e05ef0002be5388304c416c0eb592feb46e983db12577fc47e47d5752fbbfb61f
@@ -16070,6 +16081,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"set-function-length@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "set-function-length@npm:1.1.1"
+  dependencies:
+    define-data-property: ^1.1.1
+    get-intrinsic: ^1.2.1
+    gopd: ^1.0.1
+    has-property-descriptors: ^1.0.0
+  checksum: c131d7569cd7e110cafdfbfbb0557249b538477624dfac4fc18c376d879672fa52563b74029ca01f8f4583a8acb35bb1e873d573a24edb80d978a7ee607c6e06
+  languageName: node
+  linkType: hard
+
 "set-function-name@npm:^2.0.0, set-function-name@npm:^2.0.1":
   version: 2.0.1
   resolution: "set-function-name@npm:2.0.1"
@@ -18176,16 +18199,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"which-typed-array@npm:^1.1.11, which-typed-array@npm:^1.1.9":
-  version: 1.1.11
-  resolution: "which-typed-array@npm:1.1.11"
+"which-typed-array@npm:^1.1.11, which-typed-array@npm:^1.1.13, which-typed-array@npm:^1.1.9":
+  version: 1.1.13
+  resolution: "which-typed-array@npm:1.1.13"
   dependencies:
     available-typed-arrays: ^1.0.5
-    call-bind: ^1.0.2
+    call-bind: ^1.0.4
     for-each: ^0.3.3
     gopd: ^1.0.1
     has-tostringtag: ^1.0.0
-  checksum: 711ffc8ef891ca6597b19539075ec3e08bb9b4c2ca1f78887e3c07a977ab91ac1421940505a197758fb5939aa9524976d0a5bbcac34d07ed6faa75cedbb17206
+  checksum: 3828a0d5d72c800e369d447e54c7620742a4cc0c9baf1b5e8c17e9b6ff90d8d861a3a6dd4800f1953dbf80e5e5cec954a289e5b4a223e3bee4aeb1f8c5f33309
   languageName: node
   linkType: hard
 
