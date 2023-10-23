@@ -36,7 +36,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3.8.1
         with:
-          node-version: 16
+          node-version: 18
       - name: Install dependencies
         run: yarn
       - name: Login to Docker Hub
@@ -48,4 +48,4 @@ jobs:
         run: yarn build && yarn workspace ${{ matrix.package }} publish:docker snapshot
         env:
           # Webpack build could consume a large amount of memory
-          NODE_OPTIONS: '--max_old_space_size=4096'
+          NODE_OPTIONS: '--max-old-space-size=4096'

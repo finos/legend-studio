@@ -152,10 +152,10 @@ export const TextElementEditor = observer(() => {
             {showPreview && (
               <ResizablePanel minSize={300}>
                 <div className="text-element-editor__preview">
-                  {MarkdownTextViewer({
-                    value: { value: textElement.content },
-                    className: `text-element-editor__preview__markdown`,
-                  })}
+                  <MarkdownTextViewer
+                    value={{ value: textElement.content }}
+                    className="text-element-editor__preview__markdown"
+                  />
                 </div>
               </ResizablePanel>
             )}
