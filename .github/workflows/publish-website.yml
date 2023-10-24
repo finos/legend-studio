@@ -33,7 +33,7 @@ jobs:
         env:
           # Typedoc build could consume a large amount of memory
           # See https://github.com/TypeStrong/typedoc/issues/1606
-          NODE_OPTIONS: '--max-old-space-size=4512'
+          NODE_OPTIONS: '--max-old-space-size=4096'
         run: yarn build:ts && yarn build:website
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2.0.0

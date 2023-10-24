@@ -37,4 +37,4 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           # Webpack build could consume a large amount of memory
-          NODE_OPTIONS: '--max-old-space-size=4512'
+          NODE_OPTIONS: '--max-old-space-size=4096'
