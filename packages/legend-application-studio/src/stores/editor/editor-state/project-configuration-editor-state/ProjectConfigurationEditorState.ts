@@ -357,7 +357,13 @@ export class ProjectConfigurationEditorState extends EditorState {
             this.currentProjectConfiguration.platformConfigurations,
           );
       }
-
+      if (
+        this.originalConfig.runDependencyTests !==
+        this.currentProjectConfiguration.platformConfigurations
+      ) {
+        updateProjectConfigurationCommand.runDependencyTest =
+          this.currentProjectConfiguration.runDependencyTests;
+      }
       updateProjectConfigurationCommand.projectDependenciesToAdd =
         this.currentProjectConfiguration.projectDependencies.filter(
           (dep) =>
