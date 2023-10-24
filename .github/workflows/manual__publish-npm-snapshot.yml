@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4.0.0
         with:
-          node-version: 18
+          node-version: 20
           # The registry URL and `NODE_AUTH_TOKEN` are needed for `npm publish` to work properly
           # See https://github.com/actions/setup-node/blob/main/docs/advanced-usage.md#publish-to-npmjs-and-gpr-with-npm
           registry-url: 'https://registry.npmjs.org'
@@ -37,4 +37,4 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           # Webpack build could consume a large amount of memory
-          NODE_OPTIONS: '--max-old-space-size=4096'
+          NODE_OPTIONS: '--max-old-space-size=6144'

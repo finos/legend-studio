@@ -26,14 +26,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4.0.0
         with:
-          node-version: 18
+          node-version: 20
       - name: Install dependencies
         run: yarn
       - name: Build website content
         env:
           # Typedoc build could consume a large amount of memory
           # See https://github.com/TypeStrong/typedoc/issues/1606
-          NODE_OPTIONS: '--max-old-space-size=4096'
+          NODE_OPTIONS: '--max-old-space-size=6144'
         run: yarn build:ts && yarn build:website
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2.0.0
