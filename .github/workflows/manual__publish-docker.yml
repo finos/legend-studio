@@ -56,4 +56,4 @@ jobs:
         run: yarn build && yarn workspace ${{ matrix.package }} publish:docker ${{ github.event.inputs.tag }}
         env:
           # Webpack build could consume a large amount of memory
-          NODE_OPTIONS: '--max-old-space-size=6144'
+          NODE_OPTIONS: '--max-old-space-size=4512'
