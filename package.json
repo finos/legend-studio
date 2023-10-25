@@ -119,7 +119,7 @@
   },
   "packageManager": "yarn@4.0.0",
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=21.1.0",
     "yarn": ">=1.22.10"
   }
 }
