@@ -62,7 +62,7 @@
     "react-dnd": "16.0.1",
     "react-dom": "18.2.0",
     "serializr": "3.0.2",
-    "sql-formatter": "13.0.0"
+    "sql-formatter": "13.0.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

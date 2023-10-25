@@ -116,6 +116,7 @@ export const getBaseJestConfig = (isGlobal) => {
         // See https://jestjs.io/docs/configuration#coverageprovider-string
         // See https://github.com/jestjs/jest/issues/13186
         coverageProvider: 'v8',
+        coverageReporters: ['clover', 'json', 'lcov', 'text-summary'],
         coverageDirectory: '<rootDir>/build/coverage',
         watchPathIgnorePatterns: [
           ...baseConfig.watchPathIgnorePatterns,
