@@ -363,21 +363,14 @@ export const buildPropertyExpressionFromExistsNode = (
   node: QueryBuilderFilterTreeConditionNodeData,
 ): AbstractPropertyExpression => {
   let nodeParent = filterState.getParentNode(node);
-  let existsLambdaParameterNames: string[] = [];
   let existsLambdaExpressions: AbstractPropertyExpression[] = [];
   existsLambdaExpressions.push(
     node.condition.propertyExpressionState.propertyExpression,
-  );
-  existsLambdaParameterNames.push(
-    nodeParent?.lambdaParameterName ?? filterState.lambdaParameterName,
   );
   while (nodeParent && nodeParent.id !== existsNode.id) {
     if (nodeParent instanceof QueryBuilderFilterTreeExistsNodeData) {
       existsLambdaExpressions.push(
         nodeParent.propertyExpressionState.propertyExpression,
-      );
-      existsLambdaParameterNames.push(
-        nodeParent.lambdaParameterName ?? filterState.lambdaParameterName,
       );
     }
     nodeParent = filterState.getParentNode(nodeParent);
@@ -386,17 +379,12 @@ export const buildPropertyExpressionFromExistsNode = (
     existsLambdaExpressions.push(
       existsNode.propertyExpressionState.propertyExpression,
     );
-    existsLambdaParameterNames.push(
-      existsNode.lambdaParameterName ?? filterState.lambdaParameterName,
-    );
   }
-  existsLambdaParameterNames = existsLambdaParameterNames.reverse();
   existsLambdaExpressions = existsLambdaExpressions.reverse();
 
   const initialPropertyExpression = guaranteeNonNullable(
     existsLambdaExpressions[0],
   );
-  existsLambdaParameterNames = existsLambdaParameterNames.slice(1);
   existsLambdaExpressions = existsLambdaExpressions.slice(1);
 
   let flattenedPropertyExpressionChain = new AbstractPropertyExpression('');

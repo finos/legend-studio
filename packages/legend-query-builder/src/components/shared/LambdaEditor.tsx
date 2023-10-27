@@ -89,7 +89,7 @@ const LambdaEditor_Inner = observer(
     disabled: boolean;
     inline?: boolean | undefined;
     lambdaEditorState: LambdaEditorState;
-    transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | undefined;
+    transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | null;
     expectedType?: Type | undefined;
     matchedExpectedType?: (() => boolean) | undefined;
     onExpectedTypeLabelSelect?: (() => void) | undefined;
@@ -435,7 +435,7 @@ const LambdaEditor_PopUp = observer(
     className?: string | undefined;
     disabled: boolean;
     lambdaEditorState: LambdaEditorState;
-    transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | undefined;
+    transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | null;
     onClose: () => void;
   }) => {
     const {
@@ -735,7 +735,7 @@ export const InlineLambdaEditor = observer(
     const debouncedTransformStringToLambda = useMemo(
       () =>
         disabled
-          ? undefined
+          ? null
           : debounce(
               () => lambdaEditorState.convertLambdaGrammarStringToObject(),
               1000,
@@ -822,7 +822,7 @@ export const LambdaEditor = observer((props: LambdaEditorBaseProps) => {
   const debouncedTransformStringToLambda = useMemo(
     () =>
       disabled
-        ? undefined
+        ? null
         : debounce(
             () => lambdaEditorState.convertLambdaGrammarStringToObject(),
             1000,
