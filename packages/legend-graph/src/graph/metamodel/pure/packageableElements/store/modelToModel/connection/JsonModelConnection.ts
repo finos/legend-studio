@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  ContentType,
-  createUrlStringFromData,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { ConnectionVisitor } from '../../../connection/Connection.js';
 import type { Class } from '../../../domain/Class.js';
 import type { ModelStore } from '../model/ModelStore.js';
 import { PureModelConnection } from './PureModelConnection.js';
 import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+
+const DEFAULT_CONNECTION_URL = 'executor:default';
 
 export class JsonModelConnection
   extends PureModelConnection
@@ -38,7 +35,7 @@ export class JsonModelConnection
   constructor(
     store: PackageableElementReference<ModelStore>,
     _class: PackageableElementReference<Class>,
-    url = createUrlStringFromData('{}', ContentType.APPLICATION_JSON, false),
+    url = DEFAULT_CONNECTION_URL,
   ) {
     super(store);
     this.class = _class;
