@@ -103,9 +103,13 @@ import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.j
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import {
   DataGrid,
+  isEnterpriseVersionEnabled,
   type DataGridColumnApi,
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
+  type DataGridApi,
+  type DataGridCellRange,
+  type DataGridIRowNode,
 } from '@finos/legend-lego/data-grid';
 import {
   CODE_EDITOR_LANGUAGE,
@@ -116,6 +120,8 @@ import type {
   QueryBuilderTDSResultCellCoordinate,
   QueryBuilderResultState,
   QueryBuilderTDSResultCellData,
+  QueryBuilderTDSResultCellDataType,
+  QueryBuilderTDSRowDataType,
 } from '../stores/QueryBuilderResultState.js';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
@@ -146,9 +152,10 @@ const QueryBuilderGridResultContextMenu = observer(
     {
       data: QueryBuilderTDSResultCellData | null;
       tdsState: QueryBuilderTDSState;
+      dataGridApi: DataGridApi<QueryBuilderTDSRowDataType>;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { data, tdsState } = props;
+    const { data, tdsState, dataGridApi } = props;
 
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
@@ -422,13 +429,13 @@ const QueryBuilderGridResultContextMenu = observer(
 
     const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
       applicationStore.clipboardService.copyTextToClipboard(
-        data?.value?.toString() ?? '',
+        tdsState.queryBuilderState.resultState.selectedCells
+          .map((cellData) => cellData.value)
+          .join(','),
       ),
     );
 
-    const findRowFromRowIndex = (
-      rowIndex: number,
-    ): (string | number | boolean | null)[] => {
+    const findRowFromRowIndex = (rowIndex: number): string => {
       if (
         !tdsState.queryBuilderState.resultState.executionResult ||
         !(
@@ -436,13 +443,20 @@ const QueryBuilderGridResultContextMenu = observer(
           TDSExecutionResult
         )
       ) {
-        return [''];
+        return '';
       }
-      return (
-        tdsState.queryBuilderState.resultState.executionResult.result.rows[
-          rowIndex
-        ]?.values ?? ['']
-      );
+      // try to get the entire row value separated by comma
+      // rowData is in format of {columnName: value, columnName1: value, ...., rowNumber:value}
+      const valueArr: QueryBuilderTDSResultCellDataType[] = [];
+      Object.entries(
+        dataGridApi.getRenderedNodes().find((n) => n.rowIndex === rowIndex)
+          ?.data as QueryBuilderTDSRowDataType,
+      ).forEach((entry) => {
+        if (entry[0] !== 'rowNumber') {
+          valueArr.push(entry[1] as QueryBuilderTDSResultCellDataType);
+        }
+      });
+      return valueArr.join(',');
     };
 
     const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
@@ -450,7 +464,7 @@ const QueryBuilderGridResultContextMenu = observer(
         findRowFromRowIndex(
           tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
             .rowIndex ?? 0,
-        ).toString(),
+        ),
       ),
     );
 
@@ -516,7 +530,6 @@ const QueryResultCellRenderer = observer(
       );
       return { rowIndex: rowNumber, colIndex: colIndex };
     };
-
     const currentCellCoordinates = findCoordinatesFromResultValue(
       columnName,
       params.rowIndex,
@@ -529,7 +542,7 @@ const QueryResultCellRenderer = observer(
 
     const findColumnFromCoordinates = (
       colIndex: number,
-    ): string | number | boolean | null | undefined => {
+    ): QueryBuilderTDSResultCellDataType => {
       if (
         !resultState.executionResult ||
         !(resultState.executionResult instanceof TDSExecutionResult)
@@ -541,7 +554,7 @@ const QueryResultCellRenderer = observer(
 
     const findResultValueFromCoordinates = (
       resultCoordinate: [number, number],
-    ): string | number | boolean | null | undefined => {
+    ): QueryBuilderTDSResultCellDataType => {
       const rowIndex = resultCoordinate[0];
       const colIndex = resultCoordinate[1];
 
@@ -576,7 +589,6 @@ const QueryResultCellRenderer = observer(
 
     const mouseDown: React.MouseEventHandler = (event) => {
       event.preventDefault();
-
       if (event.shiftKey) {
         const coordinates = findCoordinatesFromResultValue(
           columnName,
@@ -702,6 +714,7 @@ const QueryResultCellRenderer = observer(
             <QueryBuilderGridResultContextMenu
               data={resultState.mousedOverCell}
               tdsState={fetchStructureImplementation}
+              dataGridApi={params.api}
             />
           ) : null
         }
@@ -721,6 +734,78 @@ const QueryResultCellRenderer = observer(
             'query-builder__result__values__table__cell--active':
               cellInFilteredResults,
           })}
+          onMouseDown={(event) => mouseDown(event)}
+          onMouseUp={(event) => mouseUp(event)}
+          onMouseOver={(event) => mouseOver(event)}
+        >
+          {cellValueUrlLink ? (
+            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+              {cellValueUrlLink}
+            </a>
+          ) : (
+            <span>{formattedCellValue()}</span>
+          )}
+        </div>
+      </ContextMenu>
+    );
+  },
+);
+
+const QueryResultEnterpriseCellRenderer = observer(
+  (params: IQueryRendererParamsWithGridType) => {
+    const resultState = params.resultState;
+    const fetchStructureImplementation =
+      resultState.queryBuilderState.fetchStructureState.implementation;
+    const cellValue = params.value as string | null | number | undefined;
+    const formattedCellValue = (): string | null | number | undefined => {
+      if (isNumber(cellValue)) {
+        return Intl.NumberFormat(DEFAULT_LOCALE, {
+          maximumFractionDigits: 4,
+        }).format(Number(cellValue));
+      }
+      return cellValue;
+    };
+    const cellValueUrlLink =
+      isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
+
+    const mouseDown: React.MouseEventHandler = (event) => {
+      event.preventDefault();
+      if (event.button === 0 || event.button === 2) {
+        resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+      }
+    };
+    const mouseUp: React.MouseEventHandler = (event) => {
+      resultState.setIsSelectingCells(false);
+    };
+    const mouseOver: React.MouseEventHandler = (event) => {
+      resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+    };
+
+    return (
+      <ContextMenu
+        content={
+          // NOTE: we only support this functionality for grid result with a projection fetch-structure
+          fetchStructureImplementation instanceof QueryBuilderTDSState ? (
+            <QueryBuilderGridResultContextMenu
+              data={resultState.mousedOverCell}
+              tdsState={fetchStructureImplementation}
+              dataGridApi={params.api}
+            />
+          ) : null
+        }
+        disabled={
+          !(
+            resultState.queryBuilderState.fetchStructureState
+              .implementation instanceof QueryBuilderTDSState
+          ) ||
+          !resultState.queryBuilderState.isQuerySupported ||
+          !resultState.mousedOverCell
+        }
+        menuProps={{ elevation: 7 }}
+        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
+      >
+        <div
+          className={clsx('query-builder__result__values__table__cell')}
           onMouseDown={(event) => mouseDown(event)}
           onMouseUp={(event) => mouseUp(event)}
           onMouseOver={(event) => mouseOver(event)}
@@ -772,77 +857,225 @@ const getColumnCustomizations = (
   }
 };
 
+const getRowDataFromExecutionResult = (
+  executionResult: TDSExecutionResult,
+): PlainObject<QueryBuilderTDSRowDataType>[] => {
+  const rowData = executionResult.result.rows.map((_row, rowIdx) => {
+    const row: PlainObject = {};
+    const cols = executionResult.result.columns;
+    _row.values.forEach((value, colIdx) => {
+      // `ag-grid` shows `false` value as empty string so we have
+      // call `.toString()` to avoid this behavior.
+      // See https://github.com/finos/legend-studio/issues/1008
+      row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
+    });
+
+    row.rowNumber = rowIdx;
+    return row;
+  });
+  return rowData;
+};
+
 const QueryBuilderGridResult = observer(
   (props: {
     executionResult: TDSExecutionResult;
     queryBuilderState: QueryBuilderState;
   }) => {
     const { executionResult, queryBuilderState } = props;
+    const resultState = queryBuilderState.resultState;
+    const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
+    const colDefs = executionResult.result.columns.map(
+      (colName) =>
+        ({
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          field: colName,
+          flex: 1,
+          cellRenderer: QueryResultCellRenderer,
+          cellRendererParams: {
+            resultState: resultState,
+            tdsExecutionResult: executionResult,
+          },
+        }) as DataGridColumnDefinition,
+    );
 
+    return (
+      <div className="query-builder__result__values__table">
+        <div
+          className={clsx(
+            'ag-theme-balham-dark query-builder__result__tds-grid',
+          )}
+        >
+          {
+            <DataGrid
+              rowData={getRowDataFromExecutionResult(executionResult)}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => data.data.rowNumber,
+                rowSelection: 'multiple',
+              }}
+              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+              suppressFieldDotNotation={true}
+              suppressContextMenu={!isAdvancedModeEnabled}
+              columnDefs={colDefs}
+            />
+          }
+        </div>
+      </div>
+    );
+  },
+);
+
+const QueryBuilderEnterpriseGridResult = observer(
+  (props: {
+    executionResult: TDSExecutionResult;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { executionResult, queryBuilderState } = props;
+
+    const resultState = queryBuilderState.resultState;
+    const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
+    const colDefs = executionResult.result.columns.map(
+      (colName) =>
+        ({
+          minWidth: 50,
+          sortable: true,
+          resizable: true,
+          field: colName,
+          flex: 1,
+          cellRenderer: QueryResultEnterpriseCellRenderer,
+          cellRendererParams: {
+            resultState: resultState,
+            tdsExecutionResult: executionResult,
+          },
+        }) as DataGridColumnDefinition,
+    );
+
+    const getSelectedCells = (
+      api: DataGridApi<QueryBuilderTDSRowDataType>,
+    ): QueryBuilderTDSResultCellData[] => {
+      const seletcedRanges: DataGridCellRange[] | null = api.getCellRanges();
+      const nodes = api.getRenderedNodes();
+      const columns = api.getColumnDefs() as DataGridColumnDefinition[];
+      const selectedCells = [];
+      if (seletcedRanges) {
+        for (const seletcedRange of seletcedRanges) {
+          const startRow: number = seletcedRange.startRow?.rowIndex ?? 0;
+          const endRow: number = seletcedRange.endRow?.rowIndex ?? 0;
+          const selectedColumns: string[] = seletcedRange.columns.map((col) =>
+            col.getColId(),
+          );
+          for (let x: number = startRow; x <= endRow; x++) {
+            const curRowData = nodes.find(
+              (n) => (n as DataGridIRowNode).rowIndex === x,
+            )?.data;
+            if (curRowData) {
+              for (const col of selectedColumns) {
+                const valueAndColumnId = {
+                  value: Object.entries(curRowData)
+                    .find((rData) => rData[0] === col)
+                    ?.at(1),
+                  columnName: col,
+                  coordinates: {
+                    rowIndex: x,
+                    colIndex: columns.findIndex(
+                      (colDef) => colDef.colId === col,
+                    ),
+                  },
+                } as QueryBuilderTDSResultCellData;
+                selectedCells.push(valueAndColumnId);
+              }
+            }
+          }
+        }
+      }
+      return selectedCells;
+    };
+
+    return (
+      <div className="query-builder__result__values__table">
+        <div
+          className={clsx(
+            'ag-theme-balham-dark query-builder__result__tds-grid',
+          )}
+        >
+          {
+            <DataGrid
+              rowData={getRowDataFromExecutionResult(executionResult)}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                getRowId: (data) => data.data.rowNumber,
+                rowSelection: 'multiple',
+                enableRangeSelection: true,
+              }}
+              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+              onRangeSelectionChanged={(event) => {
+                const selectedCells = getSelectedCells(event.api);
+                resultState.setSelectedCells([]);
+                selectedCells.forEach((cell) =>
+                  resultState.addSelectedCell(cell),
+                );
+              }}
+              suppressFieldDotNotation={true}
+              suppressContextMenu={!isAdvancedModeEnabled}
+              columnDefs={colDefs}
+            />
+          }
+        </div>
+      </div>
+    );
+  },
+);
+
+const QueryBuilderAdvancedGridResult = observer(
+  (props: {
+    executionResult: TDSExecutionResult;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { executionResult, queryBuilderState } = props;
     const [columnAPi, setColumnApi] = useState<DataGridColumnApi | undefined>(
       undefined,
     );
     const resultState = queryBuilderState.resultState;
     const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
-    const colDefs = isAdvancedModeEnabled
-      ? executionResult.result.columns.map((colName) => {
-          const col = {
-            minWidth: 50,
-            sortable: true,
-            resizable: true,
-            field: colName,
-            flex: 1,
-            enablePivot: true,
-            enableRowGroup: true,
-            enableValue: true,
-            ...getColumnCustomizations(executionResult, colName),
-          } as DataGridColumnDefinition;
-          const persistedColumn = resultState.gridConfig.columns.find(
-            (c) => c.colId === colName,
-          );
-          if (persistedColumn) {
-            if (persistedColumn.width) {
-              col.width = persistedColumn.width;
-            }
-            col.pinned = persistedColumn.pinned ?? null;
-            col.rowGroup = persistedColumn.rowGroup ?? false;
-            col.rowGroupIndex = persistedColumn.rowGroupIndex ?? null;
-            col.aggFunc = persistedColumn.aggFunc ?? null;
-            col.pivot = persistedColumn.pivot ?? false;
-            col.hide = persistedColumn.hide ?? false;
-          }
-          return col;
-        })
-      : executionResult.result.columns.map(
-          (colName) =>
-            ({
-              minWidth: 50,
-              sortable: true,
-              resizable: true,
-              field: colName,
-              flex: 1,
-              cellRenderer: QueryResultCellRenderer,
-              cellRendererParams: {
-                resultState: resultState,
-                tdsExecutionResult: executionResult,
-              },
-            }) as DataGridColumnDefinition,
-        );
-    const sideBar = isAdvancedModeEnabled ? ['columns', 'filters'] : null;
-
-    const rowData = executionResult.result.rows.map((_row, rowIdx) => {
-      const row: PlainObject = {};
-      const cols = executionResult.result.columns;
-      _row.values.forEach((value, colIdx) => {
-        // `ag-grid` shows `false` value as empty string so we have
-        // call `.toString()` to avoid this behavior.
-        // See https://github.com/finos/legend-studio/issues/1008
-        row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
-      });
-
-      row.rowNumber = rowIdx;
-      return row;
+    const colDefs = executionResult.result.columns.map((colName) => {
+      const col = {
+        minWidth: 50,
+        sortable: true,
+        resizable: true,
+        field: colName,
+        flex: 1,
+        enablePivot: true,
+        enableRowGroup: true,
+        enableValue: true,
+        ...getColumnCustomizations(executionResult, colName),
+      } as DataGridColumnDefinition;
+      const persistedColumn = resultState.gridConfig.columns.find(
+        (c) => c.colId === colName,
+      );
+      if (persistedColumn) {
+        if (persistedColumn.width) {
+          col.width = persistedColumn.width;
+        }
+        col.pinned = persistedColumn.pinned ?? null;
+        col.rowGroup = persistedColumn.rowGroup ?? false;
+        col.rowGroupIndex = persistedColumn.rowGroupIndex ?? null;
+        col.aggFunc = persistedColumn.aggFunc ?? null;
+        col.pivot = persistedColumn.pivot ?? false;
+        col.hide = persistedColumn.hide ?? false;
+      }
+      return col;
     });
+    const sideBar = isAdvancedModeEnabled ? ['columns', 'filters'] : null;
     const onSaveGridColumnState = (): void => {
       if (!columnAPi) {
         return;
@@ -860,57 +1093,41 @@ const QueryBuilderGridResult = observer(
             'ag-theme-balham-dark query-builder__result__tds-grid',
           )}
         >
-          {isAdvancedModeEnabled ? (
-            <DataGrid
-              rowData={rowData}
-              onGridReady={(params): void => {
-                setColumnApi(params.columnApi);
-                params.columnApi.setPivotMode(
-                  resultState.gridConfig.isPivotModeEnabled,
-                );
-              }}
-              gridOptions={{
-                suppressScrollOnNewData: true,
-                getRowId: (data) => data.data.rowNumber,
-                rowSelection: 'multiple',
-                pivotPanelShow: 'always',
-                rowGroupPanelShow: 'always',
-              }}
-              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
-              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
-              onRowDataUpdated={(params) => {
-                params.api.refreshCells({ force: true });
-              }}
-              suppressFieldDotNotation={true}
-              suppressContextMenu={!isAdvancedModeEnabled}
-              columnDefs={colDefs}
-              sideBar={sideBar}
-              onColumnVisible={onSaveGridColumnState}
-              onColumnPinned={onSaveGridColumnState}
-              onColumnResized={onSaveGridColumnState}
-              onColumnRowGroupChanged={onSaveGridColumnState}
-              onColumnValueChanged={onSaveGridColumnState}
-              onColumnPivotChanged={onSaveGridColumnState}
-              onColumnPivotModeChanged={onSaveGridColumnState}
-            />
-          ) : (
-            <DataGrid
-              rowData={rowData}
-              gridOptions={{
-                suppressScrollOnNewData: true,
-                getRowId: (data) => data.data.rowNumber,
-                rowSelection: 'multiple',
-              }}
-              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
-              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
-              onRowDataUpdated={(params) => {
-                params.api.refreshCells({ force: true });
-              }}
-              suppressFieldDotNotation={true}
-              suppressContextMenu={!isAdvancedModeEnabled}
-              columnDefs={colDefs}
-            />
-          )}
+          (
+          <DataGrid
+            rowData={getRowDataFromExecutionResult(executionResult)}
+            onGridReady={(params): void => {
+              setColumnApi(params.columnApi);
+              params.columnApi.setPivotMode(
+                resultState.gridConfig.isPivotModeEnabled,
+              );
+            }}
+            gridOptions={{
+              suppressScrollOnNewData: true,
+              getRowId: (data) => data.data.rowNumber,
+              rowSelection: 'multiple',
+              pivotPanelShow: 'always',
+              rowGroupPanelShow: 'always',
+              enableRangeSelection: true,
+            }}
+            // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+            // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            suppressContextMenu={!isAdvancedModeEnabled}
+            columnDefs={colDefs}
+            sideBar={sideBar}
+            onColumnVisible={onSaveGridColumnState}
+            onColumnPinned={onSaveGridColumnState}
+            onColumnResized={onSaveGridColumnState}
+            onColumnRowGroupChanged={onSaveGridColumnState}
+            onColumnValueChanged={onSaveGridColumnState}
+            onColumnPivotChanged={onSaveGridColumnState}
+            onColumnPivotModeChanged={onSaveGridColumnState}
+          />
+          )
         </div>
       </div>
     );
@@ -923,13 +1140,35 @@ const QueryBuilderResultValues = observer(
     queryBuilderState: QueryBuilderState;
   }) => {
     const { executionResult, queryBuilderState } = props;
+    const renderQueryBuilderGridResultComponent = (
+      tdsExecutionResult: TDSExecutionResult,
+    ): React.ReactNode => {
+      if (queryBuilderState.isAdvancedModeEnabled) {
+        return (
+          <QueryBuilderAdvancedGridResult
+            queryBuilderState={queryBuilderState}
+            executionResult={tdsExecutionResult}
+          />
+        );
+      }
+      if (isEnterpriseVersionEnabled) {
+        return (
+          <QueryBuilderEnterpriseGridResult
+            queryBuilderState={queryBuilderState}
+            executionResult={tdsExecutionResult}
+          />
+        );
+      } else {
+        return (
+          <QueryBuilderGridResult
+            queryBuilderState={queryBuilderState}
+            executionResult={tdsExecutionResult}
+          />
+        );
+      }
+    };
     if (executionResult instanceof TDSExecutionResult) {
-      return (
-        <QueryBuilderGridResult
-          queryBuilderState={queryBuilderState}
-          executionResult={executionResult}
-        />
-      );
+      return renderQueryBuilderGridResultComponent(executionResult);
     } else if (executionResult instanceof RawExecutionResult) {
       const inputValue =
         executionResult.value === null
