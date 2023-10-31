@@ -320,9 +320,14 @@ export class QueryBuilderResultState {
             stopWatch,
             report.timings,
           );
+        const reportWithState = Object.assign(
+          {},
+          report,
+          this.queryBuilderState.getStateInfo(),
+        );
         QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
-          report,
+          reportWithState,
         );
       }
     } catch (error) {
@@ -429,15 +434,20 @@ export class QueryBuilderResultState {
           stopWatch,
           report.timings,
         );
+      const reportWithState = Object.assign(
+        {},
+        report,
+        this.queryBuilderState.getStateInfo(),
+      );
       if (debug) {
         QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
-          report,
+          reportWithState,
         );
       } else {
         QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
-          report,
+          reportWithState,
         );
       }
     } catch (error) {

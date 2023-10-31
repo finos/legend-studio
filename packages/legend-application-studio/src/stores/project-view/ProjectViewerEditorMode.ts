@@ -28,6 +28,17 @@ import {
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { QuerySDLC } from '@finos/legend-query-builder';
+
+export interface ProjectQuerySDLC extends QuerySDLC {
+  projectId: string;
+}
+
+export interface ProjectGAVQuerySDLC extends QuerySDLC {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+}
 
 export class ProjectViewerEditorMode extends EditorMode {
   viewerStore: ProjectViewerStore;
@@ -92,5 +103,22 @@ export class ProjectViewerEditorMode extends EditorMode {
 
   override get supportSdlcOperations(): boolean {
     return !this.viewerStore.projectGAVCoordinates;
+  }
+
+  getSourceInfo(): QuerySDLC | undefined {
+    if (this.viewerStore.editorStore.sdlcState.currentProject) {
+      return {
+        projectId:
+          this.viewerStore.editorStore.sdlcState.currentProject.projectId,
+      } as ProjectQuerySDLC;
+    } else if (this.viewerStore.projectGAVCoordinates) {
+      return {
+        groupId: this.viewerStore.projectGAVCoordinates.groupId,
+        artifactId: this.viewerStore.projectGAVCoordinates.artifactId,
+        versionId: this.viewerStore.projectGAVCoordinates.versionId,
+      } as ProjectGAVQuerySDLC;
+    } else {
+      return undefined;
+    }
   }
 }

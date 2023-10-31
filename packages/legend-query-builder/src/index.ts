@@ -28,7 +28,10 @@ export {
 export { QueryBuilderNavigationBlocker } from './components/QueryBuilderNavigationBlocker.js';
 export { QueryBuilder } from './components/QueryBuilder.js';
 export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderComponentElement.js';
-export { QueryBuilderState } from './stores/QueryBuilderState.js';
+export {
+  QueryBuilderState,
+  type QuerySDLC,
+} from './stores/QueryBuilderState.js';
 export {
   getTDSColumnDerivedProperyFromType,
   buildTDSSortTypeExpression,

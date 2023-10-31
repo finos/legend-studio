@@ -33,8 +33,9 @@ export class MappingExecutionQueryBuilderState extends QueryBuilderState {
     graphManagerState: GraphManagerState,
     mapping: Mapping,
     config: QueryBuilderConfig | undefined,
+    sourceInfo?: object | undefined,
   ) {
-    super(applicationStore, graphManagerState, config);
+    super(applicationStore, graphManagerState, config, sourceInfo);
     this.executionMapping = mapping;
     this.executionContextState.mapping = mapping;
   }

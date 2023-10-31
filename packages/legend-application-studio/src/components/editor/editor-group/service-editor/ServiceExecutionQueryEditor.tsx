@@ -126,6 +126,10 @@ export const ServiceExecutionQueryEditor = observer(
         await flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
             setupQueryBuilderState: (): QueryBuilderState => {
+              const sourceInfo = {
+                service: service.path,
+                ...editorStore.editorMode.getSourceInfo(),
+              };
               const queryBuilderState = new ServiceQueryBuilderState(
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,
@@ -138,6 +142,7 @@ export const ServiceExecutionQueryEditor = observer(
                 undefined,
                 undefined,
                 embeddedQueryBuilderState.editorStore.applicationStore.config.options.queryBuilderConfig,
+                sourceInfo,
               );
               queryBuilderState.initializeWithQuery(
                 executionState.execution.func,
@@ -457,6 +462,10 @@ export const queryService = async (
     execution instanceof MultiExecutionParameters
       ? execution.singleExecutionParameters[0]?.key
       : undefined;
+  const sourceInfo = {
+    service: service.path,
+    ...editorStore.editorMode.getSourceInfo(),
+  };
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
       setupQueryBuilderState: (): QueryBuilderState => {
@@ -469,6 +478,7 @@ export const queryService = async (
           undefined,
           undefined,
           embeddedQueryBuilderState.editorStore.applicationStore.config.options.queryBuilderConfig,
+          sourceInfo,
         );
         if (execution) {
           queryBuilderState.initializeWithQuery(execution.func);

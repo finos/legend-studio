@@ -380,6 +380,7 @@ export const queryClass = async (
           embeddedQueryBuilderState.editorStore.applicationStore,
           embeddedQueryBuilderState.editorStore.graphManagerState,
           editorStore.applicationStore.config.options.queryBuilderConfig,
+          editorStore.editorMode.getSourceInfo(),
         );
         queryBuilderState.changeClass(_class);
         queryBuilderState.propagateClassChange(_class);

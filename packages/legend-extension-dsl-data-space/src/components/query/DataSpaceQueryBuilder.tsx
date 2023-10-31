@@ -401,6 +401,13 @@ export const queryDataSpace = async (
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
       setupQueryBuilderState: () => {
+        const sourceInfo = Object.assign(
+          {},
+          editorStore.editorMode.getSourceInfo(),
+          {
+            dataSpace: dataSpace.path,
+          },
+        );
         const queryBuilderState = new DataSpaceQueryBuilderState(
           editorStore.applicationStore,
           editorStore.graphManagerState,
@@ -428,6 +435,7 @@ export const queryDataSpace = async (
           undefined,
           undefined,
           editorStore.applicationStore.config.options.queryBuilderConfig,
+          sourceInfo,
         );
         queryBuilderState.setExecutionContext(
           dataSpace.defaultExecutionContext,
