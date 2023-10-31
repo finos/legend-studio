@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.42
+
+### Patch Changes
+
+- [#2704](https://github.com/finos/legend-studio/pull/2704) [`c3eba6cb9`](https://github.com/finos/legend-studio/commit/c3eba6cb93406a3a52897aa4db86520133fd7b5c) ([@gayathrir11](https://github.com/gayathrir11)) - Fix changing dataspace for an existing query saving it in inconsistent state
+
 ## 10.1.41
 
 ## 10.1.40

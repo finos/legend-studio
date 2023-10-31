@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.11.4
+
+### Patch Changes
+
+- [#2692](https://github.com/finos/legend-studio/pull/2692) [`c1fc52bb7`](https://github.com/finos/legend-studio/commit/c1fc52bb7e5f8c767caf7bde9dca21939fdba8e4) ([@gayathrir11](https://github.com/gayathrir11)) - Add query workflow information as a part of telemetry data we send to analytics
+
 ## 4.11.3
 
 ## 4.11.2

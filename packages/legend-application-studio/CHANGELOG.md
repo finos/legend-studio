@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.11.0
+
+### Minor Changes
+
+- [#2734](https://github.com/finos/legend-studio/pull/2734) [`21d6469f6`](https://github.com/finos/legend-studio/commit/21d6469f6f79dd237a1029d31805d893bcbe7c82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Allow running dependency tests on build pipeline using project config.
+
 ## 28.10.2
 
 ## 28.10.1
