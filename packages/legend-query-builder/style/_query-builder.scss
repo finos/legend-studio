@@ -16,6 +16,10 @@
 
 @use 'mixins' as *;
 
+.ag-row-selected .ag-cell-focus {
+  background: var(--color-navy-500) !important;
+}
+
 .query-builder {
   height: 100%;
   width: 100%;
@@ -1361,11 +1365,13 @@
       --ag-foreground-color: var(--color-light-grey-200);
       --ag-header-background-color: var(--color-dark-grey-100);
       --ag-header-foreground-color: var(--color-light-grey-50);
-      --ag-balham-active-color: var(--color-blue-200);
+      --ag-balham-active-color: var(--color-yellow-200);
       --ag-odd-row-background-color: var(--color-dark-grey-50);
       --ag-even-row-background-color: var(--color-dark-grey-50);
       --ag-row-hover-color: var(--color-dark-blue-shade-100);
       --ag-row-border-color: var(--color-dark-grey-200);
+      --ag-selected-row-background-color: var(--color-navy-300);
+      --ag-range-selection-background-color: var(--color-navy-300);
     }
   }
 

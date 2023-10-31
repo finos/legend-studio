@@ -43,6 +43,8 @@ import {
   isString,
   isNumber,
   filterByType,
+  isBoolean,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { forwardRef } from 'react';
 
@@ -70,11 +72,17 @@ import {
   instanceValue_setValue,
   instanceValue_setValues,
 } from '../../../stores/shared/ValueSpecificationModifierHelper.js';
-import { type DataGridCellRendererParams } from '@finos/legend-lego/data-grid';
+import {
+  isEnterpriseModeEnabled,
+  type DataGridApi,
+  type DataGridCellRendererParams,
+} from '@finos/legend-lego/data-grid';
 import type {
   QueryBuilderTDSResultCellCoordinate,
   QueryBuilderResultState,
   QueryBuilderTDSResultCellData,
+  QueryBuilderTDSRowDataType,
+  QueryBuilderTDSResultCellDataType,
 } from '../../../stores/QueryBuilderResultState.js';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
@@ -151,6 +159,25 @@ export const getAggregationTDSColumnCustomizations = (
   }
 };
 
+export const getRowDataFromExecutionResult = (
+  executionResult: TDSExecutionResult,
+): PlainObject<QueryBuilderTDSRowDataType>[] => {
+  const rowData = executionResult.result.rows.map((_row, rowIdx) => {
+    const row: PlainObject = {};
+    const cols = executionResult.result.columns;
+    _row.values.forEach((value, colIdx) => {
+      // `ag-grid` shows `false` value as empty string so we have
+      // call `.toString()` to avoid this behavior.
+      // See https://github.com/finos/legend-studio/issues/1008
+      row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
+    });
+
+    row.rowNumber = rowIdx;
+    return row;
+  });
+  return rowData;
+};
+
 export type IQueryRendererParamsWithGridType = DataGridCellRendererParams & {
   resultState: QueryBuilderResultState;
   tdsExecutionResult: TDSExecutionResult;
@@ -162,9 +189,10 @@ export const QueryBuilderGridResultContextMenu = observer(
     {
       data: QueryBuilderTDSResultCellData | null;
       tdsState: QueryBuilderTDSState;
+      dataGridApi: DataGridApi<QueryBuilderTDSRowDataType>;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { data, tdsState } = props;
+    const { data, tdsState, dataGridApi } = props;
 
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
@@ -436,15 +464,19 @@ export const QueryBuilderGridResultContextMenu = observer(
       );
     };
 
-    const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.clipboardService.copyTextToClipboard(
-        data?.value?.toString() ?? '',
-      ),
-    );
+    const handleCopyCellValue = isEnterpriseModeEnabled
+      ? (): void => {
+          dataGridApi.copySelectedRangeToClipboard();
+        }
+      : applicationStore.guardUnhandledError(() =>
+          applicationStore.clipboardService.copyTextToClipboard(
+            tdsState.queryBuilderState.resultState.selectedCells
+              .map((cellData) => cellData.value)
+              .join(','),
+          ),
+        );
 
-    const findRowFromRowIndex = (
-      rowIndex: number,
-    ): (string | number | boolean | null)[] => {
+    const findRowFromRowIndex = (rowIndex: number): string => {
       if (
         !tdsState.queryBuilderState.resultState.executionResult ||
         !(
@@ -452,23 +484,34 @@ export const QueryBuilderGridResultContextMenu = observer(
           TDSExecutionResult
         )
       ) {
-        return [''];
+        return '';
       }
-      return (
-        tdsState.queryBuilderState.resultState.executionResult.result.rows[
-          rowIndex
-        ]?.values ?? ['']
-      );
+      // try to get the entire row value separated by comma
+      // rowData is in format of {columnName: value, columnName1: value, ...., rowNumber:value}
+      const valueArr: QueryBuilderTDSResultCellDataType[] = [];
+      Object.entries(
+        dataGridApi.getRenderedNodes().find((n) => n.rowIndex === rowIndex)
+          ?.data as QueryBuilderTDSRowDataType,
+      ).forEach((entry) => {
+        if (entry[0] !== 'rowNumber') {
+          valueArr.push(entry[1] as QueryBuilderTDSResultCellDataType);
+        }
+      });
+      return valueArr.join(',');
     };
 
-    const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.clipboardService.copyTextToClipboard(
-        findRowFromRowIndex(
-          tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
-            .rowIndex ?? 0,
-        ).toString(),
-      ),
-    );
+    const handleCopyRowValue = isEnterpriseModeEnabled
+      ? (): void => {
+          dataGridApi.copySelectedRowsToClipboard();
+        }
+      : applicationStore.guardUnhandledError(() =>
+          applicationStore.clipboardService.copyTextToClipboard(
+            findRowFromRowIndex(
+              tdsState.queryBuilderState.resultState.selectedCells[0]
+                ?.coordinates.rowIndex ?? 0,
+            ),
+          ),
+        );
 
     return (
       <MenuContent ref={ref}>
@@ -500,14 +543,86 @@ export const QueryBuilderGridResultContextMenu = observer(
   }),
 );
 
+export const QueryResultEnterpriseCellRenderer = observer(
+  (params: IQueryRendererParamsWithGridType) => {
+    const resultState = params.resultState;
+    const fetchStructureImplementation =
+      resultState.queryBuilderState.fetchStructureState.implementation;
+    const cellValue = params.value as QueryBuilderTDSResultCellDataType;
+    const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
+      if (isNumber(cellValue)) {
+        return Intl.NumberFormat(DEFAULT_LOCALE, {
+          maximumFractionDigits: 4,
+        }).format(Number(cellValue));
+      }
+      return cellValue;
+    };
+    const cellValueUrlLink =
+      isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
+
+    const mouseDown: React.MouseEventHandler = (event) => {
+      event.preventDefault();
+      if (event.button === 0 || event.button === 2) {
+        resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+      }
+    };
+    const mouseUp: React.MouseEventHandler = (event) => {
+      resultState.setIsSelectingCells(false);
+    };
+    const mouseOver: React.MouseEventHandler = (event) => {
+      resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+    };
+
+    return (
+      <ContextMenu
+        content={
+          // NOTE: we only support this functionality for grid result with a projection fetch-structure
+          fetchStructureImplementation instanceof QueryBuilderTDSState ? (
+            <QueryBuilderGridResultContextMenu
+              data={resultState.mousedOverCell}
+              tdsState={fetchStructureImplementation}
+              dataGridApi={params.api}
+            />
+          ) : null
+        }
+        disabled={
+          !(
+            resultState.queryBuilderState.fetchStructureState
+              .implementation instanceof QueryBuilderTDSState
+          ) ||
+          !resultState.queryBuilderState.isQuerySupported ||
+          !resultState.mousedOverCell
+        }
+        menuProps={{ elevation: 7 }}
+        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
+      >
+        <div
+          className={clsx('query-builder__result__values__table__cell')}
+          onMouseDown={(event) => mouseDown(event)}
+          onMouseUp={(event) => mouseUp(event)}
+          onMouseOver={(event) => mouseOver(event)}
+        >
+          {cellValueUrlLink ? (
+            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+              {cellValueUrlLink}
+            </a>
+          ) : (
+            <span>{formattedCellValue()}</span>
+          )}
+        </div>
+      </ContextMenu>
+    );
+  },
+);
+
 export const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
     const resultState = params.resultState;
     const tdsExecutionResult = params.tdsExecutionResult;
     const fetchStructureImplementation =
       resultState.queryBuilderState.fetchStructureState.implementation;
-    const cellValue = params.value as string | null | number | undefined;
-    const formattedCellValue = (): string | null | number | undefined => {
+    const cellValue = params.value as QueryBuilderTDSResultCellDataType;
+    const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
       if (isNumber(cellValue)) {
         return Intl.NumberFormat(DEFAULT_LOCALE, {
           maximumFractionDigits: 4,
@@ -540,7 +655,7 @@ export const QueryResultCellRenderer = observer(
 
     const findColumnFromCoordinates = (
       colIndex: number,
-    ): string | number | boolean | null | undefined => {
+    ): QueryBuilderTDSResultCellDataType => {
       if (
         !resultState.executionResult ||
         !(resultState.executionResult instanceof TDSExecutionResult)
@@ -552,7 +667,7 @@ export const QueryResultCellRenderer = observer(
 
     const findResultValueFromCoordinates = (
       resultCoordinate: [number, number],
-    ): string | number | boolean | null | undefined => {
+    ): QueryBuilderTDSResultCellDataType => {
       const rowIndex = resultCoordinate[0];
       const colIndex = resultCoordinate[1];
 
@@ -713,6 +828,7 @@ export const QueryResultCellRenderer = observer(
             <QueryBuilderGridResultContextMenu
               data={resultState.mousedOverCell}
               tdsState={fetchStructureImplementation}
+              dataGridApi={params.api}
             />
           ) : null
         }
