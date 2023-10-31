@@ -427,13 +427,17 @@ const QueryBuilderGridResultContextMenu = observer(
       );
     };
 
-    const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.clipboardService.copyTextToClipboard(
-        tdsState.queryBuilderState.resultState.selectedCells
-          .map((cellData) => cellData.value)
-          .join(','),
-      ),
-    );
+    const handleCopyCellValue = isEnterpriseVersionEnabled
+      ? (): void => {
+          dataGridApi.copySelectedRangeToClipboard();
+        }
+      : applicationStore.guardUnhandledError(() =>
+          applicationStore.clipboardService.copyTextToClipboard(
+            tdsState.queryBuilderState.resultState.selectedCells
+              .map((cellData) => cellData.value)
+              .join(','),
+          ),
+        );
 
     const findRowFromRowIndex = (rowIndex: number): string => {
       if (
@@ -459,14 +463,18 @@ const QueryBuilderGridResultContextMenu = observer(
       return valueArr.join(',');
     };
 
-    const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.clipboardService.copyTextToClipboard(
-        findRowFromRowIndex(
-          tdsState.queryBuilderState.resultState.selectedCells[0]?.coordinates
-            .rowIndex ?? 0,
-        ),
-      ),
-    );
+    const handleCopyRowValue = isEnterpriseVersionEnabled
+      ? (): void => {
+          dataGridApi.copySelectedRowsToClipboard();
+        }
+      : applicationStore.guardUnhandledError(() =>
+          applicationStore.clipboardService.copyTextToClipboard(
+            findRowFromRowIndex(
+              tdsState.queryBuilderState.resultState.selectedCells[0]
+                ?.coordinates.rowIndex ?? 0,
+            ),
+          ),
+        );
 
     return (
       <MenuContent ref={ref}>
