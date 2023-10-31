@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 31.3.10
+
+### Patch Changes
+
+- [#2740](https://github.com/finos/legend-studio/pull/2740) [`c1cc6e3fa`](https://github.com/finos/legend-studio/commit/c1cc6e3fa0d84053907581f3aa0cd05be988a224) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - fix the bug where there is a failure in change detection of creating a service with an empty lambda
+
+- [#2741](https://github.com/finos/legend-studio/pull/2741) [`4b135ce78`](https://github.com/finos/legend-studio/commit/4b135ce78ded2325fca6464ac07f35293d234c38) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the default URL value of `JsonModelConnection`
+
 ## 31.3.9
 
 ## 31.3.8

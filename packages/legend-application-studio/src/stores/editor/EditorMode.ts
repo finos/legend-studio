@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { QuerySDLC } from '@finos/legend-query-builder';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
 
 export abstract class EditorMode {
@@ -31,6 +32,11 @@ export abstract class EditorMode {
   ): string;
 
   abstract get isInitialized(): boolean;
+
+  /**
+   * Using information about the current project to generate source information
+   */
+  abstract getSourceInfo(): QuerySDLC | undefined;
 
   get supportSdlcOperations(): boolean {
     return true;

@@ -2332,12 +2332,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     addDummyParameter?: boolean;
   }): RawLambda {
     return new RawLambda(
-      options?.addDummyParameter ? [{ _type: 'var', name: 'x' }] : undefined,
+      options?.addDummyParameter ? [{ _type: 'var', name: 'x' }] : [],
       [
         {
           _type: 'string',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [''],
+          value: '',
         },
       ],
     );
