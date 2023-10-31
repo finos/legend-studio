@@ -35,6 +35,7 @@ export {
   AuthenticationStrategy,
   CredentialSecret,
 } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AuthenticationStrategy.js';
+export { MasteryRuntime } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 // v1 protocols
 export { V1_MasterRecordDefinition } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
@@ -53,6 +54,7 @@ export {
   V1_AuthenticationStrategy,
   V1_CredentialSecret,
 } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+export { V1_MasteryRuntime } from './protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
 export {
   V1_serializeCredentialSecret,
   V1_deserializeCredentialSecret,

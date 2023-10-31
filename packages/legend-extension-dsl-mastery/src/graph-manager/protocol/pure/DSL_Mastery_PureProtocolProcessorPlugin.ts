@@ -105,9 +105,6 @@ export const FTP_CONNECTION_ELEMENT_CLASSIFIER_PATH =
 export const HTTP_CONNECTION_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::mastery::metamodel::connection::HTTPConnection';
 
-export const MASTERY_RUNTIME_ELEMENT_CLASSIFIER_PATH =
-  'meta::pure::mastery::metamodel::runtime::MasteryRuntime';
-
 export const KAFKA_CONNECTION_ELEMENT_CLASS_NAME = 'KafkaConnection';
 export const FTP_CONNECTION_ELEMENT_CLASS_NAME = 'FTPConnection';
 export const HTTP_CONNECTION_ELEMENT_CLASS_NAME = 'HTTPConnection';
@@ -320,8 +317,6 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
           return FTP_CONNECTION_ELEMENT_CLASSIFIER_PATH;
         } else if (elementProtocol instanceof V1_HTTPConnection) {
           return HTTP_CONNECTION_ELEMENT_CLASSIFIER_PATH;
-        } else if (elementProtocol instanceof V1_MasteryRuntime) {
-          return MASTERY_RUNTIME_ELEMENT_CLASSIFIER_PATH;
         }
         return undefined;
       },
