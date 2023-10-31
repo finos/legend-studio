@@ -218,6 +218,7 @@ export const QueryBuilderResultPanel = observer(
     );
 
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
+
     const allowSettingAdvancedMode =
       queryBuilderState.isQuerySupported && isEnterpriseModeEnabled;
 

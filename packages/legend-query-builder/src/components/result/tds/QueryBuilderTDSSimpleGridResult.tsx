@@ -18,12 +18,14 @@ import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import type { TDSExecutionResult } from '@finos/legend-graph';
-import { isBoolean, type PlainObject } from '@finos/legend-shared';
 import {
   DataGrid,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import { QueryResultCellRenderer } from './QueryBuilderTDSResultShared.js';
+import {
+  getRowDataFromExecutionResult,
+  QueryResultCellRenderer,
+} from './QueryBuilderTDSResultShared.js';
 
 export const QueryBuilderTDSSimpleGridResult = observer(
   (props: {
@@ -47,19 +49,6 @@ export const QueryBuilderTDSSimpleGridResult = observer(
           },
         }) as DataGridColumnDefinition,
     );
-    const rowData = executionResult.result.rows.map((_row, rowIdx) => {
-      const row: PlainObject = {};
-      const cols = executionResult.result.columns;
-      _row.values.forEach((value, colIdx) => {
-        // `ag-grid` shows `false` value as empty string so we have
-        // call `.toString()` to avoid this behavior.
-        // See https://github.com/finos/legend-studio/issues/1008
-        row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
-      });
-
-      row.rowNumber = rowIdx;
-      return row;
-    });
 
     return (
       <div className="query-builder__result__values__table">
@@ -69,7 +58,7 @@ export const QueryBuilderTDSSimpleGridResult = observer(
           )}
         >
           <DataGrid
-            rowData={rowData}
+            rowData={getRowDataFromExecutionResult(executionResult)}
             gridOptions={{
               suppressScrollOnNewData: true,
               getRowId: (data) => data.data.rowNumber,

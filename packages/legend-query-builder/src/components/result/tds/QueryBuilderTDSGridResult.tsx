@@ -18,18 +18,26 @@ import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import type { TDSExecutionResult } from '@finos/legend-graph';
-import { isBoolean, type PlainObject } from '@finos/legend-shared';
 import { useState } from 'react';
 import {
   DataGrid,
+  type DataGridApi,
+  type DataGridCellRange,
   type DataGridColumnApi,
   type DataGridColumnDefinition,
+  type DataGridIRowNode,
 } from '@finos/legend-lego/data-grid';
 import {
   getAggregationTDSColumnCustomizations,
-  QueryResultCellRenderer,
+  getRowDataFromExecutionResult,
+  QueryResultEnterpriseCellRenderer,
 } from './QueryBuilderTDSResultShared.js';
-import type { QueryBuilderResultState } from '../../../stores/QueryBuilderResultState.js';
+import type {
+  QueryBuilderResultState,
+  QueryBuilderTDSResultCellData,
+  QueryBuilderTDSResultCellDataType,
+  QueryBuilderTDSRowDataType,
+} from '../../../stores/QueryBuilderResultState.js';
 
 const getAdvancedColDefs = (
   executionResult: TDSExecutionResult,
@@ -66,12 +74,13 @@ const getAdvancedColDefs = (
     return col;
   });
 
-const TODO_getColDefs = (
+const getEnterpriseModeColDefs = (
   executionResult: TDSExecutionResult,
   resultState: QueryBuilderResultState,
-  // TODO: fix col return type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): DataGridColumnDefinition<any, any>[] =>
+): DataGridColumnDefinition<
+  QueryBuilderTDSRowDataType,
+  QueryBuilderTDSResultCellDataType
+>[] =>
   executionResult.result.columns.map(
     (colName) =>
       ({
@@ -80,7 +89,7 @@ const TODO_getColDefs = (
         resizable: true,
         field: colName,
         flex: 1,
-        cellRenderer: QueryResultCellRenderer,
+        cellRenderer: QueryResultEnterpriseCellRenderer,
         cellRendererParams: {
           resultState: resultState,
           tdsExecutionResult: executionResult,
@@ -102,21 +111,8 @@ export const QueryBuilderTDSGridResult = observer(
     const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
     const colDefs = isAdvancedModeEnabled
       ? getAdvancedColDefs(executionResult, resultState)
-      : TODO_getColDefs(executionResult, resultState);
+      : getEnterpriseModeColDefs(executionResult, resultState);
 
-    const rowData = executionResult.result.rows.map((_row, rowIdx) => {
-      const row: PlainObject = {};
-      const cols = executionResult.result.columns;
-      _row.values.forEach((value, colIdx) => {
-        // `ag-grid` shows `false` value as empty string so we have
-        // call `.toString()` to avoid this behavior.
-        // See https://github.com/finos/legend-studio/issues/1008
-        row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
-      });
-
-      row.rowNumber = rowIdx;
-      return row;
-    });
     const onSaveGridColumnState = (): void => {
       if (!columnAPi) {
         return;
@@ -125,6 +121,47 @@ export const QueryBuilderTDSGridResult = observer(
         columns: columnAPi.getColumnState(),
         isPivotModeEnabled: columnAPi.isPivotMode(),
       });
+    };
+
+    const getSelectedCells = (
+      api: DataGridApi<QueryBuilderTDSRowDataType>,
+    ): QueryBuilderTDSResultCellData[] => {
+      const seletcedRanges: DataGridCellRange[] | null = api.getCellRanges();
+      const nodes = api.getRenderedNodes();
+      const columns = api.getColumnDefs() as DataGridColumnDefinition[];
+      const selectedCells = [];
+      if (seletcedRanges) {
+        for (const seletcedRange of seletcedRanges) {
+          const startRow: number = seletcedRange.startRow?.rowIndex ?? 0;
+          const endRow: number = seletcedRange.endRow?.rowIndex ?? 0;
+          const selectedColumns: string[] = seletcedRange.columns.map((col) =>
+            col.getColId(),
+          );
+          for (let x: number = startRow; x <= endRow; x++) {
+            const curRowData = nodes.find(
+              (n) => (n as DataGridIRowNode).rowIndex === x,
+            )?.data;
+            if (curRowData) {
+              for (const col of selectedColumns) {
+                const valueAndColumnId = {
+                  value: Object.entries(curRowData)
+                    .find((rData) => rData[0] === col)
+                    ?.at(1),
+                  columnName: col,
+                  coordinates: {
+                    rowIndex: x,
+                    colIndex: columns.findIndex(
+                      (colDef) => colDef.colId === col,
+                    ),
+                  },
+                } as QueryBuilderTDSResultCellData;
+                selectedCells.push(valueAndColumnId);
+              }
+            }
+          }
+        }
+      }
+      return selectedCells;
     };
 
     return (
@@ -136,7 +173,7 @@ export const QueryBuilderTDSGridResult = observer(
         >
           {isAdvancedModeEnabled ? (
             <DataGrid
-              rowData={rowData}
+              rowData={getRowDataFromExecutionResult(executionResult)}
               onGridReady={(params): void => {
                 setColumnApi(params.columnApi);
                 params.columnApi.setPivotMode(
@@ -149,6 +186,7 @@ export const QueryBuilderTDSGridResult = observer(
                 rowSelection: 'multiple',
                 pivotPanelShow: 'always',
                 rowGroupPanelShow: 'always',
+                enableRangeSelection: true,
               }}
               // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
               // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
@@ -169,19 +207,28 @@ export const QueryBuilderTDSGridResult = observer(
             />
           ) : (
             <DataGrid
-              rowData={rowData}
+              rowData={getRowDataFromExecutionResult(executionResult)}
               gridOptions={{
                 suppressScrollOnNewData: true,
                 getRowId: (data) => data.data.rowNumber,
                 rowSelection: 'multiple',
+                enableRangeSelection: true,
               }}
               // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
               // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
               onRowDataUpdated={(params) => {
                 params.api.refreshCells({ force: true });
               }}
+              onRangeSelectionChanged={(event) => {
+                const selectedCells = getSelectedCells(event.api);
+                resultState.setSelectedCells([]);
+                selectedCells.forEach((cell) =>
+                  resultState.addSelectedCell(cell),
+                );
+              }}
               suppressFieldDotNotation={true}
-              suppressContextMenu={true}
+              suppressClipboardPaste={false}
+              suppressContextMenu={!isAdvancedModeEnabled}
               columnDefs={colDefs}
             />
           )}
