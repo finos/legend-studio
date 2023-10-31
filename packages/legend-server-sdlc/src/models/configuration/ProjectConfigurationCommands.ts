@@ -65,6 +65,7 @@ export class UpdateProjectConfigurationCommand {
   projectDependenciesToRemove?: ProjectDependency[];
   projectStructureVersion?: ProjectStructureVersion | undefined;
   projectType?: ProjectType | undefined;
+  runDependencyTest?: boolean | undefined;
 
   constructor(
     groupId: string,
@@ -98,6 +99,7 @@ export class UpdateProjectConfigurationCommand {
         ProjectStructureVersion.serialization.schema,
       ),
       projectType: optional(primitive()),
+      runDependencyTest: optional(primitive()),
     }),
   );
 }
