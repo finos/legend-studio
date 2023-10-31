@@ -26,6 +26,15 @@ import {
   generateViewProjectByGAVRoute,
 } from '../../__lib__/LegendStudioNavigation.js';
 import { EditorMode } from './EditorMode.js';
+import type { QuerySDLC } from '@finos/legend-query-builder';
+
+export interface WorkspaceProjectQuerySDLC extends QuerySDLC {
+  projectId: string;
+  workspaceId: string;
+  WorkspaceType: string;
+  userId?: string;
+  source?: string;
+}
 
 export class StandardEditorMode extends EditorMode {
   editorStore: EditorStore;
@@ -64,5 +73,22 @@ export class StandardEditorMode extends EditorMode {
       this.editorStore.sdlcState.currentProject &&
         this.editorStore.sdlcState.currentWorkspace,
     );
+  }
+
+  getSourceInfo(): QuerySDLC | undefined {
+    if (this.isInitialized) {
+      const workspace = guaranteeNonNullable(
+        this.editorStore.sdlcState.currentWorkspace,
+      );
+      return {
+        projectId: this.editorStore.sdlcState.activeProject.projectId,
+        workspaceId: workspace.workspaceId,
+        WorkspaceType: workspace.workspaceType,
+        userId: workspace.userId,
+        source: workspace.source,
+      } as WorkspaceProjectQuerySDLC;
+    } else {
+      return undefined;
+    }
   }
 }

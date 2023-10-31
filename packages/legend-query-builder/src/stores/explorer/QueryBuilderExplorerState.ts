@@ -748,9 +748,14 @@ export class QueryBuilderExplorerState {
             stopWatch,
             report.timings,
           );
+        const reportWithState = Object.assign(
+          {},
+          report,
+          this.queryBuilderState.getStateInfo(),
+        );
         QueryBuilderTelemetryHelper.logEvent_QueryMappingModelCoverageAnalysisSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
-          report,
+          reportWithState,
         );
       } catch (error) {
         assertErrorThrown(error);

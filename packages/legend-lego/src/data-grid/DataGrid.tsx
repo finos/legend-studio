@@ -32,12 +32,15 @@ import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-mo
 import { SideBarModule } from '@ag-grid-enterprise/side-bar';
 import { StatusBarModule } from '@ag-grid-enterprise/status-bar';
 import {
+  type CellRange,
   type CellMouseOverEvent,
   type ICellRendererParams,
   type GridOptions,
   type ColumnApi,
   type ColDef,
   type ColumnState,
+  type GridApi,
+  type IRowNode,
   ModuleRegistry,
 } from '@ag-grid-community/core';
 import { LicenseManager } from '@ag-grid-enterprise/core';
@@ -60,11 +63,13 @@ export const enterpriseModules = [
 export const allModules = communityModules.concat(enterpriseModules);
 
 declare const AG_GRID_LICENSE: string;
+export let isEnterpriseVersionEnabled = false;
 
 export function DataGrid<TData = unknown>(
   props: AgGridReactProps<TData> | AgReactUiProps<TData>,
 ): JSX.Element {
   if (AG_GRID_LICENSE) {
+    isEnterpriseVersionEnabled = true;
     LicenseManager.setLicenseKey(AG_GRID_LICENSE);
   }
   return (
@@ -86,10 +91,13 @@ export const configureDataGridComponent = (): void => {
 };
 
 export type {
+  CellRange as DataGridCellRange,
   CellMouseOverEvent as DataGridCellMouseOverEvent,
   ICellRendererParams as DataGridCellRendererParams,
   GridOptions as DataGridOptions,
   ColDef as DataGridColumnDefinition,
   ColumnState as DataGridColumnState,
   ColumnApi as DataGridColumnApi,
+  GridApi as DataGridApi,
+  IRowNode as DataGridIRowNode,
 };

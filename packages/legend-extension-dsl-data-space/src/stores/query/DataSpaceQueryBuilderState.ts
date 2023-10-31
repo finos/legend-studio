@@ -22,6 +22,7 @@ import {
 import {
   type QueryBuilderConfig,
   QueryBuilderState,
+  type QuerySDLC,
 } from '@finos/legend-query-builder';
 import {
   type GraphManagerState,
@@ -117,6 +118,13 @@ export class DataSpaceProjectInfo {
   }
 }
 
+export interface DataSpaceQuerySDLC extends QuerySDLC {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  dataSpace: string;
+}
+
 export class DataSpaceQueryBuilderState extends QueryBuilderState {
   readonly depotServerClient: DepotServerClient;
   readonly isAdvancedDataSpaceSearchEnabled: boolean;
@@ -155,8 +163,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     onClassChange?: ((val: Class) => void) | undefined,
     projectInfo?: DataSpaceProjectInfo | undefined,
     config?: QueryBuilderConfig | undefined,
+    sourceInfo?: QuerySDLC | undefined,
   ) {
-    super(applicationStore, graphManagerState, config);
+    super(applicationStore, graphManagerState, config, sourceInfo);
 
     makeObservable(this, {
       dataSpaces: observable,

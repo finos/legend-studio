@@ -662,6 +662,12 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
+    const projectInfo = this.getProjectInfo();
+    const sourceInfo = {
+      groupId: projectInfo.groupId,
+      artifactId: projectInfo.artifactId,
+      versionId: projectInfo.versionId,
+    };
     const queryBuilderState = new MappingQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
@@ -693,6 +699,8 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
           ),
         );
       },
+      undefined,
+      sourceInfo,
     );
 
     const mapping = this.graphManagerState.graph.getMapping(this.mappingPath);
@@ -761,6 +769,13 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       `Can't process service execution: only Pure execution is supported`,
     );
 
+    const projectInfo = this.getProjectInfo();
+    const sourceInfo = {
+      groupId: projectInfo.groupId,
+      artifactId: projectInfo.artifactId,
+      versionId: projectInfo.versionId,
+      service: service.path,
+    };
     const queryBuilderState = new ServiceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
@@ -789,6 +804,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
         );
       },
       this.applicationStore.config.options.queryBuilderConfig,
+      sourceInfo,
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
@@ -1017,12 +1033,19 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     }
 
     // if no extension found, fall back to basic `class -> mapping -> runtime` mode
+    const projectInfo = this.getProjectInfo();
+    const sourceInfo = {
+      groupId: projectInfo.groupId,
+      artifactId: projectInfo.artifactId,
+      versionId: projectInfo.versionId,
+    };
     queryBuilderState =
       queryBuilderState ??
       new ClassQueryBuilderState(
         this.applicationStore,
         this.graphManagerState,
         this.applicationStore.config.options.queryBuilderConfig,
+        sourceInfo,
       );
 
     queryBuilderState.executionContextState.setMapping(query.mapping.value);

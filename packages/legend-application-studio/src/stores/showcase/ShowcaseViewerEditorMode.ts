@@ -18,6 +18,11 @@ import type { ProjectDependency } from '@finos/legend-server-sdlc';
 import { EditorMode } from '../editor/EditorMode.js';
 import type { ShowcaseViewerStore } from './ShowcaseViewerStore.js';
 import { generateShowcasePath } from '../../__lib__/LegendStudioNavigation.js';
+import type { QuerySDLC } from '@finos/legend-query-builder';
+
+export interface ShowcaseViewerQuerySDLC extends QuerySDLC {
+  projectId: string;
+}
 
 export class ShowcaseViewerEditorMode extends EditorMode {
   readonly showcaseViewerStore: ShowcaseViewerStore;
@@ -47,5 +52,16 @@ export class ShowcaseViewerEditorMode extends EditorMode {
 
   override get label(): string {
     return 'Showcase View';
+  }
+
+  getSourceInfo(): ShowcaseViewerQuerySDLC | undefined {
+    if (this.showcaseViewerStore.editorStore.sdlcState.currentProject) {
+      return {
+        projectId:
+          this.showcaseViewerStore.editorStore.sdlcState.currentProject
+            .projectId,
+      } as ShowcaseViewerQuerySDLC;
+    }
+    return undefined;
   }
 }

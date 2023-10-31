@@ -161,6 +161,12 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
               editorStore.depotServerClient,
             ),
           );
+          const sourceInfo = {
+            groupId: projectInfo.groupId,
+            artifactId: projectInfo.artifactId,
+            versionId: projectInfo.versionId,
+            dataSpace: dataSpace.path,
+          };
           const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
             editorStore.applicationStore,
             editorStore.graphManagerState,
@@ -242,6 +248,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             undefined,
             projectInfo,
             editorStore.applicationStore.config.options.queryBuilderConfig,
+            sourceInfo,
           );
           const mappingModelCoverageAnalysisResult =
             dataSpaceAnalysisResult?.executionContextsIndex.get(
