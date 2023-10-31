@@ -1026,6 +1026,7 @@ const QueryBuilderEnterpriseGridResult = observer(
                 );
               }}
               suppressFieldDotNotation={true}
+              suppressClipboardPaste={false}
               suppressContextMenu={!isAdvancedModeEnabled}
               columnDefs={colDefs}
             />
