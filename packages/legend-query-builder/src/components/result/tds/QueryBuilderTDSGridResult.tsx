@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 
-import { ContextMenu, clsx } from '@finos/legend-art';
+import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import type { TDSExecutionResult } from '@finos/legend-graph';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   DataGrid,
   type DataGridApi,
   type DataGridCellRange,
   type DataGridColumnApi,
   type DataGridColumnDefinition,
+  type DataGridGetContextMenuItemsParams,
   type DataGridIRowNode,
+  type DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
 import {
   getAggregationTDSColumnCustomizations,
   getRowDataFromExecutionResult,
-  QueryBuilderGridResultContextMenu,
   type IQueryRendererParamsWithGridType,
+  filterByOrOutValues,
 } from './QueryBuilderTDSResultShared.js';
 import type {
   QueryBuilderResultState,
@@ -42,13 +44,15 @@ import type {
 import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import { isNumber, isString, isValidURL } from '@finos/legend-shared';
+import { useApplicationStore } from '@finos/legend-application';
 
 const getAdvancedColDefs = (
   executionResult: TDSExecutionResult,
   resultState: QueryBuilderResultState,
-  // TODO: fix col return type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): DataGridColumnDefinition<any, any>[] =>
+): DataGridColumnDefinition<
+  QueryBuilderTDSRowDataType,
+  QueryBuilderTDSResultCellDataType
+>[] =>
   executionResult.result.columns.map((colName) => {
     const col = {
       minWidth: 50,
@@ -81,8 +85,6 @@ const getAdvancedColDefs = (
 const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
     const resultState = params.resultState;
-    const fetchStructureImplementation =
-      resultState.queryBuilderState.fetchStructureState.implementation;
     const cellValue = params.value as QueryBuilderTDSResultCellDataType;
     const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
       if (isNumber(cellValue)) {
@@ -107,51 +109,21 @@ const QueryResultCellRenderer = observer(
     const mouseOver: React.MouseEventHandler = (event) => {
       resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
     };
-    const copyCellValue = (): void => {
-      params.api.copySelectedRangeToClipboard();
-    };
-    const copyCellRowValue = (): void => {
-      params.api.copySelectedRowsToClipboard();
-    };
     return (
-      <ContextMenu
-        content={
-          // NOTE: we only support this functionality for grid result with a projection fetch-structure
-          fetchStructureImplementation instanceof QueryBuilderTDSState ? (
-            <QueryBuilderGridResultContextMenu
-              data={resultState.mousedOverCell}
-              tdsState={fetchStructureImplementation}
-              copyCellValueFunc={copyCellValue}
-              copyCellRowValueFunc={copyCellRowValue}
-            />
-          ) : null
-        }
-        disabled={
-          !(
-            resultState.queryBuilderState.fetchStructureState
-              .implementation instanceof QueryBuilderTDSState
-          ) ||
-          !resultState.queryBuilderState.isQuerySupported ||
-          !resultState.mousedOverCell
-        }
-        menuProps={{ elevation: 7 }}
-        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
+      <div
+        className={clsx('query-builder__result__values__table__cell')}
+        onMouseDown={(event) => mouseDown(event)}
+        onMouseUp={(event) => mouseUp(event)}
+        onMouseOver={(event) => mouseOver(event)}
       >
-        <div
-          className={clsx('query-builder__result__values__table__cell')}
-          onMouseDown={(event) => mouseDown(event)}
-          onMouseUp={(event) => mouseUp(event)}
-          onMouseOver={(event) => mouseOver(event)}
-        >
-          {cellValueUrlLink ? (
-            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
-              {cellValueUrlLink}
-            </a>
-          ) : (
-            <span>{formattedCellValue()}</span>
-          )}
-        </div>
-      </ContextMenu>
+        {cellValueUrlLink ? (
+          <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+            {cellValueUrlLink}
+          </a>
+        ) : (
+          <span>{formattedCellValue()}</span>
+        )}
+      </div>
     );
   },
 );
@@ -185,7 +157,7 @@ export const QueryBuilderTDSGridResult = observer(
     queryBuilderState: QueryBuilderState;
   }) => {
     const { executionResult, queryBuilderState } = props;
-
+    const applicationStore = useApplicationStore();
     const [columnAPi, setColumnApi] = useState<DataGridColumnApi | undefined>(
       undefined,
     );
@@ -246,6 +218,56 @@ export const QueryBuilderTDSGridResult = observer(
       return selectedCells;
     };
 
+    const getContextMenuItems = useCallback(
+      (
+        params: DataGridGetContextMenuItemsParams<QueryBuilderTDSRowDataType>,
+      ): (string | DataGridMenuItemDef)[] => {
+        let result: (string | DataGridMenuItemDef)[] = [];
+        const fetchStructureImplementation =
+          resultState.queryBuilderState.fetchStructureState.implementation;
+        if (fetchStructureImplementation instanceof QueryBuilderTDSState) {
+          result = [
+            {
+              name: 'Filter by',
+              action: () => {
+                filterByOrOutValues(
+                  applicationStore,
+                  resultState.mousedOverCell,
+                  true,
+                  fetchStructureImplementation,
+                );
+              },
+            },
+            {
+              name: 'Filter out',
+              action: () => {
+                filterByOrOutValues(
+                  applicationStore,
+                  resultState.mousedOverCell,
+                  false,
+                  fetchStructureImplementation,
+                );
+              },
+            },
+            'copy',
+            'copyWithHeaders',
+            {
+              name: 'Copy row value',
+              action: () => {
+                params.api.copySelectedRowsToClipboard();
+              },
+            },
+          ];
+        }
+        return result;
+      },
+      [
+        applicationStore,
+        resultState.mousedOverCell,
+        resultState.queryBuilderState.fetchStructureState.implementation,
+      ],
+    );
+
     return (
       <div className="query-builder__result__values__table">
         <div
@@ -264,7 +286,7 @@ export const QueryBuilderTDSGridResult = observer(
               }}
               gridOptions={{
                 suppressScrollOnNewData: true,
-                getRowId: (data) => data.data.rowNumber,
+                getRowId: (data) => data.data.rowNumber as string,
                 rowSelection: 'multiple',
                 pivotPanelShow: 'always',
                 rowGroupPanelShow: 'always',
@@ -292,7 +314,7 @@ export const QueryBuilderTDSGridResult = observer(
               rowData={getRowDataFromExecutionResult(executionResult)}
               gridOptions={{
                 suppressScrollOnNewData: true,
-                getRowId: (data) => data.data.rowNumber,
+                getRowId: (data) => data.data.rowNumber as string,
                 rowSelection: 'multiple',
                 enableRangeSelection: true,
               }}
@@ -312,6 +334,9 @@ export const QueryBuilderTDSGridResult = observer(
               suppressClipboardPaste={false}
               suppressContextMenu={true}
               columnDefs={colDefs}
+              getContextMenuItems={(params): (string | DataGridMenuItemDef)[] =>
+                getContextMenuItems(params)
+              }
             />
           )}
         </div>

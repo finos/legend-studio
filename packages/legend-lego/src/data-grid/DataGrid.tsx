@@ -41,6 +41,8 @@ import {
   type ColumnState,
   type GridApi,
   type IRowNode,
+  type GetContextMenuItemsParams,
+  type MenuItemDef,
   ModuleRegistry,
 } from '@ag-grid-community/core';
 import { LicenseManager } from '@ag-grid-enterprise/core';
@@ -100,4 +102,6 @@ export type {
   ColumnApi as DataGridColumnApi,
   GridApi as DataGridApi,
   IRowNode as DataGridIRowNode,
+  GetContextMenuItemsParams as DataGridGetContextMenuItemsParams,
+  MenuItemDef as DataGridMenuItemDef,
 };
