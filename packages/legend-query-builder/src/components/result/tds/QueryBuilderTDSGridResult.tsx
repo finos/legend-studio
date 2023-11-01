@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { clsx } from '@finos/legend-art';
+import { ContextMenu, clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import type { TDSExecutionResult } from '@finos/legend-graph';
@@ -30,7 +30,8 @@ import {
 import {
   getAggregationTDSColumnCustomizations,
   getRowDataFromExecutionResult,
-  QueryResultEnterpriseCellRenderer,
+  QueryBuilderGridResultContextMenu,
+  type IQueryRendererParamsWithGridType,
 } from './QueryBuilderTDSResultShared.js';
 import type {
   QueryBuilderResultState,
@@ -38,6 +39,9 @@ import type {
   QueryBuilderTDSResultCellDataType,
   QueryBuilderTDSRowDataType,
 } from '../../../stores/QueryBuilderResultState.js';
+import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
+import { isNumber, isString, isValidURL } from '@finos/legend-shared';
 
 const getAdvancedColDefs = (
   executionResult: TDSExecutionResult,
@@ -74,7 +78,85 @@ const getAdvancedColDefs = (
     return col;
   });
 
-const getEnterpriseModeColDefs = (
+const QueryResultCellRenderer = observer(
+  (params: IQueryRendererParamsWithGridType) => {
+    const resultState = params.resultState;
+    const fetchStructureImplementation =
+      resultState.queryBuilderState.fetchStructureState.implementation;
+    const cellValue = params.value as QueryBuilderTDSResultCellDataType;
+    const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
+      if (isNumber(cellValue)) {
+        return Intl.NumberFormat(DEFAULT_LOCALE, {
+          maximumFractionDigits: 4,
+        }).format(Number(cellValue));
+      }
+      return cellValue;
+    };
+    const cellValueUrlLink =
+      isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
+
+    const mouseDown: React.MouseEventHandler = (event) => {
+      event.preventDefault();
+      if (event.button === 0 || event.button === 2) {
+        resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+      }
+    };
+    const mouseUp: React.MouseEventHandler = (event) => {
+      resultState.setIsSelectingCells(false);
+    };
+    const mouseOver: React.MouseEventHandler = (event) => {
+      resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
+    };
+    const copyCellValue = (): void => {
+      params.api.copySelectedRangeToClipboard();
+    };
+    const copyCellRowValue = (): void => {
+      params.api.copySelectedRowsToClipboard();
+    };
+    return (
+      <ContextMenu
+        content={
+          // NOTE: we only support this functionality for grid result with a projection fetch-structure
+          fetchStructureImplementation instanceof QueryBuilderTDSState ? (
+            <QueryBuilderGridResultContextMenu
+              data={resultState.mousedOverCell}
+              tdsState={fetchStructureImplementation}
+              copyCellValueFunc={copyCellValue}
+              copyCellRowValueFunc={copyCellRowValue}
+            />
+          ) : null
+        }
+        disabled={
+          !(
+            resultState.queryBuilderState.fetchStructureState
+              .implementation instanceof QueryBuilderTDSState
+          ) ||
+          !resultState.queryBuilderState.isQuerySupported ||
+          !resultState.mousedOverCell
+        }
+        menuProps={{ elevation: 7 }}
+        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
+      >
+        <div
+          className={clsx('query-builder__result__values__table__cell')}
+          onMouseDown={(event) => mouseDown(event)}
+          onMouseUp={(event) => mouseUp(event)}
+          onMouseOver={(event) => mouseOver(event)}
+        >
+          {cellValueUrlLink ? (
+            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+              {cellValueUrlLink}
+            </a>
+          ) : (
+            <span>{formattedCellValue()}</span>
+          )}
+        </div>
+      </ContextMenu>
+    );
+  },
+);
+
+const getColDefs = (
   executionResult: TDSExecutionResult,
   resultState: QueryBuilderResultState,
 ): DataGridColumnDefinition<
@@ -89,7 +171,7 @@ const getEnterpriseModeColDefs = (
         resizable: true,
         field: colName,
         flex: 1,
-        cellRenderer: QueryResultEnterpriseCellRenderer,
+        cellRenderer: QueryResultCellRenderer,
         cellRendererParams: {
           resultState: resultState,
           tdsExecutionResult: executionResult,
@@ -111,7 +193,7 @@ export const QueryBuilderTDSGridResult = observer(
     const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
     const colDefs = isAdvancedModeEnabled
       ? getAdvancedColDefs(executionResult, resultState)
-      : getEnterpriseModeColDefs(executionResult, resultState);
+      : getColDefs(executionResult, resultState);
 
     const onSaveGridColumnState = (): void => {
       if (!columnAPi) {
@@ -126,15 +208,15 @@ export const QueryBuilderTDSGridResult = observer(
     const getSelectedCells = (
       api: DataGridApi<QueryBuilderTDSRowDataType>,
     ): QueryBuilderTDSResultCellData[] => {
-      const seletcedRanges: DataGridCellRange[] | null = api.getCellRanges();
+      const selectedRanges: DataGridCellRange[] | null = api.getCellRanges();
       const nodes = api.getRenderedNodes();
       const columns = api.getColumnDefs() as DataGridColumnDefinition[];
       const selectedCells = [];
-      if (seletcedRanges) {
-        for (const seletcedRange of seletcedRanges) {
-          const startRow: number = seletcedRange.startRow?.rowIndex ?? 0;
-          const endRow: number = seletcedRange.endRow?.rowIndex ?? 0;
-          const selectedColumns: string[] = seletcedRange.columns.map((col) =>
+      if (selectedRanges) {
+        for (const selectedRange of selectedRanges) {
+          const startRow: number = selectedRange.startRow?.rowIndex ?? 0;
+          const endRow: number = selectedRange.endRow?.rowIndex ?? 0;
+          const selectedColumns: string[] = selectedRange.columns.map((col) =>
             col.getColId(),
           );
           for (let x: number = startRow; x <= endRow; x++) {
@@ -228,7 +310,7 @@ export const QueryBuilderTDSGridResult = observer(
               }}
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
-              suppressContextMenu={!isAdvancedModeEnabled}
+              suppressContextMenu={true}
               columnDefs={colDefs}
             />
           )}
