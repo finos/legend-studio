@@ -57,7 +57,6 @@ import { prettyDuration } from '@finos/legend-shared';
 import { useRef, useState } from 'react';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { PARAMETER_SUBMIT_ACTION } from '../../stores/shared/LambdaParameterState.js';
-
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   CODE_EDITOR_LANGUAGE,

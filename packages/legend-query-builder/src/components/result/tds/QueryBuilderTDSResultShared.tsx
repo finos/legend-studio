@@ -17,19 +17,16 @@
 import {
   MenuContent,
   MenuContentItem,
-  ContextMenu,
-  clsx,
   MenuContentDivider,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import {
+  type TDSExecutionResult,
   type Enumeration,
   InstanceValue,
-  TDSExecutionResult,
   EnumValueInstanceValue,
   EnumValueExplicitReference,
-  getTDSRowRankByColumnInAsc,
   PRIMITIVE_TYPE,
   type ExecutionResult,
   RelationalExecutionActivities,
@@ -39,9 +36,6 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   assertErrorThrown,
   guaranteeNonNullable,
-  isValidURL,
-  isString,
-  isNumber,
   filterByType,
   isBoolean,
   type PlainObject,
@@ -54,6 +48,7 @@ import {
 } from '../../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
+  type QueryBuilderPostFilterState,
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
   PostFilterValueSpecConditionValueState,
@@ -67,28 +62,23 @@ import {
   QueryBuilderPostFilterOperator_NotIn,
 } from '../../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import type { QueryBuilderPostFilterOperator } from '../../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterOperator.js';
-import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import type { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import {
   instanceValue_setValue,
   instanceValue_setValues,
 } from '../../../stores/shared/ValueSpecificationModifierHelper.js';
-import {
-  isEnterpriseModeEnabled,
-  type DataGridApi,
-  type DataGridCellRendererParams,
-} from '@finos/legend-lego/data-grid';
+import { type DataGridCellRendererParams } from '@finos/legend-lego/data-grid';
 import type {
-  QueryBuilderTDSResultCellCoordinate,
   QueryBuilderResultState,
   QueryBuilderTDSResultCellData,
   QueryBuilderTDSRowDataType,
-  QueryBuilderTDSResultCellDataType,
 } from '../../../stores/QueryBuilderResultState.js';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from '../../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
-import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
+import { getTDSColumnState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSHelper.js';
+import type { QueryBuilderTDSColumnState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -183,17 +173,39 @@ export type IQueryRendererParamsWithGridType = DataGridCellRendererParams & {
   tdsExecutionResult: TDSExecutionResult;
 };
 
+const getExistingPostFilterNode = (
+  operators: QueryBuilderPostFilterOperator[],
+  projectionColumnName: string | undefined,
+  postFilterState: QueryBuilderPostFilterState,
+  tdsColState: QueryBuilderTDSColumnState | undefined,
+): QueryBuilderPostFilterTreeNodeData | undefined =>
+  Array.from(postFilterState.nodes.values())
+    .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
+    .filter(
+      (node) =>
+        node.condition.leftConditionValue instanceof
+        QueryBuilderProjectionColumnState,
+    )
+    .filter(
+      (node) =>
+        node.condition.leftConditionValue.columnName ===
+          (projectionColumnName ?? tdsColState?.columnName) &&
+        operators
+          .map((op) => op.getLabel())
+          .includes(node.condition.operator.getLabel()),
+    )[0];
+
 export const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
       data: QueryBuilderTDSResultCellData | null;
       tdsState: QueryBuilderTDSState;
-      dataGridApi: DataGridApi<QueryBuilderTDSRowDataType>;
+      copyCellValueFunc: () => void;
+      copyCellRowValueFunc: () => void;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { data, tdsState, dataGridApi } = props;
-
+    const { data, tdsState, copyCellValueFunc, copyCellRowValueFunc } = props;
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
@@ -201,49 +213,19 @@ export const QueryBuilderGridResultContextMenu = observer(
       new QueryBuilderPostFilterOperator_IsEmpty();
     const postFilterNotEmptyOperator =
       new QueryBuilderPostFilterOperator_IsNotEmpty();
-
     const postFilterNotEqualOperator =
       new QueryBuilderPostFilterOperator_NotEqual();
     const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
     const postFilterState = tdsState.postFilterState;
-
-    const projectionColumnState = tdsState.projectionColumns
-      .filter((c) => c.columnName === data?.columnName)
-      .concat(
-        tdsState.aggregationState.columns
-          .filter((c) => c.columnName === data?.columnName)
-          .map((ag) => ag.projectionColumnState),
-      )[0];
-    const getExistingPostFilterNode = (
-      operators: QueryBuilderPostFilterOperator[],
-      projectionColumnName: string | undefined,
-    ): QueryBuilderPostFilterTreeNodeData | undefined =>
-      Array.from(postFilterState.nodes.values())
-        .filter(
-          (v) =>
-            v instanceof QueryBuilderPostFilterTreeConditionNodeData &&
-            v.condition.leftConditionValue instanceof
-              QueryBuilderProjectionColumnState,
-        )
-        .filter(
-          (n) =>
-            (n as QueryBuilderPostFilterTreeConditionNodeData).condition
-              .leftConditionValue.columnName ===
-              (projectionColumnName ?? projectionColumnState?.columnName) &&
-            operators
-              .map((op) => op.getLabel())
-              .includes(
-                (
-                  n as QueryBuilderPostFilterTreeConditionNodeData
-                ).condition.operator.getLabel(),
-              ),
-        )[0];
+    const tdsColState = data?.columnName
+      ? getTDSColumnState(tdsState, data.columnName)
+      : undefined;
 
     const updateFilterConditionValue = (
       conditionValue: InstanceValue,
-      cellData: QueryBuilderTDSResultCellData,
+      _cellData: QueryBuilderTDSResultCellData,
     ): void => {
-      if (cellData.value) {
+      if (_cellData.value) {
         instanceValue_setValue(
           conditionValue,
           conditionValue instanceof EnumValueInstanceValue
@@ -252,10 +234,10 @@ export const QueryBuilderGridResultContextMenu = observer(
                   (
                     conditionValue.genericType?.ownerReference
                       .value as Enumeration
-                  ).values.filter((v) => v.name === cellData.value)[0],
+                  ).values.filter((v) => v.name === _cellData.value)[0],
                 ),
               )
-            : cellData.value,
+            : _cellData.value,
           0,
           tdsState.queryBuilderState.observerContext,
         );
@@ -264,19 +246,19 @@ export const QueryBuilderGridResultContextMenu = observer(
 
     const generateNewPostFilterConditionNodeData = async (
       operator: QueryBuilderPostFilterOperator,
-      cellData: QueryBuilderTDSResultCellData,
+      _cellData: QueryBuilderTDSResultCellData,
     ): Promise<void> => {
       let postFilterConditionState: PostFilterConditionState;
       try {
-        const possibleProjectionColumnState = cellData.columnName
+        const possibleProjectionColumnState = _cellData.columnName
           ? tdsState.projectionColumns
-              .filter((c) => c.columnName === cellData.columnName)
+              .filter((c) => c.columnName === _cellData.columnName)
               .concat(
                 tdsState.aggregationState.columns
-                  .filter((c) => c.columnName === cellData.columnName)
+                  .filter((c) => c.columnName === _cellData.columnName)
                   .map((ag) => ag.projectionColumnState),
               )[0]
-          : projectionColumnState;
+          : tdsColState;
 
         if (possibleProjectionColumnState) {
           postFilterConditionState = new PostFilterConditionState(
@@ -286,12 +268,9 @@ export const QueryBuilderGridResultContextMenu = observer(
           );
 
           if (
-            projectionColumnState instanceof
-            QueryBuilderDerivationProjectionColumnState
+            tdsColState instanceof QueryBuilderDerivationProjectionColumnState
           ) {
-            await flowResult(
-              projectionColumnState.fetchDerivationLambdaReturnType(),
-            );
+            await flowResult(tdsColState.fetchDerivationLambdaReturnType());
           }
 
           const defaultFilterConditionValue =
@@ -304,7 +283,7 @@ export const QueryBuilderGridResultContextMenu = observer(
           );
           updateFilterConditionValue(
             defaultFilterConditionValue as InstanceValue,
-            cellData,
+            _cellData,
           );
           postFilterState.addNodeFromNode(
             new QueryBuilderPostFilterTreeConditionNodeData(
@@ -324,7 +303,7 @@ export const QueryBuilderGridResultContextMenu = observer(
     const updateExistingPostFilterConditionNodeData = (
       existingPostFilterNode: QueryBuilderPostFilterTreeNodeData,
       isFilterBy: boolean,
-      cellData: QueryBuilderTDSResultCellData,
+      _cellData: QueryBuilderTDSResultCellData,
       operator: QueryBuilderPostFilterOperator,
     ): void => {
       if (
@@ -353,7 +332,7 @@ export const QueryBuilderGridResultContextMenu = observer(
             (rightSide.value instanceof EnumValueInstanceValue
               ? rightSide.value.values.map((ef) => ef.value.name)
               : rightSide.value.values
-            ).includes(cellData.value);
+            ).includes(_cellData.value);
 
           if (!doesValueAlreadyExist) {
             const currentValueSpecificaton = rightSide.value;
@@ -363,7 +342,7 @@ export const QueryBuilderGridResultContextMenu = observer(
               );
             updateFilterConditionValue(
               newValueSpecification as InstanceValue,
-              cellData,
+              _cellData,
             );
             conditionState.changeOperator(
               isFilterBy ? postFilterInOperator : postFilterNotInOperator,
@@ -385,7 +364,7 @@ export const QueryBuilderGridResultContextMenu = observer(
                   : (v as InstanceValue).values,
               )
               .flat()
-              .includes(cellData.value ?? data?.value);
+              .includes(_cellData.value ?? data?.value);
 
           if (!doesValueAlreadyExist) {
             const newValueSpecification = (
@@ -393,7 +372,7 @@ export const QueryBuilderGridResultContextMenu = observer(
             ).getDefaultFilterConditionValue(conditionState);
             updateFilterConditionValue(
               newValueSpecification as InstanceValue,
-              cellData,
+              _cellData,
             );
             instanceValue_setValues(
               rightSide.value as InstanceValue,
@@ -410,16 +389,16 @@ export const QueryBuilderGridResultContextMenu = observer(
 
     const getFilterOperator = (
       isFilterBy: boolean,
-      cellData: QueryBuilderTDSResultCellData,
+      _cellData: QueryBuilderTDSResultCellData,
     ): QueryBuilderPostFilterOperator => {
-      if (isFilterBy === true) {
-        if (cellData.value === null) {
+      if (isFilterBy) {
+        if (_cellData.value === null) {
           return postFilterEmptyOperator;
         } else {
           return postFilterEqualOperator;
         }
       } else {
-        if (cellData.value === null) {
+        if (_cellData.value === null) {
           return postFilterNotEmptyOperator;
         } else {
           return postFilterNotEqualOperator;
@@ -429,94 +408,43 @@ export const QueryBuilderGridResultContextMenu = observer(
 
     const filterByOrOutValue = (
       isFilterBy: boolean,
-      cellData: QueryBuilderTDSResultCellData,
+      _cellData: QueryBuilderTDSResultCellData,
     ): void => {
       tdsState.setShowPostFilterPanel(true);
-
-      const operator = getFilterOperator(isFilterBy, cellData);
-
+      const operator = getFilterOperator(isFilterBy, _cellData);
       const existingPostFilterNode = getExistingPostFilterNode(
-        cellData.value === null
+        _cellData.value === null
           ? [postFilterEmptyOperator, postFilterNotEmptyOperator]
           : isFilterBy
           ? [postFilterEqualOperator, postFilterInOperator]
           : [postFilterNotEqualOperator, postFilterNotInOperator],
-        cellData.columnName,
+        _cellData.columnName,
+        postFilterState,
+        tdsColState,
       );
-
       existingPostFilterNode === undefined
-        ? generateNewPostFilterConditionNodeData(operator, cellData).catch(
+        ? generateNewPostFilterConditionNodeData(operator, _cellData).catch(
             applicationStore.alertUnhandledError,
           )
         : updateExistingPostFilterConditionNodeData(
             existingPostFilterNode,
             isFilterBy,
-            cellData,
+            _cellData,
             operator,
           );
     };
 
     const filterByOrOutValues = (isFilterBy: boolean): void => {
       tdsState.queryBuilderState.resultState.selectedCells.forEach(
-        (cellData) => {
-          filterByOrOutValue(isFilterBy, cellData);
+        (_cellData) => {
+          filterByOrOutValue(isFilterBy, _cellData);
         },
       );
     };
-
-    const handleCopyCellValue = isEnterpriseModeEnabled
-      ? (): void => {
-          dataGridApi.copySelectedRangeToClipboard();
-        }
-      : applicationStore.guardUnhandledError(() =>
-          applicationStore.clipboardService.copyTextToClipboard(
-            tdsState.queryBuilderState.resultState.selectedCells
-              .map((cellData) => cellData.value)
-              .join(','),
-          ),
-        );
-
-    const findRowFromRowIndex = (rowIndex: number): string => {
-      if (
-        !tdsState.queryBuilderState.resultState.executionResult ||
-        !(
-          tdsState.queryBuilderState.resultState.executionResult instanceof
-          TDSExecutionResult
-        )
-      ) {
-        return '';
-      }
-      // try to get the entire row value separated by comma
-      // rowData is in format of {columnName: value, columnName1: value, ...., rowNumber:value}
-      const valueArr: QueryBuilderTDSResultCellDataType[] = [];
-      Object.entries(
-        dataGridApi.getRenderedNodes().find((n) => n.rowIndex === rowIndex)
-          ?.data as QueryBuilderTDSRowDataType,
-      ).forEach((entry) => {
-        if (entry[0] !== 'rowNumber') {
-          valueArr.push(entry[1] as QueryBuilderTDSResultCellDataType);
-        }
-      });
-      return valueArr.join(',');
-    };
-
-    const handleCopyRowValue = isEnterpriseModeEnabled
-      ? (): void => {
-          dataGridApi.copySelectedRowsToClipboard();
-        }
-      : applicationStore.guardUnhandledError(() =>
-          applicationStore.clipboardService.copyTextToClipboard(
-            findRowFromRowIndex(
-              tdsState.queryBuilderState.resultState.selectedCells[0]
-                ?.coordinates.rowIndex ?? 0,
-            ),
-          ),
-        );
-
     return (
       <MenuContent ref={ref}>
         <MenuContentItem
-          disabled={!projectionColumnState}
+          disabled={!tdsColState}
           onClick={(): void => {
             filterByOrOutValues(true);
           }}
@@ -524,7 +452,7 @@ export const QueryBuilderGridResultContextMenu = observer(
           Filter By
         </MenuContentItem>
         <MenuContentItem
-          disabled={!projectionColumnState}
+          disabled={!tdsColState}
           onClick={(): void => {
             filterByOrOutValues(false);
           }}
@@ -532,335 +460,13 @@ export const QueryBuilderGridResultContextMenu = observer(
           Filter Out
         </MenuContentItem>
         <MenuContentDivider />
-        <MenuContentItem onClick={handleCopyCellValue}>
+        <MenuContentItem onClick={copyCellValueFunc}>
           Copy Cell Value
         </MenuContentItem>
-        <MenuContentItem onClick={handleCopyRowValue}>
+        <MenuContentItem onClick={copyCellRowValueFunc}>
           Copy Row Value
         </MenuContentItem>
       </MenuContent>
     );
   }),
-);
-
-export const QueryResultEnterpriseCellRenderer = observer(
-  (params: IQueryRendererParamsWithGridType) => {
-    const resultState = params.resultState;
-    const fetchStructureImplementation =
-      resultState.queryBuilderState.fetchStructureState.implementation;
-    const cellValue = params.value as QueryBuilderTDSResultCellDataType;
-    const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
-      if (isNumber(cellValue)) {
-        return Intl.NumberFormat(DEFAULT_LOCALE, {
-          maximumFractionDigits: 4,
-        }).format(Number(cellValue));
-      }
-      return cellValue;
-    };
-    const cellValueUrlLink =
-      isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
-
-    const mouseDown: React.MouseEventHandler = (event) => {
-      event.preventDefault();
-      if (event.button === 0 || event.button === 2) {
-        resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
-      }
-    };
-    const mouseUp: React.MouseEventHandler = (event) => {
-      resultState.setIsSelectingCells(false);
-    };
-    const mouseOver: React.MouseEventHandler = (event) => {
-      resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
-    };
-
-    return (
-      <ContextMenu
-        content={
-          // NOTE: we only support this functionality for grid result with a projection fetch-structure
-          fetchStructureImplementation instanceof QueryBuilderTDSState ? (
-            <QueryBuilderGridResultContextMenu
-              data={resultState.mousedOverCell}
-              tdsState={fetchStructureImplementation}
-              dataGridApi={params.api}
-            />
-          ) : null
-        }
-        disabled={
-          !(
-            resultState.queryBuilderState.fetchStructureState
-              .implementation instanceof QueryBuilderTDSState
-          ) ||
-          !resultState.queryBuilderState.isQuerySupported ||
-          !resultState.mousedOverCell
-        }
-        menuProps={{ elevation: 7 }}
-        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
-      >
-        <div
-          className={clsx('query-builder__result__values__table__cell')}
-          onMouseDown={(event) => mouseDown(event)}
-          onMouseUp={(event) => mouseUp(event)}
-          onMouseOver={(event) => mouseOver(event)}
-        >
-          {cellValueUrlLink ? (
-            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
-              {cellValueUrlLink}
-            </a>
-          ) : (
-            <span>{formattedCellValue()}</span>
-          )}
-        </div>
-      </ContextMenu>
-    );
-  },
-);
-
-export const QueryResultCellRenderer = observer(
-  (params: IQueryRendererParamsWithGridType) => {
-    const resultState = params.resultState;
-    const tdsExecutionResult = params.tdsExecutionResult;
-    const fetchStructureImplementation =
-      resultState.queryBuilderState.fetchStructureState.implementation;
-    const cellValue = params.value as QueryBuilderTDSResultCellDataType;
-    const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
-      if (isNumber(cellValue)) {
-        return Intl.NumberFormat(DEFAULT_LOCALE, {
-          maximumFractionDigits: 4,
-        }).format(Number(cellValue));
-      }
-      return cellValue;
-    };
-    const cellValueUrlLink =
-      isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
-    const columnName = params.column?.getColId() ?? '';
-    const findCoordinatesFromResultValue = (
-      colId: string,
-      rowNumber: number,
-    ): QueryBuilderTDSResultCellCoordinate => {
-      const colIndex = tdsExecutionResult.result.columns.findIndex(
-        (col) => col === colId,
-      );
-      return { rowIndex: rowNumber, colIndex: colIndex };
-    };
-
-    const currentCellCoordinates = findCoordinatesFromResultValue(
-      columnName,
-      params.rowIndex,
-    );
-    const cellInFilteredResults = resultState.selectedCells.some(
-      (result) =>
-        result.coordinates.colIndex === currentCellCoordinates.colIndex &&
-        result.coordinates.rowIndex === currentCellCoordinates.rowIndex,
-    );
-
-    const findColumnFromCoordinates = (
-      colIndex: number,
-    ): QueryBuilderTDSResultCellDataType => {
-      if (
-        !resultState.executionResult ||
-        !(resultState.executionResult instanceof TDSExecutionResult)
-      ) {
-        return undefined;
-      }
-      return resultState.executionResult.result.columns[colIndex];
-    };
-
-    const findResultValueFromCoordinates = (
-      resultCoordinate: [number, number],
-    ): QueryBuilderTDSResultCellDataType => {
-      const rowIndex = resultCoordinate[0];
-      const colIndex = resultCoordinate[1];
-
-      if (
-        !resultState.executionResult ||
-        !(resultState.executionResult instanceof TDSExecutionResult)
-      ) {
-        return undefined;
-      }
-      if (params.columnApi.getColumnState()[colIndex]?.sort === 'asc') {
-        resultState.executionResult.result.rows.sort((a, b) =>
-          getTDSRowRankByColumnInAsc(a, b, colIndex),
-        );
-      } else if (params.columnApi.getColumnState()[colIndex]?.sort === 'desc') {
-        resultState.executionResult.result.rows.sort((a, b) =>
-          getTDSRowRankByColumnInAsc(b, a, colIndex),
-        );
-      }
-      return resultState.executionResult.result.rows[rowIndex]?.values[
-        colIndex
-      ];
-    };
-
-    const isCoordinatesSelected = (
-      resultCoordinate: QueryBuilderTDSResultCellCoordinate,
-    ): boolean =>
-      resultState.selectedCells.some(
-        (cell) =>
-          cell.coordinates.rowIndex === resultCoordinate.rowIndex &&
-          cell.coordinates.colIndex === resultCoordinate.colIndex,
-      );
-
-    const mouseDown: React.MouseEventHandler = (event) => {
-      event.preventDefault();
-
-      if (event.shiftKey) {
-        const coordinates = findCoordinatesFromResultValue(
-          columnName,
-          params.rowIndex,
-        );
-        const actualValue = findResultValueFromCoordinates([
-          coordinates.rowIndex,
-          coordinates.colIndex,
-        ]);
-        resultState.addSelectedCell({
-          value: actualValue,
-          columnName: columnName,
-          coordinates: coordinates,
-        });
-        return;
-      }
-
-      if (event.button === 0) {
-        resultState.setIsSelectingCells(true);
-        resultState.setSelectedCells([]);
-        const coordinates = findCoordinatesFromResultValue(
-          columnName,
-          params.rowIndex,
-        );
-        const actualValue = findResultValueFromCoordinates([
-          coordinates.rowIndex,
-          coordinates.colIndex,
-        ]);
-        resultState.setSelectedCells([
-          {
-            value: actualValue,
-            columnName: columnName,
-            coordinates: coordinates,
-          },
-        ]);
-        resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
-      }
-
-      if (event.button === 2) {
-        const coordinates = findCoordinatesFromResultValue(
-          columnName,
-          params.rowIndex,
-        );
-        const isInSelected = isCoordinatesSelected(coordinates);
-        if (!isInSelected) {
-          const actualValue = findResultValueFromCoordinates([
-            coordinates.rowIndex,
-            coordinates.colIndex,
-          ]);
-          resultState.setSelectedCells([
-            {
-              value: actualValue,
-              columnName: columnName,
-              coordinates: coordinates,
-            },
-          ]);
-          resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
-        }
-      }
-    };
-
-    const mouseUp: React.MouseEventHandler = (event) => {
-      resultState.setIsSelectingCells(false);
-    };
-
-    const mouseOver: React.MouseEventHandler = (event) => {
-      if (resultState.isSelectingCells) {
-        if (resultState.selectedCells.length < 1) {
-          return;
-        }
-        const results = resultState.selectedCells[0];
-        if (!results) {
-          return;
-        }
-
-        const firstCorner = results.coordinates;
-        const secondCorner = findCoordinatesFromResultValue(
-          columnName,
-          params.rowIndex,
-        );
-
-        resultState.setSelectedCells([results]);
-
-        const minRow = Math.min(firstCorner.rowIndex, secondCorner.rowIndex);
-        const minCol = Math.min(firstCorner.colIndex, secondCorner.colIndex);
-        const maxRow = Math.max(firstCorner.rowIndex, secondCorner.rowIndex);
-        const maxCol = Math.max(firstCorner.colIndex, secondCorner.colIndex);
-
-        for (let x = minRow; x <= maxRow; x++) {
-          for (let y = minCol; y <= maxCol; y++) {
-            const actualValue = findResultValueFromCoordinates([x, y]);
-
-            const valueAndColumnId = {
-              value: actualValue,
-              columnName: findColumnFromCoordinates(y),
-              coordinates: {
-                rowIndex: x,
-                colIndex: y,
-              },
-            } as QueryBuilderTDSResultCellData;
-
-            if (
-              !resultState.selectedCells.find(
-                (result) =>
-                  result.coordinates.colIndex === y &&
-                  result.coordinates.rowIndex === x,
-              )
-            ) {
-              resultState.addSelectedCell(valueAndColumnId);
-            }
-          }
-        }
-      }
-
-      resultState.setMouseOverCell(resultState.selectedCells[0] ?? null);
-    };
-
-    return (
-      <ContextMenu
-        content={
-          // NOTE: we only support this functionality for grid result with a projection fetch-structure
-          fetchStructureImplementation instanceof QueryBuilderTDSState ? (
-            <QueryBuilderGridResultContextMenu
-              data={resultState.mousedOverCell}
-              tdsState={fetchStructureImplementation}
-              dataGridApi={params.api}
-            />
-          ) : null
-        }
-        disabled={
-          !(
-            resultState.queryBuilderState.fetchStructureState
-              .implementation instanceof QueryBuilderTDSState
-          ) ||
-          !resultState.queryBuilderState.isQuerySupported ||
-          !resultState.mousedOverCell
-        }
-        menuProps={{ elevation: 7 }}
-        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
-      >
-        <div
-          className={clsx('query-builder__result__values__table__cell', {
-            'query-builder__result__values__table__cell--active':
-              cellInFilteredResults,
-          })}
-          onMouseDown={(event) => mouseDown(event)}
-          onMouseUp={(event) => mouseUp(event)}
-          onMouseOver={(event) => mouseOver(event)}
-        >
-          {cellValueUrlLink ? (
-            <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
-              {cellValueUrlLink}
-            </a>
-          ) : (
-            <span>{formattedCellValue()}</span>
-          )}
-        </div>
-      </ContextMenu>
-    );
-  },
 );
