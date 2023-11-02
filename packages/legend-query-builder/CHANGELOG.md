@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.11.6
+
+### Patch Changes
+
+- [#2752](https://github.com/finos/legend-studio/pull/2752) [`5e965925b`](https://github.com/finos/legend-studio/commit/5e965925bc2208324dcad26b6b68b5866de522a8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Utilize built-in context menu of ag-grid in enterprise mode
+
 ## 4.11.5
 
 ### Patch Changes
