@@ -77,8 +77,8 @@ export class CoreModel extends BasicModel {
     return Array.from(this.primitiveTypesIndex.values());
   }
 
-  constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
-    super(ROOT_PACKAGE_NAME.CORE, extensionElementClasses);
+  constructor(graphPlugins: PureGraphPlugin[]) {
+    super(ROOT_PACKAGE_NAME.CORE, graphPlugins);
     this.initializePrimitiveTypes();
     // index model store singleton
     this.setOwnStore(ModelStore.NAME, ModelStore.INSTANCE);
@@ -116,8 +116,8 @@ export class CoreModel extends BasicModel {
 export class SystemModel extends BasicModel {
   autoImports: Package[] = [];
 
-  constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
-    super(ROOT_PACKAGE_NAME.SYSTEM, extensionElementClasses);
+  constructor(graphPlugins: PureGraphPlugin[]) {
+    super(ROOT_PACKAGE_NAME.SYSTEM, graphPlugins);
   }
 
   /**
@@ -141,8 +141,8 @@ export class SystemModel extends BasicModel {
 }
 
 export class GenerationModel extends BasicModel {
-  constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
-    super(ROOT_PACKAGE_NAME.MODEL_GENERATION, extensionElementClasses);
+  constructor(graphPlugins: PureGraphPlugin[]) {
+    super(ROOT_PACKAGE_NAME.MODEL_GENERATION, graphPlugins);
   }
 }
 
@@ -154,22 +154,17 @@ export class PureModel extends BasicModel {
   readonly systemModel: SystemModel;
   generationModel: GenerationModel;
   dependencyManager: DependencyManager; // used to manage the elements from dependency projects
-  graphPlugins: PureGraphPlugin[] = [];
 
   constructor(
     coreModel: CoreModel,
     systemModel: SystemModel,
     graphPlugins: PureGraphPlugin[],
   ) {
-    const extensionElementClasses = graphPlugins.flatMap(
-      (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-    );
-    super(ROOT_PACKAGE_NAME.MAIN, extensionElementClasses);
-    this.graphPlugins = graphPlugins;
+    super(ROOT_PACKAGE_NAME.MAIN, graphPlugins);
     this.coreModel = coreModel;
     this.systemModel = systemModel;
-    this.generationModel = new GenerationModel(extensionElementClasses);
-    this.dependencyManager = new DependencyManager(extensionElementClasses);
+    this.generationModel = new GenerationModel(graphPlugins);
+    this.dependencyManager = new DependencyManager(graphPlugins);
   }
 
   get autoImports(): Package[] {
@@ -363,11 +358,14 @@ export class PureModel extends BasicModel {
     ];
   }
 
-  get allOwnTestables(): Testable[] {
-    const extraTestables = this.graphPlugins
-      .flatMap((plugin) => plugin.getExtraTestablesCollectors?.() ?? [])
-      .map((collector) => collector(this));
-    return [...this.ownTestables].concat(...extraTestables);
+  get testables(): Testable[] {
+    return [
+      ...this.coreModel.ownTestables,
+      ...this.systemModel.ownTestables,
+      ...this.dependencyManager.testables,
+      ...this.ownTestables,
+      ...this.generationModel.ownTestables,
+    ];
   }
 
   getPrimitiveType = (type: PRIMITIVE_TYPE): PrimitiveType =>

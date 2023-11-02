@@ -585,7 +585,7 @@ export class GlobalTestRunnerState {
   init(force?: boolean): void {
     if (!this.testableStates || force) {
       const testables =
-        this.editorStore.graphManagerState.graph.allOwnTestables;
+        this.editorStore.graphManagerState.graph.ownTestables;
       this.testableStates = testables.map(
         (testable) => new TestableState(this.editorStore, this, testable),
       );
