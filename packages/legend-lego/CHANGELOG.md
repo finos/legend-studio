@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 1.1.47
+
+### Patch Changes
+
+- [#2743](https://github.com/finos/legend-studio/pull/2743) [`ad8dc0f9d`](https://github.com/finos/legend-studio/commit/ad8dc0f9d7f025002862ad84629de9f6339165e7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - upgrade datagrid to cooperate with enterprise version
+
 ## 1.1.46
 
 ## 1.1.45

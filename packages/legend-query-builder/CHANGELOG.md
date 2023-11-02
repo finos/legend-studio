@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.11.5
+
+### Patch Changes
+
+- [#2748](https://github.com/finos/legend-studio/pull/2748) [`6f0ee720f`](https://github.com/finos/legend-studio/commit/6f0ee720f6d2eddbc746d8755f9da732bad0d605) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Utilize enterprise ag-grid to fix the issue about filter by/out/copy wrong value
+
 ## 4.11.4
 
 ### Patch Changes

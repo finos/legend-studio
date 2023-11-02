@@ -52,13 +52,24 @@ import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 
 export const DEFAULT_LIMIT = 1000;
 
+export type QueryBuilderTDSResultCellDataType =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined;
+
+export interface QueryBuilderTDSRowDataType {
+  [key: string]: QueryBuilderTDSResultCellDataType;
+}
+
 export interface ExportDataInfo {
   contentType: ContentType;
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
 export interface QueryBuilderTDSResultCellData {
-  value: string | number | boolean | null | undefined;
+  value: QueryBuilderTDSResultCellDataType;
   columnName: string;
   coordinates: QueryBuilderTDSResultCellCoordinate;
 }

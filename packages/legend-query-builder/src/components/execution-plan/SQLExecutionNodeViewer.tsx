@@ -31,12 +31,12 @@ import {
   Button,
   PanelContent,
 } from '@finos/legend-art';
-import { tryToFormatSql } from '../QueryBuilderResultPanel.js';
 import { ResultTypeViewer } from './ResultTypeViewer.js';
 import {
   CodeEditor,
   CODE_EDITOR_LANGUAGE,
 } from '@finos/legend-lego/code-editor';
+import { tryToFormatSql } from '../result/tds/QueryBuilderTDSResultShared.js';
 
 /**
  * TODO: Create a new `AbstractPlugin` for this, called `ExecutionPlanViewerPlugin`
