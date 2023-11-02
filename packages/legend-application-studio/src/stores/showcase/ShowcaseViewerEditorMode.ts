@@ -19,9 +19,10 @@ import { EditorMode } from '../editor/EditorMode.js';
 import type { ShowcaseViewerStore } from './ShowcaseViewerStore.js';
 import { generateShowcasePath } from '../../__lib__/LegendStudioNavigation.js';
 import type { QuerySDLC } from '@finos/legend-query-builder';
+import { returnUndefOnError } from '@finos/legend-shared';
 
 export interface ShowcaseViewerQuerySDLC extends QuerySDLC {
-  projectId: string;
+  showcasePath: string;
 }
 
 export class ShowcaseViewerEditorMode extends EditorMode {
@@ -55,13 +56,11 @@ export class ShowcaseViewerEditorMode extends EditorMode {
   }
 
   getSourceInfo(): ShowcaseViewerQuerySDLC | undefined {
-    if (this.showcaseViewerStore.editorStore.sdlcState.currentProject) {
-      return {
-        projectId:
-          this.showcaseViewerStore.editorStore.sdlcState.currentProject
-            .projectId,
-      } as ShowcaseViewerQuerySDLC;
-    }
-    return undefined;
+    return returnUndefOnError(
+      () =>
+        ({
+          showcasePath: this.showcaseViewerStore.showcase.path,
+        }) as ShowcaseViewerQuerySDLC,
+    );
   }
 }

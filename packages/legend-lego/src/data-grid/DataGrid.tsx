@@ -41,6 +41,8 @@ import {
   type ColumnState,
   type GridApi,
   type IRowNode,
+  type GetContextMenuItemsParams,
+  type MenuItemDef,
   ModuleRegistry,
 } from '@ag-grid-community/core';
 import { LicenseManager } from '@ag-grid-enterprise/core';
@@ -63,13 +65,13 @@ export const enterpriseModules = [
 export const allModules = communityModules.concat(enterpriseModules);
 
 declare const AG_GRID_LICENSE: string;
-export let isEnterpriseVersionEnabled = false;
+export let isEnterpriseModeEnabled = false;
 
 export function DataGrid<TData = unknown>(
   props: AgGridReactProps<TData> | AgReactUiProps<TData>,
 ): JSX.Element {
   if (AG_GRID_LICENSE) {
-    isEnterpriseVersionEnabled = true;
+    isEnterpriseModeEnabled = true;
     LicenseManager.setLicenseKey(AG_GRID_LICENSE);
   }
   return (
@@ -100,4 +102,6 @@ export type {
   ColumnApi as DataGridColumnApi,
   GridApi as DataGridApi,
   IRowNode as DataGridIRowNode,
+  GetContextMenuItemsParams as DataGridGetContextMenuItemsParams,
+  MenuItemDef as DataGridMenuItemDef,
 };
