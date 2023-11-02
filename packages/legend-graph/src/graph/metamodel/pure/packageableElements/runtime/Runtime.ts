@@ -19,10 +19,7 @@ import {
   CORE_HASH_STRUCTURE,
   hashElementPointer,
 } from '../../../../../graph/Core_HashUtils.js';
-import type {
-  Connection,
-  ConnectionPointer,
-} from '../connection/Connection.js';
+import type { Connection } from '../connection/Connection.js';
 import type { PackageableRuntime } from './PackageableRuntime.js';
 import type { Mapping } from '../mapping/Mapping.js';
 import type { Store } from '../store/Store.js';
@@ -69,37 +66,12 @@ export class StoreConnections implements Hashable {
   }
 }
 
-export class ConnectionStores implements Hashable {
-  connectionPointer: ConnectionPointer;
-  storePointers: PackageableElementReference<Store>[] = [];
-
-  constructor(connectionPointer: ConnectionPointer) {
-    this.connectionPointer = connectionPointer;
-  }
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.STORE_CONNECTIONS,
-      this.connectionPointer,
-      hashArray(
-        this.storePointers.map((s) =>
-          hashElementPointer(
-            PackageableElementPointerType.STORE,
-            s.valueForSerialization ?? '',
-          ),
-        ),
-      ),
-    ]);
-  }
-}
-
 export abstract class Runtime implements Hashable {
   abstract get hashCode(): string;
 }
 
 export class EngineRuntime extends Runtime implements Hashable {
   mappings: PackageableElementReference<Mapping>[] = [];
-  connectionStores: ConnectionStores[] = [];
   connections: StoreConnections[] = [];
 
   get hashCode(): string {
@@ -113,7 +85,6 @@ export class EngineRuntime extends Runtime implements Hashable {
           ),
         ),
       ),
-      hashArray(this.connectionStores),
       hashArray(
         this.connections.filter(
           // TODO: use `isStubbed_StoreConnections` when we refactor hashing

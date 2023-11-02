@@ -163,7 +163,6 @@ export const TEST_DATA__roundtrip_case1 = [
         mapping: 'org::dxl::Mapping',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [{ path: 'org::dxl::Mapping', type: 'MAPPING' }],
         },
@@ -485,7 +484,6 @@ export const TEST_DATA__roundtrip_case2 = [
         mapping: 'org::dxl::Mapping',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -785,7 +783,6 @@ export const TEST_DATA__cloud__roundtrip = [
         mapping: 'org::dxl::Mapping',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {

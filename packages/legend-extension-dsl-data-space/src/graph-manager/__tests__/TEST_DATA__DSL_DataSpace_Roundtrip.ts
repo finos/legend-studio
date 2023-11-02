@@ -45,7 +45,6 @@ export const TEST_DATA__roundtrip = [
       package: 'test::model',
       runtimeValue: {
         _type: 'engineRuntime',
-        connectionStores: [],
         connections: [],
         mappings: [
           {

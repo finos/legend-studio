@@ -152,7 +152,6 @@ export const TEST_DATA__roundtrip_append_only_allow_duplicates = [
         mapping: 'test::Mapping',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -448,7 +447,6 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
         mapping: 'test::Mapping',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -726,7 +724,6 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
         mapping: 'test::Mapping',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -1354,7 +1351,6 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
       package: 'test::runtime',
       runtimeValue: {
         _type: 'engineRuntime',
-        connectionStores: [],
         connections: [
           {
             store: {
@@ -1390,7 +1386,6 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
       package: 'test::runtime',
       runtimeValue: {
         _type: 'engineRuntime',
-        connectionStores: [],
         connections: [
           {
             store: {
