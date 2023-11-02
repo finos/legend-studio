@@ -73,6 +73,7 @@ export const TEST_DATA__RuntimeRoundtrip = [
       package: 'test',
       runtimeValue: {
         _type: 'engineRuntime',
+        connectionStores: [],
         connections: [
           {
             store: {
