@@ -184,7 +184,6 @@ export const TEST_DATA__ServiceRoundtrip = [
         mapping: 'my::map',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -329,7 +328,6 @@ export const TEST_DATA__ServiceRoundtrip = [
         mapping: 'my::map',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -458,7 +456,6 @@ export const TEST_DATA__ServiceRoundtrip = [
         mapping: 'my::map',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -814,7 +811,6 @@ export const TEST_DATA__ServiceRoundtrip = [
         mapping: 'my::map',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -959,7 +955,6 @@ export const TEST_DATA__ServiceRoundtrip = [
         mapping: 'my::map',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [],
           mappings: [
             {
@@ -1120,7 +1115,6 @@ export const TEST_DATA__ServiceRoundtrip = [
         mapping: 'test::tMapping',
         runtime: {
           _type: 'engineRuntime',
-          connectionStores: [],
           connections: [
             {
               store: {
@@ -1174,7 +1168,6 @@ export const TEST_DATA__ServiceRoundtrip = [
       package: 'test',
       runtimeValue: {
         _type: 'engineRuntime',
-        connectionStores: [],
         connections: [],
         mappings: [
           {
@@ -1690,7 +1683,6 @@ export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
       package: 'execution',
       runtimeValue: {
         _type: 'engineRuntime',
-        connectionStores: [],
         connections: [
           {
             store: {

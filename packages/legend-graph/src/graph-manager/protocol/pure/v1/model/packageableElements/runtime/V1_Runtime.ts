@@ -18,7 +18,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.j
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
-import type { V1_ConnectionPointer } from '../connection/V1_ConnectionPointer.js';
 
 export abstract class V1_Runtime implements Hashable {
   abstract get hashCode(): string;
@@ -50,29 +49,14 @@ export class V1_StoreConnections implements Hashable {
   }
 }
 
-export class V1_ConnectionStores implements Hashable {
-  connectionPointer!: V1_ConnectionPointer;
-  storePointers: V1_PackageableElementPointer[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.STORE_CONNECTIONS,
-      this.connectionPointer,
-      hashArray(this.storePointers),
-    ]);
-  }
-}
-
 export class V1_EngineRuntime extends V1_Runtime implements Hashable {
   mappings: V1_PackageableElementPointer[] = [];
-  connectionStores: V1_ConnectionStores[] = [];
   connections: V1_StoreConnections[] = [];
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ENGINE_RUNTIME,
       hashArray(this.mappings),
-      hashArray(this.connectionStores),
       hashArray(this.connections),
     ]);
   }
