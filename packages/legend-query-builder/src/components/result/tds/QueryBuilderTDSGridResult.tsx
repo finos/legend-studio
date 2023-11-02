@@ -332,7 +332,7 @@ export const QueryBuilderTDSGridResult = observer(
               }}
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
-              suppressContextMenu={true}
+              suppressContextMenu={false}
               columnDefs={colDefs}
               getContextMenuItems={(params): (string | DataGridMenuItemDef)[] =>
                 getContextMenuItems(params)
