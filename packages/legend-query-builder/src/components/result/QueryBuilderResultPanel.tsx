@@ -67,7 +67,6 @@ import { QueryUsageViewer } from '../QueryUsageViewer.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../../__lib__/QueryBuilderDocumentation.js';
 import { QueryBuilderTDSSimpleGridResult } from './tds/QueryBuilderTDSSimpleGridResult.js';
-import { isEnterpriseModeEnabled } from '@finos/legend-lego/data-grid';
 import {
   getExecutedSqlFromExecutionResult,
   tryToFormatSql,
@@ -81,7 +80,7 @@ const QueryBuilderResultValues = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
     if (executionResult instanceof TDSExecutionResult) {
-      if (isEnterpriseModeEnabled) {
+      if (queryBuilderState.config?.TEMPORARY__enableGridEnterpriseMode) {
         return (
           <QueryBuilderTDSGridResult
             queryBuilderState={queryBuilderState}
@@ -219,7 +218,8 @@ export const QueryBuilderResultPanel = observer(
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
 
     const allowSettingAdvancedMode =
-      queryBuilderState.isQuerySupported && isEnterpriseModeEnabled;
+      queryBuilderState.isQuerySupported &&
+      queryBuilderState.config?.TEMPORARY__enableGridEnterpriseMode;
 
     const copyExpression = (value: string): void => {
       applicationStore.clipboardService
