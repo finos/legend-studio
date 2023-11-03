@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.11.7
+
+### Patch Changes
+
+- [#2758](https://github.com/finos/legend-studio/pull/2758) [`e4dbad768`](https://github.com/finos/legend-studio/commit/e4dbad768b9168f11c62e4a9c0f9e7922657c031) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Create a flag in query builder config to enable/disable ag grid enterprise mode
+
 ## 4.11.6
 
 ### Patch Changes
