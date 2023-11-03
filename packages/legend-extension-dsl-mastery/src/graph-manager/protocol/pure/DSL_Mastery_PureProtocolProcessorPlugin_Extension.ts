@@ -194,9 +194,9 @@ export interface DSL_Mastery_PureProtocolProcessorPlugin_Extension
   V1_getExtraAuthenticationStrategyProtocolDeserializers?(): V1_AuthenticationStrategyProtocolDeserializer[];
 
   // extension hooks: runtime
-  V1_getExtraMasteryRuntimeBuilders?(): V1_MasteryRuntimeBuilder[];
-
   V1_getExtraMasteryRuntimeFirstPassBuilders?(): V1_MasteryRuntimeBuilder[];
+
+  V1_getExtraMasteryRuntimeSecondPassBuilders?(): V1_MasteryRuntimeBuilder[];
 
   V1_getExtraMasteryRuntimeTransformers?(): V1_MasteryRuntimeTransformer[];
 

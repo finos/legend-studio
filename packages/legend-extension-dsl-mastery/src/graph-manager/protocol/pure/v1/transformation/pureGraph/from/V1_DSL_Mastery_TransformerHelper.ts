@@ -843,6 +843,6 @@ export const V1_transformMasteryRuntime = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't transform runtime '${typeof element}'`,
+    `Can't transform mastery runtime: no compatible transformer available from plugins, element`,
   );
 };

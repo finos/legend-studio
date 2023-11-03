@@ -845,7 +845,7 @@ export const V1_buildMasteryRuntime = (
     (plugin) =>
       (
         plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
-      ).V1_getExtraMasteryRuntimeBuilders?.() ?? [],
+      ).V1_getExtraMasteryRuntimeSecondPassBuilders?.() ?? [],
   );
   for (const builder of extraMasteryRuntimeBuilders) {
     const metamodel = builder(element, context);
@@ -854,6 +854,6 @@ export const V1_buildMasteryRuntime = (
     }
   }
   throw new UnsupportedOperationError(
-    `Can't build runtime '${typeof element}'`,
+    `Can't build mastery runtime: no compatible builder available from plugins, element`,
   );
 };

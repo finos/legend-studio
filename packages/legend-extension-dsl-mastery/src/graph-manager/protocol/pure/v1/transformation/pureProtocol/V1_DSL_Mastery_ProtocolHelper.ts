@@ -54,6 +54,7 @@ import {
 import type { DSL_Mastery_PureProtocolProcessorPlugin_Extension } from '../../../DSL_Mastery_PureProtocolProcessorPlugin_Extension.js';
 import {
   type PureProtocolProcessorPlugin,
+  type V1_PackageableElement,
   V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
 import {
@@ -957,9 +958,9 @@ export const V1_serializeMasteryRuntime = (
 };
 
 export const V1_deserializeMasteryRuntime = (
-  json: PlainObject<V1_MasteryRuntime>,
+  json: PlainObject<V1_PackageableElement>,
   plugins: PureProtocolProcessorPlugin[],
-): V1_MasteryRuntime => {
+): V1_PackageableElement | undefined => {
   const extraMasteryRuntimeDeserializers = plugins.flatMap(
     (plugin) =>
       (
@@ -972,7 +973,5 @@ export const V1_deserializeMasteryRuntime = (
       return masteryRuntimeProtocol;
     }
   }
-  throw new UnsupportedOperationError(
-    `Can't deserialize runtime of type '${json._type}': no compatible deserializer available from plugins`,
-  );
+  return undefined;
 };
