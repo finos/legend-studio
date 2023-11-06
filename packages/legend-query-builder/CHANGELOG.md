@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.11.8
+
+### Patch Changes
+
+- [#2759](https://github.com/finos/legend-studio/pull/2759) [`237e8eb48`](https://github.com/finos/legend-studio/commit/237e8eb48061c612e474df154d33d674f6ff51ba) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a typo in QueryBuilderConfig flag
+
 ## 4.11.7
 
 ### Patch Changes
