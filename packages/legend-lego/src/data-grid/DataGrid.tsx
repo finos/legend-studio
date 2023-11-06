@@ -65,13 +65,11 @@ export const enterpriseModules = [
 export const allModules = communityModules.concat(enterpriseModules);
 
 declare const AG_GRID_LICENSE: string;
-export let isEnterpriseModeEnabled = false;
 
 export function DataGrid<TData = unknown>(
   props: AgGridReactProps<TData> | AgReactUiProps<TData>,
 ): JSX.Element {
   if (AG_GRID_LICENSE) {
-    isEnterpriseModeEnabled = true;
     LicenseManager.setLicenseKey(AG_GRID_LICENSE);
   }
   return (
