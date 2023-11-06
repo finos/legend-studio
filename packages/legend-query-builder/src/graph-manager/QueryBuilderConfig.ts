@@ -31,7 +31,7 @@ export class QueryBuilderConfig {
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
-      TEMPORARY__enableAgGridEnterpriseMode: optional(primitive()),
+      TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
     }),
   );
 }
