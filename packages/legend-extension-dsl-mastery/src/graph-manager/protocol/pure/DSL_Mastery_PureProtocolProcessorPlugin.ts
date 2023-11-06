@@ -30,7 +30,6 @@ import {
   V1_KafkaConnectionSchema,
   V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE,
   V1_masterRecordDefinitionModelSchema,
-  V1_MASTERY_RUNTIME_ELEMENT_PROTOCOL_TYPE,
   V1_serializeMasteryRuntime,
   V1_sourcePrecedenceRuleSchema,
 } from './v1/transformation/pureProtocol/V1_DSL_Mastery_ProtocolHelper.js';
@@ -63,7 +62,11 @@ import {
   type V1_PackageableElement,
   V1_buildFullPath,
 } from '@finos/legend-graph';
-import { assertType, type PlainObject } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  assertType,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import type {
   DSL_Mastery_PureProtocolProcessorPlugin_Extension,
@@ -88,7 +91,6 @@ import {
 } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
 import { V1_MasteryRuntime } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
 import { MasteryRuntime } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
-import { UnsupportedOperationError } from '@finos/legend-shared';
 
 export const MASTER_RECORD_DEFINITION_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::mastery::metamodel::MasterRecordDefinition';
@@ -297,7 +299,6 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
           elementProtocol: V1_PackageableElement,
           context: V1_GraphBuilderContext,
         ): void => {
-          assertType(elementProtocol, V1_MasteryRuntime);
           V1_buildMasteryRuntime(elementProtocol as V1_MasteryRuntime, context);
         },
       }),
@@ -395,10 +396,7 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
         } else if (metamodel instanceof HTTPConnection) {
           return V1_transformHTTPConnection(metamodel, context);
         } else if (metamodel instanceof MasteryRuntime) {
-          return V1_transformMasteryRuntime(
-            metamodel as MasteryRuntime,
-            context,
-          );
+          return V1_transformMasteryRuntime(metamodel, context);
         }
         return undefined;
       },

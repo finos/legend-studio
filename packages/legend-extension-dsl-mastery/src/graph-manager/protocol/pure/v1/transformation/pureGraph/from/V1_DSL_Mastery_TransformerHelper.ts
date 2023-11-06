@@ -149,8 +149,8 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
-import { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
-import { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
+import type { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider

@@ -96,7 +96,7 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
-import { V1_MasteryRuntime } from '../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { V1_MasteryRuntime } from '../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
 
 /********************
  * connection
@@ -932,8 +932,6 @@ export const V1_masterRecordDefinitionModelSchema = (
 /**********
  * runtime
  **********/
-
-export const V1_MASTERY_RUNTIME_ELEMENT_PROTOCOL_TYPE = 'masteryRuntime';
 
 export const V1_serializeMasteryRuntime = (
   protocol: V1_MasteryRuntime,

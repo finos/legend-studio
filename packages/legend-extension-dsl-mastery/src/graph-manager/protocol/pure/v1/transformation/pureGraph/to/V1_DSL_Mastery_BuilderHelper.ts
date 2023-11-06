@@ -152,8 +152,8 @@ import {
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
 import { CollectionEquality } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
-import { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
-import { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
+import type { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider
