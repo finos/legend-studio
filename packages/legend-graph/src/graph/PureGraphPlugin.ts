@@ -21,7 +21,9 @@ import type { GraphPluginManager } from './GraphPluginManager.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 
 export type DeadReferencesCleaner = (graph: PureModel) => void;
-export type TestablesCollector = (graph: PureModel) => Testable[];
+export type TestableElementFilter = (
+  element: PackageableElement,
+) => Testable | undefined;
 
 /**
  * Plugins for Pure graph (aka `PureModel`). These plugins concern the operations of the graph alone and
@@ -54,5 +56,5 @@ export abstract class PureGraphPlugin extends AbstractPlugin {
   /**
    * Get the list of collectors for testable items
    */
-  getExtraTestablesCollectors?(): TestablesCollector[];
+  getExtraTestablesCollectors?(): TestableElementFilter[];
 }

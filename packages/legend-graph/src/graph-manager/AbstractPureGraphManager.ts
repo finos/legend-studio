@@ -678,9 +678,7 @@ export abstract class AbstractPureGraphManager {
   async createBasicGraph(options?: {
     initializeSystem?: boolean;
   }): Promise<PureModel> {
-    const extensionElementClasses = this.pluginManager
-      .getPureGraphPlugins()
-      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
+    const extensionElementClasses = this.pluginManager.getPureGraphPlugins();
     const coreModel = new CoreModel(extensionElementClasses);
     const systemModel = new SystemModel(extensionElementClasses);
     if (options?.initializeSystem) {
@@ -696,23 +694,11 @@ export abstract class AbstractPureGraphManager {
   }
 
   createDependencyManager(): DependencyManager {
-    return new DependencyManager(
-      this.pluginManager
-        .getPureGraphPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-        ),
-    );
+    return new DependencyManager(this.pluginManager.getPureGraphPlugins());
   }
 
   createGenerationModel(): GenerationModel {
-    return new GenerationModel(
-      this.pluginManager
-        .getPureGraphPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-        ),
-    );
+    return new GenerationModel(this.pluginManager.getPureGraphPlugins());
   }
 
   /**

@@ -229,11 +229,12 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     }
 
     // create an empty graph
-    const extensionElementClasses = this.graphManager.pluginManager
-      .getPureGraphPlugins()
-      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
-    const systemModel = new SystemModel(extensionElementClasses);
-    const coreModel = new CoreModel(extensionElementClasses);
+    const systemModel = new SystemModel(
+      this.graphManager.pluginManager.getPureGraphPlugins(),
+    );
+    const coreModel = new CoreModel(
+      this.graphManager.pluginManager.getPureGraphPlugins(),
+    );
     await this.graphManager.buildSystem(
       coreModel,
       systemModel,
