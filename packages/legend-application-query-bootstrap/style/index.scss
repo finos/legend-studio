@@ -1281,6 +1281,10 @@
       }
     }
 
+    .ag-row-selected .ag-cell-focus {
+      background: var(--color-purple-0) !important;
+    }
+
     .query-builder__result__tds-grid {
       // Customize ag-grid theme
       // See https://www.ag-grid.com/javascript-grid-themes-customising/#customising-themes
@@ -1289,17 +1293,31 @@
       --ag-foreground-color: var(--color-legacylight-dark-grey-200);
       --ag-header-background-color: var(--color-legacylight-light-grey-200);
       --ag-header-foreground-color: var(--color-legacylight-dark-grey-200);
-      --ag-balham-active-color: var(--color-legacylight-light-blue-100);
+      --ag-balham-active-color: var(--color-yellow-200);
       --ag-odd-row-background-color: var(--color-white);
       --ag-even-row-background-color: var(--color-white);
       --ag-row-hover-color: var(--color-light-grey-50);
       --ag-row-border-color: var(--color-legacylight-light-grey-200);
+      --ag-selected-row-background-color: var(--color-navy-600);
+      --ag-range-selection-background-color: var(--color-navy-600);
     }
 
     .query-builder__result__values__table__cell--active {
       background-color: var(--color-navy-600);
     }
 
+    .query-builder__result__advanced__mode__label {
+      background: var(--color-dark-grey-400);
+      color: var(--color-light-grey-100);
+    }
+
+    .query-builder__result__advanced__mode__toggler__btn {
+      background: var(--color-dark-grey-400);
+
+      svg {
+        color: var(--color-dark-grey-250);
+      }
+    }
     // ------------------------------------ Other / Modal ---------------------------------------
 
     .query-builder__tooltip {
