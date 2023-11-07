@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.47
+
+### Patch Changes
+
+- [#2767](https://github.com/finos/legend-studio/pull/2767) [`9f4b85648`](https://github.com/finos/legend-studio/commit/9f4b856482d4be4c62d76debc848af713fc252fa) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable queryBuilderConfig in DataSpaceQueryBuilderState
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix testable collector to predicate of packagable element and fix getting testables from dependencies.
+
 ## 10.1.46
 
 ## 10.1.45

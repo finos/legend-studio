@@ -1,5 +1,7 @@
 # @finos/legend-query-builder
 
+## 4.11.9
+
 ## 4.11.8
 
 ### Patch Changes

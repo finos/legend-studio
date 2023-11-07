@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.4.0
+
+### Minor Changes
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix testable collector to predicate of packagable element and fix getting testables from dependencies.
+
 ## 31.3.12
 
 ## 31.3.11
