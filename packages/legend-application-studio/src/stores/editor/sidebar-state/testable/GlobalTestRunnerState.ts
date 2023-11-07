@@ -53,6 +53,7 @@ import type {
   TestableMetadataGetter,
 } from '../../../LegendStudioApplicationPlugin.js';
 import { ServiceEditorState } from '../../editor-state/element-editor-state/service/ServiceEditorState.js';
+import { LegendStudioUserDataHelper } from '../../../../__lib__/LegendStudioUserDataHelper.js';
 
 // Testable Metadata
 export interface TestableMetadata {
@@ -553,11 +554,20 @@ export class TestableState {
 }
 
 export class GlobalTestRunnerState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
-  testableStates: TestableState[] | undefined;
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
+  readonly extraTestableMetadataGetters: TestableMetadataGetter[] = [];
+
+  // current project
   isRunningTests = ActionState.create();
-  extraTestableMetadataGetters: TestableMetadataGetter[] = [];
+  testableStates: TestableState[] | undefined;
+
+  // dependencies
+  showDependencyPanel = false;
+  isRunningDependencyTests = ActionState.create();
+  dependencyTestableStates: TestableState[] | undefined;
+
+  // error
   failureViewing: AssertFail | TestError | undefined;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
@@ -565,10 +575,17 @@ export class GlobalTestRunnerState {
       editorStore: false,
       sdlcState: false,
       testableStates: observable,
-      init: action,
+      dependencyTestableStates: observable,
+      isRunningTests: observable,
+      isRunningDependencyTests: observable,
+      initOwnTestables: action,
       runAllTests: flow,
+      runDependenciesTests: flow,
       failureViewing: observable,
+      showDependencyPanel: observable,
       setFailureViewing: action,
+      setShowDependencyPanel: action,
+      initDependency: action,
       visitTestable: action,
     });
     this.editorStore = editorStore;
@@ -580,27 +597,50 @@ export class GlobalTestRunnerState {
           plugin.getExtraTestableMetadata?.() ?? [],
       )
       .filter(isNonNullable);
+    const showDependencyPanelVal =
+      LegendStudioUserDataHelper.globalTestRunner_getShowDependencyPanel(
+        this.editorStore.applicationStore.userDataService,
+      );
+    if (showDependencyPanelVal !== undefined) {
+      this.showDependencyPanel = showDependencyPanelVal;
+    }
   }
 
-  init(force?: boolean): void {
+  get ownTestableStates(): TestableState[] {
+    return this.testableStates ?? [];
+  }
+
+  get allDependencyTestablesStates(): TestableState[] {
+    return this.dependencyTestableStates ?? [];
+  }
+
+  get allTestableStates(): TestableState[] {
+    return [...this.ownTestableStates, ...this.allDependencyTestablesStates];
+  }
+
+  get isDispatchingOwnProjectAction(): boolean {
+    return (
+      this.isRunningTests.isInProgress ||
+      this.ownTestableStates.some((s) => s.isRunningTests.isInProgress)
+    );
+  }
+
+  get isDispatchingDependencyAction(): boolean {
+    return (
+      this.isRunningDependencyTests.isInProgress ||
+      this.allDependencyTestablesStates.some(
+        (s) => s.isRunningTests.isInProgress,
+      )
+    );
+  }
+
+  initOwnTestables(force?: boolean): void {
     if (!this.testableStates || force) {
-      const testables =
-        this.editorStore.graphManagerState.graph.ownTestables;
+      const testables = this.editorStore.graphManagerState.graph.ownTestables;
       this.testableStates = testables.map(
         (testable) => new TestableState(this.editorStore, this, testable),
       );
     }
-  }
-
-  get testables(): TestableState[] {
-    return this.testableStates ?? [];
-  }
-
-  get isDispatchingAction(): boolean {
-    return (
-      this.isRunningTests.isInProgress ||
-      this.testables.some((s) => s.isRunningTests.isInProgress)
-    );
   }
 
   visitTestable(testable: Testable): void {
@@ -618,19 +658,12 @@ export class GlobalTestRunnerState {
     this.failureViewing = val;
   }
 
-  *runAllTests(testableState: TestableState | undefined): GeneratorFn<void> {
+  *runAllTests(): GeneratorFn<void> {
     try {
       this.isRunningTests.inProgress();
-      let inputs: RunTestsTestableInput[] = [];
-      if (!testableState) {
-        inputs = (this.testableStates ?? []).map(
-          (e) => new RunTestsTestableInput(e.testableMetadata.testable),
-        );
-      } else {
-        inputs = [
-          new RunTestsTestableInput(testableState.testableMetadata.testable),
-        ];
-      }
+      const inputs = this.ownTestableStates.map(
+        (e) => new RunTestsTestableInput(e.testableMetadata.testable),
+      );
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           inputs,
@@ -647,12 +680,53 @@ export class GlobalTestRunnerState {
 
   handleResults(testResults: TestResult[]): void {
     testResults.forEach((testResult) => {
-      const testableState = this.testables.find(
+      const testableState = this.allTestableStates.find(
         (tState) => tState.testableMetadata.testable === testResult.testable,
       );
       if (testableState) {
         testableState.handleTestableResult(testResult, true);
       }
     });
+  }
+
+  // dependency
+  setShowDependencyPanel(val: boolean): void {
+    this.showDependencyPanel = val;
+    if (this.showDependencyPanel) {
+      this.initDependency();
+    }
+    LegendStudioUserDataHelper.globalTestRunner_setShowDependencyPanel(
+      this.editorStore.applicationStore.userDataService,
+      val,
+    );
+  }
+
+  initDependency(): void {
+    if (!this.dependencyTestableStates) {
+      this.dependencyTestableStates =
+        this.editorStore.graphManagerState.graph.dependencyManager.testables.map(
+          (testable) => new TestableState(this.editorStore, this, testable),
+        );
+    }
+  }
+
+  *runDependenciesTests(): GeneratorFn<void> {
+    try {
+      this.isRunningDependencyTests.inProgress();
+      const inputs = this.allDependencyTestablesStates.map(
+        (e) => new RunTestsTestableInput(e.testableMetadata.testable),
+      );
+      const testResults =
+        (yield this.editorStore.graphManagerState.graphManager.runTests(
+          inputs,
+          this.editorStore.graphManagerState.graph,
+        )) as TestResult[];
+      this.handleResults(testResults);
+      this.isRunningDependencyTests.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.isRunningDependencyTests.fail();
+    }
   }
 }
