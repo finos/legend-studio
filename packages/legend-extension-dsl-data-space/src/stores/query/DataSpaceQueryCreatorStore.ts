@@ -249,7 +249,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         );
       },
       projectInfo,
-      undefined,
+      this.applicationStore.config.options.queryBuilderConfig,
       sourceInfo,
     );
     queryBuilderState.setExecutionContext(executionContext);
