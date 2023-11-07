@@ -152,6 +152,8 @@ import {
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
 import { CollectionEquality } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import type { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider
@@ -829,4 +831,29 @@ export const V1_buildMasterRecordDefinition = (
     protocol.elasticSearchTransformService;
   masterRecordDefinition.exceptionWorkflowTransformService =
     protocol.exceptionWorkflowTransformService;
+};
+
+/**********
+ * runtime
+ **********/
+
+export const V1_buildMasteryRuntime = (
+  element: V1_MasteryRuntime,
+  context: V1_GraphBuilderContext,
+): MasteryRuntime => {
+  const extraMasteryRuntimeBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMasteryRuntimeSecondPassBuilders?.() ?? [],
+  );
+  for (const builder of extraMasteryRuntimeBuilders) {
+    const metamodel = builder(element, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't build mastery runtime: no compatible builder available from plugins, element`,
+  );
 };

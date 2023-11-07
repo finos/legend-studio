@@ -149,6 +149,8 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+import type { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider
@@ -818,4 +820,29 @@ export const V1_transformMasterRecordDefinition = (
   protocol.exceptionWorkflowTransformService =
     element.exceptionWorkflowTransformService;
   return protocol;
+};
+
+/**********
+ * runtime
+ **********/
+
+export const V1_transformMasteryRuntime = (
+  element: MasteryRuntime,
+  context: V1_GraphTransformerContext,
+): V1_MasteryRuntime => {
+  const extraMasteryRuntimeTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMasteryRuntimeTransformers?.() ?? [],
+  );
+  for (const transformer of extraMasteryRuntimeTransformers) {
+    const protocol = transformer(element, context);
+    if (protocol) {
+      return protocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform mastery runtime: no compatible transformer available from plugins, element`,
+  );
 };

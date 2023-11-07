@@ -24,11 +24,13 @@ import {
   V1_DATA_PROVIDER_ELEMENT_PROTOCOL_TYPE,
   V1_dataProviderModelSchema,
   V1_deleteRuleSchema,
+  V1_deserializeMasteryRuntime,
   V1_FTPConnectionSchema,
   V1_HTTPConnectionSchema,
   V1_KafkaConnectionSchema,
   V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE,
   V1_masterRecordDefinitionModelSchema,
+  V1_serializeMasteryRuntime,
   V1_sourcePrecedenceRuleSchema,
 } from './v1/transformation/pureProtocol/V1_DSL_Mastery_ProtocolHelper.js';
 import {
@@ -37,6 +39,7 @@ import {
   V1_buildHTTPConnection,
   V1_buildKafkaConnection,
   V1_buildMasterRecordDefinition,
+  V1_buildMasteryRuntime,
 } from './v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
 import {
   V1_transformDataProvider,
@@ -44,6 +47,7 @@ import {
   V1_transformHTTPConnection,
   V1_transformKafkaConnection,
   V1_transformMasterRecordDefinition,
+  V1_transformMasteryRuntime,
 } from './v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
 import {
   type PackageableElement,
@@ -58,7 +62,11 @@ import {
   type V1_PackageableElement,
   V1_buildFullPath,
 } from '@finos/legend-graph';
-import { assertType, type PlainObject } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  assertType,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import type {
   DSL_Mastery_PureProtocolProcessorPlugin_Extension,
@@ -81,6 +89,8 @@ import {
   V1_HTTPConnection,
   V1_KafkaConnection,
 } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Connection.js';
+import { V1_MasteryRuntime } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import { MasteryRuntime } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 export const MASTER_RECORD_DEFINITION_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::mastery::metamodel::MasterRecordDefinition';
@@ -103,6 +113,7 @@ export const HTTP_CONNECTION_ELEMENT_CLASS_NAME = 'HTTPConnection';
 export const MASTER_RECORD_DEFINITION_ELEMENT_CLASS_NAME =
   'MasterRecordDefinition';
 export const DATA_PROVIDER_ELEMENT_CLASS_NAME = 'DataProvider';
+export const MASTERY_RUNTIME_ELEMENT_CLASS_NAME = 'MasteryRuntime';
 
 export class DSL_Mastery_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
@@ -257,6 +268,40 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
           V1_buildDataProvider(elementProtocol, context);
         },
       }),
+      new V1_ElementBuilder<V1_MasteryRuntime>({
+        elementClassName: MASTERY_RUNTIME_ELEMENT_CLASS_NAME,
+        _class: V1_MasteryRuntime,
+        firstPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): PackageableElement => {
+          const extraMasteryRuntimeBuilders =
+            context.extensions.plugins.flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+                ).V1_getExtraMasteryRuntimeFirstPassBuilders?.() ?? [],
+            );
+          for (const builder of extraMasteryRuntimeBuilders) {
+            const metamodel = builder(
+              elementProtocol as V1_MasteryRuntime,
+              context,
+            );
+            if (metamodel) {
+              return metamodel;
+            }
+          }
+          throw new UnsupportedOperationError(
+            `Can't build runtime: no compatible builder available from plugins, elementProtocol`,
+          );
+        },
+        secondPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): void => {
+          V1_buildMasteryRuntime(elementProtocol as V1_MasteryRuntime, context);
+        },
+      }),
     ];
   }
 
@@ -301,6 +346,8 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
           return serialize(V1_FTPConnectionSchema(plugins), elementProtocol);
         } else if (elementProtocol instanceof V1_HTTPConnection) {
           return serialize(V1_HTTPConnectionSchema(plugins), elementProtocol);
+        } else if (elementProtocol instanceof V1_MasteryRuntime) {
+          return V1_serializeMasteryRuntime(elementProtocol, plugins);
         }
         return undefined;
       },
@@ -327,7 +374,7 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
         } else if (json._type === V1_ConnectionType.HTTP) {
           return deserialize(V1_HTTPConnectionSchema(plugins), json);
         }
-        return undefined;
+        return V1_deserializeMasteryRuntime(json, plugins);
       },
     ];
   }
@@ -348,6 +395,8 @@ export class DSL_Mastery_PureProtocolProcessorPlugin
           return V1_transformFTPConnection(metamodel, context);
         } else if (metamodel instanceof HTTPConnection) {
           return V1_transformHTTPConnection(metamodel, context);
+        } else if (metamodel instanceof MasteryRuntime) {
+          return V1_transformMasteryRuntime(metamodel, context);
         }
         return undefined;
       },
