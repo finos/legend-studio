@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.12.0
+
+### Minor Changes
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `LegendStudioUserDataHelper` to store legend studio user data in browser.
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add dependencies testable view in global test runner.
+
 ## 28.11.4
 
 ## 28.11.3

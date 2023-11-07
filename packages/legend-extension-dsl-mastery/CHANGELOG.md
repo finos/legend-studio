@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.104
+
+### Patch Changes
+
+- [#2693](https://github.com/finos/legend-studio/pull/2693) [`fb2fb0c60`](https://github.com/finos/legend-studio/commit/fb2fb0c60f9366c25623ca6dcfaa02930ff43953) ([@agshubh-97](https://github.com/agshubh-97)) - Add support for Mastery Runtime
+
 ## 3.0.103
 
 ## 3.0.102
