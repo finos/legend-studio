@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.105
+
 ## 3.0.104
 
 ### Patch Changes

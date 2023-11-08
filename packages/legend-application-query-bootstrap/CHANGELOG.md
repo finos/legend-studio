@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 10.55.0
+
+### Patch Changes
+
+- [#2771](https://github.com/finos/legend-studio/pull/2771) [`8f6454120`](https://github.com/finos/legend-studio/commit/8f64541208d9c7eba383f8eb9b247ed3e5a63dcc) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix ag grid enterprise mode color in light mode
+
 ## 10.54.0
 
 ## 10.53.0
