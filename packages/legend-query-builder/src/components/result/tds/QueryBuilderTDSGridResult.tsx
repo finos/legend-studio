@@ -291,7 +291,7 @@ export const QueryBuilderTDSGridResult = observer(
         if (fetchStructureImplementation instanceof QueryBuilderTDSState) {
           result = [
             {
-              name: 'Filter by',
+              name: 'Filter By',
               action: () => {
                 filterByOrOutValues(
                   applicationStore,
@@ -302,7 +302,7 @@ export const QueryBuilderTDSGridResult = observer(
               },
             },
             {
-              name: 'Filter out',
+              name: 'Filter Out',
               action: () => {
                 filterByOrOutValues(
                   applicationStore,
@@ -315,7 +315,7 @@ export const QueryBuilderTDSGridResult = observer(
             'copy',
             'copyWithHeaders',
             {
-              name: 'Copy row value',
+              name: 'Copy Row Value',
               action: () => {
                 params.api.copySelectedRowsToClipboard();
               },
