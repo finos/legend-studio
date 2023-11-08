@@ -27,7 +27,6 @@ import {
   InstanceValue,
   EnumValueInstanceValue,
   EnumValueExplicitReference,
-  PRIMITIVE_TYPE,
   type ExecutionResult,
   RelationalExecutionActivities,
 } from '@finos/legend-graph';
@@ -117,40 +116,6 @@ export const getExecutedSqlFromExecutionResult = (
     return executedSql;
   }
   return undefined;
-};
-
-export const getAggregationTDSColumnCustomizations = (
-  result: TDSExecutionResult,
-  columnName: string,
-): object | undefined => {
-  const columnType = result.builder.columns.find(
-    (col) => col.name === columnName,
-  )?.type;
-  switch (columnType) {
-    case PRIMITIVE_TYPE.STRING:
-      return {
-        filter: 'agTextColumnFilter',
-        allowedAggFuncs: ['count'],
-      };
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return {
-        filter: 'agDateColumnFilter',
-        allowedAggFuncs: ['count'],
-      };
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
-      return {
-        filter: 'agNumberColumnFilter',
-        allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
-      };
-    default:
-      return {
-        allowedAggFuncs: ['count'],
-      };
-  }
 };
 
 export const getRowDataFromExecutionResult = (
