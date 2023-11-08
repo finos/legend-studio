@@ -17,7 +17,7 @@
 import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
-import type { TDSExecutionResult } from '@finos/legend-graph';
+import { PRIMITIVE_TYPE, type TDSExecutionResult } from '@finos/legend-graph';
 import { useState, useCallback } from 'react';
 import {
   DataGrid,
@@ -30,7 +30,6 @@ import {
   type DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
 import {
-  getAggregationTDSColumnCustomizations,
   getRowDataFromExecutionResult,
   type IQueryRendererParamsWithGridType,
   filterByOrOutValues,
@@ -46,7 +45,41 @@ import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import { isNumber, isString, isValidURL } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 
-const getAdvancedColDefs = (
+const getAggregationTDSColumnCustomizations = (
+  result: TDSExecutionResult,
+  columnName: string,
+): object => {
+  const columnType = result.builder.columns.find(
+    (col) => col.name === columnName,
+  )?.type;
+  switch (columnType) {
+    case PRIMITIVE_TYPE.STRING:
+      return {
+        filter: 'agTextColumnFilter',
+        allowedAggFuncs: ['count'],
+      };
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return {
+        filter: 'agDateColumnFilter',
+        allowedAggFuncs: ['count'],
+      };
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.FLOAT:
+      return {
+        filter: 'agNumberColumnFilter',
+        allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
+      };
+    default:
+      return {
+        allowedAggFuncs: ['count'],
+      };
+  }
+};
+
+const getLocalColDefs = (
   executionResult: TDSExecutionResult,
   resultState: QueryBuilderResultState,
 ): DataGridColumnDefinition<
@@ -128,6 +161,35 @@ const QueryResultCellRenderer = observer(
   },
 );
 
+const getFilterTDSColumnCustomizations = (
+  result: TDSExecutionResult,
+  columnName: string,
+): object => {
+  const columnType = result.builder.columns.find(
+    (col) => col.name === columnName,
+  )?.type;
+  switch (columnType) {
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return {
+        filter: 'agDateColumnFilter',
+      };
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.NUMBER:
+      return {
+        filter: 'agNumberColumnFilter',
+      };
+    default:
+      // we default all other columns to use filter true which defaults to set filters
+      return {
+        filter: true,
+      };
+  }
+};
+
 const getColDefs = (
   executionResult: TDSExecutionResult,
   resultState: QueryBuilderResultState,
@@ -148,6 +210,7 @@ const getColDefs = (
           resultState: resultState,
           tdsExecutionResult: executionResult,
         },
+        ...getFilterTDSColumnCustomizations(executionResult, colName),
       }) as DataGridColumnDefinition,
   );
 
@@ -162,9 +225,9 @@ export const QueryBuilderTDSGridResult = observer(
       undefined,
     );
     const resultState = queryBuilderState.resultState;
-    const isAdvancedModeEnabled = queryBuilderState.isAdvancedModeEnabled;
-    const colDefs = isAdvancedModeEnabled
-      ? getAdvancedColDefs(executionResult, resultState)
+    const isLocalModeEnabled = queryBuilderState.isLocalModeEnabled;
+    const colDefs = isLocalModeEnabled
+      ? getLocalColDefs(executionResult, resultState)
       : getColDefs(executionResult, resultState);
 
     const onSaveGridColumnState = (): void => {
@@ -275,7 +338,7 @@ export const QueryBuilderTDSGridResult = observer(
             'ag-theme-balham-dark query-builder__result__tds-grid',
           )}
         >
-          {isAdvancedModeEnabled ? (
+          {isLocalModeEnabled ? (
             <DataGrid
               rowData={getRowDataFromExecutionResult(executionResult)}
               onGridReady={(params): void => {
