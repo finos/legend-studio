@@ -181,7 +181,7 @@ export const QueryBuilderResultPanel = observer(
     const isQueryValid =
       !queryBuilderState.isQuerySupported || isSupportedQueryValid;
 
-    const isQueryValidForAdvancedMode =
+    const isQueryValidForLocalMode =
       isQueryValid &&
       queryBuilderState.fetchStructureState.implementation instanceof
         QueryBuilderTDSState;
@@ -217,7 +217,7 @@ export const QueryBuilderResultPanel = observer(
 
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
 
-    const allowSettingAdvancedMode =
+    const allowSettingLocalMode =
       queryBuilderState.isQuerySupported &&
       queryBuilderState.config?.TEMPORARY__enableGridEnterpriseMode;
 
@@ -292,10 +292,10 @@ export const QueryBuilderResultPanel = observer(
       }
     };
 
-    const toggleIsAdvancedModeEnabled = (): void => {
+    const toggleIsLocalModeEnabled = (): void => {
       resultState.setExecutionResult(undefined);
-      queryBuilderState.setIsAdvancedModeEnabled(
-        !queryBuilderState.isAdvancedModeEnabled,
+      queryBuilderState.setIsLocalModeEnabled(
+        !queryBuilderState.isLocalModeEnabled,
       );
     };
 
@@ -375,14 +375,14 @@ export const QueryBuilderResultPanel = observer(
             )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
-            {allowSettingAdvancedMode && (
+            {allowSettingLocalMode && (
               <div className="query-builder__result__advanced__mode">
                 <div className="query-builder__result__advanced__mode__label">
-                  Advanced Mode
+                  Local Mode
                   <DocumentationLink
-                    title="The grid in advanced mode performs all operations like grouping, sorting, filtering, etc after initial query execution locally withought reaching out to server. This limits the number of rows to smaller number so they can fit in memory"
+                    title="The grid in local mode performs all operations like grouping, sorting, filtering, etc after initial query execution locally withought reaching out to server. This limits the number of rows to smaller number so they can fit in memory"
                     documentationKey={
-                      QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_GRID_MODE
+                      QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_LOCAL_GRID_MODE
                     }
                   />
                 </div>
@@ -391,14 +391,14 @@ export const QueryBuilderResultPanel = observer(
                     'query-builder__result__advanced__mode__toggler__btn',
                     {
                       'query-builder__result__advanced__mode__toggler__btn--toggled':
-                        queryBuilderState.isAdvancedModeEnabled,
+                        queryBuilderState.isLocalModeEnabled,
                     },
                   )}
-                  disabled={!isQueryValidForAdvancedMode}
-                  onClick={toggleIsAdvancedModeEnabled}
+                  disabled={!isQueryValidForLocalMode}
+                  onClick={toggleIsLocalModeEnabled}
                   tabIndex={-1}
                 >
-                  {queryBuilderState.isAdvancedModeEnabled ? (
+                  {queryBuilderState.isLocalModeEnabled ? (
                     <CheckSquareIcon />
                   ) : (
                     <SquareIcon />
