@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.11.10
+
+### Patch Changes
+
+- [#2772](https://github.com/finos/legend-studio/pull/2772) [`05d6609d7`](https://github.com/finos/legend-studio/commit/05d6609d747a2eab5807e8a85fddfeee927c1a8b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable set filters in tds result panel.
+
 ## 4.11.9
 
 ## 4.11.8
