@@ -84,13 +84,12 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
       this.executionContextState.mapping = service.execution.mapping?.value;
       this.executionContextState.runtimeValue = service.execution.runtime;
     } else if (service.execution instanceof PureMultiExecution) {
-      this.executionContexts = service.execution.executionParameters.map(
-        (ep) => ({
+      this.executionContexts =
+        service.execution.executionParameters?.map((ep) => ({
           key: ep.key,
           mapping: ep.mapping.value,
           runtimeValue: ep.runtime,
-        }),
-      );
+        })) ?? [];
       let selectedExecutionContext: ServiceExecutionContext;
       if (executionContextKey) {
         const matchingExecutionContext = this.executionContexts.find(

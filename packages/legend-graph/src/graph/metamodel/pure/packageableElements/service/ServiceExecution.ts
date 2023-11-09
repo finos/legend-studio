@@ -100,10 +100,14 @@ export class KeyedExecutionParameter implements Hashable {
 }
 
 export class PureMultiExecution extends PureExecution implements Hashable {
-  executionKey: string;
-  executionParameters: KeyedExecutionParameter[] = [];
+  executionKey: string | undefined;
+  executionParameters: KeyedExecutionParameter[] | undefined;
 
-  constructor(executionKey: string, func: RawLambda, parentService: Service) {
+  constructor(
+    executionKey: string | undefined,
+    func: RawLambda,
+    parentService: Service,
+  ) {
     super(func, parentService);
     this.executionKey = executionKey;
   }
@@ -113,7 +117,7 @@ export class PureMultiExecution extends PureExecution implements Hashable {
       CORE_HASH_STRUCTURE.SERVICE_PURE_MULTI_EXECUTION,
       super.hashCode,
       this.executionKey,
-      hashArray(this.executionParameters),
+      hashArray(this.executionParameters ?? []),
     ]);
   }
 }

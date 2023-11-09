@@ -287,19 +287,22 @@ export const pureMultiExecution_setExecutionKey = action(
 );
 export const pureMultiExecution_addExecutionParameter = action(
   (
-    pe: PureMultiExecution,
+    executionParameters: KeyedExecutionParameter[],
     value: KeyedExecutionParameter,
     context: ObserverContext,
   ): void => {
     addUniqueEntry(
-      pe.executionParameters,
+      executionParameters,
       observe_KeyedExecutionParameter(value, context),
     );
   },
 );
 export const pureMultiExecution_deleteExecutionParameter = action(
-  (pe: PureMultiExecution, value: KeyedExecutionParameter): void => {
-    deleteEntry(pe.executionParameters, value);
+  (
+    executionParameters: KeyedExecutionParameter[],
+    value: KeyedExecutionParameter,
+  ): void => {
+    deleteEntry(executionParameters, value);
   },
 );
 

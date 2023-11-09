@@ -788,7 +788,7 @@ export class ConnectionTestDataState {
     if (execution instanceof PureSingleExecution && execution.runtime) {
       runtimes = [execution.runtime];
     } else if (execution instanceof PureMultiExecution) {
-      runtimes = execution.executionParameters.map((t) => t.runtime);
+      runtimes = execution.executionParameters?.map((t) => t.runtime) ?? [];
     }
     return runtimes.flatMap(getAllIdentifiedConnectionsFromRuntime);
   }

@@ -8,6 +8,55 @@ Service test::testService
   ];
   documentation: '';
   autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: env: String[1]|test::class.all()->project(x|$x.prop1, ['s'])->from(test::executionEnvironment->get($env));
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service test::testService3
+{
+  pattern: '/093bd56b-5945-44da-8de5-4f710d3b2b48';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: key: String[1]|test::class.all()->project(x|$x.prop1, ['s']);
+    key: 'key';
+    executions['k1']:
+    {
+      mapping: test::mapping;
+      runtime: test::runtime;
+    }
+    executions['k2']:
+    {
+      mapping: test::mapping;
+      runtime: test::runtime;
+    }
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service test::testService2
+{
+  pattern: '/093bd56b-5945-44da-8de5-4f710d3b2b48';
+  owners:
+  [
+    'anonymous'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
   execution: Single
   {
     query: |'';

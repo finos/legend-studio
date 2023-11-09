@@ -927,7 +927,6 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
       handleRunQuery: flow,
       runQuery: flow,
     });
-
     this.execution = execution;
     this.selectedExecutionContextState =
       this.getInitiallySelectedExecutionContextState();
@@ -939,6 +938,10 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,
     );
+  }
+
+  get keyedExecutionParameters(): KeyedExecutionParameter[] {
+    return this.execution.executionParameters ?? [];
   }
 
   setSingleExecutionKey(val: KeyedExecutionParameter | undefined): void {
@@ -980,7 +983,7 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
   getInitiallySelectedExecutionContextState():
     | ServiceExecutionContextState
     | undefined {
-    const parameter = this.execution.executionParameters[0];
+    const parameter = this.keyedExecutionParameters[0];
     return parameter
       ? new KeyedExecutionContextState(parameter, this)
       : undefined;
@@ -994,7 +997,10 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
   }
 
   deleteKeyExecutionParameter(value: KeyedExecutionParameter): void {
-    pureMultiExecution_deleteExecutionParameter(this.execution, value);
+    pureMultiExecution_deleteExecutionParameter(
+      this.keyedExecutionParameters,
+      value,
+    );
     if (value === this.selectedExecutionContextState?.executionContext) {
       this.selectedExecutionContextState =
         this.getInitiallySelectedExecutionContextState();
@@ -1010,7 +1016,7 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
       stub_PackageableRuntime(),
     );
     pureMultiExecution_addExecutionParameter(
-      this.execution,
+      this.keyedExecutionParameters,
       _key,
       this.editorStore.changeDetectionState.observerContext,
     );

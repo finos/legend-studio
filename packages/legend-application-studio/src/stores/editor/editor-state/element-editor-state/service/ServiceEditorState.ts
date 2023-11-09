@@ -249,7 +249,10 @@ export class ServiceEditorState extends ElementEditorState {
         this,
         execution,
       );
-    } else if (execution instanceof PureMultiExecution) {
+    } else if (
+      execution instanceof PureMultiExecution &&
+      execution.executionParameters
+    ) {
       return new MultiServicePureExecutionState(
         this.editorStore,
         this,

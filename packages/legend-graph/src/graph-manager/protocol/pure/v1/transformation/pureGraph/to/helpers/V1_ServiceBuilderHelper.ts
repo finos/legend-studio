@@ -230,7 +230,7 @@ export const V1_buildLegacyServiceTest = (
       );
     }
     const executionKeys = new Set(
-      parentService.execution.executionParameters.map(
+      (parentService.execution.executionParameters ?? []).map(
         (execution) => execution.key,
       ),
     );
@@ -291,7 +291,7 @@ export const V1_buildLegacyServiceTest = (
           )}' do not have a corresponding test`,
         ),
       );
-      multiTest.tests = parentService.execution.executionParameters.map(
+      multiTest.tests = (parentService.execution.executionParameters ?? []).map(
         (execution) =>
           multiTest.tests.find((test) => test.key === execution.key) ??
           new DEPRECATED__KeyedSingleExecutionTest(
@@ -415,16 +415,9 @@ export const V1_buildServiceExecution = (
       undefined,
     );
   } else if (serviceExecution instanceof V1_PureMultiExecution) {
-    if (!serviceExecution.executionParameters.length) {
-      throw new GraphBuilderError('Service multi-execution must not be empty');
-    }
     assertNonNullable(
       serviceExecution.func,
       `Service Pure execution 'func' field is missing`,
-    );
-    assertNonEmptyString(
-      serviceExecution.executionKey,
-      `Service multi-execution 'executionKey' field is missing`,
     );
     const execution = new PureMultiExecution(
       serviceExecution.executionKey,
@@ -436,7 +429,7 @@ export const V1_buildServiceExecution = (
       parentService,
     );
     const uniqueKeys = new Set();
-    execution.executionParameters = serviceExecution.executionParameters.map(
+    execution.executionParameters = serviceExecution.executionParameters?.map(
       (keyedExecutionParameter) => {
         assertNonEmptyString(
           keyedExecutionParameter.key,

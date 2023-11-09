@@ -75,15 +75,15 @@ export class V1_PureMultiExecution
   extends V1_PureExecution
   implements Hashable
 {
-  executionKey!: string;
-  executionParameters: V1_KeyedExecutionParameter[] = [];
+  executionKey: string | undefined;
+  executionParameters: V1_KeyedExecutionParameter[] | undefined;
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_PURE_MULTI_EXECUTION,
       super.hashCode,
       this.executionKey,
-      hashArray(this.executionParameters),
+      hashArray(this.executionParameters ?? []),
     ]);
   }
 }
