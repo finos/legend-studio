@@ -366,14 +366,13 @@ export const ChangeExecutionModal = observer(
           />
         );
       } else if (executionState instanceof MultiServicePureExecutionState) {
-        const multiExec = executionState.execution;
         const currentOption = executionState.singleExecutionKey
           ? {
               value: executionState.singleExecutionKey,
               label: executionState.singleExecutionKey.key,
             }
           : undefined;
-        const multiOptions = multiExec.executionParameters.map(
+        const multiOptions = executionState.keyedExecutionParameters.map(
           (keyExecutionParameter) => ({
             value: keyExecutionParameter,
             label: keyExecutionParameter.key,
@@ -554,7 +553,7 @@ export const NewExecutionParameterModal = observer(
     const validationMessage =
       keyValue === ''
         ? `Execution context key can't be empty`
-        : executionState.execution.executionParameters.find(
+        : executionState.execution.executionParameters?.find(
             (e) => e.key === keyValue,
           )
         ? 'Execution context key already exists'
@@ -702,15 +701,19 @@ const MultiPureExecutionEditor = observer(
                 </PanelHeaderActions>
               </PanelHeader>
 
-              {multiExecution.executionParameters.map((executionParameter) => (
-                <KeyExecutionItem
-                  key={executionParameter.key}
-                  multiExecutionState={multiExecutionState}
-                  keyExecutionParameter={executionParameter}
-                  isReadOnly={multiExecutionState.serviceEditorState.isReadOnly}
-                />
-              ))}
-              {!multiExecution.executionParameters.length && (
+              {multiExecutionState.keyedExecutionParameters.map(
+                (executionParameter) => (
+                  <KeyExecutionItem
+                    key={executionParameter.key}
+                    multiExecutionState={multiExecutionState}
+                    keyExecutionParameter={executionParameter}
+                    isReadOnly={
+                      multiExecutionState.serviceEditorState.isReadOnly
+                    }
+                  />
+                ),
+              )}
+              {!multiExecutionState.keyedExecutionParameters.length && (
                 <BlankPanelPlaceholder
                   text="Add an execution context"
                   onClick={addExecutionKey}
@@ -780,7 +783,7 @@ const ServicePureExecutionEditor = observer(
     const showChangeExecutionModal = (): void => {
       if (servicePureExecutionState instanceof MultiServicePureExecutionState) {
         servicePureExecutionState.setSingleExecutionKey(
-          servicePureExecutionState.execution.executionParameters[0],
+          servicePureExecutionState.keyedExecutionParameters[0],
         );
       }
       servicePureExecutionState.setShowChangeExecModal(true);
@@ -905,7 +908,7 @@ export const ServiceExecutionEditor = observer(() => {
   }
   return (
     <UnsupportedEditorPanel
-      text="Can't display thie service execution in form-mode"
+      text="Can't display this service execution in form-mode"
       isReadOnly={serviceState.isReadOnly}
     />
   );

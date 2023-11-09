@@ -3333,13 +3333,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           }
         } else if (execution instanceof PureMultiExecution) {
           sdlcInfo.packageableElementPointers =
-            execution.executionParameters.map(
+            execution.executionParameters?.map(
               (e) =>
                 new V1_PackageableElementPointer(
                   PackageableElementPointerType.MAPPING,
                   e.mapping.value.path,
                 ),
-            );
+            ) ?? [];
         } else {
           throw new UnsupportedOperationError(
             `Can't register service with the specified execution`,
@@ -3451,13 +3451,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             }
           } else if (execution instanceof PureMultiExecution) {
             sdlcInfo.packageableElementPointers =
-              execution.executionParameters.map(
+              execution.executionParameters?.map(
                 (e) =>
                   new V1_PackageableElementPointer(
                     PackageableElementPointerType.MAPPING,
                     e.mapping.value.path,
                   ),
-              );
+              ) ?? [];
           } else {
             throw new UnsupportedOperationError(
               `Can't register service with the specified execution`,

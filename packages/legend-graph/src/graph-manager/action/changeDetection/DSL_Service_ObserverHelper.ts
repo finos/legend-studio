@@ -323,7 +323,7 @@ export const observe_PureMultiExecution = skipObservedWithContext(
       hashCode: computed,
     });
 
-    metamodel.executionParameters.forEach((parameter) =>
+    metamodel.executionParameters?.forEach((parameter) =>
       observe_KeyedExecutionParameter(parameter, context),
     );
 
