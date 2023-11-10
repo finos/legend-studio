@@ -75,7 +75,8 @@ export * from './graph/metamodel/pure/packageableElements/service/TableRowIdenti
 export * from './graph/metamodel/pure/packageableElements/service/TablePtr.js';
 export { FunctionActivator } from './graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
-
+export { SnowflakeApp } from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
 // metamodels
@@ -378,6 +379,7 @@ export * from './graph-manager/action/changeDetection/DSL_ExternalFormat_Observe
 export * from './graph-manager/action/changeDetection/DSL_Service_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/DSL_Generation_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js';
+export * from './graph-manager/action/changeDetection/DSL_FunctionActivatorObserverHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
 

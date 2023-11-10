@@ -15,8 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../EditorStoreProvider.js';
-import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
+import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../../stores/editor/editor-state/element-editor-state/function-activator/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import {
   ArrowRightIcon,
   BlankPanelContent,
@@ -26,7 +26,7 @@ import {
 } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
-import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
+import { ProtocolValueBuilder } from '../ProtocolValueBuilder.js';
 import {
   extractAnnotatedElementDocumentation,
   generateFunctionPrettyName,

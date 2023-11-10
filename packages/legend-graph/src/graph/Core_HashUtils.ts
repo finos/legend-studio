@@ -336,6 +336,9 @@ export enum CORE_HASH_STRUCTURE {
   FLAT_DATA_ASSOCIATION_PROPERTY_MAPPING = 'FLAT_DATA_ASSOCIATION_PROPERTY_MAPPING',
   EMBEDDED_FLAT_DATA_PROPERTY_MAPPING = 'EMBEDDED_FLAT_DATA_PROPERTY_MAPPING',
   FLAT_DATA_SECTION_POINTER = 'FLAT_DATA_SECTION_POINTER',
+
+  // -------------------------------------- Function Activator --------------------------------------
+  SNOWFLAKE_APP = 'SNOWFLAKE_APP',
 }
 
 export const hashObjectWithoutSourceInformation = (val: object): string =>

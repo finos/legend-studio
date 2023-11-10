@@ -16,10 +16,16 @@
 
 import type { Hashable } from '@finos/legend-shared';
 import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_TaggedValue } from '../domain/V1_TaggedValue.js';
+import type { V1_StereotypePtr } from '../domain/V1_StereotypePtr.js';
+import type { V1_DeploymentConfiguration } from '../../../engine/functionActivator/V1_DeploymentConfiguration.js';
 
 export abstract class V1_FunctionActivator
   extends V1_PackageableElement
   implements Hashable
 {
   function!: string;
+  activationConfiguration: V1_DeploymentConfiguration | undefined;
+  stereotypes: V1_StereotypePtr[] = [];
+  taggedValues: V1_TaggedValue[] = [];
 }

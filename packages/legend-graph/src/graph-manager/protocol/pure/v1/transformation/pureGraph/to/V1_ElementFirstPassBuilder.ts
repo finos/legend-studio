@@ -74,6 +74,8 @@ import { INTERNAL__UnknownFunctionActivator } from '../../../../../../../graph/m
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import { INTERNAL__UnknownStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
+import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import { SnowflakeApp } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -130,6 +132,33 @@ export class V1_ElementFirstPassBuilder
       metamodel,
     );
     metamodel.content = element.content;
+    return metamodel;
+  }
+
+  visit_SnowflakeApp(element: V1_SnowflakeApp): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Function activator 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Function activator 'name' field is missing or empty`,
+    );
+    const metamodel = new SnowflakeApp(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    this.context.currentSubGraph.setOwnFunctionActivator(path, metamodel);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      metamodel,
+    );
+    metamodel.applicationName = element.applicationName;
+    metamodel.description = element.description;
+    metamodel.owner = element.owner;
     return metamodel;
   }
 

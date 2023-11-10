@@ -50,7 +50,7 @@ import { ServiceEditorState } from '../../../stores/editor/editor-state/element-
 import { ProjectConfigurationEditorState } from '../../../stores/editor/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { ProjectConfigurationEditor } from './project-configuration-editor/ProjectConfigurationEditor.js';
 import { ElementGenerationEditor } from './element-generation-editor/ElementGenerationEditor.js';
-import { FunctionEditor } from './FunctionEditor.js';
+import { FunctionEditor } from './function-activator/FunctionEditor.js';
 import { ElementNativeView } from './element-generation-editor/ElementNativeView.js';
 import { ServiceEditor } from './service-editor/ServiceEditor.js';
 import { PackageableRuntimeEditor } from './RuntimeEditor.js';
@@ -73,8 +73,8 @@ import { PackageableDataEditorState } from '../../../stores/editor/editor-state/
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
 import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';
 import { TabManager, type TabState } from '@finos/legend-lego/application';
-import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
-import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
+import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/INTERNAL__UnknownFunctionActivatorEditorState.js';
+import { INTERNAL__UnknownFunctionActivatorEdtior } from './function-activator/INTERNAL__UnknownFunctionActivatorEdtior.js';
 import { getElementIcon } from '../../ElementIconUtils.js';
 import { ArtifactGenerationViewerState } from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/ConnectionToQueryWorkflowEditor.js';

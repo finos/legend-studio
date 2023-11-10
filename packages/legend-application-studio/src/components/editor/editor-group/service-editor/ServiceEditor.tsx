@@ -337,7 +337,7 @@ const ServiceGeneralEditor = observer(() => {
           <div className="panel__content__form__section__header__label">
             Documentation
           </div>
-          <div className="panel__content__form__section__header__prompt">{`Provides a brief description of the service's functionalities and usage`}</div>
+          <div className="panel__content__form__section__header__prompt">{`Provide a brief description of the service's functionalities and usage`}</div>
           <textarea
             className="panel__content__form__section__textarea service-editor__documentation__input"
             spellCheck={false}

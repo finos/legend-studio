@@ -102,6 +102,8 @@ import {
 } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
+import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import { V1_buildSnowflakeAppDeploymentConfiguration } from './helpers/V1_FunctionActivatorBuilderHelper.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -141,6 +143,28 @@ export class V1_ElementSecondPassBuilder
         ),
       ),
     );
+  }
+
+  visit_SnowflakeApp(element: V1_SnowflakeApp): void {
+    const metamodel = this.context.currentSubGraph.getOwnFunctionActivator(
+      V1_buildFullPath(element.package, element.name),
+    );
+    metamodel.function = PackageableElementExplicitReference.create(
+      guaranteeNonNullable(
+        this.context.graph.functions.find(
+          (fn) =>
+            generateFunctionPrettyName(fn, {
+              fullPath: true,
+              spacing: false,
+            }) === element.function.replaceAll(/\s*/gu, ''),
+        ),
+      ),
+    );
+    metamodel.activationConfiguration =
+      V1_buildSnowflakeAppDeploymentConfiguration(
+        element.activationConfiguration,
+        this.context,
+      );
   }
 
   visit_INTERNAL__UnknownStore(element: V1_INTERNAL__UnknownStore): void {

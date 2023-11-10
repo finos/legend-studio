@@ -54,7 +54,6 @@ import {
 import {
   PackageableConnection,
   RelationalDatabaseConnection,
-  guaranteeRelationalDatabaseConnection,
 } from '@finos/legend-graph';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { type SQLPlaygroundPanelState } from '../../../stores/editor/panel-group/SQLPlaygroundPanelState.js';
@@ -81,6 +80,10 @@ import {
   type DatabaseSchemaExplorerTreeNodeContainerProps,
 } from '../editor-group/connection-editor/DatabaseSchemaExplorer.js';
 import { DatabaseSchemaExplorerTreeTableNodeData } from '../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
+import {
+  buildRelationalDatabaseConnectionOption,
+  type RelationalDatabaseConnectionOption,
+} from '../editor-group/connection-editor/RelationalDatabaseConnectionEditor.js';
 
 const DATABASE_NODE_DND_TYPE = 'DATABASE_NODE_DND_TYPE';
 type DatabaseNodeDragType = { text: string };
@@ -107,32 +110,6 @@ const SQLPlaygroundDatabaseSchemaExplorerTreeNodeContainer = observer(
     );
   },
 );
-
-type RelationalDatabaseConnectionOption = {
-  label: React.ReactNode;
-  value: PackageableConnection;
-};
-const buildRelationalDatabaseConnectionOption = (
-  connection: PackageableConnection,
-): RelationalDatabaseConnectionOption => {
-  const connectionValue = guaranteeRelationalDatabaseConnection(connection);
-  return {
-    value: connection,
-    label: (
-      <div className="sql-playground__config__connection-selector__option">
-        <div className="sql-playground__config__connection-selector__option__label">
-          {connection.name}
-        </div>
-        <div className="sql-playground__config__connection-selector__option__type">
-          {connectionValue.type}
-        </div>
-        <div className="sql-playground__config__connection-selector__option__path">
-          {connection.path}
-        </div>
-      </div>
-    ),
-  };
-};
 
 // List of most popular SQL keywords
 // See https://www.w3schools.com/sql/sql_ref_keywords.asp

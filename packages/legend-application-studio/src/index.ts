@@ -113,3 +113,6 @@ export {
   EmbeddedDataState,
 } from './stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 export type { EmbeddedDataTypeOption } from './stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
+
+export { SnowflakeAppFunctionActivatorEdtiorState } from './stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
+export { SnowflakeAppFunctionActivatorEditor } from './components/editor/editor-group/function-activator/SnowflakeAppFunctionActivatorEditor.js';

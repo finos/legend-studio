@@ -53,6 +53,8 @@ import {
   V1_rawVariableModelSchema,
 } from './V1_RawValueSpecificationSerializationHelper.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import { V1_SnowflakeAppDeploymentConfigurationAppModelSchema } from './V1_FunctionActivatorSerializationHelper.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -61,6 +63,7 @@ export const V1_MEASURE_ELEMENT_PROTOCOL_TYPE = 'measure';
 export const V1_UNIT_ELEMENT_PROTOCOL_TYPE = 'unit';
 export const V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE = 'association';
 export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
+export const V1_SNOWFLAKE_APP_TYPE = 'snowflakeApp';
 
 export const V1_propertyPointerModelSchema = createModelSchema(
   V1_PropertyPointer,
@@ -136,6 +139,25 @@ export const V1_measureModelSchema = createModelSchema(V1_Measure, {
   name: primitive(),
   nonCanonicalUnits: list(usingModelSchema(V1_unitModelSchema)),
   package: primitive(),
+});
+
+export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
+  _type: usingConstantValueSchema(V1_SNOWFLAKE_APP_TYPE),
+  description: optional(primitive()),
+  owner: optional(primitive()),
+  applicationName: primitive(),
+  function: primitive(),
+  name: primitive(),
+  package: primitive(),
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  activationConfiguration: usingModelSchema(
+    V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
+  ),
 });
 
 // ------------------------------------- Class -------------------------------------

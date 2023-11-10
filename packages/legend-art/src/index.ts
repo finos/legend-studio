@@ -31,6 +31,8 @@ export * from './badge/Badge.js';
 
 export * from './button/Button.js';
 
+export * from './card/BaseCard.js';
+
 export * from './dialog/Dialog.js';
 export * from './dialog/NonBlockingDialog.js';
 export * from './dialog/Modal.js';
