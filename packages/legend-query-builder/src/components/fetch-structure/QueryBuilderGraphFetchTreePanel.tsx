@@ -787,6 +787,7 @@ const QueryBuilderGraphFetchTreePanel = observer(
         <PanelDropZone
           isDragOver={isDragOver}
           dropTargetConnector={dropTargetConnector}
+          contentClassName="query-builder-graph-fetch-panel"
         >
           {(!treeData || isGraphFetchTreeDataEmpty(treeData)) && (
             <BlankPanelPlaceholder
@@ -829,10 +830,7 @@ export const QueryBuilderGraphFetchPanel = observer(
       );
     }
     return (
-      <div
-        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_GRAPH_FETCH}
-        className="panel__content"
-      >
+      <div data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_GRAPH_FETCH}>
         <BlankPanelContent>
           <div className="unsupported-element-editor__main">
             <div className="unsupported-element-editor__summary">

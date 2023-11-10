@@ -31,9 +31,16 @@ export const PanelDropZone: React.FC<{
   dropTargetConnector: ConnectDropTarget;
   isDragOver: boolean;
   isDroppable?: boolean | undefined;
+  contentClassName?: string | undefined;
 }> = (props) => {
-  const { children, className, isDragOver, isDroppable, dropTargetConnector } =
-    props;
+  const {
+    children,
+    className,
+    isDragOver,
+    isDroppable,
+    dropTargetConnector,
+    contentClassName,
+  } = props;
 
   const ref = useRef<HTMLInputElement>(null);
   dropTargetConnector(ref);
@@ -43,7 +50,11 @@ export const PanelDropZone: React.FC<{
       <div className={clsx('dnd__dropzone', className)} ref={ref}>
         {isDroppable && <div className="dnd__dropzone--droppable"></div>}
         {isDragOver && <div className="panel__dnd__dropzone__overlay" />}
-        <div className="panel__dnd__dropzone__content">{children}</div>
+        <div
+          className={clsx('panel__dnd__dropzone__content', contentClassName)}
+        >
+          {children}
+        </div>
       </div>
     </>
   );
