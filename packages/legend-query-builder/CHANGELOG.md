@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.11.11
+
+### Patch Changes
+
+- [#2777](https://github.com/finos/legend-studio/pull/2777) [`9ccb8ae9d`](https://github.com/finos/legend-studio/commit/9ccb8ae9decbee4580efff4ff2c7f8da06f29545) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the CSS issue where it is unable to scroll down the graph fetch editor when properties don't fit the screen
+
 ## 4.11.10
 
 ### Patch Changes

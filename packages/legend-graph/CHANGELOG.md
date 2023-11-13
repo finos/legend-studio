@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.4.1
+
+### Patch Changes
+
+- [#2776](https://github.com/finos/legend-studio/pull/2776) [`4ca8900d7`](https://github.com/finos/legend-studio/commit/4ca8900d71969dcf78a975c433f86a7d3863010f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Runtime with connection stores.
+
 ## 31.4.0
 
 ### Minor Changes
