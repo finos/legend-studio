@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.13.0
+
+### Minor Changes
+
+- [#2775](https://github.com/finos/legend-studio/pull/2775) [`a4036a6da`](https://github.com/finos/legend-studio/commit/a4036a6da36b88056a9ee30ab5846af3e9e59c18) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle multi service executions using exec env.
+
+### Patch Changes
+
+- [#2770](https://github.com/finos/legend-studio/pull/2770) [`3b9f2334f`](https://github.com/finos/legend-studio/commit/3b9f2334f690c5fc0e587cbcaffbf1c8ac7c9a25) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support function activator workflow
+
 ## 28.12.1
 
 ## 28.12.0
