@@ -90,6 +90,8 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
+  type PackageableElement,
+  type FunctionActivatorConfiguration,
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   Package,
@@ -105,15 +107,13 @@ import {
   getFunctionSignature,
   getFunctionNameWithPath,
   getElementRootPackage,
-  type PackageableElement,
   PackageableConnection,
-  RelationalDatabaseConnection,
   guaranteeRelationalDatabaseConnection,
   extractDependencyGACoordinateFromRootPackageName,
-  type FunctionActivatorConfiguration,
   Database,
   DEPENDENCY_ROOT_PACKAGE_PREFIX,
   Service,
+  isRelationalDatabaseConnection,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -458,12 +458,6 @@ const SampleDataGenerator = observer(() => {
     </Dialog>
   );
 });
-
-const isRelationalDatabaseConnection = (
-  val: PackageableElement | undefined,
-): boolean =>
-  val instanceof PackageableConnection &&
-  val.connectionValue instanceof RelationalDatabaseConnection;
 
 const isRelationalDatabase = (
   val: PackageableElement | undefined,

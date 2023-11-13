@@ -143,6 +143,7 @@ import {
   V1_testDataGenerationResultModelSchema,
 } from './service/V1_TestDataGenerationResult.js';
 import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
+import { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -1071,18 +1072,14 @@ export class V1_Engine {
   async publishFunctionActivatorToSandbox(
     input: V1_FunctionActivatorInput,
   ): Promise<void> {
-    const errors =
+    const error = V1_DeploymentResult.serialization.fromJson(
       await this.engineServerClient.publishFunctionActivatorToSandbox(
         V1_FunctionActivatorInput.serialization.toJson(input),
-      );
-    if (errors.length) {
+      ),
+    );
+    if (!error.successful) {
       throw new Error(
-        `Function activator validation failed:\n${errors
-          .map((error) =>
-            V1_FunctionActivatorError.serialization.fromJson(error),
-          )
-          .map((error) => `- ${error.message}`)
-          .join('\n')}`,
+        `Function activator validation failed: ${error.errors.join('\n')}`,
       );
     }
   }

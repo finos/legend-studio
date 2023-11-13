@@ -23,12 +23,13 @@ import {
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type ElementIconGetter,
+  type ElementEditorState,
+  type ElementEditorRenderer,
+  SnowflakeAppFunctionActivatorEditor,
+  SnowflakeAppFunctionActivatorEdtiorState,
 } from '@finos/legend-application-studio';
 import { SNOWFLAKE_APP_CODE_SNIPPET } from '../../__lib__/studio/DSL_SnowflakeApp_LegendStudioCodeSnippet.js';
-import {
-  INTERNAL__UnknownFunctionActivator,
-  type PackageableElement,
-} from '@finos/legend-graph';
+import { type PackageableElement } from '@finos/legend-graph';
 import { Snowflake_BrandIcon } from '@finos/legend-art';
 
 const PURE_GRAMMAR_SNOWFLAKE_APP_PARSER_NAME = 'Snowflake';
@@ -52,10 +53,7 @@ export class DSL_SnowflakeApp_LegendStudioApplicationPlugin
         element: PackageableElement | undefined,
       ): React.ReactNode | undefined => {
         // NOTE: this is temporary until we fully support snowflake app element
-        if (
-          element instanceof INTERNAL__UnknownFunctionActivator &&
-          element.content._type === 'snowflakeApp'
-        ) {
+        if (type === 'snowflakeApp') {
           return <Snowflake_BrandIcon className="icon__snowflake-app" />;
         }
         return undefined;
@@ -93,6 +91,23 @@ export class DSL_SnowflakeApp_LegendStudioApplicationPlugin
               },
             ]
           : undefined,
+    ];
+  }
+
+  getExtraElementEditorRenderers(): ElementEditorRenderer[] {
+    return [
+      (elementEditorState: ElementEditorState): React.ReactNode | undefined => {
+        if (
+          elementEditorState instanceof SnowflakeAppFunctionActivatorEdtiorState
+        ) {
+          return (
+            <SnowflakeAppFunctionActivatorEditor
+              key={elementEditorState.uuid}
+            />
+          );
+        }
+        return undefined;
+      },
     ];
   }
 }

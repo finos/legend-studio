@@ -66,6 +66,7 @@ import {
   getExecutionQueryFromRawLambda,
 } from '@finos/legend-query-builder';
 import { FunctionActivatorBuilderState } from './FunctionActivatorBuilderState.js';
+import { FunctionActivatorPromoteState } from './FunctionActivatorPromoteState.js';
 
 export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
@@ -243,7 +244,8 @@ export class FunctionParametersState extends LambdaParametersState {
 
 export class FunctionEditorState extends ElementEditorState {
   readonly functionDefinitionEditorState: FunctionDefinitionEditorState;
-  readonly activatorBuilderState: FunctionActivatorBuilderState;
+  readonly activatorBuilderState: FunctionActivatorBuilderState; // to be removed
+  readonly activatorPromoteState: FunctionActivatorPromoteState;
 
   selectedTab: FUNCTION_EDITOR_TAB;
 
@@ -287,6 +289,7 @@ export class FunctionEditorState extends ElementEditorState {
       this.editorStore,
     );
     this.activatorBuilderState = new FunctionActivatorBuilderState(this);
+    this.activatorPromoteState = new FunctionActivatorPromoteState(this);
     this.executionPlanState = new ExecutionPlanState(
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,

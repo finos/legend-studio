@@ -247,3 +247,9 @@ export const guaranteeRelationalDatabaseConnection = (
     guaranteeType(val, PackageableConnection).connectionValue,
     RelationalDatabaseConnection,
   );
+
+export const isRelationalDatabaseConnection = (
+  val: PackageableElement | undefined,
+): boolean =>
+  val instanceof PackageableConnection &&
+  val.connectionValue instanceof RelationalDatabaseConnection;

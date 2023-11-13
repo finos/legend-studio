@@ -19,12 +19,12 @@ import { observer } from 'mobx-react-lite';
 import {
   FunctionEditorState,
   FUNCTION_EDITOR_TAB,
-} from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
+} from '../../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../stores/editor/utils/DnDUtils.js';
+} from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   assertErrorThrown,
   assertTrue,
@@ -63,18 +63,23 @@ import {
   PlayIcon,
   PanelLoadingIndicator,
   PencilIcon,
+  RocketIcon,
+  ModalFooterButton,
+  BaseCard,
+  Snowflake_BrandIcon,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../__lib__/LegendStudioTesting.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
   StereotypeDragPreviewLayer,
   StereotypeSelector,
-} from './uml-editor/StereotypeSelector.js';
+} from '../uml-editor/StereotypeSelector.js';
 import {
   TaggedValueDragPreviewLayer,
   TaggedValueEditor,
-} from './uml-editor/TaggedValueEditor.js';
+} from '../uml-editor/TaggedValueEditor.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../EditorStoreProvider.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type ConcreteFunctionDefinition,
   type StereotypeReference,
@@ -101,6 +106,8 @@ import {
   RawExecutionResult,
   extractExecutionResultValues,
   RawLambda,
+  DatabaseType,
+  RelationalDatabaseConnection,
 } from '@finos/legend-graph';
 import {
   type ApplicationStore,
@@ -115,7 +122,7 @@ import {
   type PackageableElementOption,
   buildElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { getElementIcon } from '../../ElementIconUtils.js';
+import { getElementIcon } from '../../../ElementIconUtils.js';
 import {
   function_setReturnType,
   function_setReturnMultiplicity,
@@ -126,13 +133,13 @@ import {
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
   function_swapParameters,
-} from '../../../stores/graph-modifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/graph-modifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/graph-modifier/RawValueSpecificationGraphModifierHelper.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
+} from '../../../../stores/graph-modifier/RawValueSpecificationGraphModifierHelper.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import {
   type QueryBuilderState,
   ExecutionPlanViewer,
@@ -140,20 +147,29 @@ import {
   LambdaEditor,
   LambdaParameterValuesEditor,
 } from '@finos/legend-query-builder';
-import type { EditorStore } from '../../../stores/editor/EditorStore.js';
-import { graph_renameElement } from '../../../stores/graph-modifier/GraphModifierHelper.js';
-import { ProtocolValueBuilder } from './ProtocolValueBuilder.js';
-import type { ProtocolValueBuilderState } from '../../../stores/editor/editor-state/element-editor-state/ProtocolValueBuilderState.js';
+import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { graph_renameElement } from '../../../../stores/graph-modifier/GraphModifierHelper.js';
+import { ProtocolValueBuilder } from '../ProtocolValueBuilder.js';
+import type { ProtocolValueBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/ProtocolValueBuilderState.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
-import { PanelGroupItemExperimentalBadge } from '../panel-group/PanelGroup.js';
+import { PanelGroupItemExperimentalBadge } from '../../panel-group/PanelGroup.js';
+import type { FunctionActivatorPromoteState } from '../../../../stores/editor/editor-state/element-editor-state/FunctionActivatorPromoteState.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
   ENUMERATION = 'ENUMERATION',
   PRIMITIVE = 'PRIMITIVE',
+}
+
+export enum FUNCTION_PROMOTE_TYPE {
+  SNOWFLAKE_NATIVE_APP = 'Snowflake Native App',
+  REST_SERVICE = 'REST Service',
+  SERVICE_JAR = 'Service JAR',
+  REFINER = 'Refiner',
+  BIG_QUERY_NATIVE_APP = 'BigQuery Native App',
 }
 
 const getFunctionParameterType = (type: Type): FUNCTION_PARAMETER_TYPE => {
@@ -661,6 +677,199 @@ const ReturnTypeEditor = observer(
   },
 );
 
+const FunctionPromoteEditor = observer(
+  (props: {
+    functionElement: ConcreteFunctionDefinition;
+    activatorPromoteState: FunctionActivatorPromoteState;
+  }) => {
+    const { functionElement, activatorPromoteState } = props;
+    const applicationStore = useApplicationStore();
+    const elementAlreadyExistsMessage =
+      activatorPromoteState.functionEditorState.editorStore.graphManagerState.graph.allElements
+        .map((s) => s.path)
+        .includes(activatorPromoteState.activatorPath)
+        ? 'Element with same path already exists'
+        : undefined;
+    let validationMessage = '';
+    const closeModal = (): void => {
+      activatorPromoteState.closeFunctionPromoteModal();
+      activatorPromoteState.setPromoteType(undefined);
+    };
+    const promoteFunction = (): void => {
+      flowResult(activatorPromoteState.promote(functionElement))
+        .then(() => {
+          activatorPromoteState.closeFunctionPromoteModal();
+        })
+        .catch(applicationStore.alertUnhandledError);
+    };
+    const onTargetPathChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      activatorPromoteState.updateActivatorPath(event.target.value);
+    };
+    const validateFunctionActivator = (type: string): boolean => {
+      switch (type) {
+        case FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP: {
+          const availableConnections =
+            activatorPromoteState.functionEditorState.editorStore.graphManagerState.usableConnections.filter(
+              (connection) =>
+                connection.connectionValue instanceof
+                  RelationalDatabaseConnection &&
+                connection.connectionValue.type === DatabaseType.Snowflake,
+            );
+          if (availableConnections.length > 0) {
+            return true;
+          } else {
+            validationMessage =
+              'There is no available connection of type Snowflake';
+          }
+          return false;
+        }
+        default:
+          return true;
+      }
+    };
+    const renderFunctionPromoteTypes = (type: string): React.ReactNode => {
+      switch (type) {
+        case FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP:
+          return (
+            <BaseCard
+              key={FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP}
+              cardMedia={
+                <Snowflake_BrandIcon className="function-promote-editor__type-icon" />
+              }
+              cardName={type}
+              cardContent="Deploy the function as a UDTF(user-defined table function) in snowflake"
+              isActive={
+                activatorPromoteState.promoteType ===
+                FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP
+              }
+              onClick={() => {
+                activatorPromoteState.setPromoteType(type);
+              }}
+            />
+          );
+        case FUNCTION_PROMOTE_TYPE.REST_SERVICE:
+          return (
+            <BaseCard
+              key={FUNCTION_PROMOTE_TYPE.REST_SERVICE}
+              cardMedia={<div className="coming-soon-label">Coming Soon</div>}
+              cardName={type}
+              cardContent="Create a HostedService that will be deployed to a server environment and executed with a pattern"
+              isDisable={true}
+              isActive={
+                activatorPromoteState.promoteType ===
+                FUNCTION_PROMOTE_TYPE.REST_SERVICE
+              }
+            />
+          );
+        case FUNCTION_PROMOTE_TYPE.SERVICE_JAR:
+          return (
+            <BaseCard
+              key={FUNCTION_PROMOTE_TYPE.SERVICE_JAR}
+              cardMedia={<div className="coming-soon-label">Coming Soon</div>}
+              cardName={type}
+              cardContent="Deploy the function in the definition of a Store persistence"
+              isDisable={true}
+              isActive={
+                activatorPromoteState.promoteType ===
+                FUNCTION_PROMOTE_TYPE.SERVICE_JAR
+              }
+            />
+          );
+        case FUNCTION_PROMOTE_TYPE.REFINER:
+          return (
+            <BaseCard
+              key={FUNCTION_PROMOTE_TYPE.REFINER}
+              cardMedia={<div className="coming-soon-label">Coming Soon</div>}
+              cardName={type}
+              cardContent="Use the service in a refiner context"
+              isDisable={true}
+              isActive={
+                activatorPromoteState.promoteType ===
+                FUNCTION_PROMOTE_TYPE.REFINER
+              }
+            />
+          );
+        case FUNCTION_PROMOTE_TYPE.BIG_QUERY_NATIVE_APP:
+          return (
+            <BaseCard
+              key={FUNCTION_PROMOTE_TYPE.BIG_QUERY_NATIVE_APP}
+              cardMedia={<div className="coming-soon-label">Coming Soon</div>}
+              cardName={type}
+              cardContent="Deploy the function as a UDTF(user-defined table function) in BigQuery"
+              isDisable={true}
+              isActive={
+                activatorPromoteState.promoteType ===
+                FUNCTION_PROMOTE_TYPE.BIG_QUERY_NATIVE_APP
+              }
+            />
+          );
+        default:
+          return <></>;
+      }
+    };
+
+    return (
+      <Dialog
+        open={activatorPromoteState.isPromotingFunction}
+        onClose={closeModal}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true} className="function-promote-editor">
+          <ModalBody className="function-promote-editor__content">
+            <div className="function-promote-editor__content__prompt">
+              Select any one of the following activator type to continue
+            </div>
+            <div className="function-promote-editor__content__activator-types">
+              {Object.values(FUNCTION_PROMOTE_TYPE).map((type) =>
+                renderFunctionPromoteTypes(type),
+              )}
+            </div>
+            <div className="function-promote-editor__content__prompt">
+              Target Path
+            </div>
+            <InputWithInlineValidation
+              className="panel__content__form__section__input"
+              spellCheck={false}
+              onChange={onTargetPathChange}
+              value={activatorPromoteState.activatorPath}
+              error={elementAlreadyExistsMessage}
+              showEditableIcon={true}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              className="function-promote-editor__action-btn"
+              onClick={closeModal}
+              title="Close"
+            >
+              Cancel
+            </ModalFooterButton>
+            <ModalFooterButton
+              className=" function-promote-editor__action-btn function-promote-editor__action-btn--primitive"
+              disabled={
+                !activatorPromoteState.promoteType ||
+                !validateFunctionActivator(activatorPromoteState.promoteType)
+              }
+              title={
+                activatorPromoteState.promoteType &&
+                validateFunctionActivator(activatorPromoteState.promoteType)
+                  ? ''
+                  : validationMessage
+              }
+              onClick={promoteFunction}
+            >
+              Promote
+            </ModalFooterButton>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 const FunctionDefinitionEditor = observer(
   (props: {
     functionEditorState: FunctionEditorState;
@@ -1159,8 +1368,15 @@ export const FunctionEditor = observer(() => {
       }
     });
 
+  const openFunctionPromoteModal = (): void => {
+    functionEditorState.activatorPromoteState.showFunctionPromoteModal();
+  };
+
   return (
-    <div className="function-editor uml-editor uml-editor--dark">
+    <div
+      data-testid={LEGEND_STUDIO_TEST_ID.FUNCTION_EDITOR}
+      className="function-editor uml-editor uml-editor--dark"
+    >
       <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
@@ -1261,6 +1477,17 @@ export const FunctionEditor = observer(() => {
                   </DropdownMenu>
                 </>
               )}
+            </div>
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              <button
+                className="btn__dropdown-combo__label"
+                onClick={openFunctionPromoteModal}
+                title="Promote function"
+                tabIndex={-1}
+              >
+                <RocketIcon className="btn__dropdown-combo__label__icon" />
+                <div className="btn__dropdown-combo__label__title">Promote</div>
+              </button>
             </div>
             {editorStore.applicationStore.config.options
               .TEMPORARY__enableFunctionActivatorSupport && (
@@ -1472,6 +1699,12 @@ export const FunctionEditor = observer(() => {
             />
           )}
         </PanelContent>
+        {functionEditorState.activatorPromoteState.isPromotingFunction && (
+          <FunctionPromoteEditor
+            functionElement={functionElement}
+            activatorPromoteState={functionEditorState.activatorPromoteState}
+          />
+        )}
       </Panel>
     </div>
   );

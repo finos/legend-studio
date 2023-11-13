@@ -319,6 +319,7 @@ import {
 } from './engine/service/V1_TableRowIdentifiers.js';
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 import { EngineError } from '../../../action/EngineError.js';
+import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3870,6 +3871,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.DATA_ELEMENT;
     } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_PURE_PATH.GENERATION_SPECIFICATION;
+    } else if (protocol instanceof V1_SnowflakeApp) {
+      return CORE_PURE_PATH.SNOWFLAKE_APP;
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()
