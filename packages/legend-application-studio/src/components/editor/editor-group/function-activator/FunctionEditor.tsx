@@ -820,7 +820,7 @@ const FunctionPromoteEditor = observer(
         <Modal darkMode={true} className="function-promote-editor">
           <ModalBody className="function-promote-editor__content">
             <div className="function-promote-editor__content__prompt">
-              Select any one of the following activator type to continue
+              Select any one of the following activator types to continue
             </div>
             <div className="function-promote-editor__content__activator-types">
               {Object.values(FUNCTION_PROMOTE_TYPE).map((type) =>

@@ -228,7 +228,6 @@ export class ShowcaseViewerStore {
       yield Promise.all([
         this.editorStore.graphState.graphGenerationState.globalFileGenerationState.fetchAvailableFileGenerationDescriptions(),
         this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
-        this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatDescriptions(),
         this.editorStore.graphState.fetchAvailableFunctionActivatorConfigurations(),
       ]);
 

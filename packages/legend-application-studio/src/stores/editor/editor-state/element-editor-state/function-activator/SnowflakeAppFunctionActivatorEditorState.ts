@@ -15,8 +15,9 @@
  */
 
 import {
-  SnowflakeApp,
+  type SnowflakeAppType,
   type PackageableConnection,
+  SnowflakeApp,
   ConnectionPointer,
   InMemoryGraphData,
   PackageableElementExplicitReference,
@@ -24,10 +25,10 @@ import {
   observe_SnowflakeApp,
 } from '@finos/legend-graph';
 import {
+  type GeneratorFn,
   ActionState,
   assertErrorThrown,
   guaranteeType,
-  type GeneratorFn,
 } from '@finos/legend-shared';
 import { makeObservable, action, flow, computed } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
@@ -47,6 +48,7 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
       updateAppDescription: action,
       updateApplicationName: action,
       updateConnection: action,
+      updateAppType: action,
       validate: flow,
       deploy: flow,
     });
@@ -80,6 +82,10 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
 
   updateAppDescription(val: string): void {
     this.activator.description = val;
+  }
+
+  updateAppType(val: SnowflakeAppType): void {
+    this.activator.type = val;
   }
 
   *validate(): GeneratorFn<void> {

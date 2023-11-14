@@ -156,6 +156,7 @@ export class V1_ElementSecondPassBuilder
             generateFunctionPrettyName(fn, {
               fullPath: true,
               spacing: false,
+              notIncludeParamName: true,
             }) === element.function.replaceAll(/\s*/gu, ''),
         ),
       ),

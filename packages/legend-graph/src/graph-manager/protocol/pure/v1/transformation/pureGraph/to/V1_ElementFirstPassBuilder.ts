@@ -76,6 +76,7 @@ import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElemen
 import { INTERNAL__UnknownStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import { SnowflakeApp } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+import { V1_buildSnowflakeAppType } from './helpers/V1_FunctionActivatorBuilderHelper.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -159,6 +160,9 @@ export class V1_ElementFirstPassBuilder
     metamodel.applicationName = element.applicationName;
     metamodel.description = element.description;
     metamodel.owner = element.owner;
+    if (element.type) {
+      metamodel.type = V1_buildSnowflakeAppType(element.type);
+    }
     return metamodel;
   }
 

@@ -876,7 +876,7 @@
     "classifierPath": "meta::pure::runtime::PackageableConnection"
   },
   {
-    "path": "model::SnowFlakeConnection",
+    "path": "model::SnowflakeConnection",
     "content": {
       "_type": "connection",
       "connectionValue": {
@@ -899,7 +899,7 @@
         "element": "store::TestDB",
         "type": "Snowflake"
       },
-      "name": "SnowFlakeConnection",
+      "name": "SnowflakeConnection",
       "package": "model"
     },
     "classifierPath": "meta::pure::runtime::PackageableConnection"

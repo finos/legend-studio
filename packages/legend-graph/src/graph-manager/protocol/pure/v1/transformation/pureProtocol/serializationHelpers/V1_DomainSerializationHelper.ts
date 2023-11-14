@@ -158,6 +158,7 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   activationConfiguration: usingModelSchema(
     V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
   ),
+  type: optional(primitive()),
 });
 
 // ------------------------------------- Class -------------------------------------
