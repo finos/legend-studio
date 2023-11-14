@@ -24,6 +24,7 @@ import {
   extractElementNameFromPath,
   extractPackagePathFromPath,
   SnowflakeAppDeploymentConfiguration,
+  SnowflakeAppType,
 } from '@finos/legend-graph';
 import { type GeneratorFn } from '@finos/legend-shared';
 import { FUNCTION_PROMOTE_TYPE } from '../../../../components/editor/editor-group/function-activator/FunctionEditor.js';
@@ -52,6 +53,7 @@ export class FunctionActivatorPromoteState {
     });
 
     this.functionEditorState = functionEditorState;
+    this.promoteType = FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP;
     this.activatorPath = `${this.functionEditorState.functionElement.package?.path}::${BASE_ACTIVATOR_NAME}`;
   }
 
@@ -94,6 +96,7 @@ export class FunctionActivatorPromoteState {
         snowflakeApp.owner = undefined;
         snowflakeApp.function =
           PackageableElementExplicitReference.create(functionElement);
+        snowflakeApp.type = SnowflakeAppType.FULL;
         snowflakeApp.activationConfiguration =
           new SnowflakeAppDeploymentConfiguration();
         return snowflakeApp;
@@ -116,12 +119,15 @@ export class FunctionActivatorPromoteState {
           true,
         ),
       );
+      this.functionEditorState.editorStore.applicationStore.notificationService.notifySuccess(
+        'SnowflakeApp Function Activator has been deployed successfully',
+      );
     } catch {
       this.functionEditorState.editorStore.applicationStore.notificationService.notifyError(
         `Can't promote function`,
       );
     } finally {
-      this.setPromoteType(undefined);
+      this.setPromoteType(FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP);
     }
   }
 }

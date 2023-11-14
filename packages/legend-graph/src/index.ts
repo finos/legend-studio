@@ -77,6 +77,8 @@ export { FunctionActivator } from './graph/metamodel/pure/packageableElements/fu
 export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 export { SnowflakeApp } from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
+export { SnowflakeAppType } from './graph/metamodel/pure/functionActivator/SnowflakeAppType.js';
+
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
 // metamodels

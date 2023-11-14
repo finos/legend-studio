@@ -17,7 +17,12 @@
 import { expect, test } from '@jest/globals';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { integrationTest } from '@finos/legend-shared/test';
-import { fireEvent, getByText, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  getByDisplayValue,
+  getByText,
+  waitFor,
+} from '@testing-library/react';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
@@ -67,18 +72,26 @@ test(integrationTest('Test Function Activator '), async () => {
   expect(getByText(functionActivatorModal, 'Target Path')).toBeDefined();
   fireEvent.click(getByText(functionActivatorModal, 'Promote'));
   fireEvent.click(getByText(explorerTree, 'NewActivator'));
-
   const editorGroupHeaders = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP__HEADER_TABS,
   );
   expect(getByText(editorGroupHeaders, 'NewActivator')).toBeDefined();
-
-  //TODO: fix the assertions below
-  // const editorGroupContent = await renderResult.findByTestId(
-  //   LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
-  // );
-  // expect(getByText(editorGroupContent, 'snowflake application')).toBeDefined();
-  // expect(
-  //   getByText(editorGroupContent, 'Snowflake Activator Metadata'),
-  // ).toBeDefined();
+  const editorGroupContent = await renderResult.findByTestId(
+    LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT,
+  );
+  expect(getByText(editorGroupContent, 'snowflake application')).toBeDefined();
+  expect(
+    getByText(editorGroupContent, 'Snowflake Activator Metadata'),
+  ).toBeDefined();
+  expect(getByText(editorGroupContent, 'Function')).toBeDefined();
+  expect(
+    getByDisplayValue(
+      editorGroupContent,
+      `${functionPackageName}::${functionName}`,
+    ),
+  ).toBeDefined();
+  expect(getByText(editorGroupContent, 'Connection')).toBeDefined();
+  expect(getByText(editorGroupContent, `SnowflakeConnection`)).toBeDefined();
+  expect(getByText(editorGroupContent, 'Activator Identifer')).toBeDefined();
+  expect(getByText(editorGroupContent, `Description`)).toBeDefined();
 });

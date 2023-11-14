@@ -78,7 +78,10 @@ import { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/st
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import type { SnowflakeApp } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
-import { V1_transformSnowflakeAppDeploymentConfiguration } from './V1_FunctionActivatorTransformer.js';
+import {
+  V1_transformSnowflakeAppDeploymentConfiguration,
+  V1_transformSnowflakeAppType,
+} from './V1_FunctionActivatorTransformer.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -137,6 +140,7 @@ class V1_PackageableElementTransformer
     protocol.function = generateFunctionPrettyName(element.function.value, {
       fullPath: true,
       spacing: false,
+      notIncludeParamName: true,
     });
     protocol.applicationName = element.applicationName;
     protocol.description = element.description;
@@ -145,6 +149,9 @@ class V1_PackageableElementTransformer
       V1_transformSnowflakeAppDeploymentConfiguration(
         element.activationConfiguration,
       );
+    if (element.type) {
+      protocol.type = V1_transformSnowflakeAppType(element.type);
+    }
     return protocol;
   }
 

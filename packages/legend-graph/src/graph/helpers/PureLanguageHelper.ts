@@ -141,17 +141,22 @@ export const generateFunctionPrettyName = (
   options?: {
     fullPath?: boolean;
     spacing?: boolean;
+    notIncludeParamName?: boolean;
   },
 ): string =>
   `${
     options?.fullPath ? `${element.package?.path}${ELEMENT_PATH_DELIMITER}` : ''
   }${element.functionName}(${element.parameters
-    .map(
-      (p) =>
-        `${p.name}: ${p.type.value.name}[${generateMultiplicityString(
-          p.multiplicity.lowerBound,
-          p.multiplicity.upperBound,
-        )}]`,
+    .map((p) =>
+      !options?.notIncludeParamName
+        ? `${p.name}: ${p.type.value.name}[${generateMultiplicityString(
+            p.multiplicity.lowerBound,
+            p.multiplicity.upperBound,
+          )}]`
+        : `${p.type.value.name}[${generateMultiplicityString(
+            p.multiplicity.lowerBound,
+            p.multiplicity.upperBound,
+          )}]`,
     )
     .join(', ')}): ${
     element.returnType.value.name

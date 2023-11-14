@@ -6,6 +6,14 @@ SnowflakeApp model::NewActivator
    activationConfiguration : model::SnowFlakeConnection;
 }
 
+SnowflakeApp model::NewActivatorWithParam
+{
+   applicationName : '';
+   function : model::Firm_QueryFunction(String[1]):TabularDataSet[1];
+   type : FULL;
+   activationConfiguration : model::SnowFlakeConnection;
+}
+
 
 ###Relational
 Database store::TestDB
@@ -71,6 +79,11 @@ Class <<meta::pure::profiles::temporal.businesstemporal>> model::Address
 }
 
 function model::Firm_QueryFunction(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->project([x|$x.legalName], ['Legal Name'])->from(execution::RelationalMapping, execution::TestRuntime)
+}
+
+function model::Firm_QueryFunction(param: String[1]): meta::pure::tds::TabularDataSet[1]
 {
   model::Firm.all()->project([x|$x.legalName], ['Legal Name'])->from(execution::RelationalMapping, execution::TestRuntime)
 }

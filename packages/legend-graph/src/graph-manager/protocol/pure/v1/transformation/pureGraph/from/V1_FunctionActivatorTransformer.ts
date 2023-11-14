@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { SnowflakeAppDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
 import { V1_SnowflakeAppDeploymentConfiguration } from '../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
 import { V1_transformConnectionPointer } from './V1_ConnectionTransformer.js';
+import { V1_SnowflakeAppType } from '../../../engine/functionActivator/V1_SnowflakeAppType.js';
+import { SnowflakeAppType } from '../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppType.js';
 
 export const V1_transformSnowflakeAppDeploymentConfiguration = (
   element: SnowflakeAppDeploymentConfiguration,
@@ -30,4 +33,20 @@ export const V1_transformSnowflakeAppDeploymentConfiguration = (
   }
 
   return protocol;
+};
+
+export const V1_transformSnowflakeAppType = (
+  value: SnowflakeAppType,
+): V1_SnowflakeAppType => {
+  switch (value) {
+    case SnowflakeAppType.FULL:
+      return V1_SnowflakeAppType.FULL;
+    case SnowflakeAppType.STAGE:
+      return V1_SnowflakeAppType.STAGE;
+    default:
+      throw new UnsupportedOperationError(
+        `Can't transform SnowflakeApp type`,
+        value,
+      );
+  }
 };
