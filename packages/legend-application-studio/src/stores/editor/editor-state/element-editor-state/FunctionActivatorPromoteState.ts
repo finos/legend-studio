@@ -119,9 +119,6 @@ export class FunctionActivatorPromoteState {
           true,
         ),
       );
-      this.functionEditorState.editorStore.applicationStore.notificationService.notifySuccess(
-        'SnowflakeApp Function Activator has been deployed successfully',
-      );
     } catch {
       this.functionEditorState.editorStore.applicationStore.notificationService.notifyError(
         `Can't promote function`,

@@ -113,6 +113,9 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
         this.activator,
         new InMemoryGraphData(this.editorStore.graphManagerState.graph),
       );
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        'SnowflakeApp Function Activator has been deployed successfully',
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
