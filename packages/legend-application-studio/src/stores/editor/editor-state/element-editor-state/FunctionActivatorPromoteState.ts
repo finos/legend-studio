@@ -18,16 +18,13 @@ import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { FunctionEditorState } from './FunctionEditorState.js';
 import {
   type ConcreteFunctionDefinition,
-  type FunctionActivator,
-  PackageableElementExplicitReference,
-  SnowflakeApp,
+  FunctionActivator,
   extractElementNameFromPath,
   extractPackagePathFromPath,
-  SnowflakeAppDeploymentConfiguration,
-  SnowflakeAppType,
 } from '@finos/legend-graph';
-import { type GeneratorFn } from '@finos/legend-shared';
+import { type GeneratorFn, assertType } from '@finos/legend-shared';
 import { FUNCTION_PROMOTE_TYPE } from '../../../../components/editor/editor-group/function-activator/FunctionEditor.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../LegendStudioApplicationPlugin.js';
 
 const BASE_ACTIVATOR_NAME = 'NewActivator';
 
@@ -85,25 +82,35 @@ export class FunctionActivatorPromoteState {
     functionElement: ConcreteFunctionDefinition,
   ): FunctionActivator | undefined {
     const type = this.promoteType;
-    switch (type) {
-      case FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP: {
-        const activatorName = this.activatorPath.includes('::')
-          ? extractElementNameFromPath(this.activatorPath)
-          : this.activatorPath;
-        const snowflakeApp = new SnowflakeApp(activatorName);
-        snowflakeApp.applicationName = '';
-        snowflakeApp.description = '';
-        snowflakeApp.owner = undefined;
-        snowflakeApp.function =
-          PackageableElementExplicitReference.create(functionElement);
-        snowflakeApp.type = SnowflakeAppType.FULL;
-        snowflakeApp.activationConfiguration =
-          new SnowflakeAppDeploymentConfiguration();
-        return snowflakeApp;
+    const activatorName = this.activatorPath.includes('::')
+      ? extractElementNameFromPath(this.activatorPath)
+      : this.activatorPath;
+    if (type) {
+      const extraNewElementFromStateCreators =
+        this.functionEditorState.editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_LegendStudioApplicationPlugin_Extension
+              ).getExtraNewElementFromStateCreators?.() ?? [],
+          );
+      let functionActivator;
+      for (const creator of extraNewElementFromStateCreators) {
+        const _element = creator(
+          type,
+          activatorName,
+          this.functionEditorState.editorStore.newElementState,
+          { decorElement: functionElement },
+        );
+        if (_element) {
+          functionActivator = _element;
+          assertType(functionActivator, FunctionActivator);
+          return functionActivator;
+        }
       }
-      default:
-        return undefined;
     }
+    return undefined;
   }
 
   *promote(functionElement: ConcreteFunctionDefinition): GeneratorFn<void> {

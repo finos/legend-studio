@@ -693,7 +693,9 @@ const FunctionPromoteEditor = observer(
     let validationMessage = '';
     const closeModal = (): void => {
       activatorPromoteState.closeFunctionPromoteModal();
-      activatorPromoteState.setPromoteType(undefined);
+      activatorPromoteState.setPromoteType(
+        FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP,
+      );
     };
     const promoteFunction = (): void => {
       flowResult(activatorPromoteState.promote(functionElement))

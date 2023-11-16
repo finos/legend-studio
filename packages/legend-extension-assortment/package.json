@@ -74,7 +74,6 @@
   "extensions": {
     "graphManagerPreset": "@finos/legend-graph-manager-preset-assortment",
     "applicationStudioPreset": "@finos/legend-application-studio-preset-assortment",
-    "dsl_snowflake_app_applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-snowflake-app",
     "format_graphql_pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-format-graphql",
     "format_graphql_pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-format-graphql",
     "format_json_schema_pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-format-json-schema",

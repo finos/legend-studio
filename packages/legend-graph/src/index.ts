@@ -74,10 +74,8 @@ export { TestDataGenerationResult } from './graph/metamodel/pure/packageableElem
 export * from './graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
 export * from './graph/metamodel/pure/packageableElements/service/TablePtr.js';
 export { FunctionActivator } from './graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
+export { DeploymentConfiguration } from './graph/metamodel/pure/functionActivator/DeploymentConfiguration.js';
 export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
-export { SnowflakeApp } from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
-export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
-export { SnowflakeAppType } from './graph/metamodel/pure/functionActivator/SnowflakeAppType.js';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
@@ -139,6 +137,7 @@ export {
 export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
 export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictDate.js';
 export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+export { V1_DeploymentConfiguration } from './graph-manager/protocol/pure/v1/engine/functionActivator/V1_DeploymentConfiguration.js';
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
@@ -274,7 +273,10 @@ export * from './graph-manager/action/relational/RelationalDatabaseTypeConfigura
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
-export { V1_transformConnection } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer.js';
+export {
+  V1_transformConnection,
+  V1_transformConnectionPointer,
+} from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer.js';
 export { V1_transformRuntime } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_RuntimeTransformer.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_TestTransformer.js';
 export { V1_transformPackageableElement } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_PackageableElementTransformer.js';
@@ -381,7 +383,6 @@ export * from './graph-manager/action/changeDetection/DSL_ExternalFormat_Observe
 export * from './graph-manager/action/changeDetection/DSL_Service_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/DSL_Generation_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js';
-export * from './graph-manager/action/changeDetection/DSL_FunctionActivatorObserverHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
 
@@ -569,6 +570,7 @@ export { V1_buildConnection } from './graph-manager/protocol/pure/v1/transformat
 export {
   V1_deserializeConnectionValue,
   V1_serializeConnectionValue,
+  V1_connectionPointerModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
 export { V1_buildEngineRuntime } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
 export {
@@ -589,6 +591,8 @@ export {
   V1_MappingModelCoverageAnalysisResult,
   V1_buildModelCoverageAnalysisResult,
 } from './graph-manager/protocol/pure/v1/engine/analytics/V1_MappingModelCoverageAnalysis.js';
+
+export { V1_FunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_FunctionActivator.js';
 
 // ------------------------------------- TO BE MODULARIZED --------------------------------------------
 /**

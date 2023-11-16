@@ -39,7 +39,6 @@
   --color-runtime: var(--color-red-180);
   --color-connection: var(--color-yellow-100);
   --color-data: var(--color-light-blue-50);
-  --color-snowflake-app: var(--color-blue-40);
 }
 
 .color {
@@ -129,10 +128,6 @@
 
   &--data {
     color: var(--color-data);
-  }
-
-  &--snowflake-app {
-    color: var(--color-snowflake-app);
   }
 }
 

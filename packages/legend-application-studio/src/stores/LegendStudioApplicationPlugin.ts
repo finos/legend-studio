@@ -161,6 +161,12 @@ export type NewElementFromStateCreator = (
   type: string,
   name: string,
   state: NewElementState,
+  options?: {
+    /**
+     * decorElement might be used when creating a new element -> ???? rename rename
+     */
+    decorElement: PackageableElement | undefined;
+  },
 ) => PackageableElement | undefined;
 export type NewElementDriverCreator = (
   editorStore: EditorStore,

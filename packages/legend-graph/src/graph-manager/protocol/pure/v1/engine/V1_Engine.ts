@@ -272,7 +272,7 @@ export class V1_Engine {
       // NOTE: this is temporary until we have this API functional and released
       // See https://github.com/finos/legend-engine/pull/1858
       return {
-        functionActivatorSubtypes: ['snowflakeApp'],
+        functionActivatorSubtypes: [],
         storeSubtypes: [
           'MongoDatabase',
           'serviceStore',
