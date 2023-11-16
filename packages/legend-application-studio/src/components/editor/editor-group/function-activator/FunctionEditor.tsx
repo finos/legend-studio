@@ -48,13 +48,10 @@ import {
   PanelContent,
   PanelDnDEntry,
   Dialog,
-  ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalTitle,
   CaretDownIcon,
   DropdownMenu,
-  LaunchIcon,
   BlankPanelContent,
   MenuContent,
   MenuContentItem,
@@ -100,9 +97,6 @@ import {
   stub_RawVariableExpression,
   getFunctionNameWithPath,
   getFunctionSignature,
-  generateFunctionPrettyName,
-  extractAnnotatedElementDocumentation,
-  getClassProperty,
   RawExecutionResult,
   extractExecutionResultValues,
   RawLambda,
@@ -149,8 +143,6 @@ import {
 } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../../stores/graph-modifier/GraphModifierHelper.js';
-import { ProtocolValueBuilder } from '../ProtocolValueBuilder.js';
-import type { ProtocolValueBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/ProtocolValueBuilderState.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
@@ -1060,91 +1052,6 @@ const FunctionDefinitionEditor = observer(
   },
 );
 
-const FunctionActivatorContentBuilder = observer(
-  (props: {
-    functionEditorState: FunctionEditorState;
-    valueBuilderState: ProtocolValueBuilderState;
-  }) => {
-    const { functionEditorState, valueBuilderState } = props;
-    const builderState = functionEditorState.activatorBuilderState;
-
-    // name
-    const nameInputRef = useRef<HTMLInputElement>(null);
-    const nameValidationErrorMessage =
-      builderState.activatorName.length === 0
-        ? 'Element name cannot be empty'
-        : builderState.isDuplicated
-        ? `Element of the same path already existed`
-        : undefined;
-    useEffect(() => {
-      nameInputRef.current?.focus();
-      nameInputRef.current?.select();
-    }, [valueBuilderState]);
-
-    // function
-    const functionFieldProperty = returnUndefOnError(() =>
-      getClassProperty(valueBuilderState.type, 'function'),
-    );
-    const functionFieldDocumentation = functionFieldProperty
-      ? extractAnnotatedElementDocumentation(functionFieldProperty)
-      : undefined;
-
-    return (
-      <>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Name
-            </div>
-            <div className="input-group">
-              <input
-                className="panel__content__form__section__input"
-                spellCheck={false}
-                ref={nameInputRef}
-                value={builderState.activatorName}
-                onChange={(event) =>
-                  builderState.setActivatorName(event.target.value)
-                }
-              />
-              {nameValidationErrorMessage && (
-                <div className="input-group__error-message">
-                  {nameValidationErrorMessage}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Function
-            </div>
-            {functionFieldDocumentation && (
-              <div className="panel__content__form__section__header__prompt">
-                {functionFieldDocumentation}
-              </div>
-            )}
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={true}
-              value={generateFunctionPrettyName(
-                functionEditorState.functionElement,
-                {
-                  fullPath: true,
-                  spacing: false,
-                },
-              )}
-            />
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__divider"></div>
-          </div>
-        </div>
-        <ProtocolValueBuilder builderState={valueBuilderState} />
-      </>
-    );
-  },
-);
-
 export const FunctionEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
@@ -1244,12 +1151,6 @@ export const FunctionEditor = observer(() => {
     (tab: FUNCTION_EDITOR_TAB): (() => void) =>
     (): void =>
       functionEditorState.setSelectedTab(tab);
-
-  const activate = (): void => {
-    flowResult(functionEditorState.activatorBuilderState.activate()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  };
 
   const runFunc = applicationStore.guardUnhandledError(() =>
     flowResult(functionEditorState.handleRunFunc()),
