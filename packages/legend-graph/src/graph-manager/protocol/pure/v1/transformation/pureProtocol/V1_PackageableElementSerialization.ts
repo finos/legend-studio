@@ -91,8 +91,6 @@ import {
   V1_profileModelSchema,
   V1_PROFILE_ELEMENT_PROTOCOL_TYPE,
   V1_INTERNAL__UnknownFunctionActivatorModelSchema,
-  V1_snowflakeAppModelSchema,
-  V1_SNOWFLAKE_APP_TYPE,
 } from './serializationHelpers/V1_DomainSerializationHelper.js';
 import type {
   PureProtocolProcessorPlugin,
@@ -113,7 +111,6 @@ import { V1_INTERNAL__UnknownPackageableElement } from '../../model/packageableE
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { SubtypeInfo } from '../../../../../action/protocol/ProtocolInfo.js';
 import { V1_INTERNAL__UnknownStore } from '../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
-import type { V1_SnowflakeApp } from '../../model/packageableElements/function/V1_SnowflakeApp.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -152,12 +149,6 @@ class V1_PackageableElementSerializer
     element: V1_INTERNAL__UnknownFunctionActivator,
   ): PlainObject<V1_PackageableElement> {
     return element.content;
-  }
-
-  visit_SnowflakeApp(
-    element: V1_SnowflakeApp,
-  ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_snowflakeAppModelSchema, element);
   }
 
   visit_INTERNAL__UnknownStore(
@@ -327,8 +318,6 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_sectionIndexModelSchema, json);
       case V1_DATA_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_dataElementModelSchema(plugins), json);
-      case V1_SNOWFLAKE_APP_TYPE:
-        return deserialize(V1_snowflakeAppModelSchema, json);
       default: {
         for (const deserializer of extraElementProtocolDeserializers) {
           const protocol = deserializer(json, plugins);

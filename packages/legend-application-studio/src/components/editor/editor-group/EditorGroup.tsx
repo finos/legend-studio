@@ -79,8 +79,6 @@ import { getElementIcon } from '../../ElementIconUtils.js';
 import { ArtifactGenerationViewerState } from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/ConnectionToQueryWorkflowEditor.js';
 import { QueryConnectionEndToEndWorkflowEditorState } from '../../../stores/editor/editor-state/end-to-end-workflow-state/QueryConnectionEndToEndWorkflowEditorState.js';
-import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
-import { SnowflakeAppFunctionActivatorEditor } from './function-activator/SnowflakeAppFunctionActivatorEditor.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -267,12 +265,6 @@ export const EditorGroup = observer(() => {
             currentTabState instanceof GenerationSpecificationEditorState
           ) {
             return <GenerationSpecificationEditor key={currentTabState.uuid} />;
-          } else if (
-            currentTabState instanceof SnowflakeAppFunctionActivatorEdtiorState
-          ) {
-            return (
-              <SnowflakeAppFunctionActivatorEditor key={currentTabState.uuid} />
-            );
           } else if (currentTabState instanceof UnsupportedElementEditorState) {
             return <UnsupportedElementEditor key={currentTabState.uuid} />;
           } else if (

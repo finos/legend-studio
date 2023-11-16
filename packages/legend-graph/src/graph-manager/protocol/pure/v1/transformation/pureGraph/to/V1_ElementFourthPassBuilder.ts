@@ -56,7 +56,6 @@ import type { V1_ExecutionEnvironmentInstance } from '../../../model/packageable
 import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
-import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 
 export class V1_ElementFourthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -82,10 +81,6 @@ export class V1_ElementFourthPassBuilder
   visit_INTERNAL__UnknownFunctionActivator(
     element: V1_INTERNAL__UnknownFunctionActivator,
   ): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_SnowflakeApp(element: V1_SnowflakeApp): void {
     throw new UnsupportedOperationError();
   }
 

@@ -16,6 +16,7 @@
     { "path": "../legend-extension-dsl-persistence" },
     { "path": "../legend-extension-dsl-mastery" },
     { "path": "../legend-extension-dsl-text" },
+    { "path": "../legend-extension-dsl-snowflake-app" },
     { "path": "../legend-extension-store-service-store" }
   ]
 }

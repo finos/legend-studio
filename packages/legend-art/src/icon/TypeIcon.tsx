@@ -27,7 +27,6 @@ import {
   RobotIcon,
   ServerIcon,
   ShapeLineIcon,
-  Snowflake_BrandIcon,
   TableIcon,
   TabulatedDataFileIcon,
 } from './Icon.js';
@@ -147,12 +146,6 @@ export const PURE_ModelStoreIcon: React.FC = () => (
 export const PURE_DataIcon: React.FC = () => (
   <div className="icon color--data">
     <TabulatedDataFileIcon />
-  </div>
-);
-
-export const PURE_SnowflakeAppIcon: React.FC = () => (
-  <div className="icon color--snowflake-app">
-    <Snowflake_BrandIcon />
   </div>
 );
 

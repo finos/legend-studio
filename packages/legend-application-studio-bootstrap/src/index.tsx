@@ -35,6 +35,8 @@ import { DSL_Persistence_LegendStudioApplicationPlugin } from '@finos/legend-ext
 import { DSL_Mastery_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-mastery/application-studio';
 import { STO_ServiceStore_LegendStudioApplicationPlugin } from '@finos/legend-extension-store-service-store/application-studio';
 import { Assortment_LegendStudioApplicationPreset } from '@finos/legend-extension-assortment/application-studio';
+import { DSL_SnowflakeApp_GraphManagerPreset } from '@finos/legend-extension-dsl-snowflake-app/graph';
+import { DSL_SnowflakeApp_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-snowflake-app/application-studio';
 
 export class LegendStudioWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -46,8 +48,8 @@ export class LegendStudioWebApplication {
       new DSL_DataSpace_GraphManagerPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
+      new DSL_SnowflakeApp_GraphManagerPreset(),
       new STO_ServiceStore_GraphManagerPreset(),
-
       new Assortment_LegendStudioApplicationPreset(),
     ];
   }
@@ -61,6 +63,7 @@ export class LegendStudioWebApplication {
       new DSL_Service_LegendStudioApplicationPlugin(),
       new DSL_Persistence_LegendStudioApplicationPlugin(),
       new DSL_Mastery_LegendStudioApplicationPlugin(),
+      new DSL_SnowflakeApp_LegendStudioApplicationPlugin(),
       new STO_ServiceStore_LegendStudioApplicationPlugin(),
 
       // loggers

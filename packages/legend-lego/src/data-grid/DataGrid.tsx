@@ -44,12 +44,16 @@ import {
   type GetContextMenuItemsParams,
   type MenuItemDef,
   ModuleRegistry,
+  type Module,
 } from '@ag-grid-community/core';
 import { LicenseManager } from '@ag-grid-enterprise/core';
 
-export const communityModules = [ClientSideRowModelModule, CsvExportModule];
+export const communityModules: Module[] = [
+  ClientSideRowModelModule,
+  CsvExportModule,
+];
 
-export const enterpriseModules = [
+export const enterpriseModules: Module[] = [
   ClipboardModule,
   ColumnsToolPanelModule,
   ExcelExportModule,

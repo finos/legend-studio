@@ -16,13 +16,13 @@
 
 import packageJson from '../../../package.json' assert { type: 'json' };
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSL_SnowflakeApp_LegendStudioApplicationPlugin } from './DSL_SnowflakeApp_LegendStudioApplicationPlugin.js';
 
 export class Assortment_LegendStudioApplicationPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.applicationStudioPreset, packageJson.version, [
-      // Snowflake App
-      new DSL_SnowflakeApp_LegendStudioApplicationPlugin(),
-    ]);
+    super(
+      packageJson.extensions.applicationStudioPreset,
+      packageJson.version,
+      [],
+    );
   }
 }

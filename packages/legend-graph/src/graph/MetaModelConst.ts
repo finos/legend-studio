@@ -126,7 +126,6 @@ export enum CORE_PURE_PATH {
   GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
   DATA_ELEMENT = 'meta::pure::data::DataElement',
-  SNOWFLAKE_APP = 'meta::external::function::activator::snowflakeApp::SnowflakeApp',
 }
 
 export const PURE_DOC_TAG = 'doc';

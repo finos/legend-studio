@@ -37,7 +37,6 @@ import type { V1_ExecutionEnvironmentInstance } from './service/V1_ExecutionEnvi
 import type { V1_INTERNAL__UnknownPackageableElement } from './V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from './function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { V1_INTERNAL__UnknownStore } from './store/V1_INTERNAL__UnknownStore.js';
-import type { V1_SnowflakeApp } from './function/V1_SnowflakeApp.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -69,7 +68,6 @@ export interface V1_PackageableElementVisitor<T> {
   visit_ExecutionEnvironmentInstance(
     element: V1_ExecutionEnvironmentInstance,
   ): T;
-  visit_SnowflakeApp(element: V1_SnowflakeApp): T;
 }
 
 export abstract class V1_PackageableElement implements Hashable {

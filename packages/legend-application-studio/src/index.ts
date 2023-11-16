@@ -83,6 +83,11 @@ export * from './stores/editor/editor-state/element-editor-state/mapping/Mapping
 export { MappingElementState } from './stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 export { getElementIcon } from './components/ElementIconUtils.js';
+export {
+  type RelationalDatabaseConnectionOption,
+  buildRelationalDatabaseConnectionOption,
+} from './components/editor/editor-group/connection-editor/RelationalDatabaseConnectionEditor.js';
+export { FUNCTION_PROMOTE_TYPE } from './components/editor/editor-group/function-activator/FunctionEditor.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 /**
@@ -114,5 +119,9 @@ export {
 } from './stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 export type { EmbeddedDataTypeOption } from './stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 
-export { SnowflakeAppFunctionActivatorEdtiorState } from './stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
-export { SnowflakeAppFunctionActivatorEditor } from './components/editor/editor-group/function-activator/SnowflakeAppFunctionActivatorEditor.js';
+// --------------------------------------------- test utils --------------------------------------------------
+
+export {
+  TEST__setUpEditorWithDefaultSDLCData,
+  TEST__provideMockedEditorStore,
+} from './components/editor/__test-utils__/EditorComponentTestUtils.js';

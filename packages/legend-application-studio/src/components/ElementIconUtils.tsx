@@ -41,7 +41,6 @@ import {
   PURE_UnitIcon,
   PURE_PackageIcon,
   PURE_DataIcon,
-  PURE_SnowflakeAppIcon,
   LaunchIcon,
   LinkIcon,
 } from '@finos/legend-art';
@@ -100,8 +99,6 @@ export const getElementTypeIcon = (
       return <PURE_DataIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
       return <PURE_GenerationSpecificationIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.SNOWFLAKE_APP:
-      return <PURE_SnowflakeAppIcon />;
     default: {
       if (type) {
         const extraElementIconGetters = editorStore.pluginManager

@@ -45,7 +45,6 @@ import {
   observe_Package,
   observe_Profile,
   observe_SectionIndex,
-  observe_SnowflakeApp,
 } from './DomainObserverHelper.js';
 import {
   type ObserverContext,
@@ -72,7 +71,6 @@ import { observe_ExecutionEnvironmentInstance } from './DSL_ExecutionEnvironment
 import type { INTERNAL__UnknownPackageableElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
-import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -103,10 +101,6 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
     element: INTERNAL__UnknownFunctionActivator,
   ): void {
     observe_INTERNAL__UnknownFunctionActivator(element);
-  }
-
-  visit_SnowflakeApp(element: SnowflakeApp): void {
-    observe_SnowflakeApp(element);
   }
 
   visit_INTERNAL__UnknownStore(element: INTERNAL__UnknownStore): void {
