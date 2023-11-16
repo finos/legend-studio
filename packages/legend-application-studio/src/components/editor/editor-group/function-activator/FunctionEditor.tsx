@@ -48,13 +48,10 @@ import {
   PanelContent,
   PanelDnDEntry,
   Dialog,
-  ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalTitle,
   CaretDownIcon,
   DropdownMenu,
-  LaunchIcon,
   BlankPanelContent,
   MenuContent,
   MenuContentItem,
@@ -100,9 +97,6 @@ import {
   stub_RawVariableExpression,
   getFunctionNameWithPath,
   getFunctionSignature,
-  generateFunctionPrettyName,
-  extractAnnotatedElementDocumentation,
-  getClassProperty,
   RawExecutionResult,
   extractExecutionResultValues,
   RawLambda,
@@ -149,8 +143,6 @@ import {
 } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../../stores/graph-modifier/GraphModifierHelper.js';
-import { ProtocolValueBuilder } from '../ProtocolValueBuilder.js';
-import type { ProtocolValueBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/ProtocolValueBuilderState.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
@@ -1060,91 +1052,6 @@ const FunctionDefinitionEditor = observer(
   },
 );
 
-const FunctionActivatorContentBuilder = observer(
-  (props: {
-    functionEditorState: FunctionEditorState;
-    valueBuilderState: ProtocolValueBuilderState;
-  }) => {
-    const { functionEditorState, valueBuilderState } = props;
-    const builderState = functionEditorState.activatorBuilderState;
-
-    // name
-    const nameInputRef = useRef<HTMLInputElement>(null);
-    const nameValidationErrorMessage =
-      builderState.activatorName.length === 0
-        ? 'Element name cannot be empty'
-        : builderState.isDuplicated
-        ? `Element of the same path already existed`
-        : undefined;
-    useEffect(() => {
-      nameInputRef.current?.focus();
-      nameInputRef.current?.select();
-    }, [valueBuilderState]);
-
-    // function
-    const functionFieldProperty = returnUndefOnError(() =>
-      getClassProperty(valueBuilderState.type, 'function'),
-    );
-    const functionFieldDocumentation = functionFieldProperty
-      ? extractAnnotatedElementDocumentation(functionFieldProperty)
-      : undefined;
-
-    return (
-      <>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Name
-            </div>
-            <div className="input-group">
-              <input
-                className="panel__content__form__section__input"
-                spellCheck={false}
-                ref={nameInputRef}
-                value={builderState.activatorName}
-                onChange={(event) =>
-                  builderState.setActivatorName(event.target.value)
-                }
-              />
-              {nameValidationErrorMessage && (
-                <div className="input-group__error-message">
-                  {nameValidationErrorMessage}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Function
-            </div>
-            {functionFieldDocumentation && (
-              <div className="panel__content__form__section__header__prompt">
-                {functionFieldDocumentation}
-              </div>
-            )}
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={true}
-              value={generateFunctionPrettyName(
-                functionEditorState.functionElement,
-                {
-                  fullPath: true,
-                  spacing: false,
-                },
-              )}
-            />
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__divider"></div>
-          </div>
-        </div>
-        <ProtocolValueBuilder builderState={valueBuilderState} />
-      </>
-    );
-  },
-);
-
 export const FunctionEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
@@ -1244,12 +1151,6 @@ export const FunctionEditor = observer(() => {
     (tab: FUNCTION_EDITOR_TAB): (() => void) =>
     (): void =>
       functionEditorState.setSelectedTab(tab);
-
-  const activate = (): void => {
-    flowResult(functionEditorState.activatorBuilderState.activate()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  };
 
   const runFunc = applicationStore.guardUnhandledError(() =>
     flowResult(functionEditorState.handleRunFunc()),
@@ -1489,139 +1390,6 @@ export const FunctionEditor = observer(() => {
                 <div className="btn__dropdown-combo__label__title">Promote</div>
               </button>
             </div>
-            {editorStore.applicationStore.config.options
-              .TEMPORARY__enableFunctionActivatorSupport && (
-              <>
-                <DropdownMenu
-                  className="btn__dropdown-combo"
-                  disabled={
-                    !editorStore.graphState.functionActivatorConfigurations
-                      .length
-                  }
-                  content={
-                    <MenuContent>
-                      {editorStore.graphState.functionActivatorConfigurations.map(
-                        (config) => (
-                          <MenuContentItem
-                            key={config.uuid}
-                            className="function-editor__activator__selector__option"
-                            onClick={() =>
-                              functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
-                                config,
-                              )
-                            }
-                            title={config.description}
-                          >
-                            <div className="function-editor__activator__selector__option__name">
-                              {config.name}
-                            </div>
-                            <div className="function-editor__activator__selector__option__description">
-                              {config.description}
-                            </div>
-                          </MenuContentItem>
-                        ),
-                      )}
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  }}
-                >
-                  <div className="btn__dropdown-combo__label">
-                    <div className="btn__dropdown-combo__label__icon">
-                      <LaunchIcon />
-                    </div>
-                    <div className="btn__dropdown-combo__label__title">
-                      Activate
-                    </div>
-                  </div>
-                  <div className="btn__dropdown-combo__dropdown-btn">
-                    <CaretDownIcon />
-                  </div>
-                </DropdownMenu>
-                {functionEditorState.activatorBuilderState
-                  .currentActivatorConfiguration && (
-                  <Dialog
-                    open={Boolean(
-                      functionEditorState.activatorBuilderState
-                        .currentActivatorConfiguration,
-                    )}
-                    onClose={() =>
-                      functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
-                        undefined,
-                      )
-                    }
-                    classes={{
-                      root: 'editor-modal__root-container',
-                      container: 'editor-modal__container',
-                      paper: 'editor-modal__content',
-                    }}
-                    // NOTE: this is a safer way compared to using <form> as it will not trigger click event
-                    // on nested button
-                    // See https://stackoverflow.com/questions/11353105/why-browser-trigger-a-click-event-instead-of-a-submit-in-a-form
-                    // See https://stackoverflow.com/questions/3350247/how-to-prevent-form-from-being-submitted
-                    // See https://gomakethings.com/how-to-prevent-buttons-from-causing-a-form-to-submit-with-html/
-                    onKeyDown={(event) => {
-                      if (event.code === 'Enter' && !event.shiftKey) {
-                        event.preventDefault();
-                        activate();
-                      }
-                    }}
-                  >
-                    <Modal darkMode={true} className="editor-modal">
-                      <ModalHeader>
-                        <ModalTitle
-                          title={`Function Activator: ${functionEditorState.activatorBuilderState.currentActivatorConfiguration.name}`}
-                        />
-                      </ModalHeader>
-                      <ModalBody>
-                        <div className="function-editor__activator-builder">
-                          {functionEditorState.activatorBuilderState
-                            .functionActivatorProtocolValueBuilderState && (
-                            <FunctionActivatorContentBuilder
-                              functionEditorState={functionEditorState}
-                              valueBuilderState={
-                                functionEditorState.activatorBuilderState
-                                  .functionActivatorProtocolValueBuilderState
-                              }
-                            />
-                          )}
-                          {!functionEditorState.activatorBuilderState
-                            .functionActivatorProtocolValueBuilderState && (
-                            <BlankPanelContent>
-                              No activator chosen
-                            </BlankPanelContent>
-                          )}
-                        </div>
-                      </ModalBody>
-                      <ModalFooter>
-                        <button
-                          className="btn btn--dark function-editor__activator__btn"
-                          type="submit"
-                          disabled={
-                            !functionEditorState.activatorBuilderState.isValid
-                          }
-                          onClick={activate}
-                        >
-                          Activate
-                        </button>
-                        <button
-                          className="btn btn--dark"
-                          onClick={() =>
-                            functionEditorState.activatorBuilderState.setCurrentActivatorConfiguration(
-                              undefined,
-                            )
-                          }
-                        >
-                          Close
-                        </button>
-                      </ModalFooter>
-                    </Modal>
-                  </Dialog>
-                )}
-              </>
-            )}
             <button
               className="panel__header__action"
               disabled={
