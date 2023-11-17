@@ -101,6 +101,11 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__enableEndtoEndWorkflow = true;
 
   /**
+   * This flag is to enable function testable editor since it is WIP
+   */
+  TEMPORARY__enableFunctionTestableEditor = true;
+
+  /**
    * Config specific to query builder
    */
   queryBuilderConfig: QueryBuilderConfig | undefined;
@@ -112,6 +117,8 @@ class LegendStudioApplicationCoreOptions {
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
+      TEMPORARY__enableEndtoEndWorkflow: optional(primitive()),
+      TEMPORARY__enableFunctionTestableEditor: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),

@@ -50,6 +50,7 @@ import {
   V1_buildVariable,
   V1_buildUnit,
   V1_buildTaggedValue,
+  V1_buildFunctionSuite,
 } from './helpers/V1_DomainBuilderHelper.js';
 import {
   V1_buildServiceExecution,
@@ -322,6 +323,11 @@ export class V1_ElementSecondPassBuilder
     );
     func.expressionSequence = protocol.body;
     func.functionName = getFunctionName(func, func.name);
+    if (protocol.tests?.length) {
+      func.tests = protocol.tests.map((l) =>
+        V1_buildFunctionSuite(l, this.context),
+      );
+    }
   }
 
   visit_FlatData(element: V1_FlatData): void {

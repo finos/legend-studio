@@ -248,7 +248,11 @@ export abstract class BasicModel {
   }
 
   get ownTestables(): Testable[] {
-    const coreTestables = [...this.ownServices, ...this.ownMappings];
+    const coreTestables = [
+      ...this.ownServices,
+      ...this.ownMappings,
+      ...this.ownFunctions,
+    ];
     const filters = this.graphPlugins.flatMap(
       (plugin) => plugin.getExtraTestablesCollectors?.() ?? [],
     );

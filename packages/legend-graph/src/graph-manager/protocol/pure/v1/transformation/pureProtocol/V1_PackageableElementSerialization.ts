@@ -193,7 +193,7 @@ class V1_PackageableElementSerializer
   visit_ConcreteFunctionDefinition(
     element: V1_ConcreteFunctionDefinition,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_functionModelSchema, element);
+    return serialize(V1_functionModelSchema(this.plugins), element);
   }
 
   visit_FlatData(element: V1_FlatData): PlainObject<V1_PackageableElement> {
@@ -304,7 +304,7 @@ export const V1_deserializePackageableElement = (
       case V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_associationModelSchema, json);
       case V1_FUNCTION_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_functionModelSchema, json);
+        return deserialize(V1_functionModelSchema(plugins), json);
       case V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_flatDataModelSchema, json);
       case V1_DATABASE_ELEMENT_PROTOCOL_TYPE:
