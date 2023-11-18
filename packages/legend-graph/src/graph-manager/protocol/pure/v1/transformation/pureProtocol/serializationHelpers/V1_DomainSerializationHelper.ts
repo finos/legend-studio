@@ -22,11 +22,13 @@ import {
   alias,
   optional,
   SKIP,
+  type ModelSchema,
 } from 'serializr';
 import {
   customEquivalentList,
   customList,
   customListWithSchema,
+  optionalCustomList,
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
@@ -55,6 +57,12 @@ import {
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import { V1_SnowflakeAppDeploymentConfigurationAppModelSchema } from './V1_FunctionActivatorSerializationHelper.js';
+import {
+  V1_deserializeTestSuite,
+  V1_serializeTestSuite,
+} from './V1_TestSerializationHelper.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -281,9 +289,10 @@ export const V1_associationModelSchema = createModelSchema(V1_Association, {
 
 // ------------------------------------- Function -------------------------------------
 
-export const V1_functionModelSchema = createModelSchema(
-  V1_ConcreteFunctionDefinition,
-  {
+export const V1_functionModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ConcreteFunctionDefinition> =>
+  createModelSchema(V1_ConcreteFunctionDefinition, {
     _type: usingConstantValueSchema(V1_FUNCTION_ELEMENT_PROTOCOL_TYPE),
     body: list(raw()),
     name: primitive(),
@@ -299,8 +308,11 @@ export const V1_functionModelSchema = createModelSchema(
     taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
-  },
-);
+    tests: optionalCustomList(
+      (value: V1_TestSuite) => V1_serializeTestSuite(value, plugins),
+      (value) => V1_deserializeTestSuite(value, plugins),
+    ),
+  });
 
 export const V1_INTERNAL__UnknownFunctionActivatorModelSchema =
   createModelSchema(V1_INTERNAL__UnknownFunctionActivator, {

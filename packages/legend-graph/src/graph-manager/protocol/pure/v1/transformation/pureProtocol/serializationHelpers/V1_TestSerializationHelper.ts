@@ -65,6 +65,12 @@ import {
   V1_serviceTestModelSchema,
   V1_serviceTestSuiteModelSchema,
 } from './V1_ServiceSerializationHelper.js';
+import { V1_FunctionTestSuite } from '../../../model/packageableElements/function/test/V1_FunctionTestSuite.js';
+import {
+  V1_functionTestModelSchema,
+  V1_functionTestSuiteModelSchema,
+} from './V1_FunctionSeriaizationHelper.js';
+import { V1_FunctionTest } from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
 
 enum V1_AssertionStatusType {
   ASSERT_FAIL = 'assertFail',
@@ -89,6 +95,7 @@ enum V1_TestResultType {
 export enum V1_TestSuiteType {
   SERVICE_TEST_SUITE = 'serviceTestSuite',
   MAPPING_TEST_SUITE = 'mappingTestSuite',
+  FUNCTION_TEST_SUITE = 'functionTestSuite',
 }
 
 export const V1_uniqueTestIdModelSchema = createModelSchema(V1_UniqueTestId, {
@@ -233,6 +240,8 @@ export const V1_serializeAtomicTest = (
     return serialize(V1_serviceTestModelSchema, protocol);
   } else if (protocol instanceof V1_MappingTest) {
     return serialize(V1_mappingTestModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_FunctionTest) {
+    return serialize(V1_functionTestModelSchema);
   }
   const extraAtomicTestSerializers = plugins.flatMap(
     (plugin) =>
@@ -260,6 +269,8 @@ export const V1_deserializeAtomicTest = (
   switch (json._type) {
     case ATOMIC_TEST_TYPE.Service_Test:
       return deserialize(V1_serviceTestModelSchema, json);
+    case ATOMIC_TEST_TYPE.Function_Test:
+      return deserialize(V1_functionTestModelSchema, json);
     case ATOMIC_TEST_TYPE.Mapping_Test:
       return deserialize(V1_mappingTestModelSchema(plugins), json);
     default: {
@@ -323,6 +334,8 @@ export const V1_serializeTestSuite = (
     return serialize(V1_serviceTestSuiteModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_MappingTestSuite) {
     return serialize(V1_mappingTestSuiteModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_FunctionTestSuite) {
+    return serialize(V1_functionTestSuiteModelSchema(plugins), protocol);
   }
   throw new UnsupportedOperationError(`Can't serialize test suite`, protocol);
 };
@@ -336,6 +349,8 @@ export const V1_deserializeTestSuite = (
       return deserialize(V1_serviceTestSuiteModelSchema(plugins), json);
     case V1_TestSuiteType.MAPPING_TEST_SUITE:
       return deserialize(V1_mappingTestSuiteModelSchema(plugins), json);
+    case V1_TestSuiteType.FUNCTION_TEST_SUITE:
+      return deserialize(V1_functionTestSuiteModelSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize test suite of type '${json._type}'`,
