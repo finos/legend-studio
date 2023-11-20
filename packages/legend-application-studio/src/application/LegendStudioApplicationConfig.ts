@@ -62,6 +62,12 @@ class LegendStudioApplicationCoreOptions {
   projectCreationGroupIdSuggestion = 'org.finos.legend.*';
 
   /**
+   * This flag is for any feature that is not production ready.
+   * Used to iterate over features until they are ready for production.
+   */
+  NonProductionFeatureFlag = false;
+
+  /**
    * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
    * imports.
    *
@@ -69,12 +75,6 @@ class LegendStudioApplicationCoreOptions {
    * See https://github.com/finos/legend-studio/issues/1067
    */
   TEMPORARY__preserveSectionIndex = false;
-
-  /**
-   * This flag can be removed when the support for function activator is official
-   * See https://github.com/finos/legend-engine/pull/1815
-   */
-  TEMPORARY__enableFunctionActivatorSupport = false;
 
   /**
    * This flag can be removed when the support for local connection is official
@@ -96,16 +96,6 @@ class LegendStudioApplicationCoreOptions {
     [];
 
   /**
-   * This flag can be removed when the support for end-to-end workflow is official
-   */
-  TEMPORARY__enableEndtoEndWorkflow = true;
-
-  /**
-   * This flag is to enable function testable editor since it is WIP
-   */
-  TEMPORARY__enableFunctionTestableEditor = true;
-
-  /**
    * Config specific to query builder
    */
   queryBuilderConfig: QueryBuilderConfig | undefined;
@@ -115,10 +105,7 @@ class LegendStudioApplicationCoreOptions {
       enableGraphBuilderStrictMode: optional(primitive()),
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
-      TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
-      TEMPORARY__enableEndtoEndWorkflow: optional(primitive()),
-      TEMPORARY__enableFunctionTestableEditor: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),

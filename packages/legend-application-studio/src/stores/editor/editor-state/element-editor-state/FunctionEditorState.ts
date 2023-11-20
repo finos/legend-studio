@@ -72,6 +72,7 @@ export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
   TAGGED_VALUES = 'TAGGED_VALUES',
   STEREOTYPES = 'STEREOTYPES',
+  TEST_SUITES = 'TEST_SUITES',
 }
 
 export class FunctionDefinitionEditorState extends LambdaEditorState {
