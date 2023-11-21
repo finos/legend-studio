@@ -106,6 +106,7 @@ class LegendStudioApplicationCoreOptions {
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
+      NonProductionFeatureFlag: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),

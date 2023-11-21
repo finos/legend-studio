@@ -27,7 +27,6 @@ import {
   CustomSelectorInput,
   createFilter,
   type SelectComponent,
-  QuestionCircleIcon,
 } from '@finos/legend-art';
 import {
   type PackageableConnection,
@@ -130,7 +129,7 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
     );
   };
   const deploy = (): void => {
-    flowResult(editorState.deploy()).catch(
+    flowResult(editorState.deployToSandbox()).catch(
       applicationStore.alertUnhandledError,
     );
   };
@@ -152,25 +151,19 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
             </div>
             <div className="snowflake-app-function-activator-editor__header__actions">
               <button
-                className="snowflake-app-function-activator-editor__header__actions__action"
+                className="snowflake-app-function-activator-editor__header__actions__action snowflake-app-function-activator-editor__header__actions__action--primary"
                 onClick={validate}
                 disabled={editorState.validateState.isInProgress}
                 tabIndex={-1}
                 title="Click Validate to verify your activator before deployment"
               >
                 Validate
-                <QuestionCircleIcon
-                  title="Click Validate to verify your activator before deployment"
-                  className={
-                    'snowflake-app-function-activator-editor__header__actions__action__icon'
-                  }
-                />
               </button>
               <button
                 className="snowflake-app-function-activator-editor__header__actions__action snowflake-app-function-activator-editor__header__actions__action--primary"
                 onClick={deploy}
                 disabled={editorState.deployState.isInProgress}
-                title="Publish to sandbox"
+                title="Deploy to sandbox"
                 tabIndex={-1}
               >
                 Deploy

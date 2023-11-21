@@ -30,7 +30,7 @@ import {
 } from '@finos/legend-shared';
 import { ProtocolValueBuilderState } from '../ProtocolValueBuilderState.js';
 import { INTERNAL__UnknownFunctionActivator_setContent } from '../../../../graph-modifier/DomainGraphModifierHelper.js';
-import { FUNCTION_ACTIVATOR_EXCLUDED_PATHS } from '../FunctionActivatorBuilderState.js';
+import { FUNCTION_ACTIVATOR_EXCLUDED_PATHS } from '../ToDelete_FunctionActivatorBuilderState.js';
 
 export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditorState {
   readonly activator: INTERNAL__UnknownFunctionActivator;

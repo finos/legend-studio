@@ -15,6 +15,7 @@
  */
 
 import {
+  type Test,
   type AtomicTest,
   type Testable,
   type TestAssertion,
@@ -38,13 +39,19 @@ import {
 } from '@finos/legend-shared';
 import { action, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
-import { atomicTest_addAssertion } from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
+import {
+  atomicTest_addAssertion,
+  testSuite_deleteTest,
+  testable_deleteTest,
+  testable_setId,
+} from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
 import { createEmptyEqualToJsonAssertion } from '../../../utils/TestableUtils.js';
 import { TESTABLE_RESULT } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import {
   TestAssertionEditorState,
   TEST_ASSERTION_TAB,
 } from './TestAssertionState.js';
+import type { ElementEditorState } from '../ElementEditorState.js';
 
 export class TestableTestResultState {
   readonly editorStore: EditorStore;
@@ -71,7 +78,7 @@ export enum TESTABLE_TEST_TAB {
   ASSERTION = 'ASSERTION',
 }
 
-export class TestableTestEditorState {
+export abstract class TestableTestEditorState {
   readonly editorStore: EditorStore;
   testable: Testable;
   test: AtomicTest;
@@ -219,7 +226,7 @@ export class TestableTestEditorState {
   }
 }
 
-export class TestableTestSuiteEditorState {
+export abstract class TestableTestSuiteEditorState {
   readonly editorStore: EditorStore;
   testable: Testable;
   suite: TestSuite;
@@ -302,6 +309,101 @@ export class TestableTestSuiteEditorState {
       this.runningSuiteState.fail();
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
+    }
+  }
+
+  deleteTest(val: AtomicTest): void {
+    testSuite_deleteTest(this.suite, val);
+    this.removeTestState(val);
+    if (this.selectTestState?.test === val) {
+      this.selectTestState = this.testStates[0];
+    }
+  }
+
+  removeTestState(val: AtomicTest): void {
+    this.testStates = this.testStates.filter((e) => e.test !== val);
+  }
+
+  changeTest(val: AtomicTest): void {
+    if (this.selectTestState?.test !== val) {
+      this.selectTestState = this.testStates.find(
+        (testState) => testState.test === val,
+      );
+    }
+  }
+}
+
+export abstract class TestablePackageableElementEditorState {
+  readonly editorStore: EditorStore;
+  readonly editorState: ElementEditorState;
+  readonly testable: Testable;
+  testableResults: TestResult[] | undefined;
+  selectedTestSuite: TestableTestSuiteEditorState | undefined;
+
+  testableComponentToRename: Test | undefined;
+
+  isRunningTestableSuitesState = ActionState.create();
+  isRunningFailingSuitesState = ActionState.create();
+
+  constructor(editorState: ElementEditorState, testable: Testable) {
+    this.editorState = editorState;
+    this.editorStore = editorState.editorStore;
+    this.testable = testable;
+  }
+
+  abstract init(): void;
+
+  abstract handleNewResults(results: TestResult[]): void;
+
+  get suiteCount(): number {
+    return this.testable.tests.length;
+  }
+
+  setTestableResults(val: TestResult[] | undefined): void {
+    this.testableResults = val;
+  }
+
+  setRenameComponent(testSuite: Test | undefined): void {
+    this.testableComponentToRename = testSuite;
+  }
+
+  renameTestableComponent(val: string | undefined): void {
+    const _component = this.testableComponentToRename;
+    if (_component) {
+      testable_setId(_component, val ?? '');
+    }
+  }
+
+  deleteTestSuite(testSuite: TestSuite): void {
+    testable_deleteTest(this.testable, testSuite);
+    if (this.selectedTestSuite?.suite === testSuite) {
+      this.init();
+    }
+  }
+  *runTestable(): GeneratorFn<void> {
+    try {
+      this.setTestableResults(undefined);
+      this.isRunningTestableSuitesState.inProgress();
+      this.selectedTestSuite?.testStates.forEach((t) => t.resetResult());
+      this.selectedTestSuite?.testStates.forEach((t) =>
+        t.runningTestAction.inProgress(),
+      );
+      const input = new RunTestsTestableInput(this.testable);
+      const testResults =
+        (yield this.editorStore.graphManagerState.graphManager.runTests(
+          [input],
+          this.editorStore.graphManagerState.graph,
+        )) as TestResult[];
+      this.handleNewResults(testResults);
+      this.isRunningTestableSuitesState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.isRunningTestableSuitesState.fail();
+    } finally {
+      this.selectedTestSuite?.testStates.forEach((t) =>
+        t.runningTestAction.complete(),
+      );
     }
   }
 }

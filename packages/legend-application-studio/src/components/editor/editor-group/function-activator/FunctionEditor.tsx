@@ -148,7 +148,8 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { PanelGroupItemExperimentalBadge } from '../../panel-group/PanelGroup.js';
-import type { FunctionActivatorPromoteState } from '../../../../stores/editor/editor-state/element-editor-state/FunctionActivatorPromoteState.js';
+import type { FunctionActivatorState } from '../../../../stores/editor/editor-state/element-editor-state/FunctionActivatorState.js';
+import { FunctionTestableEditor } from './testable/FunctionTestableEditor.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -156,7 +157,7 @@ enum FUNCTION_PARAMETER_TYPE {
   PRIMITIVE = 'PRIMITIVE',
 }
 
-export enum FUNCTION_PROMOTE_TYPE {
+export enum FUNCTION_ACTIVATE_TYPE {
   SNOWFLAKE_NATIVE_APP = 'Snowflake Native App',
   REST_SERVICE = 'REST Service',
   SERVICE_JAR = 'Service JAR',
@@ -672,7 +673,7 @@ const ReturnTypeEditor = observer(
 const FunctionPromoteEditor = observer(
   (props: {
     functionElement: ConcreteFunctionDefinition;
-    activatorPromoteState: FunctionActivatorPromoteState;
+    activatorPromoteState: FunctionActivatorState;
   }) => {
     const { functionElement, activatorPromoteState } = props;
     const applicationStore = useApplicationStore();
@@ -684,13 +685,13 @@ const FunctionPromoteEditor = observer(
         : undefined;
     let validationMessage = '';
     const closeModal = (): void => {
-      activatorPromoteState.closeFunctionPromoteModal();
-      activatorPromoteState.setPromoteType(undefined);
+      activatorPromoteState.closeFunctionActivateModal();
+      activatorPromoteState.setAcitvateType(undefined);
     };
     const promoteFunction = (): void => {
-      flowResult(activatorPromoteState.promote(functionElement))
+      flowResult(activatorPromoteState.activate(functionElement))
         .then(() => {
-          activatorPromoteState.closeFunctionPromoteModal();
+          activatorPromoteState.closeFunctionActivateModal();
         })
         .catch(applicationStore.alertUnhandledError);
     };
@@ -701,7 +702,7 @@ const FunctionPromoteEditor = observer(
     };
     const validateFunctionActivator = (type: string): boolean => {
       switch (type) {
-        case FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP: {
+        case FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP: {
           const availableConnections =
             activatorPromoteState.functionEditorState.editorStore.graphManagerState.usableConnections.filter(
               (connection) =>
@@ -723,77 +724,77 @@ const FunctionPromoteEditor = observer(
     };
     const renderFunctionPromoteTypes = (type: string): React.ReactNode => {
       switch (type) {
-        case FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP:
+        case FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP:
           return (
             <BaseCard
-              key={FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP}
+              key={FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP}
               cardMedia={
                 <Snowflake_BrandIcon className="function-promote-editor__type-icon" />
               }
               cardName={type}
               cardContent="Deploy the function as a UDTF(user-defined table function) in snowflake"
               isActive={
-                activatorPromoteState.promoteType ===
-                FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP
+                activatorPromoteState.activateType ===
+                FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP
               }
               onClick={() => {
-                activatorPromoteState.setPromoteType(type);
+                activatorPromoteState.setAcitvateType(type);
               }}
             />
           );
-        case FUNCTION_PROMOTE_TYPE.REST_SERVICE:
+        case FUNCTION_ACTIVATE_TYPE.REST_SERVICE:
           return (
             <BaseCard
-              key={FUNCTION_PROMOTE_TYPE.REST_SERVICE}
+              key={FUNCTION_ACTIVATE_TYPE.REST_SERVICE}
               cardMedia={<div className="coming-soon-label">Coming Soon</div>}
               cardName={type}
               cardContent="Create a HostedService that will be deployed to a server environment and executed with a pattern"
               isDisable={true}
               isActive={
-                activatorPromoteState.promoteType ===
-                FUNCTION_PROMOTE_TYPE.REST_SERVICE
+                activatorPromoteState.activateType ===
+                FUNCTION_ACTIVATE_TYPE.REST_SERVICE
               }
             />
           );
-        case FUNCTION_PROMOTE_TYPE.SERVICE_JAR:
+        case FUNCTION_ACTIVATE_TYPE.SERVICE_JAR:
           return (
             <BaseCard
-              key={FUNCTION_PROMOTE_TYPE.SERVICE_JAR}
+              key={FUNCTION_ACTIVATE_TYPE.SERVICE_JAR}
               cardMedia={<div className="coming-soon-label">Coming Soon</div>}
               cardName={type}
               cardContent="Deploy the function in the definition of a Store persistence"
               isDisable={true}
               isActive={
-                activatorPromoteState.promoteType ===
-                FUNCTION_PROMOTE_TYPE.SERVICE_JAR
+                activatorPromoteState.activateType ===
+                FUNCTION_ACTIVATE_TYPE.SERVICE_JAR
               }
             />
           );
-        case FUNCTION_PROMOTE_TYPE.REFINER:
+        case FUNCTION_ACTIVATE_TYPE.REFINER:
           return (
             <BaseCard
-              key={FUNCTION_PROMOTE_TYPE.REFINER}
+              key={FUNCTION_ACTIVATE_TYPE.REFINER}
               cardMedia={<div className="coming-soon-label">Coming Soon</div>}
               cardName={type}
               cardContent="Use the service in a refiner context"
               isDisable={true}
               isActive={
-                activatorPromoteState.promoteType ===
-                FUNCTION_PROMOTE_TYPE.REFINER
+                activatorPromoteState.activateType ===
+                FUNCTION_ACTIVATE_TYPE.REFINER
               }
             />
           );
-        case FUNCTION_PROMOTE_TYPE.BIG_QUERY_NATIVE_APP:
+        case FUNCTION_ACTIVATE_TYPE.BIG_QUERY_NATIVE_APP:
           return (
             <BaseCard
-              key={FUNCTION_PROMOTE_TYPE.BIG_QUERY_NATIVE_APP}
+              key={FUNCTION_ACTIVATE_TYPE.BIG_QUERY_NATIVE_APP}
               cardMedia={<div className="coming-soon-label">Coming Soon</div>}
               cardName={type}
               cardContent="Deploy the function as a UDTF(user-defined table function) in BigQuery"
               isDisable={true}
               isActive={
-                activatorPromoteState.promoteType ===
-                FUNCTION_PROMOTE_TYPE.BIG_QUERY_NATIVE_APP
+                activatorPromoteState.activateType ===
+                FUNCTION_ACTIVATE_TYPE.BIG_QUERY_NATIVE_APP
               }
             />
           );
@@ -804,7 +805,7 @@ const FunctionPromoteEditor = observer(
 
     return (
       <Dialog
-        open={activatorPromoteState.isPromotingFunction}
+        open={activatorPromoteState.isActivatingFunction}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
@@ -815,7 +816,7 @@ const FunctionPromoteEditor = observer(
               Select any one of the following activator types to continue
             </div>
             <div className="function-promote-editor__content__activator-types">
-              {Object.values(FUNCTION_PROMOTE_TYPE).map((type) =>
+              {Object.values(FUNCTION_ACTIVATE_TYPE).map((type) =>
                 renderFunctionPromoteTypes(type),
               )}
             </div>
@@ -842,18 +843,18 @@ const FunctionPromoteEditor = observer(
             <ModalFooterButton
               className=" function-promote-editor__action-btn function-promote-editor__action-btn--primitive"
               disabled={
-                !activatorPromoteState.promoteType ||
-                !validateFunctionActivator(activatorPromoteState.promoteType)
+                !activatorPromoteState.activateType ||
+                !validateFunctionActivator(activatorPromoteState.activateType)
               }
               title={
-                activatorPromoteState.promoteType &&
-                validateFunctionActivator(activatorPromoteState.promoteType)
+                activatorPromoteState.activateType &&
+                validateFunctionActivator(activatorPromoteState.activateType)
                   ? ''
                   : validationMessage
               }
               onClick={promoteFunction}
             >
-              Promote
+              Activate
             </ModalFooterButton>
           </ModalFooter>
         </Modal>
@@ -1269,10 +1270,15 @@ export const FunctionEditor = observer(() => {
       }
     });
 
-  const openFunctionPromoteModal = (): void => {
-    functionEditorState.activatorPromoteState.showFunctionPromoteModal();
+  const openFunctionActivateModal = (): void => {
+    functionEditorState.activatorPromoteState.showFunctionActivateModal();
   };
-
+  // tabs
+  const functionTabs = Object.values(FUNCTION_EDITOR_TAB).filter(
+    (val) =>
+      val !== FUNCTION_EDITOR_TAB.TEST_SUITES ||
+      editorStore.applicationStore.config.options.NonProductionFeatureFlag,
+  );
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.FUNCTION_EDITOR}
@@ -1294,7 +1300,7 @@ export const FunctionEditor = observer(() => {
         </div>
         <div className="panel__header function-editor__tabs__header">
           <div className="function-editor__tabs">
-            {Object.values(FUNCTION_EDITOR_TAB).map((tab) => (
+            {functionTabs.map((tab) => (
               <div
                 key={tab}
                 onClick={changeTab(tab)}
@@ -1382,12 +1388,14 @@ export const FunctionEditor = observer(() => {
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               <button
                 className="btn__dropdown-combo__label"
-                onClick={openFunctionPromoteModal}
-                title="Promote function"
+                onClick={openFunctionActivateModal}
+                title="Activate function"
                 tabIndex={-1}
               >
                 <RocketIcon className="btn__dropdown-combo__label__icon" />
-                <div className="btn__dropdown-combo__label__title">Promote</div>
+                <div className="btn__dropdown-combo__label__title">
+                  Activate
+                </div>
               </button>
             </div>
             <button
@@ -1452,6 +1460,13 @@ export const FunctionEditor = observer(() => {
               ))}
             </div>
           )}
+          {selectedTab === FUNCTION_EDITOR_TAB.TEST_SUITES && (
+            <FunctionTestableEditor
+              functionTestableState={
+                functionEditorState.functionTestableEditorState
+              }
+            />
+          )}
           <ExecutionPlanViewer
             executionPlanState={functionEditorState.executionPlanState}
           />
@@ -1467,7 +1482,7 @@ export const FunctionEditor = observer(() => {
             />
           )}
         </PanelContent>
-        {functionEditorState.activatorPromoteState.isPromotingFunction && (
+        {functionEditorState.activatorPromoteState.isActivatingFunction && (
           <FunctionPromoteEditor
             functionElement={functionElement}
             activatorPromoteState={functionEditorState.activatorPromoteState}

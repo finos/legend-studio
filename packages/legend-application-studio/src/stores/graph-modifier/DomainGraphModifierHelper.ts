@@ -27,7 +27,6 @@ import {
   type GenericTypeReference,
   type TaggedValue,
   type StereotypeReference,
-  GenericType,
   type Type,
   type Multiplicity,
   type Stereotype,
@@ -48,7 +47,13 @@ import {
   type Unit,
   type RawLambda,
   type Association,
+  type INTERNAL__UnknownFunctionActivator,
+  type FunctionStoreTestData,
+  type ObserverContext,
+  type FunctionTestSuite,
   type AggregationKind,
+  type EmbeddedData,
+  GenericType,
   Class,
   observe_Enum,
   observe_DerivedProperty,
@@ -66,7 +71,7 @@ import {
   observe_RawLambda,
   isStubbed_PackageableElement,
   getOtherAssociatedProperty,
-  type INTERNAL__UnknownFunctionActivator,
+  observe_EmbeddedData,
 } from '@finos/legend-graph';
 
 // --------------------------------------------- Packageable Element -------------------------------------
@@ -380,6 +385,22 @@ export const function_swapParameters = action(
 export const INTERNAL__UnknownFunctionActivator_setContent = action(
   (metamodel: INTERNAL__UnknownFunctionActivator, val: PlainObject) => {
     metamodel.content = val;
+  },
+);
+
+export const functionTestable_setEmbeddedData = action(
+  (
+    store: FunctionStoreTestData,
+    embeddedData: EmbeddedData,
+    observerContext: ObserverContext,
+  ): void => {
+    store.data = observe_EmbeddedData(embeddedData, observerContext);
+  },
+);
+
+export const functionTestable_deleteDataStore = action(
+  (suite: FunctionTestSuite, val: FunctionStoreTestData): void => {
+    deleteEntry(suite.testData ?? [], val);
   },
 );
 
