@@ -61,7 +61,7 @@ test(integrationTest('Test Function Activator '), async () => {
   const functionEditor = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.FUNCTION_EDITOR,
   );
-  fireEvent.click(getByText(functionEditor, 'Promote'));
+  fireEvent.click(getByText(functionEditor, 'Activate'));
   const functionActivatorModal = await waitFor(() =>
     renderResult.getByRole('dialog'),
   );
@@ -70,7 +70,7 @@ test(integrationTest('Test Function Activator '), async () => {
   ).toBeDefined();
   fireEvent.click(getByText(functionActivatorModal, 'Snowflake Native App'));
   expect(getByText(functionActivatorModal, 'Target Path')).toBeDefined();
-  fireEvent.click(getByText(functionActivatorModal, 'Promote'));
+  fireEvent.click(getByText(functionActivatorModal, 'Activate'));
   fireEvent.click(getByText(explorerTree, 'NewActivator'));
   const editorGroupHeaders = renderResult.getByTestId(
     LEGEND_STUDIO_TEST_ID.EDITOR_GROUP__HEADER_TABS,

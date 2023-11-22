@@ -91,7 +91,6 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElement,
-  type FunctionActivatorConfiguration,
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   Package,
@@ -144,7 +143,6 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
-import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
 import { queryService } from '../editor-group/service-editor/ServiceExecutionQueryEditor.js';
 import { QueryDatabaseState } from '../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
@@ -755,50 +753,6 @@ const ExplorerContextMenu = observer(
         ).catch(applicationStore.alertUnhandledError);
       }
     };
-    const activateFunction = (): void => {
-      if (node?.packageableElement instanceof ConcreteFunctionDefinition) {
-        editorStore.setQuickInputState({
-          title: 'Activate function',
-          placeholder: 'Select an activation...',
-          options: editorStore.graphState.functionActivatorConfigurations.map(
-            (config) => ({
-              value: config,
-              label: (
-                <div
-                  className="function-editor__activator__selector__option"
-                  title={config.description}
-                >
-                  <div className="function-editor__activator__selector__option__name">
-                    {config.name}
-                  </div>
-                  <div className="function-editor__activator__selector__option__description">
-                    {config.description}
-                  </div>
-                </div>
-              ),
-            }),
-          ),
-          getSearchValue: (option: {
-            value: FunctionActivatorConfiguration;
-            label: React.ReactNode;
-          }): string => option.value.name,
-          onSelect: (option: {
-            value: FunctionActivatorConfiguration;
-            label: React.ReactNode;
-          }) => {
-            editorStore.graphEditorMode.openElement(node.packageableElement);
-            editorStore.tabManagerState
-              .getCurrentEditorState(FunctionEditorState)
-              .activatorBuilderState.setCurrentActivatorConfiguration(
-                option.value,
-              );
-          },
-          customization: {
-            rowHeight: 70,
-          },
-        });
-      }
-    };
 
     if (isDependencyProjectRoot()) {
       return (
@@ -876,19 +830,6 @@ const ExplorerContextMenu = observer(
               Query...
             </MenuContentItem>
             <MenuContentDivider />
-          </>
-        )}
-        {node.packageableElement instanceof ConcreteFunctionDefinition && (
-          <>
-            {editorStore.applicationStore.config.options
-              .TEMPORARY__enableFunctionActivatorSupport && (
-              <>
-                <MenuContentItem onClick={activateFunction}>
-                  Activate...
-                </MenuContentItem>
-                <MenuContentDivider />
-              </>
-            )}
           </>
         )}
         {isRelationalDatabaseConnection(node.packageableElement) && (

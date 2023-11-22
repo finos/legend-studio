@@ -512,7 +512,9 @@ export * from './graph/metamodel/pure/packageableElements/mapping/MappingTest.js
 export * from './graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 export { type EmbeddedSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/EmbeddedSetImplementation.js';
-
+export * from './graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
+export * from './graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
+export * from './graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
 export {
   type RawMappingModelCoverageAnalysisResult,
   MappingModelCoverageAnalysisResult,

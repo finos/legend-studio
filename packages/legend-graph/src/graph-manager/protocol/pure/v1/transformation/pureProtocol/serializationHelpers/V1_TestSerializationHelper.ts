@@ -241,7 +241,7 @@ export const V1_serializeAtomicTest = (
   } else if (protocol instanceof V1_MappingTest) {
     return serialize(V1_mappingTestModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_FunctionTest) {
-    return serialize(V1_functionTestModelSchema);
+    return serialize(V1_functionTestModelSchema, protocol);
   }
   const extraAtomicTestSerializers = plugins.flatMap(
     (plugin) =>

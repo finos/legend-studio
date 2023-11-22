@@ -362,11 +362,12 @@ export const ActivityBar = observer(() => {
     ] as (ActivityBarItemConfig | boolean)[]
   ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
 
+  const enableEndtoEndWorkflow =
+    editorStore.applicationStore.config.options.NonProductionFeatureFlag;
   const userJourneys: ActivityBarItemConfig[] = (
     [
       !editorStore.isInConflictResolutionMode &&
-        editorStore.applicationStore.config.options
-          .TEMPORARY__enableEndtoEndWorkflow && {
+        enableEndtoEndWorkflow && {
           mode: USER_JOURNEYS.END_TO_END_WORKFLOWS,
           title: 'End to End Workflows (Beta)',
           icon: (

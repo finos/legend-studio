@@ -27,54 +27,54 @@ import {
   SnowflakeAppType,
 } from '@finos/legend-graph';
 import { type GeneratorFn } from '@finos/legend-shared';
-import { FUNCTION_PROMOTE_TYPE } from '../../../../components/editor/editor-group/function-activator/FunctionEditor.js';
+import { FUNCTION_ACTIVATE_TYPE } from '../../../../components/editor/editor-group/function-activator/FunctionEditor.js';
 
 const BASE_ACTIVATOR_NAME = 'NewActivator';
 
-export class FunctionActivatorPromoteState {
+export class FunctionActivatorState {
   readonly functionEditorState: FunctionEditorState;
 
   activatorPath: string;
-  isPromotingFunction = false;
+  isActivatingFunction = false;
   isFunctionActivatorEditorOpen = false;
-  promoteType: string | undefined;
+  activateType: string | undefined;
 
   constructor(functionEditorState: FunctionEditorState) {
     makeObservable(this, {
       activatorPath: observable,
-      isPromotingFunction: observable,
+      isActivatingFunction: observable,
       isFunctionActivatorEditorOpen: observable,
-      promoteType: observable,
-      setPromoteType: action,
+      activateType: observable,
+      setAcitvateType: action,
       updateActivatorPath: action,
-      setIsPromotingFunction: action,
+      setIsActivatingFunction: action,
       setIsFunctionActivatorEditorOpen: action,
-      promote: flow,
+      activate: flow,
     });
 
     this.functionEditorState = functionEditorState;
-    this.promoteType = FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP;
+    this.activateType = FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP;
     this.activatorPath = `${this.functionEditorState.functionElement.package?.path}::${BASE_ACTIVATOR_NAME}`;
   }
 
-  setIsPromotingFunction(val: boolean): void {
-    this.isPromotingFunction = val;
+  setIsActivatingFunction(val: boolean): void {
+    this.isActivatingFunction = val;
   }
 
   setIsFunctionActivatorEditorOpen(val: boolean): void {
     this.isFunctionActivatorEditorOpen = val;
   }
 
-  setPromoteType(val: string | undefined): void {
-    this.promoteType = val;
+  setAcitvateType(val: string | undefined): void {
+    this.activateType = val;
   }
 
-  showFunctionPromoteModal(): void {
-    this.setIsPromotingFunction(true);
+  showFunctionActivateModal(): void {
+    this.setIsActivatingFunction(true);
   }
 
-  closeFunctionPromoteModal(): void {
-    this.setIsPromotingFunction(false);
+  closeFunctionActivateModal(): void {
+    this.setIsActivatingFunction(false);
   }
 
   updateActivatorPath(val: string): void {
@@ -84,9 +84,9 @@ export class FunctionActivatorPromoteState {
   createFunctionActivator(
     functionElement: ConcreteFunctionDefinition,
   ): FunctionActivator | undefined {
-    const type = this.promoteType;
+    const type = this.activateType;
     switch (type) {
-      case FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP: {
+      case FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP: {
         const activatorName = this.activatorPath.includes('::')
           ? extractElementNameFromPath(this.activatorPath)
           : this.activatorPath;
@@ -106,7 +106,7 @@ export class FunctionActivatorPromoteState {
     }
   }
 
-  *promote(functionElement: ConcreteFunctionDefinition): GeneratorFn<void> {
+  *activate(functionElement: ConcreteFunctionDefinition): GeneratorFn<void> {
     const functionActivator = this.createFunctionActivator(functionElement);
     if (!functionActivator) {
       return;
@@ -121,10 +121,10 @@ export class FunctionActivatorPromoteState {
       );
     } catch {
       this.functionEditorState.editorStore.applicationStore.notificationService.notifyError(
-        `Can't promote function`,
+        `Can't activate function`,
       );
     } finally {
-      this.setPromoteType(FUNCTION_PROMOTE_TYPE.SNOWFLAKE_NATIVE_APP);
+      this.setAcitvateType(FUNCTION_ACTIVATE_TYPE.SNOWFLAKE_NATIVE_APP);
     }
   }
 }

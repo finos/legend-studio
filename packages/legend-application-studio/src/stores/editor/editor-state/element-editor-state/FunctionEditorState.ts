@@ -65,13 +65,14 @@ import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
 } from '@finos/legend-query-builder';
-import { FunctionActivatorBuilderState } from './FunctionActivatorBuilderState.js';
-import { FunctionActivatorPromoteState } from './FunctionActivatorPromoteState.js';
+import { FunctionActivatorState } from './FunctionActivatorState.js';
+import { FunctionTestableState } from './function-activator/testable/FunctionTestableState.js';
 
 export enum FUNCTION_EDITOR_TAB {
   DEFINITION = 'DEFINITION',
   TAGGED_VALUES = 'TAGGED_VALUES',
   STEREOTYPES = 'STEREOTYPES',
+  TEST_SUITES = 'TEST_SUITES',
 }
 
 export class FunctionDefinitionEditorState extends LambdaEditorState {
@@ -244,8 +245,8 @@ export class FunctionParametersState extends LambdaParametersState {
 
 export class FunctionEditorState extends ElementEditorState {
   readonly functionDefinitionEditorState: FunctionDefinitionEditorState;
-  readonly activatorBuilderState: FunctionActivatorBuilderState; // to be removed
-  readonly activatorPromoteState: FunctionActivatorPromoteState;
+  readonly activatorPromoteState: FunctionActivatorState;
+  readonly functionTestableEditorState: FunctionTestableState;
 
   selectedTab: FUNCTION_EDITOR_TAB;
 
@@ -288,13 +289,13 @@ export class FunctionEditorState extends ElementEditorState {
       element,
       this.editorStore,
     );
-    this.activatorBuilderState = new FunctionActivatorBuilderState(this);
-    this.activatorPromoteState = new FunctionActivatorPromoteState(this);
+    this.activatorPromoteState = new FunctionActivatorState(this);
     this.executionPlanState = new ExecutionPlanState(
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,
     );
     this.parametersState = new FunctionParametersState(this);
+    this.functionTestableEditorState = new FunctionTestableState(this);
   }
 
   override get label(): string {

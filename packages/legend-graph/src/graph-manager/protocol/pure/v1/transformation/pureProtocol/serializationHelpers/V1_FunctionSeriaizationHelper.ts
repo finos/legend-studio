@@ -57,15 +57,15 @@ export const V1_parameterValueModelSchema = createModelSchema(
 );
 
 export const V1_functionTestModelSchema = createModelSchema(V1_FunctionTest, {
-  type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Function_Test),
+  _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Function_Test),
   assertions: list(
     custom(
       (val) => V1_serializeTestAssertion(val),
       (val) => V1_deserializeTestAssertion(val),
     ),
   ),
-  doc: optional(primitive()),
   id: primitive(),
+  doc: optional(primitive()),
   parameters: customListWithSchema(V1_parameterValueModelSchema),
 });
 

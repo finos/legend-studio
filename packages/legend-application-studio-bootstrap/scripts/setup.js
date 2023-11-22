@@ -99,7 +99,6 @@ export const setup = (outputDir) => {
             //     modes: ['PROD'],
             //   },
             // ],
-            TEMPORARY__enableFunctionActivatorSupport: false,
             TEMPORARY__enableLocalConnectionBuilder: false,
           },
         },

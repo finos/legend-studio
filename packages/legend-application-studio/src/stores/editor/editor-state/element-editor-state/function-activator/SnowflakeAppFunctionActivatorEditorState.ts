@@ -50,7 +50,7 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
       updateConnection: action,
       updateAppType: action,
       validate: flow,
-      deploy: flow,
+      deployToSandbox: flow,
     });
   }
 
@@ -106,7 +106,7 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
     }
   }
 
-  *deploy(): GeneratorFn<void> {
+  *deployToSandbox(): GeneratorFn<void> {
     this.deployState.inProgress();
     try {
       yield this.editorStore.graphManagerState.graphManager.publishFunctionActivatorToSandbox(

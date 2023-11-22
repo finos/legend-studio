@@ -85,6 +85,8 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'DSL_Persistence-basic.pure': SKIP,
   // Remove this when mastery DSL is finalized
   'DSL_Mastery-basic.pure': SKIP,
+  // Remove once function tests has been completed on engine side
+  'CORE-basic-function-with-tests.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {

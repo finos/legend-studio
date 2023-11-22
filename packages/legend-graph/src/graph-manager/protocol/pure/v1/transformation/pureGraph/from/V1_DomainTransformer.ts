@@ -268,14 +268,13 @@ const V1_transformFunctionSuite = (
     });
   }
   testSuite.tests = element.tests.map((el) => {
-    if (element instanceof FunctionTest) {
-      return V1_transformFunctionTest(element);
+    if (el instanceof FunctionTest) {
+      return V1_transformFunctionTest(el);
     }
     throw new UnsupportedOperationError(
       'Unsupported function test to transform',
     );
   });
-
   return testSuite;
 };
 

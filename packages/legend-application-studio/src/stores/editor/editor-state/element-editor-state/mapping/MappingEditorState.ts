@@ -673,10 +673,7 @@ export class MappingEditorState extends ElementEditorState {
       this.mapping,
       editorStore,
     );
-    this.mappingTestableState = new MappingTestableState(
-      this.editorStore,
-      this,
-    );
+    this.mappingTestableState = new MappingTestableState(this);
   }
 
   get mapping(): Mapping {
