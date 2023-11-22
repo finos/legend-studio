@@ -68,6 +68,14 @@ import {
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 import { observe_SnowflakeAppDeploymentConfiguration } from './DSL_FunctionActivatorObserverHelper.js';
+import type { FunctionTest } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
+import type { FunctionTestSuite } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
+import {
+  observe_AtomicTest,
+  observe_TestAssertion,
+} from './Testable_ObserverHelper.js';
+import type { FunctionStoreTestData } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
+import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 
 const _observe_Abstract_Package = (metamodel: Package): void => {
   observe_Abstract_PackageableElement(metamodel);
@@ -83,7 +91,7 @@ const _observe_Abstract_Package = (metamodel: Package): void => {
  * and observe all descendents.
  */
 export const observe_Package = skipObservedWithContext(
-  (metamodel: Package, context): Package => {
+  (metamodel: Package, context: ObserverContext): Package => {
     _observe_Abstract_Package(metamodel);
 
     metamodel.children.forEach((child) => {
@@ -453,8 +461,52 @@ export const observe_Association = skipObserved(
 
 // ------------------------------------- Function -------------------------------------
 
-export const observe_ConcreteFunctionDefinition = skipObserved(
-  (metamodel: ConcreteFunctionDefinition): ConcreteFunctionDefinition => {
+export const observe_FunctionTest = skipObserved(
+  (metamodel: FunctionTest): FunctionTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      doc: observable,
+      assertions: observable,
+      hashCode: computed,
+    });
+    metamodel.assertions.forEach(observe_TestAssertion);
+    return metamodel;
+  },
+);
+
+export const observe_FunctionTestData = skipObservedWithContext(
+  (metamodel: FunctionStoreTestData, context: ObserverContext) => {
+    makeObservable(metamodel, {
+      store: observable,
+      data: observable,
+      hashCode: computed,
+    });
+    observe_EmbeddedData(metamodel.data, context);
+    return metamodel;
+  },
+);
+
+export const observe_FunctionTestSuite = skipObservedWithContext(
+  (
+    metamodel: FunctionTestSuite,
+    context: ObserverContext,
+  ): FunctionTestSuite => {
+    makeObservable(metamodel, {
+      id: observable,
+      tests: observable,
+      testData: observable,
+      hashCode: computed,
+    });
+    metamodel.tests.forEach((t) => observe_AtomicTest(t, context));
+    metamodel.testData?.forEach((t) => observe_FunctionTestData(t, context));
+    return metamodel;
+  },
+);
+export const observe_ConcreteFunctionDefinition = skipObservedWithContext(
+  (
+    metamodel: ConcreteFunctionDefinition,
+    context: ObserverContext,
+  ): ConcreteFunctionDefinition => {
     observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<ConcreteFunctionDefinition, '_elementHashCode'>(metamodel, {
@@ -471,7 +523,7 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
     observe_PackageableElementReference(metamodel.returnType);
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
-
+    metamodel.tests.forEach((t) => observe_FunctionTestSuite(t, context));
     return metamodel;
   },
 );
