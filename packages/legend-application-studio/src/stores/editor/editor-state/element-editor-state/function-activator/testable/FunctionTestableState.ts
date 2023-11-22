@@ -22,17 +22,37 @@ import {
   isNonNullable,
   uuid,
   type GeneratorFn,
+  LogEvent,
+  guaranteeNonNullable,
+  addUniqueEntry,
+  uniq,
+  assertTrue,
+  guaranteeType,
 } from '@finos/legend-shared';
 import {
-  FunctionTest,
   type ConcreteFunctionDefinition,
   type EmbeddedData,
-  type FunctionStoreTestData,
-  type FunctionTestSuite,
   type TestResult,
   type AtomicTest,
+  type EngineRuntime,
+  type ObserverContext,
+  type ValueSpecification,
+  FunctionTest,
   UniqueTestId,
+  FunctionStoreTestData,
+  FunctionTestSuite,
   RunTestsTestableInput,
+  RawLambda,
+  PackageableRuntime,
+  SimpleFunctionExpression,
+  LambdaFunctionInstanceValue,
+  SUPPORTED_FUNCTIONS,
+  matchFunctionName,
+  InstanceValue,
+  PackageableElementReference,
+  Database,
+  RelationalCSVData,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   TestablePackageableElementEditorState,
@@ -43,8 +63,95 @@ import { EmbeddedDataEditorState } from '../../data/DataEditorState.js';
 import {
   functionTestable_deleteDataStore,
   functionTestable_setEmbeddedData,
+  function_addTestSuite,
 } from '../../../../../graph-modifier/DomainGraphModifierHelper.js';
-import { isTestPassing } from '../../../../utils/TestableUtils.js';
+import {
+  DEFAULT_TEST_ASSERTION_ID,
+  createDefaultEqualToJSONTestAssertion,
+  isTestPassing,
+} from '../../../../utils/TestableUtils.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
+import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
+
+const addToFunctionMap = (
+  val: SimpleFunctionExpression,
+  functions: Map<string, SimpleFunctionExpression[]>,
+): boolean => {
+  const values = functions.get(val.functionName) ?? [];
+  if (values.includes(val)) {
+    return false;
+  }
+  addUniqueEntry(values, val);
+  functions.set(val.functionName, values);
+  return true;
+};
+
+const collectSimpleFunctionExpressions = (
+  val: ValueSpecification,
+  functions: Map<string, SimpleFunctionExpression[]>,
+): void => {
+  if (val instanceof SimpleFunctionExpression) {
+    const continueProcessing = addToFunctionMap(val, functions);
+    if (continueProcessing) {
+      val.parametersValues.forEach((v) =>
+        collectSimpleFunctionExpressions(v, functions),
+      );
+    }
+  }
+};
+
+const resolveRuntimesFromQuery = (
+  func: ConcreteFunctionDefinition,
+  editorStore: EditorStore,
+): EngineRuntime[] | undefined => {
+  try {
+    const body = func.expressionSequence;
+    const rawLambda = new RawLambda([], body);
+    const functions = new Map<string, SimpleFunctionExpression[]>();
+    const valueSpec =
+      editorStore.graphManagerState.graphManager.buildValueSpecification(
+        editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+          rawLambda,
+        ),
+        editorStore.graphManagerState.graph,
+      );
+    if (valueSpec instanceof LambdaFunctionInstanceValue) {
+      const vals = guaranteeNonNullable(
+        valueSpec.values[0],
+        'function expected to be of type lambda',
+      ).expressionSequence;
+      vals.forEach((v) => collectSimpleFunctionExpressions(v, functions));
+      const fromFunctions = Array.from(functions.keys())
+        .filter((v) => matchFunctionName(v, SUPPORTED_FUNCTIONS.FROM))
+        .map((e) => functions.get(e))
+        .flat()
+        .filter(isNonNullable);
+      const runtimeInstance: PackageableRuntime[] = [];
+      fromFunctions.forEach((v) => {
+        v.parametersValues.forEach((p) => {
+          if (p instanceof InstanceValue) {
+            p.values.forEach((pIn) => {
+              if (pIn instanceof PackageableElementReference) {
+                if (pIn.value instanceof PackageableRuntime) {
+                  runtimeInstance.push(pIn.value);
+                }
+              }
+            });
+          }
+        });
+      });
+      return uniq(runtimeInstance.map((e) => e.runtimeValue).flat());
+    }
+    return [];
+  } catch (error) {
+    assertErrorThrown(error);
+    editorStore.applicationStore.logService.error(
+      LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_SETUP_FAILURE),
+      error,
+    );
+    return undefined;
+  }
+};
 
 export class FunctionStoreTestDataState {
   readonly editorStore: EditorStore;
@@ -186,6 +293,25 @@ class FunctionTestDataState {
   }
 }
 
+export const createFunctionTest = (
+  id: string,
+  observerContext: ObserverContext,
+  suite?: FunctionTestSuite | undefined,
+): FunctionTest => {
+  const funcionTest = new FunctionTest();
+  funcionTest.id = id;
+  funcionTest.assertions = [
+    createDefaultEqualToJSONTestAssertion(DEFAULT_TEST_ASSERTION_ID),
+  ];
+  if (suite) {
+    funcionTest.__parent = suite;
+    testSuite_addTest(suite, funcionTest, observerContext);
+  }
+  const assertion = createDefaultEqualToJSONTestAssertion(`expectedAssertion`);
+  funcionTest.assertions = [assertion];
+  assertion.parentTest = funcionTest;
+  return funcionTest;
+};
 export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
   readonly functionTestableState: FunctionTestableState;
   override suite: FunctionTestSuite;
@@ -209,9 +335,13 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
     makeObservable(this, {
       dataState: observable,
       showCreateModal: observable,
+      selectTestState: observable,
+      changeTest: observable,
       buildTestState: action,
       deleteTest: action,
       buildTestStates: action,
+      setShowModal: action,
+      addNewTest: action,
     });
     this.functionTestableState = functionTestableState;
     this.suite = suite;
@@ -222,6 +352,10 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
     );
     this.testStates = this.buildTestStates();
     this.selectTestState = this.testStates[0];
+  }
+
+  setShowModal(val: boolean): void {
+    this.showCreateModal = val;
   }
 
   buildTestStates(): FunctionTestState[] {
@@ -236,13 +370,34 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
     }
     return undefined;
   }
+
+  addNewTest(id: string): void {
+    const test = createFunctionTest(
+      id,
+      this.editorStore.changeDetectionState.observerContext,
+      this.suite,
+    );
+
+    testSuite_addTest(
+      this.suite,
+      test,
+      this.functionTestableState.editorStore.changeDetectionState
+        .observerContext,
+    );
+    const testState = this.buildTestState(test);
+    if (testState) {
+      this.testStates.push(testState);
+    }
+    this.selectTestState = testState;
+  }
 }
 
 export class FunctionTestableState extends TestablePackageableElementEditorState {
   readonly functionEditorState: FunctionEditorState;
+  declare selectedTestSuite: FunctionTestSuiteState | undefined;
 
   runningSuite: FunctionTestSuite | undefined;
-  declare selectedTestSuite: FunctionTestSuiteState | undefined;
+  createSuiteModal = false;
 
   constructor(functionEditorState: FunctionEditorState) {
     super(functionEditorState, functionEditorState.functionElement);
@@ -252,12 +407,15 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
       selectedTestSuite: observable,
       testableResults: observable,
       runningSuite: observable,
+      createSuiteModal: observable,
       init: action,
       buildTestSuiteState: action,
       deleteTestSuite: action,
       changeSuite: action,
       handleNewResults: action,
       setRenameComponent: action,
+      clearTestResultsForSuite: action,
+      setCreateSuite: action,
       runTestable: flow,
       runSuite: flow,
       runAllFailingSuites: flow,
@@ -311,6 +469,80 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
         ? this.buildTestSuiteState(suite)
         : undefined;
     }
+  }
+
+  setCreateSuite(val: boolean): void {
+    this.createSuiteModal = val;
+  }
+
+  createSuite(suiteName: string, testName: string): void {
+    const functionSuite = new FunctionTestSuite();
+    functionSuite.id = suiteName;
+    const engineRuntimes = resolveRuntimesFromQuery(
+      this.function,
+      this.editorStore,
+    );
+    if (engineRuntimes?.length) {
+      try {
+        assertTrue(
+          engineRuntimes.length === 1,
+          `Function Test Suite Only supports One Runtime at this time. Found ${engineRuntimes.length}`,
+        );
+        const engineRuntime = guaranteeNonNullable(engineRuntimes[0]);
+        assertTrue(
+          !(
+            engineRuntime.connectionStores.length &&
+            engineRuntime.connections.length
+          ),
+          `Runtime found has two connection types defined. Please use connection stores only`,
+        );
+        const stores = [
+          ...engineRuntime.connections
+            .map((e) =>
+              e.storeConnections.map((s) => s.connection.store.value).flat(),
+            )
+            .flat(),
+          ...engineRuntime.connectionStores
+            .map((e) => e.storePointers.map((sPt) => sPt.value))
+            .flat(),
+        ];
+        assertTrue(Boolean(stores.length), 'No runtime store found');
+        assertTrue(
+          stores.length === 1,
+          'Only one store supported in runtime for function tests',
+        );
+        const store = guaranteeNonNullable(stores[0]);
+        guaranteeType(
+          store,
+          Database,
+          'Only Database stores supported now for function test',
+        );
+        const relational = new RelationalCSVData();
+        const data = new FunctionStoreTestData();
+        data.store = PackageableElementExplicitReference.create(store);
+        data.data = relational;
+        functionSuite.testData = [data];
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.notificationService.notifyError(
+          `Unable to create function test suite: ${error.message}`,
+        );
+        return;
+      }
+    }
+    createFunctionTest(
+      testName,
+      this.editorStore.changeDetectionState.observerContext,
+      functionSuite,
+    );
+    // set test suite
+    function_addTestSuite(
+      this.function,
+      functionSuite,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    this.changeSuite(functionSuite);
+    this.setCreateSuite(false);
   }
 
   *runSuite(suite: FunctionTestSuite): GeneratorFn<void> {

@@ -509,7 +509,6 @@ export class CreateSuiteState {
       createBareMappingTest(
         testName,
         storeTestData,
-
         this.editorStore.changeDetectionState.observerContext,
         mappingTestSuite,
       );
