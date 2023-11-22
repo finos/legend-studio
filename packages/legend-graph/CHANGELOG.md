@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.5.0
+
+### Minor Changes
+
+- [#2793](https://github.com/finos/legend-studio/pull/2793) [`056b8a5ad`](https://github.com/finos/legend-studio/commit/056b8a5ad3d1bdc81bb812696eff2717f9bb94e6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `FunctionTestSuite`
+
 ## 31.4.2
 
 ## 31.4.1

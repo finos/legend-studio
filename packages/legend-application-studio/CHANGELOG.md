@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.13.3
+
+### Patch Changes
+
+- [#2792](https://github.com/finos/legend-studio/pull/2792) [`5cf2330f1`](https://github.com/finos/legend-studio/commit/5cf2330f117ee2f4548ff561e57f7114fd6e5cba) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove `Activator` button in function editor
+
 ## 28.13.2
 
 ## 28.13.1
