@@ -251,7 +251,8 @@ export abstract class BasicModel {
     const coreTestables = [
       ...this.ownServices,
       ...this.ownMappings,
-      ...this.ownFunctions,
+      // TODO: readd once function tests are complete
+      // ...this.ownFunctions,
     ];
     const filters = this.graphPlugins.flatMap(
       (plugin) => plugin.getExtraTestablesCollectors?.() ?? [],
