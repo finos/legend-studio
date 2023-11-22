@@ -15,10 +15,10 @@
  */
 
 import {
-  assertNonEmptyString,
   UnsupportedOperationError,
   assertNonNullable,
-  guaranteeNonEmptyString,
+  assertIsString,
+  guaranteeIsString,
 } from '@finos/legend-shared';
 import {
   type DatasourceSpecification,
@@ -87,11 +87,11 @@ export const V1_buildDatasourceSpecification = (
     metamodel.content = protocol.content;
     return metamodel;
   } else if (protocol instanceof V1_StaticDatasourceSpecification) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.host,
       `Static datasource specification 'host' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.databaseName,
       `Static datasource specification 'databaseName' field is missing or empty`,
     );
@@ -106,11 +106,11 @@ export const V1_buildDatasourceSpecification = (
     );
     return staticSpec;
   } else if (protocol instanceof V1_EmbeddedH2DatasourceSpecification) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.databaseName,
       `Embedded H2 datasource specification 'databaseName' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.directory,
       `Embedded H2 datasource specification 'directory' field is missing or empty`,
     );
@@ -125,19 +125,16 @@ export const V1_buildDatasourceSpecification = (
     );
     return embeddedSpec;
   } else if (protocol instanceof V1_DatabricksDatasourceSpecification) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.hostname,
       'Databricks hostname specification is missing',
     );
-    assertNonEmptyString(
-      protocol.port,
-      'Databricks port specification is missing',
-    );
-    assertNonEmptyString(
+    assertIsString(protocol.port, 'Databricks port specification is missing');
+    assertIsString(
       protocol.protocol,
       'Databricks protocol specification is missing',
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.httpPath,
       'Databricks httpPath specification is missing',
     );
@@ -149,19 +146,19 @@ export const V1_buildDatasourceSpecification = (
     );
     return databricksSpec;
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.accountName,
       `Snowflake datasource specification 'accountName' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.region,
       `Snowflake datasource specification 'region' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.warehouseName,
       `Snowflake datasource specification 'warehouseName' field is missing or empty`,
     );
-    assertNonNullable(
+    assertIsString(
       protocol.databaseName,
       `Snowflake datasource specification 'databaseName' field is missing`,
     );
@@ -183,7 +180,7 @@ export const V1_buildDatasourceSpecification = (
     snowflakeSpec.role = protocol.role;
     return snowflakeSpec;
   } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.projectId,
       `BigQuery datasource specification 'projectId' field is missing or empty`,
     );
@@ -200,24 +197,24 @@ export const V1_buildDatasourceSpecification = (
     metamodel.testDataSetupSqls = protocol.testDataSetupSqls;
     return metamodel;
   } else if (protocol instanceof V1_RedshiftDatasourceSpecification) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.databaseName,
       `Redshift datasource specification 'databaseName' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.host,
       `Redshift datasource specification 'host' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.port.toString(),
       `Redshift datasource specification 'port' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.clusterID,
       `Redshift datasource specification 'clusterID' field is missing or empty`,
     );
 
-    assertNonEmptyString(
+    assertIsString(
       protocol.region,
       `Redshift datasource specification 'region' field is missing or empty`,
     );
@@ -232,15 +229,15 @@ export const V1_buildDatasourceSpecification = (
     );
     return redshiftSpec;
   } else if (protocol instanceof V1_SpannerDatasourceSpecification) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.projectId,
       `Spanner datasource specification 'projectId' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.instanceId,
-      `Spanner datasource specification 'istance' field is missing or empty`,
+      `Spanner datasource specification 'instanceId' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.databaseId,
       `Spanner datasource specification 'databaseId' field is missing or empty`,
     );
@@ -254,7 +251,7 @@ export const V1_buildDatasourceSpecification = (
     );
     return spannerSpec;
   } else if (protocol instanceof V1_TrinoDatasourceSpecification) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.host,
       `Trino datasource specification 'host' field is missing or empty`,
     );
@@ -317,18 +314,18 @@ export const V1_buildAuthenticationStrategy = (
     metamodel.serverPrincipal = protocol.serverPrincipal;
     return metamodel;
   } else if (protocol instanceof V1_ApiTokenAuthenticationStrategy) {
-    assertNonEmptyString(protocol.apiToken, 'API token is missing or empty');
+    assertIsString(protocol.apiToken, 'API token is missing or empty');
     return new ApiTokenAuthenticationStrategy(protocol.apiToken);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.privateKeyVaultReference,
       `Snowflake public authentication strategy 'privateKeyVaultReference' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.passPhraseVaultReference,
       `Snowflake public authentication strategy 'passPhraseVaultReference' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.publicUserName,
       `Snowflake public authentication 'publicUserName' field is missing or empty`,
     );
@@ -345,32 +342,31 @@ export const V1_buildAuthenticationStrategy = (
   } else if (
     protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
   ) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.serviceAccountEmail,
       `GCPWorkloadIdentityFederation 'serviceAccountEmail' field is missing or empty`,
     );
-
     return new GCPWorkloadIdentityFederationAuthenticationStrategy(
       protocol.serviceAccountEmail,
       protocol.additionalGcpScopes,
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
     return new OAuthAuthenticationStrategy(
-      guaranteeNonEmptyString(
+      guaranteeIsString(
         protocol.oauthKey,
         `OAuth authentication specification 'oauthKey' field is missing or empty`,
       ),
-      guaranteeNonEmptyString(
+      guaranteeIsString(
         protocol.scopeName,
         `OAuth authentication specification 'scopeName' field is missing or empty`,
       ),
     );
   } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.userNameVaultReference,
       `Username password authentication strategy 'userNameVaultReference' field is missing or empty`,
     );
-    assertNonEmptyString(
+    assertIsString(
       protocol.passwordVaultReference,
       `Username password authentication strategy 'passwordVaultReference' field is missing or empty`,
     );
@@ -384,7 +380,7 @@ export const V1_buildAuthenticationStrategy = (
   } else if (
     protocol instanceof V1_MiddleTierUsernamePasswordAuthenticationStrategy
   ) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.vaultReference,
       `Middle Tier Username password authentication strategy 'vaultReference' field is missing or empty`,
     );
@@ -395,7 +391,7 @@ export const V1_buildAuthenticationStrategy = (
   } else if (
     protocol instanceof V1_TrinoDelegatedKerberosAuthenticationStrategy
   ) {
-    assertNonEmptyString(
+    assertIsString(
       protocol.kerberosRemoteServiceName,
       `Trino delegated kerberos authentication strategy 'kerberosRemoteServiceName' field is missing or empty`,
     );
