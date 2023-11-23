@@ -234,29 +234,6 @@ const checkGrammarRoundtrip = async (
       'ms',
     );
   }
-  log.info(
-    LogEvent.create(
-      transformedEntities.map((entity) => entity.content).toString(),
-    ),
-    Date.now() - startTime,
-    'ms',
-  );
-
-  log.info(
-    LogEvent.create(
-      (
-        (transformGrammarToJsonResult.data as { elements: object[] })
-          .elements as PlainObject<V1_PackageableElement>[]
-      )
-        .filter(
-          (elementProtocol: PlainObject<V1_PackageableElement>) =>
-            elementProtocol._type !== 'sectionIndex',
-        )
-        .toString(),
-    ),
-    Date.now() - startTime,
-    'ms',
-  );
 
   if (!excludes.includes(phase)) {
     // ensure that transformed entities have all fields ordered alphabetically
@@ -382,7 +359,7 @@ describe('Grammar roundtrip test', () => {
   test.each(cases)('%s', async (testName, filePath, isSkipped) => {
     if (!isSkipped) {
       await checkGrammarRoundtrip(testName, filePath, {
-        debug: false,
+        debug: true,
       });
     }
   });
@@ -393,7 +370,7 @@ describe('Grammar roundtrip test (without extensions)', () => {
     // Mapping include dataspace does not play nicely without extensions as the dependent XStore Associations will fail
     if (!isSkipped) {
       await checkGrammarRoundtrip(testName, filePath, {
-        debug: false,
+        debug: true,
         noExtensions: true,
       });
     }
