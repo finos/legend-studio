@@ -15,7 +15,10 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ACTIVITY_MODE } from '../../../stores/editor/EditorConfig.js';
+import {
+  ACTIVITY_MODE,
+  USER_JOURNEYS,
+} from '../../../stores/editor/EditorConfig.js';
 import { Explorer } from './Explorer.js';
 import { LocalChanges } from './LocalChanges.js';
 import { WorkspaceReview } from './WorkspaceReview.js';
@@ -26,6 +29,7 @@ import { WorkflowManager } from './WorkflowManager.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { GlobalTestRunner } from './testable/GlobalTestRunner.js';
 import { RegisterService } from './RegisterService.js';
+import { EndToEndWorkflow } from './end-to-end-workflow/EndToEndWorkflows.js';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.
@@ -64,6 +68,14 @@ export const SideBar = observer(() => {
           <RegisterService
             globalBulkServiceRegistrationState={
               editorStore.globalBulkServiceRegistrationState
+            }
+          />
+        );
+      case USER_JOURNEYS.END_TO_END_WORKFLOWS:
+        return (
+          <EndToEndWorkflow
+            globalEndToEndWorkflowState={
+              editorStore.globalEndToEndWorkflowState
             }
           />
         );

@@ -47,7 +47,7 @@ jobs:
             package: '@finos/legend-server-showcase-deployment'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.1.1
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
@@ -59,15 +59,15 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v3.8.1
+        uses: actions/setup-node@v4.0.0
         with:
-          node-version: 16
+          node-version: 21
       - name: Install dependencies
         run: yarn
       - name: Build image
         run: yarn workspace ${{ matrix.package }} build-dry:docker ${{ github.sha }}
       - name: Scan image for security issues
-        uses: aquasecurity/trivy-action@0.12.0
+        uses: aquasecurity/trivy-action@0.14.0
         with:
           # TODO: we should probably also setup misconfiguration scanning
           # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code

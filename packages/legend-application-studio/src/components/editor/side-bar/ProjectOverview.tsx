@@ -999,25 +999,6 @@ const OverviewViewer = observer(() => {
               onChange={changeProjectIdentifier}
             />
           </div>
-          {
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Project User Role
-                <DocumentationLink
-                  documentationKey={
-                    LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_ARE_PROJECT_ROLES
-                  }
-                />
-              </div>
-              <input
-                className="panel__content__form__section__input"
-                title="Project User Role"
-                disabled={true}
-                spellCheck={false}
-                value={sdlcState.accessRole?.accessRole ?? '(unknown)'}
-              />
-            </div>
-          }
         </div>
         <div className="panel__content__form">
           <div className="panel__content__form__section">

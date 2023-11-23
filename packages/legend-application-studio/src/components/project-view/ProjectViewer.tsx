@@ -37,6 +37,11 @@ import {
   FileTrayIcon,
   AssistantIcon,
   useResizeDetector,
+  FireIcon,
+  TrashIcon,
+  HammerIcon,
+  TerminalIcon,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import {
@@ -65,6 +70,7 @@ import {
 import { EmbeddedQueryBuilder } from '../editor/EmbeddedQueryBuilder.js';
 import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
+import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
 
 const ProjectViewerStatusBar = observer(() => {
   const params = useParams<ProjectViewerPathParams>();
@@ -90,11 +96,26 @@ const ProjectViewerStatusBar = observer(() => {
       ? 'current'
       : ''
   }`;
+
+  const editable =
+    editorStore.graphManagerState.graphBuildState.hasCompleted &&
+    editorStore.isInitialized;
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
+  const compile = applicationStore.guardUnhandledError(() =>
+    flowResult(editorStore.graphEditorMode.globalCompile()),
+  );
+  const generate = applicationStore.guardUnhandledError(() =>
+    flowResult(editorStore.graphState.graphGenerationState.globalGenerate()),
+  );
+  const emptyGenerationEntities = applicationStore.guardUnhandledError(() =>
+    flowResult(editorStore.graphState.graphGenerationState.clearGenerations()),
+  );
+
   const toggleAssistant = (): void =>
     applicationStore.assistantService.toggleAssistant();
+  const togglePanel = (): void => editorStore.panelGroupDisplayState.toggle();
 
   return (
     <div
@@ -136,6 +157,76 @@ const ProjectViewerStatusBar = observer(() => {
         )}
       </div>
       <div className="editor__status-bar__right">
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__generate-btn',
+            {
+              'editor__status-bar__generate-btn--wiggling':
+                editorStore.graphState.graphGenerationState
+                  .isRunningGlobalGenerate,
+            },
+          )}
+          disabled={
+            editorStore.graphState.isApplicationUpdateOperationIsRunning
+          }
+          onClick={generate}
+          tabIndex={-1}
+          title="Generate (F10)"
+        >
+          <FireIcon />
+        </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__clear__generation-btn ',
+
+            {
+              'editor__status-bar__action editor__status-bar__clear__generation-btn--wiggling':
+                editorStore.graphState.graphGenerationState
+                  .clearingGenerationEntitiesState.isInProgress,
+            },
+          )}
+          disabled={
+            editorStore.graphState.isApplicationUpdateOperationIsRunning ||
+            !editable
+          }
+          onClick={emptyGenerationEntities}
+          tabIndex={-1}
+          title="Clear generation entities"
+        >
+          <TrashIcon />
+        </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__compile-btn',
+            {
+              'editor__status-bar__compile-btn--wiggling':
+                editorStore.graphState.isRunningGlobalCompile,
+            },
+          )}
+          disabled={
+            editorStore.graphState.isApplicationUpdateOperationIsRunning ||
+            !editable
+          }
+          onClick={compile}
+          tabIndex={-1}
+          title="Compile (F9)"
+        >
+          <HammerIcon />
+        </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__action__toggler',
+            {
+              'editor__status-bar__action__toggler--active':
+                editorStore.panelGroupDisplayState.isOpen,
+            },
+          )}
+          onClick={togglePanel}
+          tabIndex={-1}
+          title="Toggle panel (Ctrl + `)"
+        >
+          <TerminalIcon />
+        </button>
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__action__toggler',
@@ -288,6 +379,21 @@ export const ProjectViewer = withEditorStore(
           size: editorStore.sideBarDisplayState.size,
         },
       );
+      const resizePanel = (handleProps: ResizablePanelHandlerProps): void =>
+        editorStore.panelGroupDisplayState.setSize(
+          (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
+            .height,
+        );
+      const maximizedCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+        editorStore.panelGroupDisplayState.isMaximized,
+      );
+      const collapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+        editorStore.panelGroupDisplayState.size === 0,
+        {
+          onStopResize: resizePanel,
+          size: editorStore.panelGroupDisplayState.size,
+        },
+      );
       const { ref, width, height } = useResizeDetector<HTMLDivElement>();
       useEffect(() => {
         if (ref.current) {
@@ -330,10 +436,39 @@ export const ProjectViewer = withEditorStore(
                       {...sideBarCollapsiblePanelGroupProps.remainingPanel}
                       minSize={300}
                     >
-                      {editorStore.graphEditorMode.mode ===
-                        GRAPH_EDITOR_MODE.FORM && <EditorGroup />}
-                      {editorStore.graphEditorMode.mode ===
-                        GRAPH_EDITOR_MODE.GRAMMAR_TEXT && <GrammarTextEditor />}
+                      <ResizablePanelGroup orientation="horizontal">
+                        <ResizablePanel
+                          {...maximizedCollapsiblePanelGroupProps.collapsiblePanel}
+                          {...(editorStore.panelGroupDisplayState.size === 0
+                            ? collapsiblePanelGroupProps.remainingPanel
+                            : {})}
+                        >
+                          {editorStore.graphEditorMode.mode ===
+                            GRAPH_EDITOR_MODE.FORM && <EditorGroup />}
+                          {editorStore.graphEditorMode.mode ===
+                            GRAPH_EDITOR_MODE.GRAMMAR_TEXT && (
+                            <GrammarTextEditor />
+                          )}
+                        </ResizablePanel>
+                        <ResizablePanelSplitter>
+                          <ResizablePanelSplitterLine
+                            color={
+                              editorStore.panelGroupDisplayState.isMaximized
+                                ? 'transparent'
+                                : 'var(--color-dark-grey-250)'
+                            }
+                          />
+                        </ResizablePanelSplitter>
+                        <ResizablePanel
+                          {...collapsiblePanelGroupProps.collapsiblePanel}
+                          {...(editorStore.panelGroupDisplayState.isMaximized
+                            ? maximizedCollapsiblePanelGroupProps.remainingPanel
+                            : {})}
+                          direction={-1}
+                        >
+                          <PanelGroup />
+                        </ResizablePanel>
+                      </ResizablePanelGroup>
                     </ResizablePanel>
                   </ResizablePanelGroup>
                 </div>

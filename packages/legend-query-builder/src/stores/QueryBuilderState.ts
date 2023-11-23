@@ -100,6 +100,15 @@ import {
   type QueryBuilderExecutionContextState,
 } from './QueryBuilderExecutionContextState.js';
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
+import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
+
+export interface QuerySDLC {}
+
+export type QueryStateInfo = QuerySDLC & {
+  class: string;
+  mapping: string;
+  runtime: string;
+};
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -130,10 +139,16 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isCheckingEntitlments = false;
   isCalendarEnabled = false;
   isQueryChatOpened = false;
+  isLocalModeEnabled = false;
 
   class?: Class | undefined;
   executionContextState: QueryBuilderExecutionContextState;
   internalizeState?: QueryBuilderInternalizeState | undefined;
+
+  // NOTE: This property contains information about workflow used
+  // to create this state. This should only be used to add additional
+  // information to query builder analytics.
+  sourceInfo?: QuerySDLC | undefined;
 
   // NOTE: this makes it so that we need to import components in stores code,
   // we probably want to refactor to an extension mechanism
@@ -143,6 +158,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     config: QueryBuilderConfig | undefined,
+    sourceInfo?: QuerySDLC | undefined,
   ) {
     makeObservable(this, {
       explorerState: observable,
@@ -165,6 +181,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       executionContextState: observable,
       class: observable,
       isQueryChatOpened: observable,
+      isLocalModeEnabled: observable,
 
       sideBarClassName: computed,
       isQuerySupported: computed,
@@ -177,6 +194,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setIsCheckingEntitlments: action,
       setClass: action,
       setIsQueryChatOpened: action,
+      setIsLocalModeEnabled: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -211,6 +229,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
     this.config = config;
+    this.sourceInfo = sourceInfo;
   }
 
   get isMappingReadOnly(): boolean {
@@ -255,8 +274,37 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     return this.allVariables.map((e) => e.name);
   }
 
+  /**
+   * Gets information about the current queryBuilderState.
+   * This information can be used as a part of analytics
+   */
+  getStateInfo(): QueryStateInfo | undefined {
+    if (this.sourceInfo) {
+      const classPath = this.class?.path;
+      const mappingPath = this.executionContextState.mapping?.path;
+      const runtimePath =
+        this.executionContextState.runtimeValue instanceof RuntimePointer
+          ? this.executionContextState.runtimeValue.packageableRuntime.value
+              .path
+          : undefined;
+      if (classPath && mappingPath && runtimePath) {
+        const contextInfo = {
+          class: classPath,
+          mapping: mappingPath,
+          runtime: runtimePath,
+        };
+        return Object.assign({}, this.sourceInfo, contextInfo);
+      }
+    }
+    return undefined;
+  }
+
   setIsQueryChatOpened(val: boolean): void {
     this.isQueryChatOpened = val;
+  }
+
+  setIsLocalModeEnabled(val: boolean): void {
+    this.isLocalModeEnabled = val;
   }
 
   setInternalize(val: QueryBuilderInternalizeState | undefined): void {
@@ -555,6 +603,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.fetchStructureState.initializeWithQuery();
     } catch (error) {
       assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(QUERY_BUILDER_EVENT.UNSUPPORTED_QUERY_LAUNCH),
+        error,
+      );
       this.resetQueryResult({ preserveResult: options?.preserveResult });
       this.resetQueryContent();
       this.unsupportedQueryState.setLambdaError(error);

@@ -54,6 +54,17 @@ import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { isStubbed_RawLambda } from '../../../../../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
+import type { FunctionTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
+import { V1_FunctionTestSuite } from '../../../model/packageableElements/function/test/V1_FunctionTestSuite.js';
+import { FunctionTest } from '../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
+import {
+  V1_FunctionParameterValue,
+  V1_FunctionTest,
+} from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
+import { UnsupportedOperationError } from '@finos/legend-shared';
+import { V1_FunctionStoreTestData } from '../../../model/packageableElements/function/test/V1_FunctionStoreTestData.js';
+import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
+import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();
@@ -224,6 +235,49 @@ export const V1_transformAssociation = (
   return association;
 };
 
+const V1_transformFunctionTest = (element: FunctionTest): V1_FunctionTest => {
+  const functionTest = new V1_FunctionTest();
+  functionTest.id = element.id;
+  functionTest.doc = element.doc;
+  functionTest.assertions = element.assertions.map((assertion) =>
+    V1_transformTestAssertion(assertion),
+  );
+  functionTest.parameters = element.parameters?.map((p) => {
+    const parameterValue = new V1_FunctionParameterValue();
+    parameterValue.name = p.name;
+    parameterValue.value = p.value;
+    return parameterValue;
+  });
+  return functionTest;
+};
+
+const V1_transformFunctionSuite = (
+  element: FunctionTestSuite,
+  context: V1_GraphTransformerContext,
+): V1_FunctionTestSuite => {
+  const testSuite = new V1_FunctionTestSuite();
+  testSuite.id = element.id;
+  testSuite.doc = element.doc;
+  if (element.testData?.length) {
+    testSuite.testData = element.testData.map((elementData) => {
+      const pTestData = new V1_FunctionStoreTestData();
+      pTestData.doc = elementData.doc;
+      pTestData.store = elementData.store.valueForSerialization ?? '';
+      pTestData.data = V1_transformEmbeddedData(elementData.data, context);
+      return pTestData;
+    });
+  }
+  testSuite.tests = element.tests.map((el) => {
+    if (el instanceof FunctionTest) {
+      return V1_transformFunctionTest(el);
+    }
+    throw new UnsupportedOperationError(
+      'Unsupported function test to transform',
+    );
+  });
+  return testSuite;
+};
+
 export const V1_transformFunction = (
   element: ConcreteFunctionDefinition,
   context: V1_GraphTransformerContext,
@@ -243,5 +297,10 @@ export const V1_transformFunction = (
   _function.returnMultiplicity = V1_transformMultiplicity(
     element.returnMultiplicity,
   );
+  if (element.tests.length) {
+    _function.tests = element.tests.map((suite) =>
+      V1_transformFunctionSuite(suite, context),
+    );
+  }
   return _function;
 };

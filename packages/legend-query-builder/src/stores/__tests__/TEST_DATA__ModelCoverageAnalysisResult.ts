@@ -1544,6 +1544,10 @@ export const TEST_DATA__ModelCoverageAnalysisResult_Milestoning = {
           name: 'businessTemporal',
         },
         {
+          _type: 'MappedProperty',
+          name: 'firmID',
+        },
+        {
           _type: 'entity',
           entityPath: 'my::Person2',
           name: 'processingTemporal',

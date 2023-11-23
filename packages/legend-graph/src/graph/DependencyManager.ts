@@ -43,6 +43,8 @@ import type { DataElement } from './metamodel/pure/packageableElements/data/Data
 import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 import { LegendSDLC, type GraphDataOrigin } from './GraphDataOrigin.js';
 import type { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
+import type { PureGraphPlugin } from './PureGraphPlugin.js';
+import type { Testable } from './metamodel/pure/test/Testable.js';
 
 export const DEPENDENCY_ROOT_PACKAGE_PREFIX = '@dependency__';
 export const generateDependencyRootPackageName = (
@@ -60,7 +62,7 @@ export const extractDependencyGACoordinateFromRootPackageName = (
 
 export class DependencyModel extends BasicModel {
   constructor(
-    extensionElementClasses: Clazz<PackageableElement>[],
+    extensionElementClasses: PureGraphPlugin[],
     root: Package,
     origin: GraphDataOrigin,
   ) {
@@ -85,15 +87,15 @@ const buildDependencyElementGetter =
   };
 
 export class DependencyManager {
-  private readonly extensionElementClasses: Clazz<PackageableElement>[];
+  private readonly graphPlugins: PureGraphPlugin[];
 
   private _origin: GraphDataOrigin | undefined;
 
   roots: Package[] = [];
   projectDependencyModelsIndex = new Map<string, BasicModel>();
 
-  constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
-    this.extensionElementClasses = extensionElementClasses;
+  constructor(graphPlugins: PureGraphPlugin[]) {
+    this.graphPlugins = graphPlugins;
   }
 
   /**
@@ -110,7 +112,7 @@ export class DependencyManager {
         this.projectDependencyModelsIndex.set(
           dependencyKey,
           new DependencyModel(
-            this.extensionElementClasses,
+            this.graphPlugins,
             pkg,
             new LegendSDLC(
               entitiesWithOrigin.groupId,
@@ -297,7 +299,9 @@ export class DependencyManager {
   get fileGenerations(): FileGenerationSpecification[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownFileGenerations);
   }
-
+  get testables(): Testable[] {
+    return this.dependencyGraphs.flatMap((dep) => dep.ownTestables);
+  }
   get executionEnvironments(): ExecutionEnvironmentInstance[] {
     return this.dependencyGraphs.flatMap((dep) => dep.ownExecutionEnvironments);
   }

@@ -70,7 +70,75 @@
   }
 }
 
+.mui-stepper {
+  height: 4rem;
+  background-color: var(--color-dark-grey-250);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: scroll;
+  padding-top: 0.7rem;
+
+  &__step {
+    &__step-label {
+      &__label {
+        padding: 0 0.5rem;
+        color: var(--color-light-grey-100);
+        font-size: 1.1rem;
+        cursor: default;
+        margin-right: 0.5rem;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.mui-card {
+  background-color: var(--color-dark-grey-400);
+  width: 16rem;
+  height: 17rem;
+
+  &__media {
+    margin-top: 1rem;
+    margin-left: 16px;
+    size: 2rem;
+  }
+
+  &__header {
+    font-weight: 500;
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 2rem;
+  }
+
+  &__content {
+    font-size: 1rem;
+    color: white;
+  }
+
+  &:hover {
+    background: var(--color-dark-grey-500);
+    cursor: pointer;
+  }
+}
+
+.mui-card--disable {
+  background-color: var(--color-dark-grey-100) !important;
+  cursor: not-allowed !important;
+  border: none !important;
+}
+
+.mui-card--active {
+  background: var(--color-dark-grey-500);
+  border: 0.2rem solid var(--color-light-blue-200);
+}
+
 // override global style
+
+.MuiSvgIcon-root {
+  color: var(--color-dark-grey-500);
+  font-size: 2.5rem;
+}
 
 .MuiDialog-root {
   margin-top: 3.4rem;

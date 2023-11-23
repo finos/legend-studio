@@ -75,6 +75,9 @@ export * from './graph/metamodel/pure/packageableElements/service/TableRowIdenti
 export * from './graph/metamodel/pure/packageableElements/service/TablePtr.js';
 export { FunctionActivator } from './graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
+export { SnowflakeApp } from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
+export { SnowflakeAppType } from './graph/metamodel/pure/functionActivator/SnowflakeAppType.js';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
@@ -238,6 +241,7 @@ export {
   TDSExecutionResult as TDSExecutionResult,
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
+  TDSRow,
   getTDSRowRankByColumnInAsc,
 } from './graph-manager/action/execution/ExecutionResult.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';
@@ -377,6 +381,7 @@ export * from './graph-manager/action/changeDetection/DSL_ExternalFormat_Observe
 export * from './graph-manager/action/changeDetection/DSL_Service_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/DSL_Generation_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js';
+export * from './graph-manager/action/changeDetection/DSL_FunctionActivatorObserverHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
 
@@ -507,7 +512,9 @@ export * from './graph/metamodel/pure/packageableElements/mapping/MappingTest.js
 export * from './graph/metamodel/pure/packageableElements/mapping/MappingTestSuite.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/MappingStoreTestData.js';
 export { type EmbeddedSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/EmbeddedSetImplementation.js';
-
+export * from './graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
+export * from './graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
+export * from './graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
 export {
   type RawMappingModelCoverageAnalysisResult,
   MappingModelCoverageAnalysisResult,

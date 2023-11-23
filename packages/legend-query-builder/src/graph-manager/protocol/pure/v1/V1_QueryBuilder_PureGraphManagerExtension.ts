@@ -296,7 +296,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
           serviceAnalysisResult.service = service;
           if (protocol.execution instanceof V1_PureMultiExecution) {
             serviceAnalysisResult.executionKeys =
-              protocol.execution.executionParameters.map((param) => param.key);
+              protocol.execution.executionParameters?.map((param) => param.key);
           }
           result.push(serviceAnalysisResult);
         }

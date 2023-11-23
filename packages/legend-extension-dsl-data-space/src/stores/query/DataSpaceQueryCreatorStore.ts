@@ -156,6 +156,12 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         this.depotServerClient,
       ),
     );
+    const sourceInfo = {
+      groupId: projectInfo.groupId,
+      artifactId: projectInfo.artifactId,
+      versionId: projectInfo.versionId,
+      dataSpace: dataSpace.path,
+    };
     const queryBuilderState = new DataSpaceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
@@ -243,6 +249,8 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         );
       },
       projectInfo,
+      this.applicationStore.config.options.queryBuilderConfig,
+      sourceInfo,
     );
     queryBuilderState.setExecutionContext(executionContext);
     queryBuilderState.propagateExecutionContextChange(executionContext);

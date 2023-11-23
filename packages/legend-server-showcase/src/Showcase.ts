@@ -23,12 +23,14 @@ export class ShowcaseMetadata {
   title!: string;
   path!: string;
   description?: string | undefined;
+  development?: boolean;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(ShowcaseMetadata, {
       description: optional(primitive()),
       path: primitive(),
       title: primitive(),
+      development: optional(primitive()),
     }),
   );
 }
@@ -39,6 +41,7 @@ export class Showcase {
   description?: string | undefined;
   code!: string;
   documentation?: string | undefined;
+  development?: boolean;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Showcase, {
@@ -47,6 +50,7 @@ export class Showcase {
       documentation: optional(primitive()),
       path: primitive(),
       title: primitive(),
+      development: optional(primitive()),
     }),
   );
 }

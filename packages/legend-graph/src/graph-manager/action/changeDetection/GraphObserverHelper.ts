@@ -180,7 +180,7 @@ export const observe_Graph = (metamodel: PureModel): PureModel => {
     executionEnvironments: computed,
 
     allElements: computed,
-    allOwnTestables: computed,
+    ownTestables: computed,
   });
 
   observe_DependencyManager(metamodel.dependencyManager);

@@ -152,6 +152,8 @@ import {
   V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
 import { CollectionEquality } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import type { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider
@@ -290,8 +292,8 @@ export const V1_buildProxyConfiguration = (
   context: V1_GraphBuilderContext,
 ): ProxyConfiguration => {
   const proxyConfiguration = new ProxyConfiguration();
-  proxyConfiguration.authentication = element.authentication
-    ? V1_buildAuthenticationStrategy(element.authentication, context)
+  proxyConfiguration.authenticationStrategy = element.authenticationStrategy
+    ? V1_buildAuthenticationStrategy(element.authenticationStrategy, context)
     : undefined;
   proxyConfiguration.host = element.host;
   proxyConfiguration.port = element.port;
@@ -304,8 +306,8 @@ export const V1_buildFTPConnection = (
 ): FTPConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const ftpConnection = getOwnFTPConnection(path, context.currentSubGraph);
-  ftpConnection.authentication = element.authentication
-    ? V1_buildAuthenticationStrategy(element.authentication, context)
+  ftpConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_buildAuthenticationStrategy(element.authenticationStrategy, context)
     : undefined;
   ftpConnection.host = element.host;
   ftpConnection.port = element.port;
@@ -319,8 +321,8 @@ export const V1_buildHTTPConnection = (
 ): HTTPConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const httpConnection = getOwnHTTPConnection(path, context.currentSubGraph);
-  httpConnection.authentication = element.authentication
-    ? V1_buildAuthenticationStrategy(element.authentication, context)
+  httpConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_buildAuthenticationStrategy(element.authenticationStrategy, context)
     : undefined;
   httpConnection.proxy = element.proxy
     ? V1_buildProxyConfiguration(element.proxy, context)
@@ -335,8 +337,8 @@ export const V1_buildKafkaConnection = (
 ): KafkaConnection => {
   const path = V1_buildFullPath(element.package, element.name);
   const kafkaConnection = getOwnKafkaConnection(path, context.currentSubGraph);
-  kafkaConnection.authentication = element.authentication
-    ? V1_buildAuthenticationStrategy(element.authentication, context)
+  kafkaConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_buildAuthenticationStrategy(element.authenticationStrategy, context)
     : undefined;
   kafkaConnection.topicName = element.topicName;
   kafkaConnection.topicUrls = element.topicUrls;
@@ -581,6 +583,7 @@ export const V1_buildResolutionQuery = (
 ): ResolutionQuery => {
   const resolutionQuery = new ResolutionQuery();
   resolutionQuery.keyType = protocol.keyType;
+  resolutionQuery.optional = protocol.optional;
   resolutionQuery.precedence = protocol.precedence;
   resolutionQuery.queries = protocol.queries.map((rq) =>
     V1_buildRawLambdaWithResolvedPaths(rq.parameters, rq.body, context),
@@ -828,4 +831,29 @@ export const V1_buildMasterRecordDefinition = (
     protocol.elasticSearchTransformService;
   masterRecordDefinition.exceptionWorkflowTransformService =
     protocol.exceptionWorkflowTransformService;
+};
+
+/**********
+ * runtime
+ **********/
+
+export const V1_buildMasteryRuntime = (
+  element: V1_MasteryRuntime,
+  context: V1_GraphBuilderContext,
+): MasteryRuntime => {
+  const extraMasteryRuntimeBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMasteryRuntimeSecondPassBuilders?.() ?? [],
+  );
+  for (const builder of extraMasteryRuntimeBuilders) {
+    const metamodel = builder(element, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't build mastery runtime: no compatible builder available from plugins, element`,
+  );
 };

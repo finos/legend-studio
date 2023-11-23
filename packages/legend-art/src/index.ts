@@ -31,6 +31,8 @@ export * from './badge/Badge.js';
 
 export * from './button/Button.js';
 
+export * from './card/BaseCard.js';
+
 export * from './dialog/Dialog.js';
 export * from './dialog/NonBlockingDialog.js';
 export * from './dialog/Modal.js';
@@ -38,6 +40,9 @@ export * from './dialog/Modal.js';
 export * from './menu/MenuContent.js';
 export * from './menu/ContextMenu.js';
 export * from './menu/DropdownMenu.js';
+
+export * from './stepper/BaseStepper.js';
+export * from './stepper/BaseStepperState.js';
 
 export * from './popover/BasePopover.js';
 export * from './popover/BasePopper.js';

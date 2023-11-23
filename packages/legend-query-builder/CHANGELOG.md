@@ -1,5 +1,83 @@
 # @finos/legend-query-builder
 
+## 4.11.13
+
+## 4.11.12
+
+## 4.11.11
+
+### Patch Changes
+
+- [#2777](https://github.com/finos/legend-studio/pull/2777) [`9ccb8ae9d`](https://github.com/finos/legend-studio/commit/9ccb8ae9decbee4580efff4ff2c7f8da06f29545) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the CSS issue where it is unable to scroll down the graph fetch editor when properties don't fit the screen
+
+## 4.11.10
+
+### Patch Changes
+
+- [#2772](https://github.com/finos/legend-studio/pull/2772) [`05d6609d7`](https://github.com/finos/legend-studio/commit/05d6609d747a2eab5807e8a85fddfeee927c1a8b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable set filters in tds result panel.
+
+## 4.11.9
+
+## 4.11.8
+
+### Patch Changes
+
+- [#2759](https://github.com/finos/legend-studio/pull/2759) [`237e8eb48`](https://github.com/finos/legend-studio/commit/237e8eb48061c612e474df154d33d674f6ff51ba) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a typo in QueryBuilderConfig flag
+
+## 4.11.7
+
+### Patch Changes
+
+- [#2758](https://github.com/finos/legend-studio/pull/2758) [`e4dbad768`](https://github.com/finos/legend-studio/commit/e4dbad768b9168f11c62e4a9c0f9e7922657c031) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Create a flag in query builder config to enable/disable ag grid enterprise mode
+
+## 4.11.6
+
+### Patch Changes
+
+- [#2752](https://github.com/finos/legend-studio/pull/2752) [`5e965925b`](https://github.com/finos/legend-studio/commit/5e965925bc2208324dcad26b6b68b5866de522a8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Utilize built-in context menu of ag-grid in enterprise mode
+
+## 4.11.5
+
+### Patch Changes
+
+- [#2748](https://github.com/finos/legend-studio/pull/2748) [`6f0ee720f`](https://github.com/finos/legend-studio/commit/6f0ee720f6d2eddbc746d8755f9da732bad0d605) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Utilize enterprise ag-grid to fix the issue about filter by/out/copy wrong value
+
+## 4.11.4
+
+### Patch Changes
+
+- [#2692](https://github.com/finos/legend-studio/pull/2692) [`c1fc52bb7`](https://github.com/finos/legend-studio/commit/c1fc52bb7e5f8c767caf7bde9dca21939fdba8e4) ([@gayathrir11](https://github.com/gayathrir11)) - Add query workflow information as a part of telemetry data we send to analytics
+
+## 4.11.3
+
+## 4.11.2
+
+## 4.11.1
+
+## 4.11.0
+
+### Minor Changes
+
+- [#2696](https://github.com/finos/legend-studio/pull/2696) [`479320c40`](https://github.com/finos/legend-studio/commit/479320c404aa75822e0dfc655e132943d8af28b0) ([@gayathrir11](https://github.com/gayathrir11)) - Unlock Ag grid enterprise features in query
+
+### Patch Changes
+
+- [#2703](https://github.com/finos/legend-studio/pull/2703) [`58a622da6`](https://github.com/finos/legend-studio/commit/58a622da62c425bbe045bdca2f78595aeb80e7e3) ([@gayathrir11](https://github.com/gayathrir11)) - Minor fixes to advanced query grid operations
+
+## 4.10.2
+
+### Patch Changes
+
+- [#2685](https://github.com/finos/legend-studio/pull/2685) [`b398638ad`](https://github.com/finos/legend-studio/commit/b398638ad8755f4500a7371c4d05425df3eaf794) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix post filter on aggregation col with derivation
+
+## 4.10.1
+
+### Patch Changes
+
+- [#2622](https://github.com/finos/legend-studio/pull/2622) [`cd3c88660`](https://github.com/finos/legend-studio/commit/cd3c886604dd84e17d8f2c7370bf7db9a4ec9c86) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fixed the issue where fails to target the correct row after sorting columns in query builder result panel
+
+- [#2662](https://github.com/finos/legend-studio/pull/2662) [`351f356ec`](https://github.com/finos/legend-studio/commit/351f356ecbdb8a9ed0c0c0cdffa28fffa98e6707) ([@gayathrir11](https://github.com/gayathrir11)) - Fix DnD of nested group operation with exists filter
+
 ## 4.10.0
 
 ### Minor Changes

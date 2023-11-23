@@ -90,6 +90,7 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
+  type PackageableElement,
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   Package,
@@ -105,15 +106,13 @@ import {
   getFunctionSignature,
   getFunctionNameWithPath,
   getElementRootPackage,
-  type PackageableElement,
   PackageableConnection,
-  RelationalDatabaseConnection,
   guaranteeRelationalDatabaseConnection,
   extractDependencyGACoordinateFromRootPackageName,
-  type FunctionActivatorConfiguration,
   Database,
   DEPENDENCY_ROOT_PACKAGE_PREFIX,
   Service,
+  isRelationalDatabaseConnection,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -144,9 +143,9 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
-import { FunctionEditorState } from '../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
 import { queryService } from '../editor-group/service-editor/ServiceExecutionQueryEditor.js';
+import { QueryDatabaseState } from '../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -458,12 +457,6 @@ const SampleDataGenerator = observer(() => {
   );
 });
 
-const isRelationalDatabaseConnection = (
-  val: PackageableElement | undefined,
-): boolean =>
-  val instanceof PackageableConnection &&
-  val.connectionValue instanceof RelationalDatabaseConnection;
-
 const isRelationalDatabase = (
   val: PackageableElement | undefined,
 ): Database | undefined => (val instanceof Database ? val : undefined);
@@ -495,7 +488,8 @@ const ExplorerContextMenu = observer(
       })
       .filter(isNonNullable);
     const projectId = editorStore.sdlcState.currentProject?.projectId;
-    const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
+    const isReadOnly =
+      editorStore.disableGraphEditing || Boolean(nodeIsImmutable);
     const isDependencyProjectElement =
       node && isDependencyElement(node.packageableElement);
     const _package = node
@@ -526,6 +520,19 @@ const ExplorerContextMenu = observer(
       async () => {
         if (node?.packageableElement instanceof Service) {
           await queryService(node.packageableElement, editorStore);
+        }
+      },
+    );
+    const buildDatabaseQuery = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (node?.packageableElement instanceof Database) {
+          const state = new QueryDatabaseState(
+            node.packageableElement,
+            editorStore,
+          );
+          flowResult(state.init()).catch(
+            editorStore.applicationStore.alertUnhandledError,
+          );
         }
       },
     );
@@ -564,7 +571,7 @@ const ExplorerContextMenu = observer(
                   handler: () => {
                     editorStore.explorerTreeState.buildDatabaseModels(
                       database,
-                      editorStore.isInViewerMode,
+                      editorStore.disableGraphEditing,
                     );
                   },
                 },
@@ -578,7 +585,7 @@ const ExplorerContextMenu = observer(
           } else {
             editorStore.explorerTreeState.buildDatabaseModels(
               database,
-              editorStore.isInViewerMode,
+              editorStore.disableGraphEditing,
             );
           }
         }
@@ -746,50 +753,6 @@ const ExplorerContextMenu = observer(
         ).catch(applicationStore.alertUnhandledError);
       }
     };
-    const activateFunction = (): void => {
-      if (node?.packageableElement instanceof ConcreteFunctionDefinition) {
-        editorStore.setQuickInputState({
-          title: 'Activate function',
-          placeholder: 'Select an activation...',
-          options: editorStore.graphState.functionActivatorConfigurations.map(
-            (config) => ({
-              value: config,
-              label: (
-                <div
-                  className="function-editor__activator__selector__option"
-                  title={config.description}
-                >
-                  <div className="function-editor__activator__selector__option__name">
-                    {config.name}
-                  </div>
-                  <div className="function-editor__activator__selector__option__description">
-                    {config.description}
-                  </div>
-                </div>
-              ),
-            }),
-          ),
-          getSearchValue: (option: {
-            value: FunctionActivatorConfiguration;
-            label: React.ReactNode;
-          }): string => option.value.name,
-          onSelect: (option: {
-            value: FunctionActivatorConfiguration;
-            label: React.ReactNode;
-          }) => {
-            editorStore.graphEditorMode.openElement(node.packageableElement);
-            editorStore.tabManagerState
-              .getCurrentEditorState(FunctionEditorState)
-              .activatorBuilderState.setCurrentActivatorConfiguration(
-                option.value,
-              );
-          },
-          customization: {
-            rowHeight: 70,
-          },
-        });
-      }
-    };
 
     if (isDependencyProjectRoot()) {
       return (
@@ -869,27 +832,12 @@ const ExplorerContextMenu = observer(
             <MenuContentDivider />
           </>
         )}
-        {node.packageableElement instanceof ConcreteFunctionDefinition && (
-          <>
-            {editorStore.applicationStore.config.options
-              .TEMPORARY__enableFunctionActivatorSupport && (
-              <>
-                <MenuContentItem onClick={activateFunction}>
-                  Activate...
-                </MenuContentItem>
-                <MenuContentDivider />
-              </>
-            )}
-          </>
-        )}
         {isRelationalDatabaseConnection(node.packageableElement) && (
           <>
-            {editorStore.applicationStore.config.options
-              .TEMPORARY__enableRawSQLExecutor && (
-              <MenuContentItem onClick={openSQLPlayground}>
-                Execute SQL...
-              </MenuContentItem>
-            )}
+            <MenuContentItem onClick={openSQLPlayground}>
+              Execute SQL...
+            </MenuContentItem>
+
             <MenuContentItem onClick={buildDatabase}>
               Build Database...
             </MenuContentItem>
@@ -900,6 +848,9 @@ const ExplorerContextMenu = observer(
           <>
             <MenuContentItem onClick={generateModelsFromDatabaseSpecification}>
               Build Models
+            </MenuContentItem>
+            <MenuContentItem onClick={buildDatabaseQuery}>
+              Query (Beta)...
             </MenuContentItem>
             <MenuContentDivider />
           </>
@@ -1127,7 +1078,7 @@ const ExplorerDropdownMenu = observer(() => {
 
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
-  const { isInViewerMode } = editorStore;
+  const { disableGraphEditing } = editorStore;
   const isInGrammarTextMode =
     editorStore.graphEditorMode.mode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
   const openModelImport = (): void =>
@@ -1209,7 +1160,7 @@ const ExplorerTrees = observer(() => {
   return (
     <ContextMenu
       className="explorer__content"
-      disabled={isInGrammarTextMode || isInViewerMode}
+      disabled={isInGrammarTextMode || disableGraphEditing}
       content={<ExplorerContextMenu />}
       menuProps={{ elevation: 7 }}
     >
@@ -1361,7 +1312,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
 
   return (
     <div className="panel__header__actions">
-      {!editorStore.isInViewerMode && (
+      {
         <button
           className="panel__header__action"
           disabled={disabled}
@@ -1370,16 +1321,18 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         >
           <FileImportIcon />
         </button>
+      }
+      {editorStore.editorMode.supportSdlcOperations && (
+        <button
+          className="panel__header__action panel__header__action--config"
+          disabled={disabled}
+          title="Project Configuration Panel"
+          onClick={openConfigurationEditor}
+        >
+          <SettingsEthernetIcon />
+        </button>
       )}
-      <button
-        className="panel__header__action panel__header__action--config"
-        disabled={disabled}
-        title="Project Configuration Panel"
-        onClick={openConfigurationEditor}
-      >
-        <SettingsEthernetIcon />
-      </button>
-      {!editorStore.isInViewerMode && (
+      {!editorStore.disableGraphEditing && (
         <DropdownMenu
           className="panel__header__action"
           title="New Element... (Ctrl + Shift + N)"
@@ -1462,10 +1415,16 @@ export const Explorer = observer(() => {
             EXPLORER
           </div>
         </div>
-        {editorStore.isInViewerMode && (
+        {editorStore.editorMode.disableEditing &&
+          !editorStore.editorMode.label && (
+            <div className="panel__header__title side-bar__header__title__viewer-mode-badge">
+              <LockIcon />
+              READ-ONLY
+            </div>
+          )}
+        {editorStore.editorMode.label && (
           <div className="panel__header__title side-bar__header__title__viewer-mode-badge">
-            <LockIcon />
-            READ-ONLY
+            {editorStore.editorMode.label}
           </div>
         )}
       </div>

@@ -23,9 +23,15 @@ export class QueryBuilderConfig {
    */
   TEMPORARY__disableQueryBuilderChat = false;
 
+  /**
+   * This flag is to enable AG-GRID enterprise mode
+   */
+  TEMPORARY__enableGridEnterpriseMode = false;
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
+      TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
     }),
   );
 }

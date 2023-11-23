@@ -76,6 +76,12 @@ import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageabl
 import type { INTERNAL__UnknownStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
+import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import type { SnowflakeApp } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+import {
+  V1_transformSnowflakeAppDeploymentConfiguration,
+  V1_transformSnowflakeAppType,
+} from './V1_FunctionActivatorTransformer.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -125,6 +131,27 @@ class V1_PackageableElementTransformer
       spacing: false,
     });
     protocol.content = element.content;
+    return protocol;
+  }
+
+  visit_SnowflakeApp(element: SnowflakeApp): V1_PackageableElement {
+    const protocol = new V1_SnowflakeApp();
+    V1_initPackageableElement(protocol, element);
+    protocol.function = generateFunctionPrettyName(element.function.value, {
+      fullPath: true,
+      spacing: false,
+      notIncludeParamName: true,
+    });
+    protocol.applicationName = element.applicationName;
+    protocol.description = element.description;
+    protocol.owner = element.owner;
+    protocol.activationConfiguration =
+      V1_transformSnowflakeAppDeploymentConfiguration(
+        element.activationConfiguration,
+      );
+    if (element.type) {
+      protocol.type = V1_transformSnowflakeAppType(element.type);
+    }
     return protocol;
   }
 

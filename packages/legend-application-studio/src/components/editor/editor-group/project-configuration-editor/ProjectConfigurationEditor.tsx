@@ -540,8 +540,12 @@ const ProjectPlatformVersionEditor = observer(
 );
 
 const ProjectAdvancedEditor = observer(
-  (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
-    const { projectConfig } = props;
+  (props: {
+    projectConfig: ProjectConfiguration;
+    isReadOnly: boolean;
+    configState: ProjectConfigurationEditorState;
+  }) => {
+    const { projectConfig, isReadOnly, configState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const currentProjectType = projectConfig.projectType ?? ProjectType.MANAGED;
@@ -554,6 +558,18 @@ const ProjectAdvancedEditor = observer(
       'You are about to change from managed to embedded project type. This will cause your build files (pom, ci etc) to no longer be managed by our SDLC process. Your element folder structure will remain managed by us but your build will become your responsibility. Please ensure you understand the risks of changing over before continuing.';
     const embeddedToManaged =
       'You are about to change from embedded to managed project type. Your build will now be managed by our SDLC sever in addition to your element folder structure. Your current build files will all be deleted and replaces with our own. Please ensure you understand the risks of changing over before continuing.';
+    const runDependencyMessage = `In addition to running your own tests, you can also configure to run all tests in your dependency projects.  This should be rarely used and mostly helped mitigate when you have override your dependencies. You should aim to have most of your tests in your current project.`;
+    const toggleRunDependency = (): void => {
+      const newVal = !projectConfig.runDependencyTests;
+      if (
+        !newVal &&
+        configState.originalConfig.runDependencyTests === undefined
+      ) {
+        projectConfig.setRunDependencyTests(undefined);
+      } else {
+        projectConfig.setRunDependencyTests(newVal);
+      }
+    };
     const changeProjectType = (): void => {
       applicationStore.alertService.setActionAlertInfo({
         message: `${isEmbeddedMode ? embeddedToManaged : managedToEmbedded}`,
@@ -580,6 +596,49 @@ const ProjectAdvancedEditor = observer(
 
     return (
       <Panel>
+        <PanelForm>
+          <div className="panel__content__form__section__header__label">
+            {`Dependency Tests`}
+          </div>
+          <div className="documentation-preview">
+            <div className="documentation-preview__text">
+              <div className="project-configuration-editor__advanced__project-type__info">
+                {runDependencyMessage}
+              </div>
+            </div>
+          </div>
+          <div className="platform-configurations-editor__dependencies">
+            <div className="platform-configurations-editor__dependencies__header">
+              <div className="platform-configurations-editor__dependencies__header__left">
+                <div
+                  className="platform-configurations-editor__toggler"
+                  onClick={toggleRunDependency}
+                >
+                  <button
+                    className={clsx(
+                      'platform-configurations-editor__toggler__btn',
+                      {
+                        'platform-configurations-editor__toggler__btn--toggled':
+                          Boolean(projectConfig.runDependencyTests),
+                      },
+                    )}
+                    disabled={isReadOnly}
+                    tabIndex={-1}
+                  >
+                    {projectConfig.runDependencyTests ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="platform-configurations-editor__toggler__prompt">
+                    {`Run Dependency Tests`}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </PanelForm>
         <PanelForm>
           <div className="panel__content__form__section__header__label">
             {`Project Type: ${prettyCONSTName(currentProjectType)} `}
@@ -628,7 +687,7 @@ export const ProjectConfigurationEditor = observer(() => {
     ProjectConfigurationEditorState,
   );
   const projectType =
-    configState.originalConfig.projectType ?? ProjectType.MANAGED;
+    configState.currentProjectConfiguration.projectType ?? ProjectType.MANAGED;
   const sdlcState = editorStore.sdlcState;
   const isReadOnly = editorStore.isInViewerMode;
   const selectedTab = configState.selectedTab;
@@ -852,6 +911,7 @@ export const ProjectConfigurationEditor = observer(() => {
           {selectedTab === CONFIGURATION_EDITOR_TAB.ADVANCED && (
             <ProjectAdvancedEditor
               projectConfig={currentProjectConfiguration}
+              configState={configState}
               isReadOnly={isReadOnly}
             />
           )}

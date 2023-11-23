@@ -274,6 +274,7 @@ export class ProjectViewerStore {
     yield Promise.all([
       this.editorStore.sdlcState.fetchProjectVersions(),
       this.editorStore.sdlcState.fetchPublishedProjectVersions(),
+      this.editorStore.sdlcState.fetchAuthorizedActions(),
     ]);
 
     // fetch entities

@@ -25,7 +25,10 @@ import type { Type } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregateOperator.js';
-import type { QueryBuilderProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  type QueryBuilderProjectionColumnState,
+} from '../projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../QueryBuilderStateHashUtils.js';
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import type { QueryBuilderAggregateCalendarFunction } from './QueryBuilderAggregateCalendarFunction.js';
@@ -58,6 +61,7 @@ export class QueryBuilderAggregateColumnState
       setLambdaParameterName: action,
       setOperator: action,
       setCalendarFunction: action,
+      handleUsedPostFilterType: action,
       hashCode: computed,
     });
 
@@ -88,8 +92,18 @@ export class QueryBuilderAggregateColumnState
     this.operator = val;
   }
 
-  getColumnType(): Type {
+  getColumnType(): Type | undefined {
     return this.operator.getReturnType(this);
+  }
+
+  handleUsedPostFilterType(type: Type): void {
+    if (
+      this.getColumnType() === undefined &&
+      this.projectionColumnState instanceof
+        QueryBuilderDerivationProjectionColumnState
+    ) {
+      this.projectionColumnState.setReturnType(type);
+    }
   }
 
   get hashCode(): string {

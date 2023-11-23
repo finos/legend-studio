@@ -226,7 +226,7 @@ export class ServiceTestSetupState {
   get keyOptions(): KeyOption[] {
     const keys =
       this.testState.testable.execution instanceof PureMultiExecution
-        ? this.testState.testable.execution.executionParameters.map(
+        ? (this.testState.testable.execution.executionParameters ?? []).map(
             (p) => p.key,
           )
         : [];

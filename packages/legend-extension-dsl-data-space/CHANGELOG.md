@@ -1,5 +1,53 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.52
+
+## 10.1.51
+
+## 10.1.50
+
+## 10.1.49
+
+## 10.1.48
+
+## 10.1.47
+
+### Patch Changes
+
+- [#2767](https://github.com/finos/legend-studio/pull/2767) [`9f4b85648`](https://github.com/finos/legend-studio/commit/9f4b856482d4be4c62d76debc848af713fc252fa) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable queryBuilderConfig in DataSpaceQueryBuilderState
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix testable collector to predicate of packagable element and fix getting testables from dependencies.
+
+## 10.1.46
+
+## 10.1.45
+
+## 10.1.44
+
+## 10.1.43
+
+## 10.1.42
+
+### Patch Changes
+
+- [#2704](https://github.com/finos/legend-studio/pull/2704) [`c3eba6cb9`](https://github.com/finos/legend-studio/commit/c3eba6cb93406a3a52897aa4db86520133fd7b5c) ([@gayathrir11](https://github.com/gayathrir11)) - Fix changing dataspace for an existing query saving it in inconsistent state
+
+## 10.1.41
+
+## 10.1.40
+
+## 10.1.39
+
+## 10.1.38
+
+### Patch Changes
+
+- [#2695](https://github.com/finos/legend-studio/pull/2695) [`e38dba9fb`](https://github.com/finos/legend-studio/commit/e38dba9fb6452882ab6fb1b76ce0010926508b87) ([@gayathrir11](https://github.com/gayathrir11)) - Fix filtering by current class in query loader.
+
+## 10.1.37
+
+## 10.1.36
+
 ## 10.1.35
 
 ## 10.1.34

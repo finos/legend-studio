@@ -62,6 +62,12 @@ class LegendStudioApplicationCoreOptions {
   projectCreationGroupIdSuggestion = 'org.finos.legend.*';
 
   /**
+   * This flag is for any feature that is not production ready.
+   * Used to iterate over features until they are ready for production.
+   */
+  NonProductionFeatureFlag = false;
+
+  /**
    * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
    * imports.
    *
@@ -71,23 +77,11 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__preserveSectionIndex = false;
 
   /**
-   * This flag can be removed when the support for function activator is official
-   * See https://github.com/finos/legend-engine/pull/1815
-   */
-  TEMPORARY__enableFunctionActivatorSupport = false;
-
-  /**
    * This flag can be removed when the support for local connection is official
    * Right now it's done to support the SnowflakeApp creation demo
    * See https://github.com/finos/legend-engine/pull/1819
    */
   TEMPORARY__enableLocalConnectionBuilder = false;
-
-  /**
-   * This flag can be removed when the support for raw SQL execution is official
-   * See https://github.com/finos/legend-engine/pull/1841
-   */
-  TEMPORARY__enableRawSQLExecutor = false;
 
   /**
    * Provides service registration environment configs.
@@ -111,9 +105,8 @@ class LegendStudioApplicationCoreOptions {
       enableGraphBuilderStrictMode: optional(primitive()),
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
-      TEMPORARY__enableFunctionActivatorSupport: optional(primitive()),
-      TEMPORARY__enableRawSQLExecutor: optional(primitive()),
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
+      NonProductionFeatureFlag: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),
       ),

@@ -48,8 +48,20 @@ import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificati
 import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
+import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 
 export const DEFAULT_LIMIT = 1000;
+
+export type QueryBuilderTDSResultCellDataType =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined;
+
+export interface QueryBuilderTDSRowDataType {
+  [key: string]: QueryBuilderTDSResultCellDataType;
+}
 
 export interface ExportDataInfo {
   contentType: ContentType;
@@ -57,7 +69,7 @@ export interface ExportDataInfo {
 }
 
 export interface QueryBuilderTDSResultCellData {
-  value: string | number | boolean | null | undefined;
+  value: QueryBuilderTDSResultCellDataType;
   columnName: string;
   coordinates: QueryBuilderTDSResultCellCoordinate;
 }
@@ -66,6 +78,11 @@ export interface QueryBuilderTDSResultCellCoordinate {
   rowIndex: number;
   colIndex: number;
 }
+
+type QueryBuilderDataGridConfig = {
+  columns: DataGridColumnState[];
+  isPivotModeEnabled: boolean;
+};
 
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
@@ -86,6 +103,8 @@ export class QueryBuilderResultState {
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
   isSelectingCells: boolean;
 
+  gridConfig!: QueryBuilderDataGridConfig;
+
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       executionResult: observable,
@@ -99,6 +118,8 @@ export class QueryBuilderResultState {
       isRunningQuery: observable,
       isSelectingCells: observable,
       isQueryUsageViewerOpened: observable,
+      gridConfig: observable,
+      setGridConfig: action,
       setIsSelectingCells: action,
       setIsRunningQuery: action,
       setExecutionResult: action,
@@ -117,11 +138,19 @@ export class QueryBuilderResultState {
     this.isSelectingCells = false;
 
     this.selectedCells = [];
+    this.gridConfig = {
+      columns: [],
+      isPivotModeEnabled: false,
+    };
     this.queryBuilderState = queryBuilderState;
     this.executionPlanState = new ExecutionPlanState(
       this.queryBuilderState.applicationStore,
       this.queryBuilderState.graphManagerState,
     );
+  }
+
+  setGridConfig(val: QueryBuilderDataGridConfig): void {
+    this.gridConfig = val;
   }
 
   setIsSelectingCells(val: boolean): void {
@@ -302,9 +331,14 @@ export class QueryBuilderResultState {
             stopWatch,
             report.timings,
           );
+        const reportWithState = Object.assign(
+          {},
+          report,
+          this.queryBuilderState.getStateInfo(),
+        );
         QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
-          report,
+          reportWithState,
         );
       }
     } catch (error) {
@@ -411,15 +445,20 @@ export class QueryBuilderResultState {
           stopWatch,
           report.timings,
         );
+      const reportWithState = Object.assign(
+        {},
+        report,
+        this.queryBuilderState.getStateInfo(),
+      );
       if (debug) {
         QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
-          report,
+          reportWithState,
         );
       } else {
         QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
-          report,
+          reportWithState,
         );
       }
     } catch (error) {

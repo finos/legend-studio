@@ -149,6 +149,8 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+import type { V1_MasteryRuntime } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { MasteryRuntime } from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 
 /**********
  * data provider
@@ -286,8 +288,11 @@ export const V1_transformProxyConfiguration = (
   context: V1_GraphTransformerContext,
 ): V1_ProxyConfiguration => {
   const proxyConfiguration = new V1_ProxyConfiguration();
-  proxyConfiguration.authentication = element.authentication
-    ? V1_transformAuthenticationStrategy(element.authentication, context)
+  proxyConfiguration.authenticationStrategy = element.authenticationStrategy
+    ? V1_transformAuthenticationStrategy(
+        element.authenticationStrategy,
+        context,
+      )
     : undefined;
   proxyConfiguration.host = element.host;
   proxyConfiguration.port = element.port;
@@ -300,8 +305,11 @@ export const V1_transformFTPConnection = (
 ): V1_FTPConnection => {
   const ftpConnection = new V1_FTPConnection();
   V1_initPackageableElement(ftpConnection, element);
-  ftpConnection.authentication = element.authentication
-    ? V1_transformAuthenticationStrategy(element.authentication, context)
+  ftpConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_transformAuthenticationStrategy(
+        element.authenticationStrategy,
+        context,
+      )
     : undefined;
   ftpConnection.host = element.host;
   ftpConnection.port = element.port;
@@ -315,8 +323,11 @@ export const V1_transformHTTPConnection = (
 ): V1_HTTPConnection => {
   const httpConnection = new V1_HTTPConnection();
   V1_initPackageableElement(httpConnection, element);
-  httpConnection.authentication = element.authentication
-    ? V1_transformAuthenticationStrategy(element.authentication, context)
+  httpConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_transformAuthenticationStrategy(
+        element.authenticationStrategy,
+        context,
+      )
     : undefined;
   httpConnection.proxy = element.proxy
     ? V1_transformProxyConfiguration(element.proxy, context)
@@ -331,8 +342,11 @@ export const V1_transformKafkaConnection = (
 ): V1_KafkaConnection => {
   const kafkaConnection = new V1_KafkaConnection();
   V1_initPackageableElement(kafkaConnection, element);
-  kafkaConnection.authentication = element.authentication
-    ? V1_transformAuthenticationStrategy(element.authentication, context)
+  kafkaConnection.authenticationStrategy = element.authenticationStrategy
+    ? V1_transformAuthenticationStrategy(
+        element.authenticationStrategy,
+        context,
+      )
     : undefined;
   kafkaConnection.topicName = element.topicName;
   kafkaConnection.topicUrls = element.topicUrls;
@@ -579,6 +593,7 @@ export const V1_transformResolutionQuery = (
 ): V1_ResolutionQuery => {
   const resolutionQuery = new V1_ResolutionQuery();
   resolutionQuery.keyType = element.keyType;
+  resolutionQuery.optional = element.optional;
   resolutionQuery.precedence = element.precedence;
   resolutionQuery.queries = element.queries.map((rq) => {
     const lambda = new V1_RawLambda();
@@ -805,4 +820,29 @@ export const V1_transformMasterRecordDefinition = (
   protocol.exceptionWorkflowTransformService =
     element.exceptionWorkflowTransformService;
   return protocol;
+};
+
+/**********
+ * runtime
+ **********/
+
+export const V1_transformMasteryRuntime = (
+  element: MasteryRuntime,
+  context: V1_GraphTransformerContext,
+): V1_MasteryRuntime => {
+  const extraMasteryRuntimeTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMasteryRuntimeTransformers?.() ?? [],
+  );
+  for (const transformer of extraMasteryRuntimeTransformers) {
+    const protocol = transformer(element, context);
+    if (protocol) {
+      return protocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform mastery runtime: no compatible transformer available from plugins, element`,
+  );
 };

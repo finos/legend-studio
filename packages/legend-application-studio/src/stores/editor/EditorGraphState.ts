@@ -57,8 +57,13 @@ import {
   buildDependencyReport,
 } from '@finos/legend-server-depot';
 import {
-  GRAPH_MANAGER_EVENT,
   type EngineError,
+  type PackageableElement,
+  type CompilationWarning,
+  type PureModel,
+  type FunctionActivatorConfiguration,
+  type RelationalDatabaseTypeConfiguration,
+  GRAPH_MANAGER_EVENT,
   Package,
   Profile,
   PrimitiveType,
@@ -80,13 +85,9 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
   DataElement,
-  type PackageableElement,
-  type CompilationWarning,
-  type PureModel,
   createGraphBuilderReport,
   ExecutionEnvironmentInstance,
-  type FunctionActivatorConfiguration,
-  type RelationalDatabaseTypeConfiguration,
+  SnowflakeApp,
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
@@ -832,6 +833,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.DATA;
     } else if (element instanceof ExecutionEnvironmentInstance) {
       return PACKAGEABLE_ELEMENT_TYPE.EXECUTION_ENVIRONMENT;
+    } else if (element instanceof SnowflakeApp) {
+      return PACKAGEABLE_ELEMENT_TYPE.SNOWFLAKE_APP;
     }
     const extraElementTypeLabelGetters = this.editorStore.pluginManager
       .getApplicationPlugins()

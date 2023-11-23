@@ -828,7 +828,7 @@ export const GrammarTextEditor = observer(() => {
       }
     }
     // Disable editing if user is in viewer mode
-    editor.updateOptions({ readOnly: editorStore.isInViewerMode });
+    editor.updateOptions({ readOnly: editorStore.editorMode.disableEditing });
 
     // hover
     hoverProviderDisposer.current?.dispose();

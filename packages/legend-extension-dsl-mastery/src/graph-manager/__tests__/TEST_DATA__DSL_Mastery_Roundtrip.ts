@@ -56,7 +56,7 @@ export const TEST_DATA__roundtrip = [
       'meta::pure::mastery::metamodel::connection::HTTPConnection',
     content: {
       _type: 'httpConnection',
-      authentication: {
+      authenticationStrategy: {
         _type: 'tokenAuthenticationStrategy',
         tokenUrl: 'https://some.url.com',
       },
@@ -64,7 +64,7 @@ export const TEST_DATA__roundtrip = [
       package: 'alloy::mastery::connection',
       url: 'https://some.url.com',
       proxy: {
-        authentication: {
+        authenticationStrategy: {
           _type: 'tokenAuthenticationStrategy',
           tokenUrl: 'https://some.url.com',
         },
@@ -115,6 +115,7 @@ export const TEST_DATA__roundtrip = [
         resolutionQueries: [
           {
             keyType: 'Optional',
+            optional: true,
             precedence: 1,
             queries: [
               {

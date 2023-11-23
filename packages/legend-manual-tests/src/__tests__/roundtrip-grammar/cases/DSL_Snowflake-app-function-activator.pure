@@ -1,0 +1,191 @@
+###Snowflake
+SnowflakeApp model::NewActivator
+{
+   applicationName : '';
+   function : model::Firm_QueryFunction():TabularDataSet[1];
+   activationConfiguration : model::SnowFlakeConnection;
+}
+
+SnowflakeApp model::NewActivatorWithParam
+{
+   applicationName : '';
+   function : model::Firm_QueryFunction(String[1]):TabularDataSet[1];
+   type : FULL;
+   activationConfiguration : model::SnowFlakeConnection;
+}
+
+
+###Relational
+Database store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+  Table HobbyTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200)
+  )
+  Table AddressTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    pincode INTEGER,
+    streetName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+  Join FirmAddress(AddressTable.firm_id = FirmTable.id)
+  Join HobbyPerson(PersonTable.id = HobbyTable.id)
+)
+
+
+###Pure
+Class model::Firm
+{
+  legalName: String[1];
+  employees: model::Person[*];
+  contractors: model::Person[*];
+  address: model::Address[1..*];
+  id: Number[1];
+}
+
+Class model::Hobby
+{
+  name: String[1];
+  id: Integer[1];
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  hobbies: model::Hobby[*];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> model::Address
+{
+  streetName: String[1];
+  pincode: Number[1];
+}
+
+function model::Firm_QueryFunction(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->project([x|$x.legalName], ['Legal Name'])->from(execution::RelationalMapping, execution::TestRuntime)
+}
+
+function model::Firm_QueryFunction(param: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->project([x|$x.legalName], ['Legal Name'])->from(execution::RelationalMapping, execution::TestRuntime)
+}
+
+
+###Mapping
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName,
+    lastName: [store::TestDB]PersonTable.lastName,
+    hobbies[model_Hobby]: [store::TestDB]@HobbyPerson
+  }
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]FirmTable.id
+    )
+    ~mainTable [store::TestDB]FirmTable
+    legalName: [store::TestDB]FirmTable.legal_name,
+    employees[model_Person]: [store::TestDB]@FirmPerson,
+    contractors[model_Person]: [store::TestDB]@FirmPerson,
+    address[model_Address]: [store::TestDB]@FirmAddress,
+    id: [store::TestDB]FirmTable.id
+  }
+  *model::Hobby: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]HobbyTable.id
+    )
+    ~mainTable [store::TestDB]HobbyTable
+    name: [store::TestDB]HobbyTable.name,
+    id: [store::TestDB]HobbyTable.id
+  }
+  *model::Address: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]AddressTable.id
+    )
+    ~mainTable [store::TestDB]AddressTable
+    streetName: [store::TestDB]AddressTable.streetName,
+    pincode: [store::TestDB]AddressTable.pincode
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200));\nInsert into FirmTable (id, Legal_Name) values (1, \'FirmA\');\nInsert into FirmTable (id, Legal_Name) values (2, \'Apple\');\nInsert into PersonTable (id, firm_id, lastName, firstName) values (1, 1, \'John\', \'Doe\');\nInsert into PersonTable (id, firm_id, lastName, firstName) values (2, 2, \'Tim\', \'Smith\');\nInsert into PersonTable (id, firm_id, lastName, firstName) values (3, 3, \'Nicole\', \'Doe\');\n\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection model::SnowFlakeConnection
+{
+  store: store::TestDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'test';
+    warehouse: 'test';
+    region: 'test';
+    cloudType: 'test';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'test';
+    privateKeyVaultReference: 'test';
+    passPhraseVaultReference: 'test';
+  };
+}
+
+
+###Runtime
+Runtime execution::TestRuntime
+{
+  mappings:
+  [
+    execution::RelationalMapping
+  ];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MyConnection
+    ]
+  ];
+}

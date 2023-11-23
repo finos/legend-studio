@@ -217,9 +217,9 @@ const keyedExecutionParamaterModelSchema = createModelSchema(
 
 const pureMultiExecutionModelSchema = createModelSchema(V1_PureMultiExecution, {
   _type: usingConstantValueSchema(V1_ServiceExecutionType.PURE_MULTI_EXECUTION),
-  executionKey: primitive(),
-  executionParameters: list(
-    usingModelSchema(keyedExecutionParamaterModelSchema),
+  executionKey: optional(primitive()),
+  executionParameters: optional(
+    list(usingModelSchema(keyedExecutionParamaterModelSchema)),
   ),
   func: usingModelSchema(V1_rawLambdaModelSchema),
 });

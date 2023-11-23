@@ -63,6 +63,7 @@ export enum PRIMITIVE_TYPE {
 export enum ATOMIC_TEST_TYPE {
   Service_Test = 'serviceTest',
   Mapping_Test = 'mappingTest',
+  Function_Test = 'functionTest',
 }
 
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
@@ -126,6 +127,7 @@ export enum CORE_PURE_PATH {
   GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
   DATA_ELEMENT = 'meta::pure::data::DataElement',
+  SNOWFLAKE_APP = 'meta::external::function::activator::snowflakeApp::SnowflakeApp',
 }
 
 export const PURE_DOC_TAG = 'doc';
@@ -167,3 +169,6 @@ export const DATE_TIME_FORMAT_WITH_MILLISECONDS =
   "yyyy-MM-dd'T'HH:mm:ss.SSSxxxx";
 export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssxxxx";
 export const DATE_FORMAT = 'yyyy-MM-dd';
+
+// Generation Const
+export const DEFAULT_GENERATION_PACKAGE = 'generated';

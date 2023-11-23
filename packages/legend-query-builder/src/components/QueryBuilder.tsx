@@ -46,7 +46,7 @@ import {
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
-import { QueryBuilderResultPanel } from './QueryBuilderResultPanel.js';
+import { QueryBuilderResultPanel } from './result/QueryBuilderResultPanel.js';
 import { QueryBuilderTextEditor } from './QueryBuilderTextEditor.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';

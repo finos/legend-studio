@@ -32,6 +32,7 @@ import {
   TimesIcon,
   CodeIcon,
   clsx,
+  CopyIcon,
 } from '@finos/legend-art';
 import {
   SHOWCASE_MANAGER_SEARCH_CATEGORY,
@@ -48,6 +49,7 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import React, { useEffect, useMemo, useRef } from 'react';
+import { generateShowcasePath } from '../__lib__/LegendStudioNavigation.js';
 
 const ShowcasesExplorerTreeNodeContainer = observer(
   (
@@ -536,7 +538,23 @@ const ShowcaseViewer = observer(
   }) => {
     const { showcaseManagerState, showcase } = props;
     const prettyPath = showcase.path.replaceAll(/\s*\/\s*/g, ' / ');
-
+    const launchShowcase = (): void => {
+      const applicationStore = showcaseManagerState.applicationStore;
+      applicationStore.navigationService.navigator.visitAddress(
+        applicationStore.navigationService.navigator.generateAddress(
+          generateShowcasePath(showcase.path),
+        ),
+      );
+    };
+    const handleCopy =
+      showcaseManagerState.applicationStore.guardUnhandledError(() =>
+        showcaseManagerState.applicationStore.clipboardService.copyTextToClipboard(
+          showcase.code,
+          {
+            notifySuccessMessage: 'Showcase grammar copied to clipboard',
+          },
+        ),
+      );
     return (
       <div className="showcase-manager__view">
         <div className="showcase-manager__view__header">
@@ -583,7 +601,31 @@ const ShowcaseViewer = observer(
         </div>
         <div className="showcase-manager__view__content showcase-manager__viewer__content">
           <div className="showcase-manager__viewer__title">
-            {showcase.title}
+            <div className="showcase-manager__viewer__title__label">
+              {showcase.title}
+            </div>
+            <div className="showcase-manager__viewer__title__action">
+              <div className="btn__dropdown-combo btn__dropdown-combo--primary showcase-manager__viewer__title__action-btn">
+                <button
+                  className="btn__dropdown-combo__label"
+                  onClick={launchShowcase}
+                  title="Open Showcase Project"
+                  tabIndex={-1}
+                >
+                  <div className="btn__dropdown-combo__label__title">
+                    Launch
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className="showcase-manager__viewer__title__action">
+              <div
+                onClick={handleCopy}
+                className="showcase-manager__viewer__title__action-icon"
+              >
+                <CopyIcon />
+              </div>
+            </div>
           </div>
           <div className="showcase-manager__viewer__path">{prettyPath}</div>
           <div className="showcase-manager__viewer__code">

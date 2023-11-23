@@ -82,6 +82,7 @@ import type { V1_TestDataGenerationInput } from './service/V1_TestDataGeneration
 import type { V1_TestDataGenerationResult } from './service/V1_TestDataGenerationResult.js';
 import type { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
 import type { V1_LambdaPrefix } from './lambda/V1_LambdaPrefix.js';
+import type { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -835,7 +836,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   publishFunctionActivatorToSandbox(
     input: PlainObject<V1_FunctionActivatorInput>,
-  ): Promise<PlainObject<V1_FunctionActivatorError>[]> {
+  ): Promise<PlainObject<V1_DeploymentResult>> {
     return this.postWithTracing(
       this.getTraceData(
         CORE_ENGINE_ACTIVITY_TRACE.PUBLISH_FUNCTION_ACTIVATOR_TO_SANDBOX,

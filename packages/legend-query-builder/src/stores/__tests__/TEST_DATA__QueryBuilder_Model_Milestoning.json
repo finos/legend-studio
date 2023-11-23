@@ -19,7 +19,7 @@
             "lowerBound": 1,
             "upperBound": 1
           },
-          "name": "id",
+          "name": "firmID",
           "type": "Integer"
         },
         {
@@ -873,6 +873,26 @@
                 "tableAlias": "FirmTable"
               },
               "target": "my_Person2"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::Firm",
+                "property": "firmID"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              },
+              "source": "my_Firm"
             }
           ],
           "root": true

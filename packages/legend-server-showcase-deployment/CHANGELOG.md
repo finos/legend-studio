@@ -1,5 +1,43 @@
 # @finos/legend-server-showcase-deployment
 
+## 10.59.0
+
+## 10.58.0
+
+## 10.57.0
+
+## 10.56.0
+
+## 10.55.0
+
+## 10.54.0
+
+## 10.53.0
+
+## 10.52.0
+
+## 10.51.0
+
+## 10.50.0
+
+## 10.49.0
+
+## 10.48.0
+
+## 10.47.0
+
+## 10.46.0
+
+### Minor Changes
+
+- [#2708](https://github.com/finos/legend-studio/pull/2708) [`532fbc82e`](https://github.com/finos/legend-studio/commit/532fbc82ecabb17b7939a75394e871f3e684fb12) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Explose `development` flag in showcase metadata api call.
+
+## 10.45.0
+
+## 10.44.0
+
+## 10.43.0
+
 ## 10.42.0
 
 ## 10.41.0

@@ -1,5 +1,89 @@
 # @finos/legend-application-studio
 
+## 28.13.3
+
+### Patch Changes
+
+- [#2792](https://github.com/finos/legend-studio/pull/2792) [`5cf2330f1`](https://github.com/finos/legend-studio/commit/5cf2330f117ee2f4548ff561e57f7114fd6e5cba) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove `Activator` button in function editor
+
+## 28.13.2
+
+## 28.13.1
+
+## 28.13.0
+
+### Minor Changes
+
+- [#2775](https://github.com/finos/legend-studio/pull/2775) [`a4036a6da`](https://github.com/finos/legend-studio/commit/a4036a6da36b88056a9ee30ab5846af3e9e59c18) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle multi service executions using exec env.
+
+### Patch Changes
+
+- [#2770](https://github.com/finos/legend-studio/pull/2770) [`3b9f2334f`](https://github.com/finos/legend-studio/commit/3b9f2334f690c5fc0e587cbcaffbf1c8ac7c9a25) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support function activator workflow
+
+## 28.12.1
+
+## 28.12.0
+
+### Minor Changes
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `LegendStudioUserDataHelper` to store legend studio user data in browser.
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add dependencies testable view in global test runner.
+
+## 28.11.4
+
+## 28.11.3
+
+## 28.11.2
+
+## 28.11.1
+
+## 28.11.0
+
+### Minor Changes
+
+- [#2734](https://github.com/finos/legend-studio/pull/2734) [`21d6469f6`](https://github.com/finos/legend-studio/commit/21d6469f6f79dd237a1029d31805d893bcbe7c82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Allow running dependency tests on build pipeline using project config.
+
+## 28.10.2
+
+## 28.10.1
+
+## 28.10.0
+
+### Minor Changes
+
+- [#2705](https://github.com/finos/legend-studio/pull/2705) [`89428545c`](https://github.com/finos/legend-studio/commit/89428545c6f3fbd49c58deb60af7fe22f7c04067) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable query from connection workflow
+
+### Patch Changes
+
+- [#2709](https://github.com/finos/legend-studio/pull/2709) [`897d43371`](https://github.com/finos/legend-studio/commit/897d4337182c5c891cc3d3491884fd32394b2a1a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Copy Button next to launch for showcase to copy showcase grammar. Add keyboard shortcut F7 to show showcases. Add open showcases to splash screen. Add showcase icon to activity panel.
+
+- [#2708](https://github.com/finos/legend-studio/pull/2708) [`532fbc82e`](https://github.com/finos/legend-studio/commit/532fbc82ecabb17b7939a75394e871f3e684fb12) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Hide showcase projects in development from tree.
+
+## 28.9.0
+
+### Minor Changes
+
+- [#2698](https://github.com/finos/legend-studio/pull/2698) [`fe4551640`](https://github.com/finos/legend-studio/commit/fe45516404a2f0bdd9e4faacb40d6b88b4aad856) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enhance viewer modes to show all supported status icons such as terminal, compilation generation etc.
+
+- [#2698](https://github.com/finos/legend-studio/pull/2698) [`fe4551640`](https://github.com/finos/legend-studio/commit/fe45516404a2f0bdd9e4faacb40d6b88b4aad856) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `/studio/showcase` route to showcase project viewer.
+
+## 28.8.0
+
+### Minor Changes
+
+- [#2680](https://github.com/finos/legend-studio/pull/2680) [`4cd67547f`](https://github.com/finos/legend-studio/commit/4cd67547f44e77750c5aea79ce8408808eef6071) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - **BREAKING** remove `TEMPORARY__enableRawSQLExecutor` and include raw executor as a default feature.
+
+- [#2676](https://github.com/finos/legend-studio/pull/2676) [`f813d192e`](https://github.com/finos/legend-studio/commit/f813d192e2ccb60474d204a00ef3f5636e529e22) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add preview data to databse builder from connection.
+
+### Patch Changes
+
+- [#2686](https://github.com/finos/legend-studio/pull/2686) [`9c25a0159`](https://github.com/finos/legend-studio/commit/9c25a01590db489c2f5257da9d162fa2aeb90fd1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Query Database using model generation.
+
+- [#2688](https://github.com/finos/legend-studio/pull/2688) [`6bc2a3cde`](https://github.com/finos/legend-studio/commit/6bc2a3cdec3195267bcb90f94e8a4ae0cbeefed7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle more than one compatible connections in query db.
+
+## 28.7.1
+
 ## 28.7.0
 
 ### Minor Changes

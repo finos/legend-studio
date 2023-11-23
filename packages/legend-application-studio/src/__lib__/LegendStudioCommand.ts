@@ -20,6 +20,7 @@ export enum LEGEND_STUDIO_COMMAND_KEY {
   SYNC_WITH_WORKSPACE = 'editor.sync-workspace',
   CREATE_ELEMENT = 'editor.create-new-element',
   SEARCH_ELEMENT = 'editor.search-element',
+  OPEN_SHOWCASES = 'editor.show-showcases',
   TOGGLE_TEXT_MODE = 'editor.toggle-text-mode',
   GENERATE = 'editor.generate',
   COMPILE = 'editor.compile',
@@ -47,6 +48,10 @@ export const LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER]: {
     title: 'Toggle model loader',
     defaultKeyboardShortcut: 'F2',
+  },
+  [LEGEND_STUDIO_COMMAND_KEY.OPEN_SHOWCASES]: {
+    title: 'Open Showcases',
+    defaultKeyboardShortcut: 'F7',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE]: {
     title: 'Toggle text mode',

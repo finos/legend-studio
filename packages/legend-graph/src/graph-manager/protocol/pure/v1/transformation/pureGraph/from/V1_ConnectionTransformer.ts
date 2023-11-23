@@ -369,7 +369,7 @@ export const V1_transformRelationalDatabaseConnection = (
   return connection;
 };
 
-const transformConnectionPointer = (
+export const V1_transformConnectionPointer = (
   metamodel: ConnectionPointer,
 ): V1_ConnectionPointer => {
   const connection = new V1_ConnectionPointer();
@@ -454,7 +454,7 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
   }
 
   visit_ConnectionPointer(connection: ConnectionPointer): V1_Connection {
-    return transformConnectionPointer(connection);
+    return V1_transformConnectionPointer(connection);
   }
 
   visit_ModelChainConnection(connection: ModelChainConnection): V1_Connection {

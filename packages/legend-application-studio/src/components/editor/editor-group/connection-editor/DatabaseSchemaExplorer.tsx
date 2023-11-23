@@ -26,6 +26,7 @@ import {
   CheckCircleIcon,
   EmptyCircleIcon,
   KeyIcon,
+  EyeIcon,
 } from '@finos/legend-art';
 import {
   type DatabaseExplorerTreeData,
@@ -70,6 +71,10 @@ export type DatabaseSchemaExplorerTreeNodeContainerProps =
       isPartiallySelected: (
         node: DatabaseSchemaExplorerTreeNodeData,
       ) => boolean;
+      previewData: (node: DatabaseSchemaExplorerTreeNodeData) => void;
+      isPreviewDataDisabled: (
+        node: DatabaseSchemaExplorerTreeNodeData,
+      ) => boolean;
     }
   >;
 
@@ -77,7 +82,12 @@ export const DatabaseSchemaExplorerTreeNodeContainer = observer(
   forwardRef<HTMLDivElement, DatabaseSchemaExplorerTreeNodeContainerProps>(
     function DatabaseSchemaExplorerTreeNodeContainer(props, ref) {
       const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-      const { toggleCheckedNode, isPartiallySelected } = innerProps;
+      const {
+        toggleCheckedNode,
+        isPartiallySelected,
+        isPreviewDataDisabled,
+        previewData,
+      } = innerProps;
       const isExpandable =
         Boolean(!node.childrenIds || node.childrenIds.length) &&
         !(node instanceof DatabaseSchemaExplorerTreeColumnNodeData);
@@ -158,6 +168,19 @@ export const DatabaseSchemaExplorerTreeNodeContainer = observer(
                 <KeyIcon />
               </div>
             )}
+            {!isPreviewDataDisabled(node) && (
+              <button
+                className="query-builder-explorer-tree__node__action"
+                tabIndex={-1}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  previewData(node);
+                }}
+                title="Preview Table Data"
+              >
+                <EyeIcon />
+              </button>
+            )}
           </div>
         </div>
       );
@@ -206,6 +229,20 @@ export const DatabaseSchemaExplorer = observer(
       node: DatabaseSchemaExplorerTreeNodeData,
     ): void => schemaExplorerState.toggleCheckedNode(node, treeData);
 
+    const previewData = (node: DatabaseSchemaExplorerTreeNodeData): void => {
+      flowResult(schemaExplorerState.previewData(node)).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+
+    const isPreviewDataDisabled = (
+      node: DatabaseSchemaExplorerTreeNodeData,
+    ): boolean =>
+      !(
+        node instanceof DatabaseSchemaExplorerTreeTableNodeData ||
+        node instanceof DatabaseSchemaExplorerTreeColumnNodeData
+      );
+
     return (
       <TreeView
         className="database-schema-explorer"
@@ -217,6 +254,8 @@ export const DatabaseSchemaExplorer = observer(
         innerProps={{
           toggleCheckedNode,
           isPartiallySelected,
+          previewData,
+          isPreviewDataDisabled,
         }}
         treeData={treeData}
         onNodeSelect={onNodeSelect}

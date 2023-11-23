@@ -22,8 +22,6 @@ import {
   type ExecutionResult,
   type VariableExpression,
   type SimpleFunctionExpression,
-  Enumeration,
-  PRIMITIVE_TYPE,
   observe_ValueSpecification,
   PrimitiveType,
   CollectionInstanceValue,
@@ -38,7 +36,6 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   IllegalStateError,
-  UnsupportedOperationError,
   uuid,
   filterByType,
   ActionState,
@@ -78,59 +75,13 @@ import {
   isValueExpressionReferencedInValue,
 } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { buildtdsPropertyExpressionFromColState } from './operators/QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
+import { TDS_COLUMN_GETTER } from '../../../../graph/QueryBuilderMetaModelConst.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
   CONDITION = 'CONDITION',
   BLANK_CONDITION = 'BLANK_CONDITION',
 }
-
-export enum TDS_COLUMN_GETTER {
-  GET_STRING = 'getString',
-  GET_NUMBER = 'getNumber',
-  GET_INTEGER = 'getInteger',
-  GET_FLOAT = 'getFloat',
-  GET_DECIMAL = 'getDecimal',
-  GET_DATE = 'getDate',
-  GET_DATETIME = 'getDateTime',
-  GET_STRICTDATE = 'getStrictDate',
-  GET_BOOLEAN = 'getBoolean',
-  GET_ENUM = 'getEnum',
-  IS_NULL = 'isNull',
-  IS_NOT_NULL = 'isNotNull',
-}
-
-export const getTDSColumnDerivedProperyFromType = (
-  type: Type,
-): TDS_COLUMN_GETTER => {
-  if (type instanceof Enumeration) {
-    return TDS_COLUMN_GETTER.GET_ENUM;
-  }
-  switch (type.path) {
-    case PRIMITIVE_TYPE.STRING:
-      return TDS_COLUMN_GETTER.GET_STRING;
-    case PRIMITIVE_TYPE.NUMBER:
-      return TDS_COLUMN_GETTER.GET_NUMBER;
-    case PRIMITIVE_TYPE.INTEGER:
-      return TDS_COLUMN_GETTER.GET_INTEGER;
-    case PRIMITIVE_TYPE.FLOAT:
-      return TDS_COLUMN_GETTER.GET_FLOAT;
-    case PRIMITIVE_TYPE.DECIMAL:
-      return TDS_COLUMN_GETTER.GET_DECIMAL;
-    case PRIMITIVE_TYPE.DATE:
-      return TDS_COLUMN_GETTER.GET_DATE;
-    case PRIMITIVE_TYPE.DATETIME:
-      return TDS_COLUMN_GETTER.GET_DATETIME;
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return TDS_COLUMN_GETTER.GET_STRICTDATE;
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return TDS_COLUMN_GETTER.GET_BOOLEAN;
-    default:
-      throw new UnsupportedOperationError(
-        `Can't find TDS column derived property name for type: '${type.path}'`,
-      );
-  }
-};
 
 export const getTypeFromDerivedProperty = (
   derivedProperty: TDS_COLUMN_GETTER,

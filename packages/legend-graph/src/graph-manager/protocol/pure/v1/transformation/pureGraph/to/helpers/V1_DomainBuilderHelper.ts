@@ -58,6 +58,18 @@ import {
 } from '../../../../../../../../graph/helpers/DomainHelper.js';
 import { AggregationKind } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/AggregationKind.js';
 import { GraphBuilderError } from '../../../../../../../GraphManagerUtils.js';
+import type { V1_FunctionTestSuite } from '../../../../model/packageableElements/function/test/V1_FunctionTestSuite.js';
+import { FunctionTestSuite } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
+import type { V1_FunctionStoreTestData } from '../../../../model/packageableElements/function/test/V1_FunctionStoreTestData.js';
+import { FunctionStoreTestData } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
+import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
+import { V1_FunctionTest } from '../../../../model/packageableElements/function/test/V1_FunctionTest.js';
+import {
+  FunctionParameterValue,
+  FunctionTest,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
+import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
+import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -334,4 +346,60 @@ export const V1_getAppliedProperty = (
     property,
     `Property '${name}' not found in class '${parentClass.path}'`,
   );
+};
+
+// Function Suite
+const V1_buildFunctionTest = (
+  element: V1_FunctionTest,
+  parentSuite: TestSuite,
+  context: V1_GraphBuilderContext,
+): FunctionTest => {
+  const functionTest = new FunctionTest();
+  functionTest.id = element.id;
+  functionTest.__parent = parentSuite;
+  functionTest.doc = element.doc;
+  functionTest.assertions = element.assertions.map((assertion) =>
+    V1_buildTestAssertion(assertion, functionTest, context),
+  );
+  functionTest.parameters = element.parameters?.map((param) => {
+    const parameterValue = new FunctionParameterValue();
+    parameterValue.name = param.name;
+    parameterValue.value = param.value;
+    return parameterValue;
+  });
+  return functionTest;
+};
+
+const V1_buildFunctionStoreTestData = (
+  element: V1_FunctionStoreTestData,
+  context: V1_GraphBuilderContext,
+): FunctionStoreTestData => {
+  const storeTestData = new FunctionStoreTestData();
+  storeTestData.doc = element.doc;
+  storeTestData.store = context.resolveStore(element.store);
+  storeTestData.data = V1_buildEmbeddedData(element.data, context);
+  return storeTestData;
+};
+
+export const V1_buildFunctionSuite = (
+  element: V1_FunctionTestSuite,
+  context: V1_GraphBuilderContext,
+): FunctionTestSuite => {
+  const functionSuite = new FunctionTestSuite();
+  functionSuite.id = element.id;
+  functionSuite.doc = element.doc;
+  if (element.testData?.length) {
+    functionSuite.testData = element.testData.map((e) =>
+      V1_buildFunctionStoreTestData(e, context),
+    );
+  }
+  functionSuite.tests = element.tests.map((test) => {
+    if (test instanceof V1_FunctionTest) {
+      return V1_buildFunctionTest(test, functionSuite, context);
+    }
+    throw new UnsupportedOperationError(
+      'Unable to build function test: Unsupported function test type',
+    );
+  });
+  return functionSuite;
 };

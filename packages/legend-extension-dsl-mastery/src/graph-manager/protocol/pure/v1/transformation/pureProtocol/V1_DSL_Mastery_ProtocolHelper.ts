@@ -54,6 +54,7 @@ import {
 import type { DSL_Mastery_PureProtocolProcessorPlugin_Extension } from '../../../DSL_Mastery_PureProtocolProcessorPlugin_Extension.js';
 import {
   type PureProtocolProcessorPlugin,
+  type V1_PackageableElement,
   V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
 import {
@@ -95,6 +96,7 @@ import {
   V1_NTLMAuthenticationStrategy,
   V1_TokenAuthenticationStrategy,
 } from '../../model/packageableElements/mastery/V1_DSL_Mastery_AuthenticationStrategy.js';
+import type { V1_MasteryRuntime } from '../../model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
 
 /********************
  * connection
@@ -298,7 +300,7 @@ export const V1_ProxyConfigurationSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ProxyConfiguration> =>
   createModelSchema(V1_ProxyConfiguration, {
-    authentication: optionalCustom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
@@ -317,7 +319,7 @@ export const V1_KafkaConnectionSchema = (
 ): ModelSchema<V1_KafkaConnection> =>
   createModelSchema(V1_KafkaConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.KAFKA),
-    authentication: optionalCustom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
@@ -332,7 +334,7 @@ export const V1_FTPConnectionSchema = (
 ): ModelSchema<V1_FTPConnection> =>
   createModelSchema(V1_FTPConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.FTP),
-    authentication: optionalCustom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
@@ -348,7 +350,7 @@ export const V1_HTTPConnectionSchema = (
 ): ModelSchema<V1_HTTPConnection> =>
   createModelSchema(V1_HTTPConnection, {
     _type: usingConstantValueSchema(V1_ConnectionType.HTTP),
-    authentication: optionalCustom(
+    authenticationStrategy: optionalCustom(
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
@@ -665,7 +667,8 @@ const V1_recordSourceSchema = (
  **********/
 
 const V1_resolutionQuerySchema = createModelSchema(V1_ResolutionQuery, {
-  keyType: primitive(),
+  keyType: optional(primitive()),
+  optional: optional(primitive()),
   precedence: primitive(),
   queries: list(usingModelSchema(V1_rawLambdaModelSchema)),
 });
@@ -925,3 +928,48 @@ export const V1_masterRecordDefinitionModelSchema = (
       ),
     ),
   });
+
+/**********
+ * runtime
+ **********/
+
+export const V1_serializeMasteryRuntime = (
+  protocol: V1_MasteryRuntime,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_MasteryRuntime> => {
+  const extraMasteryRuntimeSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMasteryRuntimeProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraMasteryRuntimeSerializers) {
+    const masteryRuntimeJson = serializer(protocol, plugins);
+    if (masteryRuntimeJson) {
+      return masteryRuntimeJson;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize mastery runtime: no compatible serializer available from plugins`,
+    protocol,
+  );
+};
+
+export const V1_deserializeMasteryRuntime = (
+  json: PlainObject<V1_PackageableElement>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_PackageableElement | undefined => {
+  const extraMasteryRuntimeDeserializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mastery_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMasteryRuntimeProtocolDeserializers?.() ?? [],
+  );
+  for (const deserializer of extraMasteryRuntimeDeserializers) {
+    const masteryRuntimeProtocol = deserializer(json, plugins);
+    if (masteryRuntimeProtocol) {
+      return masteryRuntimeProtocol;
+    }
+  }
+  return undefined;
+};

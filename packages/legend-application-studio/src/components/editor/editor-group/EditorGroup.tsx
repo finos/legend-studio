@@ -50,7 +50,7 @@ import { ServiceEditorState } from '../../../stores/editor/editor-state/element-
 import { ProjectConfigurationEditorState } from '../../../stores/editor/editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { ProjectConfigurationEditor } from './project-configuration-editor/ProjectConfigurationEditor.js';
 import { ElementGenerationEditor } from './element-generation-editor/ElementGenerationEditor.js';
-import { FunctionEditor } from './FunctionEditor.js';
+import { FunctionEditor } from './function-activator/FunctionEditor.js';
 import { ElementNativeView } from './element-generation-editor/ElementNativeView.js';
 import { ServiceEditor } from './service-editor/ServiceEditor.js';
 import { PackageableRuntimeEditor } from './RuntimeEditor.js';
@@ -73,10 +73,14 @@ import { PackageableDataEditorState } from '../../../stores/editor/editor-state/
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
 import { ElementXTGenerationEditor } from './element-generation-editor/ElementXTGenerationEditor.js';
 import { TabManager, type TabState } from '@finos/legend-lego/application';
-import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/INTERNAL__UnknownFunctionActivatorEditorState.js';
-import { INTERNAL__UnknownFunctionActivatorEdtior } from './INTERNAL__UnknownFunctionActivatorEdtior.js';
+import { INTERNAL__UnknownFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/INTERNAL__UnknownFunctionActivatorEditorState.js';
+import { INTERNAL__UnknownFunctionActivatorEdtior } from './function-activator/INTERNAL__UnknownFunctionActivatorEdtior.js';
 import { getElementIcon } from '../../ElementIconUtils.js';
 import { ArtifactGenerationViewerState } from '../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
+import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/ConnectionToQueryWorkflowEditor.js';
+import { QueryConnectionEndToEndWorkflowEditorState } from '../../../stores/editor/editor-state/end-to-end-workflow-state/QueryConnectionEndToEndWorkflowEditorState.js';
+import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
+import { SnowflakeAppFunctionActivatorEditor } from './function-activator/SnowflakeAppFunctionActivatorEditor.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -119,7 +123,6 @@ export const EditorGroupSplashScreen: React.FC = () => {
   const commandListHeight = 180;
   const [showCommandList, setShowCommandList] = useState(false);
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
   useEffect(() => {
     setShowCommandList(
       (width ?? 0) > commandListWidth && (height ?? 0) > commandListHeight,
@@ -155,6 +158,14 @@ export const EditorGroupSplashScreen: React.FC = () => {
               <PlusIcon />
             </div>
             <div className="hotkey__key">S</div>
+          </div>
+        </div>
+        <div className="editor-group__splash-screen__content__item">
+          <div className="editor-group__splash-screen__content__item__label">
+            Open Showcases
+          </div>
+          <div className="editor-group__splash-screen__content__item__hot-keys">
+            <div className="hotkey__key">F7</div>
           </div>
         </div>
         <div className="editor-group__splash-screen__content__item">
@@ -256,6 +267,12 @@ export const EditorGroup = observer(() => {
             currentTabState instanceof GenerationSpecificationEditorState
           ) {
             return <GenerationSpecificationEditor key={currentTabState.uuid} />;
+          } else if (
+            currentTabState instanceof SnowflakeAppFunctionActivatorEdtiorState
+          ) {
+            return (
+              <SnowflakeAppFunctionActivatorEditor key={currentTabState.uuid} />
+            );
           } else if (currentTabState instanceof UnsupportedElementEditorState) {
             return <UnsupportedElementEditor key={currentTabState.uuid} />;
           } else if (
@@ -315,6 +332,17 @@ export const EditorGroup = observer(() => {
       return <ModelImporter />;
     } else if (currentTabState instanceof ProjectConfigurationEditorState) {
       return <ProjectConfigurationEditor />;
+    } else if (
+      currentTabState instanceof QueryConnectionEndToEndWorkflowEditorState
+    ) {
+      return (
+        <QueryConnectionWorflowEditor
+          connectionToQueryWorkflowState={
+            editorStore.globalEndToEndWorkflowState
+              .queryToConnectionWorkflowEditorState
+          }
+        />
+      );
     }
     // TODO: create an editor for unsupported tab
     return null;

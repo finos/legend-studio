@@ -42,8 +42,9 @@ export class MappingQueryBuilderState extends QueryBuilderState {
     onMappingChange?: ((val: Mapping) => void) | undefined,
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     config?: QueryBuilderConfig | undefined,
+    sourceInfo?: object | undefined,
   ) {
-    super(applicationStore, graphManagerState, config);
+    super(applicationStore, graphManagerState, config, sourceInfo);
 
     this.onMappingChange = onMappingChange;
     this.onRuntimeChange = onRuntimeChange;

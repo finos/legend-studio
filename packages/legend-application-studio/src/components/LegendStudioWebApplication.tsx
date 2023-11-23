@@ -40,6 +40,7 @@ import {
   type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/LegendStudioDocumentation.js';
+import { ShowcaseViewer } from './showcase/ShowcaseViewer.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -114,7 +115,6 @@ export const LegendStudioWebApplicationRouter = observer(() => {
       applicationStore.alertUnhandledError,
     );
   }, [applicationStore, baseStore]);
-
   return (
     <div className="app">
       {baseStore.initState.hasCompleted && (
@@ -131,6 +131,16 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                   component={
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     ProjectViewer as TEMPORARY__ReactRouterComponentType
+                  }
+                />
+                <Route
+                  exact={true}
+                  path={
+                    LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE_PROJECT
+                  }
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    ShowcaseViewer as TEMPORARY__ReactRouterComponentType
                   }
                 />
                 <Route>

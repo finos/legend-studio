@@ -1,5 +1,47 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.109
+
+## 3.0.108
+
+## 3.0.107
+
+## 3.0.106
+
+## 3.0.105
+
+## 3.0.104
+
+### Patch Changes
+
+- [#2693](https://github.com/finos/legend-studio/pull/2693) [`fb2fb0c60`](https://github.com/finos/legend-studio/commit/fb2fb0c60f9366c25623ca6dcfaa02930ff43953) ([@agshubh-97](https://github.com/agshubh-97)) - Add support for Mastery Runtime
+
+## 3.0.103
+
+## 3.0.102
+
+## 3.0.101
+
+## 3.0.100
+
+## 3.0.99
+
+## 3.0.98
+
+## 3.0.97
+
+## 3.0.96
+
+## 3.0.95
+
+## 3.0.94
+
+## 3.0.93
+
+### Patch Changes
+
+- [#2653](https://github.com/finos/legend-studio/pull/2653) [`51ec6e8c2`](https://github.com/finos/legend-studio/commit/51ec6e8c233d89abdf5811c2f2d5eb0d2983db75) ([@arikpamnani](https://github.com/arikpamnani)) - Add optional field in mastery DSL
+
 ## 3.0.92
 
 ## 3.0.91

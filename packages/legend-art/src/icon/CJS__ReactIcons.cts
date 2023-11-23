@@ -43,6 +43,7 @@ import FI = require('react-icons/fi');
 import RI = require('react-icons/ri');
 import TB = require('react-icons/tb');
 import HI = require('react-icons/hi');
+import LU = require('react-icons/lu');
 
 export = {
   FA,
@@ -59,4 +60,5 @@ export = {
   RI,
   TB,
   HI,
+  LU,
 };

@@ -1,5 +1,45 @@
 # @finos/legend-graph
 
+## 31.5.0
+
+### Minor Changes
+
+- [#2793](https://github.com/finos/legend-studio/pull/2793) [`056b8a5ad`](https://github.com/finos/legend-studio/commit/056b8a5ad3d1bdc81bb812696eff2717f9bb94e6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `FunctionTestSuite`
+
+## 31.4.2
+
+## 31.4.1
+
+### Patch Changes
+
+- [#2776](https://github.com/finos/legend-studio/pull/2776) [`4ca8900d7`](https://github.com/finos/legend-studio/commit/4ca8900d71969dcf78a975c433f86a7d3863010f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Runtime with connection stores.
+
+## 31.4.0
+
+### Minor Changes
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix testable collector to predicate of packagable element and fix getting testables from dependencies.
+
+## 31.3.12
+
+## 31.3.11
+
+## 31.3.10
+
+### Patch Changes
+
+- [#2740](https://github.com/finos/legend-studio/pull/2740) [`c1cc6e3fa`](https://github.com/finos/legend-studio/commit/c1cc6e3fa0d84053907581f3aa0cd05be988a224) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - fix the bug where there is a failure in change detection of creating a service with an empty lambda
+
+- [#2741](https://github.com/finos/legend-studio/pull/2741) [`4b135ce78`](https://github.com/finos/legend-studio/commit/4b135ce78ded2325fca6464ac07f35293d234c38) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the default URL value of `JsonModelConnection`
+
+## 31.3.9
+
+## 31.3.8
+
+## 31.3.7
+
+## 31.3.6
+
 ## 31.3.5
 
 ## 31.3.4

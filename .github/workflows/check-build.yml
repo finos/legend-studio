@@ -41,7 +41,7 @@ jobs:
             os: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.1.1
       - name: Get Yarn cache directory path
         if: matrix.os != 'windows-latest'
         id: yarn-cache-dir-path
@@ -79,13 +79,13 @@ jobs:
         with:
           minimum-size: 8GB
       - name: Setup Node
-        uses: actions/setup-node@v3.8.1
+        uses: actions/setup-node@v4.0.0
         with:
-          node-version: 16
+          node-version: 21
       - name: Install dependencies
         run: yarn
       - name: Build application
         run: yarn build && yarn workspace ${{ matrix.application }} bundle
         env:
           # Webpack build could consume a large amount of memory
-          NODE_OPTIONS: '--max_old_space_size=4096'
+          NODE_OPTIONS: '--max-old-space-size=4096'

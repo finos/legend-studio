@@ -158,6 +158,7 @@ export const DocumentationIcon = FA.FaBookOpen;
 export const LevelDownIcon = FA.FaLevelDownAlt; // to be reviewed/combined
 export const CalendarIcon = FA.FaRegCalendarAlt;
 export const CalculatorIcon = FA.FaCalculator;
+export const ReadMeIcon = FA.FaReadme;
 
 const GI = ReactIcons.GI;
 export const WaterDropIcon = GI.GiWaterDrop;
@@ -315,3 +316,6 @@ export const Snowflake_BrandIcon = TB.TbBrandSnowflake;
 const HI = ReactIcons.HI;
 export const CodeIcon = HI.HiCode;
 export const HomeIcon = HI.HiHome;
+
+const LU = ReactIcons.LU;
+export const WorkflowIcon = LU.LuWorkflow;

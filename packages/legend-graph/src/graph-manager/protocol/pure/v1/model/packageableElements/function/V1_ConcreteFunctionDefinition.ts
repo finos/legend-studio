@@ -27,6 +27,7 @@ import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
 } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_FunctionTestSuite } from './test/V1_FunctionTestSuite.js';
 
 export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
   /**
@@ -57,6 +58,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
   returnMultiplicity!: V1_Multiplicity;
   taggedValues: V1_TaggedValue[] = [];
   stereotypes: V1_StereotypePtr[] = [];
+  tests: V1_FunctionTestSuite[] | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -67,6 +69,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
       hashArray(this.taggedValues),
       hashArray(this.stereotypes),
       hashRawLambda(undefined, this.body),
+      this.tests ? hashArray(this.tests) : '',
     ]);
   }
 

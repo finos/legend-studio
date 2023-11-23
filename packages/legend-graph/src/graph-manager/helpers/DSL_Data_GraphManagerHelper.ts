@@ -30,7 +30,7 @@ export const getNullableTestable = (
   graph: PureModel,
   plugins: PureGraphManagerPlugin[],
 ): Testable | undefined =>
-  graph.allOwnTestables.find(
+  graph.ownTestables.find(
     (e) => e instanceof PackageableElement && e.path === id,
   ) ??
   plugins

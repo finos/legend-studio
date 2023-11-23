@@ -102,13 +102,14 @@ import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 import { LEGEND_STUDIO_COMMAND_KEY } from '../../__lib__/LegendStudioCommand.js';
 import { EditorTabManagerState } from './EditorTabManagerState.js';
-import type { ProjectViewerEditorMode } from '../project-view/ProjectViewerEditorMode.js';
 import { GraphEditFormModeState } from './GraphEditFormModeState.js';
 import type { GraphEditorMode } from './GraphEditorMode.js';
 import { GraphEditGrammarModeState } from './GraphEditGrammarModeState.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
 import type { QuickInputState } from './QuickInputState.js';
+import { GlobalEndToEndWorkflowState } from './sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
+import { openShowcaseManager } from '../ShowcaseManagerState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -163,6 +164,7 @@ export class EditorStore implements CommandRegistrar {
   localChangesState: LocalChangesState;
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
   globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
+  globalEndToEndWorkflowState: GlobalEndToEndWorkflowState;
   devToolState: DevToolPanelState;
   sqlPlaygroundState: SQLPlaygroundPanelState;
 
@@ -211,6 +213,7 @@ export class EditorStore implements CommandRegistrar {
       quickInputState: observable,
 
       isInViewerMode: computed,
+      disableGraphEditing: computed,
       isInConflictResolutionMode: computed,
       isInitialized: computed,
 
@@ -258,6 +261,7 @@ export class EditorStore implements CommandRegistrar {
       this,
       this.sdlcState,
     );
+    this.globalEndToEndWorkflowState = new GlobalEndToEndWorkflowState(this);
     this.workspaceWorkflowManagerState = new WorkspaceWorkflowManagerState(
       this,
       this.sdlcState,
@@ -296,13 +300,7 @@ export class EditorStore implements CommandRegistrar {
   get isInitialized(): boolean {
     if (this.isInViewerMode) {
       return (
-        (Boolean(
-          this.sdlcState.currentProject && this.sdlcState.currentWorkspace,
-        ) ||
-          Boolean(
-            (this.sdlcState.editorStore.editorMode as ProjectViewerEditorMode)
-              .viewerStore.projectGAVCoordinates,
-          )) &&
+        this.editorMode.isInitialized &&
         this.graphManagerState.systemBuildState.hasSucceeded
       );
     } else {
@@ -319,6 +317,10 @@ export class EditorStore implements CommandRegistrar {
 
   get isInViewerMode(): boolean {
     return this.mode === EDITOR_MODE.VIEWER;
+  }
+
+  get disableGraphEditing(): boolean {
+    return this.isInViewerMode && this.editorMode.disableEditing;
   }
 
   get isInConflictResolutionMode(): boolean {
@@ -418,6 +420,18 @@ export class EditorStore implements CommandRegistrar {
         flowResult(this.toggleTextMode()).catch(
           this.applicationStore.alertUnhandledError,
         );
+      },
+    });
+    this.applicationStore.commandService.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.OPEN_SHOWCASES,
+      trigger: this.createEditorCommandTrigger(
+        () =>
+          this.isInitialized &&
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
+      ),
+      action: () => {
+        openShowcaseManager(this.applicationStore);
       },
     });
     this.applicationStore.commandService.registerCommand({

@@ -20,6 +20,8 @@ import type { V1_AcquisitionProtocol } from './v1/model/packageableElements/mast
 import type { AcquisitionProtocol } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_AcquisitionProtocol.js';
 import type { V1_Authorization } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Authorization.js';
 import type { Authorization } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Authorization.js';
+import type { V1_MasteryRuntime } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_Runtime.js';
+import type { MasteryRuntime } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_Runtime.js';
 import type {
   V1_AuthenticationStrategy,
   V1_CredentialSecret,
@@ -127,6 +129,27 @@ export type V1_AuthenticationStrategyProtocolDeserializer = (
   plugins: PureProtocolProcessorPlugin[],
 ) => V1_AuthenticationStrategy | undefined;
 
+// types: mastery runtime
+export type V1_MasteryRuntimeBuilder = (
+  protocol: V1_MasteryRuntime,
+  context: V1_GraphBuilderContext,
+) => MasteryRuntime | undefined;
+
+export type V1_MasteryRuntimeTransformer = (
+  metamodel: MasteryRuntime,
+  context: V1_GraphTransformerContext,
+) => V1_MasteryRuntime | undefined;
+
+export type V1_MasteryRuntimeProtocolSerializer = (
+  protocol: V1_MasteryRuntime,
+  plugins: PureProtocolProcessorPlugin[],
+) => PlainObject<V1_MasteryRuntime> | undefined;
+
+export type V1_MasteryRuntimeProtocolDeserializer = (
+  json: PlainObject<V1_MasteryRuntime>,
+  plugins: PureProtocolProcessorPlugin[],
+) => V1_MasteryRuntime | undefined;
+
 export interface DSL_Mastery_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
   // extension hooks: precedence rules
@@ -169,4 +192,15 @@ export interface DSL_Mastery_PureProtocolProcessorPlugin_Extension
   V1_getExtraAuthenticationStrategyProtocolSerializers?(): V1_AuthenticationStrategyProtocolSerializer[];
 
   V1_getExtraAuthenticationStrategyProtocolDeserializers?(): V1_AuthenticationStrategyProtocolDeserializer[];
+
+  // extension hooks: runtime
+  V1_getExtraMasteryRuntimeFirstPassBuilders?(): V1_MasteryRuntimeBuilder[];
+
+  V1_getExtraMasteryRuntimeSecondPassBuilders?(): V1_MasteryRuntimeBuilder[];
+
+  V1_getExtraMasteryRuntimeTransformers?(): V1_MasteryRuntimeTransformer[];
+
+  V1_getExtraMasteryRuntimeProtocolSerializers?(): V1_MasteryRuntimeProtocolSerializer[];
+
+  V1_getExtraMasteryRuntimeProtocolDeserializers?(): V1_MasteryRuntimeProtocolDeserializer[];
 }

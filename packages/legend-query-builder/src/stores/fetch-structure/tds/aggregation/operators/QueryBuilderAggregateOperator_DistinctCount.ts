@@ -26,6 +26,7 @@ import {
   type Type,
   Enumeration,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -169,10 +170,7 @@ export class QueryBuilderAggregateOperator_DistinctCount
   override getReturnType(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): Type {
-    const graph =
-      aggregateColumnState.aggregationState.tdsState.queryBuilderState
-        .graphManagerState.graph;
-    return graph.getType(PRIMITIVE_TYPE.INTEGER);
+    return PrimitiveType.INTEGER;
   }
 
   get hashCode(): string {

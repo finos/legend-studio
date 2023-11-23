@@ -1,0 +1,47 @@
+###Relational
+Database store::store1
+(
+)
+
+Database store::store2
+(
+)
+
+
+###Mapping
+Mapping store::MyMapping
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection store::MyConnection
+{
+  store: store::store1;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      '-- loads sample data for getting started. See https://github.com/pthom/northwind_psql for more info\n call loadNorthwindData()'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime store::MyRuntime
+{
+  mappings:
+  [
+    store::MyMapping
+  ];
+  connectionStores:
+  [
+    store::MyConnection:
+    [
+      store::store1,
+      store::store2
+    ]
+  ];
+}

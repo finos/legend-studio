@@ -105,11 +105,10 @@ export class GraphManagerState extends BasicGraphManagerState {
       resetGraph: action,
     });
 
-    const extensionElementClasses = this.pluginManager
-      .getPureGraphPlugins()
-      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
-    this.systemModel = new SystemModel(extensionElementClasses);
-    this.coreModel = new CoreModel(extensionElementClasses);
+    this.systemModel = new SystemModel(
+      this.pluginManager.getPureGraphPlugins(),
+    );
+    this.coreModel = new CoreModel(this.pluginManager.getPureGraphPlugins());
     this.graph = this.createNewGraph();
     this.graphManager = buildPureGraphManager(this.pluginManager, logService);
 

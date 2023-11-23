@@ -36,5 +36,6 @@ module.exports = {
     'selector-class-pattern': null,
     'custom-property-pattern': null,
     'keyframes-name-pattern': null,
+    'declaration-block-no-redundant-longhand-properties': null,
   },
 };

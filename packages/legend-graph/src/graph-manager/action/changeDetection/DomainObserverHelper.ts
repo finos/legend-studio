@@ -66,6 +66,8 @@ import {
   observe_RawVariableExpression,
 } from './RawValueSpecificationObserver.js';
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
+import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+import { observe_SnowflakeAppDeploymentConfiguration } from './DSL_FunctionActivatorObserverHelper.js';
 
 const _observe_Abstract_Package = (metamodel: Package): void => {
   observe_Abstract_PackageableElement(metamodel);
@@ -484,6 +486,26 @@ export const observe_INTERNAL__UnknownFunctionActivator = skipObserved(
       content: observable.ref,
     });
 
+    return metamodel;
+  },
+);
+
+export const observe_SnowflakeApp = skipObserved(
+  (metamodel: SnowflakeApp): SnowflakeApp => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable<SnowflakeApp, '_elementHashCode'>(metamodel, {
+      applicationName: observable,
+      description: observable,
+      owner: observable,
+      activationConfiguration: observable,
+      type: observable,
+      _elementHashCode: override,
+    });
+
+    observe_SnowflakeAppDeploymentConfiguration(
+      metamodel.activationConfiguration,
+    );
     return metamodel;
   },
 );

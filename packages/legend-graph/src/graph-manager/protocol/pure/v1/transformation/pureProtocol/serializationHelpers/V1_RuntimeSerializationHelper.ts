@@ -38,10 +38,12 @@ import {
   V1_LegacyRuntime,
   V1_RuntimePointer,
   V1_StoreConnections,
+  V1_ConnectionStores,
 } from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import {
   V1_serializeConnectionValue,
   V1_deserializeConnectionValue,
+  V1_connectionPointerModelSchema,
 } from './V1_ConnectionSerializationHelper.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 
@@ -86,12 +88,19 @@ export const V1_setupEngineRuntimeSerialization = (
     ),
     id: primitive(),
   });
+  createModelSchema(V1_ConnectionStores, {
+    connectionPointer: usingModelSchema(V1_connectionPointerModelSchema),
+    storePointers: list(
+      usingModelSchema(V1_packageableElementPointerModelSchema),
+    ),
+  });
   createModelSchema(V1_StoreConnections, {
     store: usingModelSchema(V1_packageableElementPointerModelSchema),
     storeConnections: list(object(V1_IdentifiedConnection)),
   });
   createModelSchema(V1_EngineRuntime, {
     _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
+    connectionStores: list(object(V1_ConnectionStores)),
     connections: list(object(V1_StoreConnections)),
     mappings: list(usingModelSchema(V1_packageableElementPointerModelSchema)),
   });

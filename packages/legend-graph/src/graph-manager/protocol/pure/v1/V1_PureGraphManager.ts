@@ -319,6 +319,7 @@ import {
 } from './engine/service/V1_TableRowIdentifiers.js';
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 import { EngineError } from '../../../action/EngineError.js';
+import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2332,12 +2333,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     addDummyParameter?: boolean;
   }): RawLambda {
     return new RawLambda(
-      options?.addDummyParameter ? [{ _type: 'var', name: 'x' }] : undefined,
+      options?.addDummyParameter ? [{ _type: 'var', name: 'x' }] : [],
       [
         {
           _type: 'string',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [''],
+          value: '',
         },
       ],
     );
@@ -3334,13 +3334,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           }
         } else if (execution instanceof PureMultiExecution) {
           sdlcInfo.packageableElementPointers =
-            execution.executionParameters.map(
+            execution.executionParameters?.map(
               (e) =>
                 new V1_PackageableElementPointer(
                   PackageableElementPointerType.MAPPING,
                   e.mapping.value.path,
                 ),
-            );
+            ) ?? [];
         } else {
           throw new UnsupportedOperationError(
             `Can't register service with the specified execution`,
@@ -3452,13 +3452,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             }
           } else if (execution instanceof PureMultiExecution) {
             sdlcInfo.packageableElementPointers =
-              execution.executionParameters.map(
+              execution.executionParameters?.map(
                 (e) =>
                   new V1_PackageableElementPointer(
                     PackageableElementPointerType.MAPPING,
                     e.mapping.value.path,
                   ),
-              );
+              ) ?? [];
           } else {
             throw new UnsupportedOperationError(
               `Can't register service with the specified execution`,
@@ -3871,6 +3871,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.DATA_ELEMENT;
     } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_PURE_PATH.GENERATION_SPECIFICATION;
+    } else if (protocol instanceof V1_SnowflakeApp) {
+      return CORE_PURE_PATH.SNOWFLAKE_APP;
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()

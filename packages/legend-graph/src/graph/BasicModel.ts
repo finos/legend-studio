@@ -24,6 +24,7 @@ import {
   filterByType,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { Package } from '../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { Type } from '../graph/metamodel/pure/packageableElements/domain/Type.js';
@@ -71,6 +72,7 @@ import { INTERNAL__UnknownPackageableElement } from './metamodel/pure/packageabl
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 import { INTERNAL__UnknownFunctionActivator } from './metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import { INTERNAL__UnknownStore } from './metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
+import type { PureGraphPlugin } from './PureGraphPlugin.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -117,6 +119,7 @@ export abstract class BasicModel {
   private _origin: GraphDataOrigin | undefined;
 
   readonly extensions: PureGraphExtension<PackageableElement>[] = [];
+  readonly graphPlugins: PureGraphPlugin[] = [];
 
   private elementSectionIndex = new Map<string, Section>();
 
@@ -157,10 +160,13 @@ export abstract class BasicModel {
 
   constructor(
     rootPackageName: string,
-    extensionElementClasses: Clazz<PackageableElement>[],
+    graphPlugins: PureGraphPlugin[],
     origin?: GraphDataOrigin | undefined,
   ) {
     this.root = new Package(rootPackageName);
+    const extensionElementClasses = graphPlugins.flatMap(
+      (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+    );
     this.extensions = this.createGraphExtensions(extensionElementClasses);
     this._origin = origin;
   }
@@ -242,7 +248,23 @@ export abstract class BasicModel {
   }
 
   get ownTestables(): Testable[] {
-    return [...this.ownServices, ...this.ownMappings];
+    const coreTestables = [
+      ...this.ownServices,
+      ...this.ownMappings,
+      ...this.ownFunctions,
+    ];
+    const filters = this.graphPlugins.flatMap(
+      (plugin) => plugin.getExtraTestablesCollectors?.() ?? [],
+    );
+    const extraTestables = this.allOwnElements
+      .map(
+        (element) =>
+          filters.find((elementFilter) => Boolean(elementFilter(element)))?.(
+            element,
+          ),
+      )
+      .filter(isNonNullable);
+    return [...coreTestables, ...extraTestables];
   }
 
   get origin(): GraphDataOrigin | undefined {

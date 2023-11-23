@@ -1,5 +1,43 @@
 # @finos/legend-extension-dsl-persistence
 
+## 5.0.108
+
+## 5.0.107
+
+## 5.0.106
+
+## 5.0.105
+
+## 5.0.104
+
+## 5.0.103
+
+### Patch Changes
+
+- [#2760](https://github.com/finos/legend-studio/pull/2760) [`07664090d`](https://github.com/finos/legend-studio/commit/07664090d33239fbab4beb8f0a24d45c9e6d9d08) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix testable collector to predicate of packagable element and fix getting testables from dependencies.
+
+## 5.0.102
+
+## 5.0.101
+
+## 5.0.100
+
+## 5.0.99
+
+## 5.0.98
+
+## 5.0.97
+
+## 5.0.96
+
+## 5.0.95
+
+## 5.0.94
+
+## 5.0.93
+
+## 5.0.92
+
 ## 5.0.91
 
 ## 5.0.90

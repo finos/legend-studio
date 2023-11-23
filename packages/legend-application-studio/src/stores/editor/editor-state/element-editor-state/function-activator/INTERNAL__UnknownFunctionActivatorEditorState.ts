@@ -19,8 +19,8 @@ import {
   InMemoryGraphData,
   type INTERNAL__UnknownFunctionActivator,
 } from '@finos/legend-graph';
-import type { EditorStore } from '../../EditorStore.js';
-import { ElementEditorState } from './ElementEditorState.js';
+import type { EditorStore } from '../../../EditorStore.js';
+import { ElementEditorState } from '../ElementEditorState.js';
 import { action, flow, makeObservable } from 'mobx';
 import {
   ActionState,
@@ -28,9 +28,9 @@ import {
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import { ProtocolValueBuilderState } from './ProtocolValueBuilderState.js';
-import { INTERNAL__UnknownFunctionActivator_setContent } from '../../../graph-modifier/DomainGraphModifierHelper.js';
-import { FUNCTION_ACTIVATOR_EXCLUDED_PATHS } from './FunctionActivatorBuilderState.js';
+import { ProtocolValueBuilderState } from '../ProtocolValueBuilderState.js';
+import { INTERNAL__UnknownFunctionActivator_setContent } from '../../../../graph-modifier/DomainGraphModifierHelper.js';
+import { FUNCTION_ACTIVATOR_EXCLUDED_PATHS } from '../ToDelete_FunctionActivatorBuilderState.js';
 
 export class INTERNAL__UnknownFunctionActivatorEdtiorState extends ElementEditorState {
   readonly activator: INTERNAL__UnknownFunctionActivator;

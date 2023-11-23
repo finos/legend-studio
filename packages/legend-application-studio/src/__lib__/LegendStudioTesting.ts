@@ -30,8 +30,12 @@ export enum LEGEND_STUDIO_TEST_ID {
   EXPLORER_TREES = 'explorer-trees',
   EXPLORER_CONTEXT_MENU = 'explorer__context-menu',
 
+  FUNCTION_EDITOR = 'function-editor',
+
   TEST_RUNNER = 'test-runner',
   BULK_REGISTRATION = 'bulk-service-registration',
+
+  END_TO_END_WORKFLOW = 'end-to-end-workflow',
 
   STATUS_BAR = 'status-bar',
   EDITOR__STATUS_BAR__RIGHT = 'editor__status-bar__right',

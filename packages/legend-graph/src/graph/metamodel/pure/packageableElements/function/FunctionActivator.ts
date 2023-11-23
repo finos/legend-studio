@@ -18,6 +18,7 @@ import type { Hashable } from '@finos/legend-shared';
 import { PackageableElement } from '../PackageableElement.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { ConcreteFunctionDefinition } from './ConcreteFunctionDefinition.js';
+import type { DeploymentConfiguration } from '../../functionActivator/DeploymentConfiguration.js';
 
 export abstract class FunctionActivator
   extends PackageableElement
@@ -30,4 +31,5 @@ export abstract class FunctionActivator
    * @discrepancy model
    */
   function!: PackageableElementReference<ConcreteFunctionDefinition>;
+  activationConfiguration!: DeploymentConfiguration;
 }

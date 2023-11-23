@@ -1,5 +1,41 @@
 # @finos/legend-lego
 
+## 1.1.53
+
+## 1.1.52
+
+## 1.1.51
+
+## 1.1.50
+
+## 1.1.49
+
+## 1.1.48
+
+## 1.1.47
+
+### Patch Changes
+
+- [#2743](https://github.com/finos/legend-studio/pull/2743) [`ad8dc0f9d`](https://github.com/finos/legend-studio/commit/ad8dc0f9d7f025002862ad84629de9f6339165e7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - upgrade datagrid to cooperate with enterprise version
+
+## 1.1.46
+
+## 1.1.45
+
+## 1.1.44
+
+## 1.1.43
+
+## 1.1.42
+
+### Patch Changes
+
+- [#2691](https://github.com/finos/legend-studio/pull/2691) [`67766982e`](https://github.com/finos/legend-studio/commit/67766982e7062d9f2e9e53ec78d96218c96aa5c8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable showing error markers in CodeEditor
+
+## 1.1.41
+
+## 1.1.40
+
 ## 1.1.39
 
 ## 1.1.38

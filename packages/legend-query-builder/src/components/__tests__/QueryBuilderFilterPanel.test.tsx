@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@jest/globals';
+import { expect, test, describe } from '@jest/globals';
 import {
   waitFor,
   fireEvent,
@@ -37,11 +37,15 @@ import {
   TEST_DATA__simpleFilterWithAndCondition,
   TEST_DATA__simpleFilterWithDateTimeWithSeconds,
   TEST_DATA__simpleFilterWithGroupOperationAndExists,
+  TEST_DATA__simpleFilterWithThreeNodes,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+  TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
@@ -54,6 +58,28 @@ import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' assert { type: 'json' };
+import {
+  TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
+  TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarget,
+  TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTarget,
+  TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarget,
+  TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBusinessTemporalTarget,
+  TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTemporalTarget,
+  TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget,
+  TEST_DATA__simpleFilterWithNonTemporalSourceAndBusinessTemporalTarget,
+  TEST_DATA__simpleFilterWithNonTemporalSourceAndProcessingTemporalTarget,
+  TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTarget,
+  TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTemporalTarget,
+  TEST_DATA__simpleFilterWithProcessingTemporalSourceAndProcessingTemporalTarget,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Milestoning.js';
+import type { Entity } from '@finos/legend-storage';
+import TEST_DATA__SimpleSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
+import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json' assert { type: 'json' };
+import {
+  TEST_DATA__nestedFilterWithSubType,
+  TEST_DATA__simpleFilterWithSubType,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 
 test(
   integrationTest(
@@ -626,5 +652,1154 @@ test(
     await waitFor(() =>
       getByText(guaranteeNonNullable(filterTreeNodes[5]), 'Legal Name'),
     );
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter when we rearrange filter node to create new group condition`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleFilterWithThreeNodes.parameters,
+          TEST_DATA__simpleFilterWithThreeNodes.body,
+        ),
+      );
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    await waitFor(() => getByText(filterPanel, 'Employees'));
+    await waitFor(() => getByText(filterPanel, 'First Name'));
+    await waitFor(() => getByText(filterPanel, 'Id'));
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+
+    let filterTreeNodes = await waitFor(() =>
+      renderResult.getAllByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(5);
+
+    // Drag and drop
+    const legalNameFilterTreeNode = guaranteeNonNullable(
+      filterTreeNodes.find((n) => queryByText(n, 'Legal Name') !== null),
+    );
+    const idFilterTreeNode = guaranteeNonNullable(
+      filterTreeNodes.find((n) => queryByText(n, 'Id') !== null),
+    );
+    const dropZone = await waitFor(() =>
+      getByTestId(
+        legalNameFilterTreeNode,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    const dragSource = await waitFor(() =>
+      getByTestId(
+        idFilterTreeNode,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      legalNameFilterTreeNode,
+      'Add New Logical Group',
+    );
+    filterTreeNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(6);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[0]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[1]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[2]), 'Legal Name'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[3]), 'Id'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[4]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[4]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[5]), 'First Name'),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter when we create filter conditions using context menu options`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Creating filter using context options
+    await waitFor(() => getByTitle(filterPanel, 'Show Filter Options Menu...'));
+    fireEvent.click(getByTitle(filterPanel, 'Show Filter Options Menu...'));
+    await waitFor(() => renderResult.getByText('Create Condition'));
+    fireEvent.click(renderResult.getByText('Create Condition'));
+
+    let dragSource = await waitFor(() => getByText(explorerPanel, 'Id'));
+    let dropZone = await waitFor(() => getByText(filterPanel, 'blank'));
+    await dragAndDrop(dragSource, dropZone, dropZone, 'Create Condition');
+
+    let filterTreeNodes = await waitFor(() =>
+      renderResult.getAllByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(2);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[0]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[1]), 'Id'),
+    );
+
+    const andNode = guaranteeNonNullable(
+      filterTreeNodes.find((n) => queryByText(n, 'and') !== null),
+    );
+    fireEvent.contextMenu(andNode);
+    fireEvent.click(renderResult.getByText('Add New Condition'));
+    dragSource = await waitFor(() => getByText(explorerPanel, 'Legal Name'));
+    dropZone = await waitFor(() => getByText(filterPanel, 'blank'));
+    await dragAndDrop(dragSource, dropZone, dropZone, 'Create Condition');
+    filterTreeNodes = await waitFor(() =>
+      renderResult.getAllByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(3);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[0]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[1]), 'Id'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[2]), 'Legal Name'),
+    );
+
+    // Creating Logical Group
+    fireEvent.contextMenu(andNode);
+    fireEvent.click(renderResult.getByText('Remove'));
+    expect(getByText(filterPanel, 'Add a filter condition')).not.toBeNull();
+
+    await waitFor(() => getByTitle(filterPanel, 'Show Filter Options Menu...'));
+    fireEvent.click(getByTitle(filterPanel, 'Show Filter Options Menu...'));
+    await waitFor(() => renderResult.getByText('Create Logical Group'));
+    fireEvent.click(renderResult.getByText('Create Logical Group'));
+
+    dragSource = await waitFor(() => getByText(explorerPanel, 'Id'));
+    const dropZones = await waitFor(() => getAllByText(filterPanel, 'blank'));
+    expect(dropZones.length).toBe(2);
+    dropZone = guaranteeNonNullable(dropZones[0]);
+    await dragAndDrop(dragSource, dropZone, dropZone, 'Create Condition');
+
+    dragSource = await waitFor(() => getByText(explorerPanel, 'Legal Name'));
+    dropZone = guaranteeNonNullable(dropZones[1]);
+    await dragAndDrop(dragSource, dropZone, dropZone, 'Create Condition');
+    filterTreeNodes = await waitFor(() =>
+      renderResult.getAllByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNodes.length).toBe(3);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[0]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[1]), 'Id'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(filterTreeNodes[2]), 'Legal Name'),
+    );
+  },
+);
+
+type MilestoningDragAndDropTestCase = [
+  string,
+  {
+    mappingPath: string;
+    runtimePath: string;
+    classPath: string;
+    entities: Entity[];
+    mappingAnalysis: object;
+    propertyClassName: string;
+    propertyName: string;
+    filterNodeName: string;
+    expectedDerivedPropertyParameters: string[];
+    expectedRawLambda: { parameters?: object; body?: object };
+  },
+];
+
+const MILESTONING_FILTER_DND_TEST_CASES: MilestoningDragAndDropTestCase[] = [
+  [
+    'Query builder loads simple filter when we DnD filter node and both source and target are business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is business Temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+];
+
+describe(
+  integrationTest('Milestoning filter DnD query is properly built'),
+  () => {
+    test.each(MILESTONING_FILTER_DND_TEST_CASES)(
+      '%s',
+      async (
+        testName: MilestoningDragAndDropTestCase[0],
+        testCase: MilestoningDragAndDropTestCase[1],
+      ) => {
+        const {
+          mappingPath,
+          runtimePath,
+          classPath,
+          entities,
+          mappingAnalysis,
+          propertyClassName,
+          propertyName,
+          filterNodeName,
+          expectedDerivedPropertyParameters,
+          expectedRawLambda,
+        } = testCase;
+        const { renderResult, queryBuilderState } =
+          await TEST__setUpQueryBuilder(
+            entities,
+            stub_RawLambda(),
+            mappingPath,
+            runtimePath,
+            mappingAnalysis,
+          );
+
+        const _class =
+          queryBuilderState.graphManagerState.graph.getClass(classPath);
+        await act(async () => {
+          queryBuilderState.changeClass(_class);
+        });
+        const filterPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+          ),
+        );
+        const explorerPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+          ),
+        );
+
+        // Drag and drop
+        const dropZone = await waitFor(() =>
+          getByText(filterPanel, 'Add a filter condition'),
+        );
+        await waitFor(() => getByText(explorerPanel, propertyClassName));
+        fireEvent.click(getByText(explorerPanel, propertyClassName));
+        const sources = await waitFor(() =>
+          getAllByText(explorerPanel, propertyName),
+        );
+        expect(sources.length).toBe(2);
+        const dragSource = guaranteeNonNullable(sources[1]);
+        await dragAndDrop(
+          dragSource,
+          dropZone,
+          filterPanel,
+          'Add a filter condition',
+        );
+        await waitFor(() => getByText(filterPanel, filterNodeName));
+        await waitFor(() => getByText(filterPanel, 'is'));
+        await waitFor(() => getByDisplayValue(filterPanel, 0));
+        const contentNodes = await waitFor(() =>
+          getAllByTestId(
+            filterPanel,
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+          ),
+        );
+        expect(contentNodes.length).toBe(1);
+        await waitFor(() =>
+          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+        );
+        fireEvent.click(
+          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+        );
+        const dpModal = await waitFor(() => renderResult.getByRole('dialog'));
+        await waitFor(() => getByText(dpModal, 'Derived Property'));
+        expectedDerivedPropertyParameters.forEach((p) =>
+          getAllByText(dpModal, p),
+        );
+        fireEvent.click(getByText(dpModal, 'Done'));
+
+        // Check whether the rawLambda we build is expected
+        expect(
+          queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+            queryBuilderState.buildQuery(),
+          ),
+        ).toEqual(expectedRawLambda);
+      },
+    );
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter when we create milestoning derived property filter condition by DnD and doesn't propagate any milestoning date `,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_MilestoningModel,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+    );
+
+    const _class =
+      queryBuilderState.graphManagerState.graph.getClass('my::Person1');
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+
+    const dragSource = await waitFor(() => getByText(explorerPanel, 'Prop'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Prop'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+    await waitFor(() =>
+      getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+    );
+    fireEvent.click(
+      getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+    );
+    const dpModal = await waitFor(() => renderResult.getByRole('dialog'));
+    await waitFor(() => getByText(dpModal, 'Derived Property'));
+    await waitFor(() => getByDisplayValue(dpModal, ''));
+
+    fireEvent.click(getByText(dpModal, 'Done'));
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter when we create milestoning property exists filter condition by DnD`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _class =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+
+    await waitFor(() => getByText(explorerPanel, 'Address'));
+    fireEvent.click(getByText(explorerPanel, 'Address'));
+    const dragSource = await waitFor(() => getByText(explorerPanel, 'Pincode'));
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add a filter condition');
+    fireEvent.drop(getByText(filterPanel, 'Add a filter condition'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(2);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[0]), 'Address'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[0]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[1]), 'Pincode'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[1]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[1]), '0'),
+    );
+    await waitFor(() =>
+      getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+    );
+    fireEvent.click(
+      getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+    );
+    const dpModal = await waitFor(() => renderResult.getByRole('dialog'));
+    await waitFor(() => getByText(dpModal, 'Derived Property'));
+    expect(getAllByText(dpModal, 'businessDate').length).toBe(3);
+
+    fireEvent.click(getByText(dpModal, 'Done'));
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter when we create group condition within single exists by DnD`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _class =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    let dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+
+    await waitFor(() => getByText(explorerPanel, 'Employees'));
+    fireEvent.click(getByText(explorerPanel, 'Employees'));
+    let dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add a filter condition');
+    fireEvent.drop(getByText(filterPanel, 'Add a filter condition'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+
+    dragSource = await waitFor(() => getByText(explorerPanel, 'Last Name'));
+    const filterTree = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE),
+    );
+    dropZone = filterTree;
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add to Exists Group');
+    fireEvent.drop(getByText(filterPanel, 'Add to Exists Group'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(4);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[0]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[0]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[1]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[2]), 'First Name'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[2]), ''),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[3]), 'Last Name'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[3]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[3]), ''),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter when we create multiple exists from group condition by DnD`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _class =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    let dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+
+    await waitFor(() => getByText(explorerPanel, 'Employees'));
+    fireEvent.click(getByText(explorerPanel, 'Employees'));
+    let dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add a filter condition');
+    fireEvent.drop(getByText(filterPanel, 'Add a filter condition'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+
+    dragSource = await waitFor(() => getByText(explorerPanel, 'Last Name'));
+    const filterTree = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE),
+    );
+    dropZone = filterTree;
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add filter to main group');
+    fireEvent.drop(getByText(filterPanel, 'Add filter to main group'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(5);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[0]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[1]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[1]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[2]), 'First Name'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[2]), ''),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[3]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[3]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[4]), 'Last Name'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[4]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[4]), ''),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter when we create multiple exists from group condition by DnD`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _class =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    let dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+
+    await waitFor(() => getByText(explorerPanel, 'Employees'));
+    fireEvent.click(getByText(explorerPanel, 'Employees'));
+    let dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add a filter condition');
+    fireEvent.drop(getByText(filterPanel, 'Add a filter condition'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+
+    dragSource = await waitFor(() => getByText(explorerPanel, 'Last Name'));
+    const filterTree = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE),
+    );
+    dropZone = filterTree;
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add filter to main group');
+    fireEvent.drop(getByText(filterPanel, 'Add filter to main group'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(5);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[0]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[1]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[1]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[2]), 'First Name'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[2]), ''),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[3]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[3]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[4]), 'Last Name'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[4]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[4]), ''),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple filter when we create nested exists by DnD`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _class =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_class);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    let dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+
+    await waitFor(() => getByText(explorerPanel, 'Employees'));
+    fireEvent.click(getByText(explorerPanel, 'Employees'));
+    let dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add a filter condition');
+    fireEvent.drop(getByText(filterPanel, 'Add a filter condition'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+
+    await waitFor(() => getByText(explorerPanel, 'Hobbies'));
+    fireEvent.click(getByText(explorerPanel, 'Hobbies'));
+    const sources = await waitFor(() => getAllByText(explorerPanel, 'Id'));
+    expect(sources.length).toBe(2);
+    dragSource = guaranteeNonNullable(sources[1]);
+    const filterTree = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE),
+    );
+    dropZone = filterTree;
+    fireEvent.dragStart(dragSource);
+    fireEvent.dragEnter(dropZone);
+    fireEvent.dragOver(dropZone);
+    await findByText(filterPanel, 'Add to Exists Group');
+    fireEvent.drop(getByText(filterPanel, 'Add to Exists Group'));
+    fireEvent.click(renderResult.getByText('Proceed'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(5);
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[0]), 'Employees'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[0]), 'exists'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[1]), 'and'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[2]), 'First Name'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[2]), ''),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[3]), 'Hobbies'),
+    );
+    await waitFor(() =>
+      getByText(guaranteeNonNullable(contentNodes[3]), 'exists'),
+    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[4]), 'Id'));
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[4]), 'is'));
+    await waitFor(() =>
+      getByDisplayValue(guaranteeNonNullable(contentNodes[4]), '0'),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads simple subType filter node when we DnD it`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__SimpleSubTypeModel,
+      stub_RawLambda(),
+      'model::NewMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    await waitFor(() => getByText(explorerPanel, 'Address'));
+    fireEvent.click(getByText(explorerPanel, 'Address'));
+    const dragSource = await waitFor(() => getByText(explorerPanel, 'Id'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Address/@(Colony)Id'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Check whether the rawLambda we build is expected
+    expect(
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      ),
+    ).toEqual(TEST_DATA__simpleFilterWithSubType);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder loads nested subType filter node when we DnD it`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__NestedSubTypeModel,
+      stub_RawLambda(),
+      'model::NewMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    await waitFor(() => getByText(explorerPanel, 'Address'));
+    fireEvent.click(getByText(explorerPanel, 'Address'));
+    await waitFor(() => getByText(explorerPanel, '@Address Type 1'));
+    fireEvent.click(getByText(explorerPanel, '@Address Type 1'));
+    const dragSource = await waitFor(() => getByText(explorerPanel, 'Zipcode'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() =>
+      getByText(filterPanel, 'Address/@(Address Type 1)Zipcode'),
+    );
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, '0'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Check whether the rawLambda we build is expected
+    expect(
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      ),
+    ).toEqual(TEST_DATA__nestedFilterWithSubType);
   },
 );

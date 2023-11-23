@@ -213,7 +213,7 @@ const transformMultiExecution = (
   execution.func = element.func.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
-  execution.executionParameters = element.executionParameters.map((param) =>
+  execution.executionParameters = element.executionParameters?.map((param) =>
     transformKeyedParameter(param, context),
   );
   return execution;

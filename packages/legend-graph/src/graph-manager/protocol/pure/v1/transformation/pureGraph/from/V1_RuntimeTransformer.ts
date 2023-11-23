@@ -33,8 +33,12 @@ import {
   V1_StoreConnections,
   V1_IdentifiedConnection,
   V1_RuntimePointer,
+  V1_ConnectionStores,
 } from '../../../model/packageableElements/runtime/V1_Runtime.js';
-import { V1_transformConnection } from './V1_ConnectionTransformer.js';
+import {
+  V1_transformConnection,
+  V1_transformConnectionPointer,
+} from './V1_ConnectionTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 
@@ -70,6 +74,19 @@ const transformEngineRuntime = (
       e,
     ),
   );
+  runtime.connectionStores = element.connectionStores.map((connection) => {
+    const val = new V1_ConnectionStores();
+    val.connectionPointer = V1_transformConnectionPointer(
+      connection.connectionPointer,
+    );
+    val.storePointers = connection.storePointers.map((s) =>
+      V1_transformElementReferencePointer(
+        PackageableElementPointerType.STORE,
+        s,
+      ),
+    );
+    return val;
+  });
   return runtime;
 };
 

@@ -61,6 +61,7 @@ import {
   type PostProcessor,
   type DatasourceSpecification,
   type AuthenticationStrategy,
+  type PackageableConnection,
   DatabaseType,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
@@ -81,6 +82,7 @@ import {
   MapperPostProcessor,
   SpannerDatasourceSpecification,
   TrinoDatasourceSpecification,
+  guaranteeRelationalDatabaseConnection,
 } from '@finos/legend-graph';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
@@ -166,6 +168,33 @@ import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostPro
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 import { prettyCONSTName, uniq } from '@finos/legend-shared';
+
+export type RelationalDatabaseConnectionOption = {
+  label: React.ReactNode;
+  value: PackageableConnection;
+};
+
+export const buildRelationalDatabaseConnectionOption = (
+  connection: PackageableConnection,
+): RelationalDatabaseConnectionOption => {
+  const connectionValue = guaranteeRelationalDatabaseConnection(connection);
+  return {
+    value: connection,
+    label: (
+      <div className="sql-playground__config__connection-selector__option">
+        <div className="sql-playground__config__connection-selector__option__label">
+          {connection.name}
+        </div>
+        <div className="sql-playground__config__connection-selector__option__type">
+          {connectionValue.type}
+        </div>
+        <div className="sql-playground__config__connection-selector__option__path">
+          {connection.path}
+        </div>
+      </div>
+    ),
+  };
+};
 
 const LocalH2DatasourceSpecificationEditor = observer(
   (props: {
@@ -1567,12 +1596,13 @@ const renderAuthenticationStrategyEditor = (
   }
 };
 
-const RelationalConnectionGeneralEditor = observer(
+export const RelationalConnectionGeneralEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
     isReadOnly: boolean;
+    hideHeader?: boolean;
   }) => {
-    const { connectionValueState, isReadOnly } = props;
+    const { connectionValueState, isReadOnly, hideHeader } = props;
     const connection = connectionValueState.connection;
     const editorStore = useEditorStore();
     const plugins = editorStore.pluginManager.getApplicationPlugins();
@@ -1692,7 +1722,7 @@ const RelationalConnectionGeneralEditor = observer(
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel size={200} minSize={15}>
             <Panel>
-              <PanelHeader title="general"></PanelHeader>
+              {!hideHeader && <PanelHeader title="general"></PanelHeader>}
               <PanelContent className="relational-connection-editor__general">
                 <PanelFormSection>
                   <div className="panel__content__form__section__header__label">
