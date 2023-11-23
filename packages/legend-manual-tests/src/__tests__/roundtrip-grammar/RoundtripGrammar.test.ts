@@ -83,8 +83,8 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // Update processing to handle Persistence V2 specs
   // See https://github.com/finos/legend-engine/pull/1764
   'DSL_Persistence-basic.pure': SKIP,
-  // Remove once function tests has been completed on engine side
-  'CORE-basic-function-with-tests.pure': SKIP,
+  // Remove this when mastery DSL is finalized
+  'DSL_Mastery-basic.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {
@@ -234,6 +234,29 @@ const checkGrammarRoundtrip = async (
       'ms',
     );
   }
+  log.info(
+    LogEvent.create(
+      transformedEntities.map((entity) => entity.content).toString(),
+    ),
+    Date.now() - startTime,
+    'ms',
+  );
+
+  log.info(
+    LogEvent.create(
+      (
+        (transformGrammarToJsonResult.data as { elements: object[] })
+          .elements as PlainObject<V1_PackageableElement>[]
+      )
+        .filter(
+          (elementProtocol: PlainObject<V1_PackageableElement>) =>
+            elementProtocol._type !== 'sectionIndex',
+        )
+        .toString(),
+    ),
+    Date.now() - startTime,
+    'ms',
+  );
 
   if (!excludes.includes(phase)) {
     // ensure that transformed entities have all fields ordered alphabetically
