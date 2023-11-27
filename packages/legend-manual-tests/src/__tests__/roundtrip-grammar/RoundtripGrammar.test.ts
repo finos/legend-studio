@@ -359,7 +359,7 @@ describe('Grammar roundtrip test', () => {
   test.each(cases)('%s', async (testName, filePath, isSkipped) => {
     if (!isSkipped) {
       await checkGrammarRoundtrip(testName, filePath, {
-        debug: true,
+        debug: false,
       });
     }
   });
@@ -370,7 +370,7 @@ describe('Grammar roundtrip test (without extensions)', () => {
     // Mapping include dataspace does not play nicely without extensions as the dependent XStore Associations will fail
     if (!isSkipped) {
       await checkGrammarRoundtrip(testName, filePath, {
-        debug: true,
+        debug: false,
         noExtensions: true,
       });
     }
