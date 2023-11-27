@@ -146,7 +146,7 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
   }
 
   visit_ConcreteFunctionDefinition(element: ConcreteFunctionDefinition): void {
-    observe_ConcreteFunctionDefinition(element);
+    observe_ConcreteFunctionDefinition(element, this.observerContext);
   }
 
   visit_FlatData(element: FlatData): void {

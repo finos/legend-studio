@@ -281,7 +281,7 @@ const StaticDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.host}
-          name="host"
+          name="host (required)"
           update={(value: string | undefined): void =>
             staticDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
@@ -293,7 +293,7 @@ const StaticDatasourceSpecificationEditor = observer(
           <input
             className="panel__content__form__section__input panel__content__form__section__number-input"
             spellCheck={false}
-            type="number"
+            type="number (required)"
             disabled={isReadOnly}
             value={sourceSpec.port}
             onChange={changePort}
@@ -302,7 +302,7 @@ const StaticDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          name="database"
+          name="database (required)"
           update={(value: string | undefined): void =>
             staticDatasourceSpecification_setDatabaseName(
               sourceSpec,
@@ -326,7 +326,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          name="database"
+          name="database (required)"
           update={(value: string | undefined): void =>
             embeddedH2DatasourceSpecification_setDatabaseName(
               sourceSpec,
@@ -337,7 +337,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.directory}
-          name="directory"
+          name="directory (required)"
           update={(value: string | undefined): void =>
             embeddedH2DatasourceSpecification_setDirectory(
               sourceSpec,
@@ -348,7 +348,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <PanelFormBooleanField
           isReadOnly={isReadOnly}
           value={sourceSpec.autoServerMode}
-          name="auto server mode"
+          name="auto server mode (required)"
           update={(value?: boolean): void =>
             embeddedH2DatasourceSpecification_setAutoServerMode(
               sourceSpec,
@@ -372,7 +372,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.hostname}
-          name="hostname"
+          name="hostname (required)"
           update={(value: string | undefined): void =>
             databricksDatasourceSpecification_setHostName(
               sourceSpec,
@@ -383,7 +383,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.port}
-          name="port"
+          name="port (required)"
           update={(value: string | undefined): void =>
             databricksDatasourceSpecification_setPort(sourceSpec, value ?? '')
           }
@@ -391,7 +391,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.protocol}
-          name="protocol"
+          name="protocol (required)"
           update={(value: string | undefined): void =>
             databricksDatasourceSpecification_setProtocol(
               sourceSpec,
@@ -402,7 +402,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.httpPath}
-          name="httpPath"
+          name="httpPath (required)"
           update={(value: string | undefined): void =>
             databricksDatasourceSpecification_setHttpPath(
               sourceSpec,
@@ -430,14 +430,14 @@ const TrinoDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.host}
-          name="host"
+          name="host (required)"
           update={(value: string | undefined): void =>
             trinoDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
         />
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
-            port
+            port (required)
           </div>
           <input
             className="panel__content__form__section__input panel__content__form__section__number-input"
@@ -518,7 +518,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.accountName}
-          name="account"
+          name="account (required)"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setAccountName(sourceSpec, value ?? '')
           }
@@ -526,7 +526,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.region}
-          name="region"
+          name="region (required)"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setRegion(sourceSpec, value ?? '')
           }
@@ -534,7 +534,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.warehouseName}
-          name="warehouse"
+          name="warehouse (required)"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setWarehouseName(sourceSpec, value ?? '')
           }
@@ -542,7 +542,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          name="database"
+          name="database (required)"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setDatabaseName(sourceSpec, value ?? '')
           }
@@ -648,14 +648,14 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.host}
-          name="host"
+          name="host (required)"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
         />
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
-            port
+            port (required)
           </div>
           <input
             className="panel__content__form__section__input panel__content__form__section__number-input"
@@ -669,7 +669,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          name="database"
+          name="database (required)"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setDatabaseName(
               sourceSpec,
@@ -681,7 +681,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.region}
-          name="region"
+          name="region (required)"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setRegion(sourceSpec, value ?? '')
           }
@@ -689,7 +689,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.clusterID}
-          name="cluster"
+          name="cluster (required)"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setClusterID(
               sourceSpec,
@@ -724,7 +724,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.projectId}
-          name="project id"
+          name="project id (required)"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProjectId(
               sourceSpec,
@@ -783,7 +783,7 @@ const SpannerDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.projectId}
-          name="project id"
+          name="project id (required)"
           prompt="Your Google Cloud Platform (GCP) project identifier"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setProjectId(sourceSpec, value ?? '')
@@ -792,7 +792,7 @@ const SpannerDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.instanceId}
-          name="instance id"
+          name="instance id (required)"
           prompt="Spanner instance identifier in Google Cloud Platform (GCP)"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setInstanceId(
@@ -804,7 +804,7 @@ const SpannerDatasourceSpecificationEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseId}
-          name="database id"
+          name="database id (required)"
           prompt="Spanner database identifier"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setDatabaseId(
@@ -873,7 +873,7 @@ const ApiTokenAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.apiToken}
-          name="apiTokenRef"
+          name="apiTokenRef (required)"
           update={(value: string | undefined): void =>
             apiTokenAuthenticationStrategy_setApiToken(authSpec, value ?? '')
           }
@@ -894,7 +894,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.privateKeyVaultReference}
-          name="private key vault reference"
+          name="private key vault reference (required)"
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPrivateKeyVaultReference(
               authSpec,
@@ -905,7 +905,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.passPhraseVaultReference}
-          name="pass phrase vault reference"
+          name="pass phrase vault reference (required)"
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPassPhraseVaultReference(
               authSpec,
@@ -916,7 +916,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.publicUserName}
-          name="public user name"
+          name="public user name (required)"
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPublicUserName(
               authSpec,
@@ -937,7 +937,7 @@ const OAuthAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.oauthKey}
-          name="oauth key"
+          name="oauth key (required)"
           update={(value: string | undefined): void =>
             oAuthAuthenticationStrategy_setOauthKey(authSpec, value ?? '')
           }
@@ -945,7 +945,7 @@ const OAuthAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.scopeName}
-          name="scope name"
+          name="scope name (required)"
           update={(value: string | undefined): void =>
             oAuthAuthenticationStrategy_setScopeName(authSpec, value ?? '')
           }
@@ -977,7 +977,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.userNameVaultReference}
-          name="user name vault reference"
+          name="user name vault reference (required)"
           update={(value: string | undefined): void =>
             usernamePasswordAuthenticationStrategy_setUserNameVaultReference(
               authSpec,
@@ -988,7 +988,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.passwordVaultReference}
-          name="password vault reference"
+          name="password vault reference (required)"
           update={(value: string | undefined): void =>
             usernamePasswordAuthenticationStrategy_setPasswordVaultReference(
               authSpec,
@@ -1012,7 +1012,7 @@ const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.vaultReference}
-          name="vault reference"
+          name="vault reference (required)"
           prompt="Specifies the credential vault reference containing connection credentials"
           update={(value: string | undefined): void =>
             middleTierUsernamePasswordAuthenticationStrategy_setVaultReference(
@@ -1037,7 +1037,7 @@ const TrinoDelegatedKerberosAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.kerberosRemoteServiceName}
-          name="Kerberos Remote Service Name"
+          name="Kerberos Remote Service Name (required)"
           prompt="Specifies the Kerberos Remote Service Name"
           update={(value: string | undefined): void =>
             trinoDelegatedKerberosAuthenticationStrategy_setKerberosRemoteServiceName(
@@ -1075,7 +1075,7 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={authSpec.serviceAccountEmail}
-          name="Service Account Email"
+          name="Service Account Email (required)"
           update={(value: string | undefined): void =>
             gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail(
               authSpec,

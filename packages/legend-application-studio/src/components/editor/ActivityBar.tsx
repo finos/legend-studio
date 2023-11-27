@@ -399,7 +399,7 @@ export const ActivityBar = observer(() => {
             {activity.icon}
           </button>
         ))}
-        <MenuContentDivider />
+        {Boolean(userJourneys.length) && <MenuContentDivider />}
         {userJourneys.map((activity) => (
           <button
             key={activity.mode}

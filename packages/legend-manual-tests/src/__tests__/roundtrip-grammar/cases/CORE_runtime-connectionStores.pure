@@ -1,9 +1,9 @@
 ###Relational
-Database store::store1
+Database store::store2
 (
 )
 
-Database store::store2
+Database store::store1
 (
 )
 
@@ -42,6 +42,25 @@ Runtime store::MyRuntime
     [
       store::store1,
       store::store2
+    ]
+  ];
+}
+
+Runtime store::LegacyRuntime
+{
+  mappings:
+  [
+    store::MyMapping
+  ];
+  connections:
+  [
+    store::store1:
+    [
+      con_1: store::MyConnection
+    ],
+    store::store2:
+    [
+      con_2: store::MyConnection
     ]
   ];
 }

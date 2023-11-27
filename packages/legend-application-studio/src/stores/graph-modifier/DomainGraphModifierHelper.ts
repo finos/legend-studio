@@ -72,6 +72,7 @@ import {
   isStubbed_PackageableElement,
   getOtherAssociatedProperty,
   observe_EmbeddedData,
+  observe_FunctionTestSuite,
 } from '@finos/legend-graph';
 
 // --------------------------------------------- Packageable Element -------------------------------------
@@ -401,6 +402,16 @@ export const functionTestable_setEmbeddedData = action(
 export const functionTestable_deleteDataStore = action(
   (suite: FunctionTestSuite, val: FunctionStoreTestData): void => {
     deleteEntry(suite.testData ?? [], val);
+  },
+);
+
+export const function_addTestSuite = action(
+  (
+    _func: ConcreteFunctionDefinition,
+    val: FunctionTestSuite,
+    context: ObserverContext,
+  ): void => {
+    addUniqueEntry(_func.tests, observe_FunctionTestSuite(val, context));
   },
 );
 
