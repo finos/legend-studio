@@ -152,14 +152,10 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
     resolutionQueries:
       [
         {
-          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}
-                   ];
           keyType: GeneratedPrimaryKey;
           precedence: 1;
         },
         {
-          queries: [ {input: org::dataeng::Widget[1],EFFECTIVE_DATE: StrictDate[1]|org::dataeng::Widget.all()->filter(widget|((($widget.identifiers.identifierType == 'ISIN') && ($input.identifiers->filter(idType|$idType.identifierType == 'ISIN').identifier == $widget.identifiers->filter(idType|$idType.identifierType == 'ISIN').identifier)) && ($widget.identifiers.FROM_Z->toOne() <= $EFFECTIVE_DATE)) && ($widget.identifiers.THRU_Z->toOne() > $EFFECTIVE_DATE))}
-                   ];
           keyType: AlternateKey;
           precedence: 2;
         }
