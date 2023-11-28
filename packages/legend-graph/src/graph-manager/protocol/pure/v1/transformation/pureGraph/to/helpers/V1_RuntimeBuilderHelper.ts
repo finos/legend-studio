@@ -63,11 +63,6 @@ export const V1_buildEngineRuntime = (
           context,
           store,
         );
-        // make sure connection are indexed by store properly
-        assertTrue(
-          connection.store.value === store.value,
-          `Runtime connections must be correctly indexed by store`,
-        );
         return new IdentifiedConnection(identifiedConnection.id, connection);
       });
     runtimeValue.connections.push(storeConnections);

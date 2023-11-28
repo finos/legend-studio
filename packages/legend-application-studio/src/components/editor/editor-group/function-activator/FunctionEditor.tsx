@@ -1313,91 +1313,99 @@ export const FunctionEditor = observer(() => {
             ))}
           </div>
           <div className="panel__header__actions">
-            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-              <button
-                className="btn__dropdown-combo__label"
-                onClick={editWithQueryBuilder()}
-                title="Edit Query"
-                tabIndex={-1}
-              >
-                <PencilIcon className="btn__dropdown-combo__label__icon" />
-                <div className="btn__dropdown-combo__label__title">Edit</div>
-              </button>
-            </div>
-            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-              {functionEditorState.isRunningFunc ? (
-                <button
-                  className="btn__dropdown-combo__canceler"
-                  onClick={cancelQuery}
-                  tabIndex={-1}
-                >
-                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
-                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
-                    <div className="btn__dropdown-combo__canceler__label__title">
-                      Stop
-                    </div>
-                  </div>
-                </button>
-              ) : (
-                <>
+            {selectedTab === FUNCTION_EDITOR_TAB.DEFINITION && (
+              <>
+                <div className="btn__dropdown-combo btn__dropdown-combo--primary">
                   <button
                     className="btn__dropdown-combo__label"
-                    onClick={runFunc}
-                    title="Run Function"
-                    disabled={executionIsRunning}
+                    onClick={editWithQueryBuilder()}
+                    title="Edit Query"
                     tabIndex={-1}
                   >
-                    <PlayIcon className="btn__dropdown-combo__label__icon" />
-                    <div className="btn__dropdown-combo__label__title">Run</div>
+                    <PencilIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Edit
+                    </div>
                   </button>
-                  <DropdownMenu
-                    className="btn__dropdown-combo__dropdown-btn"
-                    disabled={executionIsRunning}
-                    content={
-                      <MenuContent>
-                        <MenuContentItem
-                          className="btn__dropdown-combo__option"
-                          onClick={generatePlan}
-                        >
-                          Generate Plan
-                        </MenuContentItem>
-                        <MenuContentItem
-                          className="btn__dropdown-combo__option"
-                          onClick={debugPlanGeneration}
-                        >
-                          Debug
-                        </MenuContentItem>
-                      </MenuContent>
-                    }
-                    menuProps={{
-                      anchorOrigin: {
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                      },
-                      transformOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                      },
-                    }}
-                  >
-                    <CaretDownIcon />
-                  </DropdownMenu>
-                </>
-              )}
-            </div>
-            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-              <button
-                className="btn__dropdown-combo__label"
-                onClick={openFunctionActivateModal}
-                title="Activate function"
-                tabIndex={-1}
-              >
-                <RocketIcon className="btn__dropdown-combo__label__icon" />
-                <div className="btn__dropdown-combo__label__title">
-                  Activate
                 </div>
-              </button>
-            </div>
+                <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                  {functionEditorState.isRunningFunc ? (
+                    <button
+                      className="btn__dropdown-combo__canceler"
+                      onClick={cancelQuery}
+                      tabIndex={-1}
+                    >
+                      <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
+                        <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                        <div className="btn__dropdown-combo__canceler__label__title">
+                          Stop
+                        </div>
+                      </div>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        className="btn__dropdown-combo__label"
+                        onClick={runFunc}
+                        title="Run Function"
+                        disabled={executionIsRunning}
+                        tabIndex={-1}
+                      >
+                        <PlayIcon className="btn__dropdown-combo__label__icon" />
+                        <div className="btn__dropdown-combo__label__title">
+                          Run
+                        </div>
+                      </button>
+                      <DropdownMenu
+                        className="btn__dropdown-combo__dropdown-btn"
+                        disabled={executionIsRunning}
+                        content={
+                          <MenuContent>
+                            <MenuContentItem
+                              className="btn__dropdown-combo__option"
+                              onClick={generatePlan}
+                            >
+                              Generate Plan
+                            </MenuContentItem>
+                            <MenuContentItem
+                              className="btn__dropdown-combo__option"
+                              onClick={debugPlanGeneration}
+                            >
+                              Debug
+                            </MenuContentItem>
+                          </MenuContent>
+                        }
+                        menuProps={{
+                          anchorOrigin: {
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'right',
+                          },
+                        }}
+                      >
+                        <CaretDownIcon />
+                      </DropdownMenu>
+                    </>
+                  )}
+                </div>
+                <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                  <button
+                    className="btn__dropdown-combo__label"
+                    onClick={openFunctionActivateModal}
+                    title="Activate function"
+                    tabIndex={-1}
+                  >
+                    <RocketIcon className="btn__dropdown-combo__label__icon" />
+                    <div className="btn__dropdown-combo__label__title">
+                      Activate
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
             <button
               className="panel__header__action"
               disabled={

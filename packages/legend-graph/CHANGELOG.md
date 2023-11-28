@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.5.1
+
+### Patch Changes
+
+- [#2800](https://github.com/finos/legend-studio/pull/2800) [`bd598f8d6`](https://github.com/finos/legend-studio/commit/bd598f8d667b287725c9c8e0c3612b2a79f630e6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove runtime store index check + hard non empty string checks on connections to match engine compiler.
+
 ## 31.5.0
 
 ### Minor Changes

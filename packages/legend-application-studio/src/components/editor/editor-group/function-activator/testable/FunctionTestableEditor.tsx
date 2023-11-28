@@ -18,9 +18,17 @@ import { observer } from 'mobx-react-lite';
 import {
   BlankPanelPlaceholder,
   ContextMenu,
+  Dialog,
   MenuContent,
   MenuContentItem,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
+  ModalHeader,
+  ModalTitle,
   PanelContent,
+  PanelFormTextField,
   PlayIcon,
   PlusIcon,
   ResizablePanel,
@@ -31,7 +39,7 @@ import {
   RunErrorsIcon,
   clsx,
 } from '@finos/legend-art';
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import {
   type FunctionTestSuite,
   type DataElement,
@@ -331,7 +339,7 @@ const FunctionTestDataStateEditor = observer(
 const FunctionTestEditor = observer(
   (props: { functionTestState: FunctionTestState }) => {
     const { functionTestState } = props;
-    const mappingTest = functionTestState.test;
+    const functionTest = functionTestState.test;
     return (
       <div className="service-test-editor panel">
         <div className="panel mapping-testable-editor">
@@ -347,10 +355,10 @@ const FunctionTestEditor = observer(
                       <textarea
                         className="panel__content__form__section__textarea mapping-testable-editor__doc__textarea"
                         spellCheck={false}
-                        value={mappingTest.doc ?? ''}
+                        value={functionTest.doc ?? ''}
                         onChange={(event) => {
                           atomicTest_setDoc(
-                            mappingTest,
+                            functionTest,
                             event.target.value ? event.target.value : undefined,
                           );
                         }}
@@ -383,18 +391,17 @@ const FunctionTestItem = observer(
     functionTestState: FunctionTestState;
   }) => {
     const { functionTestState, suiteState } = props;
-    const mappingTest = functionTestState.test;
+    const functionTest = functionTestState.test;
     const isRunning = functionTestState.runningTestAction.isInProgress;
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const isReadOnly =
       suiteState.functionTestableState.functionEditorState.isReadOnly;
-    const openTest = (): void => suiteState.changeTest(mappingTest);
-    const isActive = suiteState.selectTestState?.test === mappingTest;
+    const openTest = (): void => suiteState.changeTest(functionTest);
+    const isActive = suiteState.selectTestState?.test === functionTest;
     const _testableResult = getTestableResultFromTestResult(
       functionTestState.testResultState.result,
     );
-
     const testableResult = isRunning
       ? TESTABLE_RESULT.IN_PROGRESS
       : _testableResult;
@@ -405,11 +412,11 @@ const FunctionTestItem = observer(
       // TODO
     };
     const _delete = (): void => {
-      suiteState.deleteTest(mappingTest);
+      suiteState.deleteTest(functionTest);
     };
 
     const rename = (): void => {
-      // suiteState.mappingTestableState.setRenameComponent(mappingTest);
+      suiteState.functionTestableState.setRenameComponent(functionTest);
     };
     const runTest = (): void => {
       flowResult(functionTestState.runTest()).catch(
@@ -448,7 +455,7 @@ const FunctionTestItem = observer(
             {resultIcon}
           </div>
           <div className="testable-test-explorer__item__label__text">
-            {mappingTest.id}
+            {functionTest.id}
           </div>
           <div className="mapping-test-explorer__item__actions">
             <button
@@ -467,6 +474,59 @@ const FunctionTestItem = observer(
   },
 );
 
+const CreateTestModal = observer(
+  (props: { functionSuiteState: FunctionTestSuiteState }) => {
+    const { functionSuiteState } = props;
+    const suite = functionSuiteState.suite;
+    // test name
+    const [id, setId] = useState<string | undefined>(undefined);
+    const isValid = id && !id.includes(' ');
+    const errorMessage = validateTestableId(
+      id,
+      suite.tests.map((t) => t.id),
+    );
+    const close = (): void => functionSuiteState.setShowModal(false);
+    const create = (): void => {
+      if (id) {
+        functionSuiteState.addNewTest(id);
+        close();
+      }
+    };
+
+    return (
+      <Dialog
+        open={functionSuiteState.showCreateModal}
+        onClose={close}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true}>
+          <ModalHeader>
+            <ModalTitle title="Create Mapping Test" />
+          </ModalHeader>
+          <ModalBody>
+            <PanelFormTextField
+              name="Name"
+              prompt=""
+              value={id}
+              update={(value: string | undefined): void => setId(value ?? '')}
+              errorMessage={errorMessage}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              disabled={!isValid}
+              onClick={create}
+              text="Create"
+            />
+            <ModalFooterButton onClick={close} text="Close" />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 const FunctionTestSuiteEditor = observer(
   (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
     const { functionTestSuiteState } = props;
@@ -474,7 +534,7 @@ const FunctionTestSuiteEditor = observer(
     const editorStore = functionTestSuiteState.editorStore;
     const selectedTestState = functionTestSuiteState.selectTestState;
     const addTest = (): void => {
-      // TODO
+      functionTestSuiteState.setShowModal(true);
     };
     const runTests = (): void => {
       flowResult(functionTestSuiteState.runSuite()).catch(
@@ -488,7 +548,7 @@ const FunctionTestSuiteEditor = observer(
     };
 
     const addStoreTestData = (): void => {
-      // mappingTestableDataState.setShowModal(true);
+      // TODO
     };
 
     const renderMappingTestEditor = (): React.ReactNode => {
@@ -527,9 +587,6 @@ const FunctionTestSuiteEditor = observer(
                 tooltipText="Click to add store test data"
               />
             )}
-            {/* {mappingTestableDataState.showNewModal && (
-              <CreateStoreTestDataModal mappingTestState={mappingTestState} />
-            )} */}
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
@@ -563,7 +620,7 @@ const FunctionTestSuiteEditor = observer(
                     className="panel__header__action"
                     tabIndex={-1}
                     onClick={addTest}
-                    title="Add Mapping Test"
+                    title="Add Function Test"
                   >
                     <PlusIcon />
                   </button>
@@ -577,9 +634,11 @@ const FunctionTestSuiteEditor = observer(
                     suiteState={functionTestSuiteState}
                   />
                 ))}
-                {/* {mappingTestSuiteState.showCreateModal && (
-                  <CreateTestModal mappingSuiteState={mappingTestSuiteState} />
-                )} */}
+                {functionTestSuiteState.showCreateModal && (
+                  <CreateTestModal
+                    functionSuiteState={functionTestSuiteState}
+                  />
+                )}
               </PanelContent>
             </ResizablePanel>
             <ResizablePanelSplitter>
@@ -591,6 +650,78 @@ const FunctionTestSuiteEditor = observer(
           </ResizablePanelGroup>
         </ResizablePanel>
       </ResizablePanelGroup>
+    );
+  },
+);
+
+const CreateFucntionTestSuiteModal = observer(
+  (props: { functiontestableEditorState: FunctionTestableState }) => {
+    const { functiontestableEditorState } = props;
+    const inputRef = useRef<HTMLInputElement>(null);
+    const handleEnter = (): void => inputRef.current?.focus();
+    const [suiteName, setSuiteName] = useState<string | undefined>(undefined);
+    const [testName, setTestName] = useState<string | undefined>(undefined);
+    const isValid = suiteName && testName;
+
+    // model
+    const close = (): void => functiontestableEditorState.setCreateSuite(false);
+    const create = (): void => {
+      if (suiteName && testName) {
+        functiontestableEditorState.createSuite(suiteName, testName);
+      }
+    };
+    return (
+      <Dialog
+        open={true}
+        onClose={close}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal darkMode={true}>
+          <ModalHeader>
+            <ModalTitle title="Create Mapping Test Suite" />
+          </ModalHeader>
+          <ModalBody>
+            <PanelFormTextField
+              ref={inputRef}
+              name="Test Suite Name"
+              prompt="Unique Identifier for Test suite i.e Person_suite"
+              value={suiteName}
+              placeholder="Suite Name"
+              update={(value: string | undefined): void =>
+                setSuiteName(value ?? '')
+              }
+              errorMessage={validateTestableId(suiteName, undefined)}
+            />
+            <PanelFormTextField
+              name="Test Name"
+              prompt="Unique Identifier for first test in suite"
+              placeholder="Test Name"
+              value={testName}
+              update={(value: string | undefined): void =>
+                setTestName(value ?? '')
+              }
+              errorMessage={validateTestableId(testName, undefined)}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              disabled={!isValid}
+              title={
+                !isValid
+                  ? 'Suite Name and Test Name Required'
+                  : 'Create Test Suite'
+              }
+              onClick={create}
+              text="Create"
+            />
+            <ModalFooterButton onClick={close} text="Close" />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
     );
   },
 );
@@ -615,7 +746,7 @@ export const FunctionTestableEditor = observer(
       functionTestableState.runAllFailingSuites();
     };
     const addSuite = (): void => {
-      // TODO
+      functionTestableState.setCreateSuite(true);
     };
 
     const renderSuiteState = (): React.ReactNode => {
@@ -722,11 +853,11 @@ export const FunctionTestableEditor = observer(
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
-          {/* {mappingTestableState.createSuiteState && (
-            <CreateTestSuiteModal
-              creatorState={mappingTestableState.createSuiteState}
+          {functionTestableState.createSuiteModal && (
+            <CreateFucntionTestSuiteModal
+              functiontestableEditorState={functionTestableState}
             />
-          )} */}
+          )}
           {functionTestableState.testableComponentToRename && (
             <RenameModal
               val={functionTestableState.testableComponentToRename.id}
