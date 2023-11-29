@@ -22,7 +22,11 @@ import {
   INTERNAL__PropagatedValue,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { assertTrue, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  UnsupportedOperationError,
+  assertTrue,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { getParameterValue } from '../../components/QueryBuilderSideBar.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { createSupportedFunctionExpression } from '../shared/ValueSpecificationEditorHelper.js';
@@ -64,6 +68,23 @@ export class QueryBuilderProcessingTemporalMilestoningImplementation extends Que
         `Milestoning class should have a parameter of type 'Date'`,
       ),
     );
+  }
+
+  buildGetAllVersionsInRangeParameters(
+    getAllVersionsInRangeFunction: SimpleFunctionExpression,
+  ): void {
+    if (this.milestoningState.startDate && this.milestoningState.endDate) {
+      getAllVersionsInRangeFunction.parametersValues.push(
+        this.milestoningState.startDate,
+      );
+      getAllVersionsInRangeFunction.parametersValues.push(
+        this.milestoningState.endDate,
+      );
+    } else {
+      throw new UnsupportedOperationError(
+        `Can't build getAllVersionsInRange() function: expected both startDate and endDate`,
+      );
+    }
   }
 
   buildGetAllWithDefaultParameters(

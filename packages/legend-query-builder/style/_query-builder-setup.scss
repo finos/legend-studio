@@ -123,6 +123,14 @@
     margin-left: 0.5rem;
   }
 
+  &__milestoning--error {
+    background-color: var(--color-red-200);
+
+    &:hover {
+      background-color: var(--color-red-200);
+    }
+  }
+
   &__config-group + &__config-group {
     margin-top: 0.5rem;
   }

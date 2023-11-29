@@ -82,6 +82,8 @@ export enum CUSTOM_DATE_PICKER_OPTION {
   LATEST_DATE = 'Latest Date',
 }
 
+const OPTIONAL_DATE = '<<optional>>';
+
 enum CUSTOM_DATE_OPTION_UNIT {
   DAYS = 'Day(s)',
   WEEKS = 'Week(s)',
@@ -725,6 +727,9 @@ export const buildDatePickerOption = (
         return new DatePickerOption('', '');
     }
   } else {
+    if (valueSpecification.values.length === 0) {
+      return new DatePickerOption(OPTIONAL_DATE, OPTIONAL_DATE);
+    }
     return valueSpecification.genericType.value.rawType.path ===
       PRIMITIVE_TYPE.LATESTDATE
       ? new DatePickerOption(
@@ -1227,6 +1232,7 @@ export const CustomDatePicker: React.FC<{
     match?: boolean;
   };
   setValueSpecification: (val: ValueSpecification) => void;
+  hasOptionalValue?: boolean | undefined;
 }> = (props) => {
   const {
     valueSpecification,
@@ -1234,11 +1240,23 @@ export const CustomDatePicker: React.FC<{
     graph,
     observerContext,
     typeCheckOption,
+    hasOptionalValue,
   } = props;
   const applicationStore = useApplicationStore();
   // For some cases where types need to be matched strictly.
   // Some options need to be filtered out for DateTime.
-  const targetDateOptionsEnum = typeCheckOption.match
+  const targetDateOptionsEnum = hasOptionalValue
+    ? typeCheckOption.match
+      ? Object.values([OPTIONAL_DATE]).concat(
+          Object.values([
+            CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
+            CUSTOM_DATE_PICKER_OPTION.NOW,
+          ]),
+        )
+      : Object.values([OPTIONAL_DATE]).concat(
+          Object.values(CUSTOM_DATE_PICKER_OPTION),
+        )
+    : typeCheckOption.match
     ? Object.values([
         CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
         CUSTOM_DATE_PICKER_OPTION.NOW,
@@ -1281,6 +1299,14 @@ export const CustomDatePicker: React.FC<{
           PRIMITIVE_TYPE.LATESTDATE,
           event.target.value,
           observerContext,
+        ),
+      );
+    } else if (OPTIONAL_DATE === chosenDatePickerOption.value) {
+      setValueSpecification(
+        new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          ),
         ),
       );
     } else if (

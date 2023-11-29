@@ -19,6 +19,8 @@ import {
   V1_buildExistsFunctionExpression,
   V1_buildFilterFunctionExpression,
   V1_buildGetAllFunctionExpression,
+  V1_buildGetAllVersionsFunctionExpression,
+  V1_buildGetAllVersionsInRangeFunctionExpression,
   V1_buildGroupByFunctionExpression,
   V1_buildOLAPGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
@@ -45,6 +47,7 @@ import {
 import {
   QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from '../../../graph/QueryBuilderMetaModelConst.js';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
@@ -67,10 +70,36 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
         if (
           matchFunctionName(
             functionName,
-            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+            QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
           )
         ) {
           return V1_buildGetAllFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+          )
+        ) {
+          return V1_buildGetAllVersionsInRangeFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+          )
+        ) {
+          return V1_buildGetAllVersionsFunctionExpression(
             functionName,
             parameters,
             openVariables,

@@ -390,6 +390,71 @@ export const V1_buildGetAllFunctionExpression = (
   return expression;
 };
 
+export const V1_buildGetAllVersionsInRangeFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  const expression = V1_buildGenericFunctionExpression(
+    functionName,
+    parameters,
+    openVariables,
+    compileContext,
+    processingContext,
+  );
+  const precedingExpression = expression.parametersValues[0];
+
+  assertType(
+    precedingExpression,
+    InstanceValue,
+    `Can't build getAllVersionsInRange() expression: only support getAllVersionsInRange() immediately following a class`,
+  );
+  const parameterValues = expression.parametersValues;
+  assertTrue(
+    parameterValues.length === 3,
+    `Can't build getAllVersionsInRange() expression: only support getAllVersionsRange() with start and end date`,
+  );
+  expression.genericType = precedingExpression.genericType;
+  expression.multiplicity = precedingExpression.multiplicity;
+
+  return expression;
+};
+
+export const V1_buildGetAllVersionsFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  const expression = V1_buildGenericFunctionExpression(
+    functionName,
+    parameters,
+    openVariables,
+    compileContext,
+    processingContext,
+  );
+  const precedingExpression = expression.parametersValues[0];
+
+  assertType(
+    precedingExpression,
+    InstanceValue,
+    `Can't build getAllVersions() expression: only support getAllVersions() immediately following a class`,
+  );
+
+  const parameterValues = expression.parametersValues;
+  assertTrue(
+    parameterValues.length === 1,
+    `Can't build getAllVersions() expression: only support getAllVersions() with no paremters`,
+  );
+  expression.genericType = precedingExpression.genericType;
+  expression.multiplicity = precedingExpression.multiplicity;
+
+  return expression;
+};
+
 export const V1_buildExistsFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
