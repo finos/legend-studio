@@ -93,7 +93,10 @@ import { QueryBuilderWatermarkState } from './watermark/QueryBuilderWatermarkSta
 import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
 import { QueryBuilderCheckEntitlementsState } from './entitlements/QueryBuilderCheckEntitlementsState.js';
 import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
-import { QUERY_BUILDER_PURE_PATH } from '../graph/QueryBuilderMetaModelConst.js';
+import {
+  QUERY_BUILDER_PURE_PATH,
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
+} from '../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderInternalizeState } from './QueryBuilderInternalizeState.js';
 import {
   QueryBuilderExternalExecutionContextState,
@@ -142,6 +145,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isLocalModeEnabled = false;
 
   class?: Class | undefined;
+  getAllFunction: QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS =
+    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL;
   executionContextState: QueryBuilderExecutionContextState;
   internalizeState?: QueryBuilderInternalizeState | undefined;
 
@@ -168,6 +173,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       fetchStructureState: observable,
       filterState: observable,
       watermarkState: observable,
+      milestoningState: observable,
       checkEntitlementsState: observable,
       resultState: observable,
       textEditorState: observable,
@@ -182,6 +188,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       class: observable,
       isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
+      getAllFunction: observable,
 
       sideBarClassName: computed,
       isQuerySupported: computed,
@@ -195,6 +202,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setClass: action,
       setIsQueryChatOpened: action,
       setIsLocalModeEnabled: action,
+      setGetAllFunction: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -339,6 +347,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.executionContextState = val;
   }
 
+  setGetAllFunction(val: QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS): void {
+    this.getAllFunction = val;
+  }
+
   get isQuerySupported(): boolean {
     return !this.unsupportedQueryState.rawLambda;
   }
@@ -418,6 +430,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   changeClass(val: Class): void {
     this.resetQueryResult();
     this.resetQueryContent();
+    this.setGetAllFunction(QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL);
     this.setClass(val);
     this.explorerState.refreshTreeData();
     this.fetchStructureState.implementation.onClassChange(val);
@@ -713,7 +726,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   get allValidationIssues(): string[] {
-    return this.fetchStructureState.implementation.allValidationIssues;
+    return this.milestoningState.allValidationIssues.concat(
+      this.fetchStructureState.implementation.allValidationIssues,
+    );
   }
 
   /**

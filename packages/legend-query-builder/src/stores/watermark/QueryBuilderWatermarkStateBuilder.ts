@@ -20,7 +20,7 @@ import {
   matchFunctionName,
 } from '@finos/legend-graph';
 import { assertTrue, guaranteeType } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import { QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../QueryBuilderStateBuilder.js';
 
@@ -37,7 +37,9 @@ export const processWatermarkExpression = (
   );
   assertTrue(
     matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
     ]),
     `Can't process forWatermark() expression: only support forWatermark() immediately following getAll()`,
   );

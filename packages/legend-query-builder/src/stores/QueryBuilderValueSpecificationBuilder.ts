@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  UnsupportedOperationError,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
 import {
   type Class,
   Multiplicity,
@@ -35,7 +39,7 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import type { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
+import { QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
 import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValueSpecificationBuilder.js';
 import { buildExecutionQueryFromLambdaFunction } from './shared/LambdaParameterState.js';
 import {
@@ -48,7 +52,27 @@ export const buildGetAllFunction = (
   multiplicity: Multiplicity,
 ): SimpleFunctionExpression => {
   const _func = new SimpleFunctionExpression(
-    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL),
+    extractElementNameFromPath(
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+    ),
+  );
+  const classInstance = new InstanceValue(
+    multiplicity,
+    GenericTypeExplicitReference.create(new GenericType(_class)),
+  );
+  classInstance.values[0] = PackageableElementExplicitReference.create(_class);
+  _func.parametersValues.push(classInstance);
+  return _func;
+};
+
+export const buildGetAllVersionsInRangeFunction = (
+  _class: Class,
+  multiplicity: Multiplicity,
+): SimpleFunctionExpression => {
+  const _func = new SimpleFunctionExpression(
+    extractElementNameFromPath(
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+    ),
   );
   const classInstance = new InstanceValue(
     multiplicity,
@@ -65,7 +89,7 @@ const buildGetAllVersionsFunction = (
 ): SimpleFunctionExpression => {
   const _func = new SimpleFunctionExpression(
     extractElementNameFromPath(
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL_VERSIONS,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
     ),
   );
   const classInstance = new InstanceValue(
@@ -158,6 +182,39 @@ export const buildLambdaFunction = (
       Multiplicity.ONE,
     );
     lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
+  } else if (
+    queryBuilderState.getAllFunction ===
+    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS
+  ) {
+    if (milestoningStereotype) {
+      const getAllVersionsFunction = buildGetAllVersionsFunction(
+        _class,
+        Multiplicity.ONE,
+      );
+      lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
+    } else {
+      throw new UnsupportedOperationError(
+        `Unable to build query lamdba: getAllVersions() expects source class to be milestoned`,
+      );
+    }
+  } else if (
+    queryBuilderState.getAllFunction ===
+    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
+  ) {
+    if (milestoningStereotype) {
+      const getAllVersionsInRangeFunction = buildGetAllVersionsInRangeFunction(
+        _class,
+        Multiplicity.ONE,
+      );
+      queryBuilderState.milestoningState
+        .getMilestoningImplementation(milestoningStereotype)
+        .buildGetAllVersionsInRangeParameters(getAllVersionsInRangeFunction);
+      lambdaFunction.expressionSequence[0] = getAllVersionsInRangeFunction;
+    } else {
+      throw new UnsupportedOperationError(
+        `Unable to build query lamdba: getAllVersionsInRange() expects source class to be milestoned`,
+      );
+    }
   } else {
     // build getAll()
     const getAllFunction = buildGetAllFunction(_class, Multiplicity.ONE);

@@ -46,6 +46,7 @@ import {
 import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from '../../../graph/QueryBuilderMetaModelConst.js';
 import { type QueryBuilderState } from '../../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../QueryBuilderStateBuilder.js';
@@ -82,7 +83,9 @@ export const processGraphFetchExpression = (
   assertTrue(
     matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
     ]),
     `Can't process ${functionName}(): only support ${functionName}() immediately following either getAll() or filter()`,
   );

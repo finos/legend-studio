@@ -191,7 +191,14 @@ export const QueryBuilderClassSelector = observer(
             />
             {queryBuilderState.isQuerySupported && (
               <button
-                className="btn--dark btn__icon--dark query-builder__setup__milestoning"
+                className={clsx(
+                  'btn--dark btn__icon--dark query-builder__setup__milestoning',
+                  {
+                    'query-builder__setup__milestoning--error':
+                      queryBuilderState.milestoningState.allValidationIssues
+                        .length,
+                  },
+                )}
                 tabIndex={-1}
                 onClick={showMilestoningEditor}
                 disabled={!milestoningState.isMilestonedQuery}
@@ -291,7 +298,14 @@ export const QueryBuilderMappingSelector = observer(
             />
             {queryBuilderState.isQuerySupported && (
               <button
-                className="btn--dark btn__icon--dark query-builder__setup__milestoning"
+                className={clsx(
+                  'btn--dark btn__icon--dark query-builder__setup__milestoning',
+                  {
+                    'query-builder__setup__milestoning--error':
+                      queryBuilderState.milestoningState.allValidationIssues
+                        .length,
+                  },
+                )}
                 tabIndex={-1}
                 onClick={showMilestoningEditor}
                 disabled={!milestoningState.isMilestonedQuery}
@@ -391,7 +405,14 @@ export const QueryBuilderFunction = observer(
             />
             {queryBuilderState.isQuerySupported && (
               <button
-                className="btn--dark btn__icon--dark query-builder__setup__milestoning"
+                className={clsx(
+                  'btn--dark btn__icon--dark query-builder__setup__milestoning',
+                  {
+                    'query-builder__setup__milestoning--error':
+                      queryBuilderState.milestoningState.allValidationIssues
+                        .length,
+                  },
+                )}
                 tabIndex={-1}
                 onClick={showMilestoningEditor}
                 disabled={!milestoningState.isMilestonedQuery}

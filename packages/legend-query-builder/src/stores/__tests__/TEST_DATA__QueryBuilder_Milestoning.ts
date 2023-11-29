@@ -2727,3 +2727,618 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget = {
     },
   ],
 };
+
+export const TEST_DATA__simpleGetAllVersionsWithProcessingTemporalClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAllVersions',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Person2',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__simpleGetAllVersionsWithBusinessTemporalClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAllVersions',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Person',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__simpleGetAllVersionsWithBiTemporalClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAllVersions',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Person1',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__simpleGetAllVersionsWithNonTemporalClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAllVersions',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Firm',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAllVersionsInRange',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Person',
+        },
+        {
+          _type: 'var',
+          name: 'start',
+        },
+        {
+          _type: 'var',
+          name: 'end',
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'Date',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'start',
+    },
+    {
+      _type: 'var',
+      class: 'Date',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'end',
+    },
+  ],
+};
+
+export const TEST_DATA__simpleGetAllVersionsInRangeWithBiTemporalClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAllVersionsInRange',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Person1',
+        },
+        {
+          _type: 'var',
+          name: 'start',
+        },
+        {
+          _type: 'var',
+          name: 'end',
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'Date',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'start',
+    },
+    {
+      _type: 'var',
+      class: 'Date',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'end',
+    },
+  ],
+};
+
+export const TEST_DATA__simpleGetAllVersionsInRangeWithProcessingTemporalClass =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'getAllVersionsInRange',
+        parameters: [
+          {
+            _type: 'packageableElementPtr',
+            fullPath: 'my::Person2',
+          },
+          {
+            _type: 'var',
+            name: 'start',
+          },
+          {
+            _type: 'var',
+            name: 'end',
+          },
+        ],
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        class: 'Date',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'start',
+      },
+      {
+        _type: 'var',
+        class: 'Date',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'end',
+      },
+    ],
+  };
+
+export const TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAllVersionsInRange',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Firm',
+        },
+        {
+          _type: 'var',
+          name: 'start',
+        },
+        {
+          _type: 'var',
+          name: 'end',
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'Date',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'start',
+    },
+    {
+      _type: 'var',
+      class: 'Date',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      name: 'end',
+    },
+  ],
+};
+
+export const TEST_DATA__simpleGetAllVersionsWithBusinessTemporalSourceAndBusinessTemporalTarget =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'getAllVersions',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'my::Person',
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                          {
+                            _type: 'var',
+                            name: 'businessDate',
+                          },
+                        ],
+                        property: 'businessTemporal',
+                      },
+                    ],
+                    property: 'date',
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'string',
+                value: 'Business Temporal/Date',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        class: 'Date',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'businessDate',
+      },
+    ],
+  };
+
+export const TEST_DATA__simpleGetAllVersionsWithBiTemporalSourceAndBiTemporalTarget =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'getAllVersions',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'my::Person1',
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                          {
+                            _type: 'var',
+                            name: 'processingDate',
+                          },
+                          {
+                            _type: 'var',
+                            name: 'businessDate',
+                          },
+                        ],
+                        property: 'biTemporal',
+                      },
+                    ],
+                    property: 'firmID',
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'string',
+                value: 'Bi Temporal/Firmid',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        class: 'Date',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'businessDate',
+      },
+      {
+        _type: 'var',
+        class: 'Date',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'processingDate',
+      },
+    ],
+  };
+
+export const TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndProcessingTemporalTarget =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'getAllVersions',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'my::Person2',
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                          {
+                            _type: 'var',
+                            name: 'processingDate',
+                          },
+                        ],
+                        property: 'processingTemporal',
+                      },
+                    ],
+                    property: 'firmID',
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'string',
+                value: 'Processing Temporal/Firmid',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        class: 'Date',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'processingDate',
+      },
+    ],
+  };
+
+export const TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndBusinessTemporalTarget =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'getAllVersions',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'my::Person2',
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                          {
+                            _type: 'var',
+                            name: 'businessDate',
+                          },
+                        ],
+                        property: 'businessTemporal',
+                      },
+                    ],
+                    property: 'firmID',
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            values: [
+              {
+                _type: 'string',
+                value: 'Business Temporal/Firmid',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        class: 'Date',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'businessDate',
+      },
+      {
+        _type: 'var',
+        class: 'Date',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'processingDate',
+      },
+    ],
+  };

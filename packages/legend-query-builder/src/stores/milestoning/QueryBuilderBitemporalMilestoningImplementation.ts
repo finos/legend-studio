@@ -25,6 +25,7 @@ import {
   PrimitiveType,
 } from '@finos/legend-graph';
 import {
+  UnsupportedOperationError,
   assertTrue,
   guaranteeNonNullable,
   guaranteeType,
@@ -102,6 +103,14 @@ export class QueryBuilderBitemporalMilestoningImplementation extends QueryBuilde
     );
     getAllFunction.parametersValues.push(parameterValue);
     getAllFunction.parametersValues.push(parameterValue);
+  }
+
+  buildGetAllVersionsInRangeParameters(
+    getAllVersionsInRangeFunction: SimpleFunctionExpression,
+  ): void {
+    throw new UnsupportedOperationError(
+      `Can't build getAllVersionsInRange() function: expects root class to be business temporal or processing temporal milestoned`,
+    );
   }
 
   generateMilestoningDate(

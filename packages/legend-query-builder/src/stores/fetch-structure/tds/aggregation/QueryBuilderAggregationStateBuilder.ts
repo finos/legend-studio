@@ -31,7 +31,10 @@ import {
   returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
+import {
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
+} from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../../QueryBuilderStateBuilder.js';
 import { extractNullableStringFromInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
@@ -202,7 +205,9 @@ export const processTDSGroupByExpression = (
   );
   assertTrue(
     matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
     ]),
     `Can't process groupBy() expression: only support groupBy() immediately following either getAll() or filter()`,

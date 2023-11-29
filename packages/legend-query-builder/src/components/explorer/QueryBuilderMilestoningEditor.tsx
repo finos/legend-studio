@@ -38,7 +38,9 @@ import {
   ModalFooterButton,
   ModalHeader,
   PanelEntryDropZonePlaceholder,
+  PanelFormBooleanField,
   PanelFormSection,
+  clsx,
 } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import {
@@ -48,6 +50,7 @@ import {
 } from '../shared/BasicValueSpecificationEditor.js';
 import { instanceValue_setValues } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
 const MilestoningParameterEditor = observer(
   (props: {
@@ -140,6 +143,123 @@ const MilestoningParameterEditor = observer(
             )}
           />
         </PanelEntryDropZonePlaceholder>
+      </div>
+    );
+  },
+);
+
+const OptionalMilestoningParameterEditor = observer(
+  (props: {
+    queryBuilderState: QueryBuilderState;
+    parameter: ValueSpecification | undefined;
+    setParameter: (val: ValueSpecification | undefined) => void;
+  }) => {
+    const { queryBuilderState, parameter, setParameter } = props;
+    const handleDrop = useCallback(
+      (item: QueryBuilderVariableDragSource): void => {
+        setParameter(item.variable);
+      },
+      [setParameter],
+    );
+    const [{ isDragOver }, dropConnector] = useDrop<
+      QueryBuilderVariableDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
+      () => ({
+        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
+        drop: (item, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item);
+          }
+        },
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({
+            shallow: true,
+          }),
+        }),
+      }),
+      [handleDrop],
+    );
+    const defaultParameter = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRICTDATE),
+      ),
+    );
+    const date = parameter ?? defaultParameter;
+
+    const setDate = (val: ValueSpecification): void => {
+      if (val instanceof PrimitiveInstanceValue && val.values.length === 0) {
+        setParameter(undefined);
+      } else {
+        setParameter(val);
+      }
+    };
+
+    return (
+      <div ref={dropConnector} className="query-builder__variable-editor">
+        <PanelEntryDropZonePlaceholder
+          isDragOver={isDragOver}
+          label="Change Milestoning Parameter Value"
+        >
+          <BasicValueSpecificationEditor
+            valueSpecification={date}
+            graph={queryBuilderState.graphManagerState.graph}
+            obseverContext={queryBuilderState.observerContext}
+            setValueSpecification={(val: ValueSpecification): void =>
+              setDate(val)
+            }
+            typeCheckOption={{
+              expectedType: PrimitiveType.DATE,
+            }}
+            resetValue={(): void => {
+              setParameter(undefined);
+            }}
+            isConstant={queryBuilderState.constantState.isValueSpecConstant(
+              date,
+            )}
+            hasOptionalValue={true}
+          />
+        </PanelEntryDropZonePlaceholder>
+      </div>
+    );
+  },
+);
+
+const AllVersionsInRangelMilestoningParametersEditor = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    if (queryBuilderState.milestoningState.isInavlidAllVersionsInRange) {
+      queryBuilderState.applicationStore.notificationService.notifyWarning(
+        'Please select both start date and end date',
+      );
+    }
+    return (
+      <div>
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            Start Date
+          </div>
+          <OptionalMilestoningParameterEditor
+            queryBuilderState={queryBuilderState}
+            parameter={queryBuilderState.milestoningState.startDate}
+            setParameter={(val: ValueSpecification | undefined): void =>
+              queryBuilderState.milestoningState.setStartDate(val)
+            }
+          />
+        </PanelFormSection>
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            End Date
+          </div>
+          <OptionalMilestoningParameterEditor
+            queryBuilderState={queryBuilderState}
+            parameter={queryBuilderState.milestoningState.endDate}
+            setParameter={(val: ValueSpecification | undefined): void =>
+              queryBuilderState.milestoningState.setEndDate(val)
+            }
+          />
+        </PanelFormSection>
       </div>
     );
   },
@@ -267,6 +387,35 @@ export const MilestoningParametersEditor = observer(
         >
           <ModalHeader title="Milestoning Parameters" />
           <ModalBody className="query-builder__variables__modal__body">
+            {milestoningState.isCurrentClassMilestoned && (
+              <PanelFormBooleanField
+                isReadOnly={false}
+                value={milestoningState.isAllVersionsEnabled}
+                name="all Versions"
+                prompt="Query All Milestoned Versions of the Root Class"
+                update={(value: boolean | undefined): void =>
+                  milestoningState.toggleAllVersions(value)
+                }
+              />
+            )}
+            {milestoningState.isAllVersionsEnabled &&
+              milestoningState.isCurrentClassSupportsVersionsInRange && (
+                <PanelFormSection>
+                  <div className="panel__content__form__section__header__label">
+                    All Versions In Range
+                  </div>
+                  <div
+                    className={clsx('panel__content__form__section__toggler')}
+                  >
+                    <div className="panel__content__form__section__toggler__prompt">
+                      Optionally apply a date range to get All Versions for
+                    </div>
+                  </div>
+                  <AllVersionsInRangelMilestoningParametersEditor
+                    queryBuilderState={queryBuilderState}
+                  />
+                </PanelFormSection>
+              )}
             <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
             <PanelFormSection>
               <div className="panel__content__form__section__header__label">
