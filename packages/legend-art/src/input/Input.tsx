@@ -41,7 +41,7 @@ export const InputWithInlineValidation: React.FC<
         })}
         {...inputProps}
       />
-      {showEditableIcon && (
+      {showEditableIcon && !error && (
         <div className="input--with-validation__editable" title={error}>
           <PencilIcon className="input--with-validation__editable__indicator" />
         </div>

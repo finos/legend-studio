@@ -166,7 +166,7 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
                 title="Deploy to sandbox"
                 tabIndex={-1}
               >
-                Deploy
+                Deploy to Sandbox
               </button>
             </div>
           </div>
