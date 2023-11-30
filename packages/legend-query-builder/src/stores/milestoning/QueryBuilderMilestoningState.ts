@@ -25,6 +25,8 @@ import {
   Multiplicity,
   PrimitiveType,
   INTERNAL__PropagatedValue,
+  MILESTONING_START_DATE_PARAMETER_NAME,
+  MILESTONING_END_DATE_PARAMETER_NAME,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -79,6 +81,9 @@ export class QueryBuilderMilestoningState implements Hashable {
       setShowMilestoningEditor: action,
       clearMilestoningDates: action,
       toggleAllVersions: action,
+      initialiseAllVersionsInRangeParameters: action,
+      clearAllVersionsInRangeParameters: action,
+      clearGetAllParameters: action,
       allValidationIssues: computed,
       hashCode: computed,
     });
@@ -226,6 +231,13 @@ export class QueryBuilderMilestoningState implements Hashable {
     );
   }
 
+  get isAllVersionsInRangeEnabled(): boolean {
+    return (
+      this.queryBuilderState.getAllFunction ===
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
+    );
+  }
+
   get isInavlidAllVersionsInRange(): boolean {
     if (
       (this.startDate && !this.endDate) ||
@@ -236,49 +248,43 @@ export class QueryBuilderMilestoningState implements Hashable {
     return false;
   }
 
+  toggleAllVersionsInRange(val: boolean | undefined): void {
+    if (val) {
+      this.queryBuilderState.setGetAllFunction(
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+      );
+      this.initialiseAllVersionsInRangeParameters();
+    } else {
+      this.queryBuilderState.setGetAllFunction(
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+      );
+      this.clearAllVersionsInRangeParameters();
+    }
+  }
+
   toggleAllVersions(val: boolean | undefined): void {
     if (val) {
       this.queryBuilderState.setGetAllFunction(
         QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
       );
+      this.clearGetAllParameters();
     } else {
       this.queryBuilderState.setGetAllFunction(
         QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
       );
+      this.clearAllVersionsInRangeParameters();
       this.updateMilestoningConfiguration();
     }
     this.updateQueryBuilderState();
   }
 
   setStartDate(val: ValueSpecification | undefined): void {
-    if (
-      val !== undefined &&
-      this.queryBuilderState.getAllFunction !==
-        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
-    ) {
-      this.queryBuilderState.setGetAllFunction(
-        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
-      );
-    } else if (!val) {
-      this.toggleAllVersions(true);
-    }
     this.startDate = val
       ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : val;
   }
 
   setEndDate(val: ValueSpecification | undefined): void {
-    if (
-      val !== undefined &&
-      this.queryBuilderState.getAllFunction !==
-        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
-    ) {
-      this.queryBuilderState.setGetAllFunction(
-        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
-      );
-    } else if (!val) {
-      this.toggleAllVersions(true);
-    }
     this.endDate = val
       ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : val;
@@ -316,6 +322,73 @@ export class QueryBuilderMilestoningState implements Hashable {
     this.businessDate = val
       ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : val;
+  }
+
+  initialiseAllVersionsInRangeParameters(): void {
+    this.setStartDate(
+      this.buildMilestoningParameter(MILESTONING_START_DATE_PARAMETER_NAME),
+    );
+    this.setEndDate(
+      this.buildMilestoningParameter(MILESTONING_END_DATE_PARAMETER_NAME),
+    );
+  }
+
+  clearGetAllParameters(): void {
+    if (
+      this.businessDate instanceof VariableExpression &&
+      !this.queryBuilderState.isVariableUsedInQueryBody(this.businessDate)
+    ) {
+      const paramState =
+        this.queryBuilderState.parametersState.parameterStates.find(
+          (p) => p.parameter === this.businessDate,
+        );
+      this.queryBuilderState.parametersState.removeParameter(
+        guaranteeNonNullable(paramState),
+      );
+      this.setBusinessDate(undefined);
+    }
+    if (
+      this.processingDate instanceof VariableExpression &&
+      !this.queryBuilderState.isVariableUsedInQueryBody(this.processingDate)
+    ) {
+      const paramState =
+        this.queryBuilderState.parametersState.parameterStates.find(
+          (p) => p.parameter === this.processingDate,
+        );
+      this.queryBuilderState.parametersState.removeParameter(
+        guaranteeNonNullable(paramState),
+      );
+      this.setProcessingDate(undefined);
+    }
+  }
+
+  clearAllVersionsInRangeParameters(): void {
+    if (
+      this.startDate instanceof VariableExpression &&
+      !this.queryBuilderState.isVariableUsedInQueryBody(this.startDate)
+    ) {
+      const paramState =
+        this.queryBuilderState.parametersState.parameterStates.find(
+          (p) => p.parameter === this.startDate,
+        );
+      this.queryBuilderState.parametersState.removeParameter(
+        guaranteeNonNullable(paramState),
+      );
+    }
+    if (
+      this.endDate instanceof VariableExpression &&
+      !this.queryBuilderState.isVariableUsedInQueryBody(this.endDate)
+    ) {
+      const paramState =
+        this.queryBuilderState.parametersState.parameterStates.find(
+          (p) => p.parameter === this.endDate,
+        );
+      this.queryBuilderState.parametersState.removeParameter(
+        guaranteeNonNullable(paramState),
+      );
+    }
+    this.setStartDate(undefined);
+    this.setEndDate(undefined);
   }
 
   clearMilestoningDates(): void {

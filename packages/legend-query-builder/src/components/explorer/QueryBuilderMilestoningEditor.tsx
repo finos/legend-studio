@@ -22,7 +22,6 @@ import {
   type VariableExpression,
   GenericType,
   GenericTypeExplicitReference,
-  MILESTONING_STEREOTYPE,
   observe_PrimitiveInstanceValue,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
@@ -40,7 +39,6 @@ import {
   PanelEntryDropZonePlaceholder,
   PanelFormBooleanField,
   PanelFormSection,
-  clsx,
 } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import {
@@ -50,109 +48,12 @@ import {
 } from '../shared/BasicValueSpecificationEditor.js';
 import { instanceValue_setValues } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
-import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
 const MilestoningParameterEditor = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
-    stereotype: MILESTONING_STEREOTYPE;
-  }) => {
-    const { queryBuilderState, stereotype } = props;
-    const handleDrop = useCallback(
-      (item: QueryBuilderVariableDragSource): void => {
-        if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
-          queryBuilderState.milestoningState.setBusinessDate(item.variable);
-        } else {
-          queryBuilderState.milestoningState.setProcessingDate(item.variable);
-        }
-      },
-      [queryBuilderState, stereotype],
-    );
-    const [{ isDragOver }, dropConnector] = useDrop<
-      QueryBuilderVariableDragSource,
-      void,
-      { isDragOver: boolean }
-    >(
-      () => ({
-        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop(item);
-          }
-        },
-        collect: (monitor): { isDragOver: boolean } => ({
-          isDragOver: monitor.isOver({
-            shallow: true,
-          }),
-        }),
-      }),
-      [handleDrop],
-    );
-    let milestoningParameter;
-    if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
-      milestoningParameter = guaranteeNonNullable(
-        queryBuilderState.milestoningState.businessDate,
-      );
-    } else {
-      milestoningParameter = guaranteeNonNullable(
-        queryBuilderState.milestoningState.processingDate,
-      );
-    }
-    const resetMilestoningParameter = (): void => {
-      const parameter = observe_PrimitiveInstanceValue(
-        new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(
-            new GenericType(PrimitiveType.STRICTDATE),
-          ),
-        ),
-        queryBuilderState.observerContext,
-      );
-      instanceValue_setValues(
-        parameter,
-        [generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE)],
-        queryBuilderState.observerContext,
-      );
-      if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
-        queryBuilderState.milestoningState.setBusinessDate(parameter);
-      } else {
-        queryBuilderState.milestoningState.setProcessingDate(parameter);
-      }
-    };
-
-    return (
-      <div ref={dropConnector} className="query-builder__variable-editor">
-        <PanelEntryDropZonePlaceholder
-          isDragOver={isDragOver}
-          label="Change Milestoning Parameter Value"
-        >
-          <BasicValueSpecificationEditor
-            valueSpecification={milestoningParameter}
-            graph={queryBuilderState.graphManagerState.graph}
-            obseverContext={queryBuilderState.observerContext}
-            setValueSpecification={(val: ValueSpecification): void =>
-              stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
-                ? queryBuilderState.milestoningState.setBusinessDate(val)
-                : queryBuilderState.milestoningState.setProcessingDate(val)
-            }
-            typeCheckOption={{
-              expectedType: PrimitiveType.DATE,
-            }}
-            resetValue={resetMilestoningParameter}
-            isConstant={queryBuilderState.constantState.isValueSpecConstant(
-              milestoningParameter,
-            )}
-          />
-        </PanelEntryDropZonePlaceholder>
-      </div>
-    );
-  },
-);
-
-const OptionalMilestoningParameterEditor = observer(
-  (props: {
-    queryBuilderState: QueryBuilderState;
-    parameter: ValueSpecification | undefined;
-    setParameter: (val: ValueSpecification | undefined) => void;
+    parameter: ValueSpecification;
+    setParameter: (val: ValueSpecification) => void;
   }) => {
     const { queryBuilderState, parameter, setParameter } = props;
     const handleDrop = useCallback(
@@ -181,19 +82,21 @@ const OptionalMilestoningParameterEditor = observer(
       }),
       [handleDrop],
     );
-    const defaultParameter = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(
-        new GenericType(PrimitiveType.STRICTDATE),
-      ),
-    );
-    const date = parameter ?? defaultParameter;
-
-    const setDate = (val: ValueSpecification): void => {
-      if (val instanceof PrimitiveInstanceValue && val.values.length === 0) {
-        setParameter(undefined);
-      } else {
-        setParameter(val);
-      }
+    const resetMilestoningParameter = (): void => {
+      const param = observe_PrimitiveInstanceValue(
+        new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.STRICTDATE),
+          ),
+        ),
+        queryBuilderState.observerContext,
+      );
+      instanceValue_setValues(
+        param,
+        [generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE)],
+        queryBuilderState.observerContext,
+      );
+      setParameter(param);
     };
 
     return (
@@ -203,63 +106,21 @@ const OptionalMilestoningParameterEditor = observer(
           label="Change Milestoning Parameter Value"
         >
           <BasicValueSpecificationEditor
-            valueSpecification={date}
+            valueSpecification={parameter}
             graph={queryBuilderState.graphManagerState.graph}
             obseverContext={queryBuilderState.observerContext}
             setValueSpecification={(val: ValueSpecification): void =>
-              setDate(val)
+              setParameter(val)
             }
             typeCheckOption={{
               expectedType: PrimitiveType.DATE,
             }}
-            resetValue={(): void => {
-              setParameter(undefined);
-            }}
+            resetValue={resetMilestoningParameter}
             isConstant={queryBuilderState.constantState.isValueSpecConstant(
-              date,
+              parameter,
             )}
-            hasOptionalValue={true}
           />
         </PanelEntryDropZonePlaceholder>
-      </div>
-    );
-  },
-);
-
-const AllVersionsInRangelMilestoningParametersEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    if (queryBuilderState.milestoningState.isInavlidAllVersionsInRange) {
-      queryBuilderState.applicationStore.notificationService.notifyWarning(
-        'Please select both start date and end date',
-      );
-    }
-    return (
-      <div>
-        <PanelFormSection>
-          <div className="panel__content__form__section__header__label">
-            Start Date
-          </div>
-          <OptionalMilestoningParameterEditor
-            queryBuilderState={queryBuilderState}
-            parameter={queryBuilderState.milestoningState.startDate}
-            setParameter={(val: ValueSpecification | undefined): void =>
-              queryBuilderState.milestoningState.setStartDate(val)
-            }
-          />
-        </PanelFormSection>
-        <PanelFormSection>
-          <div className="panel__content__form__section__header__label">
-            End Date
-          </div>
-          <OptionalMilestoningParameterEditor
-            queryBuilderState={queryBuilderState}
-            parameter={queryBuilderState.milestoningState.endDate}
-            setParameter={(val: ValueSpecification | undefined): void =>
-              queryBuilderState.milestoningState.setEndDate(val)
-            }
-          />
-        </PanelFormSection>
       </div>
     );
   },
@@ -276,7 +137,12 @@ const BiTemporalMilestoningEditor = observer(
           </div>
           <MilestoningParameterEditor
             queryBuilderState={queryBuilderState}
-            stereotype={MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL}
+            parameter={guaranteeNonNullable(
+              queryBuilderState.milestoningState.processingDate,
+            )}
+            setParameter={(val: ValueSpecification): void =>
+              queryBuilderState.milestoningState.setProcessingDate(val)
+            }
           />
         </PanelFormSection>
         <PanelFormSection>
@@ -285,7 +151,12 @@ const BiTemporalMilestoningEditor = observer(
           </div>
           <MilestoningParameterEditor
             queryBuilderState={queryBuilderState}
-            stereotype={MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL}
+            parameter={guaranteeNonNullable(
+              queryBuilderState.milestoningState.businessDate,
+            )}
+            setParameter={(val: ValueSpecification): void =>
+              queryBuilderState.milestoningState.setBusinessDate(val)
+            }
           />
         </PanelFormSection>
       </>
@@ -304,7 +175,12 @@ const BusinessTemporalMilestoningEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          stereotype={MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL}
+          parameter={guaranteeNonNullable(
+            queryBuilderState.milestoningState.businessDate,
+          )}
+          setParameter={(val: ValueSpecification): void =>
+            queryBuilderState.milestoningState.setBusinessDate(val)
+          }
         />
       </PanelFormSection>
     );
@@ -322,7 +198,12 @@ const ProcessingTemporalMilestoningEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          stereotype={MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL}
+          parameter={guaranteeNonNullable(
+            queryBuilderState.milestoningState.processingDate,
+          )}
+          setParameter={(val: ValueSpecification): void =>
+            queryBuilderState.milestoningState.setProcessingDate(val)
+          }
         />
       </PanelFormSection>
     );
@@ -357,6 +238,49 @@ const TemporalMilestoningEditor: React.FC<{
     return null;
   }
 };
+
+const AllVersionsInRangelMilestoningParametersEditor = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    if (queryBuilderState.milestoningState.isInavlidAllVersionsInRange) {
+      queryBuilderState.applicationStore.notificationService.notifyWarning(
+        'Please select both start date and end date',
+      );
+    }
+    return (
+      <div className="query-builder__milestoning-panel__all-versions-in-range-editor">
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            Start Date
+          </div>
+          <MilestoningParameterEditor
+            queryBuilderState={queryBuilderState}
+            parameter={guaranteeNonNullable(
+              queryBuilderState.milestoningState.startDate,
+            )}
+            setParameter={(val: ValueSpecification): void =>
+              queryBuilderState.milestoningState.setStartDate(val)
+            }
+          />
+        </PanelFormSection>
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            End Date
+          </div>
+          <MilestoningParameterEditor
+            queryBuilderState={queryBuilderState}
+            parameter={guaranteeNonNullable(
+              queryBuilderState.milestoningState.endDate,
+            )}
+            setParameter={(val: ValueSpecification): void =>
+              queryBuilderState.milestoningState.setEndDate(val)
+            }
+          />
+        </PanelFormSection>
+      </div>
+    );
+  },
+);
 
 export const MilestoningParametersEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -400,21 +324,23 @@ export const MilestoningParametersEditor = observer(
             )}
             {milestoningState.isAllVersionsEnabled &&
               milestoningState.isCurrentClassSupportsVersionsInRange && (
-                <PanelFormSection>
-                  <div className="panel__content__form__section__header__label">
-                    All Versions In Range
-                  </div>
-                  <div
-                    className={clsx('panel__content__form__section__toggler')}
-                  >
-                    <div className="panel__content__form__section__toggler__prompt">
-                      Optionally apply a date range to get All Versions for
-                    </div>
-                  </div>
-                  <AllVersionsInRangelMilestoningParametersEditor
-                    queryBuilderState={queryBuilderState}
+                <>
+                  <PanelFormBooleanField
+                    isReadOnly={false}
+                    value={milestoningState.isAllVersionsInRangeEnabled}
+                    name=" All Versions In Range"
+                    prompt="Optionally apply a date range to get All Versions for"
+                    update={(value: boolean | undefined): void =>
+                      milestoningState.toggleAllVersionsInRange(value)
+                    }
                   />
-                </PanelFormSection>
+
+                  {milestoningState.isAllVersionsInRangeEnabled && (
+                    <AllVersionsInRangelMilestoningParametersEditor
+                      queryBuilderState={queryBuilderState}
+                    />
+                  )}
+                </>
               )}
             <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
             <PanelFormSection>

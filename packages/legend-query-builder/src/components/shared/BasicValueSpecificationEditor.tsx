@@ -895,7 +895,6 @@ const DateInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
-    hasOptionalValue?: boolean | undefined;
   }) => {
     const {
       valueSpecification,
@@ -904,7 +903,6 @@ const DateInstanceValueEditor = observer(
       obseverContext,
       typeCheckOption,
       resetValue,
-      hasOptionalValue,
     } = props;
 
     return (
@@ -915,7 +913,6 @@ const DateInstanceValueEditor = observer(
           observerContext={obseverContext}
           typeCheckOption={typeCheckOption}
           setValueSpecification={setValueSpecification}
-          hasOptionalValue={hasOptionalValue}
         />
         <button
           className="value-spec-editor__reset-btn"
@@ -954,7 +951,6 @@ export const BasicValueSpecificationEditor: React.FC<{
         cleanUpReloadValues?: () => void;
       }
     | undefined;
-  hasOptionalValue?: boolean | undefined;
 }> = (props) => {
   const {
     className,
@@ -966,7 +962,6 @@ export const BasicValueSpecificationEditor: React.FC<{
     resetValue,
     selectorConfig,
     isConstant,
-    hasOptionalValue,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -1021,7 +1016,6 @@ export const BasicValueSpecificationEditor: React.FC<{
             className={className}
             setValueSpecification={setValueSpecification}
             resetValue={resetValue}
-            hasOptionalValue={hasOptionalValue}
           />
         );
       default:
@@ -1088,7 +1082,6 @@ export const BasicValueSpecificationEditor: React.FC<{
           className={className}
           setValueSpecification={setValueSpecification}
           resetValue={resetValue}
-          hasOptionalValue={hasOptionalValue}
         />
       );
     } else if (

@@ -549,6 +549,12 @@
   }
 }
 
+.query-builder__milestoning-panel {
+  &__all-versions-in-range-editor {
+    margin: 1rem 0;
+  }
+}
+
 .query-builder__side-bar {
   display: flex;
   flex-direction: column;

@@ -570,13 +570,11 @@ describe(
         });
 
         renderResult.getByTitle('Edit Milestoning Parameters');
-        await fireEvent.click(
-          renderResult.getByTitle('Edit Milestoning Parameters'),
-        );
+        fireEvent.click(renderResult.getByTitle('Edit Milestoning Parameters'));
 
         const dialog = await waitFor(() => renderResult.getByRole('dialog'));
 
-        await fireEvent.click(
+        fireEvent.click(
           getByText(dialog, 'Query All Milestoned Versions of the Root Class'),
         );
         const receivedOutput = queryBuilderState.buildQuery();

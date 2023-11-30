@@ -3331,14 +3331,5 @@ export const TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndBusin
         },
         name: 'businessDate',
       },
-      {
-        _type: 'var',
-        class: 'Date',
-        multiplicity: {
-          lowerBound: 1,
-          upperBound: 1,
-        },
-        name: 'processingDate',
-      },
     ],
   };
