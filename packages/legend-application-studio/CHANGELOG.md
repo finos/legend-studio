@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.13.5
+
+### Patch Changes
+
+- [#2804](https://github.com/finos/legend-studio/pull/2804) [`c5954ebaa`](https://github.com/finos/legend-studio/commit/c5954ebaab8015fac6f05e0466641510578b7c53) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Minor function activator improvements
+
 ## 28.13.4
 
 ### Patch Changes
