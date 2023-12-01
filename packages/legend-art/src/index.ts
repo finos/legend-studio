@@ -37,6 +37,8 @@ export * from './dialog/Dialog.js';
 export * from './dialog/NonBlockingDialog.js';
 export * from './dialog/Modal.js';
 
+export * from './divider/Divider.js';
+
 export * from './menu/MenuContent.js';
 export * from './menu/ContextMenu.js';
 export * from './menu/DropdownMenu.js';

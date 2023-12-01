@@ -44,6 +44,23 @@ test(integrationTest('Shows project searcher properly'), async () => {
   // NOTE: react-select does not seem to produce a normal input box where we could set the placeholder attribute
   // as such, we cannot use `queryByPlaceholderText` but use `queryByText` instead
   await waitFor(() =>
+    expect(queryByText('Welcome to Legend Studio')).not.toBeNull(),
+  );
+  await waitFor(() => expect(queryByText('Search for project')).not.toBeNull());
+  await waitFor(() =>
     expect(queryByText('Search for project...')).not.toBeNull(),
   );
+  await waitFor(() => expect(queryByText('Choose a workspace')).not.toBeNull());
+  await waitFor(() =>
+    expect(
+      queryByText('In order to choose a workspace, a project must be chosen'),
+    ).not.toBeNull(),
+  );
+  await waitFor(() => expect(queryByText('Go')).not.toBeNull());
+  await waitFor(() => expect(queryByText('Create New Project')).not.toBeNull());
+  await waitFor(() =>
+    expect(queryByText('Create New Workspace')).not.toBeNull(),
+  );
+  //check successfully load cards
+  await waitFor(() => expect(queryByText('Showcase projects')).not.toBeNull());
 });

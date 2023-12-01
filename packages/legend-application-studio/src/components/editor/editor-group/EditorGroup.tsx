@@ -81,6 +81,11 @@ import { QueryConnectionWorflowEditor } from './end-to-end-flow-editor/Connectio
 import { QueryConnectionEndToEndWorkflowEditorState } from '../../../stores/editor/editor-state/end-to-end-workflow-state/QueryConnectionEndToEndWorkflowEditorState.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 import { SnowflakeAppFunctionActivatorEditor } from './function-activator/SnowflakeAppFunctionActivatorEditor.js';
+import {
+  ShowcaseCard,
+  RuleEngagementCard,
+  DocumentationCard,
+} from '../../workspace-setup/WorkspaceSetup.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -136,52 +141,70 @@ export const EditorGroupSplashScreen: React.FC = () => {
           'editor-group__splash-screen__content--hidden': !showCommandList,
         })}
       >
-        <div className="editor-group__splash-screen__content__item">
-          <div className="editor-group__splash-screen__content__item__label">
-            Open or Search for an Element
+        <div className="editor-group__splash-screen__content__cards">
+          <div className="editor-group__splash-screen__content__header">
+            You can see our Showcase projects here and use them as quickstarts:
           </div>
-          <div className="editor-group__splash-screen__content__item__hot-keys">
-            <div className="hotkey__key">Ctrl</div>
-            <div className="hotkey__plus">
-              <PlusIcon />
+          <div className="editor-group__splash-screen__content__cards__container">
+            <RuleEngagementCard />
+            <ShowcaseCard hideDocumentation={true} />
+            <DocumentationCard />
+          </div>
+        </div>
+        <div className="editor-group__splash-screen__content__divider"></div>
+        <div className="editor-group__splash-screen__content__actions">
+          <div className="editor-group__splash-screen__content__header">
+            Essential Keyboard Shortcuts
+          </div>
+          <div className="editor-group__splash-screen__content__items">
+            <div className="editor-group__splash-screen__content__item">
+              <div className="editor-group__splash-screen__content__item__label">
+                Open or Search for an Element
+              </div>
+              <div className="editor-group__splash-screen__content__item__hot-keys">
+                <div className="hotkey__key">Ctrl</div>
+                <div className="hotkey__plus">
+                  <PlusIcon />
+                </div>
+                <div className="hotkey__key">P</div>
+              </div>
             </div>
-            <div className="hotkey__key">P</div>
-          </div>
-        </div>
-        <div className="editor-group__splash-screen__content__item">
-          <div className="editor-group__splash-screen__content__item__label">
-            Push Local Changes
-          </div>
-          <div className="editor-group__splash-screen__content__item__hot-keys">
-            <div className="hotkey__key">Ctrl</div>
-            <div className="hotkey__plus">
-              <PlusIcon />
+            <div className="editor-group__splash-screen__content__item">
+              <div className="editor-group__splash-screen__content__item__label">
+                Push Local Changes
+              </div>
+              <div className="editor-group__splash-screen__content__item__hot-keys">
+                <div className="hotkey__key">Ctrl</div>
+                <div className="hotkey__plus">
+                  <PlusIcon />
+                </div>
+                <div className="hotkey__key">S</div>
+              </div>
             </div>
-            <div className="hotkey__key">S</div>
-          </div>
-        </div>
-        <div className="editor-group__splash-screen__content__item">
-          <div className="editor-group__splash-screen__content__item__label">
-            Open Showcases
-          </div>
-          <div className="editor-group__splash-screen__content__item__hot-keys">
-            <div className="hotkey__key">F7</div>
-          </div>
-        </div>
-        <div className="editor-group__splash-screen__content__item">
-          <div className="editor-group__splash-screen__content__item__label">
-            Toggle Hackermode
-          </div>
-          <div className="editor-group__splash-screen__content__item__hot-keys">
-            <div className="hotkey__key">F8</div>
-          </div>
-        </div>
-        <div className="editor-group__splash-screen__content__item">
-          <div className="editor-group__splash-screen__content__item__label">
-            Compile
-          </div>
-          <div className="editor-group__splash-screen__content__item__hot-keys">
-            <div className="hotkey__key">F9</div>
+            <div className="editor-group__splash-screen__content__item">
+              <div className="editor-group__splash-screen__content__item__label">
+                Open Showcases
+              </div>
+              <div className="editor-group__splash-screen__content__item__hot-keys">
+                <div className="hotkey__key">F7</div>
+              </div>
+            </div>
+            <div className="editor-group__splash-screen__content__item">
+              <div className="editor-group__splash-screen__content__item__label">
+                Toggle Hackermode
+              </div>
+              <div className="editor-group__splash-screen__content__item__hot-keys">
+                <div className="hotkey__key">F8</div>
+              </div>
+            </div>
+            <div className="editor-group__splash-screen__content__item">
+              <div className="editor-group__splash-screen__content__item__label">
+                Compile
+              </div>
+              <div className="editor-group__splash-screen__content__item__hot-keys">
+                <div className="hotkey__key">F9</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

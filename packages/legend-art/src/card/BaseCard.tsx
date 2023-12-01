@@ -18,17 +18,27 @@ import {
   type CardProps as MuiCardProps,
   Card as MuiCard,
   CardContent as MuiCardContent,
+  CardActions as MuiCardActions,
+  Button,
 } from '@mui/material';
 import clsx from 'clsx';
+
+export type MuiCardActionConfig = {
+  title: string;
+  content: React.ReactNode;
+  action: () => void;
+};
 
 export const BaseCard: React.FC<
   {
     className?: string | undefined;
     cardMedia: React.ReactNode;
     cardName: string;
-    cardContent: string;
+    cardContent: React.ReactNode;
+    cardActions?: MuiCardActionConfig[];
     isDisable?: boolean;
     isActive?: boolean;
+    isStable?: boolean;
   } & MuiCardProps
 > = (props) => {
   const {
@@ -37,8 +47,10 @@ export const BaseCard: React.FC<
     cardMedia,
     cardName,
     cardContent,
+    cardActions,
     isDisable,
     isActive,
+    isStable,
     ...otherProps
   } = props;
   return (
@@ -47,6 +59,7 @@ export const BaseCard: React.FC<
         'mui-card',
         { 'mui-card--disable': isDisable },
         { 'mui-card--active': isActive },
+        { 'mui-card--stable': isStable },
         className,
       )}
       {...otherProps}
@@ -56,6 +69,24 @@ export const BaseCard: React.FC<
         <div className="mui-card__header">{cardName}</div>
         <div className="mui-card__content">{cardContent}</div>
       </MuiCardContent>
+      {cardActions && (
+        <MuiCardActions>
+          {cardActions.map((cardAction) => (
+            <Button
+              className="mui-card__card-action"
+              key={cardAction.title}
+              onClick={cardAction.action}
+            >
+              <div className="mui-card__card-action__label">
+                {cardAction.title}
+              </div>
+              <div className="mui-card__card-action__content">
+                {cardAction.content}
+              </div>
+            </Button>
+          ))}
+        </MuiCardActions>
+      )}
     </MuiCard>
   );
 };
