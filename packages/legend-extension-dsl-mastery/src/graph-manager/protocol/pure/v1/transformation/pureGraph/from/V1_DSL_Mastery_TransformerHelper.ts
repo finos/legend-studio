@@ -594,9 +594,9 @@ export const V1_transformResolutionQuery = (
   resolutionQuery.keyType = element.keyType;
   resolutionQuery.optional = element.optional;
   resolutionQuery.precedence = element.precedence;
-  resolutionQuery.queries = element.queries.map((rq) => {
-    return V1_transformRawLambda(rq, context);
-  });
+  resolutionQuery.queries = element.queries.map((rq) =>
+    V1_transformRawLambda(rq, context),
+  );
   return resolutionQuery;
 };
 

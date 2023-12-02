@@ -147,7 +147,7 @@ Service org::dataeng::ElasticSearchTransformService
 MasterRecordDefinition alloy::mastery::WidgetMasterRecord
 {
   modelClass: org::dataeng::Widget;
-  identityResolution: 
+  identityResolution:
   {
     resolutionQueries:
       [
