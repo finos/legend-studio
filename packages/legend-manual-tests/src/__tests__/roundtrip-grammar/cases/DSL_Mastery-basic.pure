@@ -152,19 +152,53 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
     resolutionQueries:
       [
         {
-          queries: [
-                   ];
+          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}
+          ];
           keyType: GeneratedPrimaryKey;
           precedence: 1;
         },
         {
-          queries: [
-                   ];
+          queries: [ {input: org::dataeng::Widget[1],EFFECTIVE_DATE: StrictDate[1]|org::dataeng::Widget.all()->filter(widget|((($widget.identifiers.identifierType == 'ISIN') && ($input.identifiers->filter(idType|$idType.identifierType == 'ISIN').identifier == $widget.identifiers->filter(idType|$idType.identifierType == 'ISIN').identifier)) && ($widget.identifiers.FROM_Z->toOne() <= $EFFECTIVE_DATE)) && ($widget.identifiers.THRU_Z->toOne() > $EFFECTIVE_DATE))}
+          ];
           keyType: AlternateKey;
           precedence: 2;
         }
       ]
   }
+  precedenceRules: [
+    DeleteRule: {
+      path: org::dataeng::Widget.identifiers;
+      ruleScope: [
+        RecordSourceScope {widget-rest-source}
+      ];
+    },
+    CreateRule: {
+      path: org::dataeng::Widget{$.widgetId == 1234}.identifiers.identifierType;
+      ruleScope: [
+        RecordSourceScope {widget-file-source-ftp},
+        DataProviderTypeScope {Aggregator}
+      ];
+    },
+    ConditionalRule: {
+      predicate: {incoming: org::dataeng::Widget[1],current: org::dataeng::Widget[1]|$incoming.widgetId == $current.widgetId};
+      path: org::dataeng::Widget.identifiers.identifierType;
+    },
+    SourcePrecedenceRule: {
+      path: org::dataeng::Widget.identifiers{$.identifier == 'XLON'};
+      action: Overwrite;
+      ruleScope: [
+        RecordSourceScope {widget-file-source-sftp, precedence: 1},
+        DataProviderTypeScope {Exchange, precedence: 2}
+      ];
+    },
+    SourcePrecedenceRule: {
+      path: org::dataeng::Widget.identifiers;
+      action: Overwrite;
+      ruleScope: [
+        RecordSourceScope {widget-rest-source, precedence: 2}
+      ];
+    }
+  ]
   postCurationEnrichmentService: org::dataeng::PostCurationWidget;
   publishToElasticSearch: true;
   elasticSearchTransformService: org::dataeng::ElasticSearchTransformService;
