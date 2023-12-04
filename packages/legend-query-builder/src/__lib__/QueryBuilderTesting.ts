@@ -19,6 +19,7 @@ export enum QUERY_BUILDER_TEST_ID {
 
   QUERY_BUILDER = 'query__builder',
   QUERY_BUILDER_SETUP = 'query__builder__setup',
+  QUERY_BUILDER_PROJECTION = 'query__builder__projection',
   QUERY_BUILDER_TDS = 'query__builder__tds',
   QUERY_BUILDER_TDS_PROJECTION_COLUMN = 'QUERY_BUILDER_TDS_PROJECTION_COLUMN',
   QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT = 'query-builder__tds__result-modifier-prompt',
