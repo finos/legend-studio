@@ -1168,7 +1168,7 @@ export const QueryBuilderTDSPanel = observer(
           </div>
         </div>
         <div
-          data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
+          data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION}
           className="query-builder__projection__content"
         >
           <PanelDropZone

@@ -443,7 +443,7 @@ test(
 );
 
 test(
-  integrationTest('Query builder loads simple prjection query when we DnD it'),
+  integrationTest('Query builder loads simple projection query when we DnD it'),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__ComplexRelationalModel,
@@ -471,7 +471,9 @@ test(
     );
 
     const projectionPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
     );
 
     // Drag and drop to the projection panel
