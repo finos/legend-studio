@@ -22,7 +22,7 @@ import {
   findByText,
   getByText,
 } from '@testing-library/react';
-import { LogService } from '@finos/legend-shared';
+import { LogService, guaranteeNonNullable } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import {
   type RawMappingModelCoverageAnalysisResult,
@@ -49,6 +49,62 @@ import {
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
 } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
+import { STYLE_PREFIX, STYLE_PREFIX__DARK } from '@finos/legend-art';
+import { expect } from '@jest/globals';
+
+export const selectFromCustomSelectorInput = (
+  selectorContainer: HTMLElement,
+  optionText: string,
+  lightMode?: boolean,
+): void => {
+  const selectorContainerClassName =
+    '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;
+  const selectorInputValue =
+    '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__single-value`;
+
+  let foundOptionText = false;
+  const selector = selectorContainer.querySelector(
+    selectorContainerClassName,
+  ) as HTMLSelectElement;
+
+  // be careful that the first option in the dropdown has been selected
+  fireEvent.keyDown(selector, { key: 'ArrowDown' });
+  fireEvent.keyDown(selector, { key: 'Enter' });
+  expect(selector.querySelector(selectorInputValue)).not.toBeNull();
+  const firstOptionValue = guaranteeNonNullable(
+    selector.querySelector(selectorInputValue),
+  ).textContent;
+  let currentOptionValue = firstOptionValue;
+  let numofPress = 1;
+
+  // Since the selector value can't be directly changed to the desired option value through fireEvent.change(),
+  // we need to repeatedly press the ArrowDown key to select it. However, each time we restart this process,
+  // it starts from the beginning of the dropdown list, creating a circular pattern.
+  // To prevent a loop, we must keep track of the number of times we press the key to select other options
+  // and ensure we don't return to the initial option.
+  while (
+    (!foundOptionText && currentOptionValue !== firstOptionValue) ||
+    numofPress === 1
+  ) {
+    for (let i = 0; i < numofPress + 1; i++) {
+      fireEvent.keyDown(selector, { key: 'ArrowDown' });
+    }
+    fireEvent.keyDown(selector, { key: 'Enter' });
+    expect(selector.querySelector(selectorInputValue)).not.toBeNull();
+    currentOptionValue = guaranteeNonNullable(
+      selector.querySelector(selectorInputValue),
+    ).textContent;
+    if (currentOptionValue === optionText) {
+      foundOptionText = true;
+    }
+    numofPress++;
+  }
+  if (!foundOptionText) {
+    throw new Error(
+      `The option is unavailable in the selector dropdown. Kindly review the input: ${optionText}`,
+    );
+  }
+};
 
 export const dragAndDrop = async (
   source: HTMLElement,

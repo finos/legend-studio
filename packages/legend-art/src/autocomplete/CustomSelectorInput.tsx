@@ -172,8 +172,8 @@ const CustomOption: React.FC<
   );
 };
 
-const STYLE_PREFIX = 'selector-input';
-const STYLE_PREFIX__DARK = 'selector-input--dark';
+export const STYLE_PREFIX = 'selector-input';
+export const STYLE_PREFIX__DARK = 'selector-input--dark';
 
 const LoadingIndicator: React.FC = () => (
   <div
