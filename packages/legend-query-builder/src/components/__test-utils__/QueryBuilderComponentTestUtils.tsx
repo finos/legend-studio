@@ -101,7 +101,7 @@ export const selectFromCustomSelectorInput = (
   }
   if (!foundOptionText) {
     throw new Error(
-      `The option isn't available in the selector dropdown. Kindly review the input.`,
+      `The option is unavailable in the selector dropdown. Kindly review the input: ${optionText}`,
     );
   }
 };
