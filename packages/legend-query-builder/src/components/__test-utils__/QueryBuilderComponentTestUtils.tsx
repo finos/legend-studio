@@ -67,6 +67,7 @@ export const selectFromCustomSelectorInput = (
     selectorContainerClassName,
   ) as HTMLSelectElement;
 
+  // be careful that the first option in the dropdown has been selected
   fireEvent.keyDown(selector, { key: 'ArrowDown' });
   fireEvent.keyDown(selector, { key: 'Enter' });
   expect(selector.querySelector(selectorInputValue)).not.toBeNull();
@@ -97,6 +98,11 @@ export const selectFromCustomSelectorInput = (
       foundOptionText = true;
     }
     numofPress++;
+  }
+  if (!foundOptionText) {
+    throw new Error(
+      `The option isn't available in the selector dropdown. Kindly review the input.`,
+    );
   }
 };
 
