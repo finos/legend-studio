@@ -72,7 +72,10 @@ import {
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
-import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import {
+  TEST__setUpQueryBuilder,
+  dragAndDrop,
+} from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
@@ -436,6 +439,99 @@ test(
     expect(
       await waitFor(() => dpModal.querySelector(`input[value="Mr."]`)),
     ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest('Query builder loads simple projection query when we DnD it'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    const projectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+
+    // Drag and drop to the projection panel
+    const dropZone = await waitFor(() =>
+      getByText(projectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() => getByText(explorerPanel, 'Age'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      projectionPanel,
+      'Add a projection column',
+    );
+    await waitFor(() => getByText(projectionPanel, 'Age'));
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsState.projectionColumns.length).toBe(1);
+    const LAST_NAME_ALIAS = 'Last Name';
+    const lastNameNode = await waitFor(() =>
+      getByText(explorerPanel, LAST_NAME_ALIAS),
+    );
+    await dragAndDrop(
+      lastNameNode,
+      dropZone,
+      projectionPanel,
+      'Add a projection column',
+    );
+    await waitFor(() => getByText(projectionPanel, LAST_NAME_ALIAS));
+    expect(tdsState.projectionColumns.length).toBe(2);
+
+    // Drag and Drop to an exisitng projection column
+    const projectionCols = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    const lastNameColumnName = guaranteeNonNullable(
+      await waitFor(() =>
+        projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
+      ),
+    );
+    fireEvent.change(lastNameColumnName, {
+      target: { value: 'edited last name' },
+    });
+    const propertyExpressionBadgeDropZone = await waitFor(() =>
+      getByText(projectionPanel, 'Last Name'),
+    );
+    const firstNameNode = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    await dragAndDrop(
+      firstNameNode,
+      propertyExpressionBadgeDropZone,
+      propertyExpressionBadgeDropZone,
+      'Change Property',
+    );
+    await waitFor(() => getByText(projectionPanel, 'First Name'));
+    expect(tdsState.projectionColumns.length).toBe(2);
   },
 );
 

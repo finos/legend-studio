@@ -1167,7 +1167,10 @@ export const QueryBuilderTDSPanel = observer(
             </button>
           </div>
         </div>
-        <div className="query-builder__projection__content">
+        <div
+          data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION}
+          className="query-builder__projection__content"
+        >
           <PanelDropZone
             isDragOver={isDragOver && isEmpty}
             isDroppable={isDroppable && isEmpty}
