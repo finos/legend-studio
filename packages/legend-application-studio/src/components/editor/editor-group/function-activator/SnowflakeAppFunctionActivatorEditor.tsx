@@ -33,7 +33,6 @@ import {
   generateFunctionPrettyName,
   RelationalDatabaseConnection,
   DatabaseType,
-  SnowflakeAppType,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -46,11 +45,6 @@ import {
   type RelationalDatabaseConnectionOption,
 } from '../connection-editor/RelationalDatabaseConnectionEditor.js';
 
-interface SnowflakeAppTypeOption {
-  label: string;
-  value: SnowflakeAppType;
-}
-
 export const SnowflakeAppFunctionActivatorEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
@@ -58,18 +52,6 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
     SnowflakeAppFunctionActivatorEdtiorState,
   );
   const activator = editorState.activator;
-  const snowflakeAppTypeOptions: SnowflakeAppTypeOption[] = Object.values(
-    SnowflakeAppType,
-  ).map((snowflakeAppType) => ({
-    label: snowflakeAppType.valueOf(),
-    value: snowflakeAppType,
-  }));
-  const changeSnowflakeAppType = (val: SnowflakeAppTypeOption): void => {
-    if (val.value === activator.type) {
-      return;
-    }
-    editorState.updateAppType(val.value);
-  };
   const connectionSelectorRef = useRef<SelectComponent>(null);
   const connectionFilterOption = createFilter({
     ignoreCase: true,
@@ -262,32 +244,6 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
                 value={activator.description}
                 onChange={changeDescription}
               />
-            </div>
-          </PanelForm>
-          <PanelForm>
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Activator Type
-              </div>
-            </div>
-            <div className="snowflake-app-function-activator-editor__configuration__items">
-              <div className="snowflake-app-function-activator-editor__configuration__item">
-                <CustomSelectorInput
-                  className="snowflake-app-function-activator-editor__config__connection-selector__input"
-                  options={snowflakeAppTypeOptions}
-                  onChange={changeSnowflakeAppType}
-                  value={
-                    activator.type
-                      ? {
-                          value: activator.type,
-                          label: activator.type.valueOf(),
-                        }
-                      : undefined
-                  }
-                  darkMode={true}
-                  placeholder="Choose a type"
-                />
-              </div>
             </div>
           </PanelForm>
         </PanelContent>
