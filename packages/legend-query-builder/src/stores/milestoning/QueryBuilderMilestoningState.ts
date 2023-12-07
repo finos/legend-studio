@@ -27,11 +27,13 @@ import {
   INTERNAL__PropagatedValue,
   MILESTONING_START_DATE_PARAMETER_NAME,
   MILESTONING_END_DATE_PARAMETER_NAME,
+  PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   type Hashable,
   hashArray,
   guaranteeNonNullable,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
@@ -340,11 +342,13 @@ export class QueryBuilderMilestoningState implements Hashable {
     ) {
       const paramState =
         this.queryBuilderState.parametersState.parameterStates.find(
-          (p) => p.parameter === this.businessDate,
+          (p) =>
+            p.parameter.name ===
+            guaranteeType(this.businessDate, VariableExpression).name,
         );
-      this.queryBuilderState.parametersState.removeParameter(
-        guaranteeNonNullable(paramState),
-      );
+      if (paramState) {
+        this.queryBuilderState.parametersState.removeParameter(paramState);
+      }
       this.setBusinessDate(undefined);
     }
     if (
@@ -353,11 +357,20 @@ export class QueryBuilderMilestoningState implements Hashable {
     ) {
       const paramState =
         this.queryBuilderState.parametersState.parameterStates.find(
-          (p) => p.parameter === this.processingDate,
+          (p) =>
+            p.parameter.name ===
+            guaranteeType(this.processingDate, VariableExpression).name,
         );
-      this.queryBuilderState.parametersState.removeParameter(
-        guaranteeNonNullable(paramState),
-      );
+      if (paramState) {
+        this.queryBuilderState.parametersState.removeParameter(paramState);
+      }
+      this.setProcessingDate(undefined);
+    }
+    // Reset miletoning dates when they are of type `PrimitiveInstanceValue`
+    if (this.businessDate instanceof PrimitiveInstanceValue) {
+      this.setBusinessDate(undefined);
+    }
+    if (this.processingDate instanceof PrimitiveInstanceValue) {
       this.setProcessingDate(undefined);
     }
   }

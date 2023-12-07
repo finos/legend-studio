@@ -182,49 +182,56 @@ export const buildLambdaFunction = (
       Multiplicity.ONE,
     );
     lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
-  } else if (
-    queryBuilderState.getAllFunction ===
-    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS
-  ) {
-    if (milestoningStereotype) {
-      const getAllVersionsFunction = buildGetAllVersionsFunction(
-        _class,
-        Multiplicity.ONE,
-      );
-      lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
-    } else {
-      throw new UnsupportedOperationError(
-        `Unable to build query lamdba: getAllVersions() expects source class to be milestoned`,
-      );
-    }
-  } else if (
-    queryBuilderState.getAllFunction ===
-    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
-  ) {
-    if (milestoningStereotype) {
-      const getAllVersionsInRangeFunction = buildGetAllVersionsInRangeFunction(
-        _class,
-        Multiplicity.ONE,
-      );
-      queryBuilderState.milestoningState
-        .getMilestoningImplementation(milestoningStereotype)
-        .buildGetAllVersionsInRangeParameters(getAllVersionsInRangeFunction);
-      lambdaFunction.expressionSequence[0] = getAllVersionsInRangeFunction;
-    } else {
-      throw new UnsupportedOperationError(
-        `Unable to build query lamdba: getAllVersionsInRange() expects source class to be milestoned`,
-      );
-    }
   } else {
-    // build getAll()
-    const getAllFunction = buildGetAllFunction(_class, Multiplicity.ONE);
-    if (milestoningStereotype) {
-      // build milestoning parameter(s) for getAll()
-      queryBuilderState.milestoningState
-        .getMilestoningImplementation(milestoningStereotype)
-        .buildGetAllParameters(getAllFunction);
+    switch (queryBuilderState.getAllFunction) {
+      case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS: {
+        if (milestoningStereotype) {
+          const getAllVersionsFunction = buildGetAllVersionsFunction(
+            _class,
+            Multiplicity.ONE,
+          );
+          lambdaFunction.expressionSequence[0] = getAllVersionsFunction;
+        } else {
+          throw new UnsupportedOperationError(
+            `Unable to build query lamdba: getAllVersions() expects source class to be milestoned`,
+          );
+        }
+        break;
+      }
+      case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE: {
+        if (milestoningStereotype) {
+          const getAllVersionsInRangeFunction =
+            buildGetAllVersionsInRangeFunction(_class, Multiplicity.ONE);
+          queryBuilderState.milestoningState
+            .getMilestoningImplementation(milestoningStereotype)
+            .buildGetAllVersionsInRangeParameters(
+              getAllVersionsInRangeFunction,
+            );
+          lambdaFunction.expressionSequence[0] = getAllVersionsInRangeFunction;
+        } else {
+          throw new UnsupportedOperationError(
+            `Unable to build query lamdba: getAllVersionsInRange() expects source class to be milestoned`,
+          );
+        }
+        break;
+      }
+      case QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL: {
+        // build getAll()
+        const getAllFunction = buildGetAllFunction(_class, Multiplicity.ONE);
+        if (milestoningStereotype) {
+          // build milestoning parameter(s) for getAll()
+          queryBuilderState.milestoningState
+            .getMilestoningImplementation(milestoningStereotype)
+            .buildGetAllParameters(getAllFunction);
+        }
+        lambdaFunction.expressionSequence[0] = getAllFunction;
+        break;
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Unable to build query lambda: unknown ${queryBuilderState.getAllFunction} function`,
+        );
     }
-    lambdaFunction.expressionSequence[0] = getAllFunction;
   }
 
   // build watermark
