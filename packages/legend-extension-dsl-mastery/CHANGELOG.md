@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.112
+
+### Patch Changes
+
+- [#2798](https://github.com/finos/legend-studio/pull/2798) [`6cafe035a`](https://github.com/finos/legend-studio/commit/6cafe035a5b7884de7440745554275c63ee532e6) ([@arikpamnani](https://github.com/arikpamnani)) - Fixing source info handling in Mastery grammar
+
 ## 3.0.111
 
 ## 3.0.110

@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.13.6
+
+### Patch Changes
+
+- [#2815](https://github.com/finos/legend-studio/pull/2815) [`01c73d6de`](https://github.com/finos/legend-studio/commit/01c73d6deb3042e081e76c8c9fd61f5b4b403035) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove function activator type for snowflakeApp from UI
+
 ## 28.13.5
 
 ### Patch Changes
