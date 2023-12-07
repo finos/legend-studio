@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.13.7
+
+### Patch Changes
+
+- [#2805](https://github.com/finos/legend-studio/pull/2805) [`3a7a0a6f6`](https://github.com/finos/legend-studio/commit/3a7a0a6f6676d4b63b9bda4682bff83fb410506b) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Improve Studio landing page and splash screen
+
 ## 28.13.6
 
 ### Patch Changes
