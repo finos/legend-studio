@@ -131,7 +131,6 @@ import {
 import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
-  V1_RawLambda,
   V1_transformRawLambda,
 } from '@finos/legend-graph';
 import type { DSL_Mastery_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mastery_PureProtocolProcessorPlugin_Extension.js';
@@ -595,12 +594,9 @@ export const V1_transformResolutionQuery = (
   resolutionQuery.keyType = element.keyType;
   resolutionQuery.optional = element.optional;
   resolutionQuery.precedence = element.precedence;
-  resolutionQuery.queries = element.queries.map((rq) => {
-    const lambda = new V1_RawLambda();
-    lambda.parameters = rq.parameters;
-    lambda.body = rq.body;
-    return lambda;
-  });
+  resolutionQuery.queries = element.queries.map((rq) =>
+    V1_transformRawLambda(rq, context),
+  );
   return resolutionQuery;
 };
 

@@ -26,14 +26,6 @@ Mapping test::Mapping
 )
 
 
-###Connection
-JsonModelConnection test::connection::modelConnection
-{
-  class: test::connection::class;
-  url: 'test/connection/url';
-}
-
-
 ###Service
 Service org::dataeng::ParseWidget
 {
@@ -46,12 +38,9 @@ Service org::dataeng::ParseWidget
     mapping: test::Mapping;
     runtime:
     #{
-      connections:
+      mappings:
       [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
+        test::Mapping
       ];
     }#;
   }
@@ -72,12 +61,9 @@ Service org::dataeng::TransformWidget
     mapping: test::Mapping;
     runtime:
     #{
-      connections:
+      mappings:
       [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
+        test::Mapping
       ];
     }#;
   }
@@ -87,7 +73,7 @@ Service org::dataeng::TransformWidget
   ]
 }
 
-Service org::dataeng::EqualityFunction
+Service org::dataeng::PostCurationWidget
 {
   pattern: 'test';
   documentation: 'test';
@@ -98,12 +84,32 @@ Service org::dataeng::EqualityFunction
     mapping: test::Mapping;
     runtime:
     #{
-      connections:
+      mappings:
       [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
+        test::Mapping
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service org::dataeng::EqualityFunctionMilestonedIdentifier
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::dataeng::Widget[1]|$src.widgetId;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::Mapping
       ];
     }#;
   }
@@ -124,38 +130,9 @@ Service org::dataeng::ElasticSearchTransformService
     mapping: test::Mapping;
     runtime:
     #{
-      connections:
+      mappings:
       [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
-      ];
-    }#;
-  }
-  testSuites:
-  [
-
-  ]
-}
-
-Service org::dataeng::ExceptionWorkflowTransformService
-{
-  pattern: 'test';
-  documentation: 'test';
-  autoActivateUpdates: true;
-  execution: Single
-  {
-    query: src: org::dataeng::Widget[1]|$src.widgetId;
-    mapping: test::Mapping;
-    runtime:
-    #{
-      connections:
-      [
-        ModelStore:
-        [
-          id1: test::connection::modelConnection
-        ]
+        test::Mapping
       ];
     }#;
   }
@@ -170,7 +147,7 @@ Service org::dataeng::ExceptionWorkflowTransformService
 MasterRecordDefinition alloy::mastery::WidgetMasterRecord
 {
   modelClass: org::dataeng::Widget;
-  identityResolution:
+  identityResolution: 
   {
     resolutionQueries:
       [
@@ -222,14 +199,14 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       ];
     }
   ]
-  postCurationEnrichmentService: org::dataeng::ParseWidget;
+  postCurationEnrichmentService: org::dataeng::PostCurationWidget;
   publishToElasticSearch: true;
   elasticSearchTransformService: org::dataeng::ElasticSearchTransformService;
-  exceptionWorkflowTransformService: org::dataeng::ExceptionWorkflowTransformService;
+  exceptionWorkflowTransformService: org::dataeng::ElasticSearchTransformService;
   collectionEqualities: [
     {
       modelClass: org::dataeng::MilestonedIdentifier;
-      equalityFunction: org::dataeng::EqualityFunction;
+      equalityFunction: org::dataeng::EqualityFunctionMilestonedIdentifier;
     }
   ]
   recordSources:
@@ -244,10 +221,11 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
           fileType: CSV;
           filePath: '/download/day-file.csv';
           headerLines: 0;
-          maxRetryTimeInMinutes: 180;
+          maxRetryTimeMinutes: 180;
           encoding: 'Windows-1252';
           connection: alloy::mastery::connection::FTPConnection;
-        }#;};
+        }#;
+      };
       dataProvider: alloy::mastery::dataprovider::Bloomberg;
       trigger: Manual;
       sequentialData: true;
@@ -257,7 +235,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
       allowFieldDelete: true;
       raiseExceptionWorkflow: true;
       runProfile: Medium;
-      timeoutInMinutes: 100;
+      timeoutInMinutes: 180;
       dependencies: [
         RecordSourceDependency {widget-file-source-sftp}
       ];
