@@ -39,15 +39,38 @@
   &__station {
     @include flexVCenter;
 
-    justify-content: flex-end;
-    height: 3.4rem;
-    width: 5.1rem;
-    // make the bottom right corner slightly pointer to form an arrow pointing at the button in status bar
-    border-radius: 1.7rem 1.1rem 0.2em 1.7rem;
-    background: var(--color-dark-grey-50);
+    justify-content: space-evenly;
+    height: 4rem;
+    width: 13rem;
+    background: var(--color-light-blue-50);
     opacity: 0.9;
     border: 0.1rem solid var(--color-blue-50);
     transition: width 0.1s ease-in-out;
+    border-radius: 1rem;
+  }
+
+  &__station__character {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 2.8rem;
+
+    &__hat {
+      color: var(--color-orange-150);
+    }
+
+    &__glasses {
+      color: var(--color-dark-grey-300);
+    }
+
+    &__beard {
+      color: var(--color-yellow-200);
+    }
+  }
+
+  &__station__label {
+    font-weight: 500;
+    cursor: pointer;
   }
 
   &__station__trigger {
@@ -56,26 +79,8 @@
     height: 2.8rem;
     width: 2.8rem;
     border-radius: 50%;
-    background: var(--color-blue-50);
+    background: var(--color-dark-grey-85);
     margin: 0.3rem 0 0.3rem 0.2rem;
-
-    &__close {
-      font-size: 2.6rem;
-      color: var(--color-dark-shade-800);
-      position: relative;
-    }
-
-    &__circle {
-      font-size: 2rem;
-      color: var(--color-dark-grey-80);
-      animation: opacity-pulse 1.2s infinite ease-in-out alternate-reverse;
-    }
-
-    &__help {
-      font-size: 2.4rem;
-      color: var(--color-dark-shade-800);
-      animation: opacity-pulse-2 1s infinite ease-in-out alternate-reverse;
-    }
 
     @keyframes opacity-pulse {
       from {
@@ -120,7 +125,7 @@
 
     svg {
       font-size: 2rem;
-      color: var(--color-light-shade-100);
+      color: var(--color-dark-shade-300);
     }
   }
 

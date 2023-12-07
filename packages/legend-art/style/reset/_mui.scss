@@ -93,10 +93,23 @@
   }
 }
 
+.mui-card:first-child {
+  margin-left: 0;
+}
+
+.mui-card:last-child {
+  margin-right: 0;
+}
+
 .mui-card {
   background-color: var(--color-dark-grey-400);
   width: 16rem;
-  height: 17rem;
+  height: 24rem;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  flex: 1 1 auto;
+  margin: 0 1.5rem;
 
   &__media {
     margin-top: 1rem;
@@ -106,19 +119,38 @@
 
   &__header {
     font-weight: 500;
-    font-size: 1.5rem;
+    height: 20%;
+    font-size: min(1.25vw, 2rem);
     color: white;
     margin-bottom: 2rem;
   }
 
   &__content {
-    font-size: 1rem;
+    font-size: min(1vw, 1.5rem);
     color: white;
+    height: 80%;
+    overflow-y: scroll;
+    flex: 1 1 auto;
   }
 
   &:hover {
     background: var(--color-dark-grey-500);
     cursor: pointer;
+  }
+
+  &__card-action {
+    color: var(--color-light-blue-50);
+
+    &__label {
+      margin-right: 1rem;
+      font-size: min(1.25vw, 2rem);
+    }
+
+    &__content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   }
 }
 
@@ -131,6 +163,11 @@
 .mui-card--active {
   background: var(--color-dark-grey-500);
   border: 0.2rem solid var(--color-light-blue-200);
+}
+
+.mui-card--stable {
+  background-color: var(--color-dark-grey-85) !important;
+  border: none !important;
 }
 
 // override global style
@@ -162,4 +199,12 @@
 
 .MuiTooltip-tooltipPlacementTop {
   margin: 0.5rem 0;
+}
+
+.MuiCardContent-root {
+  height: 60%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  flex: 1 auto;
 }

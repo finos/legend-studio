@@ -45,6 +45,18 @@ beforeEach(async () => {
 });
 
 test(integrationTest('Test navigation between element states'), async () => {
+  //check successfully load cards
+  await waitFor(() =>
+    expect(
+      renderResult.queryByText(
+        'You can see our Showcase projects here and use them as quickstarts:',
+      ),
+    ).not.toBeNull(),
+  );
+  await waitFor(() =>
+    expect(renderResult.queryByText('Showcase projects')).not.toBeNull(),
+  );
+
   // Test opening multiple elements
   await TEST__openElementFromExplorerTree('ui::test1::Animal', renderResult);
   const packageExplorer = renderResult.getByTestId(

@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   clsx,
-  MarkdownTextViewer,
   AssistantIcon,
   compareLabelFn,
-  PlusIcon,
   GitBranchIcon,
   CustomSelectorInput,
-  RepoIcon,
+  LongArrowRightIcon,
+  DividerWithText,
+  SearchIcon,
+  FileImportIcon,
+  BaseCard,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
@@ -57,12 +66,195 @@ import {
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
+import { openShowcaseManager } from '../../stores/ShowcaseManagerState.js';
 
 const WorkspaceSetupStoreContext = createContext<
   WorkspaceSetupStore | undefined
 >(undefined);
 
 export const DEFAULT_WORKSPACE_SOURCE = 'HEAD';
+
+export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
+  props,
+) => {
+  const applicationStore = useLegendStudioApplicationStore();
+  const appDocUrl = applicationStore.documentationService.url;
+  return (
+    <BaseCard
+      className="workspace-setup__content__card"
+      cardMedia={undefined}
+      cardName="Showcase projects"
+      cardContent={
+        <div>
+          Review showcase projects with sample project code and re-use existing
+          code snippets to quickly build your model.
+          {!props.hideDocumentation && (
+            <>
+              Review the comprehensive{' '}
+              <a
+                href={appDocUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="workspace-setup__content__link"
+              >
+                documentation
+              </a>{' '}
+              available for the studio.
+            </>
+          )}
+        </div>
+      }
+      cardActions={[
+        {
+          title: 'Showcase explorer',
+          content: <FileImportIcon />,
+          action: () => openShowcaseManager(applicationStore),
+        },
+      ]}
+      isStable={true}
+    />
+  );
+};
+
+export const DocumentationCard: React.FC = () => {
+  const applicationStore = useLegendStudioApplicationStore();
+  const appDocUrl = applicationStore.documentationService.url;
+  return (
+    <BaseCard
+      className="workspace-setup__content__card"
+      cardMedia={undefined}
+      cardName="Documentation"
+      cardContent={
+        <div>
+          Review the comprehensive{' '}
+          <a
+            href={appDocUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="workspace-setup__content__link"
+          >
+            documentation
+          </a>{' '}
+          available for the studio.
+        </div>
+      }
+      cardActions={[
+        {
+          title: 'Review documentation',
+          content: <FileImportIcon />,
+          action: () => {
+            if (appDocUrl) {
+              applicationStore.navigationService.navigator.visitAddress(
+                appDocUrl,
+              );
+            }
+          },
+        },
+      ]}
+      isStable={true}
+    />
+  );
+};
+
+export const ProductionCard: React.FC = () => {
+  const applicationStore = useLegendStudioApplicationStore();
+  const productionDocument = applicationStore.documentationService.getDocEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.APPLICATION_PRODUCTION,
+  );
+  return (
+    productionDocument?.title &&
+    productionDocument.markdownText &&
+    productionDocument.text && (
+      <BaseCard
+        className="workspace-setup__content__card"
+        cardMedia={undefined}
+        cardName={productionDocument.title}
+        cardContent={productionDocument.markdownText.value}
+        cardActions={[
+          {
+            title: productionDocument.text,
+            content: <FileImportIcon />,
+            action: () => {
+              if (productionDocument.url) {
+                applicationStore.navigationService.navigator.visitAddress(
+                  productionDocument.url,
+                );
+              }
+            },
+          },
+        ]}
+        isStable={true}
+      />
+    )
+  );
+};
+
+export const SandboxCard: React.FC = () => {
+  const applicationStore = useLegendStudioApplicationStore();
+  const sandboxDocument = applicationStore.documentationService.getDocEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.APPLICATION_SANDBOX,
+  );
+  return (
+    sandboxDocument?.title &&
+    sandboxDocument.markdownText &&
+    sandboxDocument.text && (
+      <BaseCard
+        className="workspace-setup__content__card"
+        cardMedia={undefined}
+        cardName={sandboxDocument.title}
+        cardContent={sandboxDocument.markdownText.value}
+        cardActions={[
+          {
+            title: sandboxDocument.text,
+            content: <FileImportIcon />,
+            action: () => {
+              if (sandboxDocument.url) {
+                applicationStore.navigationService.navigator.visitAddress(
+                  sandboxDocument.url,
+                );
+              }
+            },
+          },
+        ]}
+        isStable={true}
+      />
+    )
+  );
+};
+
+export const RuleEngagementCard: React.FC = () => {
+  const applicationStore = useLegendStudioApplicationStore();
+  const ruleEngagementDocument =
+    applicationStore.documentationService.getDocEntry(
+      LEGEND_STUDIO_DOCUMENTATION_KEY.APPLICATION_RULE_ENGAGEMENT,
+    );
+  return (
+    ruleEngagementDocument?.title &&
+    ruleEngagementDocument.markdownText &&
+    ruleEngagementDocument.text && (
+      <BaseCard
+        className="workspace-setup__content__card"
+        cardMedia={undefined}
+        cardName={ruleEngagementDocument.title}
+        cardContent={ruleEngagementDocument.markdownText.value}
+        cardActions={[
+          {
+            title: ruleEngagementDocument.text,
+            content: <FileImportIcon />,
+            action: () => {
+              if (ruleEngagementDocument.url) {
+                applicationStore.navigationService.navigator.visitAddress(
+                  ruleEngagementDocument.url,
+                );
+              }
+            },
+          },
+        ]}
+        isStable={true}
+      />
+    )
+  );
+};
 
 const WorkspaceSetupStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -104,12 +296,10 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     const setupStore = useWorkspaceSetupStore();
     const applicationStore = useLegendStudioApplicationStore();
     const [projectSearchText, setProjectSearchText] = useState('');
+    const goButtonRef = useRef<HTMLButtonElement>(null);
 
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
-    const documentation = applicationStore.documentationService.getDocEntry(
-      LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE,
-    );
 
     // projects
     const projectOptions = setupStore.projects
@@ -165,6 +355,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
             `Can't edit current workspace as the current project is not configured`,
           );
         }
+        goButtonRef.current?.focus();
       } else {
         setupStore.resetWorkspace();
       }
@@ -218,131 +409,168 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
               className="workspace-setup__content"
               data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
             >
-              <div className="workspace-setup__content__main">
-                <div className="workspace-setup__title">
-                  <div className="workspace-setup__title__header">
-                    Setup Workspace
-                    <DocumentationLink
-                      documentationKey={
-                        LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
-                      }
-                    />
-                  </div>
-                  {documentation?.markdownText && (
-                    <div className="workspace-setup__title__documentation">
-                      <MarkdownTextViewer value={documentation.markdownText} />
+              <div className="workspace-setup__content__body">
+                <div className="workspace-setup__content__main">
+                  <div className="workspace-setup__title">
+                    <div className="workspace-setup__logo">
+                      <img
+                        src="/favicon.ico"
+                        className="workspace-setup__logo__icon"
+                      />
                     </div>
-                  )}
+                    <div className="workspace-setup__title__header">
+                      Welcome to Legend Studio
+                      <DocumentationLink
+                        documentationKey={
+                          LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="workspace-setup__selectors">
+                    <div className="workspace-setup__selectors__container">
+                      <div className="workspace-setup__selector">
+                        <div className="workspace-setup__selector__header">
+                          Search for project
+                        </div>
+                        <div className="workspace-setup__selector__content">
+                          <div
+                            className="workspace-setup__selector__content__icon"
+                            title="project"
+                          >
+                            <SearchIcon className="workspace-setup__selector__content__icon--project" />
+                          </div>
+                          <CustomSelectorInput
+                            className="workspace-setup__selector__content__input"
+                            options={projectOptions}
+                            isLoading={
+                              setupStore.loadProjectsState.isInProgress
+                            }
+                            onInputChange={onProjectSearchTextChange}
+                            inputValue={projectSearchText}
+                            onChange={onProjectChange}
+                            value={selectedProjectOption}
+                            placeholder="Search for project..."
+                            isClearable={true}
+                            escapeClearsValue={true}
+                            darkMode={true}
+                            formatOptionLabel={getProjectOptionLabelFormatter(
+                              applicationStore,
+                              setupStore.currentProjectConfigurationStatus,
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div className="workspace-setup__selector">
+                        <div className="workspace-setup__selector__header">
+                          Choose a workspace
+                        </div>
+                        <div className="workspace-setup__selector__content">
+                          <div
+                            className="workspace-setup__selector__content__icon"
+                            title="workspace"
+                          >
+                            <GitBranchIcon className="workspace-setup__selector__content__icon--workspace" />
+                          </div>
+                          <CustomSelectorInput
+                            className="workspace-setup__selector__content__input"
+                            options={workspaceOptions}
+                            onKeyDown={(
+                              event: React.KeyboardEvent<HTMLDivElement>,
+                            ) => {
+                              if (event.key === 'Enter') {
+                                goButtonRef.current?.focus();
+                                handleProceed();
+                              }
+                            }}
+                            disabled={
+                              !setupStore.currentProject ||
+                              !setupStore.currentProjectConfigurationStatus ||
+                              !setupStore.currentProjectConfigurationStatus
+                                .isConfigured ||
+                              setupStore.loadProjectsState.isInProgress ||
+                              setupStore.loadWorkspacesState.isInProgress
+                            }
+                            isLoading={
+                              setupStore.loadWorkspacesState.isInProgress
+                            }
+                            onChange={onWorkspaceChange}
+                            formatOptionLabel={formatWorkspaceOptionLabel}
+                            value={selectedWorkspaceOption}
+                            placeholder={
+                              setupStore.loadWorkspacesState.isInProgress
+                                ? 'Loading workspaces...'
+                                : !setupStore.currentProject
+                                ? 'In order to choose a workspace, a project must be chosen'
+                                : workspaceOptions.length
+                                ? 'Choose an existing workspace'
+                                : 'You have no workspaces. Please create one to proceed...'
+                            }
+                            isClearable={true}
+                            escapeClearsValue={true}
+                            darkMode={true}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="workspace-setup__actions-combo">
+                    <div className="workspace-setup__actions">
+                      <div className="workspace-setup__actions__button">
+                        <button
+                          className="workspace-setup__go-btn btn--dark"
+                          onClick={handleProceed}
+                          ref={goButtonRef}
+                          disabled={
+                            !setupStore.currentProject ||
+                            !setupStore.currentProjectConfigurationStatus ||
+                            !setupStore.currentProjectConfigurationStatus
+                              .isConfigured ||
+                            !setupStore.currentWorkspace ||
+                            setupStore.createWorkspaceState.isInProgress ||
+                            setupStore.createOrImportProjectState.isInProgress
+                          }
+                        >
+                          <div className="workspace-setup__go-btn__label">
+                            Go
+                          </div>
+                          <LongArrowRightIcon className="workspace-setup__go-btn__icon" />
+                        </button>
+                      </div>
+                      <DividerWithText className="workspace-setup__divider">
+                        OR
+                      </DividerWithText>
+                      <div className="workspace-setup__actions__button">
+                        <button
+                          className="workspace-setup__new-btn"
+                          onClick={showCreateProjectModal}
+                          title="Create a Project"
+                        >
+                          Create New Project
+                        </button>
+                        <button
+                          className="workspace-setup__new-btn"
+                          onClick={showCreateWorkspaceModal}
+                          disabled={
+                            !setupStore.currentProject ||
+                            !setupStore.currentProjectConfigurationStatus ||
+                            !setupStore.currentProjectConfigurationStatus
+                              .isConfigured
+                          }
+                        >
+                          Create New Workspace
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <form
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    handleProceed();
-                  }}
-                >
-                  <div className="workspace-setup__selector">
-                    <div
-                      className="workspace-setup__selector__icon"
-                      title="project"
-                    >
-                      <RepoIcon className="workspace-setup__selector__icon--project" />
-                    </div>
-                    <CustomSelectorInput
-                      className="workspace-setup__selector__input"
-                      options={projectOptions}
-                      isLoading={setupStore.loadProjectsState.isInProgress}
-                      onInputChange={onProjectSearchTextChange}
-                      inputValue={projectSearchText}
-                      onChange={onProjectChange}
-                      value={selectedProjectOption}
-                      placeholder="Search for project..."
-                      isClearable={true}
-                      escapeClearsValue={true}
-                      darkMode={true}
-                      formatOptionLabel={getProjectOptionLabelFormatter(
-                        applicationStore,
-                        setupStore.currentProjectConfigurationStatus,
-                      )}
-                    />
-                    <button
-                      className="workspace-setup__selector__action btn--dark"
-                      onClick={showCreateProjectModal}
-                      tabIndex={-1}
-                      type="button" // prevent this toggler being activated on form submission
-                      title="Create a Project"
-                    >
-                      <PlusIcon />
-                    </button>
-                  </div>
-                  <div className="workspace-setup__selector">
-                    <div
-                      className="workspace-setup__selector__icon"
-                      title="workspace"
-                    >
-                      <GitBranchIcon className="workspace-setup__selector__icon--workspace" />
-                    </div>
-                    <CustomSelectorInput
-                      className="workspace-setup__selector__input"
-                      options={workspaceOptions}
-                      disabled={
-                        !setupStore.currentProject ||
-                        !setupStore.currentProjectConfigurationStatus ||
-                        !setupStore.currentProjectConfigurationStatus
-                          .isConfigured ||
-                        setupStore.loadProjectsState.isInProgress ||
-                        setupStore.loadWorkspacesState.isInProgress
-                      }
-                      isLoading={setupStore.loadWorkspacesState.isInProgress}
-                      onChange={onWorkspaceChange}
-                      formatOptionLabel={formatWorkspaceOptionLabel}
-                      value={selectedWorkspaceOption}
-                      placeholder={
-                        setupStore.loadWorkspacesState.isInProgress
-                          ? 'Loading workspaces...'
-                          : !setupStore.currentProject
-                          ? 'In order to choose a workspace, a project must be chosen'
-                          : workspaceOptions.length
-                          ? 'Choose an existing workspace'
-                          : 'You have no workspaces. Please create one to proceed...'
-                      }
-                      isClearable={true}
-                      escapeClearsValue={true}
-                      darkMode={true}
-                    />
-                    <button
-                      className="workspace-setup__selector__action btn--dark"
-                      onClick={showCreateWorkspaceModal}
-                      disabled={
-                        !setupStore.currentProject ||
-                        !setupStore.currentProjectConfigurationStatus ||
-                        !setupStore.currentProjectConfigurationStatus
-                          .isConfigured
-                      }
-                      tabIndex={-1}
-                      type="button" // prevent this toggler being activated on form submission
-                      title="Create a Workspace"
-                    >
-                      <PlusIcon />
-                    </button>
-                  </div>
-                  <div className="workspace-setup__actions">
-                    <button
-                      className="workspace-setup__next-btn btn--dark"
-                      onClick={handleProceed}
-                      disabled={
-                        !setupStore.currentProject ||
-                        !setupStore.currentProjectConfigurationStatus ||
-                        !setupStore.currentProjectConfigurationStatus
-                          .isConfigured ||
-                        !setupStore.currentWorkspace ||
-                        setupStore.createWorkspaceState.isInProgress ||
-                        setupStore.createOrImportProjectState.isInProgress
-                      }
-                    >
-                      Edit Workspace
-                    </button>
-                  </div>
-                </form>
+                <div className="workspace-setup__content__cards">
+                  <RuleEngagementCard />
+                  <ShowcaseCard />
+                  {/* The SandboxCard and ProductionCard will appear only if the corresponding documentation entry is added in the config.json file for each realm.*/}
+                  <SandboxCard />
+                  <ProductionCard />
+                </div>
                 {/* NOTE: We do this to reset the initial state of the modals */}
                 {setupStore.showCreateProjectModal && <CreateProjectModal />}
                 {setupStore.showCreateWorkspaceModal &&
@@ -354,7 +582,6 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
               </div>
             </div>
           </div>
-
           <div
             data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
             className="editor__status-bar"

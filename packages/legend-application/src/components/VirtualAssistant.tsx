@@ -41,8 +41,6 @@ import {
   QuestionCircleIcon,
   EmptyWindowRestoreIcon,
   WindowMaximizeIcon,
-  QuestionThinIcon,
-  LightBulbIcon,
 } from '@finos/legend-art';
 import {
   ADVANCED_FUZZY_SEARCH_MODE,
@@ -804,15 +802,18 @@ export const VirtualAssistant = observer(() => {
                   }Click to open Assistant...`
             }
           >
-            {assistantService.isOpen ? (
-              <CloseIcon className="virtual-assistant__station__trigger__close" />
-            ) : currentContextualDocumentationEntry ? (
-              <LightBulbIcon className="virtual-assistant__station__trigger__circle" />
-            ) : (
-              <QuestionThinIcon className="virtual-assistant__station__trigger__help" />
-            )}
+            <div className="virtual-assistant__station__character">
+              <WizardHatIcon className="virtual-assistant__station__character__hat" />
+              <SunglassesIcon className="virtual-assistant__station__character__glasses" />
+              <BeardIcon className="virtual-assistant__station__character__beard" />
+            </div>
           </button>
-
+          <div
+            className="virtual-assistant__station__label"
+            onClick={toggleAssistantPanel}
+          >
+            Assistant
+          </div>
           <ContextMenu
             className={clsx('virtual-assistant__station__drag-handle', {
               'virtual-assistant__station__drag-handle--dragging': isDragging,
