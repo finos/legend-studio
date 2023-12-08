@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.12.0
+
+### Minor Changes
+
+- [#2820](https://github.com/finos/legend-studio/pull/2820) [`a7be472f8`](https://github.com/finos/legend-studio/commit/a7be472f88003cbb53217b4da4e23ec13422ced6) ([@gayathrir11](https://github.com/gayathrir11)) - Support getAllVersions() and getAllVersionsInRange() for milestoned root class
+
 ## 4.11.17
 
 ## 4.11.16
