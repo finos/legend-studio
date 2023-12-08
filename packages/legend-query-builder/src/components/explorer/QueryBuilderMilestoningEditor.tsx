@@ -242,11 +242,7 @@ const TemporalMilestoningEditor: React.FC<{
 const AllVersionsInRangelMilestoningParametersEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    if (queryBuilderState.milestoningState.isInavlidAllVersionsInRange) {
-      queryBuilderState.applicationStore.notificationService.notifyWarning(
-        'Please select both start date and end date',
-      );
-    }
+
     return (
       <div className="query-builder__milestoning-panel__all-versions-in-range-editor">
         <PanelFormSection>
@@ -318,7 +314,7 @@ export const MilestoningParametersEditor = observer(
                 name="all Versions"
                 prompt="Query All Milestoned Versions of the Root Class"
                 update={(value: boolean | undefined): void =>
-                  milestoningState.toggleAllVersions(value)
+                  milestoningState.setAllVersions(value)
                 }
               />
             )}
@@ -331,7 +327,7 @@ export const MilestoningParametersEditor = observer(
                     name=" All Versions In Range"
                     prompt="Optionally apply a date range to get All Versions for"
                     update={(value: boolean | undefined): void =>
-                      milestoningState.toggleAllVersionsInRange(value)
+                      milestoningState.setAllVersionsInRange(value)
                     }
                   />
 

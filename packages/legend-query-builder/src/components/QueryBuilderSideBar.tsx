@@ -191,14 +191,7 @@ export const QueryBuilderClassSelector = observer(
             />
             {queryBuilderState.isQuerySupported && (
               <button
-                className={clsx(
-                  'btn--dark btn__icon--dark query-builder__setup__milestoning',
-                  {
-                    'query-builder__setup__milestoning--error':
-                      queryBuilderState.milestoningState.allValidationIssues
-                        .length,
-                  },
-                )}
+                className="btn--dark btn__icon--dark query-builder__setup__milestoning"
                 tabIndex={-1}
                 onClick={showMilestoningEditor}
                 disabled={!milestoningState.isMilestonedQuery}
@@ -298,14 +291,7 @@ export const QueryBuilderMappingSelector = observer(
             />
             {queryBuilderState.isQuerySupported && (
               <button
-                className={clsx(
-                  'btn--dark btn__icon--dark query-builder__setup__milestoning',
-                  {
-                    'query-builder__setup__milestoning--error':
-                      queryBuilderState.milestoningState.allValidationIssues
-                        .length,
-                  },
-                )}
+                className="btn--dark btn__icon--dark query-builder__setup__milestoning"
                 tabIndex={-1}
                 onClick={showMilestoningEditor}
                 disabled={!milestoningState.isMilestonedQuery}
@@ -405,14 +391,7 @@ export const QueryBuilderFunction = observer(
             />
             {queryBuilderState.isQuerySupported && (
               <button
-                className={clsx(
-                  'btn--dark btn__icon--dark query-builder__setup__milestoning',
-                  {
-                    'query-builder__setup__milestoning--error':
-                      queryBuilderState.milestoningState.allValidationIssues
-                        .length,
-                  },
-                )}
+                className="btn--dark btn__icon--dark query-builder__setup__milestoning"
                 tabIndex={-1}
                 onClick={showMilestoningEditor}
                 disabled={!milestoningState.isMilestonedQuery}

@@ -82,11 +82,11 @@ export class QueryBuilderMilestoningState implements Hashable {
       setEndDate: action,
       setShowMilestoningEditor: action,
       clearMilestoningDates: action,
-      toggleAllVersions: action,
-      initialiseAllVersionsInRangeParameters: action,
+      setAllVersions: action,
+      setAllVersionsInRange: action,
+      initializeAllVersionsInRangeParameters: action,
       clearAllVersionsInRangeParameters: action,
       clearGetAllParameters: action,
-      allValidationIssues: computed,
       hashCode: computed,
     });
 
@@ -109,16 +109,6 @@ export class QueryBuilderMilestoningState implements Hashable {
         MILESTONING_STEREOTYPE.BITEMPORAL,
       ),
     );
-  }
-
-  get allValidationIssues(): string[] {
-    const validationIssues: string[] = [];
-    if (this.isInavlidAllVersionsInRange) {
-      validationIssues.push(
-        'Invalid getAllVersionsInRange format: expects both endDate and startDate',
-      );
-    }
-    return validationIssues;
   }
 
   // Updates the current queryBuilderState when `allVersions` is selected.
@@ -240,7 +230,7 @@ export class QueryBuilderMilestoningState implements Hashable {
     );
   }
 
-  get isInavlidAllVersionsInRange(): boolean {
+  get isInvalidAllVersionsInRange(): boolean {
     if (
       (this.startDate && !this.endDate) ||
       (!this.startDate && this.endDate)
@@ -250,12 +240,12 @@ export class QueryBuilderMilestoningState implements Hashable {
     return false;
   }
 
-  toggleAllVersionsInRange(val: boolean | undefined): void {
+  setAllVersionsInRange(val: boolean | undefined): void {
     if (val) {
       this.queryBuilderState.setGetAllFunction(
         QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
       );
-      this.initialiseAllVersionsInRangeParameters();
+      this.initializeAllVersionsInRangeParameters();
     } else {
       this.queryBuilderState.setGetAllFunction(
         QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
@@ -264,7 +254,7 @@ export class QueryBuilderMilestoningState implements Hashable {
     }
   }
 
-  toggleAllVersions(val: boolean | undefined): void {
+  setAllVersions(val: boolean | undefined): void {
     if (val) {
       this.queryBuilderState.setGetAllFunction(
         QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
@@ -326,7 +316,7 @@ export class QueryBuilderMilestoningState implements Hashable {
       : val;
   }
 
-  initialiseAllVersionsInRangeParameters(): void {
+  initializeAllVersionsInRangeParameters(): void {
     this.setStartDate(
       this.buildMilestoningParameter(MILESTONING_START_DATE_PARAMETER_NAME),
     );
@@ -338,7 +328,9 @@ export class QueryBuilderMilestoningState implements Hashable {
   clearGetAllParameters(): void {
     if (
       this.businessDate instanceof VariableExpression &&
-      !this.queryBuilderState.isVariableUsedInQueryBody(this.businessDate)
+      !this.queryBuilderState.isVariableUsed(this.businessDate, {
+        exculdeMilestoningState: true,
+      })
     ) {
       const paramState =
         this.queryBuilderState.parametersState.parameterStates.find(
@@ -353,7 +345,9 @@ export class QueryBuilderMilestoningState implements Hashable {
     }
     if (
       this.processingDate instanceof VariableExpression &&
-      !this.queryBuilderState.isVariableUsedInQueryBody(this.processingDate)
+      !this.queryBuilderState.isVariableUsed(this.processingDate, {
+        exculdeMilestoningState: true,
+      })
     ) {
       const paramState =
         this.queryBuilderState.parametersState.parameterStates.find(
@@ -378,7 +372,9 @@ export class QueryBuilderMilestoningState implements Hashable {
   clearAllVersionsInRangeParameters(): void {
     if (
       this.startDate instanceof VariableExpression &&
-      !this.queryBuilderState.isVariableUsedInQueryBody(this.startDate)
+      !this.queryBuilderState.isVariableUsed(this.startDate, {
+        exculdeMilestoningState: true,
+      })
     ) {
       const paramState =
         this.queryBuilderState.parametersState.parameterStates.find(
@@ -390,7 +386,9 @@ export class QueryBuilderMilestoningState implements Hashable {
     }
     if (
       this.endDate instanceof VariableExpression &&
-      !this.queryBuilderState.isVariableUsedInQueryBody(this.endDate)
+      !this.queryBuilderState.isVariableUsed(this.endDate, {
+        exculdeMilestoningState: true,
+      })
     ) {
       const paramState =
         this.queryBuilderState.parametersState.parameterStates.find(

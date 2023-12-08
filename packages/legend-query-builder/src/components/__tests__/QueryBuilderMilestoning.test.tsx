@@ -26,7 +26,9 @@ import {
   TEST_DATA__getAllWithHardcodedDateInput,
   TEST_DATA__getAllWithHardcodedDateOutput,
   TEST_DATA__simpleGetAllVersionsWithBiTemporalSourceAndBiTemporalTarget,
+  TEST_DATA__simpleGetAllVersionsWithBusinessTemporalClass,
   TEST_DATA__simpleGetAllVersionsWithBusinessTemporalSourceAndBusinessTemporalTarget,
+  TEST_DATA__simpleGetAllVersionsWithProcessingTemporalClass,
   TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndBusinessTemporalTarget,
   TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndProcessingTemporalTarget,
   TEST_DATA__simpleProjectionWithAggregationInput,
@@ -582,6 +584,108 @@ describe(
         // Compare input JSON and output JSON for building a query
         expect(receivedOutput.parameters).toEqual(expectedLambda.parameters);
         expect(receivedOutput.body).toEqual(expectedLambda.body);
+      },
+    );
+  },
+);
+
+type QueryGetAllVersionsInRangeTestCase = [
+  string,
+  {
+    mappingPath: string;
+    runtimePath: string;
+    classPath: string;
+    entities: Entity[];
+    rawLambda: { parameters?: object; body?: object };
+    expectedMilestoningDate: string;
+  },
+];
+const QUERY_GET_ALL_VERSIONS_IN_RANGE_CASES: QueryGetAllVersionsInRangeTestCase[] =
+  [
+    [
+      'Query builder state is properly built after setting getAllVersionsInRange() with business temporal source',
+      {
+        mappingPath: 'my::map',
+        runtimePath: 'my::runtime',
+        classPath: 'my::Person',
+        entities: TEST_MilestoningModel,
+        rawLambda: TEST_DATA__simpleGetAllVersionsWithBusinessTemporalClass,
+        expectedMilestoningDate: 'businessDate',
+      },
+    ],
+    [
+      'Query builder state is properly built after setting getAllVersionsInRange() with processing temporal source',
+      {
+        mappingPath: 'my::map',
+        runtimePath: 'my::runtime',
+        classPath: 'my::Person',
+        entities: TEST_MilestoningModel,
+        rawLambda: TEST_DATA__simpleGetAllVersionsWithProcessingTemporalClass,
+        expectedMilestoningDate: 'processingDate',
+      },
+    ],
+  ];
+
+describe(
+  integrationTest(
+    `Milestoning query is properly set after selecting getAllVersionsInRange()`,
+  ),
+  () => {
+    test.each(QUERY_GET_ALL_VERSIONS_IN_RANGE_CASES)(
+      '%s',
+      async (
+        testName: QueryGetAllVersionsInRangeTestCase[0],
+        testCase: QueryGetAllVersionsInRangeTestCase[1],
+      ) => {
+        const {
+          mappingPath,
+          runtimePath,
+          classPath,
+          entities,
+          rawLambda,
+          expectedMilestoningDate,
+        } = testCase;
+        const { renderResult, queryBuilderState } =
+          await TEST__setUpQueryBuilder(
+            entities,
+            stub_RawLambda(),
+            mappingPath,
+            runtimePath,
+            TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+          );
+
+        const _personClass =
+          queryBuilderState.graphManagerState.graph.getClass(classPath);
+        await act(async () => {
+          queryBuilderState.changeClass(_personClass);
+        });
+
+        await act(async () => {
+          queryBuilderState.initializeWithQuery(
+            create_RawLambda(rawLambda.parameters, rawLambda.body),
+          );
+        });
+
+        renderResult.getByTitle('Edit Milestoning Parameters');
+        fireEvent.click(renderResult.getByTitle('Edit Milestoning Parameters'));
+
+        const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+
+        // Check if we are setting start date and end date when allVersionsInRange() is selected
+        fireEvent.click(
+          getByText(
+            dialog,
+            'Optionally apply a date range to get All Versions for',
+          ),
+        );
+        expect(getAllByText(dialog, 'startDate').length).toBe(2);
+        expect(getAllByText(dialog, 'endDate').length).toBe(2);
+
+        // Change the function back to getAll()
+        fireEvent.click(
+          getByText(dialog, 'Query All Milestoned Versions of the Root Class'),
+        );
+        expect(getAllByText(dialog, expectedMilestoningDate).length).toBe(2);
       },
     );
   },

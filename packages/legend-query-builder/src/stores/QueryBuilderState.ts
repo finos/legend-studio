@@ -368,23 +368,19 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   // Used to determine if variable is used within query
   // For places where we don't know, we will assume the variable is not used (i.e projection derivation column)
-  isVariableUsed(variable: VariableExpression): boolean {
-    return (
-      this.milestoningState.isVariableUsed(variable) ||
+  isVariableUsed(
+    variable: VariableExpression,
+    options?: {
+      exculdeMilestoningState: boolean;
+    },
+  ): boolean {
+    const isVariableUsedInBody =
       this.filterState.isVariableUsed(variable) ||
       this.watermarkState.isVariableUsed(variable) ||
-      this.fetchStructureState.implementation.isVariableUsed(variable)
-    );
-  }
-
-  // Used to determine if variable is used within query except for milestoning
-  // For places where we don't know, we will assume the variable is not used (i.e projection derivation column)
-  isVariableUsedInQueryBody(variable: VariableExpression): boolean {
-    return (
-      this.filterState.isVariableUsed(variable) ||
-      this.watermarkState.isVariableUsed(variable) ||
-      this.fetchStructureState.implementation.isVariableUsed(variable)
-    );
+      this.fetchStructureState.implementation.isVariableUsed(variable);
+    return options?.exculdeMilestoningState
+      ? isVariableUsedInBody
+      : this.milestoningState.isVariableUsed(variable) || isVariableUsedInBody;
   }
 
   deregisterCommands(): void {
@@ -736,9 +732,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   get allValidationIssues(): string[] {
-    return this.milestoningState.allValidationIssues.concat(
-      this.fetchStructureState.implementation.allValidationIssues,
-    );
+    return this.fetchStructureState.implementation.allValidationIssues;
   }
 
   /**
