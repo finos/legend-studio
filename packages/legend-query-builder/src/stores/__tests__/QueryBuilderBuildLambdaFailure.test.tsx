@@ -41,6 +41,12 @@ import {
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
 } from '../__test-utils__/QueryBuilderStateTestUtils.js';
+import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' assert { type: 'json' };
+import {
+  TEST_DATA__simpleGetAllVersionsInRangeWithBiTemporalClass,
+  TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass,
+  TEST_DATA__simpleGetAllVersionsWithNonTemporalClass,
+} from './TEST_DATA__QueryBuilder_Milestoning.js';
 
 type TestCase = [
   string,
@@ -57,6 +63,10 @@ const relationalCtx = {
 
 const postFilterCtx = {
   entities: TEST_DATA__PostFilterModel,
+};
+
+const milestoningCtx = {
+  entities: TEST_MilestoningModel,
 };
 
 const cases: TestCase[] = [
@@ -101,6 +111,24 @@ const cases: TestCase[] = [
     postFilterCtx,
     TEST_DATA__malformedTodayFunction,
     `Can't find expression builder for function 'meta::pure::functions::date::todayyy': no compatible function expression builder available from plugins`,
+  ],
+  [
+    'GetAllVersionsInRange() with bitemporal class',
+    milestoningCtx,
+    TEST_DATA__simpleGetAllVersionsInRangeWithBiTemporalClass,
+    `Can't process getAllVersionsInRange() expression: getAllVersionInRange() expects source class to be processing temporal or business temporal milestoned`,
+  ],
+  [
+    'GetAllVersionsInRange() with non-temporal class',
+    milestoningCtx,
+    TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass,
+    `Can't process getAllVersionsInRange() expression: getAllVersionInRange() expects source class to be processing temporal or business temporal milestoned`,
+  ],
+  [
+    'GetAllVersions() with non-temporal class',
+    milestoningCtx,
+    TEST_DATA__simpleGetAllVersionsWithNonTemporalClass,
+    `Can't process getAllVersions() expression: getAllVersions() expects source class to be milestoned`,
   ],
 ];
 

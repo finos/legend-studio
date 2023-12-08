@@ -62,12 +62,16 @@ export enum QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS {
   CALENDAR_YTD = 'meta::pure::functions::date::calendar::ytd',
 }
 
+export enum QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS {
+  GET_ALL = 'meta::pure::functions::collection::getAll',
+  GET_ALL_VERSIONS = 'meta::pure::functions::collection::getAllVersions',
+  GET_ALL_VERSIONS_IN_RANGE = 'meta::pure::functions::collection::getAllVersionsInRange',
+}
+
 export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   AND = 'meta::pure::functions::boolean::and',
   EXISTS = 'meta::pure::functions::collection::exists',
   FILTER = 'meta::pure::functions::collection::filter',
-  GET_ALL = 'meta::pure::functions::collection::getAll',
-  GET_ALL_VERSIONS = 'meta::pure::functions::collection::getAllVersions',
   NOT = 'meta::pure::functions::boolean::not',
   OR = 'meta::pure::functions::boolean::or',
   TAKE = 'meta::pure::functions::collection::take',

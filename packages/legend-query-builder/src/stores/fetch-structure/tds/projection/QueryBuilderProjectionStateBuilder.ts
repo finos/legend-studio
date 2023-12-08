@@ -40,6 +40,7 @@ import {
 import {
   COLUMN_SORT_TYPE,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../../QueryBuilderStateBuilder.js';
@@ -80,7 +81,9 @@ export const processTDSProjectExpression = (
   );
   assertTrue(
     matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
     ]),

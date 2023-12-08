@@ -110,6 +110,13 @@ export const isDefaultDatePropagationSupported = (
   ) {
     return false;
   }
+  if (
+    !prevPropertyExpression &&
+    property.genericType.value.rawType instanceof Class &&
+    queryBuilderState.milestoningState.isAllVersionsEnabled
+  ) {
+    return false;
+  }
   if (property.genericType.value.rawType instanceof Class) {
     // the stereotype of source class of current property expression.
     const sourceStereotype =

@@ -64,6 +64,13 @@ export abstract class QueryBuilderMilestoningImplementation {
   ): void;
 
   /**
+   * Builds parameters for getAllVersionsInRange() function with milestoned class
+   */
+  abstract buildGetAllVersionsInRangeParameters(
+    getAllVersionsInRangeFunction: SimpleFunctionExpression,
+  ): void;
+
+  /**
    * Builds parameters for getAll() function with milestoned class
    */
   abstract buildGetAllWithDefaultParameters(

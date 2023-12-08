@@ -24,11 +24,16 @@ import {
   type ValueSpecification,
   Multiplicity,
   PrimitiveType,
+  INTERNAL__PropagatedValue,
+  MILESTONING_START_DATE_PARAMETER_NAME,
+  MILESTONING_END_DATE_PARAMETER_NAME,
+  PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   type Hashable,
   hashArray,
   guaranteeNonNullable,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
@@ -39,6 +44,14 @@ import { QueryBuilderBitemporalMilestoningImplementation } from './QueryBuilderB
 import { QueryBuilderBusinessTemporalMilestoningImplementation } from './QueryBuilderBusinessTemporalMilestoningImplementation.js';
 import type { QueryBuilderMilestoningImplementation } from './QueryBuilderMilestoningImplementation.js';
 import { QueryBuilderProcessingTemporalMilestoningImplementation } from './QueryBuilderProcessingTemporalMilestoningImplementation.js';
+import { QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import { QueryBuilderAggregateColumnState } from '../fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
+import {
+  QueryBuilderFilterTreeConditionNodeData,
+  QueryBuilderFilterTreeExistsNodeData,
+} from '../filter/QueryBuilderFilterState.js';
 
 export class QueryBuilderMilestoningState implements Hashable {
   readonly milestoningImplementations: QueryBuilderMilestoningImplementation[] =
@@ -52,16 +65,28 @@ export class QueryBuilderMilestoningState implements Hashable {
   businessDate?: ValueSpecification | undefined;
   processingDate?: ValueSpecification | undefined;
 
+  startDate?: ValueSpecification | undefined;
+  endDate?: ValueSpecification | undefined;
+
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       processingDate: observable,
       businessDate: observable,
+      startDate: observable,
+      endDate: observable,
       showMilestoningEditor: observable,
       isMilestonedQuery: computed,
       setProcessingDate: action,
       setBusinessDate: action,
+      setStartDate: action,
+      setEndDate: action,
       setShowMilestoningEditor: action,
       clearMilestoningDates: action,
+      setAllVersions: action,
+      setAllVersionsInRange: action,
+      initializeAllVersionsInRangeParameters: action,
+      clearAllVersionsInRangeParameters: action,
+      clearGetAllParameters: action,
       hashCode: computed,
     });
 
@@ -86,8 +111,175 @@ export class QueryBuilderMilestoningState implements Hashable {
     );
   }
 
+  // Updates the current queryBuilderState when `allVersions` is selected.
+  // When `allVersions` is selected date propagation cannot be done from root class
+  // to immediate project/filter properties, so setting date propagation to false
+  // to those properties
+  updateQueryBuilderState(): void {
+    if (this.isAllVersionsEnabled) {
+      if (
+        this.queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderTDSState
+      ) {
+        this.queryBuilderState.fetchStructureState.implementation.tdsColumns.forEach(
+          (column) => {
+            if (column instanceof QueryBuilderSimpleProjectionColumnState) {
+              column.propertyExpressionState.derivedPropertyExpressionStates[0]?.parameterValues.forEach(
+                (p) => {
+                  if (p instanceof INTERNAL__PropagatedValue) {
+                    p.isPropagatedValue = false;
+                  }
+                },
+              );
+            } else if (
+              column instanceof QueryBuilderAggregateColumnState &&
+              column.projectionColumnState instanceof
+                QueryBuilderSimpleProjectionColumnState
+            ) {
+              column.projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates[0]?.parameterValues.forEach(
+                (p) => {
+                  if (p instanceof INTERNAL__PropagatedValue) {
+                    p.isPropagatedValue = false;
+                  }
+                },
+              );
+            }
+          },
+        );
+      }
+      this.queryBuilderState.filterState.nodes.forEach((node) => {
+        if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+          node.condition.propertyExpressionState.derivedPropertyExpressionStates[0]?.parameterValues.forEach(
+            (p) => {
+              if (p instanceof INTERNAL__PropagatedValue) {
+                p.isPropagatedValue = false;
+              }
+            },
+          );
+        } else if (node instanceof QueryBuilderFilterTreeExistsNodeData) {
+          if (
+            node.propertyExpressionState.derivedPropertyExpressionStates[0] &&
+            this.queryBuilderState.class?._generatedMilestonedProperties.includes(
+              node.propertyExpressionState.derivedPropertyExpressionStates[0]
+                .derivedProperty,
+            )
+          ) {
+            node.propertyExpressionState.derivedPropertyExpressionStates[0]?.parameterValues.forEach(
+              (p) => {
+                if (p instanceof INTERNAL__PropagatedValue) {
+                  p.isPropagatedValue = false;
+                }
+              },
+            );
+          }
+        }
+      });
+    }
+  }
+
   get isMilestonedQuery(): boolean {
-    return Boolean(this.businessDate ?? this.processingDate);
+    return (
+      Boolean(this.businessDate ?? this.processingDate) ||
+      this.queryBuilderState.getAllFunction ===
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS ||
+      this.queryBuilderState.getAllFunction ===
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
+    );
+  }
+
+  get isCurrentClassMilestoned(): boolean {
+    const currentclass = this.queryBuilderState.class;
+    if (currentclass !== undefined) {
+      const stereotype = getMilestoneTemporalStereotype(
+        currentclass,
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      return stereotype !== undefined;
+    }
+    return false;
+  }
+
+  get isCurrentClassSupportsVersionsInRange(): boolean {
+    const currentclass = this.queryBuilderState.class;
+    if (currentclass !== undefined) {
+      const stereotype = getMilestoneTemporalStereotype(
+        currentclass,
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      return (
+        stereotype !== undefined &&
+        stereotype !== MILESTONING_STEREOTYPE.BITEMPORAL
+      );
+    }
+    return false;
+  }
+
+  get isAllVersionsEnabled(): boolean {
+    return (
+      this.queryBuilderState.getAllFunction ===
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS ||
+      this.queryBuilderState.getAllFunction ===
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
+    );
+  }
+
+  get isAllVersionsInRangeEnabled(): boolean {
+    return (
+      this.queryBuilderState.getAllFunction ===
+      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
+    );
+  }
+
+  get isInvalidAllVersionsInRange(): boolean {
+    if (
+      (this.startDate && !this.endDate) ||
+      (!this.startDate && this.endDate)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  setAllVersionsInRange(val: boolean | undefined): void {
+    if (val) {
+      this.queryBuilderState.setGetAllFunction(
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+      );
+      this.initializeAllVersionsInRangeParameters();
+    } else {
+      this.queryBuilderState.setGetAllFunction(
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+      );
+      this.clearAllVersionsInRangeParameters();
+    }
+  }
+
+  setAllVersions(val: boolean | undefined): void {
+    if (val) {
+      this.queryBuilderState.setGetAllFunction(
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+      );
+      this.clearGetAllParameters();
+    } else {
+      this.queryBuilderState.setGetAllFunction(
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+      );
+      this.clearAllVersionsInRangeParameters();
+      this.updateMilestoningConfiguration();
+    }
+    this.updateQueryBuilderState();
+  }
+
+  setStartDate(val: ValueSpecification | undefined): void {
+    this.startDate = val
+      ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
+      : val;
+  }
+
+  setEndDate(val: ValueSpecification | undefined): void {
+    this.endDate = val
+      ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
+      : val;
   }
 
   setShowMilestoningEditor(val: boolean): void {
@@ -122,6 +314,92 @@ export class QueryBuilderMilestoningState implements Hashable {
     this.businessDate = val
       ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : val;
+  }
+
+  initializeAllVersionsInRangeParameters(): void {
+    this.setStartDate(
+      this.buildMilestoningParameter(MILESTONING_START_DATE_PARAMETER_NAME),
+    );
+    this.setEndDate(
+      this.buildMilestoningParameter(MILESTONING_END_DATE_PARAMETER_NAME),
+    );
+  }
+
+  clearGetAllParameters(): void {
+    if (
+      this.businessDate instanceof VariableExpression &&
+      !this.queryBuilderState.isVariableUsed(this.businessDate, {
+        exculdeMilestoningState: true,
+      })
+    ) {
+      const paramState =
+        this.queryBuilderState.parametersState.parameterStates.find(
+          (p) =>
+            p.parameter.name ===
+            guaranteeType(this.businessDate, VariableExpression).name,
+        );
+      if (paramState) {
+        this.queryBuilderState.parametersState.removeParameter(paramState);
+      }
+      this.setBusinessDate(undefined);
+    }
+    if (
+      this.processingDate instanceof VariableExpression &&
+      !this.queryBuilderState.isVariableUsed(this.processingDate, {
+        exculdeMilestoningState: true,
+      })
+    ) {
+      const paramState =
+        this.queryBuilderState.parametersState.parameterStates.find(
+          (p) =>
+            p.parameter.name ===
+            guaranteeType(this.processingDate, VariableExpression).name,
+        );
+      if (paramState) {
+        this.queryBuilderState.parametersState.removeParameter(paramState);
+      }
+      this.setProcessingDate(undefined);
+    }
+    // Reset miletoning dates when they are of type `PrimitiveInstanceValue`
+    if (this.businessDate instanceof PrimitiveInstanceValue) {
+      this.setBusinessDate(undefined);
+    }
+    if (this.processingDate instanceof PrimitiveInstanceValue) {
+      this.setProcessingDate(undefined);
+    }
+  }
+
+  clearAllVersionsInRangeParameters(): void {
+    if (
+      this.startDate instanceof VariableExpression &&
+      !this.queryBuilderState.isVariableUsed(this.startDate, {
+        exculdeMilestoningState: true,
+      })
+    ) {
+      const paramState =
+        this.queryBuilderState.parametersState.parameterStates.find(
+          (p) => p.parameter === this.startDate,
+        );
+      this.queryBuilderState.parametersState.removeParameter(
+        guaranteeNonNullable(paramState),
+      );
+    }
+    if (
+      this.endDate instanceof VariableExpression &&
+      !this.queryBuilderState.isVariableUsed(this.endDate, {
+        exculdeMilestoningState: true,
+      })
+    ) {
+      const paramState =
+        this.queryBuilderState.parametersState.parameterStates.find(
+          (p) => p.parameter === this.endDate,
+        );
+      this.queryBuilderState.parametersState.removeParameter(
+        guaranteeNonNullable(paramState),
+      );
+    }
+    this.setStartDate(undefined);
+    this.setEndDate(undefined);
   }
 
   clearMilestoningDates(): void {

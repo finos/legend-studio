@@ -52,6 +52,7 @@ import {
   PackageableRuntime,
   RuntimePointer,
   PackageableElementExplicitReference,
+  MILESTONING_STEREOTYPE,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
@@ -77,6 +78,7 @@ import {
 import {
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
   QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from '../graph/QueryBuilderMetaModelConst.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/window/QueryBuilderWindowStateBuilder.js';
@@ -120,6 +122,87 @@ const processGetAllExpression = (
       `Can't process getAll() expression: getAll() expects no arguments`,
     );
   }
+};
+
+const processGetAllVersionsExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  const _class = expression.genericType?.value.rawType;
+  assertType(
+    _class,
+    Class,
+    `Can't process getAllVersions() expression: getAllVersions() return type is missing`,
+  );
+  queryBuilderState.setClass(_class);
+  queryBuilderState.milestoningState.clearMilestoningDates();
+  queryBuilderState.explorerState.refreshTreeData();
+
+  // check parameters (milestoning) and build state
+  const acceptedNoOfParameters = 1;
+  const stereotype = getMilestoneTemporalStereotype(
+    _class,
+    queryBuilderState.graphManagerState.graph,
+  );
+  assertNonNullable(
+    stereotype,
+    `Can't process getAllVersions() expression: getAllVersions() expects source class to be milestoned`,
+  );
+
+  assertTrue(
+    expression.parametersValues.length === acceptedNoOfParameters,
+    `Can't process getAllVersions() expression: getAllVersions() expects no arguments`,
+  );
+  queryBuilderState.setGetAllFunction(
+    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+  );
+};
+
+const processGetAllVersionsInRangeExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  const _class = expression.genericType?.value.rawType;
+  assertType(
+    _class,
+    Class,
+    `Can't process getAllVersionsInRange() expression: getAllVersionsInRange() return type is missing`,
+  );
+  queryBuilderState.setClass(_class);
+  queryBuilderState.milestoningState.clearMilestoningDates();
+  queryBuilderState.explorerState.refreshTreeData();
+
+  // check parameters (milestoning) and build state
+  const acceptedNoOfParameters = 3;
+  const stereotype = getMilestoneTemporalStereotype(
+    _class,
+    queryBuilderState.graphManagerState.graph,
+  );
+  assertTrue(
+    stereotype !== undefined &&
+      stereotype !== MILESTONING_STEREOTYPE.BITEMPORAL,
+    `Can't process getAllVersionsInRange() expression: getAllVersionInRange() expects source class to be processing temporal or business temporal milestoned`,
+  );
+
+  assertTrue(
+    expression.parametersValues.length === acceptedNoOfParameters,
+    `Can't process getAllVersionsInRange() expression: getAllVersionsInRange() expects start and end date`,
+  );
+  queryBuilderState.setGetAllFunction(
+    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+  );
+  queryBuilderState.milestoningState.setStartDate(
+    guaranteeNonNullable(
+      expression.parametersValues[1],
+      `Can't process getAllVersionsInRange() expression: getAllVersionsInRange() expects start date to be defined`,
+    ),
+  );
+  queryBuilderState.milestoningState.setEndDate(
+    guaranteeNonNullable(
+      expression.parametersValues[2],
+      `Can't process getAllVersionsInRange() expression: getAllVersionsInRange() expects end date to be defined`,
+    ),
+  );
 };
 
 const processLetExpression = (
@@ -381,9 +464,34 @@ export class QueryBuilderValueSpecificationProcessor
   ): void {
     const functionName = valueSpecification.functionName;
     if (
-      matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL)
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+      )
     ) {
       processGetAllExpression(valueSpecification, this.queryBuilderState);
+      return;
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+      )
+    ) {
+      processGetAllVersionsExpression(
+        valueSpecification,
+        this.queryBuilderState,
+      );
+      return;
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+      )
+    ) {
+      processGetAllVersionsInRangeExpression(
+        valueSpecification,
+        this.queryBuilderState,
+      );
       return;
     } else if (
       matchFunctionName(
@@ -427,10 +535,11 @@ export class QueryBuilderValueSpecificationProcessor
       );
 
       if (
-        matchFunctionName(
-          precedingExpression.functionName,
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
-        )
+        matchFunctionName(precedingExpression.functionName, [
+          QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+          QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+          QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+        ])
       ) {
         assertTrue(
           matchFunctionName(

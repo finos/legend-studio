@@ -143,7 +143,14 @@ import {
 import { DEFAULT_LIMIT } from '../QueryBuilderResultState.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' assert { type: 'json' };
-import { TEST_DATA__simpleProjectionWithBusinessMilestonedColumn } from './TEST_DATA__QueryBuilder_Milestoning.js';
+import {
+  TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass,
+  TEST_DATA__simpleGetAllVersionsInRangeWithProcessingTemporalClass,
+  TEST_DATA__simpleGetAllVersionsWithBiTemporalClass,
+  TEST_DATA__simpleGetAllVersionsWithBusinessTemporalClass,
+  TEST_DATA__simpleGetAllVersionsWithProcessingTemporalClass,
+  TEST_DATA__simpleProjectionWithBusinessMilestonedColumn,
+} from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
 
 type RoundtripTestCase = [
@@ -704,6 +711,37 @@ const cases: RoundtripTestCase[] = [
     'Simple milestoned projection query with milestoning parameters as constants',
     milestoningCtx,
     TEST_DATA__simpleProjectionWithBusinessMilestonedColumn,
+    undefined,
+  ],
+  [
+    'Simple getAllVersions() with processing temporal class',
+    milestoningCtx,
+    TEST_DATA__simpleGetAllVersionsWithProcessingTemporalClass,
+    undefined,
+  ],
+
+  [
+    'Simple getAllVersions() with bi temporal class',
+    milestoningCtx,
+    TEST_DATA__simpleGetAllVersionsWithBiTemporalClass,
+    undefined,
+  ],
+  [
+    'Simple getAllVersions() with business temporal class',
+    milestoningCtx,
+    TEST_DATA__simpleGetAllVersionsWithBusinessTemporalClass,
+    undefined,
+  ],
+  [
+    'Simple getAllVersionsInRange() with processing temporal class',
+    milestoningCtx,
+    TEST_DATA__simpleGetAllVersionsInRangeWithProcessingTemporalClass,
+    undefined,
+  ],
+  [
+    'Simple getAllVersionsInRange() with business temporal class',
+    milestoningCtx,
+    TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass,
     undefined,
   ],
 ];
