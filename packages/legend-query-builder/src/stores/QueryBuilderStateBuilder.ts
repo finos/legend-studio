@@ -71,6 +71,7 @@ import {
   processTDSProjectExpression,
   processTDSProjectionColumnPropertyExpression,
   processTDSProjectionDerivationExpression,
+  processTDSSliceExpression,
   processTDSSortDirectionExpression,
   processTDSSortExpression,
   processTDSTakeExpression,
@@ -636,6 +637,15 @@ export class QueryBuilderValueSpecificationProcessor
       )
     ) {
       processTDSSortExpression(
+        valueSpecification,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
+      return;
+    } else if (
+      matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.SLICE)
+    ) {
+      processTDSSliceExpression(
         valueSpecification,
         this.queryBuilderState,
         this.parentLambda,

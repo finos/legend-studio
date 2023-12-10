@@ -65,6 +65,7 @@ export class QueryResultSetModifierState implements Hashable {
   limit?: number | undefined;
   distinct = false;
   sortColumns: SortColumnState[] = [];
+  slice: [number, number] | undefined;
 
   constructor(tdsState: QueryBuilderTDSState) {
     makeObservable(this, {
@@ -72,12 +73,14 @@ export class QueryResultSetModifierState implements Hashable {
       limit: observable,
       distinct: observable,
       sortColumns: observable,
+      slice: observable.ref,
       setShowModal: action,
       setLimit: action,
       toggleDistinct: action,
       deleteSortColumn: action,
       addSortColumn: action,
       updateSortColumns: action,
+      setSlice: action,
       reset: action,
       hashCode: computed,
     });
@@ -109,6 +112,10 @@ export class QueryResultSetModifierState implements Hashable {
     this.sortColumns = this.sortColumns.filter((colState) =>
       this.tdsState.tdsColumns.includes(colState.columnState),
     );
+  }
+
+  setSlice(slice: [number, number] | undefined): void {
+    this.slice = slice;
   }
 
   reset(): void {

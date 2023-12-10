@@ -27,11 +27,13 @@ import {
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
   VariableExpression,
+  PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   assertNonNullable,
   assertTrue,
   assertType,
+  guaranteeIsNumber,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
@@ -383,6 +385,68 @@ export const processTDSSortExpression = (
       queryBuilderState,
     ),
   );
+};
+
+export const processTDSSliceExpression = (
+  exp: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  // check parameters
+  assertTrue(
+    exp.parametersValues.length === 3,
+    `Can't process slice() expression: slice() expects 2 argument`,
+  );
+
+  // check preceding expression
+  const precedingExpression = guaranteeType(
+    exp.parametersValues[0],
+    SimpleFunctionExpression,
+    `Can't process slice() expression: only support slice() immediately following an expression`,
+  );
+  assertTrue(
+    matchFunctionName(precedingExpression.functionName, [
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
+    ]),
+    `Can't process slice() expression: only support slice() in TDS expression`,
+  );
+  QueryBuilderValueSpecificationProcessor.process(
+    precedingExpression,
+    parentLambda,
+    queryBuilderState,
+  );
+
+  // build state
+  if (
+    queryBuilderState.fetchStructureState.implementation instanceof
+    QueryBuilderTDSState
+  ) {
+    const tdsState = queryBuilderState.fetchStructureState.implementation;
+    const start = guaranteeIsNumber(
+      guaranteeType(
+        exp.parametersValues[1],
+        PrimitiveInstanceValue,
+        'Can`t process slice() function: first param should be a primitive instance value',
+      ).values[0],
+      'Can`t process slice() function: first param should be a number primitive instance value',
+    );
+
+    const end = guaranteeIsNumber(
+      guaranteeType(
+        exp.parametersValues[2],
+        PrimitiveInstanceValue,
+        'Can`t process slice() function: first param should be a primitive instance value',
+      ).values[0],
+      'Can`t process slice() function: first param should be a number primitive instance value',
+    );
+    tdsState.resultSetModifierState.setSlice([start, end]);
+  }
 };
 
 export const processTDSSortDirectionExpression = (

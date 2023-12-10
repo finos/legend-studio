@@ -352,6 +352,86 @@ export const TEST_DATA__projectWithCols = {
   parameters: [],
 };
 
+export const TEST_DATA__projectWithSlice = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'slice',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'test::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'lastName',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Last Name',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'integer',
+          value: 1,
+        },
+        {
+          _type: 'integer',
+          value: 20,
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__simpleProjectionWithFilter = {
   _type: 'lambda',
   body: [

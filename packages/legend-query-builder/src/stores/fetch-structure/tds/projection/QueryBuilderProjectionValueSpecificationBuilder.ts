@@ -136,6 +136,33 @@ const appendResultSetModifier = (
           takeFunction.parametersValues[1] = limit;
           currentExpression = takeFunction;
         }
+        // build slice()
+        if (resultModifierState.slice) {
+          const sliceStart = resultModifierState.slice[0];
+          const sliceEnd = resultModifierState.slice[1];
+          const startVal = new PrimitiveInstanceValue(
+            GenericTypeExplicitReference.create(
+              new GenericType(PrimitiveType.INTEGER),
+            ),
+          );
+          const endVal = new PrimitiveInstanceValue(
+            GenericTypeExplicitReference.create(
+              new GenericType(PrimitiveType.INTEGER),
+            ),
+          );
+          startVal.values = [sliceStart];
+          endVal.values = [sliceEnd];
+          const sliceFunction = new SimpleFunctionExpression(
+            extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SLICE),
+          );
+          sliceFunction.parametersValues = [
+            currentExpression,
+            startVal,
+            endVal,
+          ];
+          currentExpression = sliceFunction;
+        }
+
         lambdaFunction.expressionSequence[0] = currentExpression;
         return lambdaFunction;
       }

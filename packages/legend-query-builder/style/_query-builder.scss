@@ -1330,6 +1330,35 @@
     }
   }
 
+  &__slice {
+    display: flex;
+    align-items: center;
+    border-radius: 0.2rem;
+
+    &__input {
+      height: 2.8rem;
+
+      &:not(:focus) {
+        border: 0.1rem solid var(--color-dark-grey-250);
+      }
+
+      &[disabled] {
+        cursor: not-allowed;
+      }
+    }
+
+    &__range {
+      display: flex;
+      align-items: center;
+      padding: 0 0.3rem;
+      font-size: 2rem;
+      font-weight: bold;
+      height: 2.8rem;
+      color: var(--color-light-grey-150);
+      cursor: default;
+    }
+  }
+
   &__values {
     padding: 0 !important;
     position: relative;

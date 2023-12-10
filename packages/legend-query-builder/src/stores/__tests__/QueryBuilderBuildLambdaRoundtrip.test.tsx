@@ -36,6 +36,7 @@ import {
   TEST_DATA__simpleProjectionWithPreviewLimit,
   TEST_DATA__simpleFromFunction,
   TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
+  TEST_DATA__simpleProjectionWithSlice,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
@@ -742,6 +743,13 @@ const cases: RoundtripTestCase[] = [
     'Simple getAllVersionsInRange() with business temporal class',
     milestoningCtx,
     TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass,
+    undefined,
+  ],
+  // slice()
+  [
+    'Simple projection with slice',
+    projectionCtx,
+    TEST_DATA__simpleProjectionWithSlice,
     undefined,
   ],
 ];

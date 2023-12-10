@@ -38,6 +38,7 @@ import {
   TEST_DATA__personWithSubType,
   TEST_DATA_dateCompabilityForFilterAndPostFilter,
   TEST_DATA__fromWithPersonProject,
+  TEST_DATA__projectWithSlice,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip.js';
 import TEST_DATA__BindingM2MModel from './TEST_DATA__QueryBuilder_Model_BindingM2M.json' assert { type: 'json' };
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json' assert { type: 'json' };
@@ -238,6 +239,8 @@ const cases: RoundtripTestCase[] = [
     bindingM2MCtx,
     TEST_DATA__lambda_Externalize_externalize_graphFetchChecked,
   ],
+  // slice
+  ['Simple slice() function', relationalCtx, TEST_DATA__projectWithSlice],
 ];
 
 describe(unitTest('Lambda processing roundtrip'), () => {

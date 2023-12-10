@@ -202,6 +202,40 @@ export const QueryResultModifierModal = observer(
       );
     };
 
+    const handleSliceStartChange = (start: number, end: number): void => {
+      const slice: [number, number] = [start, end];
+      resultSetModifierState.setSlice(slice);
+    };
+
+    const clearSlice = (): void => {
+      resultSetModifierState.setSlice(undefined);
+    };
+
+    const addSlice = (): void => {
+      resultSetModifierState.setSlice([0, 1]);
+    };
+
+    const changeSliceStart: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      const currentSlice = resultSetModifierState.slice;
+      const val = event.target.value;
+      const start = typeof val === 'number' ? val : parseInt(val, 10);
+      if (currentSlice) {
+        handleSliceStartChange(start, currentSlice[1]);
+      }
+    };
+    const changeSliceEnd: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      const currentSlice = resultSetModifierState.slice;
+      const val = event.target.value;
+      const end = typeof val === 'number' ? val : parseInt(val, 10);
+      if (currentSlice) {
+        handleSliceStartChange(currentSlice[0], end);
+      }
+    };
+
     return (
       <Dialog
         open={Boolean(resultSetModifierState.showModal)}
@@ -257,6 +291,56 @@ export const QueryResultModifierModal = observer(
                   value={limitResults ?? ''}
                   onChange={changeValue}
                 />
+              </div>
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  Slice
+                </div>
+                <div className="panel__content__form__section__header__prompt">
+                  Reduce the number of rows in the provided TDS, selecting the
+                  set of rows in the specified range between start and stop
+                </div>
+                {resultSetModifierState.slice ? (
+                  <>
+                    <div className="query-builder__result__slice">
+                      <input
+                        className="input--dark query-builder__result__slice__input"
+                        spellCheck={false}
+                        value={resultSetModifierState.slice[0]}
+                        onChange={changeSliceStart}
+                        type="number"
+                      />
+                      <div className="query-builder__result__slice__range">
+                        ..
+                      </div>
+                      <input
+                        className="input--dark query-builder__result__slice__input"
+                        spellCheck={false}
+                        value={resultSetModifierState.slice[1]}
+                        onChange={changeSliceEnd}
+                        type="number"
+                      />
+                      <button
+                        className="query-builder__projection__options__sort__remove-btn btn--dark btn--caution"
+                        onClick={clearSlice}
+                        tabIndex={-1}
+                        title="Remove"
+                      >
+                        <TimesIcon />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="panel__content__form__section__list__new-item__add">
+                    <button
+                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                      onClick={addSlice}
+                      tabIndex={-1}
+                    >
+                      Add Slice
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </ModalBody>
