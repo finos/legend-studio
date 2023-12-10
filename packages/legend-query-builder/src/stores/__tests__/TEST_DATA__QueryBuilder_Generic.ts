@@ -6553,3 +6553,83 @@ export const TEST_DATA__simplePostFilterWithDateTimeWithSeconds = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__simpleProjectionWithSlice = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'slice',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::pure::tests::model::simple::Person',
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'name',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Name',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'integer',
+          value: 0,
+        },
+        {
+          _type: 'integer',
+          value: 1,
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

@@ -158,6 +158,9 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   // TOTDS
   TABLE_TO_TDS = 'meta::pure::tds::tableToTDS',
   TABLE_REFERENCE = 'meta::relational::functions::database::tableReference',
+
+  // SLICE
+  SLICE = 'meta::pure::functions::collection::slice',
 }
 
 export enum TDS_COLUMN_GETTER {

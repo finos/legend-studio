@@ -1142,6 +1142,19 @@ export const QueryBuilderTDSPanel = observer(
                 )}
               </div>
             )}
+            {tdsState.resultSetModifierState.slice && (
+              <div className="query-builder__projection__result-modifier-prompt__group">
+                <div className="query-builder__projection__result-modifier-prompt__group__label">
+                  Slice
+                </div>
+                <div
+                  className="query-builder__projection__result-modifier-prompt__group__content"
+                  onClick={openResultSetModifierEditor}
+                >
+                  {`${tdsState.resultSetModifierState.slice[0]},${tdsState.resultSetModifierState.slice[1]}`}
+                </div>
+              </div>
+            )}
           </div>
           <div className="query-builder__projection__toolbar__actions">
             <button
