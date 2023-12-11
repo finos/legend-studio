@@ -125,6 +125,7 @@
         height: 3.6rem;
         color: var(--color-light-grey-150);
         background: var(--color-dark-grey-500);
+        margin-right: 0.5rem;
 
         &__icon {
           cursor: pointer;
@@ -138,10 +139,6 @@
 
       &__action--primary {
         background: var(--color-blue-200);
-      }
-
-      &__action + &__action {
-        margin-left: 0.5rem;
       }
     }
   }

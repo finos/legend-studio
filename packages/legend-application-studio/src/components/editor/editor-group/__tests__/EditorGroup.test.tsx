@@ -47,14 +47,7 @@ beforeEach(async () => {
 test(integrationTest('Test navigation between element states'), async () => {
   //check successfully load cards
   await waitFor(() =>
-    expect(
-      renderResult.queryByText(
-        'You can see our Showcase projects here and use them as quickstarts:',
-      ),
-    ).not.toBeNull(),
-  );
-  await waitFor(() =>
-    expect(renderResult.queryByText('Showcase projects')).not.toBeNull(),
+    expect(renderResult.queryByText('Showcase Projects')).not.toBeNull(),
   );
 
   // Test opening multiple elements

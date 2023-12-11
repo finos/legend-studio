@@ -20,32 +20,60 @@
 @forward 'workspace-setup/workspace-selector';
 @forward 'workspace-setup/project-selector';
 
-.selector-input--dark .selector-input--dark__control {
-  background: var(--color-dark-grey-85);
-  height: 100%;
-}
-
-.selector-input--dark .selector-input--dark__single-value {
-  font-size: min(1vw, 1.5rem);
-}
-
-.selector-input--dark .selector-input__dropdown-indicator {
-  background: var(--color-light-blue-50);
-  margin-right: 1rem;
-  height: 2rem;
-  width: 2rem;
-}
-
-.selector-input--dark .selector-input--dark__indicator-separator {
-  margin-top: 0;
-  margin-bottom: 0;
-  background: none;
-}
-
 .workspace-setup {
   height: 100%;
   position: relative;
   background: var(--color-dark-grey-50);
+
+  .selector-input__clear-indicator {
+    margin-right: 1vh;
+    width: 1vh;
+
+    svg {
+      font-size: 1.5vh;
+    }
+  }
+
+  .selector-input--dark__placeholder {
+    font-size: 1.5vh;
+  }
+
+  selector-input--dark__value-container,
+  .selector-menu--dark .selector-input--dark__value-container,
+  .selector-input--dark .selector-input--dark__value-container {
+    height: 100%;
+  }
+
+  .selector-input--dark .selector-input--dark__control {
+    background: var(--color-dark-grey-85);
+    height: 100%;
+    min-height: unset;
+  }
+
+  .selector-input--dark .selector-input--dark__single-value {
+    font-size: min(1vw, 1.5rem);
+  }
+
+  .selector-input--dark .selector-input__dropdown-indicator {
+    background: var(--color-light-blue-50);
+    margin-right: 1vh;
+    height: 2vh;
+    width: 2vh;
+
+    svg {
+      font-size: 1.5vh;
+    }
+  }
+
+  .selector-input--dark .selector-input--dark__indicator-separator {
+    margin-top: 0;
+    margin-bottom: 0;
+    background: none;
+  }
+
+  .divider-with-text__content {
+    font-size: 1.5vh;
+  }
 
   &__logo {
     display: flex;
@@ -68,7 +96,7 @@
 
   &__title__header {
     display: flex;
-    font-size: 2vw;
+    font-size: min(4vw, 4vh);
     height: 24%;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 700;
@@ -88,6 +116,7 @@
     &__link {
       color: var(--color-light-blue-50);
       font-weight: 500;
+      font-size: min(1.5vh, 1.25vw);
       text-decoration: none;
     }
   }
@@ -122,6 +151,16 @@
   &__content__card {
     background-color: var(--color-dark-grey-100) !important;
     height: 100% !important;
+
+    &__content {
+      font-size: min(1.5vh, 1.25vw);
+    }
+
+    &__action__icon {
+      svg {
+        font-size: min(1vw, 1.5vh);
+      }
+    }
   }
 
   &__workspace__selector {
@@ -147,11 +186,11 @@
     flex-direction: column;
     height: 45%;
     justify-content: space-between;
-    margin-left: 4rem;
-    margin-right: 4rem;
+    margin-left: 2vw;
+    margin-right: 2vw;
 
     &__header {
-      font-size: min(1.25vw, 2rem);
+      font-size: min(2vw, 2vh);
       font-weight: 500;
       color: var(--color-light-grey-200);
       height: 33%;
@@ -167,7 +206,7 @@
         @include flexCenter;
 
         height: 100%;
-        width: 2.8rem;
+        width: 2vh;
         background: var(--color-dark-grey-85);
         border-radius: 0.2rem 0 0 0.2rem;
 
@@ -208,8 +247,8 @@
   }
 
   &__divider {
-    margin-left: 4rem;
-    margin-right: 4rem;
+    margin-left: 2vw;
+    margin-right: 2vw;
     margin-top: 2vh;
     margin-bottom: 2vh;
     height: 14%;
@@ -240,7 +279,7 @@
 
     &__label {
       font-weight: 700;
-      font-size: 2rem;
+      font-size: min(2vw, 2vh);
     }
 
     &__icon {
@@ -254,9 +293,9 @@
     color: var(--color-light-blue-50);
     height: 100%;
     width: 25vw;
-    margin-left: 4rem;
-    margin-right: 4rem;
-    font-size: 2rem;
+    margin-left: 2vw;
+    margin-right: 2vw;
+    font-size: min(2vw, 2vh);
   }
 
   &__filter__selector {
