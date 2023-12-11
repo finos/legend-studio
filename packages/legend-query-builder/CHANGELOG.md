@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.13.0
+
+### Minor Changes
+
+- [#2824](https://github.com/finos/legend-studio/pull/2824) [`1f5014b4c`](https://github.com/finos/legend-studio/commit/1f5014b4cce2e792f841327ad8dc914d289b204d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `slice()` function.
+
 ## 4.12.0
 
 ### Minor Changes
