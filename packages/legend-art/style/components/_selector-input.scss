@@ -382,3 +382,9 @@
     height: 100%;
   }
 }
+
+.selector-input--dark__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}

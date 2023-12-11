@@ -32,7 +32,7 @@ export type MuiCardActionConfig = {
 export const BaseCard: React.FC<
   {
     className?: string | undefined;
-    cardMedia: React.ReactNode;
+    cardMedia?: React.ReactNode;
     cardName: string;
     cardContent: React.ReactNode;
     cardActions?: MuiCardActionConfig[];
@@ -64,7 +64,7 @@ export const BaseCard: React.FC<
       )}
       {...otherProps}
     >
-      <div className="mui-card__media"> {cardMedia}</div>
+      {cardMedia && <div className="mui-card__media"> {cardMedia}</div>}
       <MuiCardContent>
         <div className="mui-card__header">{cardName}</div>
         <div className="mui-card__content">{cardContent}</div>

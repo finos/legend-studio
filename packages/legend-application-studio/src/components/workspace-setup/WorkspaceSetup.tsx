@@ -125,7 +125,6 @@ export const DocumentationCard: React.FC = () => {
   return (
     <BaseCard
       className="workspace-setup__content__card"
-      cardMedia={undefined}
       cardName="Documentation"
       cardContent={
         <div>
@@ -170,7 +169,6 @@ export const ProductionCard: React.FC = () => {
     productionDocument.text && (
       <BaseCard
         className="workspace-setup__content__card"
-        cardMedia={undefined}
         cardName={productionDocument.title}
         cardContent={productionDocument.markdownText.value}
         cardActions={[
@@ -203,7 +201,6 @@ export const SandboxCard: React.FC = () => {
     sandboxDocument.text && (
       <BaseCard
         className="workspace-setup__content__card"
-        cardMedia={undefined}
         cardName={sandboxDocument.title}
         cardContent={sandboxDocument.markdownText.value}
         cardActions={[
@@ -300,7 +297,8 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     const applicationStore = useLegendStudioApplicationStore();
     const [projectSearchText, setProjectSearchText] = useState('');
     const goButtonRef = useRef<HTMLButtonElement>(null);
-    const logoPath = `${applicationStore.navigationService.navigator.getCurrentLocation()}favicon.ico`;
+    //TODO: fix logo loading issue for localhost
+    const logoPath = `${applicationStore.config.baseAddress}favicon.ico`;
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
 
@@ -456,6 +454,9 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                               applicationStore,
                               setupStore.currentProjectConfigurationStatus,
                             )}
+                            optionCustomization={{
+                              rowHeight: window.innerHeight * 0.03,
+                            }}
                           />
                         </div>
                       </div>
@@ -507,6 +508,9 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             isClearable={true}
                             escapeClearsValue={true}
                             darkMode={true}
+                            optionCustomization={{
+                              rowHeight: window.innerHeight * 0.03,
+                            }}
                           />
                         </div>
                       </div>

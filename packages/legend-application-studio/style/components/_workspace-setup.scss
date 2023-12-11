@@ -35,7 +35,7 @@
   }
 
   .selector-input--dark__placeholder {
-    font-size: 1.5vh;
+    font-size: min(1.25vw, 1.25vh);
   }
 
   selector-input--dark__value-container,
@@ -73,6 +73,97 @@
 
   .divider-with-text__content {
     font-size: 1.5vh;
+  }
+
+  .project-selector__option {
+    height: 100%;
+    justify-content: space-between;
+
+    &__label {
+      display: flex;
+      width: 100%;
+
+      &__name {
+        font-size: min(1.25vw, 1.25vh);
+      }
+    }
+
+    &__visit-btn {
+      width: 6vh;
+      margin-right: 1vh;
+
+      &__label {
+        width: 4vh;
+        height: 2vh;
+        font-size: 1vh;
+      }
+
+      &__icon {
+        height: 2vh;
+        width: 2vh;
+
+        svg {
+          font-size: 1.5vh;
+        }
+      }
+    }
+
+    &__configure-btn {
+      width: 10vh;
+      margin-right: 1vh;
+
+      &__label {
+        width: 6vh;
+        height: 2vh;
+        font-size: 1vh;
+      }
+
+      &__warning-icon {
+        height: 2vh;
+        width: 2vh;
+
+        svg {
+          font-size: 1.5vh;
+        }
+      }
+
+      &__icon {
+        height: 2vh;
+        width: 2vh;
+
+        svg {
+          font-size: 1.5vh;
+        }
+      }
+    }
+  }
+
+  .workspace-selector__option {
+    height: 100%;
+    display: flex;
+    align-items: center;
+
+    &__icon {
+      @include flexCenter;
+
+      width: 1vh;
+      margin-right: 1vh;
+
+      svg {
+        font-size: 1.5vh;
+      }
+    }
+
+    &__label {
+      width: calc(100% - 1rem);
+      display: flex;
+      align-items: center;
+    }
+
+    &__name {
+      font-size: min(1.25vw, 1.25vh);
+      height: 100%;
+    }
   }
 
   &__logo {
@@ -116,7 +207,7 @@
     &__link {
       color: var(--color-light-blue-50);
       font-weight: 500;
-      font-size: min(1.5vh, 1.25vw);
+      font-size: min(1.25vh, 1.25vw);
       text-decoration: none;
     }
   }
@@ -153,7 +244,7 @@
     height: 100% !important;
 
     &__content {
-      font-size: min(1.5vh, 1.25vw);
+      font-size: min(1.25vh, 1.25vw);
     }
 
     &__action__icon {

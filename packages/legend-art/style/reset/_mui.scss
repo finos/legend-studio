@@ -114,11 +114,11 @@
   &__media {
     margin-top: 1vw;
     margin-left: 1vw;
-    margin-bottom: 1.5vh;
     size: 2rem;
   }
 
   &__header {
+    margin-top: 1.5vh;
     font-weight: 500;
     height: 20%;
     font-size: min(2vw, 2vh);
@@ -129,7 +129,7 @@
   }
 
   &__content {
-    font-size: min(1vw, 1.5rem);
+    font-size: min(1.25vh, 1.25vw);
     color: white;
     height: 80%;
     overflow-y: scroll;
