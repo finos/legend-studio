@@ -20,6 +20,8 @@
   @include flexVCenter;
 
   width: 100%;
+  height: 100%;
+  justify-content: space-between;
 
   &__label {
     display: flex;
@@ -28,7 +30,7 @@
     &__name {
       @include flexVCenter;
 
-      height: 1.8rem;
+      font-size: min(1.5vw, 1.5vh);
     }
 
     &--selected {
@@ -42,17 +44,17 @@
 
   &__visit-btn {
     display: flex;
-    width: 6rem;
-    margin-right: 0.5rem;
+    width: 6vh;
+    margin-right: 1vh;
 
     &__label {
       @include flexCenter;
 
-      width: 4.2rem;
-      height: 1.8rem;
+      width: 4vh;
+      height: 2vh;
       background: var(--color-dark-grey-500);
       border-radius: 0.2rem 0 0 0.2rem;
-      font-size: 1.2rem;
+      font-size: 1vh;
       color: var(--color-dark-grey-200);
       font-weight: 500;
     }
@@ -60,13 +62,13 @@
     &__icon {
       @include flexCenter;
 
-      height: 1.8rem;
-      width: 1.8rem;
+      height: 2vh;
+      width: 2vh;
       background: var(--color-dark-grey-500);
       border-radius: 0 50% 50% 0;
 
       svg {
-        font-size: 1.6rem;
+        font-size: 1.5vh;
         color: var(--color-dark-grey-200);
       }
     }

@@ -142,9 +142,6 @@ export const EditorGroupSplashScreen: React.FC = () => {
         })}
       >
         <div className="editor-group__splash-screen__content__cards">
-          <div className="editor-group__splash-screen__content__header">
-            You can see our Showcase projects here and use them as quickstarts:
-          </div>
           <div className="editor-group__splash-screen__content__cards__container">
             <RuleEngagementCard />
             <ShowcaseCard hideDocumentation={true} />

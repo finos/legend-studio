@@ -38,6 +38,7 @@
     @include flexVCenter;
 
     height: 1.8rem;
+    font-size: min(1.5vw, 1.5vh);
   }
 
   &__source {

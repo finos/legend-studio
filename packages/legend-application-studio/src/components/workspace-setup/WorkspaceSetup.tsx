@@ -65,7 +65,6 @@ import {
 } from './WorkspaceSelectorUtils.js';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
-import { DocumentationLink } from '@finos/legend-lego/application';
 import { openShowcaseManager } from '../../stores/ShowcaseManagerState.js';
 
 const WorkspaceSetupStoreContext = createContext<
@@ -83,14 +82,14 @@ export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
     <BaseCard
       className="workspace-setup__content__card"
       cardMedia={undefined}
-      cardName="Showcase projects"
+      cardName="Showcase Projects"
       cardContent={
-        <div>
+        <div className="workspace-setup__content__card__content">
           Review showcase projects with sample project code and re-use existing
-          code snippets to quickly build your model.
+          code snippets to quickly build your model.{' '}
           {!props.hideDocumentation && (
             <>
-              Review the comprehensive{' '}
+              Review Studio{' '}
               <a
                 href={appDocUrl}
                 target="_blank"
@@ -98,8 +97,8 @@ export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
                 className="workspace-setup__content__link"
               >
                 documentation
-              </a>{' '}
-              available for the studio.
+              </a>
+              .
             </>
           )}
         </div>
@@ -107,7 +106,11 @@ export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
       cardActions={[
         {
           title: 'Showcase explorer',
-          content: <FileImportIcon />,
+          content: (
+            <div className="workspace-setup__content__card__action__icon">
+              <FileImportIcon />
+            </div>
+          ),
           action: () => openShowcaseManager(applicationStore),
         },
       ]}
@@ -126,7 +129,7 @@ export const DocumentationCard: React.FC = () => {
       cardName="Documentation"
       cardContent={
         <div>
-          Review the comprehensive{' '}
+          Review Studio{' '}
           <a
             href={appDocUrl}
             target="_blank"
@@ -134,8 +137,8 @@ export const DocumentationCard: React.FC = () => {
             className="workspace-setup__content__link"
           >
             documentation
-          </a>{' '}
-          available for the studio.
+          </a>
+          .
         </div>
       }
       cardActions={[
@@ -297,7 +300,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     const applicationStore = useLegendStudioApplicationStore();
     const [projectSearchText, setProjectSearchText] = useState('');
     const goButtonRef = useRef<HTMLButtonElement>(null);
-
+    const logoPath = `${applicationStore.navigationService.navigator.getCurrentLocation()}favicon.ico`;
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
 
@@ -414,17 +417,12 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                   <div className="workspace-setup__title">
                     <div className="workspace-setup__logo">
                       <img
-                        src="/favicon.ico"
+                        src={logoPath}
                         className="workspace-setup__logo__icon"
                       />
                     </div>
                     <div className="workspace-setup__title__header">
                       Welcome to Legend Studio
-                      <DocumentationLink
-                        documentationKey={
-                          LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
-                        }
-                      />
                     </div>
                   </div>
                   <div className="workspace-setup__selectors">
