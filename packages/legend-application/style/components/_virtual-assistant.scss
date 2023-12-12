@@ -49,6 +49,15 @@
     border-radius: 1rem;
   }
 
+  &__station__hide-button {
+    color: var(--color-yellow-200);
+    align-self: flex-start;
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+
   &__station__character {
     @include flexCenter;
 

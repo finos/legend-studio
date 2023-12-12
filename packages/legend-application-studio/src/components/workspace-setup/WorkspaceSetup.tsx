@@ -252,7 +252,11 @@ export const RuleEngagementCard: React.FC = () => {
         cardActions={[
           {
             title: ruleEngagementDocument.text,
-            content: <FileImportIcon />,
+            content: (
+              <div className="workspace-setup__content__card__action__icon">
+                <FileImportIcon />
+              </div>
+            ),
             action: () => {
               if (ruleEngagementDocument.url) {
                 applicationStore.navigationService.navigator.visitAddress(
