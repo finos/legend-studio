@@ -110,6 +110,7 @@
   flex-direction: column;
   flex: 1 1 auto;
   margin: 0 1.5rem;
+  border-radius: 1rem;
 
   &__media {
     margin-top: 1vw;
@@ -129,7 +130,7 @@
   }
 
   &__content {
-    font-size: min(1.25vh, 1.25vw);
+    font-size: min(1.5vh, 1.5vw);
     color: white;
     height: 80%;
     overflow-y: scroll;
@@ -145,6 +146,7 @@
     color: var(--color-light-blue-50);
     height: 100%;
     padding: 0;
+    margin-bottom: 1.5vh;
 
     &__label {
       margin-right: 0.5rem;

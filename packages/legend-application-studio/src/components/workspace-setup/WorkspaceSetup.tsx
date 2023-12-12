@@ -127,7 +127,7 @@ export const DocumentationCard: React.FC = () => {
       className="workspace-setup__content__card"
       cardName="Documentation"
       cardContent={
-        <div>
+        <div className="workspace-setup__content__card__content">
           Review Studio{' '}
           <a
             href={appDocUrl}
@@ -143,7 +143,11 @@ export const DocumentationCard: React.FC = () => {
       cardActions={[
         {
           title: 'Review documentation',
-          content: <FileImportIcon />,
+          content: (
+            <div className="workspace-setup__content__card__action__icon">
+              <FileImportIcon />
+            </div>
+          ),
           action: () => {
             if (appDocUrl) {
               applicationStore.navigationService.navigator.visitAddress(
@@ -174,7 +178,11 @@ export const ProductionCard: React.FC = () => {
         cardActions={[
           {
             title: productionDocument.text,
-            content: <FileImportIcon />,
+            content: (
+              <div className="workspace-setup__content__card__action__icon">
+                <FileImportIcon />
+              </div>
+            ),
             action: () => {
               if (productionDocument.url) {
                 applicationStore.navigationService.navigator.visitAddress(
@@ -206,7 +214,11 @@ export const SandboxCard: React.FC = () => {
         cardActions={[
           {
             title: sandboxDocument.text,
-            content: <FileImportIcon />,
+            content: (
+              <div className="workspace-setup__content__card__action__icon">
+                <FileImportIcon />
+              </div>
+            ),
             action: () => {
               if (sandboxDocument.url) {
                 applicationStore.navigationService.navigator.visitAddress(
@@ -544,15 +556,16 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       </DividerWithText>
                       <div className="workspace-setup__actions__button">
                         <button
-                          className="workspace-setup__new-btn"
+                          className="workspace-setup__new-btn btn--dark"
                           onClick={showCreateProjectModal}
                           title="Create a Project"
                         >
                           Create New Project
                         </button>
                         <button
-                          className="workspace-setup__new-btn"
+                          className="workspace-setup__new-btn btn--dark"
                           onClick={showCreateWorkspaceModal}
+                          title="Create a Workspace after choosing one project"
                           disabled={
                             !setupStore.currentProject ||
                             !setupStore.currentProjectConfigurationStatus ||

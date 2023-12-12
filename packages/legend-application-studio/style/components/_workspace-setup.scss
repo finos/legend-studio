@@ -84,7 +84,7 @@
       width: 100%;
 
       &__name {
-        font-size: min(1.25vw, 1.25vh);
+        font-size: min(1.5vw, 1.5vh);
       }
     }
 
@@ -95,7 +95,7 @@
       &__label {
         width: 4vh;
         height: 2vh;
-        font-size: 1vh;
+        font-size: 1.25vh;
       }
 
       &__icon {
@@ -115,7 +115,7 @@
       &__label {
         width: 6vh;
         height: 2vh;
-        font-size: 1vh;
+        font-size: 1.25vh;
       }
 
       &__warning-icon {
@@ -147,7 +147,7 @@
       @include flexCenter;
 
       width: 1vh;
-      margin-right: 1vh;
+      margin-right: 1rem;
 
       svg {
         font-size: 1.5vh;
@@ -161,7 +161,7 @@
     }
 
     &__name {
-      font-size: min(1.25vw, 1.25vh);
+      font-size: min(1.5vw, 1.5vh);
       height: 100%;
     }
   }
@@ -207,7 +207,7 @@
     &__link {
       color: var(--color-light-blue-50);
       font-weight: 500;
-      font-size: min(1.25vh, 1.25vw);
+      font-size: min(1.5vh, 1.5vw);
       text-decoration: none;
     }
   }
@@ -227,7 +227,7 @@
     flex-direction: column;
     background: var(--color-dark-grey-100);
     border: 0.1rem solid var(--color-dark-grey-100);
-    border-radius: 0.5rem;
+    border-radius: 1rem;
     box-shadow: 0 1px 5px 0 rgb(0 0 0 / 50%);
   }
 
@@ -244,12 +244,15 @@
     height: 100% !important;
 
     &__content {
-      font-size: min(1.25vh, 1.25vw);
+      font-size: min(1.5vh, 1.5vw);
     }
 
     &__action__icon {
+      display: flex;
+      align-items: center;
+
       svg {
-        font-size: min(1vw, 1.5vh);
+        font-size: min(1.25vw, 1.25vh);
       }
     }
   }
@@ -365,7 +368,7 @@
 
   &__go-btn {
     height: 100%;
-    width: 25vw;
+    width: 15vw;
     background: var(--color-light-blue-50);
 
     &__label {
@@ -380,12 +383,11 @@
   }
 
   &__new-btn {
-    border: 0.1rem solid var(--color-light-blue-50);
-    color: var(--color-light-blue-50);
     height: 100%;
-    width: 25vw;
+    width: 15vw;
     margin-left: 2vw;
     margin-right: 2vw;
+    background: var(--color-light-blue-50);
     font-size: min(2vw, 2vh);
   }
 

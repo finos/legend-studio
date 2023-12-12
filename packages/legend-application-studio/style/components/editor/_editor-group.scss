@@ -247,7 +247,7 @@
           @include flexVCenter;
 
           width: 100%;
-          height: 90%;
+          height: 100%;
           justify-content: space-between;
         }
       }
@@ -263,6 +263,7 @@
       &__header {
         color: var(--color-light-grey-100);
         font-weight: bold;
+        font-size: min(2vw, 2vh);
         height: 10%;
         width: 100%;
       }
@@ -298,6 +299,7 @@
 
       height: 2.8rem;
       font-weight: 500;
+      font-size: min(1.5vh, 1.5vw);
       width: 65%;
       color: var(--color-light-blue-50);
     }
