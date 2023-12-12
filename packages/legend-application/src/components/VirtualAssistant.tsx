@@ -41,6 +41,7 @@ import {
   QuestionCircleIcon,
   EmptyWindowRestoreIcon,
   WindowMaximizeIcon,
+  MinusCircleIcon,
 } from '@finos/legend-art';
 import {
   ADVANCED_FUZZY_SEARCH_MODE,
@@ -788,6 +789,15 @@ export const VirtualAssistant = observer(() => {
             ),
           })}
         >
+          <button
+            className="virtual-assistant__station__hide-button"
+            title="Hide assistant"
+            onClick={() => {
+              applicationStore.assistantService.toggleAssistant();
+            }}
+          >
+            <MinusCircleIcon />
+          </button>
           <button
             className="virtual-assistant__station__trigger"
             tabIndex={-1}
