@@ -10,7 +10,6 @@ SnowflakeApp model::NewActivatorWithParam
 {
    applicationName : '';
    function : model::Firm_QueryFunction(String[1]):TabularDataSet[1];
-   type : FULL;
    activationConfiguration : model::SnowFlakeConnection;
 }
 

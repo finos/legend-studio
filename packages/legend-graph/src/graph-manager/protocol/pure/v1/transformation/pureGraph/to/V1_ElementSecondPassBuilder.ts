@@ -140,7 +140,7 @@ export class V1_ElementSecondPassBuilder
             generateFunctionPrettyName(fn, {
               fullPath: true,
               spacing: false,
-            }) === element.function.replaceAll(/\s*/gu, ''),
+            }) === element.function.path.replaceAll(/\s*/gu, ''),
         ),
       ),
     );
@@ -158,7 +158,7 @@ export class V1_ElementSecondPassBuilder
               fullPath: true,
               spacing: false,
               notIncludeParamName: true,
-            }) === element.function.replaceAll(/\s*/gu, ''),
+            }) === element.function.path.replaceAll(/\s*/gu, ''),
         ),
       ),
     );

@@ -21,12 +21,14 @@ export class V1_DeploymentResult {
   activatorIdentifier!: string;
   successful!: boolean;
   errors: string[] = [];
+  deploymentLocation!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DeploymentResult, {
       activatorIdentifier: primitive(),
       successful: primitive(),
       errors: list(primitive()),
+      deploymentLocation: primitive(),
     }),
   );
 }

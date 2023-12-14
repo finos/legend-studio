@@ -32,7 +32,10 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_multiplicityModelSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import {
+  V1_multiplicityModelSchema,
+  V1_packageableElementPointerModelSchema,
+} from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
 import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
 import {
@@ -154,7 +157,7 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   description: optional(primitive()),
   owner: optional(primitive()),
   applicationName: primitive(),
-  function: primitive(),
+  function: usingModelSchema(V1_packageableElementPointerModelSchema),
   name: primitive(),
   package: primitive(),
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
@@ -166,7 +169,6 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   activationConfiguration: usingModelSchema(
     V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
   ),
-  type: optional(primitive()),
 });
 
 // ------------------------------------- Class -------------------------------------
