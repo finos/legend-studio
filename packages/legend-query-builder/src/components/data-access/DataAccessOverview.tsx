@@ -302,6 +302,26 @@ export const DataAccessOverview = observer(
       // dataAccessState.intialize().catch(applicationStore.alertUnhandledError);
     }, [applicationStore, dataAccessState]);
 
+    const renderWarehouseEntitlementTab = (): React.ReactNode | undefined => {
+      const plugins = applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as QueryBuilder_LegendApplicationPlugin_Extension
+            ).getWarehouseEntitlementRenders?.() ?? [],
+        );
+      let warehouseEntitlementRender: React.ReactNode | undefined;
+      for (const plugin of plugins) {
+        warehouseEntitlementRender = plugin.renderer(dataAccessState);
+        if (warehouseEntitlementRender) {
+          break;
+        }
+      }
+      return warehouseEntitlementRender;
+    };
+    const warehouseEntitlementTab = renderWarehouseEntitlementTab();
+
     return (
       <div
         className={clsx('data-access-overview', {
@@ -314,8 +334,21 @@ export const DataAccessOverview = observer(
             dataAccessState.checkEntitlementsState.isInProgress
           }
         />
-        <DataAccessOverviewChart dataAccessState={dataAccessState} />
-        <DataAccessOverviewGrid dataAccessState={dataAccessState} />
+        {warehouseEntitlementTab && (
+          <div className="data-access-overview__warehouse">
+            <div className="data-access-overview__header">
+              WAREHOUSE ENTITLEMENTS
+            </div>
+            {warehouseEntitlementTab}
+          </div>
+        )}
+        <div className="data-access-overview__datasets">
+          <div className="data-access-overview__header">
+            DATASET ENTITLEMENTS
+          </div>
+          <DataAccessOverviewChart dataAccessState={dataAccessState} />
+          <DataAccessOverviewGrid dataAccessState={dataAccessState} />
+        </div>
       </div>
     );
   },
