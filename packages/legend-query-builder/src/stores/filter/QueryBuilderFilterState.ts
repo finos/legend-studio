@@ -42,6 +42,8 @@ import {
   type ValueSpecification,
   type VariableExpression,
   observe_ValueSpecification,
+  CollectionInstanceValue,
+  InstanceValue,
 } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
@@ -54,6 +56,7 @@ import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js
 import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
 import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecificationHelper.js';
+import { instanceValue_setValues } from '../shared/ValueSpecificationModifierHelper.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -195,7 +198,24 @@ export class FilterConditionState implements Hashable {
   changeOperator(val: QueryBuilderFilterOperator): void {
     this.setOperator(val);
     if (!this.operator.isCompatibleWithFilterConditionValue(this)) {
-      this.setValue(this.operator.getDefaultFilterConditionValue(this));
+      let defaultValue = this.operator.getDefaultFilterConditionValue(this);
+      if (
+        defaultValue instanceof CollectionInstanceValue &&
+        this.value instanceof InstanceValue
+      ) {
+        instanceValue_setValues(
+          defaultValue,
+          [this.value],
+          this.filterState.queryBuilderState.observerContext,
+        );
+      } else if (
+        defaultValue instanceof InstanceValue &&
+        this.value instanceof CollectionInstanceValue &&
+        this.value.values.length
+      ) {
+        defaultValue = this.value.values[0];
+      }
+      this.setValue(defaultValue);
     }
   }
 
