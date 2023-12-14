@@ -314,7 +314,6 @@ export const DataAccessOverview = observer(
       let warehouseEntitlementRender: React.ReactNode | undefined;
       for (const plugin of plugins) {
         warehouseEntitlementRender = plugin.renderer(dataAccessState);
-        warehouseEntitlementRender = <>test</>;
         if (warehouseEntitlementRender) {
           break;
         }
