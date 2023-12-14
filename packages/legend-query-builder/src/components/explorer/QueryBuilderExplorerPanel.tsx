@@ -100,6 +100,7 @@ import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPan
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { getClassPropertyIcon } from '@finos/legend-lego/graph-editor';
+import { QueryBuilderRootClassInfoTooltip } from '../shared/QueryBuilderRootClassInfoTooltip.js';
 
 const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -538,8 +539,17 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                   <PURE_ClassIcon />
                 </div>
               </div>
-              <div className="tree-view__node__label query-builder-explorer-tree__node__label">
+              <div className="tree-view__node__label query-builder-explorer-tree__node__label query-builder-explorer-tree__node__label--with-action">
                 {node.label}
+              </div>
+              <div className="query-builder-explorer-tree__node__actions">
+                <QueryBuilderRootClassInfoTooltip
+                  _class={guaranteeNonNullable(queryBuilderState.class)}
+                >
+                  <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
+                    <InfoCircleIcon />
+                  </div>
+                </QueryBuilderRootClassInfoTooltip>
               </div>
             </>
           )}
