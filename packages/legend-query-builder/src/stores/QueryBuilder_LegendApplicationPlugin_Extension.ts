@@ -45,6 +45,10 @@ export type QueryExportUsageConfiguration = {
   renderer(): React.ReactNode;
 };
 
+export type WarehouseEntitlementRender = {
+  renderer: (dataAccessState: DataAccessState) => React.ReactNode;
+};
+
 export type QueryChatRenderer = (
   queryBuilderState: QueryBuilderState,
 ) => React.ReactNode;
@@ -55,6 +59,11 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of filter options for query loader.
    */
   getExtraLoadQueryFilterOptions?(): LoadQueryFilterOption[];
+
+  /**
+   * Get the list of warehouse entitlement configurations
+   */
+  getWarehouseEntitlementRenders?(): WarehouseEntitlementRender[];
 
   /**
    * Get the list of dataset entitlement access report action configurations.

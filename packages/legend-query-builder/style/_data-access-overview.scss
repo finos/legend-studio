@@ -17,6 +17,19 @@
 @use 'mixins' as *;
 
 .data-access-overview {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-weight: 500;
+    height: 4rem;
+    width: 20rem;
+    background: var(--color-navy-300);
+    opacity: 0.9;
+    border: 0.1rem solid var(--color-navy-300);
+    border-radius: 1rem;
+  }
+
   &__chart {
     @include flexCenter;
 
