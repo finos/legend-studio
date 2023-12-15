@@ -148,6 +148,7 @@ export interface ExecutionOptions {
    * NOTE: This will result in numeric values being stored as object instead of primitive type number values.
    */
   useLosslessParse?: boolean | undefined;
+  convertUnsafeNumbersToString?: boolean | undefined;
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
   parameterValues?: ParameterValue[];
 }

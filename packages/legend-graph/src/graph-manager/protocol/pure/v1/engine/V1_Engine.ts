@@ -28,6 +28,7 @@ import {
   deserializeMap,
   StopWatch,
   guaranteeNonNullable,
+  isLossSafeNumber,
 } from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
@@ -706,11 +707,10 @@ export class V1_Engine {
           },
         )) as Response
       ).text();
-      const rawExecutionResult = (returnUndefOnError(() =>
-        options?.useLosslessParse
-          ? parseLosslessJSON(executionResultInText)
-          : JSON.parse(executionResultInText),
-      ) ?? executionResultInText) as PlainObject<V1_ExecutionResult> | string;
+      const rawExecutionResult =
+        returnUndefOnError(() =>
+          this.parseExecutionResults(executionResultInText, options),
+        ) ?? executionResultInText;
       return V1_serializeExecutionResult(rawExecutionResult);
     } catch (error) {
       assertErrorThrown(error);
@@ -722,6 +722,42 @@ export class V1_Engine {
         );
       }
       throw error;
+    }
+  }
+
+  /**
+   * For parsing of execution results, we may want to maintain the precision of the numbers
+   * coming in. To do this, we setup a custom parser for numbers, so that if the number
+   * is unsafe to convert to number (we lose precision) we will keep them as strings.
+   * This is useful when displaying the execution results.
+   */
+  parseExecutionResults(
+    executionResultTxt: string,
+    options: ExecutionOptions | undefined,
+  ): PlainObject<V1_ExecutionResult> {
+    if (options?.useLosslessParse) {
+      return parseLosslessJSON(
+        executionResultTxt,
+      ) as PlainObject<V1_ExecutionResult>;
+    }
+    if (!options?.convertUnsafeNumbersToString) {
+      return JSON.parse(executionResultTxt);
+    }
+    try {
+      const customNumParser = (numVal: string): number | string => {
+        if (isLossSafeNumber(numVal)) {
+          return Number(numVal);
+        }
+        return numVal;
+      };
+      return parseLosslessJSON(
+        executionResultTxt,
+        undefined,
+        customNumParser,
+      ) as PlainObject<V1_ExecutionResult>;
+    } catch (error) {
+      // fall back to regular parse if any issue with the custom number parsing
+      return JSON.parse(executionResultTxt);
     }
   }
 

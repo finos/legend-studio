@@ -316,6 +316,7 @@ export class QueryBuilderResultState {
         this.queryBuilderState.graphManagerState.graph,
         {
           parameterValues,
+          convertUnsafeNumbersToString: true,
         },
       );
 

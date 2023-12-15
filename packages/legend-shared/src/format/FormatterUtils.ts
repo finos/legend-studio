@@ -19,6 +19,7 @@ import {
   type Replacer,
   stringify as losslessStringify,
   parse as losslessParse,
+  isSafeNumber as lossIsSafeNumber,
 } from 'lossless-json';
 import CSVParser from 'papaparse';
 import { assertNonNullable } from '../error/AssertionUtils.js';
@@ -181,6 +182,7 @@ export const toGrammarString = (value: string): string =>
  * But use this with discretion since it it does not result in the same object as `JSON.parse`
  */
 export { losslessParse as parseLosslessJSON };
+export { lossIsSafeNumber as isLossSafeNumber };
 export const stringifyLosslessJSON = (
   val: JavaScriptValue,
   replacer?: Replacer,
