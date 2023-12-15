@@ -24,7 +24,7 @@ import {
   MappingTestFlatDataInputDataState,
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
-} from '../../../../stores/editor/editor-state/element-editor-state/mapping/DEPRECATED__MappingTestState.js';
+} from '../../../../../stores/editor/editor-state/element-editor-state/mapping/legacy/DEPRECATED__MappingTestState.js';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -50,7 +50,7 @@ import { useDrop } from 'react-dnd';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/editor/utils/DnDUtils.js';
+} from '../../../../../stores/editor/utils/DnDUtils.js';
 import {
   IllegalStateError,
   guaranteeType,
@@ -65,14 +65,14 @@ import {
 import {
   ClassMappingSelectorModal,
   getRelationalInputTestDataEditorLanguage,
-} from './MappingExecutionBuilder.js';
+} from '../MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';
-import { MappingTestStatusIndicator } from './MappingTestsExplorer.js';
+import { MappingTestStatusIndicator } from '../MappingTestsExplorer.js';
 import {
   getMappingElementSource,
   getMappingElementTarget,
-} from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import { useEditorStore } from '../../EditorStoreProvider.js';
+} from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { useEditorStore } from '../../../EditorStoreProvider.js';
 import {
   Class,
   SetImplementation,
@@ -82,17 +82,17 @@ import {
   isStubbed_RawLambda,
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
-import { flatData_setData } from '../../../../stores/graph-modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../../stores/graph-modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 import {
   type QueryBuilderState,
   QueryBuilderTextEditorMode,
   ExecutionPlanViewer,
 } from '@finos/legend-query-builder';
-import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
+import { MappingExecutionQueryBuilderState } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,

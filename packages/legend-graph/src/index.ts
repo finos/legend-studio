@@ -502,10 +502,10 @@ export { SetImplementationExplicitReference } from './graph/metamodel/pure/packa
 export * from './graph/metamodel/pure/packageableElements/mapping/EnumerationMappingReference.js';
 export {
   DEPRECATED__MappingTest,
-  DEPRECATED__MappingTestAssert as MappingTestAssert,
-  DEPRECATED__ExpectedOutputMappingTestAssert as ExpectedOutputMappingTestAssert,
-  DEPRECATED__InputData as InputData,
-  DEPRECATED__ObjectInputData as ObjectInputData,
+  DEPRECATED__MappingTestAssert,
+  DEPRECATED__ExpectedOutputMappingTestAssert,
+  DEPRECATED__InputData,
+  DEPRECATED__ObjectInputData,
   ObjectInputType,
 } from './graph/metamodel/pure/packageableElements/mapping/DEPRECATED__MappingTest.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
