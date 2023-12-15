@@ -51,7 +51,7 @@ import {
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../utils/MockDataUtils.js';
 import {
-  type InputData,
+  type DEPRECATED__InputData,
   type Mapping,
   type Connection,
   type ExecutionResult,
@@ -69,9 +69,9 @@ import {
   LAMBDA_PIPE,
   GRAPH_MANAGER_EVENT,
   Class,
-  ObjectInputData,
+  DEPRECATED__ObjectInputData,
   ObjectInputType,
-  ExpectedOutputMappingTestAssert,
+  DEPRECATED__ExpectedOutputMappingTestAssert,
   IdentifiedConnection,
   EngineRuntime,
   JsonModelConnection,
@@ -209,12 +209,12 @@ abstract class MappingExecutionInputDataState {
   readonly uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
-  inputData?: InputData | undefined;
+  inputData?: DEPRECATED__InputData | undefined;
 
   constructor(
     editorStore: EditorStore,
     mapping: Mapping,
-    inputData: InputData | undefined,
+    inputData: DEPRECATED__InputData | undefined,
   ) {
     this.editorStore = editorStore;
     this.mapping = mapping;
@@ -232,7 +232,7 @@ abstract class MappingExecutionInputDataState {
     return undefined;
   }
 
-  abstract buildInputDataForTest(): InputData;
+  abstract buildInputDataForTest(): DEPRECATED__InputData;
 }
 
 export const createRuntimeForExecution = (
@@ -267,7 +267,7 @@ export class MappingExecutionEmptyInputDataState extends MappingExecutionInputDa
     );
   }
 
-  buildInputDataForTest(): InputData {
+  buildInputDataForTest(): DEPRECATED__InputData {
     throw new IllegalStateError(
       'Mapping execution runtime information is not specified',
     );
@@ -276,13 +276,13 @@ export class MappingExecutionEmptyInputDataState extends MappingExecutionInputDa
 
 // TODO?: handle XML
 export class MappingExecutionObjectInputDataState extends MappingExecutionInputDataState {
-  declare inputData: ObjectInputData;
+  declare inputData: DEPRECATED__ObjectInputData;
 
   constructor(editorStore: EditorStore, mapping: Mapping, _class: Class) {
     super(
       editorStore,
       mapping,
-      new ObjectInputData(
+      new DEPRECATED__ObjectInputData(
         PackageableElementExplicitReference.create(
           guaranteeNonNullable(_class),
         ),
@@ -344,8 +344,8 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
     return jsonAssertion;
   }
 
-  buildInputDataForTest(): InputData {
-    return new ObjectInputData(
+  buildInputDataForTest(): DEPRECATED__InputData {
+    return new DEPRECATED__ObjectInputData(
       PackageableElementExplicitReference.create(
         guaranteeNonNullable(this.inputData.sourceClass.value),
       ),
@@ -402,7 +402,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
     );
   }
 
-  buildInputDataForTest(): InputData {
+  buildInputDataForTest(): DEPRECATED__InputData {
     return new FlatDataInputData(
       PackageableElementExplicitReference.create(
         guaranteeNonNullable(this.inputData.sourceFlatData.value),
@@ -474,7 +474,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
     );
   }
 
-  buildInputDataForTest(): InputData {
+  buildInputDataForTest(): DEPRECATED__InputData {
     return new RelationalInputData(
       PackageableElementExplicitReference.create(
         guaranteeNonNullable(this.inputData.database.value),
@@ -664,7 +664,7 @@ export class MappingExecutionState extends MappingEditorTabState {
         this.executionResultText
       ) {
         const inputData = this.inputDataState.buildInputDataForTest();
-        const assert = new ExpectedOutputMappingTestAssert(
+        const assert = new DEPRECATED__ExpectedOutputMappingTestAssert(
           toGrammarString(this.executionResultText),
         );
         const mappingTest = new DEPRECATED__MappingTest(

@@ -33,7 +33,7 @@ import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
   DEPRECATED__MappingTestState,
   TEST_RESULT,
-} from './DEPRECATED__MappingTestState.js';
+} from './legacy/DEPRECATED__MappingTestState.js';
 import { createMockDataForMappingElementSource } from '../../../utils/MockDataUtils.js';
 import {
   type GeneratorFn,
@@ -59,7 +59,7 @@ import { RootRelationalInstanceSetImplementationState } from './relational/Relat
 import {
   type CompilationError,
   type PackageableElement,
-  type InputData,
+  type DEPRECATED__InputData,
   Type,
   type EmbeddedSetImplementation,
   type ExecutionResult,
@@ -74,8 +74,8 @@ import {
   EnumerationMapping,
   SetImplementation,
   PureInstanceSetImplementation,
-  ExpectedOutputMappingTestAssert,
-  ObjectInputData,
+  DEPRECATED__ExpectedOutputMappingTestAssert,
+  DEPRECATED__ObjectInputData,
   ObjectInputType,
   FlatDataInstanceSetImplementation,
   InstanceSetImplementation,
@@ -125,6 +125,7 @@ import { rootRelationalSetImp_setMainTableAlias } from '../../../../graph-modifi
 import { LambdaEditorState } from '@finos/legend-query-builder';
 import type { MappingEditorTabState } from './MappingTabManagerState.js';
 import { MappingTestableState } from './testable/MappingTestableState.js';
+import { MappingTestMigrationState } from './legacy/MappingTestMigrationState.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -626,6 +627,7 @@ export class MappingEditorState extends ElementEditorState {
 
   // DEPREACTED legacy tests: TO REMOVE once mapping testable dev work is complete
   DEPRECATED_mappingTestStates: DEPRECATED__MappingTestState[] = [];
+  migrationState: MappingTestMigrationState | undefined;
   isRunningAllTests = false;
   allTestRunTime = 0;
 
@@ -640,11 +642,15 @@ export class MappingEditorState extends ElementEditorState {
       isRunningAllTests: observable,
       allTestRunTime: observable,
       selectedTab: observable,
+      migrationState: observable,
       mappingExplorerTreeData: observable.ref,
       mapping: computed,
       testSuiteResult: computed,
       setNewMappingElementSpec: action,
+      openMigrationTool: action,
+      closeMigrationTool: action,
       setMappingExplorerTreeNodeData: action,
+      buildLegacyTestsStates: action,
       openMappingElement: action,
       closeAllTabs: action,
       createMappingElement: action,
@@ -666,9 +672,7 @@ export class MappingEditorState extends ElementEditorState {
       deleteMappingElement: flow,
     });
 
-    this.DEPRECATED_mappingTestStates = this.mapping.test.map(
-      (t) => new DEPRECATED__MappingTestState(editorStore, t, this),
-    );
+    this.DEPRECATED_mappingTestStates = this.buildLegacyTestsStates();
     this.mappingExplorerTreeData = getMappingElementTreeData(
       this.mapping,
       editorStore,
@@ -681,6 +685,12 @@ export class MappingEditorState extends ElementEditorState {
       this.element,
       Mapping,
       'Element inside mapping editor state must be a mapping',
+    );
+  }
+
+  buildLegacyTestsStates(): DEPRECATED__MappingTestState[] {
+    return this.mapping.test.map(
+      (t) => new DEPRECATED__MappingTestState(this.editorStore, t, this),
     );
   }
 
@@ -1393,6 +1403,23 @@ export class MappingEditorState extends ElementEditorState {
 
   // -------------------------------------- Test ---------------------------------------
 
+  openMigrationTool(): void {
+    if (!this.mapping.test.length) {
+      this.editorStore.applicationStore.notificationService.notifyError(
+        'No legacy tests to migrate',
+      );
+      return;
+    }
+    this.migrationState = MappingTestMigrationState.build(
+      this.editorStore,
+      this,
+    );
+  }
+
+  closeMigrationTool(): void {
+    this.migrationState = undefined;
+  }
+
   *openTest(
     test: DEPRECATED__MappingTest,
     openTab?: MAPPING_TEST_EDITOR_TAB_TYPE,
@@ -1546,9 +1573,9 @@ export class MappingEditorState extends ElementEditorState {
         `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
       );
     }
-    let inputData: InputData;
+    let inputData: DEPRECATED__InputData;
     if (source === undefined || source instanceof Class) {
-      inputData = new ObjectInputData(
+      inputData = new DEPRECATED__ObjectInputData(
         PackageableElementExplicitReference.create(source ?? stub_Class()),
         ObjectInputType.JSON,
         source
@@ -1578,7 +1605,7 @@ export class MappingEditorState extends ElementEditorState {
       generateMappingTestName(this.mapping),
       query,
       [inputData],
-      new ExpectedOutputMappingTestAssert('{}'),
+      new DEPRECATED__ExpectedOutputMappingTestAssert('{}'),
     );
     mapping_addDEPRECATEDTest(
       this.mapping,

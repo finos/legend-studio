@@ -51,8 +51,8 @@ import {
 } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { MappingElementState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { MappingExplorer } from './MappingExplorer.js';
-import { DEPRECATED__MappingTestEditor } from './DEPRECATED__MappingTestEditor.js';
-import { DEPRECATED__MappingTestState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/DEPRECATED__MappingTestState.js';
+import { DEPRECATED__MappingTestEditor } from './legacy/DEPRECATED__MappingTestEditor.js';
+import { DEPRECATED__MappingTestState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/legacy/DEPRECATED__MappingTestState.js';
 import { MappingTestsExplorer } from './MappingTestsExplorer.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { MappingExecutionState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
@@ -75,6 +75,7 @@ import type { MappingEditorTabState } from '../../../../stores/editor/editor-sta
 import { MappingTestableEditor } from './MappingTestableEditor.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
+import { MappingTestMigrationTool } from './legacy/MappingTestMigrationTool.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -398,6 +399,12 @@ export const MappingEditor = observer(() => {
           {selectedTab === MAPPING_EDITOR_TAB.TEST_SUITES && (
             <MappingTestableEditor
               mappingTestableState={mappingEditorState.mappingTestableState}
+            />
+          )}
+          {mappingEditorState.migrationState && (
+            <MappingTestMigrationTool
+              mappingEditorState={mappingEditorState}
+              migrationState={mappingEditorState.migrationState}
             />
           )}
         </div>

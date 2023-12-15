@@ -74,7 +74,7 @@ export * from './stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 
 export { PostProcessorEditorState } from './stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 export { MappingExecutionState } from './stores/editor/editor-state/element-editor-state/mapping/MappingExecutionState.js';
-export { DEPRECATED__MappingTestState } from './stores/editor/editor-state/element-editor-state/mapping/DEPRECATED__MappingTestState.js';
+export { DEPRECATED__MappingTestState } from './stores/editor/editor-state/element-editor-state/mapping/legacy/DEPRECATED__MappingTestState.js';
 export {
   ConnectionValueState,
   RelationalDatabaseConnectionValueState,

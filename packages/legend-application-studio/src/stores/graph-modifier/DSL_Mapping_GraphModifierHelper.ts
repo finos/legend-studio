@@ -18,15 +18,15 @@ import {
   type Enum,
   type EnumerationMapping,
   type EnumValueMapping,
-  type InputData,
+  type DEPRECATED__InputData,
   type InstanceSetImplementation,
   type Mapping,
   type DEPRECATED__MappingTest,
-  type MappingTestAssert,
+  type DEPRECATED__MappingTestAssert,
   type PropertyMapping,
   type RawLambda,
   type SetImplementation,
-  type ExpectedOutputMappingTestAssert,
+  type DEPRECATED__ExpectedOutputMappingTestAssert,
   type OperationSetImplementation,
   type OperationType,
   type SetImplementationContainer,
@@ -44,7 +44,7 @@ import {
   type Class,
   type PureInstanceSetImplementation,
   type PurePropertyMapping,
-  type ObjectInputData,
+  type DEPRECATED__ObjectInputData,
   type ObserverContext,
   type Type,
   PackageableElementExplicitReference,
@@ -331,7 +331,7 @@ export const mappingTest_setName = action(
 export const mappingTest_setInputData = action(
   (
     test: DEPRECATED__MappingTest,
-    value: InputData[],
+    value: DEPRECATED__InputData[],
     observeContext: ObserverContext,
   ): void => {
     test.inputData = value.map((i) => observe_InputData(i, observeContext));
@@ -347,14 +347,14 @@ export const DEPRECATED_mappingTest_setQuery = action(
 export const mappingTest_setAssert = action(
   (
     test: DEPRECATED__MappingTest,
-    value: MappingTestAssert,
+    value: DEPRECATED__MappingTestAssert,
     observerContext: ObserverContext,
   ): void => {
     test.assert = observe_MappingTestAssert(value, observerContext);
   },
 );
 export const expectedOutputMappingTestAssert_setExpectedOutput = action(
-  (e: ExpectedOutputMappingTestAssert, val: string): void => {
+  (e: DEPRECATED__ExpectedOutputMappingTestAssert, val: string): void => {
     e.expectedOutput = val;
   },
 );
@@ -471,7 +471,7 @@ export const setImpl_nominateRoot = action(
 // --------------------------------------------- M2M -------------------------------------
 
 export const objectInputData_setData = action(
-  (o: ObjectInputData, val: string): void => {
+  (o: DEPRECATED__ObjectInputData, val: string): void => {
     o.data = val;
   },
 );

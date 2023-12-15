@@ -17,7 +17,7 @@
 import type {
   MappingEditorState,
   MappingElementSource,
-} from './MappingEditorState.js';
+} from '../MappingEditorState.js';
 import {
   type GeneratorFn,
   LogEvent,
@@ -39,22 +39,22 @@ import {
   ContentType,
   StopWatch,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../../EditorStore.js';
+import type { EditorStore } from '../../../../EditorStore.js';
 import { observable, flow, action, makeObservable, flowResult } from 'mobx';
-import { createMockDataForMappingElementSource } from '../../../utils/MockDataUtils.js';
+import { createMockDataForMappingElementSource } from '../../../../utils/MockDataUtils.js';
 import {
   type RawLambda,
   type Runtime,
-  type InputData,
-  type MappingTestAssert,
+  type DEPRECATED__InputData,
+  type DEPRECATED__MappingTestAssert,
   type Mapping,
   type ExecutionResult,
   extractExecutionResultValues,
   GRAPH_MANAGER_EVENT,
   LAMBDA_PIPE,
   Class,
-  ExpectedOutputMappingTestAssert,
-  ObjectInputData,
+  DEPRECATED__ExpectedOutputMappingTestAssert,
+  DEPRECATED__ObjectInputData,
   ObjectInputType,
   IdentifiedConnection,
   EngineRuntime,
@@ -81,7 +81,7 @@ import {
   reportGraphAnalytics,
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { flatData_setData } from '../../../../graph-modifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../../graph-modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
@@ -89,19 +89,19 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../../graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import {
   LambdaEditorState,
   QueryBuilderTelemetryHelper,
   QUERY_BUILDER_EVENT,
   ExecutionPlanState,
 } from '@finos/legend-query-builder';
-import { MappingEditorTabState } from './MappingTabManagerState.js';
+import { MappingEditorTabState } from '../MappingTabManagerState.js';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -194,12 +194,12 @@ abstract class MappingTestInputDataState {
   readonly uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
-  inputData: InputData;
+  inputData: DEPRECATED__InputData;
 
   constructor(
     editorStore: EditorStore,
     mapping: Mapping,
-    inputData: InputData,
+    inputData: DEPRECATED__InputData,
   ) {
     this.editorStore = editorStore;
     this.mapping = mapping;
@@ -210,7 +210,7 @@ abstract class MappingTestInputDataState {
 }
 
 export class MappingTestObjectInputDataState extends MappingTestInputDataState {
-  declare inputData: ObjectInputData;
+  declare inputData: DEPRECATED__ObjectInputData;
   /**
    * @workaround https://github.com/finos/legend-studio/issues/68
    */
@@ -219,7 +219,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
   constructor(
     editorStore: EditorStore,
     mapping: Mapping,
-    inputData: ObjectInputData,
+    inputData: DEPRECATED__ObjectInputData,
   ) {
     super(editorStore, mapping, inputData);
 
@@ -353,21 +353,21 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
 
 abstract class MappingTestAssertionState {
   readonly uuid = uuid();
-  assert: MappingTestAssert;
+  assert: DEPRECATED__MappingTestAssert;
 
-  constructor(assert: MappingTestAssert) {
+  constructor(assert: DEPRECATED__MappingTestAssert) {
     this.assert = assert;
   }
 }
 
 export class MappingTestExpectedOutputAssertionState extends MappingTestAssertionState {
-  declare assert: ExpectedOutputMappingTestAssert;
+  declare assert: DEPRECATED__ExpectedOutputMappingTestAssert;
   /**
    * @workaround https://github.com/finos/legend-studio/issues/68
    */
   expectedResult: string;
 
-  constructor(assert: ExpectedOutputMappingTestAssert) {
+  constructor(assert: DEPRECATED__ExpectedOutputMappingTestAssert) {
     super(assert);
 
     makeObservable(this, {
@@ -399,6 +399,7 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
   SETUP = 'Test Setup',
   RESULT = 'Test Result',
 }
+
 /**
  * TODO: Remove once migration from `MappingTest_Legacy` to `MappingTest` is complete
  * @deprecated
@@ -513,7 +514,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
       'Mapping test input data must contain at least one item',
     );
     const inputData = this.test.inputData[0];
-    if (inputData instanceof ObjectInputData) {
+    if (inputData instanceof DEPRECATED__ObjectInputData) {
       return new MappingTestObjectInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
@@ -540,7 +541,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
 
   buildAssertionState(): MappingTestAssertionState {
     const testAssertion = this.test.assert;
-    if (testAssertion instanceof ExpectedOutputMappingTestAssert) {
+    if (testAssertion instanceof DEPRECATED__ExpectedOutputMappingTestAssert) {
       return new MappingTestExpectedOutputAssertionState(testAssertion);
     }
     throw new UnsupportedOperationError(
@@ -584,7 +585,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
       const newInputDataState = new MappingTestObjectInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
-        new ObjectInputData(
+        new DEPRECATED__ObjectInputData(
           PackageableElementExplicitReference.create(source ?? stub_Class()),
           ObjectInputType.JSON,
           tryToMinifyJSONString('{}'),
