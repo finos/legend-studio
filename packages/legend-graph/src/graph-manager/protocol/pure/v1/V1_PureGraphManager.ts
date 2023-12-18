@@ -2557,7 +2557,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
 
     const result = V1_buildExecutionResult(
-      await this.engine.executeMapping(input, options),
+      await this.engine.runQuery(input, options),
     );
     stopWatch.record(
       GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
@@ -2567,7 +2567,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...Object.fromEntries(stopWatch.records),
       total: stopWatch.elapsed,
     };
-
     return result;
   }
 
@@ -2629,7 +2628,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         options?.parameterValues,
       );
       const result = V1_buildExecutionResult(
-        await this.engine.executeMapping(input, options),
+        await this.engine.runQuery(input, options),
       );
       stopWatch.record(
         GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,

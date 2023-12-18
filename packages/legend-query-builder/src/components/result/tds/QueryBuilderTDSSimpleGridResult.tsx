@@ -39,6 +39,7 @@ import type {
   QueryBuilderTDSResultCellDataType,
   QueryBuilderTDSRowDataType,
 } from '../../../stores/QueryBuilderResultState.js';
+import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
 
 const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
@@ -358,7 +359,10 @@ export const QueryBuilderTDSSimpleGridResult = observer(
     );
 
     return (
-      <div className="query-builder__result__values__table">
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS}
+        className="query-builder__result__values__table"
+      >
         <div
           className={clsx(
             'ag-theme-balham-dark query-builder__result__tds-grid',
