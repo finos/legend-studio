@@ -79,7 +79,7 @@ jobs:
         with:
           minimum-size: 8GB
       - name: Setup Node
-        uses: actions/setup-node@v4.0.0
+        uses: actions/setup-node@v4.0.1
         with:
           node-version: 21
       - name: Install dependencies
