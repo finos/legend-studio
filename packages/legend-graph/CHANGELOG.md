@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.6.0
+
+### Minor Changes
+
+- [#2832](https://github.com/finos/legend-studio/pull/2832) [`186ffc011`](https://github.com/finos/legend-studio/commit/186ffc011db9877d0f4853561c4a6e1714e42b38) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle unsafe numbers in parsing of execution results.
+
 ## 31.5.2
 
 ## 31.5.1
