@@ -44,6 +44,7 @@ import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryB
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import { isNumber, isString, isValidURL } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
+import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
 
 const getAggregationTDSColumnCustomizations = (
   result: TDSExecutionResult,
@@ -332,7 +333,10 @@ export const QueryBuilderTDSGridResult = observer(
     );
 
     return (
-      <div className="query-builder__result__values__table">
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS}
+        className="query-builder__result__values__table"
+      >
         <div
           className={clsx(
             'ag-theme-balham-dark query-builder__result__tds-grid',

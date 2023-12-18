@@ -693,20 +693,15 @@ export class V1_Engine {
 
   // --------------------------------------------- Execution ---------------------------------------------
 
-  async executeMapping(
+  async runQuery(
     input: V1_ExecuteInput,
     options?: ExecutionOptions,
   ): Promise<V1_ExecutionResult> {
     try {
-      const executionResultInText = await (
-        (await this.engineServerClient.execute(
-          V1_ExecuteInput.serialization.toJson(input),
-          {
-            returnResultAsText: true,
-            serializationFormat: options?.serializationFormat,
-          },
-        )) as Response
-      ).text();
+      const executionResultInText = await this.runQueryAndReturnString(
+        input,
+        options,
+      );
       const rawExecutionResult =
         returnUndefOnError(() =>
           this.parseExecutionResults(executionResultInText, options),
@@ -723,6 +718,21 @@ export class V1_Engine {
       }
       throw error;
     }
+  }
+
+  async runQueryAndReturnString(
+    input: V1_ExecuteInput,
+    options?: ExecutionOptions,
+  ): Promise<string> {
+    return (
+      (await this.engineServerClient.execute(
+        V1_ExecuteInput.serialization.toJson(input),
+        {
+          returnResultAsText: true,
+          serializationFormat: options?.serializationFormat,
+        },
+      )) as Response
+    ).text();
   }
 
   /**

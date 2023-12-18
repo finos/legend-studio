@@ -22,7 +22,6 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_TDS_PROJECTION = 'query__builder__tds__projection',
   QUERY_BUILDER_TDS = 'query__builder__tds',
   QUERY_BUILDER_TDS_PROJECTION_COLUMN = 'QUERY_BUILDER_TDS_PROJECTION_COLUMN',
-  QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT = 'query-builder__tds__result-modifier-prompt',
   QUERY_BUILDER_GRAPH_FETCH = 'query__builder__graph__fetch',
   // filter panel
   QUERY_BUILDER_FILTER_PANEL = 'query__builder__filter__panel',
@@ -36,8 +35,12 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_WINDOW_GROUPBY = 'query__builder__window',
   QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
   QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',
-  QUERY_BUILDER_RESULT_PANEL = 'query__builder__result__panel',
-  QUERY_BUILDER_RESULT_ANALYTICS = 'query__builder__result__analytics',
   QUERY_BUILDER_PARAMETERS = 'query-builder__parameters',
   QUERY_BUILDER_CONSTANTS = 'query-builder__constants',
+  // result panel
+  QUERY_BUILDER_RESULT_VALUES = 'QUERY_BUILDER_RESULT_VALUES',
+  QUERY_BUILDER_RESULT_VALUES_TDS = 'QUERY_BUILDER_RESULT_VALUES_TDS',
+  QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT = 'query-builder__tds__result-modifier-prompt',
+  QUERY_BUILDER_RESULT_PANEL = 'query__builder__result__panel',
+  QUERY_BUILDER_RESULT_ANALYTICS = 'query__builder__result__analytics',
 }
