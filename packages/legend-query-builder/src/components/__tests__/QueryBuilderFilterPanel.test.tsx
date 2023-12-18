@@ -32,6 +32,7 @@ import {
   findByText,
 } from '@testing-library/react';
 import {
+  TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
   TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
   TEST_DATA__simpeFilterWithMilestonedExists,
   TEST_DATA__simpleFilterWithAndCondition,
@@ -1801,5 +1802,46 @@ test(
         queryBuilderState.buildQuery(),
       ),
     ).toEqual(TEST_DATA__nestedFilterWithSubType);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder filter supports persisting of is_in and is_not_in filter values',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    await waitFor(() => renderResult.getByText('Add a filter condition'));
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__getAllWithOneIntegerIsInConditionFilter.parameters,
+          TEST_DATA__getAllWithOneIntegerIsInConditionFilter.body,
+        ),
+      );
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    await waitFor(() => getByText(filterPanel, 'is in'));
+    expect(getByText(filterPanel, 'List(3): 1,2,3'));
+    fireEvent.click(getByTitle(filterPanel, 'Choose Operator...'));
+    let switchMenu = renderResult.getByRole('menu');
+    fireEvent.click(getByText(switchMenu, 'is not in'));
+    expect(getByText(filterPanel, 'List(3): 1,2,3'));
+    fireEvent.click(getByTitle(filterPanel, 'Choose Operator...'));
+    switchMenu = renderResult.getByRole('menu');
+    fireEvent.click(getByText(switchMenu, 'is'));
+    expect(queryByText(filterPanel, '1'));
   },
 );
