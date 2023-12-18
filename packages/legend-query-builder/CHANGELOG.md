@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.13.4
+
+### Patch Changes
+
+- [#2838](https://github.com/finos/legend-studio/pull/2838) [`3cd01d3de`](https://github.com/finos/legend-studio/commit/3cd01d3de7c1fbc9d40305f6d1be0c81d07175f5) ([@gayathrir11](https://github.com/gayathrir11)) - Add tooltip information for root class
+
+- [#2839](https://github.com/finos/legend-studio/pull/2839) [`70125aaa9`](https://github.com/finos/legend-studio/commit/70125aaa9ef329219fefec49e05ca383fcc4810a) ([@gayathrir11](https://github.com/gayathrir11)) - Perist filter condition value for `is in` and `is not in` operators
+
+- [#2841](https://github.com/finos/legend-studio/pull/2841) [`f3c364681`](https://github.com/finos/legend-studio/commit/f3c36468198f6e21c9fffcfd6244a250964ad944) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Move warehouse-entitlement tab to the data-access-overview view
+
 ## 4.13.3
 
 ## 4.13.2

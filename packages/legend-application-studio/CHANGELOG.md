@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.13.13
+
+### Patch Changes
+
+- [#2821](https://github.com/finos/legend-studio/pull/2821) [`b0ce7db86`](https://github.com/finos/legend-studio/commit/b0ce7db86b0c5366a2bc5eb687747f6d2cf2c24b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add mapping migration tool with to migrate legacy mapping test to new framework.
+
 ## 28.13.12
 
 ## 28.13.11
