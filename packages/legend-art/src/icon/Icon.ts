@@ -319,3 +319,6 @@ export const HomeIcon = HI.HiHome;
 
 const LU = ReactIcons.LU;
 export const WorkflowIcon = LU.LuWorkflow;
+
+const IO5 = ReactIcons.IO5;
+export const OpenIcon = IO5.IoOpenOutline;
