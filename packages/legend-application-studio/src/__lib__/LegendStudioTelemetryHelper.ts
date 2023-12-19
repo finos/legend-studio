@@ -30,6 +30,15 @@ type TestDataGeneration_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
 };
 
+export type ShowcaseMetadata_TelemetryData = {
+  showcasesTotalCount: number;
+  showcasesDevelopmentCount: number;
+};
+
+export type ShowcaseProject_TelemetryData = {
+  showcasePath: string;
+};
+
 export class LegendStudioTelemetryHelper {
   static logEvent_GraphCompilationLaunched(service: TelemetryService): void {
     service.logEvent(LEGEND_STUDIO_APP_EVENT.COMPILE_GRAPH__LAUNCH, {});
@@ -78,5 +87,28 @@ export class LegendStudioTelemetryHelper {
     data: GraphInitializationReport,
   ): void {
     service.logEvent(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS, data);
+  }
+
+  // showcase manager
+  static logEvent_ShowcaseManagerLaunch(
+    service: TelemetryService,
+    data: ShowcaseMetadata_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_LAUNCH, data);
+  }
+  static logEvent_ShowcaseManagerShowcaseProjectLaunch(
+    service: TelemetryService,
+    data: ShowcaseProject_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_SHOWCASE_PROJECT_LAUNCH,
+      data,
+    );
+  }
+  static logEvent_ShowcaseViewerLaunch(
+    service: TelemetryService,
+    data: ShowcaseProject_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SHOWCASE_VIEWER_LAUNCH, data);
   }
 }
