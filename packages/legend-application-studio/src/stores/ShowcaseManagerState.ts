@@ -22,7 +22,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../__lib__/LegendStudioEvent.js';
 import {
   type Showcase,
@@ -40,6 +40,7 @@ import {
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
 import { SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY } from '../components/extensions/Core_LegendStudioApplicationPlugin.js';
+import { LegendStudioTelemetryHelper } from '../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum SHOWCASE_MANAGER_VIEW {
   EXPLORER = 'EXPLORER',
@@ -160,7 +161,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
 
   private readonly showcaseServerClient?: ShowcaseRegistryServerClient;
 
-  showcases: ShowcaseMetadata[] = [];
+  allShowcases: ShowcaseMetadata[] | undefined;
   currentShowcase?: Showcase | undefined;
   showcaseLineToScroll?: number | undefined;
 
@@ -176,7 +177,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     super();
 
     makeObservable(this, {
-      showcases: observable,
+      allShowcases: observable,
       currentShowcase: observable,
       currentView: observable,
       explorerTreeData: observable.ref,
@@ -185,6 +186,8 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
       showcaseSearchResults: observable.ref,
       currentSearchCaterogy: observable,
       showcaseLineToScroll: observable,
+      nonDevShowcases: computed,
+      logOpenManager: action,
       setCurrentView: action,
       closeShowcase: action,
       setExplorerTreeData: action,
@@ -207,6 +210,10 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
 
   override get INTERNAL__identifierKey(): string {
     return ShowcaseManagerState.IDENTIFIER;
+  }
+
+  get nonDevShowcases(): ShowcaseMetadata[] {
+    return this.allShowcases?.filter((showcase) => !showcase.development) ?? [];
   }
 
   static retrieveNullableState(
@@ -263,9 +270,16 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     this.fetchShowcaseState.inProgress();
 
     try {
-      this.currentShowcase = (yield this.client.getShowcase(
+      const showcase = (yield this.client.getShowcase(
         metadata.path,
       )) as Showcase;
+      this.currentShowcase = showcase;
+      LegendStudioTelemetryHelper.logEvent_ShowcaseManagerShowcaseProjectLaunch(
+        this.applicationStore.telemetryService,
+        {
+          showcasePath: showcase.path,
+        },
+      );
       this.showcaseLineToScroll = showcaseLineToScroll;
       this.fetchShowcaseState.pass();
     } catch (error) {
@@ -275,6 +289,19 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
         error,
       );
       this.fetchShowcaseState.fail();
+    }
+  }
+
+  logOpenManager(): void {
+    if (this.allShowcases) {
+      const report = {
+        showcasesTotalCount: this.allShowcases.length,
+        showcasesDevelopmentCount: this.nonDevShowcases.length,
+      };
+      LegendStudioTelemetryHelper.logEvent_ShowcaseManagerLaunch(
+        this.applicationStore.telemetryService,
+        report,
+      );
     }
   }
 
@@ -308,10 +335,11 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     this.initState.inProgress();
 
     try {
-      this.showcases = (
-        (yield this.client.getShowcases()) as ShowcaseMetadata[]
-      ).filter((showcase) => !showcase.development);
-      this.explorerTreeData = buildShowcasesExplorerTreeData(this.showcases);
+      this.allShowcases =
+        (yield this.client.getShowcases()) as ShowcaseMetadata[];
+      this.explorerTreeData = buildShowcasesExplorerTreeData(
+        this.nonDevShowcases,
+      );
       // expand all the root nodes by default
       this.explorerTreeData.rootIds.forEach((rootId) => {
         const rootNode = this.explorerTreeData?.nodes.get(rootId);
@@ -320,7 +348,6 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
         }
       });
       this.setExplorerTreeData({ ...this.explorerTreeData });
-
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -347,7 +374,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
       )) as ShowcaseTextSearchResult;
       this.textSearchResults = result.textMatches
         .map((match) => {
-          const matchingShowcase = this.showcases.find(
+          const matchingShowcase = this.nonDevShowcases.find(
             (showcase) => showcase.path === match.path,
           );
           if (matchingShowcase) {
@@ -361,7 +388,9 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
         .filter(isNonNullable);
       this.showcaseSearchResults = result.showcases
         .map((showcasePath) =>
-          this.showcases.find((showcase) => showcase.path === showcasePath),
+          this.nonDevShowcases.find(
+            (showcase) => showcase.path === showcasePath,
+          ),
         )
         .filter(isNonNullable);
     } catch (error) {
@@ -388,5 +417,6 @@ export const openShowcaseManager = (
     applicationStore.assistantService.setSelectedTab(
       SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY,
     );
+    showcaseManagerState.logOpenManager();
   }
 };

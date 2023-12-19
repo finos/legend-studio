@@ -96,6 +96,12 @@ export class ShowcaseViewerStore {
       this._showcase = (yield this.client.getShowcase(
         showcasePath,
       )) as Showcase;
+      LegendStudioTelemetryHelper.logEvent_ShowcaseManagerShowcaseProjectLaunch(
+        this.editorStore.applicationStore.telemetryService,
+        {
+          showcasePath: showcasePath,
+        },
+      );
       // initialize graph manager
       yield this.editorStore.graphManagerState.graphManager.initialize(
         {
