@@ -20,6 +20,7 @@ export interface ActivityBarItemConfig {
   mode: string;
   title: string;
   icon: React.ReactElement;
+  disabled?: boolean;
 }
 
 export const ActivityBarItemExperimentalBadge: React.FC = () => (

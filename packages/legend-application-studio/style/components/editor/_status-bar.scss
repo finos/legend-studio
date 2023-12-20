@@ -203,6 +203,10 @@
   }
 }
 
+.lazy-text-editor__status-bar {
+  background: var(--color-green-200);
+}
+
 @keyframes flame-rise {
   from {
     transform: translateY(-0.05rem);

@@ -491,6 +491,31 @@ export class EditorGraphState {
     }
   }
 
+  *buildGraphForLazyText(): GeneratorFn<void> {
+    this.isInitializingGraph = true;
+    const stopWatch = new StopWatch();
+    // reset
+    this.editorStore.graphManagerState.resetGraph();
+    // fetch and build dependencies
+    stopWatch.record();
+    const dependencyManager =
+      this.editorStore.graphManagerState.graphManager.createDependencyManager();
+    this.editorStore.graphManagerState.graph.dependencyManager =
+      dependencyManager;
+    this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
+      `Fetching dependencies...`,
+    );
+    const dependencyEntitiesIndex = (yield flowResult(
+      this.getIndexedDependencyEntities(),
+    )) as Map<string, EntitiesWithOrigin>;
+    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
+    dependencyManager.initialize(dependencyEntitiesIndex);
+    this.isInitializingGraph = false;
+    this.editorStore.graphManagerState.dependenciesBuildState.sync(
+      ActionState.create().pass(),
+    );
+  }
+
   private redirectToModelImporterForDebugging(error: Error): void {
     if (this.editorStore.isInConflictResolutionMode) {
       this.editorStore.applicationStore.alertService.setBlockingAlert({
