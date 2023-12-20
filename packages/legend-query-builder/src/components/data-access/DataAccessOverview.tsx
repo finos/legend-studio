@@ -48,7 +48,6 @@ import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../store
 const DataAccessOverviewChart = observer(
   (props: { dataAccessState: DataAccessState }) => {
     const { dataAccessState } = props;
-    const applicationStore = useApplicationStore();
     const entitlementCheckInfo = dataAccessState.entitlementCheckInfo;
     const total = entitlementCheckInfo.total;
     const accessGrantedCount =
@@ -58,31 +57,6 @@ const DataAccessOverviewChart = observer(
 
     return (
       <div className="data-access-overview__chart">
-        <div className="data-access-overview__chart__actions">
-          <button
-            className="data-access-overview__chart__actions__refresh-btn btn--dark"
-            tabIndex={-1}
-            title="Refresh"
-            onClick={() => {
-              dataAccessState
-                .refresh()
-                .catch(applicationStore.alertUnhandledError);
-            }}
-          >
-            <RefreshIcon />
-          </button>
-        </div>
-        {Boolean(
-          dataAccessState.datasets.find(
-            (dataset) =>
-              dataset.entitlementReport instanceof
-              DatasetEntitlementUnsupportedReport,
-          ),
-        ) && (
-          <div className="data-access-overview__chart__warning">
-            Use case is not fully supported!
-          </div>
-        )}
         <div className="data-access-overview__chart__container">
           <Doughnut
             data={{
@@ -302,7 +276,7 @@ export const DataAccessOverview = observer(
       // dataAccessState.intialize().catch(applicationStore.alertUnhandledError);
     }, [applicationStore, dataAccessState]);
 
-    const renderWarehouseEntitlementTab = (): React.ReactNode | undefined => {
+    const renderWarehouseEntitlementTab = (): React.ReactNode => {
       const plugins = applicationStore.pluginManager
         .getApplicationPlugins()
         .flatMap(
@@ -311,7 +285,7 @@ export const DataAccessOverview = observer(
               plugin as QueryBuilder_LegendApplicationPlugin_Extension
             ).getWarehouseEntitlementRenders?.() ?? [],
         );
-      let warehouseEntitlementRender: React.ReactNode | undefined;
+      let warehouseEntitlementRender: React.ReactNode;
       for (const plugin of plugins) {
         warehouseEntitlementRender = plugin.renderer(dataAccessState);
         if (warehouseEntitlementRender) {
@@ -334,6 +308,38 @@ export const DataAccessOverview = observer(
             dataAccessState.checkEntitlementsState.isInProgress
           }
         />
+        <div className="data-access-overview__actions">
+          {Boolean(
+            dataAccessState.datasets.find(
+              (dataset) =>
+                dataset.entitlementReport instanceof
+                DatasetEntitlementUnsupportedReport,
+            ),
+          ) && (
+            <div className="data-access-overview__actions__warning">
+              Use case is not fully supported!
+            </div>
+          )}
+          <button
+            className="data-access-overview__actions__refresh-btn btn--dark"
+            tabIndex={-1}
+            title="Refresh"
+            onClick={() => {
+              dataAccessState
+                .refresh()
+                .catch(applicationStore.alertUnhandledError);
+            }}
+          >
+            <RefreshIcon />
+          </button>
+        </div>
+        <div className="data-access-overview__datasets">
+          <div className="data-access-overview__header">
+            DATASET ENTITLEMENTS
+          </div>
+          <DataAccessOverviewChart dataAccessState={dataAccessState} />
+          <DataAccessOverviewGrid dataAccessState={dataAccessState} />
+        </div>
         {warehouseEntitlementTab && (
           <div className="data-access-overview__warehouse">
             <div className="data-access-overview__header">
@@ -342,13 +348,6 @@ export const DataAccessOverview = observer(
             {warehouseEntitlementTab}
           </div>
         )}
-        <div className="data-access-overview__datasets">
-          <div className="data-access-overview__header">
-            DATASET ENTITLEMENTS
-          </div>
-          <DataAccessOverviewChart dataAccessState={dataAccessState} />
-          <DataAccessOverviewGrid dataAccessState={dataAccessState} />
-        </div>
       </div>
     );
   },

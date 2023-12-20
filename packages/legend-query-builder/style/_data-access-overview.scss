@@ -30,19 +30,13 @@
     border-radius: 1rem;
   }
 
-  &__chart {
+  &__actions {
     @include flexCenter;
 
-    height: 36rem;
-    width: 100%;
-    padding: 3rem;
-    position: relative;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
 
     &__warning {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
       padding: 0.5rem 1rem;
       border-radius: 0.2rem;
       background: var(--color-yellow-300);
@@ -54,24 +48,27 @@
       box-shadow: var(--color-dark-shade-280) 0 0 0.5rem 0;
     }
 
-    &__actions {
-      position: absolute;
-      top: 0;
-      right: 0;
-      z-index: 1;
+    &__refresh-btn {
+      @include flexCenter;
 
-      &__refresh-btn {
-        @include flexCenter;
+      height: 2.8rem;
+      width: 2.8rem;
+      border-radius: 50%;
+      margin-left: auto;
 
-        height: 2.8rem;
-        width: 2.8rem;
-        border-radius: 50%;
-
-        svg {
-          font-size: 2rem;
-        }
+      svg {
+        font-size: 2rem;
       }
     }
+  }
+
+  &__chart {
+    @include flexCenter;
+
+    height: 36rem;
+    width: 100%;
+    padding: 3rem;
+    position: relative;
 
     &__container {
       @include flexCenter;
