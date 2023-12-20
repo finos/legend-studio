@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.13.5
+
+### Patch Changes
+
+- [#2852](https://github.com/finos/legend-studio/pull/2852) [`9b5fa7282`](https://github.com/finos/legend-studio/commit/9b5fa7282767d5a6979505444ab13e77f39d26ab) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Minor improvements on Data-Access-Overview for warehouse entitlements
+
 ## 4.13.4
 
 ### Patch Changes
