@@ -110,6 +110,10 @@ import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.j
 import type { QuickInputState } from './QuickInputState.js';
 import { GlobalEndToEndWorkflowState } from './sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
 import { openShowcaseManager } from '../ShowcaseManagerState.js';
+import {
+  GraphEditLazyGrammarModeState,
+  LazyTextEditorStore,
+} from '../lazy-text-editor/LazyTextEditorStore.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -195,6 +199,8 @@ export class EditorStore implements CommandRegistrar {
   readonly tabManagerState = new EditorTabManagerState(this);
   supportedElementTypesWithCategory: Map<string, string[]>;
 
+  lazyTextEditorStore = new LazyTextEditorStore(this);
+
   constructor(
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
@@ -211,6 +217,7 @@ export class EditorStore implements CommandRegistrar {
       graphEditorMode: observable,
       showSearchElementCommand: observable,
       quickInputState: observable,
+      lazyTextEditorStore: observable,
 
       isInViewerMode: computed,
       disableGraphEditing: computed,
@@ -230,6 +237,7 @@ export class EditorStore implements CommandRegistrar {
       initialize: flow,
       initMode: flow,
       initStandardMode: flow,
+      initializeLazyTextMode: flow,
       initConflictResolutionMode: flow,
       buildGraph: flow,
       toggleTextMode: flow,
@@ -715,6 +723,7 @@ export class EditorStore implements CommandRegistrar {
       ),
     ]);
     yield this.graphManagerState.initializeSystem();
+
     yield flowResult(this.initMode());
 
     onLeave(true);
@@ -727,6 +736,9 @@ export class EditorStore implements CommandRegistrar {
         return;
       case EDITOR_MODE.CONFLICT_RESOLUTION:
         yield flowResult(this.initConflictResolutionMode());
+        return;
+      case EDITOR_MODE.LAZY_TEXT_EDITOR:
+        yield flowResult(this.initializeLazyTextMode());
         return;
       default:
         throw new UnsupportedOperationError(
@@ -764,6 +776,92 @@ export class EditorStore implements CommandRegistrar {
       this.sdlcState.fetchPublishedProjectVersions(),
       this.sdlcState.fetchAuthorizedActions(),
     ]);
+  }
+
+  *initializeLazyTextMode(): GeneratorFn<void> {
+    // set up
+    const projectId = this.sdlcState.activeProject.projectId;
+    const activeWorkspace = this.sdlcState.activeWorkspace;
+    const projectConfiguration = (yield this.sdlcServerClient.getConfiguration(
+      projectId,
+      activeWorkspace,
+    )) as PlainObject<ProjectConfiguration>;
+    this.projectConfigurationEditorState.setProjectConfiguration(
+      ProjectConfiguration.serialization.fromJson(projectConfiguration),
+    );
+    // make sure we set the original project configuration to a different object
+    this.projectConfigurationEditorState.setOriginalProjectConfiguration(
+      ProjectConfiguration.serialization.fromJson(projectConfiguration),
+    );
+
+    const startTime = Date.now();
+    let entities: Entity[];
+
+    this.initState.setMessage(`Fetching entities...`);
+    try {
+      entities = (yield this.sdlcServerClient.getEntities(
+        projectId,
+        activeWorkspace,
+      )) as Entity[];
+      this.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
+        entities,
+      );
+      this.applicationStore.logService.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS),
+        Date.now() - startTime,
+        'ms',
+      );
+    } catch {
+      return;
+    } finally {
+      this.initState.setMessage(undefined);
+    }
+    this.initState.setMessage('Building entities hash...');
+    yield flowResult(
+      this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
+        entities,
+        LogEvent.create(
+          LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+        ),
+      ),
+    );
+
+    this.initState.setMessage('Building strict lazy graph...');
+    (yield flowResult(
+      this.graphState.buildGraphForLazyText(),
+    )) as GraphBuilderResult;
+    this.graphManagerState.graphBuildState.sync(ActionState.create().pass());
+    this.graphManagerState.generationsBuildState.sync(
+      ActionState.create().pass(),
+    );
+    this.initState.setMessage(undefined);
+    // switch to text mode
+    const graphEditorMode = new GraphEditLazyGrammarModeState(this);
+    try {
+      const editorGrammar =
+        (yield this.graphManagerState.graphManager.entitiesToPureCode(
+          this.changeDetectionState.workspaceLocalLatestRevisionState.entities,
+          { pretty: true },
+        )) as string;
+      yield flowResult(
+        graphEditorMode.grammarTextEditorState.setGraphGrammarText(
+          editorGrammar,
+        ),
+      );
+      this.graphEditorMode = graphEditorMode;
+      yield flowResult(
+        this.graphEditorMode.initialize({
+          useStoredEntities: true,
+        }),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyWarning(
+        `Can't initialize strict text mode. Issue converting entities to grammar: ${error.message}`,
+      );
+      this.applicationStore.alertService.setBlockingAlert(undefined);
+      return;
+    }
   }
 
   private *initConflictResolutionMode(): GeneratorFn<void> {
@@ -946,11 +1044,15 @@ export class EditorStore implements CommandRegistrar {
     if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
       return;
     }
-    this.applicationStore.alertService.setBlockingAlert({
-      message: 'Switching to text mode...',
-      showLoading: true,
-    });
+    if (this.graphEditorMode.disableLeaveMode) {
+      this.graphEditorMode.onLeave();
+      return;
+    }
     if (this.graphEditorMode instanceof GraphEditFormModeState) {
+      this.applicationStore.alertService.setBlockingAlert({
+        message: 'Switching to text mode...',
+        showLoading: true,
+      });
       yield flowResult(this.switchModes(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
     } else if (this.graphEditorMode instanceof GraphEditGrammarModeState) {
       yield flowResult(this.switchModes(GRAPH_EDITOR_MODE.FORM));
@@ -1136,6 +1238,7 @@ export class EditorStore implements CommandRegistrar {
     fallbackOptions?: {
       isCompilationFailure?: boolean;
       isGraphBuildFailure?: boolean;
+      useStoredEntities?: boolean;
     },
   ): GeneratorFn<void> {
     switch (to) {
@@ -1147,9 +1250,7 @@ export class EditorStore implements CommandRegistrar {
             graphEditorMode.cleanupBeforeEntering(fallbackOptions),
           );
           this.graphEditorMode = graphEditorMode;
-          yield flowResult(
-            this.graphEditorMode.initialize(Boolean(fallbackOptions)),
-          );
+          yield flowResult(this.graphEditorMode.initialize(fallbackOptions));
         } catch (error) {
           assertErrorThrown(error);
           this.applicationStore.notificationService.notifyWarning(

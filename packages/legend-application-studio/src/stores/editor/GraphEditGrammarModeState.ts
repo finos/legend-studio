@@ -61,7 +61,15 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     this.grammarTextEditorState = new GrammarTextEditorState(this.editorStore);
   }
 
-  *initialize(isFallback?: boolean): GeneratorFn<void> {
+  get headerLabel(): string {
+    return 'Text Mode';
+  }
+
+  *initialize(isFallback?: {
+    isCompilationFailure?: boolean;
+    isGraphBuildFailure?: boolean;
+    useStoredEntities?: boolean;
+  }): GeneratorFn<void> {
     this.editorStore.localChangesState = new TextLocalChangesState(
       this.editorStore,
       this.editorStore.sdlcState,
@@ -93,7 +101,11 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
         error,
       );
     }
-    if (isFallback) {
+    if (
+      isFallback?.isCompilationFailure ||
+      isFallback?.isGraphBuildFailure ||
+      isFallback?.useStoredEntities
+    ) {
       yield flowResult(
         this.globalCompile({
           ignoreBlocking: true,

@@ -684,9 +684,10 @@ export const GrammarTextEditor = observer(() => {
   >();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const grammarTextEditorState = editorStore.getGraphEditorMode(
+  const grammarModeState = editorStore.getGraphEditorMode(
     GraphEditGrammarModeState,
-  ).grammarTextEditorState;
+  );
+  const grammarTextEditorState = grammarModeState.grammarTextEditorState;
   const error = editorStore.graphState.error;
   const [elementsFolded, setFoldingElements] = useState(false);
 
@@ -1185,7 +1186,9 @@ export const GrammarTextEditor = observer(() => {
             className="editor-group__text-mode__tab editor-group__text-mode__tab--active"
             content={<GrammarTextEditorHeaderTabContextMenu />}
           >
-            <div className="editor-group__text-mode__tab__label">Text Mode</div>
+            <div className="editor-group__text-mode__tab__label">
+              {grammarModeState.headerLabel}
+            </div>
           </ContextMenu>
         </div>
         <div className="editor-group__header__actions">

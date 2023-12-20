@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import {
   ACTIVITY_MODE,
+  EDITOR_MODE,
   PANEL_MODE,
   USER_JOURNEYS,
 } from '../../stores/editor/EditorConfig.js';
@@ -266,119 +267,125 @@ export const ActivityBar = observer(() => {
       data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
     ></div>
   );
+  const lazyTextModeEnabled = editorStore.mode === EDITOR_MODE.LAZY_TEXT_EDITOR;
   // tabs
-  const activities: ActivityBarItemConfig[] = (
-    [
-      {
-        mode: ACTIVITY_MODE.EXPLORER,
-        title: 'Explorer (Ctrl + Shift + X)',
-        icon: <FileTrayIcon className="activity-bar__explorer-icon" />,
-      },
-      !editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.TEST_RUNNER,
-        title: 'Test Runner',
-        icon: <FlaskIcon />,
-      },
-      !editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.LOCAL_CHANGES,
-        title: `Local Changes (Ctrl + Shift + G)${
-          localChanges ? ` - ${localChanges} unpushed changes` : ''
-        }`,
-        icon: (
-          <div className="activity-bar__local-change-icon activity-bar__item__icon-with-indicator">
-            <CodeBranchIcon />
-            {localChangesIndicatorStatusIcon}
-          </div>
-        ),
-      },
-      !editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.WORKSPACE_UPDATER,
-        title: `Update Workspace (Ctrl + Shift + U)${
-          workspaceUpdateChanges
-            ? ` - Update available${
-                workspaceUpdatePotentialConflicts
-                  ? ' with potential conflicts'
-                  : ''
-              }`
-            : ''
-        }`,
-        icon: (
-          <div className="activity-bar__workspace-updater-icon activity-bar__item__icon-with-indicator">
-            <CloudDownloadIcon />
-            {projectLatestChangesIndicatorStatusIcon}
-          </div>
-        ),
-      },
-      !editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.WORKSPACE_REVIEW,
-        title: `Review (Ctrl + Shift + M)${
-          reviewChanges ? ` - ${reviewChanges} changes` : ''
-        }`,
-        icon: (
-          <div className="activity-bar__review-icon activity-bar__item__icon-with-indicator">
-            <GitPullRequestIcon />
-            {reviewChangesIndicatorStatusIcon}
-          </div>
-        ),
-      },
-      editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.CONFLICT_RESOLUTION,
-        title: `Conflict Resolution${
-          conflictResolutionChanges
-            ? ` - ${conflictResolutionChanges} changes${
-                conflictResolutionConflicts
-                  ? ` (${conflictResolutionConflicts} unresolved conflicts)`
-                  : ''
-              }`
-            : ''
-        }`,
-        icon: (
-          <div className="activity-bar__conflict-resolution-icon activity-bar__item__icon-with-indicator">
-            <GitMergeIcon />
-            {conflictResolutionChangesIndicatorStatusIcon}
-          </div>
-        ),
-      },
-      !editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
-        title: 'Project',
-        icon: <RepoIcon className="activity-bar__project-overview-icon" />,
-      },
-      !editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
-        title: 'Workflow Manager',
-        icon: <WrenchIcon />,
-      },
-      !editorStore.isInConflictResolutionMode && {
-        mode: ACTIVITY_MODE.REGISTER_SERVICES,
-        title: 'Register Service (Beta)',
-        icon: (
-          <>
-            <RobotIcon className="activity-bar__icon--service-registrar" />
-            <ActivityBarItemExperimentalBadge />
-          </>
-        ),
-      },
-    ] as (ActivityBarItemConfig | boolean)[]
-  ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
+  const activities: ActivityBarItemConfig[] = [
+    {
+      mode: ACTIVITY_MODE.EXPLORER,
+      title: 'Explorer (Ctrl + Shift + X)',
+      icon: <FileTrayIcon className="activity-bar__explorer-icon" />,
+    },
+    {
+      mode: ACTIVITY_MODE.TEST_RUNNER,
+      title: 'Test Runner',
+      icon: <FlaskIcon />,
+      disabled: editorStore.isInConflictResolutionMode || lazyTextModeEnabled,
+    },
+    {
+      mode: ACTIVITY_MODE.LOCAL_CHANGES,
+      title: `Local Changes (Ctrl + Shift + G)${
+        localChanges ? ` - ${localChanges} unpushed changes` : ''
+      }`,
+      icon: (
+        <div className="activity-bar__local-change-icon activity-bar__item__icon-with-indicator">
+          <CodeBranchIcon />
+          {localChangesIndicatorStatusIcon}
+        </div>
+      ),
+      disabled: editorStore.isInConflictResolutionMode,
+    },
+    {
+      mode: ACTIVITY_MODE.WORKSPACE_UPDATER,
+      title: `Update Workspace (Ctrl + Shift + U)${
+        workspaceUpdateChanges
+          ? ` - Update available${
+              workspaceUpdatePotentialConflicts
+                ? ' with potential conflicts'
+                : ''
+            }`
+          : ''
+      }`,
+      icon: (
+        <div className="activity-bar__workspace-updater-icon activity-bar__item__icon-with-indicator">
+          <CloudDownloadIcon />
+          {projectLatestChangesIndicatorStatusIcon}
+        </div>
+      ),
+      disabled: editorStore.isInConflictResolutionMode,
+    },
+    {
+      mode: ACTIVITY_MODE.WORKSPACE_REVIEW,
+      title: `Review (Ctrl + Shift + M)${
+        reviewChanges ? ` - ${reviewChanges} changes` : ''
+      }`,
+      icon: (
+        <div className="activity-bar__review-icon activity-bar__item__icon-with-indicator">
+          <GitPullRequestIcon />
+          {reviewChangesIndicatorStatusIcon}
+        </div>
+      ),
+      disabled: editorStore.isInConflictResolutionMode,
+    },
+    {
+      mode: ACTIVITY_MODE.CONFLICT_RESOLUTION,
+      title: `Conflict Resolution${
+        conflictResolutionChanges
+          ? ` - ${conflictResolutionChanges} changes${
+              conflictResolutionConflicts
+                ? ` (${conflictResolutionConflicts} unresolved conflicts)`
+                : ''
+            }`
+          : ''
+      }`,
+      icon: (
+        <div className="activity-bar__conflict-resolution-icon activity-bar__item__icon-with-indicator">
+          <GitMergeIcon />
+          {conflictResolutionChangesIndicatorStatusIcon}
+        </div>
+      ),
 
-  const enableEndtoEndWorkflow =
-    editorStore.applicationStore.config.options.NonProductionFeatureFlag;
-  const userJourneys: ActivityBarItemConfig[] = (
-    [
-      !editorStore.isInConflictResolutionMode &&
-        enableEndtoEndWorkflow && {
-          mode: USER_JOURNEYS.END_TO_END_WORKFLOWS,
-          title: 'End to End Workflows (Beta)',
-          icon: (
-            <div>
-              <WorkflowIcon className="activity-bar__icon--service-registrar" />
-              <ActivityBarItemExperimentalBadge />
-            </div>
-          ),
-        },
-    ] as (ActivityBarItemConfig | boolean)[]
-  ).filter((activity): activity is ActivityBarItemConfig => Boolean(activity));
+      disabled: !editorStore.isInConflictResolutionMode || lazyTextModeEnabled,
+    },
+    {
+      mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
+      title: 'Project',
+      icon: <RepoIcon className="activity-bar__project-overview-icon" />,
+      disabled: editorStore.isInConflictResolutionMode,
+    },
+    {
+      mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
+      title: 'Workflow Manager',
+      icon: <WrenchIcon />,
+      disabled: editorStore.isInConflictResolutionMode,
+    },
+    {
+      mode: ACTIVITY_MODE.REGISTER_SERVICES,
+      title: 'Register Service (Beta)',
+      icon: (
+        <>
+          <RobotIcon className="activity-bar__icon--service-registrar" />
+          <ActivityBarItemExperimentalBadge />
+        </>
+      ),
+      disabled: editorStore.isInConflictResolutionMode || lazyTextModeEnabled,
+    },
+  ].filter((activity) => !activity.disabled);
+
+  const userJourneys: ActivityBarItemConfig[] = [
+    {
+      mode: USER_JOURNEYS.END_TO_END_WORKFLOWS,
+      title: 'End to End Workflows (Beta)',
+      icon: (
+        <div>
+          <WorkflowIcon className="activity-bar__icon--service-registrar" />
+          <ActivityBarItemExperimentalBadge />
+        </div>
+      ),
+      disabled:
+        editorStore.isInConflictResolutionMode ||
+        !editorStore.applicationStore.config.options.NonProductionFeatureFlag,
+    },
+  ].filter((activity) => !activity.disabled);
 
   return (
     <div className="activity-bar">

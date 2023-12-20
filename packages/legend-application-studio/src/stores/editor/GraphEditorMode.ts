@@ -42,7 +42,15 @@ export abstract class GraphEditorMode {
     this.editorStore = editorStore;
   }
 
-  abstract initialize(isFallback?: boolean): GeneratorFn<void>;
+  get disableLeaveMode(): boolean {
+    return false;
+  }
+
+  abstract initialize(options?: {
+    isCompilationFailure?: boolean;
+    isGraphBuildFailure?: boolean;
+    useStoredEntities?: boolean;
+  }): GeneratorFn<void>;
   abstract addElement(
     element: PackageableElement,
     packagePath: string | undefined,

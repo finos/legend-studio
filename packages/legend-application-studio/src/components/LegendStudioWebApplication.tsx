@@ -41,6 +41,7 @@ import {
 } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/LegendStudioDocumentation.js';
 import { ShowcaseViewer } from './showcase/ShowcaseViewer.js';
+import { LazyTextEditor } from './lazy-text-editor/LazyTextEditor.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -51,7 +52,6 @@ const NotFoundPage = observer(() => {
   const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.NOT_FOUND_HELP,
   );
-
   return (
     <div className="app__page">
       <div
@@ -191,6 +191,18 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                   component={
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     Editor as TEMPORARY__ReactRouterComponentType
+                  }
+                />
+                <Route
+                  exact={true}
+                  strict={true}
+                  path={[
+                    LEGEND_STUDIO_ROUTE_PATTERN.TEXT_GROUP_WORKSPACE,
+                    LEGEND_STUDIO_ROUTE_PATTERN.TEXT_WORKSPACE,
+                  ]}
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    LazyTextEditor as TEMPORARY__ReactRouterComponentType
                   }
                 />
                 <Route
