@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.13.14
+
+### Patch Changes
+
+- [#2850](https://github.com/finos/legend-studio/pull/2850) [`24799bfcf`](https://github.com/finos/legend-studio/commit/24799bfcff705e0011aa8ff18163d70da7cf8295) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add telemetry logging for showcase projects.
+
 ## 28.13.13
 
 ### Patch Changes
