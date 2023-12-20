@@ -32,8 +32,8 @@ import {
   LongArrowRightIcon,
   DividerWithText,
   SearchIcon,
-  FileImportIcon,
   BaseCard,
+  OpenIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
@@ -108,7 +108,7 @@ export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
           title: 'Showcase explorer',
           content: (
             <div className="workspace-setup__content__card__action__icon">
-              <FileImportIcon />
+              <OpenIcon />
             </div>
           ),
           action: () => openShowcaseManager(applicationStore),
@@ -145,7 +145,7 @@ export const DocumentationCard: React.FC = () => {
           title: 'Review documentation',
           content: (
             <div className="workspace-setup__content__card__action__icon">
-              <FileImportIcon />
+              <OpenIcon />
             </div>
           ),
           action: () => {
@@ -180,7 +180,7 @@ export const ProductionCard: React.FC = () => {
             title: productionDocument.text,
             content: (
               <div className="workspace-setup__content__card__action__icon">
-                <FileImportIcon />
+                <OpenIcon />
               </div>
             ),
             action: () => {
@@ -216,7 +216,7 @@ export const SandboxCard: React.FC = () => {
             title: sandboxDocument.text,
             content: (
               <div className="workspace-setup__content__card__action__icon">
-                <FileImportIcon />
+                <OpenIcon />
               </div>
             ),
             action: () => {
@@ -254,7 +254,7 @@ export const RuleEngagementCard: React.FC = () => {
             title: ruleEngagementDocument.text,
             content: (
               <div className="workspace-setup__content__card__action__icon">
-                <FileImportIcon />
+                <OpenIcon />
               </div>
             ),
             action: () => {

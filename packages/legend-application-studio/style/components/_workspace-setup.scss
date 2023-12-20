@@ -245,6 +245,7 @@
 
     &__content {
       font-size: min(1.5vh, 1.5vw);
+      line-height: 2vh;
     }
 
     &__action__icon {
@@ -252,7 +253,7 @@
       align-items: center;
 
       svg {
-        font-size: min(1.25vw, 1.25vh);
+        font-size: min(1.5vw, 1.5vh);
       }
     }
   }
@@ -300,7 +301,7 @@
         @include flexCenter;
 
         height: 100%;
-        width: 2vh;
+        width: 4vh;
         background: var(--color-dark-grey-85);
         border-radius: 0.2rem 0 0 0.2rem;
 
