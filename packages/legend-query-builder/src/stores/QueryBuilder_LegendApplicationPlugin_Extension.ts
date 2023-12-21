@@ -46,7 +46,7 @@ export type QueryExportUsageConfiguration = {
 };
 
 export type WarehouseEntitlementRender = {
-  renderer: (dataAccessState: DataAccessState) => React.ReactNode | undefined;
+  renderer: (dataAccessState: DataAccessState) => React.ReactNode;
 };
 
 export type QueryChatRenderer = (
@@ -63,7 +63,7 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
   /**
    * Get the list of warehouse entitlement configurations
    */
-  getWarehouseEntitlementRenders?(): WarehouseEntitlementRender[] | undefined;
+  getWarehouseEntitlementRenders?(): WarehouseEntitlementRender[];
 
   /**
    * Get the list of dataset entitlement access report action configurations.
