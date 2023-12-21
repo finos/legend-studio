@@ -791,8 +791,8 @@ export const GrammarTextEditor = observer(() => {
     if (editorModel) {
       editorModel.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
       if (
-        !editorStore.graphState.areProblemsStale &&
-        error?.sourceInformation
+        error?.sourceInformation &&
+        !editorStore.graphState.areProblemsStale
       ) {
         setErrorMarkers(editorModel, [
           {
@@ -806,8 +806,8 @@ export const GrammarTextEditor = observer(() => {
       }
 
       if (
-        !editorStore.graphState.areProblemsStale &&
-        editorStore.graphState.warnings.length
+        editorStore.graphState.warnings.length &&
+        !editorStore.graphState.areProblemsStale
       ) {
         setWarningMarkers(
           editorModel,
