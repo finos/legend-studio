@@ -443,7 +443,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                     <div className="workspace-setup__selectors__container">
                       <div className="workspace-setup__selector">
                         <div className="workspace-setup__selector__header">
-                          Search for project
+                          Search for an existing project
                         </div>
                         <div className="workspace-setup__selector__content">
                           <div
@@ -478,7 +478,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       </div>
                       <div className="workspace-setup__selector">
                         <div className="workspace-setup__selector__header">
-                          Choose a workspace
+                          Choose an existing workspace
                         </div>
                         <div className="workspace-setup__selector__content">
                           <div
@@ -534,6 +534,19 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                   </div>
                   <div className="workspace-setup__actions-combo">
                     <div className="workspace-setup__actions">
+                      <button
+                        className="workspace-setup__new-workspace-btn"
+                        onClick={showCreateWorkspaceModal}
+                        title="Create a Workspace after choosing one project"
+                        disabled={
+                          !setupStore.currentProject ||
+                          !setupStore.currentProjectConfigurationStatus ||
+                          !setupStore.currentProjectConfigurationStatus
+                            .isConfigured
+                        }
+                      >
+                        {`Don't have a workspace?`}
+                      </button>
                       <div className="workspace-setup__actions__button">
                         <button
                           className="workspace-setup__go-btn btn--dark"
@@ -565,19 +578,6 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                           title="Create a Project"
                         >
                           Create New Project
-                        </button>
-                        <button
-                          className="workspace-setup__new-btn btn--dark"
-                          onClick={showCreateWorkspaceModal}
-                          title="Create a Workspace after choosing one project"
-                          disabled={
-                            !setupStore.currentProject ||
-                            !setupStore.currentProjectConfigurationStatus ||
-                            !setupStore.currentProjectConfigurationStatus
-                              .isConfigured
-                          }
-                        >
-                          Create New Workspace
                         </button>
                       </div>
                     </div>

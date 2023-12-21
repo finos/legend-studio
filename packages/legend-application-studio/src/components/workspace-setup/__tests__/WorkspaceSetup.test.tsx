@@ -46,11 +46,15 @@ test(integrationTest('Shows project searcher properly'), async () => {
   await waitFor(() =>
     expect(queryByText('Welcome to Legend Studio')).not.toBeNull(),
   );
-  await waitFor(() => expect(queryByText('Search for project')).not.toBeNull());
   await waitFor(() =>
     expect(queryByText('Search for project...')).not.toBeNull(),
   );
-  await waitFor(() => expect(queryByText('Choose a workspace')).not.toBeNull());
+  await waitFor(() =>
+    expect(queryByText('Search for an existing project')).not.toBeNull(),
+  );
+  await waitFor(() =>
+    expect(queryByText('Choose an existing workspace')).not.toBeNull(),
+  );
   await waitFor(() =>
     expect(
       queryByText('In order to choose a workspace, a project must be chosen'),
@@ -59,7 +63,7 @@ test(integrationTest('Shows project searcher properly'), async () => {
   await waitFor(() => expect(queryByText('Go')).not.toBeNull());
   await waitFor(() => expect(queryByText('Create New Project')).not.toBeNull());
   await waitFor(() =>
-    expect(queryByText('Create New Workspace')).not.toBeNull(),
+    expect(queryByText(`Don't have a workspace?`)).not.toBeNull(),
   );
   //check successfully load cards
   await waitFor(() => expect(queryByText('Showcase Projects')).not.toBeNull());
