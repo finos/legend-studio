@@ -792,6 +792,8 @@ export const GrammarTextEditor = observer(() => {
       editorModel.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
       if (
         error?.sourceInformation &&
+        // We should only calculate if problems are stale if there is an error/warning as
+        // calculating staleness takes time
         !editorStore.graphState.areProblemsStale
       ) {
         setErrorMarkers(editorModel, [
@@ -807,6 +809,8 @@ export const GrammarTextEditor = observer(() => {
 
       if (
         editorStore.graphState.warnings.length &&
+        // We should only calculate if problems are stale if there is an error/warning as
+        // calculating staleness takes time
         !editorStore.graphState.areProblemsStale
       ) {
         setWarningMarkers(
