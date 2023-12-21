@@ -340,14 +340,7 @@ export const DataAccessOverview = observer(
           <DataAccessOverviewChart dataAccessState={dataAccessState} />
           <DataAccessOverviewGrid dataAccessState={dataAccessState} />
         </div>
-        {warehouseEntitlementTab && (
-          <div className="data-access-overview__warehouse">
-            <div className="data-access-overview__header">
-              WAREHOUSE ENTITLEMENTS
-            </div>
-            {warehouseEntitlementTab}
-          </div>
-        )}
+        {warehouseEntitlementTab}
       </div>
     );
   },
