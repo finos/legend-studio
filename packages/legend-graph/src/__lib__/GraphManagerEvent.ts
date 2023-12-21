@@ -53,4 +53,5 @@ export enum GRAPH_MANAGER_EVENT {
   GRAPH_MANAGER_FAILURE = 'graph-manager.failure',
   CACHE_MANAGER_FAILURE = 'graph-manager.cache.failure',
   RELATIONAL_CONNECTION = 'graph-manager.relational.connection.failure',
+  FETCH_GRAPH_ENTITIES_ERROR = 'graph-manager.entities-dependencies.error',
 }
