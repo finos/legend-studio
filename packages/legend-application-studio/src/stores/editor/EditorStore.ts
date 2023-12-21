@@ -811,7 +811,14 @@ export class EditorStore implements CommandRegistrar {
         Date.now() - startTime,
         'ms',
       );
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES_ERROR),
+        Date.now() - startTime,
+        'ms',
+      );
+      this.applicationStore.notificationService.notifyError(error);
       return;
     } finally {
       this.initState.setMessage(undefined);
@@ -928,7 +935,14 @@ export class EditorStore implements CommandRegistrar {
         Date.now() - startTime,
         'ms',
       );
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES_ERROR),
+        Date.now() - startTime,
+        'ms',
+      );
+      this.applicationStore.notificationService.notifyError(error);
       return;
     } finally {
       this.initState.setMessage(undefined);
