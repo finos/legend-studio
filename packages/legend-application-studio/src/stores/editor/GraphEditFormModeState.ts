@@ -475,7 +475,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
       if (!options?.disableNotificationOnSuccess) {
         if (this.editorStore.graphState.warnings.length) {
           this.editorStore.applicationStore.notificationService.notifyWarning(
-            `Compilation suceeded with warnings`,
+            `Compilation succeeded with warnings`,
           );
         } else {
           if (!options?.disableNotificationOnSuccess) {
