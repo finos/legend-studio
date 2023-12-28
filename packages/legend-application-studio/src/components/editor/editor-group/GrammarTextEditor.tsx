@@ -25,14 +25,15 @@ import {
 } from 'monaco-editor';
 import {
   ContextMenu,
-  clsx,
-  WordWrapIcon,
-  MoreHorizontalIcon,
-  FoldIcon,
-  UnfoldIcon,
   PanelContent,
   MenuContent,
   MenuContentItem,
+  PanelLoadingIndicator,
+  CaretDownIcon,
+  DropdownMenu,
+  MenuContentItemIcon,
+  CheckIcon,
+  MenuContentItemLabel,
 } from '@finos/legend-art';
 import {
   DEFAULT_TAB_SIZE,
@@ -701,7 +702,7 @@ const resolveElementPathFromCurrentPosition = (
     const model = _editor.getModel();
     let position = _editor.getPosition();
     let maxWords = 0;
-    if (model && maxWords < 10) {
+    if (model) {
       while (position && maxWords < 30) {
         const currentWord = model.getWordAtPosition(position);
         const lineNumber = position.lineNumber;
@@ -714,20 +715,19 @@ const resolveElementPathFromCurrentPosition = (
           };
           const startPost = model.modifyPosition(wordStartPost, -2);
           elementPath = currentWord.word + elementPath;
-          if (startPost) {
-            const pathDelimiterRange = {
-              startLineNumber: startPost.lineNumber,
-              startColumn: startPost.column,
-              endLineNumber: wordStartPost.lineNumber,
-              endColumn: wordStartPost.column,
-            };
-            const packageRange = model.getValueInRange(
-              model.validateRange(pathDelimiterRange),
-            );
-            if (packageRange === ELEMENT_PATH_DELIMITER) {
-              elementPath = packageRange + elementPath;
-              position = model.modifyPosition(startPost, -1);
-            }
+
+          const pathDelimiterRange = {
+            startLineNumber: startPost.lineNumber,
+            startColumn: startPost.column,
+            endLineNumber: wordStartPost.lineNumber,
+            endColumn: wordStartPost.column,
+          };
+          const packageRange = model.getValueInRange(
+            model.validateRange(pathDelimiterRange),
+          );
+          if (packageRange === ELEMENT_PATH_DELIMITER) {
+            elementPath = packageRange + elementPath;
+            position = model.modifyPosition(startPost, -1);
           }
         }
       }
@@ -763,7 +763,9 @@ const goToElement = (
     grammarModeState,
   );
   if (elementPath) {
-    flowResult(grammarModeState.goToElement(elementPath));
+    flowResult(grammarModeState.goToElement(elementPath)).catch(
+      grammarModeState.editorStore.applicationStore.alertUnhandledError,
+    );
   }
 };
 
@@ -790,6 +792,10 @@ export const GrammarTextEditor = observer(() => {
 
   const leaveTextMode = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
+  );
+
+  const globalCompile = applicationStore.guardUnhandledError(() =>
+    flowResult(grammarModeState.globalCompile()),
   );
 
   const toggleWordWrap = (): void => {
@@ -824,7 +830,7 @@ export const GrammarTextEditor = observer(() => {
       _editor.addAction({
         id: GRAMMAR_MODE_EDITOR_ACTION.GO_TO_ELEMENT_DEFINITION,
         label: 'Go To Element',
-        keybindings: [KeyMod.CtrlCmd | KeyCode.KeyB, KeyCode.F12],
+        keybindings: [KeyMod.CtrlCmd | KeyCode.KeyB],
         run: (ed: monacoEditorAPI.ICodeEditor): void => {
           goToElement(ed, grammarModeState);
         },
@@ -1278,19 +1284,6 @@ export const GrammarTextEditor = observer(() => {
     <div className="panel editor-group">
       <div className="panel__header editor-group__header">
         <div className="editor-group__header__tabs">
-          <div className="editor-group__text-mode__tab">
-            <button
-              className="editor-group__text-mode__tab__label"
-              disabled={
-                editorStore.graphState.isApplicationLeavingGraphEditMode
-              }
-              onClick={leaveTextMode}
-              tabIndex={-1}
-              title="Click to exit text mode and go back to form mode"
-            >
-              <MoreHorizontalIcon />
-            </button>
-          </div>
           <ContextMenu
             className="editor-group__text-mode__tab editor-group__text-mode__tab--active"
             content={<GrammarTextEditorHeaderTabContextMenu />}
@@ -1301,39 +1294,66 @@ export const GrammarTextEditor = observer(() => {
           </ContextMenu>
         </div>
         <div className="editor-group__header__actions">
-          <button
-            className={clsx('editor-group__header__action', {
-              'editor-group__header__action--active':
-                grammarTextEditorState.wrapText,
-            })}
-            onClick={toggleWordWrap}
-            tabIndex={-1}
-            title={`[${
-              grammarTextEditorState.wrapText ? 'on' : 'off'
-            }] Toggle word wrap`}
-          >
-            <WordWrapIcon className="editor-group__icon__word-wrap" />
-          </button>
-          <button
-            className={clsx('editor-group__header__action', {
-              'editor-group__header__action--active': elementsFolded,
-            })}
-            onClick={toggleAutoFoldingElements}
-            tabIndex={-1}
-            title={`${
-              !elementsFolded ? 'Unfold' : 'Fold'
-            } auto-folding elements`}
-          >
-            {!elementsFolded && (
-              <UnfoldIcon className="editor-group__icon__word-wrap" />
-            )}
-            {elementsFolded && (
-              <FoldIcon className="editor-group__icon__word-wrap" />
-            )}
-          </button>
+          <div className="editor-group__text-mode__action">
+            <button
+              title="Compile (F9)"
+              onClick={globalCompile}
+              className="editor-group__text-mode-btn btn--dark"
+            >
+              Compile
+            </button>
+          </div>
+          <div className="editor-group__text-mode__action">
+            <button
+              title="Click to exit text mode and go back to form mode (F8)"
+              onClick={leaveTextMode}
+              className="editor-group__text-mode-btn btn--dark"
+            >
+              Exit Text Mode
+            </button>
+          </div>
+          <div className="query-builder__header__actions">
+            <DropdownMenu
+              className="query-builder__header__advanced-dropdown"
+              title="Show Advanced Menu..."
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={toggleWordWrap}>
+                    <MenuContentItemIcon>
+                      {grammarTextEditorState.wrapText ? <CheckIcon /> : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Wrap Overflowing Words
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={toggleAutoFoldingElements}>
+                    <MenuContentItemIcon>
+                      {elementsFolded ? <CheckIcon /> : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Auto Fold Elements
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                </MenuContent>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+            >
+              <div className="query-builder__header__advanced-dropdown__label">
+                Advanced
+              </div>
+              <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
+            </DropdownMenu>
+          </div>
         </div>
       </div>
       <PanelContent className="editor-group__content">
+        <PanelLoadingIndicator
+          isLoading={editorStore.graphState.isRunningGlobalCompile}
+        />
         <div className="code-editor__container">
           <div className="code-editor__body" ref={textEditorRef} />
         </div>

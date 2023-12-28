@@ -99,6 +99,20 @@
     }
   }
 
+  &__text-mode {
+    &__action {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0.5rem 0.5rem 0.5rem 0;
+    }
+
+    &-btn {
+      height: 100%;
+      width: 12rem;
+      background: var(--color-light-blue-50);
+    }
+  }
+
   &__header__actions {
     display: flex;
     height: 100%;

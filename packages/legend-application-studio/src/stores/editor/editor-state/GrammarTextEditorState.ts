@@ -17,7 +17,7 @@
 import type { EditorStore } from '../EditorStore.js';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { hashValue } from '@finos/legend-shared';
-import { type SourceInformation } from '@finos/legend-graph';
+import type { SourceInformation } from '@finos/legend-graph';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
 import type { CodeEditorPosition } from '@finos/legend-lego/code-editor';
 

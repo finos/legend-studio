@@ -63,7 +63,7 @@ test(integrationTest('Shows project searcher properly'), async () => {
   await waitFor(() => expect(queryByText('Go')).not.toBeNull());
   await waitFor(() => expect(queryByText('Create New Project')).not.toBeNull());
   await waitFor(() =>
-    expect(queryByText(`Don't have a workspace?`)).not.toBeNull(),
+    expect(queryByText(`Need to create a new workspace?`)).not.toBeNull(),
   );
   //check successfully load cards
   await waitFor(() => expect(queryByText('Showcase Projects')).not.toBeNull());
