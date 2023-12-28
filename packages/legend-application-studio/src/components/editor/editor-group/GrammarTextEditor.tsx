@@ -20,6 +20,8 @@ import {
   type IDisposable,
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
+  KeyCode,
+  KeyMod,
 } from 'monaco-editor';
 import {
   ContextMenu,
@@ -64,12 +66,20 @@ import { useDrop } from 'react-dnd';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { hasWhiteSpace, isNonNullable } from '@finos/legend-shared';
 import {
+  LogEvent,
+  assertErrorThrown,
+  assertTrue,
+  hasWhiteSpace,
+  isNonNullable,
+} from '@finos/legend-shared';
+import {
+  ELEMENT_PATH_DELIMITER,
   PARSER_SECTION_MARKER,
   PURE_CONNECTION_NAME,
   PURE_ELEMENT_NAME,
   PURE_PARSER,
+  isValidFullPath,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../stores/editor/EditorStore.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../__lib__/LegendStudioDocumentation.js';
@@ -109,7 +119,11 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
-import { GraphEditGrammarModeState } from '../../../stores/editor/GraphEditGrammarModeState.js';
+import {
+  GRAMMAR_MODE_EDITOR_ACTION,
+  GraphEditGrammarModeState,
+} from '../../../stores/editor/GraphEditGrammarModeState.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
@@ -678,6 +692,81 @@ const collectParserElementSnippetSuggestions = (
   return [];
 };
 
+const resolveElementPathFromCurrentPosition = (
+  _editor: monacoEditorAPI.ICodeEditor,
+  grammarModeState: GraphEditGrammarModeState,
+): string | undefined => {
+  let elementPath = '';
+  try {
+    const model = _editor.getModel();
+    let position = _editor.getPosition();
+    let maxWords = 0;
+    if (model && maxWords < 10) {
+      while (position && maxWords < 30) {
+        const currentWord = model.getWordAtPosition(position);
+        const lineNumber = position.lineNumber;
+        position = null;
+        maxWords += 1;
+        if (currentWord) {
+          const wordStartPost = {
+            lineNumber: lineNumber,
+            column: currentWord.startColumn,
+          };
+          const startPost = model.modifyPosition(wordStartPost, -2);
+          elementPath = currentWord.word + elementPath;
+          if (startPost) {
+            const pathDelimiterRange = {
+              startLineNumber: startPost.lineNumber,
+              startColumn: startPost.column,
+              endLineNumber: wordStartPost.lineNumber,
+              endColumn: wordStartPost.column,
+            };
+            const packageRange = model.getValueInRange(
+              model.validateRange(pathDelimiterRange),
+            );
+            if (packageRange === ELEMENT_PATH_DELIMITER) {
+              elementPath = packageRange + elementPath;
+              position = model.modifyPosition(startPost, -1);
+            }
+          }
+        }
+      }
+    }
+    assertTrue(
+      isValidFullPath(elementPath),
+      `Unable to go to element definition. Not valid element path: ${elementPath}`,
+    );
+    return elementPath;
+  } catch (error) {
+    assertErrorThrown(error);
+    grammarModeState.editorStore.applicationStore.logService.error(
+      LogEvent.create(
+        LEGEND_STUDIO_APP_EVENT.TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__ERROR,
+      ),
+      error,
+    );
+  }
+  return undefined;
+};
+
+const goToElement = (
+  _editor: monacoEditorAPI.ICodeEditor,
+  grammarModeState: GraphEditGrammarModeState,
+): void => {
+  grammarModeState.editorStore.applicationStore.logService.info(
+    LogEvent.create(
+      LEGEND_STUDIO_APP_EVENT.TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__LAUNCH,
+    ),
+  );
+  const elementPath = resolveElementPathFromCurrentPosition(
+    _editor,
+    grammarModeState,
+  );
+  if (elementPath) {
+    flowResult(grammarModeState.goToElement(elementPath));
+  }
+};
+
 export const GrammarTextEditor = observer(() => {
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
@@ -732,9 +821,23 @@ export const GrammarTextEditor = observer(() => {
       });
       _editor.focus(); // focus on the editor initially
       _editor.getModel()?.updateOptions({ tabSize: DEFAULT_TAB_SIZE });
+      _editor.addAction({
+        id: GRAMMAR_MODE_EDITOR_ACTION.GO_TO_ELEMENT_DEFINITION,
+        label: 'Go To Element',
+        keybindings: [KeyMod.CtrlCmd | KeyCode.KeyB, KeyCode.F12],
+        run: (ed: monacoEditorAPI.ICodeEditor): void => {
+          goToElement(ed, grammarModeState);
+        },
+      });
       setEditor(_editor);
     }
-  }, [editorStore, applicationStore, editor, grammarTextEditorState]);
+  }, [
+    editorStore,
+    applicationStore,
+    editor,
+    grammarTextEditorState,
+    grammarModeState,
+  ]);
 
   // Drag and Drop
   const extraElementDragTypes = editorStore.pluginManager
