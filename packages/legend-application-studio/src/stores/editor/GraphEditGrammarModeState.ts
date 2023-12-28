@@ -34,6 +34,7 @@ import {
   LogEvent,
   ActionState,
   StopWatch,
+  assertNonNullable,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import { makeObservable, flow, flowResult, observable } from 'mobx';
@@ -48,6 +49,11 @@ import { graph_dispose } from '../graph-modifier/GraphModifierHelper.js';
 import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+
+export enum GRAMMAR_MODE_EDITOR_ACTION {
+  GO_TO_ELEMENT_DEFINITION = 'go-to-element-definition',
+}
 
 export class GraphEditGrammarModeState extends GraphEditorMode {
   grammarTextEditorState: GrammarTextEditorState;
@@ -57,6 +63,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     makeObservable(this, {
       grammarTextEditorState: observable,
       compileText: flow,
+      goToElement: flow,
     });
     this.grammarTextEditorState = new GrammarTextEditorState(this.editorStore);
   }
@@ -127,6 +134,47 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
           column: 0,
         });
       }
+    }
+  }
+
+  *goToElement(elementPath: string): GeneratorFn<void> {
+    try {
+      const sourceInformationIndex = new Map<string, SourceInformation>();
+      (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
+        this.grammarTextEditorState.graphGrammarText,
+        {
+          sourceInformationIndex,
+        },
+      )) as Entity[];
+      this.grammarTextEditorState.setSourceInformationIndex(
+        sourceInformationIndex,
+      );
+      const sourceInformation =
+        this.grammarTextEditorState.sourceInformationIndex.get(elementPath);
+      assertNonNullable(
+        sourceInformation,
+        `No definition found for current element in current grammar. Element may not exist of be defined in dependencies`,
+      );
+      this.grammarTextEditorState.setForcedCursorPosition({
+        lineNumber: sourceInformation.startLine,
+        column: 0,
+      });
+      this.editorStore.applicationStore.logService.info(
+        LogEvent.create(
+          LEGEND_STUDIO_APP_EVENT.TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__SUCCESS,
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to go to element ${elementPath}: ${error.message}`,
+      );
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(
+          LEGEND_STUDIO_APP_EVENT.TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__ERROR,
+        ),
+        error,
+      );
     }
   }
 

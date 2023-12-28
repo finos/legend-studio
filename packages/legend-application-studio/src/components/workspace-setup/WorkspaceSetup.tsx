@@ -545,7 +545,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             .isConfigured
                         }
                       >
-                        {`Don't have a workspace?`}
+                        {`Need to create a new workspace?`}
                       </button>
                       <div className="workspace-setup__actions__button">
                         <button
