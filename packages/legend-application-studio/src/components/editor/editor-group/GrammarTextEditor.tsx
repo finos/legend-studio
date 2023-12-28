@@ -715,7 +715,6 @@ const resolveElementPathFromCurrentPosition = (
           };
           const startPost = model.modifyPosition(wordStartPost, -2);
           elementPath = currentWord.word + elementPath;
-
           const pathDelimiterRange = {
             startLineNumber: startPost.lineNumber,
             startColumn: startPost.column,
