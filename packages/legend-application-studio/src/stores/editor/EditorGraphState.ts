@@ -88,6 +88,7 @@ import {
   createGraphBuilderReport,
   ExecutionEnvironmentInstance,
   SnowflakeApp,
+  GraphEntities,
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
@@ -169,6 +170,7 @@ export class EditorGraphState {
       loadEntityChangesToGraph: flow,
       updateGenerationGraphAndApplication: flow,
       rebuildDependencies: flow,
+      buildGraphForLazyText: flow,
     });
 
     this.editorStore = editorStore;
@@ -510,6 +512,16 @@ export class EditorGraphState {
     )) as Map<string, EntitiesWithOrigin>;
     stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
     dependencyManager.initialize(dependencyEntitiesIndex);
+    // set dependency manager graph origin to entities
+    if (dependencyManager.origin === undefined) {
+      dependencyManager.setOrigin(
+        new GraphEntities(
+          Array.from(dependencyEntitiesIndex.values())
+            .map((e) => e.entities)
+            .flat(),
+        ),
+      );
+    }
     this.isInitializingGraph = false;
     this.editorStore.graphManagerState.dependenciesBuildState.sync(
       ActionState.create().pass(),

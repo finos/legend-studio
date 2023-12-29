@@ -188,7 +188,7 @@ export const EditorGroupSplashScreen: React.FC = () => {
             </div>
             <div className="editor-group__splash-screen__content__item">
               <div className="editor-group__splash-screen__content__item__label">
-                Toggle Hackermode
+                Go To Text Mode
               </div>
               <div className="editor-group__splash-screen__content__item__hot-keys">
                 <div className="hotkey__key">F8</div>
