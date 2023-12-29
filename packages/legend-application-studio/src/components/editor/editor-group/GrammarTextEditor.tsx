@@ -1060,59 +1060,46 @@ export const GrammarTextEditor = observer(() => {
           [],
       );
     const foldingClass = editor?.getContribution('editor.contrib.folding');
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (foldingClass as any).getFoldingModel().then(
-      (foldingModel: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        _regions: any;
-        onDidChange: (arg0: () => void) => void;
-        getRegionAtLine: (arg0: unknown) => unknown;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getAllRegionsAtLine(arg0: unknown): any;
-        toggleCollapseState: (arg0: unknown) => unknown;
-      }) => {
-        const model = editor?.getModel();
-        const toggleFoldingLines: number[] = [];
-        model?.getLinesContent().forEach((line, j) => {
-          autoFoldingElements.forEach((elementName) => {
-            if (line.match(new RegExp(`^${elementName}`))) {
-              toggleFoldingLines.push(j + 2);
+    if (editor && foldingClass) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (foldingClass as any).getFoldingModel().then(
+        (foldingModel: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          _regions: any;
+          onDidChange: (arg0: () => void) => void;
+          getRegionAtLine: (arg0: unknown) => unknown;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          getAllRegionsAtLine(arg0: unknown): any;
+          toggleCollapseState: (arg0: unknown) => unknown;
+        }) => {
+          const model = editor.getModel();
+          const toggleFoldingLines: number[] = [];
+          model?.getLinesContent().forEach((line, j) => {
+            autoFoldingElements.forEach((elementName) => {
+              if (line.match(new RegExp(`^${elementName}`))) {
+                toggleFoldingLines.push(j + 2);
+              }
+            });
+          });
+          const toFold = !elementsFolded;
+          toggleFoldingLines.forEach((foldingLineRegion, i) => {
+            if (foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]) {
+              if (
+                foldingModel._regions.isCollapsed(
+                  foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]
+                    .regionIndex,
+                ) !== toFold
+              ) {
+                foldingModel.toggleCollapseState(
+                  foldingModel.getAllRegionsAtLine(foldingLineRegion),
+                );
+              }
             }
           });
-        });
-        let allElementsFolded = true;
-        toggleFoldingLines.forEach((foldingLineRegion, i) => {
-          if (foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]) {
-            if (
-              foldingModel._regions.isCollapsed(
-                foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]
-                  .regionIndex,
-              ) === false
-            ) {
-              allElementsFolded = false;
-            }
-          }
-        });
-
-        setFoldingElements(!allElementsFolded);
-
-        toggleFoldingLines.forEach((foldingLineRegion, i) => {
-          if (foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]) {
-            if (
-              foldingModel._regions.isCollapsed(
-                foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]
-                  .regionIndex,
-              ) !== elementsFolded
-            ) {
-              foldingModel.toggleCollapseState(
-                foldingModel.getAllRegionsAtLine(foldingLineRegion),
-              );
-            }
-          }
-        });
-      },
-    );
+          setFoldingElements(toFold);
+        },
+      );
+    }
   }
 
   // below use effects watch over `forcedCursorPosition`, `wordWrapOtion`, `error`, `warnings` and reset them to the editor as needed
@@ -1164,8 +1151,10 @@ export const GrammarTextEditor = observer(() => {
     }
   }, [editor, error, warnings]);
 
+  // first load with grammar. auto fold element sections
   useEffect(() => {
     if (editor) {
+      const model = editor.getModel();
       const autoFoldingElements = editorStore.pluginManager
         .getApplicationPlugins()
         .flatMap(
@@ -1176,88 +1165,38 @@ export const GrammarTextEditor = observer(() => {
             [],
         );
       const foldingClass = editor.getContribution('editor.contrib.folding');
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (foldingClass as any).getFoldingModel().then(
-        (foldingModel: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          _regions: any;
-          onDidChange: (arg0: () => void) => void;
-          getRegionAtLine: (arg0: unknown) => unknown;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          getAllRegionsAtLine(arg0: unknown): any;
-          toggleCollapseState: (arg0: unknown) => unknown;
-        }) => {
-          foldingModel.onDidChange(() => {
-            const model = editor.getModel();
-            const toggleFoldingLines: number[] = [];
-            model?.getLinesContent().forEach((line, j) => {
-              autoFoldingElements.forEach((elementName) => {
-                if (line.match(new RegExp(`^${elementName}`))) {
-                  toggleFoldingLines.push(j + 2);
+      if (foldingClass && model) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (foldingClass as any).getFoldingModel().then(
+          (
+            foldingModel:
+              | {
+                  onDidChange: (arg0: () => void) => void;
+                  getRegionAtLine: (arg0: unknown) => unknown;
+                  getAllRegionsAtLine(arg0: unknown): unknown;
+                  toggleCollapseState: (arg0: unknown) => unknown;
                 }
+              | undefined,
+          ) => {
+            if (foldingModel) {
+              const elementLinesToBeFolded: number[] = [];
+              model.getLinesContent().forEach((line, idx) => {
+                autoFoldingElements.forEach((elementName) => {
+                  if (line.match(new RegExp(`^${elementName}`))) {
+                    elementLinesToBeFolded.push(idx + 2);
+                  }
+                });
               });
-            });
-            let allElementsFolded = true;
-            toggleFoldingLines.forEach((foldingLineRegion, i) => {
-              if (foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]) {
-                if (
-                  foldingModel._regions.isCollapsed(
-                    foldingModel.getAllRegionsAtLine(foldingLineRegion)[0]
-                      .regionIndex,
-                  ) === false
-                ) {
-                  allElementsFolded = false;
-                }
-              }
-            });
-
-            setFoldingElements(!allElementsFolded);
-          });
-        },
-      );
-    }
-  });
-
-  useEffect(() => {
-    if (editor) {
-      const autoFoldingElements = editorStore.pluginManager
-        .getApplicationPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_LegendStudioApplicationPlugin_Extension
-            ).getExtraGrammarTextEditorAutoFoldingElementCreatorKeywords?.() ??
-            [],
-        );
-      const foldingClass = editor.getContribution('editor.contrib.folding');
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (foldingClass as any)
-        .getFoldingModel()
-        .then(
-          (foldingModel: {
-            onDidChange: (arg0: () => void) => void;
-            getRegionAtLine: (arg0: unknown) => unknown;
-            getAllRegionsAtLine(arg0: unknown): unknown;
-            toggleCollapseState: (arg0: unknown) => unknown;
-          }) => {
-            const model = editor.getModel();
-            const foldingLines: number[] = [];
-            model?.getLinesContent().forEach((line, j) => {
-              autoFoldingElements.forEach((elementName) => {
-                if (line.match(new RegExp(`^${elementName}`))) {
-                  foldingLines.push(j + 2);
-                }
+              elementLinesToBeFolded.forEach((lineToBeFolded) => {
+                const regionToFold =
+                  foldingModel.getAllRegionsAtLine(lineToBeFolded);
+                foldingModel.toggleCollapseState(regionToFold);
               });
-            });
-            foldingLines.forEach((foldingLineRegion, i) => {
-              foldingModel.toggleCollapseState(
-                foldingModel.getAllRegionsAtLine(foldingLineRegion),
-              );
-            });
+              setFoldingElements(true);
+            }
           },
         );
+      }
     }
   }, [editor, editorStore.pluginManager]);
 
