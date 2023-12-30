@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.14.0
+
+### Minor Changes
+
+- [#2862](https://github.com/finos/legend-studio/pull/2862) [`6ecf5906f`](https://github.com/finos/legend-studio/commit/6ecf5906f872161d2582a9ede4482fb929af362d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Move setting of errors/wordWrap and warnings into useEffect in GrammarTextEditor
+
+### Patch Changes
+
+- [#2863](https://github.com/finos/legend-studio/pull/2863) [`725583359`](https://github.com/finos/legend-studio/commit/72558335936a3956b66bbd619710f33b72a50d34) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add basic support for go to element (Ctlr + B). Clean up buttons from icons in text mode.
+
 ## 28.13.15
 
 ## 28.13.14
