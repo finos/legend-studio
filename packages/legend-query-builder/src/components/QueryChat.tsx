@@ -15,15 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  Dialog,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalFooterButton,
-  BlankPanelContent,
-} from '@finos/legend-art';
+import { Dialog } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -47,27 +39,7 @@ export const QueryChat = observer(
         open={queryBuilderState.isQueryChatOpened}
         onClose={() => queryBuilderState.setIsQueryChatOpened(false)}
       >
-        <Modal className="query-builder__chat-mode__modal" darkMode={true}>
-          <ModalHeader title="Chat Mode" />
-          <ModalBody className="query-builder__chat-mode__body">
-            <>
-              {extraQueryChatConfigurations.length === 0 ? (
-                <BlankPanelContent>
-                  Chat Mode is not available
-                </BlankPanelContent>
-              ) : (
-                extraQueryChatConfigurations[0]?.(queryBuilderState)
-              )}
-            </>
-          </ModalBody>
-          <ModalFooter>
-            <ModalFooterButton
-              className="btn--caution"
-              onClick={() => queryBuilderState.setIsQueryChatOpened(false)}
-              text="Discard and Close"
-            />
-          </ModalFooter>
-        </Modal>
+        {extraQueryChatConfigurations[0]?.(queryBuilderState)}
       </Dialog>
     );
   },
