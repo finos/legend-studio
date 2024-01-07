@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.13.7
+
+### Patch Changes
+
+- [#2868](https://github.com/finos/legend-studio/pull/2868) [`be2544dc9`](https://github.com/finos/legend-studio/commit/be2544dc954f7a7abe22624fed678faf8ed152d0) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Removing Modal From Query Chat.
+
 ## 4.13.6
 
 ## 4.13.5
