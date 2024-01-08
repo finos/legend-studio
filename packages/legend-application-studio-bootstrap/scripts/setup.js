@@ -100,6 +100,7 @@ export const setup = (outputDir) => {
             //   },
             // ],
             TEMPORARY__enableLocalConnectionBuilder: false,
+            NonProductionFeatureFlag: true,
           },
         },
       },

@@ -21,27 +21,29 @@ import {
   assertErrorThrown,
   isNonNullable,
   uuid,
-  type GeneratorFn,
   LogEvent,
   guaranteeNonNullable,
   addUniqueEntry,
   uniq,
   assertTrue,
   guaranteeType,
+  returnUndefOnError,
+  type PlainObject,
+  filterByType,
+  deleteEntry,
 } from '@finos/legend-shared';
 import {
   type ConcreteFunctionDefinition,
   type EmbeddedData,
-  type TestResult,
   type AtomicTest,
   type EngineRuntime,
   type ObserverContext,
   type ValueSpecification,
+  FunctionParameterValue,
+  VariableExpression,
   FunctionTest,
-  UniqueTestId,
   FunctionStoreTestData,
   FunctionTestSuite,
-  RunTestsTestableInput,
   RawLambda,
   PackageableRuntime,
   SimpleFunctionExpression,
@@ -53,6 +55,8 @@ import {
   Database,
   RelationalCSVData,
   PackageableElementExplicitReference,
+  observe_ValueSpecification,
+  buildLambdaVariableExpressions,
 } from '@finos/legend-graph';
 import {
   TestablePackageableElementEditorState,
@@ -63,15 +67,20 @@ import { EmbeddedDataEditorState } from '../../data/DataEditorState.js';
 import {
   functionTestable_deleteDataStore,
   functionTestable_setEmbeddedData,
+  function_addParameterValue,
   function_addTestSuite,
+  function_deleteParameterValue,
+  function_setParameterName,
+  function_setParameterValueSpec,
+  function_setParameterValues,
 } from '../../../../../graph-modifier/DomainGraphModifierHelper.js';
 import {
   DEFAULT_TEST_ASSERTION_ID,
   createDefaultEqualToJSONTestAssertion,
-  isTestPassing,
 } from '../../../../utils/TestableUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
 import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
+import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
 
 const addToFunctionMap = (
   val: SimpleFunctionExpression,
@@ -202,12 +211,86 @@ export class FunctionStoreTestDataState {
   }
 }
 
+export class FunctionTestParameterState {
+  readonly uuid = uuid();
+  readonly editorStore: EditorStore;
+  readonly testState: FunctionTestState;
+  parameterValue: FunctionParameterValue;
+  constructor(
+    parameterValue: FunctionParameterValue,
+    editorStore: EditorStore,
+    testState: FunctionTestState,
+  ) {
+    this.editorStore = editorStore;
+    this.testState = testState;
+    this.parameterValue = parameterValue;
+  }
+}
+
+export class FunctionValueSpecificationTestParameterState extends FunctionTestParameterState {
+  valueSpec: ValueSpecification;
+  varExpression: VariableExpression;
+
+  constructor(
+    parameterValue: FunctionParameterValue,
+    editorStore: EditorStore,
+    testState: FunctionTestState,
+    valueSpec: ValueSpecification,
+    varExpression: VariableExpression,
+  ) {
+    super(parameterValue, editorStore, testState);
+    makeObservable(this, {
+      setName: observable,
+      valueSpec: observable,
+      parameterValue: observable,
+      resetValueSpec: action,
+      updateValueSpecification: action,
+      updateParameterValue: action,
+    });
+    this.valueSpec = valueSpec;
+    this.varExpression = varExpression;
+  }
+
+  updateValueSpecification(val: ValueSpecification): void {
+    this.valueSpec = observe_ValueSpecification(
+      val,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    this.updateParameterValue();
+  }
+
+  updateParameterValue(): void {
+    const updatedValueSpec =
+      this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
+        this.valueSpec,
+      );
+    function_setParameterValueSpec(this.parameterValue, updatedValueSpec);
+  }
+
+  setName(val: string): void {
+    function_setParameterName(this.parameterValue, val);
+  }
+
+  resetValueSpec(): void {
+    const mockValue = generateVariableExpressionMockValue(
+      this.varExpression,
+      this.editorStore.graphManagerState.graph,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    if (mockValue) {
+      this.updateValueSpecification(mockValue);
+    }
+  }
+}
+
 export class FunctionTestState extends TestableTestEditorState {
   readonly parentState: FunctionTestSuiteState;
   readonly functionTestableState: FunctionTestableState;
   readonly uuid = uuid();
   override test: FunctionTest;
-  // TODO: param
+  parameterValueStates: FunctionTestParameterState[] = [];
+  newParameterValueName = '';
+  showNewParameterModal = false;
 
   constructor(
     editorStore: EditorStore,
@@ -227,7 +310,13 @@ export class FunctionTestState extends TestableTestEditorState {
       assertionEditorStates: observable,
       testResultState: observable,
       runningTestAction: observable,
+      parameterValueStates: observable,
+      setNewParameterValueName: action,
+      setShowNewParameterModal: action,
+      addExpressionParameterValue: action,
+      openNewParamModal: action,
       addAssertion: action,
+      addParameterValue: action,
       setAssertionToRename: action,
       handleTestResult: action,
       setSelectedTab: action,
@@ -236,6 +325,188 @@ export class FunctionTestState extends TestableTestEditorState {
     this.parentState = parentSuiteState;
     this.functionTestableState = parentSuiteState.functionTestableState;
     this.test = test;
+    this.parameterValueStates = this.buildParameterStates();
+  }
+  get queryVariableExpressions(): VariableExpression[] {
+    const query =
+      this.functionTestableState.functionEditorState.bodyExpressionSequence;
+    return buildLambdaVariableExpressions(
+      query,
+      this.editorStore.graphManagerState,
+    ).filter(filterByType(VariableExpression));
+  }
+
+  get newParamOptions(): { value: string; label: string }[] {
+    const queryVarExpressions = this.queryVariableExpressions;
+    const currentParams = this.test.parameters ?? [];
+    return queryVarExpressions
+      .filter((v) => !currentParams.find((i) => i.name === v.name))
+      .map((e) => ({ value: e.name, label: e.name }));
+  }
+
+  setNewParameterValueName(val: string): void {
+    this.newParameterValueName = val;
+  }
+
+  setShowNewParameterModal(val: boolean): void {
+    this.showNewParameterModal = val;
+  }
+
+  openNewParamModal(): void {
+    this.setShowNewParameterModal(true);
+    const option = this.newParamOptions[0];
+    if (option) {
+      this.newParameterValueName = option.value;
+    }
+  }
+
+  addParameterValue(): void {
+    try {
+      const expressions = this.queryVariableExpressions;
+      const expression = guaranteeNonNullable(
+        expressions.find((v) => v.name === this.newParameterValueName),
+      );
+      this.addExpressionParameterValue(expression);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.setShowNewParameterModal(false);
+    }
+  }
+
+  syncWithQuery(): void {
+    // remove non existing params
+    this.parameterValueStates.forEach((paramState) => {
+      const expression = this.queryVariableExpressions.find(
+        (v) => v.name === paramState.parameterValue.name,
+      );
+      if (!expression) {
+        deleteEntry(this.parameterValueStates, paramState);
+        function_deleteParameterValue(this.test, paramState.parameterValue);
+      }
+    });
+    // add new required params
+    this.queryVariableExpressions.forEach((v) => {
+      const multiplicity = v.multiplicity;
+      const isRequired = multiplicity.lowerBound > 0;
+      const paramState = this.parameterValueStates.find(
+        (p) => p.parameterValue.name === v.name,
+      );
+      if (!paramState && isRequired) {
+        this.addExpressionParameterValue(v);
+      }
+    });
+  }
+
+  addExpressionParameterValue(expression: VariableExpression): void {
+    try {
+      const mockValue = guaranteeNonNullable(
+        generateVariableExpressionMockValue(
+          expression,
+          this.editorStore.graphManagerState.graph,
+          this.editorStore.changeDetectionState.observerContext,
+        ),
+      );
+      const paramValue = new FunctionParameterValue();
+      paramValue.name = expression.name;
+      paramValue.value =
+        this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
+          mockValue,
+        );
+      function_addParameterValue(this.test, paramValue);
+      const paramValueState = new FunctionValueSpecificationTestParameterState(
+        paramValue,
+        this.editorStore,
+        this,
+        observe_ValueSpecification(
+          mockValue,
+          this.editorStore.changeDetectionState.observerContext,
+        ),
+        expression,
+      );
+      this.parameterValueStates.push(paramValueState);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    }
+  }
+
+  generateTestParameterValues(): void {
+    try {
+      const varExpressions = this.queryVariableExpressions;
+      const parameterValueStates = varExpressions
+        .map((varExpression) => {
+          const mockValue = generateVariableExpressionMockValue(
+            varExpression,
+            this.editorStore.graphManagerState.graph,
+            this.editorStore.changeDetectionState.observerContext,
+          );
+          if (mockValue) {
+            const paramValue = new FunctionParameterValue();
+            paramValue.name = varExpression.name;
+            paramValue.value =
+              this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
+                mockValue,
+              );
+            return new FunctionValueSpecificationTestParameterState(
+              paramValue,
+              this.editorStore,
+              this,
+              mockValue,
+              varExpression,
+            );
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      function_setParameterValues(
+        this.test,
+        parameterValueStates.map((s) => s.parameterValue),
+      );
+      this.parameterValueStates = parameterValueStates;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Unable to generate param values: ${error.message}`,
+      );
+    }
+  }
+
+  buildParameterStates(): FunctionTestParameterState[] {
+    const query =
+      this.functionTestableState.functionEditorState.bodyExpressionSequence;
+    const varExpressions = buildLambdaVariableExpressions(
+      query,
+      this.editorStore.graphManagerState,
+    ).filter(filterByType(VariableExpression));
+    const paramValues = this.test.parameters ?? [];
+    return paramValues.map((pValue) => {
+      const spec = returnUndefOnError(() =>
+        this.editorStore.graphManagerState.graphManager.buildValueSpecification(
+          pValue.value as PlainObject,
+          this.editorStore.graphManagerState.graph,
+        ),
+      );
+      const expression = varExpressions.find((e) => e.name === pValue.name);
+      return spec && expression
+        ? new FunctionValueSpecificationTestParameterState(
+            pValue,
+            this.editorStore,
+            this,
+            observe_ValueSpecification(
+              spec,
+              this.editorStore.changeDetectionState.observerContext,
+            ),
+            expression,
+          )
+        : new FunctionTestParameterState(pValue, this.editorStore, this);
+    });
+  }
+
+  removeParamValueState(paramState: FunctionTestParameterState): void {
+    deleteEntry(this.parameterValueStates, paramState);
+    function_deleteParameterValue(this.test, paramState.parameterValue);
   }
 }
 
@@ -395,8 +666,8 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
 export class FunctionTestableState extends TestablePackageableElementEditorState {
   readonly functionEditorState: FunctionEditorState;
   declare selectedTestSuite: FunctionTestSuiteState | undefined;
+  declare runningSuite: FunctionTestSuite | undefined;
 
-  runningSuite: FunctionTestSuite | undefined;
   createSuiteModal = false;
 
   constructor(functionEditorState: FunctionEditorState) {
@@ -407,6 +678,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
       selectedTestSuite: observable,
       testableResults: observable,
       runningSuite: observable,
+      testableComponentToRename: observable,
       createSuiteModal: observable,
       init: action,
       buildTestSuiteState: action,
@@ -428,41 +700,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
     return this.functionEditorState.functionElement;
   }
 
-  get passingSuites(): FunctionTestSuite[] {
-    const results = this.testableResults;
-    if (results?.length) {
-      return this.function.tests.filter((suite) =>
-        results
-          .filter((res) => res.parentSuite?.id === suite.id)
-          .every((e) => isTestPassing(e)),
-      );
-    }
-    return [];
-  }
-
-  get failingSuites(): FunctionTestSuite[] {
-    const results = this.testableResults;
-    if (results?.length) {
-      return this.function.tests.filter((suite) =>
-        results
-          .filter((res) => res.parentSuite?.id === suite.id)
-          .some((e) => !isTestPassing(e)),
-      );
-    }
-    return [];
-  }
-
-  get staticSuites(): FunctionTestSuite[] {
-    const results = this.testableResults;
-    if (results?.length) {
-      return this.function.tests.filter((suite) =>
-        results.every((res) => res.parentSuite?.id !== suite.id),
-      );
-    }
-    return this.function.tests;
-  }
-
-  init(): void {
+  override init(): void {
     if (!this.selectedTestSuite) {
       const suite = this.function.tests[0];
       this.selectedTestSuite = suite
@@ -543,95 +781,6 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
     );
     this.changeSuite(functionSuite);
     this.setCreateSuite(false);
-  }
-
-  *runSuite(suite: FunctionTestSuite): GeneratorFn<void> {
-    try {
-      this.runningSuite = suite;
-      this.clearTestResultsForSuite(suite);
-      this.selectedTestSuite?.testStates.forEach((t) => t.resetResult());
-      this.selectedTestSuite?.testStates.forEach((t) =>
-        t.runningTestAction.inProgress(),
-      );
-
-      const input = new RunTestsTestableInput(this.function);
-      suite.tests.forEach((t) =>
-        input.unitTestIds.push(new UniqueTestId(suite, t)),
-      );
-      const testResults =
-        (yield this.editorStore.graphManagerState.graphManager.runTests(
-          [input],
-          this.editorStore.graphManagerState.graph,
-        )) as TestResult[];
-
-      this.handleNewResults(testResults);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.isRunningTestableSuitesState.fail();
-    } finally {
-      this.selectedTestSuite?.testStates.forEach((t) =>
-        t.runningTestAction.complete(),
-      );
-      this.runningSuite = undefined;
-    }
-  }
-
-  *runAllFailingSuites(): GeneratorFn<void> {
-    try {
-      this.isRunningFailingSuitesState.inProgress();
-      const input = new RunTestsTestableInput(this.testable);
-      this.failingSuites.forEach((s) => {
-        s.tests.forEach((t) => input.unitTestIds.push(new UniqueTestId(s, t)));
-      });
-      const testResults =
-        (yield this.editorStore.graphManagerState.graphManager.runTests(
-          [input],
-          this.editorStore.graphManagerState.graph,
-        )) as TestResult[];
-      this.handleNewResults(testResults);
-      this.isRunningFailingSuitesState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.isRunningFailingSuitesState.fail();
-    } finally {
-      this.selectedTestSuite?.testStates.forEach((t) =>
-        t.runningTestAction.complete(),
-      );
-    }
-  }
-
-  handleNewResults(results: TestResult[]): void {
-    if (this.testableResults?.length) {
-      const newSuitesResults = results
-        .map((e) => e.parentSuite?.id)
-        .filter(isNonNullable);
-      const reducedFilters = this.testableResults.filter(
-        (res) => !newSuitesResults.includes(res.parentSuite?.id ?? ''),
-      );
-      this.setTestableResults([...reducedFilters, ...results]);
-    } else {
-      this.setTestableResults(results);
-    }
-    this.testableResults?.forEach((result) => {
-      const state = this.selectedTestSuite?.testStates.find(
-        (t) =>
-          t.test.id === result.atomicTest.id &&
-          t.parentState.suite.id === result.parentSuite?.id,
-      );
-      state?.handleTestResult(result);
-    });
-  }
-
-  clearTestResultsForSuite(suite: FunctionTestSuite): void {
-    this.testableResults = this.testableResults?.filter(
-      (t) => !(this.resolveSuiteResults(suite) ?? []).includes(t),
-    );
-  }
-
-  resolveSuiteResults(suite: FunctionTestSuite): TestResult[] | undefined {
-    return this.testableResults?.filter((t) => t.parentSuite?.id === suite.id);
   }
 
   buildTestSuiteState(val: FunctionTestSuite): FunctionTestSuiteState {

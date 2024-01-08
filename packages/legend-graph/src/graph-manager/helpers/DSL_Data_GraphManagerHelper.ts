@@ -30,7 +30,9 @@ export const getNullableTestable = (
   graph: PureModel,
   plugins: PureGraphManagerPlugin[],
 ): Testable | undefined =>
-  graph.ownTestables.find(
+  // TODO: REMOVE functions once function test runner has been completed in backend
+  // ...this.ownFunctions,
+  [...graph.ownTestables, ...graph.ownFunctions].find(
     (e) => e instanceof PackageableElement && e.path === id,
   ) ??
   plugins

@@ -29,29 +29,44 @@ import {
   type AtomicTest,
   type Class,
   type EmbeddedDataVisitor,
+  type INTERNAL__UnknownConnection,
+  type DataElementReference,
+  type INTERNAL__UnknownEmbeddedData,
+  type TestResult,
+  type ValueSpecification,
+  type Binding,
+  type RawLambda,
   ExternalFormatData,
   RelationalCSVData,
   ConnectionTestData,
   EqualToJson,
   DEFAULT_TEST_ASSERTION_PREFIX,
   RelationalCSVDataTable,
-  type INTERNAL__UnknownConnection,
   getAllIdentifiedConnectionsFromRuntime,
   ModelStoreData,
   ModelEmbeddedData,
   PackageableElementExplicitReference,
-  type DataElementReference,
-  type INTERNAL__UnknownEmbeddedData,
-  type TestResult,
   TestExecuted,
   TestExecutionStatus,
+  isStubbed_RawLambda,
+  SimpleFunctionExpression,
+  InstanceValue,
+  CollectionInstanceValue,
+  matchFunctionName,
+  PackageableElementImplicitReference,
+  VariableExpression,
+  PrimitiveInstanceValue,
+  PrimitiveType,
+  LambdaFunctionInstanceValue,
 } from '@finos/legend-graph';
 import {
   assertTrue,
   ContentType,
   generateEnumerableNameFromToken,
+  getNullableFirstEntry,
   guaranteeNonEmptyString,
   isNonNullable,
+  LogEvent,
   returnUndefOnError,
   UnsupportedOperationError,
   uuid,
@@ -60,6 +75,8 @@ import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
 import type { EditorStore } from '../EditorStore.js';
 import { createMockDataForMappingElementSource } from './MockDataUtils.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '@finos/legend-query-builder';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 
 export const DEFAULT_TEST_ASSERTION_ID = 'assertion_1';
 export const DEFAULT_TEST_ID = 'test_1';
@@ -359,3 +376,126 @@ export const TEMPORARY__createRelationalDataFromCSV = (
 export const isTestPassing = (testResult: TestResult): boolean =>
   testResult instanceof TestExecuted &&
   testResult.testExecutionStatus === TestExecutionStatus.PASS;
+
+// external format param type
+export interface TestParamContentType {
+  contentType: string;
+  param: string;
+}
+export const getContentTypeWithParamRecursively = (
+  expression: ValueSpecification | undefined,
+): TestParamContentType[] => {
+  let currentExpression = expression;
+  const res: TestParamContentType[] = [];
+  // use if statement to safely scan service query without breaking the app
+  while (currentExpression instanceof SimpleFunctionExpression) {
+    if (
+      matchFunctionName(
+        currentExpression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.INTERNALIZE,
+      ) ||
+      matchFunctionName(
+        currentExpression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_RUNTIME_WITH_MODEL_QUERY_CONNECTION,
+      )
+    ) {
+      if (currentExpression.parametersValues[1] instanceof InstanceValue) {
+        if (
+          currentExpression.parametersValues[1].values[0] instanceof
+            PackageableElementImplicitReference &&
+          currentExpression.parametersValues[2] instanceof VariableExpression
+        ) {
+          res.push({
+            contentType: (
+              currentExpression.parametersValues[1].values[0].value as Binding
+            ).contentType,
+            param: currentExpression.parametersValues[2].name,
+          });
+        } else if (
+          matchFunctionName(
+            currentExpression.functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_RUNTIME_WITH_MODEL_QUERY_CONNECTION,
+          ) &&
+          currentExpression.parametersValues[1] instanceof
+            PrimitiveInstanceValue &&
+          currentExpression.parametersValues[1].genericType.value.rawType ===
+            PrimitiveType.STRING &&
+          currentExpression.parametersValues[2] instanceof VariableExpression
+        ) {
+          res.push({
+            contentType: currentExpression.parametersValues[1]
+              .values[0] as string,
+            param: currentExpression.parametersValues[2].name,
+          });
+        }
+      }
+      currentExpression = currentExpression.parametersValues[1];
+    } else if (
+      matchFunctionName(
+        currentExpression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.FROM,
+      )
+    ) {
+      currentExpression = currentExpression.parametersValues[2];
+    } else if (
+      matchFunctionName(
+        currentExpression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MERGERUNTIMES,
+      )
+    ) {
+      const collection = currentExpression.parametersValues[0];
+      if (collection instanceof CollectionInstanceValue) {
+        collection.values
+          .map((v) => getContentTypeWithParamRecursively(v))
+          .flat()
+          .map((p) => res.push(p));
+      }
+      currentExpression = collection;
+    } else {
+      currentExpression = getNullableFirstEntry(
+        currentExpression.parametersValues,
+      );
+    }
+  }
+  return res;
+};
+
+export const getContentTypeWithParamFromQuery = (
+  query: RawLambda | undefined,
+  editorStore: EditorStore,
+): TestParamContentType[] => {
+  if (query && !isStubbed_RawLambda(query)) {
+    // safely pass unsupported funtions when building ValueSpecification from Rawlambda
+    try {
+      const valueSpec =
+        editorStore.graphManagerState.graphManager.buildValueSpecification(
+          editorStore.graphManagerState.graphManager.serializeRawValueSpecification(
+            query,
+          ),
+          editorStore.graphManagerState.graph,
+        );
+      if (valueSpec instanceof LambdaFunctionInstanceValue) {
+        return getContentTypeWithParamRecursively(
+          valueSpec.values[0]?.expressionSequence.find(
+            (exp) =>
+              exp instanceof SimpleFunctionExpression &&
+              (matchFunctionName(
+                exp.functionName,
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
+              ) ||
+                matchFunctionName(
+                  exp.functionName,
+                  QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXTERNALIZE,
+                )),
+          ),
+        );
+      }
+    } catch (error) {
+      editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_SETUP_FAILURE),
+        error,
+      );
+    }
+  }
+  return [];
+};
