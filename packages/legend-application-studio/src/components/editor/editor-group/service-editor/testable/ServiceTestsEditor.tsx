@@ -35,11 +35,6 @@ import {
   RefreshIcon,
   TimesIcon,
   FilledWindowMaximizeIcon,
-  Modal,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalTitle,
   PlayIcon,
 } from '@finos/legend-art';
 import {
@@ -47,13 +42,13 @@ import {
   PrimitiveInstanceValue,
   PrimitiveType,
   PureMultiExecution,
+  resolveServiceQueryRawLambda,
 } from '@finos/legend-graph';
 import {
   BasicValueSpecificationEditor,
   instanceValue_setValue,
 } from '@finos/legend-query-builder';
 import {
-  ContentType,
   filterByType,
   guaranteeNonNullable,
   prettyCONSTName,
@@ -79,15 +74,16 @@ import {
 } from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { getTestableResultIcon } from '../../../side-bar/testable/GlobalTestRunner.js';
 import {
+  ExternalFormatParameterEditorModal,
   RenameModal,
   TestAssertionEditor,
   TestAssertionItem,
 } from '../../testable/TestableSharedComponents.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
+import {
+  getContentTypeWithParamFromQuery,
+  type TestParamContentType,
+} from '../../../../../stores/editor/utils/TestableUtils.js';
 
 export const NewParameterModal = observer(
   (props: { setupState: ServiceTestSetupState; isReadOnly: boolean }) => {
@@ -140,86 +136,12 @@ export const NewParameterModal = observer(
   },
 );
 
-export const ExternalFormatParameterEditorModal = observer(
-  (props: {
-    paramState: ServiceValueSpecificationTestParameterState;
-    isReadOnly: boolean;
-    onClose: () => void;
-    updateParamValue: (val: string) => void;
-    contentTypeParamPair: {
-      contentType: string;
-      param: string;
-    };
-  }) => {
-    const {
-      paramState,
-      isReadOnly,
-      onClose,
-      updateParamValue,
-      contentTypeParamPair,
-    } = props;
-    const paramValue =
-      paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
-        ? atob(
-            (paramState.valueSpec as PrimitiveInstanceValue)
-              .values[0] as string,
-          )
-        : ((paramState.valueSpec as PrimitiveInstanceValue)
-            .values[0] as string);
-    return (
-      <Dialog
-        open={true}
-        onClose={onClose}
-        classes={{ container: 'search-modal__container' }}
-        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-      >
-        <Modal
-          darkMode={true}
-          className={clsx('editor-modal lambda-editor__popup__modal')}
-        >
-          <ModalHeader>
-            <ModalTitle title="Edit Parameter Value" />
-          </ModalHeader>
-          <ModalBody>
-            <div className="service-test-editor__setup__parameter__code-editor__container">
-              <div className="service-test-editor__setup__parameter__code-editor__container__content">
-                <CodeEditor
-                  key={paramState.uuid}
-                  inputValue={paramValue}
-                  updateInput={updateParamValue}
-                  isReadOnly={isReadOnly}
-                  language={
-                    contentTypeParamPair.contentType ===
-                    ContentType.APPLICATION_JSON.toString()
-                      ? CODE_EDITOR_LANGUAGE.JSON
-                      : CODE_EDITOR_LANGUAGE.TEXT
-                  }
-                />
-              </div>
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <button className="btn btn--dark" onClick={onClose}>
-              Close
-            </button>
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
 const ServiceTestParameterEditor = observer(
   (props: {
     isReadOnly: boolean;
     paramState: ServiceValueSpecificationTestParameterState;
     serviceTestState: ServiceTestState;
-    contentTypeParamPair:
-      | {
-          contentType: string;
-          param: string;
-        }
-      | undefined;
+    contentTypeParamPair: TestParamContentType | undefined;
   }) => {
     const { serviceTestState, paramState, isReadOnly, contentTypeParamPair } =
       props;
@@ -290,7 +212,8 @@ const ServiceTestParameterEditor = observer(
               />
               {showPopUp && (
                 <ExternalFormatParameterEditorModal
-                  paramState={paramState}
+                  valueSpec={paramState.valueSpec}
+                  varExpression={paramState.varExpression}
                   isReadOnly={isReadOnly}
                   onClose={closePopUp}
                   updateParamValue={updateParamValue}
@@ -525,12 +448,15 @@ const ServiceTestSetupEditor = observer(
                         isReadOnly={isReadOnly}
                         paramState={paramState}
                         serviceTestState={serviceTestState}
-                        contentTypeParamPair={setupState
-                          .getContentTypeWithParamFromQuery()
-                          .find(
-                            (pair) =>
-                              pair.param === paramState.parameterValue.name,
-                          )}
+                        contentTypeParamPair={getContentTypeWithParamFromQuery(
+                          resolveServiceQueryRawLambda(
+                            serviceTestState.service,
+                          ),
+                          serviceTestState.editorStore,
+                        ).find(
+                          (pair) =>
+                            pair.param === paramState.parameterValue.name,
+                        )}
                       />
                     ))}
                 </div>

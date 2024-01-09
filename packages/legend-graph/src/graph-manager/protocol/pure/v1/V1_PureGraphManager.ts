@@ -2211,6 +2211,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             graph,
             this.pluginManager.getPureGraphManagerPlugins(),
           ),
+          `Unable to find testable from id`,
         );
         if (!testable) {
           return undefined;

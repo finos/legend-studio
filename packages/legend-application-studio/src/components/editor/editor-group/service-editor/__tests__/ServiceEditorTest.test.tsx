@@ -41,7 +41,11 @@ import { ServiceEditorState } from '../../../../../stores/editor/editor-state/el
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { Core_GraphManagerPreset } from '@finos/legend-graph';
+import {
+  Core_GraphManagerPreset,
+  resolveServiceQueryRawLambda,
+} from '@finos/legend-graph';
+import { getContentTypeWithParamFromQuery } from '../../../../../stores/editor/utils/TestableUtils.js';
 
 test(integrationTest('Service Multi Execution Editor'), async () => {
   const MOCK__editorStore = TEST__provideMockedEditorStore();
@@ -148,9 +152,15 @@ test(
       ),
     );
 
-    const contentTypeParmPairs = MOCK__editorStore.tabManagerState
-      .getCurrentEditorState(ServiceEditorState)
-      .testableState.selectedSuiteState?.testStates[0]?.setupState.getContentTypeWithParamFromQuery();
+    const contentTypeParmPairs = getContentTypeWithParamFromQuery(
+      resolveServiceQueryRawLambda(
+        MOCK__editorStore.tabManagerState.getCurrentEditorState(
+          ServiceEditorState,
+        ).service,
+      ),
+      MOCK__editorStore,
+    );
+
     expect(contentTypeParmPairs).toHaveLength(2);
     const firstPair = guaranteeNonNullable(
       guaranteeNonNullable(contentTypeParmPairs)[0],
@@ -223,9 +233,15 @@ test(
       ),
     );
     fireEvent.click(getByText(serviceTestEditor, 'Setup'));
-    const contentTypeParmPairsForByte = MOCK__editorStore.tabManagerState
-      .getCurrentEditorState(ServiceEditorState)
-      .testableState.selectedSuiteState?.testStates[0]?.setupState.getContentTypeWithParamFromQuery();
+    const contentTypeParmPairsForByte = getContentTypeWithParamFromQuery(
+      resolveServiceQueryRawLambda(
+        MOCK__editorStore.tabManagerState.getCurrentEditorState(
+          ServiceEditorState,
+        ).service,
+      ),
+      MOCK__editorStore,
+    );
+
     expect(contentTypeParmPairsForByte).toHaveLength(1);
     expect(
       guaranteeNonNullable(guaranteeNonNullable(contentTypeParmPairsForByte)[0])
@@ -284,9 +300,15 @@ test(
       ),
     );
     fireEvent.click(getByText(serviceTestEditor, 'Setup'));
-    const contentTypeParmPairsForByte = MOCK__editorStore.tabManagerState
-      .getCurrentEditorState(ServiceEditorState)
-      .testableState.selectedSuiteState?.testStates[0]?.setupState.getContentTypeWithParamFromQuery();
+    const contentTypeParmPairsForByte = getContentTypeWithParamFromQuery(
+      resolveServiceQueryRawLambda(
+        MOCK__editorStore.tabManagerState.getCurrentEditorState(
+          ServiceEditorState,
+        ).service,
+      ),
+      MOCK__editorStore,
+    );
+
     expect(contentTypeParmPairsForByte).toHaveLength(1);
     expect(
       guaranteeNonNullable(guaranteeNonNullable(contentTypeParmPairsForByte)[0])

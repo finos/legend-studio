@@ -36,6 +36,7 @@ import {
   addUniqueEntry,
   deleteEntry,
   isNonNullable,
+  filterByType,
 } from '@finos/legend-shared';
 import { action, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
@@ -45,7 +46,10 @@ import {
   testable_deleteTest,
   testable_setId,
 } from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
-import { createEmptyEqualToJsonAssertion } from '../../../utils/TestableUtils.js';
+import {
+  createEmptyEqualToJsonAssertion,
+  isTestPassing,
+} from '../../../utils/TestableUtils.js';
 import { TESTABLE_RESULT } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import {
   TestAssertionEditorState,
@@ -144,22 +148,6 @@ export abstract class TestableTestEditorState {
     }
   }
 
-  *runTest(): GeneratorFn<void> {
-    try {
-      this.resetResult();
-      this.runningTestAction.inProgress();
-      const result = (yield flowResult(this.fetchTestResult())) as TestResult;
-      this.handleTestResult(result);
-      this.runningTestAction.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(
-        `Error running test: ${error.message}`,
-      );
-      this.runningTestAction.fail();
-    }
-  }
-
   // Fetches test results. Caller of test should catch the error
   async fetchTestResult(): Promise<TestResult> {
     const input = new RunTestsTestableInput(this.testable);
@@ -195,6 +183,18 @@ export abstract class TestableTestEditorState {
     });
   }
 
+  correspondsToTestResult(val: TestResult): boolean {
+    const atomicTest = this.test;
+    if (atomicTest.id === val.atomicTest.id) {
+      const parent = atomicTest.__parent;
+      if (parent instanceof TestSuite) {
+        return parent.id === val.parentSuite?.id;
+      }
+      return val.parentSuite === undefined && val.testable === this.testable;
+    }
+    return false;
+  }
+
   get assertionCount(): number {
     return this.assertionEditorStates.length;
   }
@@ -223,6 +223,21 @@ export abstract class TestableTestEditorState {
     return this.assertionEditorStates.filter(
       (state) => state.assertionResultState.result !== TESTABLE_RESULT.PASSED,
     ).length;
+  }
+  *runTest(): GeneratorFn<void> {
+    try {
+      this.resetResult();
+      this.runningTestAction.inProgress();
+      const result = (yield flowResult(this.fetchTestResult())) as TestResult;
+      this.handleTestResult(result);
+      this.runningTestAction.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Error running test: ${error.message}`,
+      );
+      this.runningTestAction.fail();
+    }
   }
 }
 
@@ -339,6 +354,7 @@ export abstract class TestablePackageableElementEditorState {
   readonly testable: Testable;
   testableResults: TestResult[] | undefined;
   selectedTestSuite: TestableTestSuiteEditorState | undefined;
+  runningSuite: TestSuite | undefined;
 
   testableComponentToRename: Test | undefined;
 
@@ -353,10 +369,56 @@ export abstract class TestablePackageableElementEditorState {
 
   abstract init(): void;
 
-  abstract handleNewResults(results: TestResult[]): void;
-
   get suiteCount(): number {
     return this.testable.tests.length;
+  }
+
+  get suites(): TestSuite[] {
+    return this.testable.tests.filter(filterByType(TestSuite));
+  }
+
+  get passingSuites(): TestSuite[] {
+    const results = this.testableResults;
+    if (results?.length) {
+      return this.suites.filter((suite) =>
+        results
+          .filter((res) => res.parentSuite?.id === suite.id)
+          .every((e) => isTestPassing(e)),
+      );
+    }
+    return [];
+  }
+
+  get failingSuites(): TestSuite[] {
+    const results = this.testableResults;
+    if (results?.length) {
+      return this.suites.filter((suite) =>
+        results
+          .filter((res) => res.parentSuite?.id === suite.id)
+          .some((e) => !isTestPassing(e)),
+      );
+    }
+    return [];
+  }
+
+  resolveSuiteResults(suite: TestSuite): TestResult[] | undefined {
+    return this.testableResults?.filter((t) => t.parentSuite?.id === suite.id);
+  }
+
+  clearTestResultsForSuite(suite: TestSuite): void {
+    this.testableResults = this.testableResults?.filter(
+      (t) => !(this.resolveSuiteResults(suite) ?? []).includes(t),
+    );
+  }
+
+  get staticSuites(): TestSuite[] {
+    const results = this.testableResults;
+    if (results?.length) {
+      return this.suites.filter((suite) =>
+        results.every((res) => res.parentSuite?.id !== suite.id),
+      );
+    }
+    return this.suites;
   }
 
   setTestableResults(val: TestResult[] | undefined): void {
@@ -377,9 +439,36 @@ export abstract class TestablePackageableElementEditorState {
   deleteTestSuite(testSuite: TestSuite): void {
     testable_deleteTest(this.testable, testSuite);
     if (this.selectedTestSuite?.suite === testSuite) {
+      this.selectedTestSuite = undefined;
       this.init();
     }
   }
+
+  *runAllFailingSuites(): GeneratorFn<void> {
+    try {
+      this.isRunningFailingSuitesState.inProgress();
+      const input = new RunTestsTestableInput(this.testable);
+      this.failingSuites.forEach((s) => {
+        s.tests.forEach((t) => input.unitTestIds.push(new UniqueTestId(s, t)));
+      });
+      const testResults =
+        (yield this.editorStore.graphManagerState.graphManager.runTests(
+          [input],
+          this.editorStore.graphManagerState.graph,
+        )) as TestResult[];
+      this.handleNewResults(testResults);
+      this.isRunningFailingSuitesState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.isRunningFailingSuitesState.fail();
+    } finally {
+      this.selectedTestSuite?.testStates.forEach((t) =>
+        t.runningTestAction.complete(),
+      );
+    }
+  }
+
   *runTestable(): GeneratorFn<void> {
     try {
       this.setTestableResults(undefined);
@@ -405,5 +494,56 @@ export abstract class TestablePackageableElementEditorState {
         t.runningTestAction.complete(),
       );
     }
+  }
+
+  *runSuite(suite: TestSuite): GeneratorFn<void> {
+    try {
+      this.runningSuite = suite;
+      this.clearTestResultsForSuite(suite);
+      this.selectedTestSuite?.testStates.forEach((t) => t.resetResult());
+      this.selectedTestSuite?.testStates.forEach((t) =>
+        t.runningTestAction.inProgress(),
+      );
+      const input = new RunTestsTestableInput(this.testable);
+      suite.tests.forEach((t) =>
+        input.unitTestIds.push(new UniqueTestId(suite, t)),
+      );
+      const testResults =
+        (yield this.editorStore.graphManagerState.graphManager.runTests(
+          [input],
+          this.editorStore.graphManagerState.graph,
+        )) as TestResult[];
+
+      this.handleNewResults(testResults);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.isRunningTestableSuitesState.fail();
+    } finally {
+      this.selectedTestSuite?.testStates.forEach((t) =>
+        t.runningTestAction.complete(),
+      );
+      this.runningSuite = undefined;
+    }
+  }
+
+  handleNewResults(results: TestResult[]): void {
+    if (this.testableResults?.length) {
+      const newSuitesResults = results
+        .map((e) => e.parentSuite?.id)
+        .filter(isNonNullable);
+      const reducedFilters = this.testableResults.filter(
+        (res) => !newSuitesResults.includes(res.parentSuite?.id ?? ''),
+      );
+      this.setTestableResults([...reducedFilters, ...results]);
+    } else {
+      this.setTestableResults(results);
+    }
+    this.testableResults?.forEach((result) => {
+      const state = this.selectedTestSuite?.testStates.find((testState) =>
+        testState.correspondsToTestResult(result),
+      );
+      state?.handleTestResult(result);
+    });
   }
 }

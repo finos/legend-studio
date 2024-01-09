@@ -266,3 +266,139 @@
   color: white;
   font-size: 1rem;
 }
+
+.function-testable-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &__header {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
+    cursor: default;
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-300);
+    height: 2.8rem;
+    min-height: 2.8rem;
+    position: relative;
+    z-index: 1;
+    border: 0.1rem solid var(--color-dark-grey-200);
+    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+  }
+
+  &__header__title {
+    @include flexVCenter;
+
+    padding-left: 0.5rem;
+    user-select: none;
+  }
+
+  &__header__title__label {
+    height: 1.8rem;
+    line-height: 1.8rem;
+    border-radius: 0.1rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-200);
+    background: var(--color-dark-grey-250);
+    font-size: 1.1rem;
+    cursor: default;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+
+    &--data {
+      background: var(--color-blue-200) !important;
+    }
+
+    &--tests {
+      background: var(--color-purple-200) !important;
+    }
+
+    &--tests-suites {
+      background: var(--color-pink-500) !important;
+    }
+
+    &--assertions {
+      background: var(--color-yellow-500) !important;
+    }
+  }
+
+  &__header__title__content {
+    font-weight: bold;
+
+    @include ellipsisTextOverflow;
+  }
+
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
+      font-weight: bold;
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action {
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-300) !important;
+    }
+
+    &__content {
+      height: calc(100% - 2.8rem);
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
+    }
+  }
+}
+
+.function-test-suite-editor {
+  height: 100%;
+  width: 100%;
+
+  &__content {
+    height: 100%;
+    background: var(--color-dark-grey-50);
+  }
+
+  &__doc {
+    &__textarea {
+      max-width: 100%;
+      height: 100% !important;
+    }
+  }
+}
+
+.function-test-editor {
+  height: 100%;
+  width: 100%;
+
+  &__doc {
+    height: 15rem;
+    margin-top: 1rem;
+  }
+
+  &__content {
+    height: 100%;
+    background: var(--color-dark-grey-50);
+  }
+}

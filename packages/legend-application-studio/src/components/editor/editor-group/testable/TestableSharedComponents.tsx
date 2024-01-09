@@ -27,6 +27,7 @@ import {
   ModalFooter,
   ModalFooterButton,
   ModalHeader,
+  ModalTitle,
   PanelContent,
   PanelFormTextField,
   PanelHeader,
@@ -35,8 +36,16 @@ import {
   RefreshIcon,
   WrenchIcon,
 } from '@finos/legend-art';
-import { type DataElement, TestError } from '@finos/legend-graph';
 import {
+  type DataElement,
+  type ValueSpecification,
+  type VariableExpression,
+  type PrimitiveInstanceValue,
+  TestError,
+  PrimitiveType,
+} from '@finos/legend-graph';
+import {
+  ContentType,
   prettyCONSTName,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
@@ -67,6 +76,7 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
 } from '@finos/legend-lego/graph-editor';
+import type { TestParamContentType } from '../../../../stores/editor/utils/TestableUtils.js';
 
 export const SharedDataElementModal = observer(
   (props: {
@@ -594,6 +604,69 @@ export const TestAssertionEditor = observer(
           )}
         </div>
       </div>
+    );
+  },
+);
+
+export const ExternalFormatParameterEditorModal = observer(
+  (props: {
+    valueSpec: ValueSpecification;
+    varExpression: VariableExpression;
+    isReadOnly: boolean;
+    onClose: () => void;
+    updateParamValue: (val: string) => void;
+    contentTypeParamPair: TestParamContentType;
+  }) => {
+    const {
+      valueSpec,
+      varExpression,
+      isReadOnly,
+      onClose,
+      updateParamValue,
+      contentTypeParamPair,
+    } = props;
+    const paramValue =
+      varExpression.genericType?.value.rawType === PrimitiveType.BYTE
+        ? atob((valueSpec as PrimitiveInstanceValue).values[0] as string)
+        : ((valueSpec as PrimitiveInstanceValue).values[0] as string);
+    return (
+      <Dialog
+        open={true}
+        onClose={onClose}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal
+          darkMode={true}
+          className={clsx('editor-modal lambda-editor__popup__modal')}
+        >
+          <ModalHeader>
+            <ModalTitle title="Edit Parameter Value" />
+          </ModalHeader>
+          <ModalBody>
+            <div className="service-test-editor__setup__parameter__code-editor__container">
+              <div className="service-test-editor__setup__parameter__code-editor__container__content">
+                <CodeEditor
+                  inputValue={paramValue}
+                  updateInput={updateParamValue}
+                  isReadOnly={isReadOnly}
+                  language={
+                    contentTypeParamPair.contentType ===
+                    ContentType.APPLICATION_JSON.toString()
+                      ? CODE_EDITOR_LANGUAGE.JSON
+                      : CODE_EDITOR_LANGUAGE.TEXT
+                  }
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <button className="btn btn--dark" onClick={onClose}>
+              Close
+            </button>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
     );
   },
 );

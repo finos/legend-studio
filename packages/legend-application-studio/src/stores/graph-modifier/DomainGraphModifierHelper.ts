@@ -50,6 +50,8 @@ import {
   type INTERNAL__UnknownFunctionActivator,
   type FunctionStoreTestData,
   type ObserverContext,
+  type FunctionParameterValue,
+  type FunctionTest,
   type FunctionTestSuite,
   type AggregationKind,
   type EmbeddedData,
@@ -73,6 +75,7 @@ import {
   getOtherAssociatedProperty,
   observe_EmbeddedData,
   observe_FunctionTestSuite,
+  observe_FunctionParameterValue,
 } from '@finos/legend-graph';
 
 // --------------------------------------------- Packageable Element -------------------------------------
@@ -412,6 +415,36 @@ export const function_addTestSuite = action(
     context: ObserverContext,
   ): void => {
     addUniqueEntry(_func.tests, observe_FunctionTestSuite(val, context));
+  },
+);
+
+export const function_setParameterValueSpec = action(
+  (parameterValue: FunctionParameterValue, val: object) => {
+    parameterValue.value = val;
+  },
+);
+
+export const function_setParameterValues = action(
+  (test: FunctionTest, values: FunctionParameterValue[]) => {
+    test.parameters = values.map(observe_FunctionParameterValue);
+  },
+);
+
+export const function_deleteParameterValue = action(
+  (test: FunctionTest, value: FunctionParameterValue) => {
+    deleteEntry(test.parameters ?? [], value);
+  },
+);
+
+export const function_addParameterValue = action(
+  (test: FunctionTest, value: FunctionParameterValue) => {
+    test.parameters?.push(observe_FunctionParameterValue(value));
+  },
+);
+
+export const function_setParameterName = action(
+  (parameterValue: FunctionParameterValue, val: string) => {
+    parameterValue.name = val;
   },
 );
 

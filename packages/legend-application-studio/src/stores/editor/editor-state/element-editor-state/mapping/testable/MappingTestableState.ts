@@ -68,7 +68,6 @@ import {
 import {
   EmbeddedDataCreatorFromEmbeddedData,
   createBareExternalFormat,
-  isTestPassing,
 } from '../../../../utils/TestableUtils.js';
 import {
   TESTABLE_TEST_TAB,
@@ -542,7 +541,7 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
   createSuiteState: CreateSuiteState | undefined;
 
   declare selectedTestSuite: MappingTestSuiteState | undefined;
-  runningSuite: MappingTestSuite | undefined;
+  declare runningSuite: MappingTestSuite | undefined;
 
   constructor(mappingEditorState: MappingEditorState) {
     super(mappingEditorState, mappingEditorState.mapping);
@@ -573,50 +572,6 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
 
   get mapping(): Mapping {
     return this.mappingEditorState.mapping;
-  }
-
-  get passingSuites(): MappingTestSuite[] {
-    const results = this.testableResults;
-    if (results?.length) {
-      return this.mapping.tests.filter((suite) =>
-        results
-          .filter((res) => res.parentSuite?.id === suite.id)
-          .every((e) => isTestPassing(e)),
-      );
-    }
-    return [];
-  }
-
-  get failingSuites(): MappingTestSuite[] {
-    const results = this.testableResults;
-    if (results?.length) {
-      return this.mapping.tests.filter((suite) =>
-        results
-          .filter((res) => res.parentSuite?.id === suite.id)
-          .some((e) => !isTestPassing(e)),
-      );
-    }
-    return [];
-  }
-
-  get staticSuites(): MappingTestSuite[] {
-    const results = this.testableResults;
-    if (results?.length) {
-      return this.mapping.tests.filter((suite) =>
-        results.every((res) => res.parentSuite?.id !== suite.id),
-      );
-    }
-    return this.mapping.tests;
-  }
-
-  resolveSuiteResults(suite: MappingTestSuite): TestResult[] | undefined {
-    return this.testableResults?.filter((t) => t.parentSuite?.id === suite.id);
-  }
-
-  clearTestResultsForSuite(suite: MappingTestSuite): void {
-    this.testableResults = this.testableResults?.filter(
-      (t) => !(this.resolveSuiteResults(suite) ?? []).includes(t),
-    );
   }
 
   override init(): void {
@@ -668,7 +623,7 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
     }
   }
 
-  *runSuite(suite: MappingTestSuite): GeneratorFn<void> {
+  override *runSuite(suite: MappingTestSuite): GeneratorFn<void> {
     try {
       this.runningSuite = suite;
       this.clearTestResultsForSuite(suite);
@@ -717,52 +672,5 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
       );
       this.runningSuite = undefined;
     }
-  }
-
-  *runAllFailingSuites(): GeneratorFn<void> {
-    try {
-      this.isRunningFailingSuitesState.inProgress();
-      const input = new RunTestsTestableInput(this.mapping);
-      this.failingSuites.forEach((s) => {
-        s.tests.forEach((t) => input.unitTestIds.push(new UniqueTestId(s, t)));
-      });
-      const testResults =
-        (yield this.editorStore.graphManagerState.graphManager.runTests(
-          [input],
-          this.editorStore.graphManagerState.graph,
-        )) as TestResult[];
-      this.handleNewResults(testResults);
-      this.isRunningFailingSuitesState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.isRunningFailingSuitesState.fail();
-    } finally {
-      this.selectedTestSuite?.testStates.forEach((t) =>
-        t.runningTestAction.complete(),
-      );
-    }
-  }
-
-  handleNewResults(results: TestResult[]): void {
-    if (this.testableResults?.length) {
-      const newSuitesResults = results
-        .map((e) => e.parentSuite?.id)
-        .filter(isNonNullable);
-      const reducedFilters = this.testableResults.filter(
-        (res) => !newSuitesResults.includes(res.parentSuite?.id ?? ''),
-      );
-      this.setTestableResults([...reducedFilters, ...results]);
-    } else {
-      this.setTestableResults(results);
-    }
-    this.testableResults?.forEach((result) => {
-      const state = this.selectedTestSuite?.testStates.find(
-        (t) =>
-          t.test.id === result.atomicTest.id &&
-          t.parentState.suite.id === result.parentSuite?.id,
-      );
-      state?.handleTestResult(result);
-    });
   }
 }

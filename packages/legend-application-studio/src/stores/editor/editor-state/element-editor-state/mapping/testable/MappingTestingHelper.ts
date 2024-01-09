@@ -184,7 +184,7 @@ export const createBareMappingTest = (
   id: string,
   storeTestData: StoreTestData | undefined,
   observerContext: ObserverContext,
-  suite?: MappingTestSuite | undefined,
+  suite: MappingTestSuite,
 ): MappingTest => {
   const mappingTest = new MappingTest();
   mappingTest.id = id;
@@ -192,10 +192,10 @@ export const createBareMappingTest = (
   mappingTest.assertions = [
     createDefaultEqualToJSONTestAssertion(DEFAULT_TEST_ASSERTION_ID),
   ];
-  if (suite) {
-    mappingTest.__parent = suite;
-    testSuite_addTest(suite, mappingTest, observerContext);
-  }
+
+  mappingTest.__parent = suite;
+  testSuite_addTest(suite, mappingTest, observerContext);
+
   const assertion = createDefaultEqualToJSONTestAssertion(`expectedAssertion`);
   mappingTest.assertions = [assertion];
   assertion.parentTest = mappingTest;

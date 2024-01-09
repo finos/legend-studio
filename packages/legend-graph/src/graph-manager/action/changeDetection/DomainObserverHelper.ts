@@ -68,7 +68,10 @@ import {
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 import { observe_SnowflakeAppDeploymentConfiguration } from './DSL_FunctionActivatorObserverHelper.js';
-import type { FunctionTest } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
+import type {
+  FunctionParameterValue,
+  FunctionTest,
+} from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
 import type { FunctionTestSuite } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionTestSuite.js';
 import {
   observe_AtomicTest,
@@ -460,6 +463,16 @@ export const observe_Association = skipObserved(
 );
 
 // ------------------------------------- Function -------------------------------------
+export const observe_FunctionParameterValue = skipObserved(
+  (metamodel: FunctionParameterValue): FunctionParameterValue => {
+    makeObservable(metamodel, {
+      name: observable,
+      value: observable.ref,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
 
 export const observe_FunctionTest = skipObserved(
   (metamodel: FunctionTest): FunctionTest => {
@@ -469,6 +482,7 @@ export const observe_FunctionTest = skipObserved(
       assertions: observable,
       hashCode: computed,
     });
+    metamodel.parameters?.forEach(observe_FunctionParameterValue);
     metamodel.assertions.forEach(observe_TestAssertion);
     return metamodel;
   },
@@ -516,6 +530,7 @@ export const observe_ConcreteFunctionDefinition = skipObservedWithContext(
       expressionSequence: observable.ref, // only observe the reference, the object itself is not observed
       stereotypes: observable,
       taggedValues: observable,
+      tests: observable,
       _elementHashCode: override,
     });
 
