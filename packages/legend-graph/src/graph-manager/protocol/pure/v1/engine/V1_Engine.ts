@@ -937,6 +937,7 @@ export class V1_Engine {
     executionMode: ServiceExecutionMode,
     TEMPORARY__useStoreModel: boolean,
     TEMPORARY__useGenerateLineage: boolean,
+    TEMPORARY__useGenerateOpenApi: boolean,
   ): Promise<V1_ServiceRegistrationResult> {
     return V1_ServiceRegistrationResult.serialization.fromJson(
       await this.engineServerClient.INTERNAL__registerService(
@@ -945,6 +946,7 @@ export class V1_Engine {
         executionMode,
         TEMPORARY__useStoreModel,
         TEMPORARY__useGenerateLineage,
+        TEMPORARY__useGenerateOpenApi,
       ),
     );
   }

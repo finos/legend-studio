@@ -941,6 +941,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     serviceExecutionMode: ServiceExecutionMode,
     TEMPORARY__useStoreModel: boolean,
     TEMPORARY__useGenerateLineage: boolean,
+    TEMPORARY__useGenerateOpenApi: boolean,
   ): Promise<PlainObject<V1_ServiceRegistrationResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.REGISTER_SERVICE),
@@ -955,7 +956,14 @@ export class V1_EngineServerClient extends AbstractServerClient {
             storeModel: TEMPORARY__useStoreModel,
             generateLineage: TEMPORARY__useGenerateLineage,
           }
-        : { generateLineage: TEMPORARY__useGenerateLineage },
+        : serviceExecutionMode === ServiceExecutionMode.SEMI_INTERACTIVE
+        ? {
+            generateLineage: TEMPORARY__useGenerateLineage,
+          }
+        : {
+            generateLineage: TEMPORARY__useGenerateLineage,
+            generateOpenApi: TEMPORARY__useGenerateOpenApi,
+          },
       { enableCompression: true },
     );
 }
