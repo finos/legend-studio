@@ -117,6 +117,12 @@ export const ServiceRegistrationEditor = observer(() => {
     );
   };
 
+  const toggleUseGenerateOpenApi = (): void => {
+    registrationState.setUseGenerateOpenApi(
+      !registrationState.TEMPORARY__useGenerateOpenApi,
+    );
+  };
+
   // actions
   const registerService = (): void => {
     if (selectedEnvOption && selectedServiceType) {
@@ -281,7 +287,38 @@ export const ServiceRegistrationEditor = observer(() => {
               </div>
             </div>
           }
-
+          {registrationState.serviceExecutionMode ===
+            ServiceExecutionMode.PROD && (
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Generate Open Api
+              </div>
+              <div
+                className="panel__content__form__section__toggler"
+                onClick={toggleUseGenerateOpenApi}
+              >
+                <button
+                  className={clsx(
+                    'panel__content__form__section__toggler__btn',
+                    {
+                      'panel__content__form__section__toggler__btn--toggled':
+                        registrationState.TEMPORARY__useGenerateOpenApi,
+                    },
+                  )}
+                  tabIndex={-1}
+                >
+                  {registrationState.TEMPORARY__useGenerateOpenApi ? (
+                    <CheckSquareIcon />
+                  ) : (
+                    <SquareIcon />
+                  )}
+                </button>
+                <div className="panel__content__form__section__toggler__prompt">
+                  Generate Open Api
+                </div>
+              </div>
+            </div>
+          )}
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
               Project Version
