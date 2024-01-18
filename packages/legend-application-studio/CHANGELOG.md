@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.14.2
+
+### Patch Changes
+
+- [#2877](https://github.com/finos/legend-studio/pull/2877) [`2aed15179`](https://github.com/finos/legend-studio/commit/2aed151796f60392995be873037850c3d58cd7b1) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add option to generate OpenApi during service registration
+
 ## 28.14.1
 
 ## 28.14.0

@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 31.6.3
+
+### Patch Changes
+
+- [#2874](https://github.com/finos/legend-studio/pull/2874) [`42b9b9561`](https://github.com/finos/legend-studio/commit/42b9b9561f9def674acf8fce10a16830992d08bc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `csv_transformed` for csv serialization with engine to leverage correct handling of enums and timestamps in results.
+
+- [#2877](https://github.com/finos/legend-studio/pull/2877) [`2aed15179`](https://github.com/finos/legend-studio/commit/2aed151796f60392995be873037850c3d58cd7b1) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add option to generate OpenApi during service registration
+
 ## 31.6.2
 
 ## 31.6.1

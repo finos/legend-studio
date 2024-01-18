@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.67
+
+### Patch Changes
+
+- [#2876](https://github.com/finos/legend-studio/pull/2876) [`9277ae422`](https://github.com/finos/legend-studio/commit/9277ae42270d7f2d99923c6321a5a6ca2a84da14) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Exporting DataSpaceQuerySetupState to be used in QueryChat
+
 ## 10.1.66
 
 ## 10.1.65
