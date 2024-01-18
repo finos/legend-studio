@@ -15,8 +15,11 @@
  */
 
 export * from '../__lib__/DSL_DataSpace_LegendApplicationNavigation.js';
+export * from '../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 export { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApplicationPlugin.js';
 export { DataSpaceViewer } from './DataSpaceViewer.js';
 export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 export { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 export { DataSpaceQueryBuilderState } from '../stores/query/DataSpaceQueryBuilderState.js';
+export { type DataSpaceInfo } from '../stores/query/DataSpaceInfo.js';
+export { DataSpaceQuerySetupState } from '../stores/query/DataSpaceQuerySetupStore.js';
