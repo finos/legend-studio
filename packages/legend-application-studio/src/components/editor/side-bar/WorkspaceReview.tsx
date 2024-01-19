@@ -139,6 +139,8 @@ export const WorkspaceReview = observer(() => {
     !workspaceReviewState.canMergeReview;
   const commitReviewTitle = workspaceContainsSnapshotDependencies
     ? `Can't commit review: workspace has snapshot dependencies`
+    : workspaceReviewState.sdlcState.isActiveProjectSandbox
+    ? `Can't commit review: reviews are not allowed on sandbox projects`
     : !workspaceReviewState.canMergeReview
     ? workspaceReviewState.sdlcState.unAuthorizedActionMessage(
         AuthorizableProjectAction.COMMIT_REVIEW,
@@ -160,9 +162,12 @@ export const WorkspaceReview = observer(() => {
     Boolean(workspaceReview) ||
     !workspaceReviewState.reviewTitle ||
     workspaceContainsSnapshotDependencies ||
-    !workspaceReviewState.canCreateReview;
+    !workspaceReviewState.canCreateReview ||
+    workspaceReviewState.sdlcState.isActiveProjectSandbox;
   const createReviewTitle = workspaceContainsSnapshotDependencies
     ? `Can't create review: workspace has snapshot dependencies`
+    : workspaceReviewState.sdlcState.isActiveProjectSandbox
+    ? `Can't create review: reviews are not allowed on sandbox projects`
     : !workspaceReviewState.canCreateReview
     ? workspaceReviewState.sdlcState.unAuthorizedActionMessage(
         AuthorizableProjectAction.SUBMIT_REVIEW,

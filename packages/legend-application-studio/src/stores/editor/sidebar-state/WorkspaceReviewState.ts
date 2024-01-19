@@ -44,6 +44,7 @@ import {
   ReviewState,
   RevisionAlias,
   AuthorizableProjectAction,
+  isProjectSandbox,
 } from '@finos/legend-server-sdlc';
 import { ActionAlertActionType } from '@finos/legend-application';
 
@@ -323,7 +324,12 @@ export class WorkspaceReviewState {
       );
       return;
     }
-
+    if (isProjectSandbox(this.sdlcState.activeProject)) {
+      this.editorStore.applicationStore.notificationService.notifyWarning(
+        `Can't create review: Reviews for sandbox projects not suppoorted`,
+      );
+      return;
+    }
     this.isCreatingWorkspaceReview = true;
     try {
       const description =

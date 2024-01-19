@@ -202,6 +202,8 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   _pure = (): string => `${this.baseUrl}/pure/v1`;
 
+  _sdlc = (): string => `${this.baseUrl}/sdlc/v1`;
+
   // ------------------------------------------- Server -------------------------------------------
 
   _server = (): string => `${this.baseUrl}/server/v1`;
@@ -221,6 +223,22 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   getSubtypeInfo = (): Promise<SubtypeInfo> =>
     this.get(`${this._pure()}/protocol/pure/getSubtypeInfo`);
+
+  // ------------------------------------------- SDLC -------------------------------------------
+
+  createPrototypeProject = (): Promise<{
+    projectId: string;
+    webUrl: string | undefined;
+    owner: string;
+  }> =>
+    this.post(
+      `${this._sdlc()}/createPrototypeProject`,
+      undefined,
+      {},
+      {
+        [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+      },
+    );
 
   // ------------------------------------------- Grammar -------------------------------------------
 
