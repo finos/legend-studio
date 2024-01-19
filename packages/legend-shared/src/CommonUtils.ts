@@ -189,7 +189,7 @@ export const sortObjectKeys = (value: PlainObject): PlainObject => {
   const _sort = (obj: unknown): unknown => {
     if (Array.isArray(obj)) {
       return obj.map(sortObjectKeys);
-    } else if (typeof obj === 'object') {
+    } else if (typeof obj === 'object' && obj !== null) {
       const oldObj = obj as PlainObject;
       const newObj: PlainObject = {};
       Object.keys(oldObj)

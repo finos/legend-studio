@@ -75,7 +75,7 @@ test(unitTest('Sort object keys alphabetically'), () => {
     b: [{ m: 'mValue' }, { n: 'nValue', a: 'val' }],
     // check sorting for objects within nested array
     y: [
-      [{ m: 'mValue' }, { n: 'nValue', a: 'val' }],
+      [{ m: 'mValue' }, { n: 'nValue', a: 'val', b: null }],
       [{ 456: 'val', 123: 'nValue' }],
     ],
     a: 'one',
@@ -83,6 +83,7 @@ test(unitTest('Sort object keys alphabetically'), () => {
     1234: { a: [1, 2] },
     _1234: 'a',
     c: { a: [1, 2] },
+    d: null,
   };
   const obj2 = {
     a: 'oneOverride',
@@ -94,8 +95,9 @@ test(unitTest('Sort object keys alphabetically'), () => {
     a: 'one',
     b: [{ m: 'mValue' }, { a: 'val', n: 'nValue' }],
     c: { a: [1, 2] },
+    d: null,
     y: [
-      [{ m: 'mValue' }, { a: 'val', n: 'nValue' }],
+      [{ m: 'mValue' }, { a: 'val', b: null, n: 'nValue' }],
       [{ 123: 'nValue', 456: 'val' }],
     ],
     z: { a: [1, 2] },
