@@ -84,6 +84,11 @@ class LegendStudioApplicationCoreOptions {
   TEMPORARY__enableLocalConnectionBuilder = false;
 
   /**
+   * This flag enables creating sandbox projects via engine.
+   */
+  TEMPORARY__enableCreationOfSandboxProjects = false;
+
+  /**
    * Provides service registration environment configs.
    *
    * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
@@ -105,6 +110,7 @@ class LegendStudioApplicationCoreOptions {
       enableGraphBuilderStrictMode: optional(primitive()),
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
+      TEMPORARY__enableCreationOfSandboxProjects: optional(primitive()),
       TEMPORARY__enableLocalConnectionBuilder: optional(primitive()),
       NonProductionFeatureFlag: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(

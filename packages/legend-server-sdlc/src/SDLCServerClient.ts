@@ -104,6 +104,7 @@ export interface SDLCServerClientConfig {
   baseHeaders?: RequestHeaders | undefined;
 }
 
+
 export class SDLCServerClient extends AbstractServerClient {
   currentUser?: User;
   private _features: SDLCServerFeaturesConfiguration | undefined;

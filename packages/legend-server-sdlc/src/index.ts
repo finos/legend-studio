@@ -55,4 +55,6 @@ export * from './models/User.js';
 
 export * from './models/patch/Patch.js';
 
+export * from './util/ProjectUtil.js';
+
 export { SDLCServerClient } from './SDLCServerClient.js';

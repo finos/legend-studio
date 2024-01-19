@@ -49,6 +49,7 @@ import {
   WorkspaceAccessType,
   Patch,
   AuthorizableProjectAction,
+  isProjectSandbox,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 
@@ -100,6 +101,7 @@ export class EditorSDLCState {
       canCreateWorkspace: computed,
       canCreateVersion: computed,
       isWorkspaceOutOfSync: computed,
+      isActiveProjectSandbox: computed,
       setCurrentProject: action,
       setCurrentPatch: action,
       setCurrentWorkspace: action,
@@ -128,6 +130,11 @@ export class EditorSDLCState {
     return guaranteeNonNullable(
       this.currentProject,
       `Active project has not been properly set`,
+    );
+  }
+  get isActiveProjectSandbox(): boolean {
+    return Boolean(
+      this.currentProject && isProjectSandbox(this.currentProject),
     );
   }
 
