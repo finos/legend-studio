@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.14.3
+
+### Patch Changes
+
+- [#2881](https://github.com/finos/legend-studio/pull/2881) [`4ae25db2e`](https://github.com/finos/legend-studio/commit/4ae25db2ee616cc1032a0bf39adc9a162e1d19b6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add ability to create sandbox projects
+
 ## 28.14.2
 
 ### Patch Changes
