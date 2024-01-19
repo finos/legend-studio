@@ -3540,6 +3540,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  // --------------------------------------------- SDLC --------------------------------------------------
+  createSandboxProject(): Promise<{
+    projectId: string;
+    webUrl: string | undefined;
+    owner: string;
+  }> {
+    return this.engine.getEngineServerClient().createPrototypeProject();
+  }
+
   // --------------------------------------------- Change Detection ---------------------------------------------
 
   async buildHashesIndex(entities: Entity[]): Promise<Map<string, string>> {

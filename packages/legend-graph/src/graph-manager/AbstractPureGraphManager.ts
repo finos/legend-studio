@@ -380,6 +380,14 @@ export abstract class AbstractPureGraphManager {
     errors: Map<string, EngineError>;
   }>;
 
+  // ------------------------------------------- SDLC -------------------------------------------
+
+  abstract createSandboxProject(): Promise<{
+    projectId: string;
+    webUrl: string | undefined;
+    owner: string;
+  }>;
+
   // ------------------------------------------- Test -------------------------------------------
 
   abstract runTests(

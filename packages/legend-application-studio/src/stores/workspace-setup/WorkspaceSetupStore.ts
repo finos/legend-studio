@@ -23,26 +23,33 @@ import {
   LogEvent,
   ActionState,
   IllegalStateError,
+  UnsupportedOperationError,
+  guaranteeNonNullable,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import {
   type SDLCServerClient,
+  SANDBOX_SDLC_TAG,
   WorkspaceType,
   ImportReport,
   Project,
   Review,
   Workspace,
   Patch,
+  isProjectSandbox,
 } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import {
+  DEFAULT_TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
 } from '@finos/legend-application';
 import {
   fetchProjectConfigurationStatus,
-  type ProjectConfigurationStatus,
+  ProjectConfigurationStatus,
 } from './ProjectConfigurationStatus.js';
+import { GraphManagerState } from '@finos/legend-graph';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -57,12 +64,16 @@ export class WorkspaceSetupStore {
   readonly initState = ActionState.create();
 
   projects: Project[] = [];
+  sandboxProject: Project | boolean = false;
   currentProject?: Project | undefined;
   currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
   loadProjectsState = ActionState.create();
+  loadSandboxState = ActionState.create();
   createOrImportProjectState = ActionState.create();
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
   showCreateProjectModal = false;
+
+  createSandboxProjectState = ActionState.create();
 
   patches: Patch[] = [];
   loadPatchesState = ActionState.create();
@@ -73,6 +84,8 @@ export class WorkspaceSetupStore {
   createWorkspaceState = ActionState.create();
   showCreateWorkspaceModal = false;
   showAdvancedWorkspaceFilterOptions = false;
+
+  graphManagerState: GraphManagerState;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -87,7 +100,10 @@ export class WorkspaceSetupStore {
       workspaces: observable,
       currentWorkspace: observable,
       showAdvancedWorkspaceFilterOptions: observable,
+      loadSandboxState: observable,
       showCreateWorkspaceModal: observable,
+      sandboxProject: observable,
+      createSandboxProjectState: observable,
       setShowCreateProjectModal: action,
       setShowCreateWorkspaceModal: action,
       setShowAdvancedWorkspaceFilterOptions: action,
@@ -97,14 +113,20 @@ export class WorkspaceSetupStore {
       resetWorkspace: action,
       initialize: flow,
       loadProjects: flow,
+      loadSandboxProject: flow,
       changeProject: flow,
       createProject: flow,
       importProject: flow,
+      createSandboxProject: flow,
       createWorkspace: flow,
     });
 
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
+    this.graphManagerState = new GraphManagerState(
+      applicationStore.pluginManager,
+      applicationStore.logService,
+    );
   }
 
   setShowCreateProjectModal(val: boolean): void {
@@ -147,6 +169,59 @@ export class WorkspaceSetupStore {
           undefined,
         ),
       );
+    }
+  }
+
+  *createSandboxProject(): GeneratorFn<void> {
+    try {
+      // create sandbox project and pilot workspace
+      this.applicationStore.alertService.setBlockingAlert({
+        message: 'Creating sandbox project...',
+        showLoading: true,
+      });
+      const sandboxProject =
+        (yield this.graphManagerState.graphManager.createSandboxProject()) as {
+          projectId: string;
+          webUrl: string | undefined;
+          owner: string;
+        };
+      this.applicationStore.alertService.setBlockingAlert({
+        message: `Sandbox project ${sandboxProject.projectId} created. Creating default workspace...`,
+        showLoading: true,
+      });
+      yield flowResult(this.loadSandboxProject());
+      const sandbox = guaranteeType(
+        this.sandboxProject,
+        Project,
+        'Error Retrieving sandbox project',
+      );
+      const pilotWorkspace = Workspace.serialization.fromJson(
+        (yield this.sdlcServerClient.createWorkspace(
+          sandbox.projectId,
+          undefined,
+          'pilotWorkspace',
+          WorkspaceType.GROUP,
+        )) as PlainObject<Workspace>,
+      );
+      yield flowResult(
+        this.changeProject(sandbox, {
+          workspaceId: pilotWorkspace.workspaceId,
+          workspaceType: WorkspaceType.GROUP,
+        }),
+      );
+      this.applicationStore.alertService.setBlockingAlert(undefined);
+      this.applicationStore.notificationService.notifySuccess(
+        `Sandbox Project with pilot workspace created`,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        error,
+      );
+      this.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.applicationStore.alertService.setBlockingAlert(undefined);
     }
   }
 
@@ -193,7 +268,22 @@ export class WorkspaceSetupStore {
           ),
         );
       }
-
+      yield flowResult(
+        this.graphManagerState.graphManager.initialize(
+          {
+            env: this.applicationStore.config.env,
+            tabSize: DEFAULT_TAB_SIZE,
+            clientConfig: {
+              baseUrl: this.applicationStore.config.engineServerUrl,
+              queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+              enableCompression: true,
+            },
+          },
+          {
+            tracerService: this.applicationStore.tracerService,
+          },
+        ),
+      );
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -227,6 +317,35 @@ export class WorkspaceSetupStore {
     }
   }
 
+  *loadSandboxProject(): GeneratorFn<void> {
+    this.sandboxProject = false;
+    this.loadSandboxState.inProgress();
+    try {
+      const sandboxProject = (
+        (yield this.sdlcServerClient.getProjects(
+          undefined,
+          this.sdlcServerClient.currentUser?.userId,
+          [SANDBOX_SDLC_TAG],
+          1,
+        )) as PlainObject<Project>[]
+      ).map((v) => Project.serialization.fromJson(v));
+      this.sandboxProject = true;
+      if (sandboxProject.length > 1) {
+        throw new UnsupportedOperationError('Only one sandbox is supported., ');
+      } else if (sandboxProject.length === 1) {
+        this.sandboxProject = guaranteeNonNullable(sandboxProject[0]);
+      }
+      this.loadSandboxState.pass();
+    } catch (error) {
+      this.sandboxProject = true;
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
+      );
+      this.loadSandboxState.fail();
+    }
+  }
+
   *changeProject(
     project: Project,
     workspaceInfo?:
@@ -240,11 +359,15 @@ export class WorkspaceSetupStore {
     this.currentProjectConfigurationStatus = undefined;
     this.loadPatchesState.inProgress();
     try {
-      this.patches = (
-        (yield this.sdlcServerClient.getPatches(
-          project.projectId,
-        )) as PlainObject<Patch>[]
-      ).map((v) => Patch.serialization.fromJson(v));
+      if (isProjectSandbox(project)) {
+        this.patches = [];
+      } else {
+        this.patches = (
+          (yield this.sdlcServerClient.getPatches(
+            project.projectId,
+          )) as PlainObject<Patch>[]
+        ).map((v) => Patch.serialization.fromJson(v));
+      }
       this.loadPatchesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -258,20 +381,28 @@ export class WorkspaceSetupStore {
 
     this.loadWorkspacesState.inProgress();
     try {
-      this.currentProjectConfigurationStatus =
-        (yield fetchProjectConfigurationStatus(
-          project.projectId,
-          undefined,
-          this.applicationStore,
-          this.sdlcServerClient,
-        )) as ProjectConfigurationStatus;
-
-      const workspacesInConflictResolutionIds = (
-        (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
-          project.projectId,
-          undefined,
-        )) as Workspace[]
-      ).map((workspace) => workspace.workspaceId);
+      if (isProjectSandbox(project)) {
+        const result = new ProjectConfigurationStatus();
+        result.projectId = project.projectId;
+        result.isConfigured = true;
+        this.currentProjectConfigurationStatus = result;
+      } else {
+        this.currentProjectConfigurationStatus =
+          (yield fetchProjectConfigurationStatus(
+            project.projectId,
+            undefined,
+            this.applicationStore,
+            this.sdlcServerClient,
+          )) as ProjectConfigurationStatus;
+      }
+      const workspacesInConflictResolutionIds = isProjectSandbox(project)
+        ? []
+        : (
+            (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
+              project.projectId,
+              undefined,
+            )) as Workspace[]
+          ).map((workspace) => workspace.workspaceId);
 
       this.workspaces = (
         (yield this.sdlcServerClient.getWorkspaces(

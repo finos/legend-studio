@@ -338,6 +338,12 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     const showCreateProjectModal = (): void =>
       setupStore.setShowCreateProjectModal(true);
 
+    const createSandboxProject = (): void => {
+      flowResult(setupStore.createSandboxProject()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+
     // project search text
     const debouncedLoadProjects = useMemo(
       () =>
@@ -409,6 +415,9 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
       flowResult(setupStore.loadProjects('')).catch(
         applicationStore.alertUnhandledError,
       );
+      flowResult(setupStore.loadSandboxProject()).catch(
+        applicationStore.alertUnhandledError,
+      );
     }, [setupStore, applicationStore]);
 
     useApplicationNavigationContext(
@@ -456,7 +465,8 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             className="workspace-setup__selector__content__input"
                             options={projectOptions}
                             isLoading={
-                              setupStore.loadProjectsState.isInProgress
+                              setupStore.loadProjectsState.isInProgress ||
+                              setupStore.loadSandboxState.isInProgress
                             }
                             onInputChange={onProjectSearchTextChange}
                             inputValue={projectSearchText}
@@ -579,6 +589,17 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                         >
                           Create New Project
                         </button>
+                        {setupStore.sandboxProject === true &&
+                          setupStore.applicationStore.config.options
+                            .TEMPORARY__enableCreationOfSandboxProjects && (
+                            <button
+                              className="workspace-setup__new-btn btn--dark"
+                              onClick={createSandboxProject}
+                              title="Create Sandbox Project"
+                            >
+                              Create Sandbox Project
+                            </button>
+                          )}
                       </div>
                     </div>
                   </div>
