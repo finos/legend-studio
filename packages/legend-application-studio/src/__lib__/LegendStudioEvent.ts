@@ -37,6 +37,8 @@ export enum LEGEND_STUDIO_APP_EVENT {
   GENERATION_FAILURE = 'editor.generation.failure',
   EXTERNAL_FORMAT_FAILURE = 'editor.external-format.failure',
   MAPPING_TEST_FAILURE = 'editor.mapping-editor.test-runner.failure',
+
+  ENGINE_MANAGER_FAILURE = 'engine.manager.failure',
   // SDLC
   // TODO: consider to split this generic errors into more specific events
   SDLC_MANAGER_FAILURE = 'sdlc.manager.failure',

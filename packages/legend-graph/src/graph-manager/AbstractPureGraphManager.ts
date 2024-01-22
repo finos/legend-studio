@@ -210,6 +210,7 @@ export abstract class AbstractPureGraphManager {
     config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
+      disableGraphConfiguration?: boolean | undefined;
     },
   ): Promise<void>;
 

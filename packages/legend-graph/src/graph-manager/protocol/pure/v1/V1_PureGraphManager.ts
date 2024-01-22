@@ -558,33 +558,36 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
+      disableGraphConfiguration?: boolean | undefined;
     },
   ): Promise<void> {
     this.engine = new V1_Engine(config.clientConfig, this.logService);
     this.engine
       .getEngineServerClient()
       .setTracerService(options?.tracerService ?? new TracerService());
+    if (!options?.disableGraphConfiguration) {
+      // TODO: should probably be moved into each store's own initialize method
+      await Promise.all([
+        this.engine.setup(config),
+        this.configureElementClassifierPathMap(config),
+        this.configureSubtypeInfoMap(config),
+      ]);
 
-    await Promise.all([
-      this.engine.setup(config),
-      this.configureElementClassifierPathMap(config),
-      this.configureSubtypeInfoMap(config),
-    ]);
-
-    // setup serialization plugins
-    V1_setupPureModelContextDataSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-      this.subtypeInfo,
-    );
-    V1_setupDatabaseSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    V1_setupEngineRuntimeSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    V1_setupLegacyRuntimeSerialization(
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
+      // setup serialization plugins
+      V1_setupPureModelContextDataSerialization(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+        this.subtypeInfo,
+      );
+      V1_setupDatabaseSerialization(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+      V1_setupEngineRuntimeSerialization(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+      V1_setupLegacyRuntimeSerialization(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      );
+    }
   }
 
   private async configureElementClassifierPathMap(

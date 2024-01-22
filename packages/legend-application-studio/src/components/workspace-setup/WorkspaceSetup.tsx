@@ -590,6 +590,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                           Create New Project
                         </button>
                         {setupStore.sandboxProject === true &&
+                          setupStore.initState.hasCompleted &&
                           setupStore.applicationStore.config.options
                             .TEMPORARY__enableCreationOfSandboxProjects && (
                             <button

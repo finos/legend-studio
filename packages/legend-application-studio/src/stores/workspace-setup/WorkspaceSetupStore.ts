@@ -254,6 +254,31 @@ export class WorkspaceSetupStore {
           this.initState.pass();
           return;
         }
+
+        try {
+          yield flowResult(
+            this.graphManagerState.graphManager.initialize(
+              {
+                env: this.applicationStore.config.env,
+                tabSize: DEFAULT_TAB_SIZE,
+                clientConfig: {
+                  baseUrl: this.applicationStore.config.engineServerUrl,
+                },
+              },
+              {
+                tracerService: this.applicationStore.tracerService,
+                disableGraphConfiguration: true,
+              },
+            ),
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          this.applicationStore.logService.error(
+            LogEvent.create(LEGEND_STUDIO_APP_EVENT.ENGINE_MANAGER_FAILURE),
+            error,
+          );
+        }
+
         yield flowResult(
           this.changeProject(
             project,
@@ -268,27 +293,12 @@ export class WorkspaceSetupStore {
           ),
         );
       }
-      yield flowResult(
-        this.graphManagerState.graphManager.initialize(
-          {
-            env: this.applicationStore.config.env,
-            tabSize: DEFAULT_TAB_SIZE,
-            clientConfig: {
-              baseUrl: this.applicationStore.config.engineServerUrl,
-              queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
-              enableCompression: true,
-            },
-          },
-          {
-            tracerService: this.applicationStore.tracerService,
-          },
-        ),
-      );
+
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.applicationStore.notificationService.notifyError(error);
