@@ -63,9 +63,15 @@
     font-family: 'Roboto Mono', monospace;
   }
 
-  &__plus svg {
-    font-size: 1rem;
-    margin: 0 0.2rem;
+  &__plus {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    svg {
+      font-size: 1rem;
+      margin: 0 0.2rem;
+    }
   }
 }
 

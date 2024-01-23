@@ -264,6 +264,39 @@
           height: 100%;
           justify-content: space-between;
         }
+
+        .mui-card {
+          &__media {
+            margin-top: 1vw;
+            margin-left: 1vw;
+          }
+
+          &__header {
+            margin-top: 1.5vh;
+            font-size: min(2vw, 2vh);
+            margin-bottom: 1.5vh;
+          }
+
+          &__content {
+            font-size: min(1.5vh, 1.5vw);
+          }
+
+          &__card-action {
+            margin-bottom: 1.5vh;
+
+            &__label {
+              font-size: min(1.5vw, 1.5vh);
+            }
+          }
+        }
+
+        .MuiCardContent-root {
+          margin-left: 1vw;
+        }
+
+        .MuiCardActions-root {
+          margin-left: 1vw;
+        }
       }
 
       &__divider {
@@ -331,10 +364,13 @@
       &__key {
         color: var(--color-light-grey-400);
         background: var(--color-dark-grey-200);
+        font-size: min(1.5vh, 1.5vw);
+        height: min(2vh, 2vw);
       }
 
       &__plus svg {
         color: var(--color-light-grey-400);
+        font-size: min(1vh, 1vw);
       }
     }
   }
