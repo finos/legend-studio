@@ -79,6 +79,7 @@ import { CustomDatePicker } from './CustomDatePicker.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { simplifyValueExpression } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { evaluate } from 'mathjs';
+import { isUsedDateFunctionSupportedInFormMode } from '../../stores/QueryBuilderStateBuilder.js';
 
 type TypeCheckOption = {
   expectedType: Type;
@@ -1073,17 +1074,21 @@ export const BasicValueSpecificationEditor: React.FC<{
     );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
     if (isSubType(typeCheckOption.expectedType, PrimitiveType.DATE)) {
-      return (
-        <DateInstanceValueEditor
-          valueSpecification={valueSpecification}
-          graph={graph}
-          obseverContext={obseverContext}
-          typeCheckOption={typeCheckOption}
-          className={className}
-          setValueSpecification={setValueSpecification}
-          resetValue={resetValue}
-        />
-      );
+      if (isUsedDateFunctionSupportedInFormMode(valueSpecification)) {
+        return (
+          <DateInstanceValueEditor
+            valueSpecification={valueSpecification}
+            graph={graph}
+            obseverContext={obseverContext}
+            typeCheckOption={typeCheckOption}
+            className={className}
+            setValueSpecification={setValueSpecification}
+            resetValue={resetValue}
+          />
+        );
+      } else {
+        return <UnsupportedValueSpecificationEditor />;
+      }
     } else if (
       // TODO: think of other ways we could make use of this code path where we can simplify
       // an expression value to simple value, not just handling minus() function only

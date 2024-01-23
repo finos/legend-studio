@@ -26,25 +26,25 @@ import {
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
+  type AbstractPropertyExpression,
   type EnumValueInstanceValue,
   type FunctionExpression,
   type GraphFetchTreeInstanceValue,
   type ValueSpecificationVisitor,
-  InstanceValue,
-  INTERNAL__UnknownValueSpecification,
   type LambdaFunction,
   type KeyExpressionInstanceValue,
-  matchFunctionName,
-  Class,
+  type INTERNAL__PropagatedValue,
+  type ValueSpecification,
   type CollectionInstanceValue,
   type LambdaFunctionInstanceValue,
+  InstanceValue,
+  INTERNAL__UnknownValueSpecification,
+  matchFunctionName,
+  Class,
   PrimitiveInstanceValue,
   SimpleFunctionExpression,
   VariableExpression,
-  type AbstractPropertyExpression,
   getMilestoneTemporalStereotype,
-  type INTERNAL__PropagatedValue,
-  type ValueSpecification,
   SUPPORTED_FUNCTIONS,
   isSuperType,
   PackageableElementReference,
@@ -206,6 +206,33 @@ const processGetAllVersionsInRangeExpression = (
   );
 };
 
+// a recursive function to check if there are some date functions
+// unsupported in the custom date picker dropdown.
+// For now, it's just QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR and QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH.
+export const isUsedDateFunctionSupportedInFormMode = (
+  valueSpec: ValueSpecification,
+): boolean => {
+  if (valueSpec instanceof SimpleFunctionExpression) {
+    if (
+      matchFunctionName(
+        valueSpec.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+      ) ||
+      matchFunctionName(
+        valueSpec.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+      )
+    ) {
+      return false;
+    }
+    return !valueSpec.parametersValues
+      .map((value) => isUsedDateFunctionSupportedInFormMode(value))
+      .includes(false);
+  } else {
+    return true;
+  }
+};
+
 const processLetExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
@@ -239,11 +266,26 @@ const processLetExpression = (
       rightSide.content,
     );
   } else {
-    constantExpression = new QueryBuilderSimpleConstantExpressionState(
-      queryBuilderState,
-      varExp,
-      rightSide,
-    );
+    // Even if a valueSpecification is successfully built, it might contain some date functions
+    // unsupported in the custom date picker dropdown, e.g., QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR
+    // or QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH.
+    // If it doesn't contain any unsupported date functions, a QueryBuilderSimpleConstantExpressionState should be created.
+    // Otherwise, a QueryBuilderCalculatedConstantExpressionState should be created.
+    if (isUsedDateFunctionSupportedInFormMode(rightSide)) {
+      constantExpression = new QueryBuilderSimpleConstantExpressionState(
+        queryBuilderState,
+        varExp,
+        rightSide,
+      );
+    } else {
+      constantExpression = new QueryBuilderCalculatedConstantExpressionState(
+        queryBuilderState,
+        varExp,
+        queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
+          rightSide,
+        ),
+      );
+    }
   }
   queryBuilderState.constantState.setShowConstantPanel(true);
   queryBuilderState.constantState.addConstant(constantExpression);

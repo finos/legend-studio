@@ -217,7 +217,9 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           return expression;
         } else if (
           matchFunctionName(functionName, [
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,

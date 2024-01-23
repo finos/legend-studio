@@ -858,6 +858,9 @@ const QueryBuilderFilterConditionEditor = observer(
             {node.condition.value && (
               <div
                 ref={dropConnector}
+                data-testid={
+                  QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_VALUE
+                }
                 className="query-builder-filter-tree__condition-node__value"
               >
                 <PanelEntryDropZonePlaceholder

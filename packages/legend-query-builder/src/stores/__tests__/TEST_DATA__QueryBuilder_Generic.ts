@@ -6736,3 +6736,147 @@ export const TEST_DATA__simpeFilterWithDerivedPropFromParentsUsedInFilter = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__simpleLambdaWithFirstDayOfYearDateFunction = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'letFunction',
+      parameters: [
+        {
+          _type: 'string',
+          value: 'myDate',
+        },
+        {
+          _type: 'func',
+          function: 'meta::pure::functions::date::adjust',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'meta::pure::functions::date::firstDayOfYear',
+              parameters: [
+                {
+                  _type: 'strictDate',
+                  value: '2020-08-08',
+                },
+              ],
+            },
+            {
+              _type: 'func',
+              function: 'meta::pure::functions::math::minus',
+              parameters: [
+                {
+                  _type: 'integer',
+                  value: 1,
+                },
+              ],
+            },
+            {
+              _type: 'enumValue',
+              fullPath: 'meta::pure::functions::date::DurationUnit',
+              value: 'DAYS',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'filter',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::pure::tests::model::simple::Location',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'censusdate',
+                    },
+                    {
+                      _type: 'strictDate',
+                      value: '2024-01-22',
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'censusdate',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'Censusdate',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
