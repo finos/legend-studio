@@ -34,6 +34,7 @@ import {
 import {
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
   TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted,
+  TEST_DATA__simpeFilterWithDerivedPropFromParentsUsedInFilter,
   TEST_DATA__simpeFilterWithMilestonedExists,
   TEST_DATA__simpleFilterWithAndCondition,
   TEST_DATA__simpleFilterWithDateTimeWithSeconds,
@@ -45,6 +46,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
   TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDerivedPropFromParentUsedInFilter,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
@@ -56,6 +58,7 @@ import {
   dragAndDrop,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
+import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter.json';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -1843,5 +1846,36 @@ test(
     switchMenu = renderResult.getByRole('menu');
     fireEvent.click(getByText(switchMenu, 'is'));
     expect(queryByText(filterPanel, '1'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder is able to process derived properties from parents when building a query',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::TestRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDerivedPropFromParentUsedInFilter,
+    );
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpeFilterWithDerivedPropFromParentsUsedInFilter.parameters,
+          TEST_DATA__simpeFilterWithDerivedPropFromParentsUsedInFilter.body,
+        ),
+      );
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    await waitFor(() => getByText(filterPanel, 'Derived Prop From Parent'));
   },
 );
