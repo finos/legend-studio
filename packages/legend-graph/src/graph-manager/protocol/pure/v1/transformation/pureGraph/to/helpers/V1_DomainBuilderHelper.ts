@@ -53,6 +53,7 @@ import type { V1_TaggedValue } from '../../../../model/packageableElements/domai
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 import {
   addElementToPackage,
+  getAllClassDerivedProperties,
   getAllClassProperties,
   getOrCreateGraphPackage,
 } from '../../../../../../../../graph/helpers/DomainHelper.js';
@@ -337,7 +338,7 @@ export const V1_getAppliedProperty = (
   if (property) {
     return property;
   }
-  property = parentClass.derivedProperties.find((p) =>
+  property = getAllClassDerivedProperties(parentClass).find((p) =>
     parameters
       ? isCompatibleDerivedProperty(p, name, parameters)
       : name === p.name,
