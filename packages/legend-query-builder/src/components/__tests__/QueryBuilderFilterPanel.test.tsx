@@ -40,6 +40,7 @@ import {
   TEST_DATA__simpleFilterWithDateTimeWithSeconds,
   TEST_DATA__simpleFilterWithGroupOperationAndExists,
   TEST_DATA__simpleFilterWithThreeNodes,
+  TEST_DATA__simpleLambdaWithFirstDayOfYearDateFunction,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -863,6 +864,61 @@ test(
     await waitFor(() =>
       getByText(guaranteeNonNullable(filterTreeNodes[2]), 'Legal Name'),
     );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder is able to detect a constant that uses meta::pure::functions::date::firstDayOfYear is of type Date and is able to drag and drop this constant varible to a filter node with Date type',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleLambdaWithFirstDayOfYearDateFunction.parameters,
+          TEST_DATA__simpleLambdaWithFirstDayOfYearDateFunction.body,
+        ),
+      );
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    await waitFor(() => getByText(filterPanel, 'Censusdate'));
+    const constantPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    expect(getByText(constantPanel, 'myDate')).not.toBeNull();
+    //Drag and drop
+    const filterTreeNode = await waitFor(() =>
+      renderResult.getAllByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(filterTreeNode.length).toBe(1);
+    const censusdateFilterTreeNode = guaranteeNonNullable(filterTreeNode[0]);
+    const dropZone = await waitFor(() =>
+      getByTestId(
+        censusdateFilterTreeNode,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_VALUE,
+      ),
+    );
+    const dragSource = await waitFor(() => getByText(constantPanel, 'myDate'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      censusdateFilterTreeNode,
+      'Change Filter Value',
+    );
+    await waitFor(() => getByText(filterPanel, 'myDate'));
   },
 );
 

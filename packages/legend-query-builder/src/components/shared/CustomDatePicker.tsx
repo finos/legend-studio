@@ -114,7 +114,7 @@ enum CUSTOM_DATE_OPTION_DIRECTION {
 enum CUSTOM_DATE_OPTION_REFERENCE_MOMENT {
   TODAY = 'Today',
   NOW = 'Now',
-  FIRST_DAY_OF_YEAR = 'Start of Year',
+  FIRST_DAY_OF_THIS_YEAR = 'Start of Year',
   FIRST_DAY_OF_QUARTER = 'Start of Quarter',
   FIRST_DAY_OF_MONTH = 'Start of Month',
   FIRST_DAY_OF_WEEK = 'Start of Week',
@@ -297,16 +297,16 @@ const buildPureDateFunctionExpression = (
   } else if (datePickerOption instanceof CustomFirstDayOfOption) {
     switch (datePickerOption.unit) {
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR: {
-        const firstDayOfYearSFE = new SimpleFunctionExpression(
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+        const firstDayOfThisYearSFE = new SimpleFunctionExpression(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
         );
         valueSpecification_setGenericType(
-          firstDayOfYearSFE,
+          firstDayOfThisYearSFE,
           GenericTypeExplicitReference.create(
             new GenericType(PrimitiveType.DATE),
           ),
         );
-        return firstDayOfYearSFE;
+        return firstDayOfThisYearSFE;
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER: {
         const firstDayOfQuarterSFE = new SimpleFunctionExpression(
@@ -322,7 +322,7 @@ const buildPureDateFunctionExpression = (
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH: {
         const firstDayOfMonthSFE = new SimpleFunctionExpression(
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
         );
         valueSpecification_setGenericType(
           firstDayOfMonthSFE,
@@ -363,9 +363,9 @@ const buildPureDateFunctionExpression = (
           PrimitiveType.DATETIME,
         );
       }
-      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR: {
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_THIS_YEAR: {
         const firstDayOfYearSFE = new SimpleFunctionExpression(
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR,
         );
         valueSpecification_setGenericType(
           firstDayOfYearSFE,
@@ -389,7 +389,7 @@ const buildPureDateFunctionExpression = (
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH: {
         const firstDayOfMonthSFE = new SimpleFunctionExpression(
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH,
         );
         valueSpecification_setGenericType(
           firstDayOfMonthSFE,
@@ -600,11 +600,11 @@ const buildCustomDateOptionReferenceMomentValue = (
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY;
     case QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.NOW;
-    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR:
-      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR;
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR:
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_THIS_YEAR;
     case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER;
-    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH:
+    case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH;
     case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
       return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK;
@@ -691,9 +691,9 @@ export const buildDatePickerOption = (
           CUSTOM_DATE_PICKER_OPTION.NOW,
           CUSTOM_DATE_PICKER_OPTION.NOW,
         );
-      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_YEAR:
         return new CustomFirstDayOfOption(
-          CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR,
+          CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_THIS_YEAR,
           CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR,
         );
       case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER:
@@ -701,7 +701,7 @@ export const buildDatePickerOption = (
           CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER,
           CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER,
         );
-      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH:
+      case QUERY_BUILDER_SUPPORTED_FUNCTIONS.FIRST_DAY_OF_THIS_MONTH:
         return new CustomFirstDayOfOption(
           CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH,
           CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH,

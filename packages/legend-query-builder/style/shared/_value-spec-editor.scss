@@ -76,6 +76,10 @@
 
     &__options {
       min-width: 29rem;
+
+      .mui-radio-group__group {
+        height: 3rem;
+      }
     }
 
     &__absolute-date {

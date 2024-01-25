@@ -44,9 +44,7 @@
           "type": "Number"
         }
       ],
-      "superTypes": [
-        "model::Base"
-      ]
+      "superTypes": ["model::Base"]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -309,9 +307,7 @@
                 }
               ],
               "name": "FirmTable",
-              "primaryKey": [
-                "id"
-              ]
+              "primaryKey": ["id"]
             },
             {
               "columns": [
@@ -347,9 +343,7 @@
                 }
               ],
               "name": "PersonTable",
-              "primaryKey": [
-                "id"
-              ]
+              "primaryKey": ["id"]
             },
             {
               "columns": [
@@ -370,9 +364,7 @@
                 }
               ],
               "name": "HobbyTable",
-              "primaryKey": [
-                "id"
-              ]
+              "primaryKey": ["id"]
             },
             {
               "columns": [
@@ -407,9 +399,7 @@
                 }
               ],
               "name": "AddressTable",
-              "primaryKey": [
-                "id"
-              ]
+              "primaryKey": ["id"]
             }
           ],
           "views": []
