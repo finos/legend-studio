@@ -261,7 +261,7 @@ export const ServiceExecutionQueryEditor = observer(
           artifactId:
             editorStore.projectConfigurationEditorState
               .currentProjectConfiguration.artifactId,
-          versionId: editorStore.sdlcState.projectPublishedVersions?.includes(
+          versionId: editorStore.sdlcState.projectPublishedVersions.includes(
             `${currentWorkSpaceId}-${SNAPSHOT_ALIAS}`,
           )
             ? `${currentWorkSpaceId}-${SNAPSHOT_ALIAS}`
