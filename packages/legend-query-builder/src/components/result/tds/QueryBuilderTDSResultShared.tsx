@@ -99,10 +99,12 @@ export const tryToFormatSql = (sql: string): string => {
 
 export const getExecutedSqlFromExecutionResult = (
   execResult: ExecutionResult,
+  pretty?: boolean,
 ): string | undefined => {
   const executedSqls = execResult.activities
     ?.filter(filterByType(RelationalExecutionActivities))
-    .map((relationalActivity) => relationalActivity.sql);
+    .map((relationalActivity) => relationalActivity.sql)
+    .map((sql) => (pretty ? tryToFormatSql(sql) : sql));
   if (executedSqls?.length) {
     let executedSql = '';
     if (executedSqls.length > 1) {

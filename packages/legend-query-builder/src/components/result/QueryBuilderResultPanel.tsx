@@ -67,10 +67,7 @@ import { QueryUsageViewer } from '../QueryUsageViewer.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../../__lib__/QueryBuilderDocumentation.js';
 import { QueryBuilderTDSSimpleGridResult } from './tds/QueryBuilderTDSSimpleGridResult.js';
-import {
-  getExecutedSqlFromExecutionResult,
-  tryToFormatSql,
-} from './tds/QueryBuilderTDSResultShared.js';
+import { getExecutedSqlFromExecutionResult } from './tds/QueryBuilderTDSResultShared.js';
 import { QueryBuilderTDSGridResult } from './tds/QueryBuilderTDSGridResult.js';
 
 const QueryBuilderResultValues = observer(
@@ -131,7 +128,7 @@ export const QueryBuilderResultPanel = observer(
     const executionResult = resultState.executionResult;
     const [showSqlModal, setShowSqlModal] = useState(false);
     const executedSql = executionResult
-      ? getExecutedSqlFromExecutionResult(executionResult)
+      ? getExecutedSqlFromExecutionResult(executionResult, true)
       : undefined;
 
     const fetchStructureImplementation =
@@ -314,7 +311,7 @@ export const QueryBuilderResultPanel = observer(
               <ModalBody className="query-builder__sql__modal">
                 <>
                   <CodeEditor
-                    inputValue={tryToFormatSql(executedSql)}
+                    inputValue={executedSql}
                     isReadOnly={true}
                     language={CODE_EDITOR_LANGUAGE.SQL}
                     hideMinimap={true}
