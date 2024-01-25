@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.14.4
+
+### Patch Changes
+
+- [#2892](https://github.com/finos/legend-studio/pull/2892) [`0c295a30a`](https://github.com/finos/legend-studio/commit/0c295a30ac37a9aeb2b3e6eac332c389279f23ab) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Go to snapshot version of a workspace if there is one when creating an Ad-hoc query
+
+- [#2887](https://github.com/finos/legend-studio/pull/2887) [`ddc1b9d2c`](https://github.com/finos/legend-studio/commit/ddc1b9d2cf551bec8908cb2c293e1350f122d190) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix zoom in/out css issues for landing page and splash screen
+
 ## 28.14.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 10.0.30
+
+### Patch Changes
+
+- [#2882](https://github.com/finos/legend-studio/pull/2882) [`b98f72496`](https://github.com/finos/legend-studio/commit/b98f724965369a675ce436906e4a930814381964) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix parsing bug in sortObjectKeys CommonUtils
+
 ## 10.0.29
 
 ## 10.0.28

@@ -1,5 +1,7 @@
 # @finos/legend-application-pure-ide-deployment
 
+## 11.5.0
+
 ## 11.4.0
 
 ## 11.3.0

@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.6.5
+
+### Patch Changes
+
+- [#2888](https://github.com/finos/legend-studio/pull/2888) [`b95a9fb73`](https://github.com/finos/legend-studio/commit/b95a9fb735a059e7a9c68a69f4d7d49e751414ca) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the issue where Studio fails to process derived properties from parents when building a query
+
 ## 31.6.4
 
 ### Patch Changes
