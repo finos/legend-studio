@@ -69,7 +69,10 @@ import {
   buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import { useDrag } from 'react-dnd';
-import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
+import {
+  QueryBuilderPropertyInfoTooltip,
+  QueryBuilderTaggedValueInfoTooltip,
+} from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { flowResult } from 'mobx';
 import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
@@ -200,6 +203,9 @@ export const QueryBuilderSubclassInfoTooltip: React.FC<{
               {isMapped ? 'Yes' : 'No'}
             </div>
           </div>
+          <QueryBuilderTaggedValueInfoTooltip
+            taggedValues={subclass.taggedValues}
+          />
         </div>
       }
     >
