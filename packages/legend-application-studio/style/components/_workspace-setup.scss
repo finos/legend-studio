@@ -20,6 +20,111 @@
 @forward 'workspace-setup/workspace-selector';
 @forward 'workspace-setup/project-selector';
 
+.selector-input--dark__option {
+  .workspace-selector__option {
+    height: 100%;
+    display: flex;
+    align-items: center;
+
+    &__icon {
+      @include flexCenter;
+
+      width: 1vh;
+      min-width: 2vh;
+      margin-right: 1vh;
+
+      svg {
+        font-size: 1.5vh;
+      }
+    }
+
+    &__label {
+      width: calc(100% - 1rem);
+      display: flex;
+      align-items: center;
+    }
+
+    &__name {
+      font-size: min(1.5vw, 1.5vh);
+      height: 100%;
+    }
+
+    &__source {
+      margin-right: 1vh;
+
+      &__patch {
+        border-radius: 0.2rem;
+        font-size: 1.25vh;
+        width: 8vh;
+        height: 2vh;
+      }
+    }
+  }
+
+  .project-selector__option {
+    height: 100%;
+    justify-content: space-between;
+
+    &__label {
+      display: flex;
+      width: 100%;
+
+      &__name {
+        font-size: min(1.5vw, 1.5vh);
+      }
+    }
+
+    &__visit-btn {
+      width: 6vh;
+      margin-right: 1vh;
+
+      &__label {
+        width: 4vh;
+        height: 2vh;
+        font-size: 1.25vh;
+      }
+
+      &__icon {
+        height: 2vh;
+        width: 2vh;
+
+        svg {
+          font-size: 1.5vh;
+        }
+      }
+    }
+
+    &__configure-btn {
+      width: 10vh;
+      margin-right: 1vh;
+
+      &__label {
+        width: 6vh;
+        height: 2vh;
+        font-size: 1.25vh;
+      }
+
+      &__warning-icon {
+        height: 2vh;
+        width: 2vh;
+
+        svg {
+          font-size: 1.5vh;
+        }
+      }
+
+      &__icon {
+        height: 2vh;
+        width: 2vh;
+
+        svg {
+          font-size: 1.5vh;
+        }
+      }
+    }
+  }
+}
+
 .workspace-setup {
   height: 100%;
   position: relative;
@@ -147,7 +252,8 @@
       @include flexCenter;
 
       width: 1vh;
-      margin-right: 1rem;
+      min-width: 2vh;
+      margin-right: 1vh;
 
       svg {
         font-size: 1.5vh;
@@ -163,6 +269,17 @@
     &__name {
       font-size: min(1.5vw, 1.5vh);
       height: 100%;
+    }
+
+    &__source {
+      margin-right: 1vh;
+
+      &__patch {
+        border-radius: 0.2rem;
+        font-size: 1.25vh;
+        width: 8vh;
+        height: 2vh;
+      }
     }
   }
 
@@ -237,6 +354,39 @@
     margin-top: 3rem;
     width: 60vw;
     height: 25%;
+
+    .mui-card {
+      &__media {
+        margin-top: 1vw;
+        margin-left: 1vw;
+      }
+
+      &__header {
+        margin-top: 1.5vh;
+        font-size: min(2vw, 2vh);
+        margin-bottom: 1.5vh;
+      }
+
+      &__content {
+        font-size: min(1.5vh, 1.5vw);
+      }
+
+      &__card-action {
+        margin-bottom: 1.5vh;
+
+        &__label {
+          font-size: min(1.5vw, 1.5vh);
+        }
+      }
+    }
+
+    .MuiCardContent-root {
+      margin-left: 1vw;
+    }
+
+    .MuiCardActions-root {
+      margin-left: 1vw;
+    }
   }
 
   &__content__card {
@@ -312,7 +462,7 @@
 
       &__icon--project,
       &__icon--workspace {
-        font-size: 1.8rem;
+        font-size: 1.5vh;
       }
 
       &__label {
@@ -381,8 +531,8 @@
     }
 
     &__icon {
-      margin-left: 1rem;
-      font-size: 2rem;
+      margin-left: 1vh;
+      font-size: 1.5vh;
     }
   }
 

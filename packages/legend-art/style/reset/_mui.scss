@@ -113,24 +113,24 @@
   border-radius: 1rem;
 
   &__media {
-    margin-top: 1vw;
-    margin-left: 1vw;
+    margin-top: 2rem;
+    margin-left: 2rem;
     size: 2rem;
   }
 
   &__header {
-    margin-top: 1.5vh;
+    margin-top: 1rem;
     font-weight: 500;
     height: 20%;
-    font-size: min(2vw, 2vh);
+    font-size: 2rem;
     color: white;
-    margin-bottom: 1.5vh;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
   }
 
   &__content {
-    font-size: min(1.5vh, 1.5vw);
+    font-size: 1.5rem;
     color: white;
     height: 80%;
     overflow-y: scroll;
@@ -215,11 +215,11 @@
   flex-direction: column;
   flex: 1 auto;
   padding: 0;
-  margin-left: 1vw;
+  margin-left: 2rem;
 }
 
 .MuiCardActions-root {
   height: 20%;
-  margin-left: 1vw;
+  margin-left: 1rem;
   padding: 0;
 }
