@@ -55,7 +55,10 @@ import {
 } from '@finos/legend-query-builder';
 import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
 import { useLegendStudioApplicationStore } from '../../../LegendStudioFrameworkProvider.js';
-import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
+import {
+  SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   CODE_EDITOR_LANGUAGE,
@@ -249,6 +252,8 @@ export const ServiceExecutionQueryEditor = observer(
           };
         }
       } else {
+        const currentWorkSpaceId =
+          editorStore.sdlcState.currentWorkspace?.workspaceId;
         projectGAV = {
           groupId:
             editorStore.projectConfigurationEditorState
@@ -256,7 +261,11 @@ export const ServiceExecutionQueryEditor = observer(
           artifactId:
             editorStore.projectConfigurationEditorState
               .currentProjectConfiguration.artifactId,
-          versionId: SNAPSHOT_VERSION_ALIAS,
+          versionId: editorStore.sdlcState.projectPublishedVersions?.includes(
+            `${currentWorkSpaceId}-${SNAPSHOT_ALIAS}`,
+          )
+            ? `${currentWorkSpaceId}-${SNAPSHOT_ALIAS}`
+            : SNAPSHOT_VERSION_ALIAS,
         };
       }
       applicationStore.navigationService.navigator.visitAddress(
