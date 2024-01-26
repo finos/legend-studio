@@ -39,6 +39,7 @@ export * from './application/RandomizerUtils.js';
 export * from './application/ActionState.js';
 export * from './application/TimerUtils.js';
 export * from './application/AbstractPluginManager.js';
+
 export * from './application/BrowserUtils.js';
 
 export * from './data-structure/Pair.js';
@@ -49,3 +50,5 @@ export * from './log/WebConsole.js';
 
 export * from './search/FuzzySearch.js';
 export * from './search/FuzzySearchAdvancedConfigState.js';
+
+export * from './network/WorkerHelper.js';

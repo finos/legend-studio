@@ -161,18 +161,7 @@ export const getBaseWebpackConfig = (
         },
       ],
     },
-    optimization: isEnvDevelopment
-      ? {
-          // Keep runtime chunk minimal by enabling runtime chunk
-          // See https://webpack.js.org/guides/build-performance/#minimal-entry-chunk
-          runtimeChunk: true,
-          // Avoid extra optimization step, turning off split-chunk optimization
-          // See https://webpack.js.org/guides/build-performance/#avoid-extra-optimization-steps
-          removeAvailableModules: false,
-          removeEmptyChunks: false,
-          splitChunks: false,
-        }
-      : {},
+    optimization: {},
     plugins: [
       ((isEnvProduction && !isEnvProduction_Fast) || isEnvDevelopment_Debug) &&
         new CircularDependencyPlugin({
@@ -231,6 +220,7 @@ export const getWebAppBaseWebpackConfig = (
     appConfig,
     babelConfigPath,
     enableReactFastRefresh,
+    serviceWorkerPath,
   },
 ) => {
   if (!dirname) {
@@ -247,7 +237,13 @@ export const getWebAppBaseWebpackConfig = (
 
   const config = {
     ...baseConfig,
-    entry: { index: mainEntryPath },
+    entry: {
+      index: mainEntryPath,
+      'service-worker': {
+        import: serviceWorkerPath,
+        filename: 'service-worker.js',
+      },
+    },
     output: {
       ...baseConfig.output,
       path: join(dirname, `dist${appConfig.baseUrl}`),
@@ -300,21 +296,29 @@ export const getWebAppBaseWebpackConfig = (
       },
       ...(appConfig.devServer ?? {}),
     },
-    optimization: isEnvProduction
-      ? {
-          splitChunks: {
-            cacheGroups: {
-              defaultVendors: {
-                test: /node_modules/,
-                chunks: 'initial',
-                name: 'vendor',
-                priority: -10,
-                enforce: true,
-              },
-            },
+    optimization: {
+      runtimeChunk: {
+        name: (entrypoint) => {
+          if (entrypoint.name.startsWith('service-worker')) {
+            return null;
+          }
+
+          return `runtime-${entrypoint.name}`;
+        },
+      },
+      splitChunks: {
+        chunks: (chunk) => chunk.name !== 'service-worker',
+        cacheGroups: {
+          defaultVendors: {
+            test: /node_modules/,
+            chunks: 'initial',
+            name: 'vendor',
+            priority: -10,
+            enforce: true,
           },
-        }
-      : baseConfig.optimization,
+        },
+      },
+    },
     plugins: [
       ...baseConfig.plugins,
       isEnvDevelopment &&

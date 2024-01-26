@@ -31,11 +31,13 @@ const { DefinePlugin } = webpack;
 export default (env, arg) => {
   const { isEnvDevelopment } = getEnvInfo(env, arg);
 
+  console.log('testing-------->');
   const baseConfig = getWebAppBaseWebpackConfig(env, arg, __dirname, {
     mainEntryPath: resolve(__dirname, './src/index.tsx'),
     indexHtmlPath: resolve(__dirname, './src/index.html'),
     appConfig,
     babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
+    serviceWorkerPath: resolve(__dirname, './service-worker.js'),
     enableReactFastRefresh: isEnvDevelopment,
   });
   const config = {

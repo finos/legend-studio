@@ -17,5 +17,7 @@
 import { LegendStudioWebApplication } from '@finos/legend-application-studio-bootstrap';
 import config from '../studio.config.js';
 import './index.scss';
+import { registerServiceWorker } from '@finos/legend-shared';
 
 LegendStudioWebApplication.run(config.baseUrl);
+registerServiceWorker();
