@@ -340,6 +340,7 @@ export abstract class AbstractServerClient {
         },
       )
       .then((result) => {
+        console.log('result', result);
         trace.reportSuccess();
         return Promise.resolve(result);
       })

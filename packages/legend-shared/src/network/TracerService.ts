@@ -20,6 +20,14 @@ import {
 } from '../application/AbstractPluginManager.js';
 import type { PlainObject } from '../CommonUtils.js';
 
+export function trace(message: string): void {
+  // eslint-disable-next-line no-process-env
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
+    console.debug(message);
+  }
+}
+
 export interface TraceData {
   name: string;
   tags?: PlainObject;

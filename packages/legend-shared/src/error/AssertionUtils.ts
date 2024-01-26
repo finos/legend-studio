@@ -83,6 +83,10 @@ export function assertNonEmptyString(
   }
 }
 
+export function isNonEmptyString(str: string | null | undefined): boolean {
+  return str !== null && str !== undefined && str !== '';
+}
+
 export function guaranteeNonEmptyString(
   str: string | null | undefined,
   message = '',

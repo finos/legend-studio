@@ -31,7 +31,7 @@ import {
   type RawExecutionPlan,
   type ExecutionResult,
   type RawLambda,
-  type EXECUTION_SERIALIZATION_FORMAT,
+  EXECUTION_SERIALIZATION_FORMAT,
   GRAPH_MANAGER_EVENT,
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
@@ -241,32 +241,24 @@ export class QueryBuilderResultState {
       const query = this.buildExecutionRawLambda({
         isExportingResult: true,
       });
-      const result =
-        (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
-          query,
-          this.queryBuilderState.executionContextState.mapping,
-          this.queryBuilderState.executionContextState.runtimeValue,
-          this.queryBuilderState.graphManagerState.graph,
-          {
-            serializationFormat,
-            parameterValues: buildExecutionParameterValues(
-              this.queryBuilderState.parametersState.parameterStates,
-              this.queryBuilderState.graphManagerState,
-            ),
-          },
-        )) as ExecutionResult;
-      let content: string;
-      if (result instanceof RawExecutionResult) {
-        content = result.value === null ? 'null' : result.value.toString();
-      } else {
-        content = JSON.stringify(
-          extractExecutionResultValues(result),
-          null,
-          DEFAULT_TAB_SIZE,
-        );
-      }
-      const fileName = `result.${getContentTypeFileExtension(contentType)}`;
-      downloadFileUsingDataURI(fileName, content, contentType);
+
+      yield this.queryBuilderState.graphManagerState.graphManager.exportData(
+        query,
+        this.queryBuilderState.executionContextState.mapping,
+        this.queryBuilderState.executionContextState.runtimeValue,
+        this.queryBuilderState.graphManagerState.graph,
+        {
+          serializationFormat:
+            serializationFormat ?? EXECUTION_SERIALIZATION_FORMAT.CSV,
+          contentType: contentType,
+        },
+        {
+          parameterValues: buildExecutionParameterValues(
+            this.queryBuilderState.parametersState.parameterStates,
+            this.queryBuilderState.graphManagerState,
+          ),
+        },
+      );
       this.exportDataState.pass();
     } catch (error) {
       assertErrorThrown(error);

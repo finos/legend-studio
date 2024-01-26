@@ -29,6 +29,8 @@ import {
   StopWatch,
   guaranteeNonNullable,
   isLossSafeNumber,
+  getContentTypeFileExtension,
+  ContentType,
 } from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
@@ -88,7 +90,10 @@ import { deserialize, serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError.js';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText.js';
 import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
-import type { ExecutionOptions } from '../../../../../graph-manager/AbstractPureGraphManager.js';
+import type {
+  ExecutionOptions,
+  ExportDataOptions,
+} from '../../../../../graph-manager/AbstractPureGraphManager.js';
 import type { ExternalFormatDescription } from '../../../../../graph-manager/action/externalFormat/ExternalFormatDescription.js';
 import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
@@ -698,10 +703,7 @@ export class V1_Engine {
     options?: ExecutionOptions,
   ): Promise<V1_ExecutionResult> {
     try {
-      const executionResultInText = await this.runQueryAndReturnString(
-        input,
-        options,
-      );
+      const executionResultInText = await this.runQueryAndReturnString(input);
       const rawExecutionResult =
         returnUndefOnError(() =>
           this.parseExecutionResults(executionResultInText, options),
@@ -720,16 +722,38 @@ export class V1_Engine {
     }
   }
 
-  async runQueryAndReturnString(
+  async exportData(
     input: V1_ExecuteInput,
-    options?: ExecutionOptions,
-  ): Promise<string> {
+    options: ExportDataOptions,
+  ): Promise<void> {
+    try {
+      const extension = getContentTypeFileExtension(
+        options.contentType ?? ContentType.TEXT_CSV,
+      );
+      await this.engineServerClient.exportData(
+        V1_ExecuteInput.serialization.toJson(input),
+        options.serializationFormat,
+        `result.${extension}`,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  }
+
+  async runQueryAndReturnString(input: V1_ExecuteInput): Promise<string> {
     return (
-      (await this.engineServerClient.execute(
+      (await this.engineServerClient.runQuery(
         V1_ExecuteInput.serialization.toJson(input),
         {
           returnResultAsText: true,
-          serializationFormat: options?.serializationFormat,
         },
       )) as Response
     ).text();
