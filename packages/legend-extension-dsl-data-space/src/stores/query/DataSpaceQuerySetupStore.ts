@@ -22,6 +22,7 @@ import {
 } from '@finos/legend-application-query';
 import {
   DepotScope,
+  LATEST_VERSION_ALIAS,
   type DepotServerClient,
   type StoredEntity,
 } from '@finos/legend-server-depot';
@@ -182,7 +183,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
             generateDataSpaceQueryCreatorRoute(
               guaranteeNonNullable(dataSpaceInfo.groupId),
               guaranteeNonNullable(dataSpaceInfo.artifactId),
-              guaranteeNonNullable(dataSpaceInfo.versionId),
+              LATEST_VERSION_ALIAS, //always default to latest
               dataSpaceInfo.path,
               dataSpaceInfo.defaultExecutionContext,
               undefined,
