@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.13.10
+
+### Patch Changes
+
+- [#2886](https://github.com/finos/legend-studio/pull/2886) [`6b55cc6a8`](https://github.com/finos/legend-studio/commit/6b55cc6a82d9d22f538365a2533dab6b18b51d93) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Read meta::pure::functions::date::firstDayOfYear as a Date function
+
+- [#2894](https://github.com/finos/legend-studio/pull/2894) [`9c1fe534f`](https://github.com/finos/legend-studio/commit/9c1fe534f8ec3e96b7ff67bc4a0ee900ba3c4c7a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Format multi executed sqls.
+
 ## 4.13.9
 
 ## 4.13.8
