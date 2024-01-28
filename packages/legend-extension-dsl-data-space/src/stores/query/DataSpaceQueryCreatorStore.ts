@@ -34,6 +34,7 @@ import {
 import {
   type DepotServerClient,
   StoreProjectData,
+  LATEST_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import {
   guaranteeNonNullable,
@@ -174,7 +175,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
             generateDataSpaceQueryCreatorRoute(
               guaranteeNonNullable(dataSpaceInfo.groupId),
               guaranteeNonNullable(dataSpaceInfo.artifactId),
-              guaranteeNonNullable(dataSpaceInfo.versionId),
+              LATEST_VERSION_ALIAS, //always default to latest
               dataSpaceInfo.path,
               dataSpaceInfo.defaultExecutionContext,
               undefined,
