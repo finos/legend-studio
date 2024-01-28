@@ -15,7 +15,8 @@
  */
 
 import { type TooltipPlacement, Tooltip } from '@finos/legend-art';
-import { CORE_PURE_PATH, PURE_DOC_TAG, type Class } from '@finos/legend-graph';
+import { type Class } from '@finos/legend-graph';
+import { QueryBuilderTaggedValueInfoTooltip } from './QueryBuilderPropertyInfoTooltip.js';
 
 export const QueryBuilderRootClassInfoTooltip: React.FC<{
   _class: Class;
@@ -23,14 +24,6 @@ export const QueryBuilderRootClassInfoTooltip: React.FC<{
   placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { _class, children, placement } = props;
-  const documentation = _class.taggedValues
-    .filter(
-      (taggedValue) =>
-        taggedValue.tag.ownerReference.value.path ===
-          CORE_PURE_PATH.PROFILE_DOC &&
-        taggedValue.tag.value.value === PURE_DOC_TAG,
-    )
-    .map((taggedValue) => taggedValue.value);
 
   return (
     <Tooltip
@@ -59,17 +52,9 @@ export const QueryBuilderRootClassInfoTooltip: React.FC<{
               {_class.path}
             </div>
           </div>
-
-          {Boolean(documentation.length) && (
-            <div className="query-builder__tooltip__item">
-              <div className="query-builder__tooltip__item__label">
-                Documentation
-              </div>
-              <div className="query-builder__tooltip__item__value">
-                {documentation.join('\n\n')}
-              </div>
-            </div>
-          )}
+          <QueryBuilderTaggedValueInfoTooltip
+            taggedValues={_class.taggedValues}
+          />
         </div>
       }
     >

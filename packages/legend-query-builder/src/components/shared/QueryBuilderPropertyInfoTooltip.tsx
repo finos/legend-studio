@@ -17,12 +17,99 @@
 import { type TooltipPlacement, Tooltip } from '@finos/legend-art';
 import {
   type AbstractProperty,
+  type Type,
+  type TaggedValue,
   DerivedProperty,
   getMultiplicityDescription,
   CORE_PURE_PATH,
   PURE_DOC_TAG,
-  type Type,
 } from '@finos/legend-graph';
+import { useState } from 'react';
+
+export const QueryBuilderTaggedValueInfoTooltip: React.FC<{
+  taggedValues: TaggedValue[];
+}> = (props) => {
+  const { taggedValues } = props;
+  const [showMore, setShowMore] = useState(false);
+  const toggleShowMoreButton: React.MouseEventHandler = (event) => {
+    event.stopPropagation();
+    setShowMore(!showMore);
+  };
+  const isDocTaggedValue = (val: TaggedValue): boolean =>
+    val.tag.ownerReference.value.path === CORE_PURE_PATH.PROFILE_DOC &&
+    val.tag.value.value === PURE_DOC_TAG;
+  const documentation = taggedValues
+    .filter((taggedValue) => isDocTaggedValue(taggedValue))
+    .map((taggedValue) => taggedValue.value);
+  const tagValuesExceptDoc = taggedValues.filter(
+    (taggedValue) => !isDocTaggedValue(taggedValue),
+  );
+
+  const taggedValueCellRender = (taggedValue: TaggedValue): React.ReactNode => (
+    <div
+      className="query-builder__tooltip__item"
+      key={`${taggedValue.tag.ownerReference.value.name}.${taggedValue.value}`}
+    >
+      <div className="query-builder__tooltip__item__label">
+        {`${taggedValue.tag.ownerReference.value.name}.${taggedValue.tag.value.value}`}
+      </div>
+      <div className="query-builder__tooltip__item__value">
+        {taggedValue.value}
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      {tagValuesExceptDoc.length > 0 ? (
+        <div className="query-builder__tooltip__item">
+          <div className="query-builder__tooltip__item__label">
+            Tagged Values
+          </div>
+          <div className="query-builder__tooltip__taggedValues">
+            {taggedValues.slice(0, 1).map((taggedValue) => (
+              <div
+                className="query-builder__tooltip__combo"
+                key={`${taggedValue.tag.ownerReference.value.name}.${taggedValue.value}`}
+              >
+                {taggedValueCellRender(taggedValue)}
+                {taggedValues.length > 3 && (
+                  <button
+                    className="btn btn--dark query-builder__tooltip__taggedValues__show-btn"
+                    onClick={toggleShowMoreButton}
+                    title="Toggle button to show more/less"
+                  >
+                    {showMore ? 'Show Less' : 'Show More'}
+                  </button>
+                )}
+              </div>
+            ))}
+            {taggedValues
+              .slice(1, 3)
+              .map((taggedValue) => taggedValueCellRender(taggedValue))}
+            {showMore &&
+              taggedValues
+                .slice(3)
+                .map((taggedValue) => taggedValueCellRender(taggedValue))}
+          </div>
+        </div>
+      ) : (
+        <>
+          {Boolean(documentation.length) && (
+            <div className="query-builder__tooltip__item">
+              <div className="query-builder__tooltip__item__label">
+                Documentation
+              </div>
+              <div className="query-builder__tooltip__item__value">
+                {documentation.join('\n\n')}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
 
 export const QueryBuilderPropertyInfoTooltip: React.FC<{
   property: AbstractProperty;
@@ -33,14 +120,6 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
   type?: Type | undefined;
 }> = (props) => {
   const { property, path, isMapped, children, placement, type } = props;
-  const documentation = property.taggedValues
-    .filter(
-      (taggedValue) =>
-        taggedValue.tag.ownerReference.value.path ===
-          CORE_PURE_PATH.PROFILE_DOC &&
-        taggedValue.tag.value.value === PURE_DOC_TAG,
-    )
-    .map((taggedValue) => taggedValue.value);
 
   return (
     <Tooltip
@@ -91,17 +170,9 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
               {isMapped ? 'Yes' : 'No'}
             </div>
           </div>
-
-          {Boolean(documentation.length) && (
-            <div className="query-builder__tooltip__item">
-              <div className="query-builder__tooltip__item__label">
-                Documentation
-              </div>
-              <div className="query-builder__tooltip__item__value">
-                {documentation.join('\n\n')}
-              </div>
-            </div>
-          )}
+          <QueryBuilderTaggedValueInfoTooltip
+            taggedValues={property.taggedValues}
+          />
         </div>
       }
     >

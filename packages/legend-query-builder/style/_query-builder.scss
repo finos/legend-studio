@@ -421,7 +421,7 @@
 
   &__item {
     display: flex;
-    line-height: 1.6rem;
+    line-height: 3rem;
   }
 
   &__item__label {
@@ -440,6 +440,29 @@
     // as this tooltip can contain long documentation, it's best we limit its dimension
     max-width: 50rem;
     white-space: pre-line; // properly preserve newline characters
+  }
+
+  &__combo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__taggedValues {
+    max-height: 20rem;
+    overflow-y: scroll;
+    background-color: var(--color-dark-grey-100);
+    margin-top: 0.5rem;
+    margin-left: 1rem;
+    opacity: 0.9;
+    border: 1rem solid var(--color-dark-grey-100);
+
+    &__show-btn {
+      height: 1.5rem;
+      outline: none !important;
+      margin-left: 1rem;
+      white-space: nowrap;
+    }
   }
 }
 
