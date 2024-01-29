@@ -55,7 +55,10 @@ import {
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
 import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
-import { StoreProjectData } from '@finos/legend-server-depot';
+import {
+  LATEST_VERSION_ALIAS,
+  StoreProjectData,
+} from '@finos/legend-server-depot';
 import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import { flowResult } from 'mobx';
 
@@ -180,7 +183,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                     generateDataSpaceQueryCreatorRoute(
                       guaranteeNonNullable(dataSpaceInfo.groupId),
                       guaranteeNonNullable(dataSpaceInfo.artifactId),
-                      guaranteeNonNullable(dataSpaceInfo.versionId),
+                      LATEST_VERSION_ALIAS, //always default to latest
                       dataSpaceInfo.path,
                       guaranteeNonNullable(
                         dataSpaceInfo.defaultExecutionContext,
