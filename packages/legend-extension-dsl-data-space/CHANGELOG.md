@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.70
+
+### Patch Changes
+
+- [#2896](https://github.com/finos/legend-studio/pull/2896) [`a71ca3193`](https://github.com/finos/legend-studio/commit/a71ca319397f8871d909fae263477a8913e0a6a7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Default to latest when creating a query from dataspace
+
 ## 10.1.69
 
 ## 10.1.68
