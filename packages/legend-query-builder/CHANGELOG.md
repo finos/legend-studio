@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.13.11
+
+### Patch Changes
+
+- [#2889](https://github.com/finos/legend-studio/pull/2889) [`5283a043f`](https://github.com/finos/legend-studio/commit/5283a043f311434db38eecac8c0f34947a1f24fc) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support showing all tagged values of Class in query builder info tooltip
+
 ## 4.13.10
 
 ### Patch Changes
