@@ -552,7 +552,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 <QueryBuilderRootClassInfoTooltip
                   _class={guaranteeNonNullable(queryBuilderState.class)}
                 >
-                  <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
+                  <div
+                    className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info"
+                    data-testid={
+                      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON
+                    }
+                  >
                     <InfoCircleIcon />
                   </div>
                 </QueryBuilderRootClassInfoTooltip>
@@ -639,7 +644,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     isMapped={node.mappingData.mapped}
                     type={node.type}
                   >
-                    <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
+                    <div
+                      className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info"
+                      data-testid={
+                        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON
+                      }
+                    >
                       <InfoCircleIcon />
                     </div>
                   </QueryBuilderPropertyInfoTooltip>
@@ -651,7 +661,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     isMapped={node.mappingData.mapped}
                     multiplicity={node.multiplicity}
                   >
-                    <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
+                    <div
+                      className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info"
+                      data-testid={
+                        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON
+                      }
+                    >
                       <InfoCircleIcon />
                     </div>
                   </QueryBuilderSubclassInfoTooltip>
