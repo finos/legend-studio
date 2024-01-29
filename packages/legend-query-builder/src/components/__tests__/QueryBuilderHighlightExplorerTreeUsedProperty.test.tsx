@@ -17,7 +17,7 @@
 import { describe, test, expect } from '@jest/globals';
 import TEST_DATA__SimpleSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
 import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json' assert { type: 'json' };
-import { type PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
   create_RawLambda,
@@ -36,7 +36,12 @@ import {
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__graphFetchWithNestedSubtype,
 } from './TEST_DATA__QueryBuilder_Query_HighlightProperties.js';
-import { waitFor, getByText, fireEvent } from '@testing-library/react';
+import {
+  waitFor,
+  getByText,
+  fireEvent,
+  queryByText,
+} from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { isExplorerTreeNodeAlreadyUsed } from '../explorer/QueryBuilderExplorerPanel.js';
@@ -213,4 +218,39 @@ describe(integrationTest('Build property mapping data'), () => {
       ).toBe(expectedNumberOfUsedPropertyNode);
     },
   );
+});
+
+test(integrationTest('Query builder parameter default values'), async () => {
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    TEST_DATA__QueryBuilder_Model_HighlightProperties,
+    stub_RawLambda(),
+    'my::map',
+    'my::runtime',
+    TEST_DATA__ModelCoverageAnalysisResult_HighlightProperties,
+  );
+  await act(async () => {
+    queryBuilderState.changeClass(
+      queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
+    );
+  });
+
+  const explorerPanel = await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+  );
+  await waitFor(() => getByText(explorerPanel, 'Firm'));
+  const tooltipIcon = await waitFor(
+    () =>
+      renderResult.getAllByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON,
+      )[0],
+  );
+  fireEvent.mouseOver(guaranteeNonNullable(tooltipIcon));
+  const tooltip = await waitFor(() => renderResult.getByRole('tooltip'));
+  await waitFor(() => getByText(tooltip, 'Tagged Values'));
+  await waitFor(() => getByText(tooltip, 'Show More'));
+  await waitFor(() => getByText(tooltip, 'TestProfile.ID'));
+  expect(queryByText(tooltip, 'TestProfile.Test')).toBeNull();
+  fireEvent.click(getByText(tooltip, 'Show More'));
+  await waitFor(() => getByText(tooltip, 'Show Less'));
+  await waitFor(() => getByText(tooltip, 'TestProfile.Test'));
 });

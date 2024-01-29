@@ -1,30 +1,14 @@
 [
   {
-    "path": "my::Firm",
+    "path": "my::TestProfile",
     "content": {
-      "_type": "class",
-      "name": "Firm",
+      "_type": "profile",
+      "name": "TestProfile",
       "package": "my",
-      "properties": [
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "legalName",
-          "type": "String"
-        },
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "id",
-          "type": "Integer"
-        }
-      ]
+      "stereotypes": [],
+      "tags": ["ID", "Verified", "Test"]
     },
-    "classifierPath": "meta::pure::metamodel::type::Class"
+    "classifierPath": "meta::pure::metamodel::extension::Profile"
   },
   {
     "path": "my::Person",
@@ -48,6 +32,63 @@
           },
           "name": "firmID",
           "type": "Integer"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "my::Firm",
+    "content": {
+      "_type": "class",
+      "name": "Firm",
+      "package": "my",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "legalName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Integer"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "this is firm"
+        },
+        {
+          "tag": {
+            "profile": "my::TestProfile",
+            "value": "Verified"
+          },
+          "value": "true"
+        },
+        {
+          "tag": {
+            "profile": "my::TestProfile",
+            "value": "ID"
+          },
+          "value": "4"
+        },
+        {
+          "tag": {
+            "profile": "my::TestProfile",
+            "value": "Test"
+          },
+          "value": "true"
         }
       ]
     },
@@ -313,6 +354,7 @@
       "package": "my",
       "runtimeValue": {
         "_type": "engineRuntime",
+        "connectionStores": [],
         "connections": [
           {
             "store": {
