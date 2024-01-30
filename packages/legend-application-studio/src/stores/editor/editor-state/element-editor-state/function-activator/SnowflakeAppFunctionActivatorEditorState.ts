@@ -15,7 +15,6 @@
  */
 
 import {
-  type SnowflakeAppType,
   type PackageableConnection,
   SnowflakeApp,
   ConnectionPointer,
@@ -48,7 +47,6 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
       updateAppDescription: action,
       updateApplicationName: action,
       updateConnection: action,
-      updateAppType: action,
       validate: flow,
       deployToSandbox: flow,
     });
@@ -82,10 +80,6 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
 
   updateAppDescription(val: string): void {
     this.activator.description = val;
-  }
-
-  updateAppType(val: SnowflakeAppType): void {
-    this.activator.type = val;
   }
 
   *validate(): GeneratorFn<void> {

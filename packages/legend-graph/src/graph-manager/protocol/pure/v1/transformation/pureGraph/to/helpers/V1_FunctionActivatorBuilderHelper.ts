@@ -19,9 +19,7 @@ import { SnowflakeAppDeploymentConfiguration } from '../../../../../../../../gra
 import type { V1_SnowflakeAppDeploymentConfiguration } from '../../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildConnection } from './V1_ConnectionBuilderHelper.js';
-import { UnsupportedOperationError, guaranteeType } from '@finos/legend-shared';
-import { V1_SnowflakeAppType } from '../../../../engine/functionActivator/V1_SnowflakeAppType.js';
-import { SnowflakeAppType } from '../../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppType.js';
+import { guaranteeType } from '@finos/legend-shared';
 
 export const V1_buildSnowflakeAppDeploymentConfiguration = (
   element: V1_SnowflakeAppDeploymentConfiguration,
@@ -38,20 +36,4 @@ export const V1_buildSnowflakeAppDeploymentConfiguration = (
     metamodel.activationConnection = activationConnection;
   }
   return metamodel;
-};
-
-export const V1_buildSnowflakeAppType = (
-  element: V1_SnowflakeAppType,
-): SnowflakeAppType => {
-  switch (element) {
-    case V1_SnowflakeAppType.FULL:
-      return SnowflakeAppType.FULL;
-    case V1_SnowflakeAppType.STAGE:
-      return SnowflakeAppType.STAGE;
-    default:
-      throw new UnsupportedOperationError(
-        `Can't build V1_SnowflakeApp type`,
-        element,
-      );
-  }
 };

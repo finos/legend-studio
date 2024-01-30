@@ -19,14 +19,12 @@ import { V1_FunctionActivator } from './V1_FunctionActivator.js';
 import type { V1_PackageableElementVisitor } from '../V1_PackageableElement.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_SnowflakeAppDeploymentConfiguration } from '../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
-import type { V1_SnowflakeAppType } from '../../../engine/functionActivator/V1_SnowflakeAppType.js';
 
 export class V1_SnowflakeApp extends V1_FunctionActivator {
   applicationName!: string;
   description: string | undefined;
   owner: string | undefined;
   declare activationConfiguration: V1_SnowflakeAppDeploymentConfiguration;
-  type: V1_SnowflakeAppType | undefined;
 
   accept_PackageableElementVisitor<T>(
     visitor: V1_PackageableElementVisitor<T>,
@@ -41,7 +39,6 @@ export class V1_SnowflakeApp extends V1_FunctionActivator {
       this.description ?? '',
       this.owner ?? '',
       this.activationConfiguration,
-      this.type ?? '',
     ]);
   }
 }

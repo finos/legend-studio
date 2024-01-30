@@ -154,6 +154,7 @@ export enum PackageableElementPointerType {
   STORE = 'STORE',
   MAPPING = 'MAPPING',
   RUNTIME = 'RUNTIME',
+  FUNCTION = 'FUNCTION',
   FILE_GENERATION = 'FILE_GENERATION',
   SERVICE = 'SERVICE',
 }
