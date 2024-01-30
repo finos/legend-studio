@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.16
+
+### Patch Changes
+
+- [#2905](https://github.com/finos/legend-studio/pull/2905) [`2b4482334`](https://github.com/finos/legend-studio/commit/2b44823344d0a6a7e06240eee60641f208bcdd5e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Switch to use `@react-icons/all-files` from `react-icons` for most of icons to reduce bundle size
+
 ## 7.1.15
 
 ## 7.1.14

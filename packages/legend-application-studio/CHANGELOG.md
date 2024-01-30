@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.14.7
+
+### Patch Changes
+
+- [#2906](https://github.com/finos/legend-studio/pull/2906) [`273d1d28f`](https://github.com/finos/legend-studio/commit/273d1d28f842ccfaaf5f97a8c5664eede4fc38d0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Check sandbox access before creating sandbox project.
+
+- [#2840](https://github.com/finos/legend-studio/pull/2840) [`0e376262b`](https://github.com/finos/legend-studio/commit/0e376262b3bd65bb7fee4a170e7235136b9c2c7e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove Type From native App metamodel
+
 ## 28.14.6
 
 ## 28.14.5
