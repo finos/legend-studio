@@ -25,6 +25,8 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   IMPORT_PROJECT = 'setup.import-project',
   CREATE_WORKSPACE = 'setup.create-workspace',
   CREATE_PATCH = 'setup.create-patch',
+  SETUP_CREATE_SANDBOX_UNAUTHORIZED = 'setup.create-sandbox-unauthorized',
+  SETUP_CREATE_SANDBOX_PROJECT = 'setup.create-sandbox-project',
 
   // grammar parsers
   GRAMMAR_PARSER_PURE = 'grammar.parser.pure',

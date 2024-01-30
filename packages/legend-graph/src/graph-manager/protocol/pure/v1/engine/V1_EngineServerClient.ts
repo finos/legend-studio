@@ -240,6 +240,11 @@ export class V1_EngineServerClient extends AbstractServerClient {
       },
     );
 
+  validUserAccessRole = (userId: string): Promise<boolean> =>
+    this.get(`${this._sdlc()}/validUserAccessRole/${userId}`, undefined, {
+      [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+    });
+
   // ------------------------------------------- Grammar -------------------------------------------
 
   _grammarToJSON = (): string => `${this._pure()}/grammar/grammarToJson`;

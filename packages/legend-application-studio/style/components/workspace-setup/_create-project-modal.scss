@@ -177,3 +177,33 @@
     }
   }
 }
+
+.sandbox-project-modal {
+  width: 75rem;
+  border: 0.1rem solid var(--color-blue-200);
+  padding: 0;
+  overflow: auto;
+
+  &__header {
+    display: flex;
+    margin: 1.5rem 2rem;
+
+    &__label {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+  }
+
+  &__form {
+    display: flex;
+    padding: 0.5rem 0 1rem;
+    flex-direction: column;
+
+    &__unsupported {
+      @include flexHCenter;
+
+      font-weight: 500;
+      color: var(--color-dark-grey-400);
+    }
+  }
+}
