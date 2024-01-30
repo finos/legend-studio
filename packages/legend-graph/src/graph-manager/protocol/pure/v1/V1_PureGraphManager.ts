@@ -3552,6 +3552,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.getEngineServerClient().createPrototypeProject();
   }
 
+  userHasPrototypeProjectAccess(userId: string): Promise<boolean> {
+    return this.engine.getEngineServerClient().validUserAccessRole(userId);
+  }
+
   // --------------------------------------------- Change Detection ---------------------------------------------
 
   async buildHashesIndex(entities: Entity[]): Promise<Map<string, string>> {

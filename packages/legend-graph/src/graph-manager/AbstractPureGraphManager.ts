@@ -389,6 +389,8 @@ export abstract class AbstractPureGraphManager {
     owner: string;
   }>;
 
+  abstract userHasPrototypeProjectAccess(userId: string): Promise<boolean>;
+
   // ------------------------------------------- Test -------------------------------------------
 
   abstract runTests(

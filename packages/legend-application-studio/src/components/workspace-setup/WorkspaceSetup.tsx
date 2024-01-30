@@ -34,6 +34,9 @@ import {
   SearchIcon,
   BaseCard,
   OpenIcon,
+  Dialog,
+  MarkdownTextViewer,
+  Modal,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
@@ -301,6 +304,39 @@ const withWorkspaceSetupStore = (WrappedComponent: React.FC): React.FC =>
       </WorkspaceSetupStoreProvider>
     );
   };
+
+const SandboxAccessModal = observer(() => {
+  const setupStore = useWorkspaceSetupStore();
+  const closeModal = (): void => setupStore.setSandboxModal(false);
+  const applicationStore = setupStore.applicationStore;
+  const documentation = applicationStore.documentationService.getDocEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_CREATE_SANDBOX_UNAUTHORIZED,
+  );
+
+  return (
+    <Dialog open={true} onClose={closeModal}>
+      <Modal darkMode={true} className="sandbox-project-modal">
+        <div className="sandbox-project-modal__header">
+          <div className="sandbox-project-modal__header__label">
+            Create Sandbox Project
+          </div>
+        </div>
+        <div className="sandbox-project-modal__form panel__content__form">
+          <div className="panel__content__form__section sandbox-project-modal__form__unsupported">
+            You do not have access to create a Sandbox Project
+          </div>
+        </div>
+        <div className="sandbox-project-modal__content">
+          {documentation?.markdownText && (
+            <div className="panel__content__form__section">
+              <MarkdownTextViewer value={documentation.markdownText} />
+            </div>
+          )}
+        </div>
+      </Modal>
+    </Dialog>
+  );
+});
 
 export const WorkspaceSetup = withWorkspaceSetupStore(
   observer(() => {
@@ -581,6 +617,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       <DividerWithText className="workspace-setup__divider">
                         OR
                       </DividerWithText>
+                      {setupStore.sandboxModal && <SandboxAccessModal />}
                       <div className="workspace-setup__actions__button">
                         <button
                           className="workspace-setup__new-btn btn--dark"
@@ -591,8 +628,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                         </button>
                         {setupStore.sandboxProject === true &&
                           setupStore.initState.hasCompleted &&
-                          setupStore.applicationStore.config.options
-                            .TEMPORARY__enableCreationOfSandboxProjects && (
+                          setupStore.supportsCreatingSandboxProject && (
                             <button
                               className="workspace-setup__new-btn btn--dark"
                               onClick={createSandboxProject}
