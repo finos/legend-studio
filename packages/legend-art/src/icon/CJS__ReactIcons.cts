@@ -29,36 +29,22 @@
  * --verbatimModuleSyntax flag, so we have to use CommonJS syntax in this file
  * See https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#verbatimmodulesyntax
  */
-import FA = require('react-icons/fa');
-import GI = require('react-icons/gi');
+
+/**
+ * HEADS-UP: Try to use '@react-icons/all-files' to reduce bundle size
+ * if there is a missing icon in '@react-icons/all-files' then use 'react-icons'
+ * Reference:
+ * https://github.com/react-icons/react-icons/blob/master/README.md
+ * https://github.com/react-icons/react-icons/issues/154#issuecomment-895976123
+ */
 import MD = require('react-icons/md');
 import VSC = require('react-icons/vsc');
-import GO = require('react-icons/go');
-import SI = require('react-icons/si');
-import IO5 = require('react-icons/io5');
 import BS = require('react-icons/bs');
-import BI = require('react-icons/bi');
-import CG = require('react-icons/cg');
-import FI = require('react-icons/fi');
-import RI = require('react-icons/ri');
 import TB = require('react-icons/tb');
-import HI = require('react-icons/hi');
-import LU = require('react-icons/lu');
 
 export = {
-  FA,
-  GI,
   MD,
   VSC,
-  GO,
-  SI,
-  IO5,
   BS,
-  BI,
-  CG,
-  FI,
-  RI,
   TB,
-  HI,
-  LU,
 };
