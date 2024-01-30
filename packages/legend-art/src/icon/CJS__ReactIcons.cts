@@ -29,16 +29,22 @@
  * --verbatimModuleSyntax flag, so we have to use CommonJS syntax in this file
  * See https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#verbatimmodulesyntax
  */
+
+/**
+ * HEADS-UP: Try to use '@react-icons/all-files' to reduce bundle size
+ * if there is a missing icon in '@react-icons/all-files' then use 'react-icons'
+ * Reference:
+ * https://github.com/react-icons/react-icons/blob/master/README.md
+ * https://github.com/react-icons/react-icons/issues/154#issuecomment-895976123
+ */
 import MD = require('react-icons/md');
 import VSC = require('react-icons/vsc');
 import BS = require('react-icons/bs');
 import TB = require('react-icons/tb');
-import LU = require('react-icons/lu');
 
 export = {
   MD,
   VSC,
   BS,
   TB,
-  LU,
 };

@@ -39,9 +39,6 @@ export const LastModifiedIcon = TB.TbClockEdit;
 export const SQLIcon = TB.TbSql;
 export const Snowflake_BrandIcon = TB.TbBrandSnowflake;
 
-const LU = ReactIcons.LU;
-export const WorkflowIcon = LU.LuWorkflow;
-
 const MD = ReactIcons.MD;
 export const ManageSearchIcon = MD.MdManageSearch; // to be reviewed
 export const PencilIcon = MD.MdModeEdit;
@@ -517,3 +514,8 @@ export const TestTubeIcon = RiTestTubeFill;
 export const DroidIcon = RiRobotFill;
 export const GovernanceIcon = RiGovernmentFill;
 export const CostCircleIcon = RiMoneyDollarCircleFill;
+
+//======================================================= FC =======================================================
+import { FcWorkflow } from '@react-icons/all-files/fc/FcWorkflow.js';
+
+export const WorkflowIcon = FcWorkflow;
