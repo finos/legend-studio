@@ -241,9 +241,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
 
   validUserAccessRole = (userId: string): Promise<boolean> =>
-    this.get(`${this._sdlc()}/validUserAccessRole/${userId}`, undefined, {
-      [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
-    });
+    this.get(
+      `${this._sdlc()}/userHasPrototypeProjectAccess/${userId}`,
+      undefined,
+      {
+        [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+      },
+    );
 
   // ------------------------------------------- Grammar -------------------------------------------
 
