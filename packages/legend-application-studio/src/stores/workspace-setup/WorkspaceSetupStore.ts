@@ -221,30 +221,30 @@ export class WorkspaceSetupStore {
       const sandbox = guaranteeType(
         this.sandboxProject,
         Project,
-        'Error Retrieving sandbox project',
+        'Error retrieving sandbox project',
       );
-      const pilotWorkspace = Workspace.serialization.fromJson(
+      const initialWorkspace = Workspace.serialization.fromJson(
         (yield this.sdlcServerClient.createWorkspace(
           sandbox.projectId,
           undefined,
-          'pilotWorkspace',
+          'myWorkspace',
           WorkspaceType.GROUP,
         )) as PlainObject<Workspace>,
       );
       yield flowResult(
         this.changeProject(sandbox, {
-          workspaceId: pilotWorkspace.workspaceId,
+          workspaceId: initialWorkspace.workspaceId,
           workspaceType: WorkspaceType.GROUP,
         }),
       );
       this.applicationStore.alertService.setBlockingAlert(undefined);
       this.applicationStore.notificationService.notifySuccess(
-        `Sandbox Project with pilot workspace created`,
+        `Sandbox project with workspace created`,
       );
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.ENGINE_MANAGER_FAILURE),
         error,
       );
       this.applicationStore.notificationService.notifyError(error);
