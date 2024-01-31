@@ -15,6 +15,7 @@
  */
 
 import {
+  type EqualTo,
   type EqualToJson,
   type ExternalFormatData,
   type AtomicTest,
@@ -33,6 +34,12 @@ import { action } from 'mobx';
 export const equalToJSON_setExpected = action(
   (equalToJSON: EqualToJson, val: ExternalFormatData): void => {
     equalToJSON.expected = observe_ExternalFormatData(val);
+  },
+);
+
+export const equalTo_setExpected = action(
+  (equalToJSON: EqualTo, val: object): void => {
+    equalToJSON.expected = val;
   },
 );
 
