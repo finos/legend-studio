@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.74
+
+### Patch Changes
+
+- [#2917](https://github.com/finos/legend-studio/pull/2917) [`fc75e4921`](https://github.com/finos/legend-studio/commit/fc75e4921e28d39bb8ed355987973dfdce8f0150) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix loading correct dataspace exec context.
+
 ## 10.1.73
 
 ## 10.1.72
