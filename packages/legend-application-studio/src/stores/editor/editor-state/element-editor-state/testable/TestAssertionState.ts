@@ -17,6 +17,7 @@
 import {
   type TestAssertion,
   type AssertionStatus,
+  type ValueSpecification,
   AssertFail,
   type TestResult,
   TestExecuted,
@@ -27,6 +28,8 @@ import {
   MultiExecutionServiceTestResult,
   AssertPass,
   TestExecutionStatus,
+  EqualTo,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -39,6 +42,8 @@ import {
   IllegalStateError,
   guaranteeNonNullable,
   guaranteeType,
+  returnUndefOnError,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
@@ -49,6 +54,7 @@ import {
 } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import type { TestableTestEditorState } from './TestableEditorState.js';
 import { isTestPassing } from '../../../utils/TestableUtils.js';
+import { equalTo_setExpected } from '../../../../graph-modifier/Testable_GraphModifierHelper.js';
 
 export enum TEST_ASSERTION_TAB {
   EXPECTED = 'EXPECTED',
@@ -268,6 +274,55 @@ export class EqualToJsonAssertionState extends TestAssertionState {
   }
 }
 
+export class EqualToAssertionState extends TestAssertionState {
+  declare assertion: EqualTo;
+  valueSpec: ValueSpecification;
+
+  constructor(
+    editorStore: EditorStore,
+    assertionState: TestAssertionEditorState,
+    valueSpec: ValueSpecification,
+  ) {
+    super(editorStore, assertionState);
+    makeObservable(this, {
+      valueSpec: observable,
+      assertion: observable,
+      updateValueSpec: action,
+    });
+    this.valueSpec = observe_ValueSpecification(
+      valueSpec,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+  }
+
+  updateValueSpec(val: ValueSpecification): void {
+    this.valueSpec = observe_ValueSpecification(
+      val,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    const object =
+      this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
+        val,
+      );
+    equalTo_setExpected(this.assertion, object);
+  }
+
+  override generateExpected(status: AssertFail): boolean {
+    throw new Error('Method not implemented.');
+  }
+  override generateBare(): TestAssertion {
+    const equal = new EqualTo();
+    equal.expected = {};
+    return equal;
+  }
+  override label(): string {
+    return 'Equal To';
+  }
+  override get supportsGeneratingAssertion(): boolean {
+    return false;
+  }
+}
+
 export class UnsupportedAssertionState extends TestAssertionState {
   override get supportsGeneratingAssertion(): boolean {
     return false;
@@ -387,6 +442,16 @@ export class TestAssertionEditorState {
   buildAssertionState(assertion: TestAssertion): TestAssertionState {
     if (assertion instanceof EqualToJson) {
       return new EqualToJsonAssertionState(this.editorStore, this);
+    } else if (assertion instanceof EqualTo) {
+      const val = returnUndefOnError(() =>
+        this.editorStore.graphManagerState.graphManager.buildValueSpecification(
+          assertion.expected as PlainObject<ValueSpecification>,
+          this.editorStore.graphManagerState.graph,
+        ),
+      );
+      if (val) {
+        return new EqualToAssertionState(this.editorStore, this, val);
+      }
     }
     return new UnsupportedAssertionState(this.editorStore, this);
   }

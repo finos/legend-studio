@@ -818,7 +818,7 @@ const CreateTestModal = observer(
       >
         <Modal darkMode={true}>
           <ModalHeader>
-            <ModalTitle title="Create Mapping Test" />
+            <ModalTitle title="Create Function Test" />
           </ModalHeader>
           <ModalBody>
             <PanelFormTextField
@@ -842,11 +842,9 @@ const CreateTestModal = observer(
     );
   },
 );
-
-const FunctionTestSuiteEditor = observer(
+const FunctionTestSuiteEditorInner = observer(
   (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
     const { functionTestSuiteState } = props;
-    const dataState = functionTestSuiteState.dataState;
     const editorStore = functionTestSuiteState.editorStore;
     const selectedTestState = functionTestSuiteState.selectTestState;
     const addTest = (): void => {
@@ -862,11 +860,6 @@ const FunctionTestSuiteEditor = observer(
         editorStore.applicationStore.alertUnhandledError,
       );
     };
-
-    const addStoreTestData = (): void => {
-      // TODO
-    };
-
     const renderFunctionTestEditor = (): React.ReactNode => {
       if (selectedTestState) {
         return <FunctionTestEditor functionTestState={selectedTestState} />;
@@ -882,6 +875,80 @@ const FunctionTestSuiteEditor = observer(
       }
       return null;
     };
+
+    return (
+      <ResizablePanelGroup orientation="vertical">
+        <ResizablePanel size={200} minSize={28}>
+          <div className="binding-editor__header">
+            <div className="binding-editor__header__title">
+              <div className="panel__header__title__content">Tests</div>
+            </div>
+            <div className="panel__header__actions">
+              <button
+                className="panel__header__action testable-test-explorer__play__all__icon"
+                tabIndex={-1}
+                onClick={runTests}
+                title="Run All Tests"
+              >
+                <RunAllIcon />
+              </button>
+              <button
+                className="panel__header__action testable-test-explorer__play__all__icon"
+                tabIndex={-1}
+                onClick={runFailingTests}
+                title="Run All Failing Tests"
+              >
+                <RunErrorsIcon />
+              </button>
+              <button
+                className="panel__header__action"
+                tabIndex={-1}
+                onClick={addTest}
+                title="Add Function Test"
+              >
+                <PlusIcon />
+              </button>
+            </div>
+          </div>
+          <PanelContent>
+            {functionTestSuiteState.testStates.map((test) => (
+              <FunctionTestItem
+                key={test.uuid}
+                functionTestState={test}
+                suiteState={functionTestSuiteState}
+              />
+            ))}
+            {functionTestSuiteState.showCreateModal && (
+              <CreateTestModal functionSuiteState={functionTestSuiteState} />
+            )}
+          </PanelContent>
+        </ResizablePanel>
+        <ResizablePanelSplitter>
+          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+        </ResizablePanelSplitter>
+        <ResizablePanel minSize={28}>
+          {renderFunctionTestEditor()}
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    );
+  },
+);
+
+const FunctionTestSuiteEditor = observer(
+  (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
+    const { functionTestSuiteState } = props;
+    const dataState = functionTestSuiteState.dataState;
+    const addStoreTestData = (): void => {
+      // TODO
+    };
+
+    if (!functionTestSuiteState.functionTestableState.containsRuntime) {
+      return (
+        <FunctionTestSuiteEditorInner
+          functionTestSuiteState={functionTestSuiteState}
+        />
+      );
+    }
     return (
       <ResizablePanelGroup orientation="horizontal">
         <ResizablePanel size={300} minSize={28}>
@@ -909,61 +976,11 @@ const FunctionTestSuiteEditor = observer(
           <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
         </ResizablePanelSplitter>
         <ResizablePanel minSize={56}>
-          <ResizablePanelGroup orientation="vertical">
-            <ResizablePanel size={200} minSize={28}>
-              <div className="binding-editor__header">
-                <div className="binding-editor__header__title">
-                  <div className="panel__header__title__content">Tests</div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action testable-test-explorer__play__all__icon"
-                    tabIndex={-1}
-                    onClick={runTests}
-                    title="Run All Tests"
-                  >
-                    <RunAllIcon />
-                  </button>
-                  <button
-                    className="panel__header__action testable-test-explorer__play__all__icon"
-                    tabIndex={-1}
-                    onClick={runFailingTests}
-                    title="Run All Failing Tests"
-                  >
-                    <RunErrorsIcon />
-                  </button>
-                  <button
-                    className="panel__header__action"
-                    tabIndex={-1}
-                    onClick={addTest}
-                    title="Add Function Test"
-                  >
-                    <PlusIcon />
-                  </button>
-                </div>
-              </div>
-              <PanelContent>
-                {functionTestSuiteState.testStates.map((test) => (
-                  <FunctionTestItem
-                    key={test.uuid}
-                    functionTestState={test}
-                    suiteState={functionTestSuiteState}
-                  />
-                ))}
-                {functionTestSuiteState.showCreateModal && (
-                  <CreateTestModal
-                    functionSuiteState={functionTestSuiteState}
-                  />
-                )}
-              </PanelContent>
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={28}>
-              {renderFunctionTestEditor()}
-            </ResizablePanel>
-          </ResizablePanelGroup>
+          {
+            <FunctionTestSuiteEditorInner
+              functionTestSuiteState={functionTestSuiteState}
+            />
+          }
         </ResizablePanel>
       </ResizablePanelGroup>
     );
@@ -1089,7 +1106,7 @@ export const FunctionTestableEditor = observer(
       functionTestableState.renameTestableComponent(val);
     };
     useApplicationNavigationContext(
-      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EDITOR_TEST,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.FUNCTION_EDITOR_TEST,
     );
 
     return (

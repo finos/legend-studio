@@ -39,6 +39,7 @@ import {
   type EngineRuntime,
   type ObserverContext,
   type ValueSpecification,
+  type TestAssertion,
   FunctionParameterValue,
   VariableExpression,
   FunctionTest,
@@ -57,6 +58,7 @@ import {
   PackageableElementExplicitReference,
   observe_ValueSpecification,
   buildLambdaVariableExpressions,
+  EqualTo,
 } from '@finos/legend-graph';
 import {
   TestablePackageableElementEditorState,
@@ -80,7 +82,10 @@ import {
 } from '../../../../utils/TestableUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
 import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
-import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
+import {
+  buildDefaultInstanceValue,
+  generateVariableExpressionMockValue,
+} from '@finos/legend-query-builder';
 
 const addToFunctionMap = (
   val: SimpleFunctionExpression,
@@ -567,20 +572,41 @@ class FunctionTestDataState {
 export const createFunctionTest = (
   id: string,
   observerContext: ObserverContext,
+  containsRuntime: boolean,
+  functionDefinition: ConcreteFunctionDefinition,
+  editorStore: EditorStore,
   suite?: FunctionTestSuite | undefined,
 ): FunctionTest => {
   const funcionTest = new FunctionTest();
   funcionTest.id = id;
-  funcionTest.assertions = [
-    createDefaultEqualToJSONTestAssertion(DEFAULT_TEST_ASSERTION_ID),
-  ];
+  funcionTest.assertions = [];
+  let _assertion: TestAssertion;
+  if (containsRuntime) {
+    _assertion = createDefaultEqualToJSONTestAssertion(
+      DEFAULT_TEST_ASSERTION_ID,
+    );
+  } else {
+    const equalTo = new EqualTo();
+    equalTo.id = DEFAULT_TEST_ASSERTION_ID;
+    const type = functionDefinition.returnType.value;
+    const valSpec = buildDefaultInstanceValue(
+      editorStore.graphManagerState.graph,
+      type,
+      editorStore.changeDetectionState.observerContext,
+    );
+    const expected =
+      editorStore.graphManagerState.graphManager.serializeValueSpecification(
+        valSpec,
+      );
+    equalTo.expected = expected;
+    _assertion = equalTo;
+  }
+  funcionTest.assertions = [_assertion];
+  _assertion.parentTest = funcionTest;
   if (suite) {
     funcionTest.__parent = suite;
     testSuite_addTest(suite, funcionTest, observerContext);
   }
-  const assertion = createDefaultEqualToJSONTestAssertion(`expectedAssertion`);
-  funcionTest.assertions = [assertion];
-  assertion.parentTest = funcionTest;
   return funcionTest;
 };
 export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
@@ -608,6 +634,8 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
       showCreateModal: observable,
       selectTestState: observable,
       changeTest: observable,
+      runSuite: flow,
+      runFailingTests: flow,
       buildTestState: action,
       deleteTest: action,
       buildTestStates: action,
@@ -646,9 +674,11 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
     const test = createFunctionTest(
       id,
       this.editorStore.changeDetectionState.observerContext,
+      this.functionTestableState.containsRuntime,
+      this.functionTestableState.function,
+      this.editorStore,
       this.suite,
     );
-
     testSuite_addTest(
       this.suite,
       test,
@@ -700,6 +730,14 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
     return this.functionEditorState.functionElement;
   }
 
+  get associatedRuntimes(): EngineRuntime[] | undefined {
+    return resolveRuntimesFromQuery(this.function, this.editorStore);
+  }
+
+  get containsRuntime(): boolean {
+    return Boolean(this.associatedRuntimes?.length);
+  }
+
   override init(): void {
     if (!this.selectedTestSuite) {
       const suite = this.function.tests[0];
@@ -716,10 +754,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
   createSuite(suiteName: string, testName: string): void {
     const functionSuite = new FunctionTestSuite();
     functionSuite.id = suiteName;
-    const engineRuntimes = resolveRuntimesFromQuery(
-      this.function,
-      this.editorStore,
-    );
+    const engineRuntimes = this.associatedRuntimes;
     if (engineRuntimes?.length) {
       try {
         assertTrue(
@@ -771,6 +806,9 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
     createFunctionTest(
       testName,
       this.editorStore.changeDetectionState.observerContext,
+      this.containsRuntime,
+      this.function,
+      this.editorStore,
       functionSuite,
     );
     // set test suite

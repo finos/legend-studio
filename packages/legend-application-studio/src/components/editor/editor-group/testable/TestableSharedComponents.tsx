@@ -59,6 +59,7 @@ import {
   type TestAssertionResultState,
   type TestAssertionEditorState,
   type TestAssertionState,
+  EqualToAssertionState,
 } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
 import { externalFormatData_setData } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
@@ -77,6 +78,10 @@ import {
   getPackageableElementOptionFormatter,
 } from '@finos/legend-lego/graph-editor';
 import type { TestParamContentType } from '../../../../stores/editor/utils/TestableUtils.js';
+import {
+  BasicValueSpecificationEditor,
+  buildDefaultInstanceValue,
+} from '@finos/legend-query-builder';
 
 export const SharedDataElementModal = observer(
   (props: {
@@ -252,6 +257,51 @@ const EqualToJsonAsssertionEditor = observer(
                 equalToJsonAssertionState.setExpectedValue(val);
               }}
               hideGutter={true}
+            />
+          </div>
+        </div>
+      </>
+    );
+  },
+);
+
+const EqualToAsssertionEditor = observer(
+  (props: {
+    testAssertionEditorState: TestAssertionEditorState;
+    equalToAssertionState: EqualToAssertionState;
+  }) => {
+    const { equalToAssertionState, testAssertionEditorState } = props;
+    const editorStore = testAssertionEditorState.editorStore;
+    const resetNode = (): void => {
+      const type = equalToAssertionState.valueSpec.genericType?.value.rawType;
+      if (type) {
+        const valSpec = buildDefaultInstanceValue(
+          testAssertionEditorState.editorStore.graphManagerState.graph,
+          type,
+          testAssertionEditorState.editorStore.changeDetectionState
+            .observerContext,
+        );
+        equalToAssertionState.updateValueSpec(valSpec);
+      }
+    };
+
+    return (
+      <>
+        <div className="equal-to-editor__content">
+          <div className="equal-to-editor__content__data">
+            <BasicValueSpecificationEditor
+              valueSpecification={equalToAssertionState.valueSpec}
+              setValueSpecification={(val: ValueSpecification): void => {
+                equalToAssertionState.updateValueSpec(val);
+              }}
+              graph={editorStore.graphManagerState.graph}
+              obseverContext={editorStore.changeDetectionState.observerContext}
+              resetValue={resetNode}
+              typeCheckOption={{
+                expectedType:
+                  equalToAssertionState.valueSpec.genericType?.value.rawType ??
+                  PrimitiveType.STRING,
+              }}
             />
           </div>
         </div>
@@ -540,6 +590,13 @@ export const TestAssertionEditor = observer(
         return (
           <EqualToJsonAsssertionEditor
             equalToJsonAssertionState={state}
+            testAssertionEditorState={testAssertionState}
+          />
+        );
+      } else if (state instanceof EqualToAssertionState) {
+        return (
+          <EqualToAsssertionEditor
+            equalToAssertionState={state}
             testAssertionEditorState={testAssertionState}
           />
         );
