@@ -36,7 +36,12 @@ import {
   generateDataSpaceQuerySetupRoute,
 } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
-import { type Query, isValidFullPath } from '@finos/legend-graph';
+import {
+  type Query,
+  type Mapping,
+  type PackageableRuntime,
+  isValidFullPath,
+} from '@finos/legend-graph';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
@@ -61,6 +66,29 @@ import {
 } from '@finos/legend-server-depot';
 import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import { flowResult } from 'mobx';
+import type {
+  DataSpace,
+  DataSpaceExecutionContext,
+} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+
+const resolveExecutionContext = (
+  dataSpace: DataSpace,
+  queryMapping: Mapping,
+  queryRuntime: PackageableRuntime,
+): DataSpaceExecutionContext | undefined => {
+  const matchingExecContexts = dataSpace.executionContexts.filter(
+    (ec) => ec.mapping.value === queryMapping,
+  );
+  if (matchingExecContexts.length > 1) {
+    const matchRuntime = matchingExecContexts.find(
+      (exec) => exec.defaultRuntime.value.path === queryRuntime.path,
+    );
+    // TODO: we will safely do this for now. Long term we should save exec context key into query store
+    // we should make runtime/mapping optional
+    return matchRuntime ?? matchingExecContexts[0];
+  }
+  return matchingExecContexts[0];
+};
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
@@ -124,8 +152,10 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             editorStore.graphManagerState.graph,
           );
           const mapping = query.mapping.value;
-          const matchingExecutionContext = dataSpace.executionContexts.find(
-            (ec) => ec.mapping.value === mapping,
+          const matchingExecutionContext = resolveExecutionContext(
+            dataSpace,
+            mapping,
+            query.runtime.value,
           );
           if (!matchingExecutionContext) {
             // if a matching execution context is not found, it means this query is not
