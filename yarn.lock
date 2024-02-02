@@ -2524,7 +2524,6 @@ __metadata:
     "@fontsource/roboto-mono": "npm:5.0.15"
     "@jest/globals": "npm:29.7.0"
     "@mui/material": "npm:5.14.15"
-    "@react-icons/all-files": "npm:4.1.0"
     "@types/react": "npm:18.2.31"
     "@types/react-select": "npm:4.0.18"
     "@types/react-window": "npm:1.8.7"
@@ -4122,15 +4121,6 @@ __metadata:
   version: 4.0.2
   resolution: "@react-dnd/shallowequal@npm:4.0.2"
   checksum: 7f21d691bddbfd4d2830948cbeefecca1600b2b46bcb1934926795f07ae8a1fa60a3dfd3a2112be5ef682c3820c80a99711e9fa15843f7e300acb25a4ecb70ab
-  languageName: node
-  linkType: hard
-
-"@react-icons/all-files@npm:4.1.0":
-  version: 4.1.0
-  resolution: "@react-icons/all-files@npm:4.1.0"
-  peerDependencies:
-    react: "*"
-  checksum: 56252b205bd5960e605e9de9a9eacd4b2a5cf9f2e6156f4a1803eee502a7d1749e479a56d68dfc5514decc06cf4ffdf11e36c71359a984892c54cfc4a4604bc8
   languageName: node
   linkType: hard
 

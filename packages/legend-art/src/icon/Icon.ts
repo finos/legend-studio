@@ -25,126 +25,220 @@
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
  */
-import ReactIcons from './CJS__ReactIcons.cjs';
-
-/* eslint @typescript-eslint/no-unsafe-assignment: 0 */
-const TB = ReactIcons.TB;
-export const ArrowsJoinIcon = TB.TbArrowsJoin2;
-export const ArrowsSplitIcon = TB.TbArrowsSplit2;
-export const FunctionIcon = TB.TbMathFunction;
-export const RepoIcon = TB.TbBook;
-export const OffIcon = TB.TbCircleOff;
-export const CalendarClockIcon = TB.TbCalendarTime;
-export const LastModifiedIcon = TB.TbClockEdit;
-export const SQLIcon = TB.TbSql;
-export const Snowflake_BrandIcon = TB.TbBrandSnowflake;
-
-const MD = ReactIcons.MD;
-export const ManageSearchIcon = MD.MdManageSearch; // to be reviewed
-export const PencilIcon = MD.MdModeEdit;
-export const StringTypeIcon = MD.MdTextFields;
-export const MoreVerticalIcon = MD.MdMoreVert;
-export const MoreHorizontalIcon = MD.MdMoreHoriz;
-export const WrapTextIcon = MD.MdWrapText;
-export const SaveAsIcon = MD.MdSaveAs;
-export const SaveCurrIcon = MD.MdSave;
-export const VerticalAlignBottomIcon = MD.MdVerticalAlignBottom;
-export const RefreshIcon = MD.MdRefresh;
-export const SigmaIcon = MD.MdFunctions;
-export const CompareIcon = MD.MdCompareArrows;
-export const CheckListIcon = MD.MdPlaylistAddCheck;
-export const AddIcon = MD.MdAdd; // to be reviewed
-export const EditIcon = MD.MdEdit; // to be reviewed
-export const SubjectIcon = MD.MdSubject;
-export const ViewHeadlineIcon = MD.MdViewHeadline;
-export const AssistantIcon = MD.MdAssistant;
-export const SettingsEthernetIcon = MD.MdSettingsEthernet;
-export const LinkIcon = MD.MdLink;
-export const WindowIcon = MD.MdWindow;
-export const ReviewIcon = MD.MdReviews;
-export const CalculateIcon = MD.MdCalculate;
-export const LaunchIcon = MD.MdRocketLaunch;
-export const DatasetIcon = MD.MdOutlineDataset;
-export const VerifiedIcon = MD.MdVerified;
-export const QueryIcon = MD.MdQueryStats;
-export const CenterFocusIcon = MD.MdFilterCenterFocus;
-export const DescriptionIcon = MD.MdOutlineDescription;
-export const QuestionAnswerIcon = MD.MdQuestionAnswer;
-export const FoldIcon = MD.MdUnfoldLess;
-export const UnfoldIcon = MD.MdUnfoldMore;
-
-const VSC = ReactIcons.VSC;
-export const ErrorIcon = VSC.VscError;
-export const WarningIcon = VSC.VscWarning;
-export const WordWrapIcon = VSC.VscWordWrap;
-export const GoToFileIcon = VSC.VscGoToFile;
-export const CloseIcon = VSC.VscClose;
-export const RunAllIcon = VSC.VscRunAll;
-export const RunErrorsIcon = VSC.VscRunErrors;
-export const OpenPreviewIcon = VSC.VscOpenPreview;
-export const DiffIcon = VSC.VscDiff;
-export const RegexIcon = VSC.VscRegex;
-export const VersionsIcon = VSC.VscVersions;
-export const CaseSensitiveIcon = VSC.VscCaseSensitive;
-export const WholeWordMatchIcon = VSC.VscWholeWord;
-export const ReferencesIcon = VSC.VscReferences;
-export const WandIcon = VSC.VscWand;
-export const CollapseTreeIcon = VSC.VscCollapseAll;
-export const ExpandTreeIcon = VSC.VscExpandAll;
-export const SerializeIcon = VSC.VscJson;
-export const TableIcon = VSC.VscTable;
-
-const BS = ReactIcons.BS;
-export const FilledTriangleIcon = BS.BsFillTriangleFill;
-export const TabulatedDataFileIcon = BS.BsFillFileEarmarkSpreadsheetFill;
-export const BundleIcon = BS.BsBoxSeam;
-export const ThinVerticalDragHandleIcon = BS.BsGripVertical;
-export const AlignTopIcon = BS.BsAlignTop;
-export const AlignMiddleIcon = BS.BsAlignMiddle;
-export const AlignBottomIcon = BS.BsAlignBottom;
-export const AlignStartIcon = BS.BsAlignStart;
-export const AlignCenterIcon = BS.BsAlignCenter;
-export const AlignEndIcon = BS.BsAlignEnd;
-export const DistributeHorizontalIcon = BS.BsDistributeHorizontal;
-export const DistributeVerticalIcon = BS.BsDistributeVertical;
-export const DataAccessIcon = BS.BsDatabaseFillLock;
-export const DataReadyIcon = BS.BsDatabaseFillCheck;
-export const ThinChevronUpIcon = BS.BsChevronUp;
-export const ThinChevronDownIcon = BS.BsChevronDown;
-export const ThinChevronRightIcon = BS.BsChevronRight;
-export const ThinChevronLeftIcon = BS.BsChevronLeft;
-export const QuestionSquareIcon = BS.BsQuestionSquare;
-export const QuestionSquareFillIcon = BS.BsQuestionSquareFill;
-export const GenericTextFileIcon = BS.BsTextLeft;
 
 /**
- * using @react-icons/all-files/... to reduce bundle size
- * @react-icons/all-files doesn't contain all icons from react-icons
+ * HEADS-UP: use 'react-icons/{..}/index.js' to import icons, which is not good-looking but it helps
+ * to reduce bundle size to 22.46MB to 66.46kb significantly.
  * Reference:
  * https://github.com/react-icons/react-icons/blob/master/README.md
  * https://github.com/react-icons/react-icons/issues/154#issuecomment-895976123
  */
 
+/* eslint @typescript-eslint/no-unsafe-assignment: 0 */
+
+//======================================================= TB =======================================================
+import {
+  TbArrowsJoin2,
+  TbArrowsSplit2,
+  TbMathFunction,
+  TbBook,
+  TbCircleOff,
+  TbCalendarTime,
+  TbClockEdit,
+  TbSql,
+  TbBrandSnowflake,
+} from 'react-icons/tb/index.js';
+
+export const ArrowsJoinIcon = TbArrowsJoin2;
+export const ArrowsSplitIcon = TbArrowsSplit2;
+export const FunctionIcon = TbMathFunction;
+export const RepoIcon = TbBook;
+export const OffIcon = TbCircleOff;
+export const CalendarClockIcon = TbCalendarTime;
+export const LastModifiedIcon = TbClockEdit;
+export const SQLIcon = TbSql;
+export const Snowflake_BrandIcon = TbBrandSnowflake;
+
+//======================================================= MD =======================================================
+import {
+  MdManageSearch,
+  MdModeEdit,
+  MdTextFields,
+  MdMoreVert,
+  MdMoreHoriz,
+  MdWrapText,
+  MdSaveAs,
+  MdSave,
+  MdVerticalAlignBottom,
+  MdRefresh,
+  MdFunctions,
+  MdCompareArrows,
+  MdPlaylistAddCheck,
+  MdAdd, // to be reviewed
+  MdEdit, // to be reviewed
+  MdSubject,
+  MdViewHeadline,
+  MdAssistant,
+  MdSettingsEthernet,
+  MdLink,
+  MdWindow,
+  MdReviews,
+  MdCalculate,
+  MdRocketLaunch,
+  MdOutlineDataset,
+  MdVerified,
+  MdQueryStats,
+  MdFilterCenterFocus,
+  MdOutlineDescription,
+  MdQuestionAnswer,
+  MdUnfoldLess,
+  MdUnfoldMore,
+} from 'react-icons/md/index.js';
+
+export const ManageSearchIcon = MdManageSearch; // to be reviewed
+export const PencilIcon = MdModeEdit;
+export const StringTypeIcon = MdTextFields;
+export const MoreVerticalIcon = MdMoreVert;
+export const MoreHorizontalIcon = MdMoreHoriz;
+export const WrapTextIcon = MdWrapText;
+export const SaveAsIcon = MdSaveAs;
+export const SaveCurrIcon = MdSave;
+export const VerticalAlignBottomIcon = MdVerticalAlignBottom;
+export const RefreshIcon = MdRefresh;
+export const SigmaIcon = MdFunctions;
+export const CompareIcon = MdCompareArrows;
+export const CheckListIcon = MdPlaylistAddCheck;
+export const AddIcon = MdAdd; // to be reviewed
+export const EditIcon = MdEdit; // to be reviewed
+export const SubjectIcon = MdSubject;
+export const ViewHeadlineIcon = MdViewHeadline;
+export const AssistantIcon = MdAssistant;
+export const SettingsEthernetIcon = MdSettingsEthernet;
+export const LinkIcon = MdLink;
+export const WindowIcon = MdWindow;
+export const ReviewIcon = MdReviews;
+export const CalculateIcon = MdCalculate;
+export const LaunchIcon = MdRocketLaunch;
+export const DatasetIcon = MdOutlineDataset;
+export const VerifiedIcon = MdVerified;
+export const QueryIcon = MdQueryStats;
+export const CenterFocusIcon = MdFilterCenterFocus;
+export const DescriptionIcon = MdOutlineDescription;
+export const QuestionAnswerIcon = MdQuestionAnswer;
+export const FoldIcon = MdUnfoldLess;
+export const UnfoldIcon = MdUnfoldMore;
+
+//======================================================= VSC =======================================================
+import {
+  VscError,
+  VscWarning,
+  VscWordWrap,
+  VscGoToFile,
+  VscClose,
+  VscRunAll,
+  VscRunErrors,
+  VscOpenPreview,
+  VscDiff,
+  VscRegex,
+  VscVersions,
+  VscCaseSensitive,
+  VscWholeWord,
+  VscReferences,
+  VscWand,
+  VscCollapseAll,
+  VscExpandAll,
+  VscJson,
+  VscTable,
+} from 'react-icons/vsc/index.js';
+
+export const ErrorIcon = VscError;
+export const WarningIcon = VscWarning;
+export const WordWrapIcon = VscWordWrap;
+export const GoToFileIcon = VscGoToFile;
+export const CloseIcon = VscClose;
+export const RunAllIcon = VscRunAll;
+export const RunErrorsIcon = VscRunErrors;
+export const OpenPreviewIcon = VscOpenPreview;
+export const DiffIcon = VscDiff;
+export const RegexIcon = VscRegex;
+export const VersionsIcon = VscVersions;
+export const CaseSensitiveIcon = VscCaseSensitive;
+export const WholeWordMatchIcon = VscWholeWord;
+export const ReferencesIcon = VscReferences;
+export const WandIcon = VscWand;
+export const CollapseTreeIcon = VscCollapseAll;
+export const ExpandTreeIcon = VscExpandAll;
+export const SerializeIcon = VscJson;
+export const TableIcon = VscTable;
+
+//======================================================= BS =======================================================
+import {
+  BsFillTriangleFill,
+  BsFillFileEarmarkSpreadsheetFill,
+  BsBoxSeam,
+  BsGripVertical,
+  BsAlignTop,
+  BsAlignMiddle,
+  BsAlignBottom,
+  BsAlignStart,
+  BsAlignCenter,
+  BsAlignEnd,
+  BsDistributeHorizontal,
+  BsDistributeVertical,
+  BsDatabaseFillLock,
+  BsDatabaseFillCheck,
+  BsChevronUp,
+  BsChevronDown,
+  BsChevronRight,
+  BsChevronLeft,
+  BsQuestionSquare,
+  BsQuestionSquareFill,
+  BsTextLeft,
+} from 'react-icons/bs/index.js';
+
+export const FilledTriangleIcon = BsFillTriangleFill;
+export const TabulatedDataFileIcon = BsFillFileEarmarkSpreadsheetFill;
+export const BundleIcon = BsBoxSeam;
+export const ThinVerticalDragHandleIcon = BsGripVertical;
+export const AlignTopIcon = BsAlignTop;
+export const AlignMiddleIcon = BsAlignMiddle;
+export const AlignBottomIcon = BsAlignBottom;
+export const AlignStartIcon = BsAlignStart;
+export const AlignCenterIcon = BsAlignCenter;
+export const AlignEndIcon = BsAlignEnd;
+export const DistributeHorizontalIcon = BsDistributeHorizontal;
+export const DistributeVerticalIcon = BsDistributeVertical;
+export const DataAccessIcon = BsDatabaseFillLock;
+export const DataReadyIcon = BsDatabaseFillCheck;
+export const ThinChevronUpIcon = BsChevronUp;
+export const ThinChevronDownIcon = BsChevronDown;
+export const ThinChevronRightIcon = BsChevronRight;
+export const ThinChevronLeftIcon = BsChevronLeft;
+export const QuestionSquareIcon = BsQuestionSquare;
+export const QuestionSquareFillIcon = BsQuestionSquareFill;
+export const GenericTextFileIcon = BsTextLeft;
+
 //======================================================= HI =======================================================
-import { HiCode } from '@react-icons/all-files/hi/HiCode.js';
-import { HiHome } from '@react-icons/all-files/hi/HiHome.js';
+import { HiCode, HiHome } from 'react-icons/hi/index.js';
 
 export const CodeIcon = HiCode;
 export const HomeIcon = HiHome;
 
 //======================================================= io5 =======================================================
-import { IoOpenOutline } from '@react-icons/all-files/io5/IoOpenOutline.js';
-import { IoResize } from '@react-icons/all-files/io5/IoResize.js';
-import { IoFileTrayFullOutline } from '@react-icons/all-files/io5/IoFileTrayFullOutline.js';
-import { IoMenuOutline } from '@react-icons/all-files/io5/IoMenuOutline.js';
-import { IoBeaker } from '@react-icons/all-files/io5/IoBeaker.js';
-import { IoFlaskSharp } from '@react-icons/all-files/io5/IoFlaskSharp.js';
-import { IoSyncCircleSharp } from '@react-icons/all-files/io5/IoSyncCircleSharp.js';
-import { IoStatsChart } from '@react-icons/all-files/io5/IoStatsChart.js';
-import { IoHelpBuoy } from '@react-icons/all-files/io5/IoHelpBuoy.js';
-import { IoCloudDownloadOutline } from '@react-icons/all-files/io5/IoCloudDownloadOutline.js';
-import { IoCloudUploadOutline } from '@react-icons/all-files/io5/IoCloudUploadOutline.js';
-import { IoHelp } from '@react-icons/all-files/io5/IoHelp.js';
+import {
+  IoOpenOutline,
+  IoResize,
+  IoFileTrayFullOutline,
+  IoMenuOutline,
+  IoBeaker,
+  IoFlaskSharp,
+  IoSyncCircleSharp,
+  IoStatsChart,
+  IoHelpBuoy,
+  IoCloudDownloadOutline,
+  IoCloudUploadOutline,
+  IoHelp,
+} from 'react-icons/io5/index.js';
 
 export const OpenIcon = IoOpenOutline;
 export const ResizeIcon = IoResize;
@@ -160,135 +254,137 @@ export const CloudUploadIcon = IoCloudUploadOutline;
 export const QuestionThinIcon = IoHelp;
 
 //======================================================= FA =======================================================
-import { FaHistory } from '@react-icons/all-files/fa/FaHistory.js';
-import { FaCrosshairs } from '@react-icons/all-files/fa/FaCrosshairs.js';
-import { FaLayerGroup } from '@react-icons/all-files/fa/FaLayerGroup.js';
-import { FaGhost } from '@react-icons/all-files/fa/FaGhost.js';
-import { FaLock } from '@react-icons/all-files/fa/FaLock.js';
-import { FaMask } from '@react-icons/all-files/fa/FaMask.js';
-import { FaFile } from '@react-icons/all-files/fa/FaFile.js';
-import { FaLongArrowAltRight } from '@react-icons/all-files/fa/FaLongArrowAltRight.js';
-import { FaTimes } from '@react-icons/all-files/fa/FaTimes.js';
-import { FaTimesCircle } from '@react-icons/all-files/fa/FaTimesCircle.js';
-import { FaPlus } from '@react-icons/all-files/fa/FaPlus.js';
-import { FaCog } from '@react-icons/all-files/fa/FaCog.js';
-import { FaEye } from '@react-icons/all-files/fa/FaEye.js';
-import { FaEyeSlash } from '@react-icons/all-files/fa/FaEyeSlash.js';
-import { FaCaretUp } from '@react-icons/all-files/fa/FaCaretUp.js';
-import { FaFire } from '@react-icons/all-files/fa/FaFire.js';
-import { FaSave } from '@react-icons/all-files/fa/FaSave.js';
-import { FaCaretDown } from '@react-icons/all-files/fa/FaCaretDown.js';
-import { FaSquare } from '@react-icons/all-files/fa/FaSquare.js';
-import { FaRegSquare } from '@react-icons/all-files/fa/FaRegSquare.js';
-import { FaCheckSquare } from '@react-icons/all-files/fa/FaCheckSquare.js';
-import { FaMinusSquare } from '@react-icons/all-files/fa/FaMinusSquare.js';
-import { FaHashtag } from '@react-icons/all-files/fa/FaHashtag.js';
-import { FaHammer } from '@react-icons/all-files/fa/FaHammer.js';
-import { FaCommentDots } from '@react-icons/all-files/fa/FaCommentDots.js';
-import { FaClock } from '@react-icons/all-files/fa/FaClock.js';
-import { FaRegClock } from '@react-icons/all-files/fa/FaRegClock.js';
-import { FaToggleOn } from '@react-icons/all-files/fa/FaToggleOn.js';
-import { FaQuestion } from '@react-icons/all-files/fa/FaQuestion.js';
-import { FaQuestionCircle } from '@react-icons/all-files/fa/FaQuestionCircle.js';
-import { FaInfoCircle } from '@react-icons/all-files/fa/FaInfoCircle.js';
-import { FaCompress } from '@react-icons/all-files/fa/FaCompress.js';
-import { FaMap } from '@react-icons/all-files/fa/FaMap.js';
-import { FaPlay } from '@react-icons/all-files/fa/FaPlay.js';
-import { FaRobot } from '@react-icons/all-files/fa/FaRobot.js';
-import { FaGripVertical } from '@react-icons/all-files/fa/FaGripVertical.js';
-import { FaArrowRight } from '@react-icons/all-files/fa/FaArrowRight.js';
-import { FaArrowLeft } from '@react-icons/all-files/fa/FaArrowLeft.js';
-import { FaArrowAltCircleDown } from '@react-icons/all-files/fa/FaArrowAltCircleDown.js';
-import { FaArrowAltCircleRight } from '@react-icons/all-files/fa/FaArrowAltCircleRight.js';
-import { FaArrowCircleRight } from '@react-icons/all-files/fa/FaArrowCircleRight.js';
-import { FaShapes } from '@react-icons/all-files/fa/FaShapes.js';
-import { FaUser } from '@react-icons/all-files/fa/FaUser.js';
-import { FaSkull } from '@react-icons/all-files/fa/FaSkull.js';
-import { FaEnvelope } from '@react-icons/all-files/fa/FaEnvelope.js';
-import { FaDollarSign } from '@react-icons/all-files/fa/FaDollarSign.js';
-import { FaStar } from '@react-icons/all-files/fa/FaStar.js';
-import { FaSearch } from '@react-icons/all-files/fa/FaSearch.js';
-import { FaKey } from '@react-icons/all-files/fa/FaKey.js';
-import { FaExternalLinkAlt } from '@react-icons/all-files/fa/FaExternalLinkAlt.js';
-import { FaExternalLinkSquareAlt } from '@react-icons/all-files/fa/FaExternalLinkSquareAlt.js';
-import { FaLightbulb } from '@react-icons/all-files/fa/FaLightbulb.js';
-import { FaRegCircle } from '@react-icons/all-files/fa/FaRegCircle.js';
-import { FaShieldAlt } from '@react-icons/all-files/fa/FaShieldAlt.js';
-import { FaTag } from '@react-icons/all-files/fa/FaTag.js';
-import { FaBolt } from '@react-icons/all-files/fa/FaBolt.js';
-import { FaTags } from '@react-icons/all-files/fa/FaTags.js';
-import { FaCheckCircle } from '@react-icons/all-files/fa/FaCheckCircle.js';
-import { FaList } from '@react-icons/all-files/fa/FaList.js';
-import { FaTrash } from '@react-icons/all-files/fa/FaTrash.js';
-import { FaMinusCircle } from '@react-icons/all-files/fa/FaMinusCircle.js';
-import { FaCircle } from '@react-icons/all-files/fa/FaCircle.js';
-import { FaRegLightbulb } from '@react-icons/all-files/fa/FaRegLightbulb.js';
-import { FaExclamationTriangle } from '@react-icons/all-files/fa/FaExclamationTriangle.js';
-import { FaBug } from '@react-icons/all-files/fa/FaBug.js';
-import { FaCircleNotch } from '@react-icons/all-files/fa/FaCircleNotch.js';
-import { FaRegKeyboard } from '@react-icons/all-files/fa/FaRegKeyboard.js';
-import { FaUserSecret } from '@react-icons/all-files/fa/FaUserSecret.js';
-import { FaBuffer } from '@react-icons/all-files/fa/FaBuffer.js';
-import { FaSitemap } from '@react-icons/all-files/fa/FaSitemap.js';
-import { FaExpand } from '@react-icons/all-files/fa/FaExpand.js';
-import { FaExpandArrowsAlt } from '@react-icons/all-files/fa/FaExpandArrowsAlt.js';
-import { FaSortAlphaDown } from '@react-icons/all-files/fa/FaSortAlphaDown.js';
-import { FaSortAlphaDownAlt } from '@react-icons/all-files/fa/FaSortAlphaDownAlt.js';
-import { FaSort } from '@react-icons/all-files/fa/FaSort.js';
-import { FaFolderPlus } from '@react-icons/all-files/fa/FaFolderPlus.js';
-import { FaCaretLeft } from '@react-icons/all-files/fa/FaCaretLeft.js';
-import { FaCaretRight } from '@react-icons/all-files/fa/FaCaretRight.js';
-import { FaWrench } from '@react-icons/all-files/fa/FaWrench.js';
-import { FaArrowDown } from '@react-icons/all-files/fa/FaArrowDown.js';
-import { FaArrowUp } from '@react-icons/all-files/fa/FaArrowUp.js';
-import { FaTerminal } from '@react-icons/all-files/fa/FaTerminal.js';
-import { FaWindowMaximize } from '@react-icons/all-files/fa/FaWindowMaximize.js';
-import { FaLongArrowAltDown } from '@react-icons/all-files/fa/FaLongArrowAltDown.js';
-import { FaLongArrowAltUp } from '@react-icons/all-files/fa/FaLongArrowAltUp.js';
-import { FaMeteor } from '@react-icons/all-files/fa/FaMeteor.js';
-import { FaPiedPiperSquare } from '@react-icons/all-files/fa/FaPiedPiperSquare.js';
-import { FaPuzzlePiece } from '@react-icons/all-files/fa/FaPuzzlePiece.js';
-import { FaToggleOff } from '@react-icons/all-files/fa/FaToggleOff.js';
-import { FaMapMarkerAlt } from '@react-icons/all-files/fa/FaMapMarkerAlt.js';
-import { FaHatWizard } from '@react-icons/all-files/fa/FaHatWizard.js';
-import { FaRegLaughWink } from '@react-icons/all-files/fa/FaRegLaughWink.js';
-import { FaRegSadTear } from '@react-icons/all-files/fa/FaRegSadTear.js';
-import { FaBusinessTime } from '@react-icons/all-files/fa/FaBusinessTime.js';
-import { FaDatabase } from '@react-icons/all-files/fa/FaDatabase.js';
-import { FaServer } from '@react-icons/all-files/fa/FaServer.js';
-import { FaBrain } from '@react-icons/all-files/fa/FaBrain.js';
-import { FaArchive } from '@react-icons/all-files/fa/FaArchive.js';
-import { FaBookOpen } from '@react-icons/all-files/fa/FaBookOpen.js';
-import { FaLevelDownAlt } from '@react-icons/all-files/fa/FaLevelDownAlt.js';
-import { FaRegCalendarAlt } from '@react-icons/all-files/fa/FaRegCalendarAlt.js';
-import { FaCalculator } from '@react-icons/all-files/fa/FaCalculator.js';
-import { FaReadme } from '@react-icons/all-files/fa/FaReadme.js';
-import { FaTruckLoading } from '@react-icons/all-files/fa/FaTruckLoading.js';
-import { FaFolderOpen } from '@react-icons/all-files/fa/FaFolderOpen.js';
-import { FaFolder } from '@react-icons/all-files/fa/FaFolder.js';
-import { FaFileCode } from '@react-icons/all-files/fa/FaFileCode.js';
-import { FaCodeBranch } from '@react-icons/all-files/fa/FaCodeBranch.js';
-import { FaArrowAltCircleUp } from '@react-icons/all-files/fa/FaArrowAltCircleUp.js';
-import { FaArrowAltCircleLeft } from '@react-icons/all-files/fa/FaArrowAltCircleLeft.js';
-import { FaRegStopCircle } from '@react-icons/all-files/fa/FaRegStopCircle.js';
-import { FaAsterisk } from '@react-icons/all-files/fa/FaAsterisk.js';
-import { FaFilter } from '@react-icons/all-files/fa/FaFilter.js';
-import { FaExclamationCircle } from '@react-icons/all-files/fa/FaExclamationCircle.js';
-import { FaRocket } from '@react-icons/all-files/fa/FaRocket.js';
-import { FaCheck } from '@react-icons/all-files/fa/FaCheck.js';
-import { FaBan } from '@react-icons/all-files/fa/FaBan.js';
-import { FaFileImport } from '@react-icons/all-files/fa/FaFileImport.js';
-import { FaUserFriends } from '@react-icons/all-files/fa/FaUserFriends.js';
-import { FaDownload } from '@react-icons/all-files/fa/FaDownload.js';
-import { FaUpload } from '@react-icons/all-files/fa/FaUpload.js';
-import { FaRegWindowRestore } from '@react-icons/all-files/fa/FaRegWindowRestore.js';
-import { FaPauseCircle } from '@react-icons/all-files/fa/FaPauseCircle.js';
-import { FaShare } from '@react-icons/all-files/fa/FaShare.js';
-import { FaRegCopy } from '@react-icons/all-files/fa/FaRegCopy.js';
-import { FaFileAlt } from '@react-icons/all-files/fa/FaFileAlt.js';
-import { FaEdit } from '@react-icons/all-files/fa/FaEdit.js';
-import { FaArrowsAltH } from '@react-icons/all-files/fa/FaArrowsAltH.js';
-import { FaRegWindowMaximize } from '@react-icons/all-files/fa/FaRegWindowMaximize.js';
+import {
+  FaHistory,
+  FaCrosshairs,
+  FaLayerGroup,
+  FaGhost,
+  FaLock,
+  FaMask,
+  FaFile,
+  FaLongArrowAltRight,
+  FaTimes,
+  FaTimesCircle,
+  FaPlus,
+  FaCog,
+  FaEye,
+  FaEyeSlash,
+  FaCaretUp,
+  FaCaretDown,
+  FaFire,
+  FaSave,
+  FaSquare,
+  FaRegSquare,
+  FaCheckSquare,
+  FaMinusSquare,
+  FaHashtag,
+  FaHammer,
+  FaCommentDots,
+  FaClock,
+  FaRegClock,
+  FaToggleOn,
+  FaQuestion,
+  FaQuestionCircle,
+  FaInfoCircle,
+  FaCompress,
+  FaMap,
+  FaPlay,
+  FaGripVertical,
+  FaRobot,
+  FaArrowLeft,
+  FaArrowRight,
+  FaArrowAltCircleDown,
+  FaArrowAltCircleRight,
+  FaArrowCircleRight,
+  FaUser,
+  FaShapes,
+  FaEnvelope,
+  FaSkull,
+  FaDollarSign,
+  FaSearch,
+  FaStar,
+  FaKey,
+  FaExternalLinkAlt,
+  FaExternalLinkSquareAlt,
+  FaLightbulb,
+  FaRegLightbulb,
+  FaList,
+  FaCircle,
+  FaMinusCircle,
+  FaTrash,
+  FaRegCircle,
+  FaShieldAlt,
+  FaTag,
+  FaTags,
+  FaBolt,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaBug,
+  FaCircleNotch,
+  FaRegKeyboard,
+  FaUserSecret,
+  FaBuffer,
+  FaSitemap,
+  FaExpand,
+  FaExpandArrowsAlt,
+  FaSortAlphaDown,
+  FaSort,
+  FaSortAlphaDownAlt,
+  FaFolderPlus,
+  FaCaretRight,
+  FaCaretLeft,
+  FaWrench,
+  FaArrowDown,
+  FaArrowUp,
+  FaTerminal,
+  FaTruckLoading,
+  FaFolderOpen,
+  FaFolder,
+  FaFileCode,
+  FaCodeBranch,
+  FaArrowAltCircleUp,
+  FaArrowAltCircleLeft,
+  FaRegStopCircle,
+  FaAsterisk,
+  FaFilter,
+  FaExclamationCircle,
+  FaRocket,
+  FaCheck,
+  FaBan,
+  FaFileImport,
+  FaUserFriends,
+  FaDownload,
+  FaUpload,
+  FaRegWindowRestore,
+  FaPauseCircle,
+  FaShare,
+  FaRegCopy,
+  FaFileAlt,
+  FaEdit,
+  FaArrowsAltH,
+  FaRegWindowMaximize,
+  FaWindowMaximize,
+  FaLongArrowAltDown,
+  FaLongArrowAltUp,
+  FaMeteor,
+  FaPiedPiperSquare,
+  FaPuzzlePiece,
+  FaToggleOff,
+  FaMapMarkerAlt,
+  FaHatWizard,
+  FaRegLaughWink,
+  FaRegSadTear,
+  FaBusinessTime,
+  FaDatabase,
+  FaServer,
+  FaArchive,
+  FaBrain,
+  FaBookOpen,
+  FaLevelDownAlt,
+  FaRegCalendarAlt,
+  FaCalculator,
+  FaReadme,
+} from 'react-icons/fa/index.js';
 
 export const HistoryIcon = FaHistory;
 export const CrosshairsIcon = FaCrosshairs;
@@ -404,7 +500,6 @@ export const LongArrowAltUpIcon = FaLongArrowAltUp; // to be reviewed/combined
 export const MeteorIcon = FaMeteor; // to be reviewed/combined
 export const PiedPiperSquareIcon = FaPiedPiperSquare; // to be reviewed/combined
 export const PuzzlePieceIcon = FaPuzzlePiece; // to be reviewed/combined
-export const ToggleOnIcon = FaToggleOn;
 export const ToggleOffIcon = FaToggleOff;
 export const MapMarkerIcon = FaMapMarkerAlt;
 export const WizardHatIcon = FaHatWizard;
@@ -422,10 +517,12 @@ export const CalculatorIcon = FaCalculator;
 export const ReadMeIcon = FaReadme;
 
 //======================================================= GI =======================================================
-import { GiWaterDrop } from '@react-icons/all-files/gi/GiWaterDrop.js';
-import { GiBeard } from '@react-icons/all-files/gi/GiBeard.js';
-import { GiSunglasses } from '@react-icons/all-files/gi/GiSunglasses.js';
-import { GiHouseKeys } from '@react-icons/all-files/gi/GiHouseKeys.js';
+import {
+  GiWaterDrop,
+  GiBeard,
+  GiSunglasses,
+  GiHouseKeys,
+} from 'react-icons/gi/index.js';
 
 export const WaterDropIcon = GiWaterDrop;
 export const BeardIcon = GiBeard;
@@ -433,17 +530,19 @@ export const SunglassesIcon = GiSunglasses;
 export const HouseKeys = GiHouseKeys;
 
 //======================================================= GO =======================================================
-import { GoChevronDown } from '@react-icons/all-files/go/GoChevronDown.js';
-import { GoChevronUp } from '@react-icons/all-files/go/GoChevronUp.js';
-import { GoChevronLeft } from '@react-icons/all-files/go/GoChevronLeft.js';
-import { GoChevronRight } from '@react-icons/all-files/go/GoChevronRight.js';
-import { GoFileBinary } from '@react-icons/all-files/go/GoFileBinary.js';
-import { GoGitPullRequest } from '@react-icons/all-files/go/GoGitPullRequest.js';
-import { GoGitMerge } from '@react-icons/all-files/go/GoGitMerge.js';
-import { GoSync } from '@react-icons/all-files/go/GoSync.js';
-import { GoGitBranch } from '@react-icons/all-files/go/GoGitBranch.js';
-import { GoX } from '@react-icons/all-files/go/GoX.js';
-import { GoPlug } from '@react-icons/all-files/go/GoPlug.js';
+import {
+  GoChevronDown,
+  GoChevronUp,
+  GoChevronLeft,
+  GoChevronRight,
+  GoFileBinary,
+  GoGitPullRequest,
+  GoGitMerge,
+  GoSync,
+  GoGitBranch,
+  GoX,
+  GoPlug,
+} from 'react-icons/go/index.js';
 
 export const ChevronDownIcon = GoChevronDown;
 export const ChevronUpIcon = GoChevronUp;
@@ -458,37 +557,37 @@ export const XIcon = GoX;
 export const PluginIcon = GoPlug;
 
 //======================================================= SI =======================================================
-import { SiSwagger } from '@react-icons/all-files/si/SiSwagger.js';
+import { SiSwagger } from 'react-icons/si/index.js';
 
 export const SwaggerIcon = SiSwagger; // to be reviewed
 
 //======================================================= BI =======================================================
 
-import { BiShapeTriangle } from '@react-icons/all-files/bi/BiShapeTriangle.js';
-import { BiAtom } from '@react-icons/all-files/bi/BiAtom.js';
-import { BiCabinet } from '@react-icons/all-files/bi/BiCabinet.js';
+import { BiShapeTriangle, BiAtom, BiCabinet } from 'react-icons/bi/index.js';
 
 export const ShapeTriangleIcon = BiShapeTriangle;
 export const AtomIcon = BiAtom;
 export const CabinetIcon = BiCabinet;
 
 //======================================================= CG =======================================================
-import { CgOptions } from '@react-icons/all-files/cg/CgOptions.js';
+import { CgOptions } from 'react-icons/cg/index.js';
 
 export const OptionsIcon = CgOptions;
 
 //======================================================= FI =======================================================
-import { FiPackage } from '@react-icons/all-files/fi/FiPackage.js';
-import { FiMinus } from '@react-icons/all-files/fi/FiMinus.js';
-import { FiMousePointer } from '@react-icons/all-files/fi/FiMousePointer.js';
-import { FiMove } from '@react-icons/all-files/fi/FiMove.js';
-import { FiPlusCircle } from '@react-icons/all-files/fi/FiPlusCircle.js';
-import { FiSidebar } from '@react-icons/all-files/fi/FiSidebar.js';
-import { FiTriangle } from '@react-icons/all-files/fi/FiTriangle.js';
-import { FiZoomIn } from '@react-icons/all-files/fi/FiZoomIn.js';
-import { FiZoomOut } from '@react-icons/all-files/fi/FiZoomOut.js';
-import { FiGitMerge } from '@react-icons/all-files/fi/FiGitMerge.js';
-import { FiLink } from '@react-icons/all-files/fi/FiLink.js';
+import {
+  FiPackage,
+  FiMinus,
+  FiMousePointer,
+  FiMove,
+  FiPlusCircle,
+  FiSidebar,
+  FiTriangle,
+  FiZoomIn,
+  FiZoomOut,
+  FiGitMerge,
+  FiLink,
+} from 'react-icons/fi/index.js';
 
 export const PackageIcon = FiPackage;
 export const MinusIcon = FiMinus;
@@ -503,11 +602,13 @@ export const TruncatedGitMergeIcon = FiGitMerge; // to be reviewed/combined
 export const AnchorLinkIcon = FiLink;
 
 //======================================================= RI =======================================================
-import { RiShapeLine } from '@react-icons/all-files/ri/RiShapeLine.js';
-import { RiTestTubeFill } from '@react-icons/all-files/ri/RiTestTubeFill.js';
-import { RiRobotFill } from '@react-icons/all-files/ri/RiRobotFill.js';
-import { RiGovernmentFill } from '@react-icons/all-files/ri/RiGovernmentFill.js';
-import { RiMoneyDollarCircleFill } from '@react-icons/all-files/ri/RiMoneyDollarCircleFill.js';
+import {
+  RiShapeLine,
+  RiTestTubeFill,
+  RiRobotFill,
+  RiGovernmentFill,
+  RiMoneyDollarCircleFill,
+} from 'react-icons/ri/index.js';
 
 export const ShapeLineIcon = RiShapeLine;
 export const TestTubeIcon = RiTestTubeFill;
@@ -515,7 +616,7 @@ export const DroidIcon = RiRobotFill;
 export const GovernanceIcon = RiGovernmentFill;
 export const CostCircleIcon = RiMoneyDollarCircleFill;
 
-//======================================================= FC =======================================================
-import { FcWorkflow } from '@react-icons/all-files/fc/FcWorkflow.js';
+//======================================================= Fc =======================================================
+import { FcWorkflow } from 'react-icons/fc/index.js';
 
 export const WorkflowIcon = FcWorkflow;
