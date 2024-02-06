@@ -21,6 +21,7 @@ import {
   type ServerClientConfig,
   type TraceData,
   HttpHeader,
+  download,
 } from '@finos/legend-shared';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type {
@@ -622,11 +623,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
   _execution = (): string => `${this._pure()}/execution`;
   _executionManager = (): string => `${this._server()}/executionManager`;
 
-  execute = (
+  runQuery = (
     input: PlainObject<V1_ExecuteInput>,
     options?: {
       returnResultAsText?: boolean;
-      serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> =>
     this.postWithTracing(
@@ -635,14 +635,37 @@ export class V1_EngineServerClient extends AbstractServerClient {
       this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
       {},
       undefined,
-      {
-        serializationFormat: options?.serializationFormat
-          ? getEngineSerializationFormat(options.serializationFormat)
-          : undefined,
-      },
+      undefined,
       { enableCompression: true },
       { skipProcessing: Boolean(options?.returnResultAsText) },
     );
+
+  exportData = async (
+    input: PlainObject<V1_ExecuteInput>,
+    serializationFormat: EXECUTION_SERIALIZATION_FORMAT,
+    fileName: string,
+  ): Promise<void> => {
+    const response = (await this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
+      `${this._execution()}/execute`,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
+      {},
+      undefined,
+      {
+        serializationFormat: getEngineSerializationFormat(serializationFormat),
+      },
+      { enableCompression: true },
+      { skipProcessing: true },
+    )) as unknown as Response;
+    if (response.body) {
+      try {
+        download(response.body, fileName);
+      } catch (error) {
+        // ignored
+      }
+    }
+    return Promise.resolve(undefined);
+  };
 
   generatePlan = (
     input: PlainObject<V1_ExecuteInput>,

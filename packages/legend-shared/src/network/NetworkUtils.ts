@@ -27,6 +27,7 @@ import queryString from 'query-string';
 import { returnUndefOnError } from '../error/ErrorUtils.js';
 import { sanitizeUrl } from '@braintree/sanitize-url';
 import type { PlainObject } from '../CommonUtils.js';
+import { download } from './DownloadHelper.js';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms
@@ -246,6 +247,9 @@ export interface ResponseProcessConfig {
   skipProcessing?: boolean | undefined;
   preprocess?: ((response: Response) => void) | undefined;
   autoReAuthenticateUrl?: string | undefined;
+  downloadConfig?: {
+    fileName: string;
+  };
 }
 
 export interface RequestProcessConfig {
@@ -271,9 +275,16 @@ const processResponse = async <T>(
   if (responseProcessConfig?.skipProcessing) {
     return Promise.resolve(response) as unknown as Promise<T>;
   }
+  if (responseProcessConfig?.downloadConfig) {
+    if (response.body) {
+      download(response.body, responseProcessConfig.downloadConfig.fileName);
+    }
+    return Promise.resolve(undefined) as unknown as Promise<T>;
+  }
   if (response.status === HttpStatus.NO_CONTENT) {
     return Promise.resolve(undefined) as unknown as Promise<T>;
   }
+
   // TODO: might need to handle */* ContentType and other types
   // Note that right now what we support is rather simplistic, as we always expect `application/json` or `text/plain`
   // and use these to determine how we should decode the response. However, we should properly allow passing in

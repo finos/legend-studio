@@ -46,6 +46,7 @@ import {
   type GraphBuilderOptions,
   type ExecutionOptions,
   type ServiceRegistrationOptions,
+  type ExportDataOptions,
 } from '../../../../graph-manager/AbstractPureGraphManager.js';
 import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
@@ -70,7 +71,6 @@ import {
   ServiceRegistrationSuccess,
   ServiceRegistrationFail,
 } from '../../../../graph-manager/action/service/ServiceRegistrationResult.js';
-import type { ExecutionResult } from '../../../../graph-manager/action/execution/ExecutionResult.js';
 import type { GenerationOutput } from '../../../../graph-manager/action/generation/GenerationOutput.js';
 import type { ValueSpecification } from '../../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
 import { ServiceExecutionMode } from '../../../../graph-manager/action/service/ServiceExecutionMode.js';
@@ -320,6 +320,7 @@ import {
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 import { EngineError } from '../../../action/EngineError.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
+import type { ExecutionResult } from '../../../action/execution/ExecutionResult.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2572,6 +2573,40 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       total: stopWatch.elapsed,
     };
     return result;
+  }
+
+  async exportData(
+    lambda: RawLambda,
+    mapping: Mapping,
+    runtime: Runtime,
+    graph: PureModel,
+    exportDataOptions: ExportDataOptions,
+    executionOptions?: ExecutionOptions,
+    _report?: GraphManagerOperationReport,
+  ): Promise<void> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
+    const input = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      this.engine.config.useDevClientProtocol
+        ? V1_PureGraphManager.DEV_PROTOCOL_VERSION
+        : V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+      executionOptions?.parameterValues,
+    );
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+    await this.engine.exportData(input, exportDataOptions),
+      stopWatch.record(
+        GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+      );
+
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
   }
 
   async DEPRECATED__runLegacyMappingTests(

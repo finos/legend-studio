@@ -58,6 +58,7 @@ import {
   type LogService,
   type ServerClientConfig,
   type TracerService,
+  type ContentType,
 } from '@finos/legend-shared';
 import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
 import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
@@ -149,8 +150,12 @@ export interface ExecutionOptions {
    */
   useLosslessParse?: boolean | undefined;
   convertUnsafeNumbersToString?: boolean | undefined;
-  serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
   parameterValues?: ParameterValue[];
+}
+
+export interface ExportDataOptions {
+  serializationFormat: EXECUTION_SERIALIZATION_FORMAT;
+  contentType?: ContentType | undefined;
 }
 
 export interface ServiceRegistrationOptions {
@@ -489,6 +494,16 @@ export abstract class AbstractPureGraphManager {
     options?: ExecutionOptions,
     report?: GraphManagerOperationReport,
   ): Promise<ExecutionResult>;
+
+  abstract exportData(
+    lambda: RawLambda,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
+    graph: PureModel,
+    exportDataOptions: ExportDataOptions,
+    executionOptions?: ExecutionOptions,
+    report?: GraphManagerOperationReport,
+  ): Promise<void>;
 
   abstract cancelUserExecutions(broadcastToCluster: boolean): Promise<string>;
 

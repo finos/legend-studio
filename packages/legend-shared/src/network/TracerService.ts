@@ -20,6 +20,14 @@ import {
 } from '../application/AbstractPluginManager.js';
 import type { PlainObject } from '../CommonUtils.js';
 
+export function trace(message: string): void {
+  // eslint-disable-next-line no-process-env
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
+    console.debug(message);
+  }
+}
+
 export interface TraceData {
   name: string;
   tags?: PlainObject;
@@ -115,9 +123,9 @@ export class TracerService {
     url: string,
     headers: PlainObject,
   ): Trace {
-    const trace = new Trace();
+    const _trace = new Trace();
     if (traceData) {
-      trace.setup(
+      _trace.setup(
         this.plugins.map((plugin) => {
           const clientSpan = plugin.createClientSpan(traceData);
           const serverSpan = plugin.createServerSpan(
@@ -134,6 +142,6 @@ export class TracerService {
         }),
       );
     }
-    return trace;
+    return _trace;
   }
 }

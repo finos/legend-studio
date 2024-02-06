@@ -19,6 +19,7 @@ import {
   type AbstractPreset,
   type AbstractPlugin,
   WebConsole,
+  registerServiceWorker,
 } from '@finos/legend-shared';
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/graph';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
@@ -77,5 +78,6 @@ export class LegendStudioWebApplication {
       .catch((e: unknown) => {
         throw e;
       });
+    registerServiceWorker();
   }
 }
