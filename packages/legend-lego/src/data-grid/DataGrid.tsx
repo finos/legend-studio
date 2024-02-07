@@ -64,7 +64,7 @@ export const enterpriseModules = [
 
 export const allModules = communityModules.concat(enterpriseModules);
 
-declare const AG_GRID_LICENSE: string;
+declare const AG_GRID_LICENSE: string | null;
 
 export function DataGrid<TData = unknown>(
   props: AgGridReactProps<TData> | AgReactUiProps<TData>,
