@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.7.0
+
+### Minor Changes
+
+- [#2923](https://github.com/finos/legend-studio/pull/2923) [`f557af7b1`](https://github.com/finos/legend-studio/commit/f557af7b1ce0bfe879703c0ada0bd038bbec86c5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add export data to return `runQuery` as readable stream.
+
 ## 31.6.7
 
 ## 31.6.6
