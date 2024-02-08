@@ -70,7 +70,6 @@ import {
   ServiceRegistrationSuccess,
   ServiceRegistrationFail,
 } from '../../../../graph-manager/action/service/ServiceRegistrationResult.js';
-import type { ExecutionResult } from '../../../../graph-manager/action/execution/ExecutionResult.js';
 import type { GenerationOutput } from '../../../../graph-manager/action/generation/GenerationOutput.js';
 import type { ValueSpecification } from '../../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
 import { ServiceExecutionMode } from '../../../../graph-manager/action/service/ServiceExecutionMode.js';
@@ -320,6 +319,7 @@ import {
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 import { EngineError } from '../../../action/EngineError.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
+import type { ExecutionResult } from '../../../action/execution/ExecutionResult.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2572,6 +2572,39 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       total: stopWatch.elapsed,
     };
     return result;
+  }
+
+  async exportData(
+    lambda: RawLambda,
+    mapping: Mapping,
+    runtime: Runtime,
+    graph: PureModel,
+    options?: ExecutionOptions,
+    _report?: GraphManagerOperationReport,
+  ): Promise<ReadableStream> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
+    const input = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      this.engine.config.useDevClientProtocol
+        ? V1_PureGraphManager.DEV_PROTOCOL_VERSION
+        : V1_PureGraphManager.PROD_PROTOCOL_VERSION,
+      options?.parameterValues,
+    );
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+    const stream = await this.engine.exportData(input, options);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+    );
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
+    return stream;
   }
 
   async DEPRECATED__runLegacyMappingTests(

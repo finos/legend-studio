@@ -46,6 +46,7 @@ import { ShowcaseManager } from '../ShowcaseManager.js';
 import { CabinetIcon } from '@finos/legend-art';
 import { ShowcaseManagerState } from '../../stores/ShowcaseManagerState.js';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
+import { registerDownloadHelperServiceWorker } from '@finos/legend-lego/download-helper';
 
 export const SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY = 'showcase-manager';
 
@@ -79,6 +80,7 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
                 ).getExtraPureGrammarKeywords?.() ?? [],
             ),
         });
+        registerDownloadHelperServiceWorker();
       },
     ];
   }
