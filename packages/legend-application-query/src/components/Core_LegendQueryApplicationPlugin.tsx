@@ -49,6 +49,7 @@ import {
   configureCodeEditorComponent,
   setupPureLanguageService,
 } from '@finos/legend-lego/code-editor';
+import { registerDownloadHelperServiceWorker } from '@finos/legend-lego/download-helper';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -62,6 +63,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
       async (applicationStore) => {
         await configureCodeEditorComponent(applicationStore);
         setupPureLanguageService({});
+        registerDownloadHelperServiceWorker();
       },
     ];
   }

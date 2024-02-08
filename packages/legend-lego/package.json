@@ -26,6 +26,8 @@
     "./code-editor/test/MockedMonacoEditor.js": "./lib/code-editor/__test-utils__/MockedMonacoEditor.js",
     "./data-grid": "./lib/data-grid/index.js",
     "./graph-editor": "./lib/graph-editor/index.js",
+    "./download-helper": "./lib/download-helper/index.js",
+    "./download-helper/test/MockedDownloadHelper.js": "./lib/download-helper/__test-utils__/MockedDownloadHelper.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",

@@ -256,9 +256,17 @@ export const getWebAppBaseWebpackConfig = (
         isEnvDevelopment ? '[name].[ext]' : '[name].[contenthash:8].[ext]'
       }`,
       publicPath: isEnvDevelopment ? '/' : appConfig.baseUrl,
-      filename: `${staticPath}/${
-        isEnvDevelopment ? '[name].js' : '[name].[contenthash:8].js'
-      }`,
+      filename: (pathData) => {
+        // NOTE: output service worker file in root so service worker can intercept fetch requests properly.
+        // instead of just handling requests under /static for example
+        // See https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register
+        if (pathData.filename?.endsWith('.service-worker')) {
+          return '[name].js';
+        }
+        return `${staticPath}/${
+          isEnvDevelopment ? '[name].js' : '[name].[contenthash:8].js'
+        }`;
+      },
     },
     resolve: {
       ...baseConfig.resolve,
