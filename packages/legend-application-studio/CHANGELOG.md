@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.15.0
+
+### Minor Changes
+
+- [#2923](https://github.com/finos/legend-studio/pull/2923) [`f557af7b1`](https://github.com/finos/legend-studio/commit/f557af7b1ce0bfe879703c0ada0bd038bbec86c5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable ServiceWork in Studio and Query Application Launching.
+
 ## 28.14.9
 
 ## 28.14.8

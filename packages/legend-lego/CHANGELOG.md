@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 1.2.0
+
+### Minor Changes
+
+- [#2923](https://github.com/finos/legend-studio/pull/2923) [`f557af7b1`](https://github.com/finos/legend-studio/commit/f557af7b1ce0bfe879703c0ada0bd038bbec86c5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add ability to register [Service Worker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) in `LegendApplication` and configure it during start up of application.
+
 ## 1.1.70
 
 ## 1.1.69
