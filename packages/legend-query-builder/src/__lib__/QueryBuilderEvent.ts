@@ -18,11 +18,13 @@ export enum QUERY_BUILDER_EVENT {
   RUN_QUERY__LAUNCH = 'query-builder.run-query.launch',
   GENERATE_EXECUTION_PLAN__LAUNCH = 'query-builder.generate-plan.launch',
   DEBUG_EXECUTION_PLAN__LAUNCH = 'query-builder.debug-plan.launch',
+  EXPORT_QUERY_DATA__LAUNCH = 'query-builder.export-query-data.launch',
 
   RUN_QUERY__SUCCESS = 'query-builder.run-query.success',
   GENERATE_EXECUTION_PLAN__SUCCESS = 'query-builder.generate-plan.success',
   DEBUG_EXECUTION_PLAN__SUCCESS = 'query-builder.debug-plan.success',
   BUILD_EXECUTION_PLAN__SUCCESS = 'query-builder.build-plan.success',
+  EXPORT_QUERY_DATA__SUCCESS = 'query-builder.export-query-data.success',
 
   MAPPING_MODEL_COVERAGE_ANALYSYS__LAUNCH = 'query-builder.mapping-model-coverage-analysis.launch',
   MAPPING_MODEL_COVERAGE_ANALYSYS__SUCCESS = 'query-builder.mapping-model-coverage-analysis.success',

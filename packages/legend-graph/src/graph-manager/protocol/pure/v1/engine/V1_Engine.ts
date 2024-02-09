@@ -720,15 +720,44 @@ export class V1_Engine {
     }
   }
 
+  async exportData(
+    input: V1_ExecuteInput,
+    options?: ExecutionOptions,
+  ): Promise<ReadableStream> {
+    try {
+      return guaranteeNonNullable(
+        (
+          (await this.engineServerClient.runQuery(
+            V1_ExecuteInput.serialization.toJson(input),
+            {
+              serializationFormat: options?.serializationFormat,
+              returnAsResponse: true,
+            },
+          )) as Response
+        ).body,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  }
+
   async runQueryAndReturnString(
     input: V1_ExecuteInput,
     options?: ExecutionOptions,
   ): Promise<string> {
     return (
-      (await this.engineServerClient.execute(
+      (await this.engineServerClient.runQuery(
         V1_ExecuteInput.serialization.toJson(input),
         {
-          returnResultAsText: true,
+          returnAsResponse: true,
           serializationFormat: options?.serializationFormat,
         },
       )) as Response
