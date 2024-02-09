@@ -80,10 +80,9 @@ const CustomMenuList: React.FC<{
   const { options, children, getValue, selectProps } = props;
   // Get row height in pixel since `react-window` does not support `rem`
   // See https://stackoverflow.com/questions/45001097/convert-rem-to-px-without-reflow
-  let rowHeight =
+  const rowHeight =
     selectProps.optionCustomization?.rowHeight ??
     parseInt(getComputedStyle(document.documentElement).fontSize, 10) * 3.5;
-  rowHeight = isNaN(rowHeight) ? 35 : rowHeight;
   const MAX_OPTIONS_LENGTH = 6;
   const [value] = getValue();
   const initialOffset = options.indexOf(value) * rowHeight;
