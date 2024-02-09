@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 const TAG_REQUEST = 'download-request';
 const TAG_RESPONSE = 'download-response';
-
 const STREAM_CLOSED = '#stream-closed';
 const STREAM_ABORTED = '#stream-aborted';
-
 // will interact from `createWritableStreamFromMessageChannel`
-function createReadableStreamFromMessagePort(
-  port: MessagePort,
-): ReadableStream {
+function createReadableStreamFromMessagePort(port) {
   return new ReadableStream({
     start(controller) {
       port.onmessage = ({ data }) => {
@@ -40,37 +35,22 @@ function createReadableStreamFromMessagePort(
     },
   });
 }
-
-interface DownloadRequest {
-  tag: string;
-  filename: string;
-  url: string;
-}
-
-const entries: Map<string, [ReadableStream, DownloadRequest, MessagePort]> =
-  new Map();
-
-export function handleDownloadMessage(event: ExtendableMessageEvent): void {
-  const data = event.data as DownloadRequest;
+const entries = new Map();
+export function handleDownloadMessage(event) {
+  const data = event.data;
   if (event.data && event.data.tag === TAG_REQUEST) {
     const port = event.ports[0];
     if (port === undefined) {
       throw new Error('Port 1 expected to handle download request');
     }
-    const entry: [ReadableStream, DownloadRequest, MessagePort] = [
-      createReadableStreamFromMessagePort(port),
-      data,
-      port,
-    ];
+    const entry = [createReadableStreamFromMessagePort(port), data, port];
     entries.set(data.url, entry);
     port.postMessage({ tag: TAG_RESPONSE, downloadUrl: data.url });
   }
 }
-
-function handleDownloadFetch(event: FetchEvent): void {
+function handleDownloadFetch(event) {
   const url = event.request.url;
   const entry = entries.get(url);
-
   if (entry) {
     entries.delete(url);
     const [stream, data] = entry;
@@ -85,35 +65,26 @@ function handleDownloadFetch(event: FetchEvent): void {
     event.respondWith(new Response(stream, { headers }));
   }
 }
-
-// ------------------ Service Worker Lifecycle ------------------
-
-declare const self: ServiceWorkerGlobalScope;
-
-function handleInstall(event: ExtendableEvent): void {
+function handleInstall(event) {
   // TODO: add trace
   // console.log('service worker install', event);
   event.waitUntil(self.skipWaiting());
 }
-
-function handleActivate(event: ExtendableEvent): void {
+function handleActivate(event) {
   // TODO: add trace
   // console.log('service worker activate', event);
   event.waitUntil(self.clients.claim());
 }
-
-function handleMessage(event: ExtendableMessageEvent): void {
+function handleMessage(event) {
   // TODO: add trace
   // console.log('service worker message', event);
   handleDownloadMessage(event);
 }
-
-function handleFetch(event: FetchEvent): void {
+function handleFetch(event) {
   // TODO: add trace
   // console.log('service worker fetch', event);
   handleDownloadFetch(event);
 }
-
 self.addEventListener('install', handleInstall);
 self.addEventListener('activate', handleActivate);
 self.addEventListener('message', handleMessage);

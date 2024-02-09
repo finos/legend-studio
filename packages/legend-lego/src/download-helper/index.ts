@@ -143,14 +143,16 @@ export async function downloadStream(
 export function registerDownloadHelperServiceWorker(): void {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker
-      .register(new URL('./DownloadHelper.service-worker.js', import.meta.url))
+      .register('ServiceWorker.js')
       .then((reg) => {
         // TODO: add trace
-        // console.debug('register service worker success', reg);
+        // eslint-disable-next-line no-console
+        console.debug('register service worker success', reg);
       })
       .catch((error) => {
         // TODO: add trace
-        // console.debug('register service worker error', error);
+        // eslint-disable-next-line no-console
+        console.debug('register service worker error', error);
       });
   }
 }
