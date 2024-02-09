@@ -1,5 +1,7 @@
 # @finos/legend-server-sdlc
 
+## 5.3.6
+
 ## 5.3.5
 
 ## 5.3.4
