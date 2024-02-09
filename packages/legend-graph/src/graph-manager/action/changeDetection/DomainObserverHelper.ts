@@ -67,7 +67,11 @@ import {
 } from './RawValueSpecificationObserver.js';
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
-import { observe_SnowflakeAppDeploymentConfiguration } from './DSL_FunctionActivatorObserverHelper.js';
+import {
+  observe_RestServiceDeploymentConfiguration,
+  observe_RestServiceOwnership,
+  observe_SnowflakeAppDeploymentConfiguration,
+} from './DSL_FunctionActivatorObserverHelper.js';
 import type {
   FunctionParameterValue,
   FunctionTest,
@@ -79,6 +83,7 @@ import {
 } from './Testable_ObserverHelper.js';
 import type { FunctionStoreTestData } from '../../../graph/metamodel/pure/packageableElements/function/test/FunctionStoreTestData.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
+import type { RestService } from '../../../graph/metamodel/pure/packageableElements/function/RestService.js';
 
 const _observe_Abstract_Package = (metamodel: Package): void => {
   observe_Abstract_PackageableElement(metamodel);
@@ -571,6 +576,30 @@ export const observe_SnowflakeApp = skipObserved(
     });
 
     observe_SnowflakeAppDeploymentConfiguration(
+      metamodel.activationConfiguration,
+    );
+    return metamodel;
+  },
+);
+
+export const observe_RestService = skipObserved(
+  (metamodel: RestService): RestService => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable<RestService, '_elementHashCode'>(metamodel, {
+      documentation: observable,
+      ownership: observable,
+      pattern: observable,
+      autoActivateUpdates: observable,
+      storeModel: observable,
+      generateLineage: observable,
+      activationConfiguration: observable,
+      _elementHashCode: override,
+    });
+    if (metamodel.ownership) {
+      observe_RestServiceOwnership(metamodel.ownership);
+    }
+    observe_RestServiceDeploymentConfiguration(
       metamodel.activationConfiguration,
     );
     return metamodel;

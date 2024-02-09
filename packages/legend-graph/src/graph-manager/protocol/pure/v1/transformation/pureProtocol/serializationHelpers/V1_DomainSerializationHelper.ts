@@ -28,6 +28,7 @@ import {
   customEquivalentList,
   customList,
   customListWithSchema,
+  optionalCustom,
   optionalCustomList,
   usingConstantValueSchema,
   usingModelSchema,
@@ -56,13 +57,19 @@ import {
 } from './V1_RawValueSpecificationSerializationHelper.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
-import { V1_SnowflakeAppDeploymentConfigurationAppModelSchema } from './V1_FunctionActivatorSerializationHelper.js';
+import {
+  V1_RestServiceDeploymentConfigurationAppModelSchema,
+  V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
+  V1_deserializeRestServiceOwnership,
+  V1_serializeRestServiceOwnership,
+} from './V1_FunctionActivatorSerializationHelper.js';
 import {
   V1_deserializeTestSuite,
   V1_serializeTestSuite,
 } from './V1_TestSerializationHelper.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
+import { V1_RestService } from '../../../model/packageableElements/function/V1_RestService.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -72,6 +79,7 @@ export const V1_UNIT_ELEMENT_PROTOCOL_TYPE = 'unit';
 export const V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE = 'association';
 export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
 export const V1_SNOWFLAKE_APP_TYPE = 'snowflakeApp';
+export const V1_REST_SERVICE_TYPE = 'hostedService';
 
 export const V1_propertyPointerModelSchema = createModelSchema(
   V1_PropertyPointer,
@@ -167,6 +175,31 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
     V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
   ),
   type: optional(primitive()),
+});
+
+export const V1_restServiceModelSchema = createModelSchema(V1_RestService, {
+  _type: usingConstantValueSchema(V1_REST_SERVICE_TYPE),
+  documentation: optional(primitive()),
+  ownership: optionalCustom(
+    (val) => V1_serializeRestServiceOwnership(val),
+    (val) => V1_deserializeRestServiceOwnership(val),
+  ),
+  pattern: primitive(),
+  autoActivateUpdates: primitive(),
+  storeModel: primitive(),
+  generateLineage: primitive(),
+  function: primitive(),
+  name: primitive(),
+  package: primitive(),
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  activationConfiguration: usingModelSchema(
+    V1_RestServiceDeploymentConfigurationAppModelSchema,
+  ),
 });
 
 // ------------------------------------- Class -------------------------------------

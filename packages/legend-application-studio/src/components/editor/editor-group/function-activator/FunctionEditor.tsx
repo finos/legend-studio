@@ -746,14 +746,18 @@ const FunctionPromoteEditor = observer(
           return (
             <BaseCard
               key={FUNCTION_ACTIVATE_TYPE.REST_SERVICE}
-              cardMedia={<div className="coming-soon-label">Coming Soon</div>}
+              cardMedia={
+                <RocketIcon className="function-promote-editor__type-icon" />
+              }
               cardName={type}
               cardContent="Create a HostedService that will be deployed to a server environment and executed with a pattern"
-              isDisable={true}
               isActive={
                 activatorPromoteState.activateType ===
                 FUNCTION_ACTIVATE_TYPE.REST_SERVICE
               }
+              onClick={() => {
+                activatorPromoteState.setAcitvateType(type);
+              }}
             />
           );
         case FUNCTION_ACTIVATE_TYPE.SERVICE_JAR:

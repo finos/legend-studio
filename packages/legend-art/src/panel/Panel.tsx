@@ -386,7 +386,7 @@ export const PanelFormBooleanField = observer(
     prompt?: string;
     value: boolean | undefined;
     children?: React.ReactNode;
-    isReadOnly: boolean;
+    isReadOnly?: boolean;
     update: (value: boolean | undefined) => void;
   }) => {
     const { value, name, prompt, children, isReadOnly, update } = props;

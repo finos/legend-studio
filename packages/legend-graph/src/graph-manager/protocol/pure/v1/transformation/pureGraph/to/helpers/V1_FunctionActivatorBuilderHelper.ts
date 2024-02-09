@@ -22,6 +22,19 @@ import { V1_buildConnection } from './V1_ConnectionBuilderHelper.js';
 import { UnsupportedOperationError, guaranteeType } from '@finos/legend-shared';
 import { V1_SnowflakeAppType } from '../../../../engine/functionActivator/V1_SnowflakeAppType.js';
 import { SnowflakeAppType } from '../../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppType.js';
+import type { V1_RestServiceDeploymentConfiguration } from '../../../../engine/functionActivator/V1_RestServiceDeploymentConfiguration.js';
+import { RestServiceDeploymentConfiguration } from '../../../../../../../../graph/metamodel/pure/functionActivator/RestServiceDeploymentConfiguration.js';
+import {
+  V1_DeploymentOwnership,
+  V1_UserListOwnership,
+  type V1_RestServiceOwnership,
+} from '../../../../model/packageableElements/function/V1_RestServiceOwnership.js';
+import {
+  RestDeploymentOwnership,
+  RestUserListOwnership,
+  type RestServiceOwnership,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/function/RestServiceOwnership.js';
+import type { RestService } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/RestService.js';
 
 export const V1_buildSnowflakeAppDeploymentConfiguration = (
   element: V1_SnowflakeAppDeploymentConfiguration,
@@ -54,4 +67,28 @@ export const V1_buildSnowflakeAppType = (
         element,
       );
   }
+};
+
+export const V1_buildRestServiceDeploymentConfiguration = (
+  element: V1_RestServiceDeploymentConfiguration,
+): RestServiceDeploymentConfiguration => {
+  const metamodel = new RestServiceDeploymentConfiguration();
+
+  metamodel.host = element.host;
+  metamodel.port = element.port;
+  metamodel.path = element.path;
+
+  return metamodel;
+};
+
+export const V1_builRestServiceOwnership = (
+  serviceOwnership: V1_RestServiceOwnership,
+  parentService: RestService,
+): RestServiceOwnership => {
+  if (serviceOwnership instanceof V1_DeploymentOwnership) {
+    return new RestDeploymentOwnership(serviceOwnership.id, parentService);
+  } else if (serviceOwnership instanceof V1_UserListOwnership) {
+    return new RestUserListOwnership(serviceOwnership.users, parentService);
+  }
+  throw new UnsupportedOperationError();
 };

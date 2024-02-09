@@ -20,6 +20,8 @@ import { V1_SnowflakeAppDeploymentConfiguration } from '../../../engine/function
 import { V1_transformConnectionPointer } from './V1_ConnectionTransformer.js';
 import { V1_SnowflakeAppType } from '../../../engine/functionActivator/V1_SnowflakeAppType.js';
 import { SnowflakeAppType } from '../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppType.js';
+import type { RestServiceDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/RestServiceDeploymentConfiguration.js';
+import { V1_RestServiceDeploymentConfiguration } from '../../../engine/functionActivator/V1_RestServiceDeploymentConfiguration.js';
 
 export const V1_transformSnowflakeAppDeploymentConfiguration = (
   element: SnowflakeAppDeploymentConfiguration,
@@ -49,4 +51,14 @@ export const V1_transformSnowflakeAppType = (
         value,
       );
   }
+};
+
+export const V1_transformRestServiceDeploymentConfiguration = (
+  element: RestServiceDeploymentConfiguration,
+): V1_RestServiceDeploymentConfiguration => {
+  const protocol = new V1_RestServiceDeploymentConfiguration();
+  protocol.host = element.host;
+  protocol.path = element.path;
+  protocol.port = element.port;
+  return protocol;
 };

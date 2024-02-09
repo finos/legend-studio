@@ -46,6 +46,7 @@ import type { INTERNAL__UnknownPackageableElement } from './INTERNAL__UnknownPac
 import type { INTERNAL__UnknownFunctionActivator } from './function/INTERNAL__UnknownFunctionActivator.js';
 import type { INTERNAL__UnknownStore } from './store/INTERNAL__UnknownStore.js';
 import type { SnowflakeApp } from './function/SnowflakeApp.js';
+import type { RestService } from './function/RestService.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -78,6 +79,7 @@ export interface PackageableElementVisitor<T> {
   visit_DataElement(element: DataElement): T;
   visit_ExecutionEnvironmentInstance(element: ExecutionEnvironmentInstance): T;
   visit_SnowflakeApp(element: SnowflakeApp): T;
+  visit_RestService(element: RestService): T;
 }
 
 class ModelElement extends AnnotatedElement {

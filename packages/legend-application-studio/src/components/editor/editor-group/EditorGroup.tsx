@@ -86,6 +86,8 @@ import {
   RuleEngagementCard,
   DocumentationCard,
 } from '../../workspace-setup/WorkspaceSetup.js';
+import { RestServiceFunctionActivatorEditorState } from '../../../stores/editor/editor-state/element-editor-state/function-activator/RestServiceFunctionActivatorEditorState.js';
+import { RestServiceFunctionActivatorEditor } from './function-activator/RestServiceFunctionActivatorEditor.js';
 
 export const ViewerEditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -292,6 +294,12 @@ export const EditorGroup = observer(() => {
           ) {
             return (
               <SnowflakeAppFunctionActivatorEditor key={currentTabState.uuid} />
+            );
+          } else if (
+            currentTabState instanceof RestServiceFunctionActivatorEditorState
+          ) {
+            return (
+              <RestServiceFunctionActivatorEditor key={currentTabState.uuid} />
             );
           } else if (currentTabState instanceof UnsupportedElementEditorState) {
             return <UnsupportedElementEditor key={currentTabState.uuid} />;

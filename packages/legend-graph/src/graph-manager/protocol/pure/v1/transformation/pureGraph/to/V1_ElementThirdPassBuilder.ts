@@ -64,6 +64,7 @@ import type { V1_INTERNAL__UnknownPackageableElement } from '../../../model/pack
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
+import type { V1_RestService } from '../../../model/packageableElements/function/V1_RestService.js';
 
 export class V1_ElementThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -109,6 +110,10 @@ export class V1_ElementThirdPassBuilder
   }
 
   visit_SnowflakeApp(element: V1_SnowflakeApp): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_RestService(element: V1_RestService): void {
     throw new UnsupportedOperationError();
   }
 

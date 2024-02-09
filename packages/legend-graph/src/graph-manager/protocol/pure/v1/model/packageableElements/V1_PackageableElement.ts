@@ -38,6 +38,7 @@ import type { V1_INTERNAL__UnknownPackageableElement } from './V1_INTERNAL__Unkn
 import type { V1_INTERNAL__UnknownFunctionActivator } from './function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { V1_INTERNAL__UnknownStore } from './store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from './function/V1_SnowflakeApp.js';
+import type { V1_RestService } from './function/V1_RestService.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -70,6 +71,7 @@ export interface V1_PackageableElementVisitor<T> {
     element: V1_ExecutionEnvironmentInstance,
   ): T;
   visit_SnowflakeApp(element: V1_SnowflakeApp): T;
+  visit_RestService(element: V1_RestService): T;
 }
 
 export abstract class V1_PackageableElement implements Hashable {

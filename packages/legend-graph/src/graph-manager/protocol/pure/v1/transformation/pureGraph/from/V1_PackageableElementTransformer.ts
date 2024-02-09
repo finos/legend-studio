@@ -79,9 +79,13 @@ import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/P
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import type { SnowflakeApp } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 import {
+  V1_transformRestServiceDeploymentConfiguration,
   V1_transformSnowflakeAppDeploymentConfiguration,
   V1_transformSnowflakeAppType,
 } from './V1_FunctionActivatorTransformer.js';
+import type { RestService } from '../../../../../../../graph/metamodel/pure/packageableElements/function/RestService.js';
+import { V1_RestService } from '../../../model/packageableElements/function/V1_RestService.js';
+import { V1_transformRestServiceOwnership } from './V1_RestServiceTransformation.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -152,6 +156,32 @@ class V1_PackageableElementTransformer
     if (element.type) {
       protocol.type = V1_transformSnowflakeAppType(element.type);
     }
+    return protocol;
+  }
+
+  visit_RestService(element: RestService): V1_PackageableElement {
+    const protocol = new V1_RestService();
+    V1_initPackageableElement(protocol, element);
+    protocol.function = generateFunctionPrettyName(element.function.value, {
+      fullPath: true,
+      spacing: false,
+      notIncludeParamName: true,
+    });
+
+    protocol.documentation = element.documentation;
+
+    if (element.ownership) {
+      protocol.ownership = V1_transformRestServiceOwnership(element.ownership);
+    }
+
+    protocol.pattern = element.pattern;
+    protocol.autoActivateUpdates = element.autoActivateUpdates;
+    protocol.storeModel = element.storeModel;
+    protocol.generateLineage = element.generateLineage;
+    protocol.activationConfiguration =
+      V1_transformRestServiceDeploymentConfiguration(
+        element.activationConfiguration,
+      );
     return protocol;
   }
 

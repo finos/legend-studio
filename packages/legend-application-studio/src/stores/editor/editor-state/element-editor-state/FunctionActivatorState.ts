@@ -25,8 +25,11 @@ import {
   extractPackagePathFromPath,
   SnowflakeAppDeploymentConfiguration,
   SnowflakeAppType,
+  RestService,
+  RestServiceDeploymentConfiguration,
+  RestDeploymentOwnership,
 } from '@finos/legend-graph';
-import { type GeneratorFn } from '@finos/legend-shared';
+import { uuid, type GeneratorFn } from '@finos/legend-shared';
 import { FUNCTION_ACTIVATE_TYPE } from '../../../../components/editor/editor-group/function-activator/FunctionEditor.js';
 
 const BASE_ACTIVATOR_NAME = 'NewActivator';
@@ -100,6 +103,24 @@ export class FunctionActivatorState {
         snowflakeApp.activationConfiguration =
           new SnowflakeAppDeploymentConfiguration();
         return snowflakeApp;
+      }
+      case FUNCTION_ACTIVATE_TYPE.REST_SERVICE: {
+        const activatorName = this.activatorPath.includes('::')
+          ? extractElementNameFromPath(this.activatorPath)
+          : this.activatorPath;
+        const restService = new RestService(activatorName);
+        restService.documentation = '';
+        restService.ownership = new RestDeploymentOwnership('', restService);
+        restService.pattern = `/${uuid()}`;
+        restService.autoActivateUpdates = true;
+        restService.storeModel = false;
+        restService.generateLineage = false;
+        restService.function =
+          PackageableElementExplicitReference.create(functionElement);
+        PackageableElementExplicitReference.create(functionElement);
+        restService.activationConfiguration =
+          new RestServiceDeploymentConfiguration();
+        return restService;
       }
       default:
         return undefined;

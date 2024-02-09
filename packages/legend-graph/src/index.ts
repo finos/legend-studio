@@ -600,3 +600,4 @@ export {
 export * from './DSL_Service_Exports.js';
 export * from './STO_FlatData_Exports.js';
 export * from './STO_Relational_Exports.js';
+export * from './DSL_RestService_Exports.js';
