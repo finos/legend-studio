@@ -538,7 +538,9 @@ export const QueryBuilderResultPanel = observer(
         <PanelContent>
           <PanelLoadingIndicator
             isLoading={
-              resultState.isRunningQuery || resultState.isGeneratingPlan
+              resultState.isRunningQuery ||
+              resultState.isGeneratingPlan ||
+              resultState.exportDataState.isInProgress
             }
           />
           {!executionResult && (

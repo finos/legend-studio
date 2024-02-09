@@ -631,10 +631,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
   _execution = (): string => `${this._pure()}/execution`;
   _executionManager = (): string => `${this._server()}/executionManager`;
 
-  runQuery = (
+  execute = (
     input: PlainObject<V1_ExecuteInput>,
     options?: {
-      returnAsResponse?: boolean;
+      returnResultAsText?: boolean;
       serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> =>
@@ -650,7 +650,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
           : undefined,
       },
       { enableCompression: true },
-      { skipProcessing: Boolean(options?.returnAsResponse) },
+      { skipProcessing: Boolean(options?.returnResultAsText) },
     );
 
   generatePlan = (
