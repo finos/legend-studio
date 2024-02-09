@@ -26,7 +26,6 @@ import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
-const TerserPlugin = require('terser-webpack-plugin');
 
 export const getEnvInfo = (env, arg) => ({
   isEnvDevelopment: arg.mode === 'development',
@@ -333,16 +332,6 @@ export const getWebAppBaseWebpackConfig = (
               },
             },
           },
-          usedExports: false,
-          mergeDuplicateChunks: true,
-          mangleWasmImports: true,
-          innerGraph: false, // https://webpack.js.org/configuration/optimization/#optimizationinnergraph
-          minimize: true, // https://webpack.js.org/configuration/optimization/#optimizationminimize
-          minimizer: [
-            new TerserPlugin({
-              parallel: true,
-            }),
-          ],
         }
       : baseConfig.optimization,
     plugins: [
