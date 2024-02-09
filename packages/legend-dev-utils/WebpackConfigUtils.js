@@ -166,7 +166,15 @@ export const getBaseWebpackConfig = (
       ? {
           // Keep runtime chunk minimal by enabling runtime chunk
           // See https://webpack.js.org/guides/build-performance/#minimal-entry-chunk
-          runtimeChunk: true,
+          runtimeChunk: {
+            name: (entrypoint) => {
+              if (entrypoint.name.startsWith('service-worker')) {
+                return null;
+              }
+
+              return `runtime~${entrypoint.name}`;
+            },
+          },
           // Avoid extra optimization step, turning off split-chunk optimization
           // See https://webpack.js.org/guides/build-performance/#avoid-extra-optimization-steps
           removeAvailableModules: false,
@@ -232,6 +240,7 @@ export const getWebAppBaseWebpackConfig = (
     appConfig,
     babelConfigPath,
     enableReactFastRefresh,
+    enableServiceWorker,
   },
 ) => {
   if (!dirname) {
@@ -248,7 +257,17 @@ export const getWebAppBaseWebpackConfig = (
 
   const config = {
     ...baseConfig,
-    entry: { index: mainEntryPath },
+    entry: {
+      index: mainEntryPath,
+      ...(enableServiceWorker
+        ? {
+            'service-worker': {
+              filename: 'ServiceWorker.js',
+              import: './ServiceWorker.js',
+            },
+          }
+        : {}),
+    },
     output: {
       ...baseConfig.output,
       path: join(dirname, `dist${appConfig.baseUrl}`),
@@ -307,7 +326,7 @@ export const getWebAppBaseWebpackConfig = (
             cacheGroups: {
               defaultVendors: {
                 test: /node_modules/,
-                chunks: 'initial',
+                chunks: (chunkFilename) => chunkFilename !== 'service-worker',
                 name: 'vendor',
                 priority: -10,
                 enforce: true,

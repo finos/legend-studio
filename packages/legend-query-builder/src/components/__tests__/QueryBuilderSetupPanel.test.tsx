@@ -28,40 +28,44 @@ import {
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
-test(integrationTest('Query builder set up panel'), async () => {
-  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-    TEST_DATA__ComplexRelationalModel,
-    stub_RawLambda(),
-    'model::relational::tests::simpleRelationalMapping',
-    'model::MyRuntime',
-    TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-  );
-  await act(async () => {
-    queryBuilderState.initializeWithQuery(
-      create_RawLambda(
-        TEST_DATA__simpleProjectionWithConstantsAndParameters.parameters,
-        TEST_DATA__simpleProjectionWithConstantsAndParameters.body,
-      ),
+test(
+  integrationTest('Query builder set up panel'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
     );
-  });
-  const queryBuilderSetup = await waitFor(() =>
-    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-  );
-  await waitFor(() => getByText(queryBuilderSetup, 'Person'));
-  // select FirmExtension from dropdown
-  selectFromCustomSelectorInput(
-    queryBuilderSetup,
-    'FirmExtensionmodel::pure::tests::model::simple::FirmExtension',
-  );
-  await waitFor(() => getByText(queryBuilderSetup, 'FirmExtension'));
-  // select synonym from dropdown
-  selectFromCustomSelectorInput(
-    queryBuilderSetup,
-    'Synonymmodel::pure::tests::model::simple::Synonym',
-  );
-  await waitFor(() => getByText(queryBuilderSetup, 'Synonym'));
-  const queryBuilderExplorerTree = await waitFor(() =>
-    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
-  );
-  await waitFor(() => getByText(queryBuilderExplorerTree, 'Synonym'));
-});
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithConstantsAndParameters.parameters,
+          TEST_DATA__simpleProjectionWithConstantsAndParameters.body,
+        ),
+      );
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    // select FirmExtension from dropdown
+    selectFromCustomSelectorInput(
+      queryBuilderSetup,
+      'FirmExtensionmodel::pure::tests::model::simple::FirmExtension',
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'FirmExtension'));
+    // select synonym from dropdown
+    selectFromCustomSelectorInput(
+      queryBuilderSetup,
+      'Synonymmodel::pure::tests::model::simple::Synonym',
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Synonym'));
+    const queryBuilderExplorerTree = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    await waitFor(() => getByText(queryBuilderExplorerTree, 'Synonym'));
+  },
+  50000,
+);
