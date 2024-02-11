@@ -158,7 +158,6 @@ export class V1_ElementFirstPassBuilder
     );
     metamodel.applicationName = element.applicationName;
     metamodel.description = element.description;
-    metamodel.owner = element.owner;
     return metamodel;
   }
 

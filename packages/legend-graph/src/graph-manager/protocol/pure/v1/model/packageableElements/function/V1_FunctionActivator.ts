@@ -22,6 +22,7 @@ import {
 import type { V1_TaggedValue } from '../domain/V1_TaggedValue.js';
 import type { V1_StereotypePtr } from '../domain/V1_StereotypePtr.js';
 import type { V1_DeploymentConfiguration } from '../../../engine/functionActivator/V1_DeploymentConfiguration.js';
+import type { V1_Ownership } from './V1_Ownership.js';
 
 export abstract class V1_FunctionActivator
   extends V1_PackageableElement
@@ -29,6 +30,7 @@ export abstract class V1_FunctionActivator
 {
   function!: V1_PackageableElementPointer;
   activationConfiguration: V1_DeploymentConfiguration | undefined;
+  ownership?: V1_Ownership;
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
 }

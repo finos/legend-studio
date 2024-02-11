@@ -19,7 +19,16 @@ import { SnowflakeAppDeploymentConfiguration } from '../../../../../../../../gra
 import type { V1_SnowflakeAppDeploymentConfiguration } from '../../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildConnection } from './V1_ConnectionBuilderHelper.js';
-import { guaranteeType } from '@finos/legend-shared';
+import { UnsupportedOperationError, guaranteeType } from '@finos/legend-shared';
+import {
+  DeploymentOwner,
+  type Ownership,
+} from '../../../../../../../../graph/metamodel/pure/packageableElements/function/Ownership.js';
+import {
+  V1_DeploymentOwner,
+  type V1_Ownership,
+} from '../../../../model/packageableElements/function/V1_Ownership.js';
+import type { FunctionActivator } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 
 export const V1_buildSnowflakeAppDeploymentConfiguration = (
   element: V1_SnowflakeAppDeploymentConfiguration,
@@ -36,4 +45,14 @@ export const V1_buildSnowflakeAppDeploymentConfiguration = (
     metamodel.activationConnection = activationConnection;
   }
   return metamodel;
+};
+
+export const V1_buildDeploymentOwnership = (
+  ownership: V1_Ownership,
+  functionActivator: FunctionActivator,
+): Ownership => {
+  if (ownership instanceof V1_DeploymentOwner) {
+    return new DeploymentOwner(ownership.id, functionActivator);
+  }
+  throw new UnsupportedOperationError();
 };

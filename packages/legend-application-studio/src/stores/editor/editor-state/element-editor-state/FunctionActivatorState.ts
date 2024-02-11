@@ -24,6 +24,7 @@ import {
   extractElementNameFromPath,
   extractPackagePathFromPath,
   SnowflakeAppDeploymentConfiguration,
+  DeploymentOwner,
 } from '@finos/legend-graph';
 import { type GeneratorFn } from '@finos/legend-shared';
 import { FUNCTION_ACTIVATE_TYPE } from '../../../../components/editor/editor-group/function-activator/FunctionEditor.js';
@@ -92,7 +93,7 @@ export class FunctionActivatorState {
         const snowflakeApp = new SnowflakeApp(activatorName);
         snowflakeApp.applicationName = '';
         snowflakeApp.description = '';
-        snowflakeApp.owner = undefined;
+        snowflakeApp.ownership = new DeploymentOwner('', snowflakeApp);
         snowflakeApp.function =
           PackageableElementExplicitReference.create(functionElement);
         snowflakeApp.activationConfiguration =

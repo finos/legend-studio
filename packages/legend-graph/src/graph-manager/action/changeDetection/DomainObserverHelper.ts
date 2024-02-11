@@ -564,7 +564,7 @@ export const observe_SnowflakeApp = skipObserved(
     makeObservable<SnowflakeApp, '_elementHashCode'>(metamodel, {
       applicationName: observable,
       description: observable,
-      owner: observable,
+      ownership: observable,
       activationConfiguration: observable,
       _elementHashCode: override,
     });
