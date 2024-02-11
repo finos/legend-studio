@@ -41,6 +41,7 @@ import {
 } from '../stores/DocumentationService.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 import { ApplicationStore } from '../stores/ApplicationStore.js';
+import { registerDownloadHelperServiceWorker } from '../util/DownloadHelperServiceWorker.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -109,6 +110,9 @@ export abstract class LegendApplication {
     | undefined;
   protected _isConfigured = false;
 
+  protected downloadHelperServiceWorkerPath: string | undefined;
+  protected downloadHelper = false;
+
   protected constructor(
     pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
   ) {
@@ -154,6 +158,12 @@ export abstract class LegendApplication {
 
   withPlugins(plugins: AbstractPlugin[]): LegendApplication {
     this.pluginManager.usePlugins([...this.basePlugins, ...plugins]);
+    return this;
+  }
+
+  withDownloadHelper(path?: string | undefined): LegendApplication {
+    this.downloadHelper = true;
+    this.downloadHelperServiceWorkerPath = path;
     return this;
   }
 
@@ -326,6 +336,11 @@ export abstract class LegendApplication {
         LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__SUCCESS),
         'Legend application loaded',
       );
+      if (this.downloadHelper) {
+        registerDownloadHelperServiceWorker(
+          this.downloadHelperServiceWorkerPath,
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.logger.error(

@@ -499,7 +499,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     options?: ExecutionOptions,
     report?: GraphManagerOperationReport,
-  ): Promise<ReadableStream>;
+  ): Promise<Response>;
 
   abstract cancelUserExecutions(broadcastToCluster: boolean): Promise<string>;
 

@@ -37,7 +37,10 @@ export default (env, arg) => {
     appConfig,
     babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
     enableReactFastRefresh: isEnvDevelopment,
-    enableServiceWorker: true,
+    serviceWorkerConfig: {
+      filename: 'ServiceWorker.js',
+      import: resolve(__dirname, './ServiceWorker.js'),
+    },
   });
   const config = {
     ...baseConfig,

@@ -2581,7 +2581,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     options?: ExecutionOptions,
     _report?: GraphManagerOperationReport,
-  ): Promise<ReadableStream> {
+  ): Promise<Response> {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 

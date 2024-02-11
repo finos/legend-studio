@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+import {
+  type ContentType,
+  downloadFileUsingDataURI,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
+
 enum DOWNLOAD_EVENTS {
   TAG_REQUEST = 'download-request',
   TAG_RESPONSE = 'download-response',
@@ -114,9 +120,11 @@ function openInIframe(src: string): HTMLIFrameElement {
 }
 
 export async function downloadStream(
-  responseBody: ReadableStream,
+  response: Response,
   filename: string,
+  contentType: ContentType,
 ): Promise<void> {
+  const responseBody = guaranteeNonNullable(response.body);
   // creates communication channel with service worker with response handler
   const channel = new MessageChannel();
   channel.port1.onmessage = handleServiceWorkerDownloadResponse;
@@ -124,11 +132,17 @@ export async function downloadStream(
   // grabs service worker and handles it download along with response channel port
   const serviceWorker = await getServiceWorker();
   if (!serviceWorker) {
+    // TODO: remove once service worker workflow is tested
+    const text = await response.text();
+    // eslint-disable-next-line no-console
+    console.debug('service worker not found. Using in memory file download');
+    downloadFileUsingDataURI(filename, text, contentType);
     return;
   }
+  // eslint-disable-next-line no-console
+  console.debug('Service worker found. Continuing download');
   const downloadRequest = createDownloadRequest(filename);
   serviceWorker.postMessage(downloadRequest, [channel.port2]);
-
   // creates new data stream over communication channel and pipes given stream in it
   responseBody
     .pipeTo(createWritableStreamFromMessageChannel(channel))
@@ -140,19 +154,28 @@ export async function downloadStream(
     });
 }
 
-export function registerDownloadHelperServiceWorker(): void {
+export function registerDownloadHelperServiceWorker(
+  workerPath?: string | undefined,
+): void {
   if ('serviceWorker' in navigator) {
+    const path = workerPath ?? '/ServiceWorker.js';
     navigator.serviceWorker
-      .register('ServiceWorker.js')
+      .register(path)
       .then((reg) => {
         // TODO: add trace
         // eslint-disable-next-line no-console
-        console.debug('register service worker success', reg);
+        console.debug(
+          `register service worker success with path: ${path}`,
+          reg,
+        );
       })
       .catch((error) => {
         // TODO: add trace
         // eslint-disable-next-line no-console
-        console.debug('register service worker error', error);
+        console.debug(
+          `register service worker error with path: ${path}`,
+          error,
+        );
       });
   }
 }
