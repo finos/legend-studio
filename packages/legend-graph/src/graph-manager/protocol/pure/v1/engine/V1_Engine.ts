@@ -723,18 +723,16 @@ export class V1_Engine {
   async exportData(
     input: V1_ExecuteInput,
     options?: ExecutionOptions,
-  ): Promise<ReadableStream> {
+  ): Promise<Response> {
     try {
       return guaranteeNonNullable(
-        (
-          (await this.engineServerClient.runQuery(
-            V1_ExecuteInput.serialization.toJson(input),
-            {
-              serializationFormat: options?.serializationFormat,
-              returnAsResponse: true,
-            },
-          )) as Response
-        ).body,
+        (await this.engineServerClient.runQuery(
+          V1_ExecuteInput.serialization.toJson(input),
+          {
+            serializationFormat: options?.serializationFormat,
+            returnAsResponse: true,
+          },
+        )) as Response,
       );
     } catch (error) {
       assertErrorThrown(error);

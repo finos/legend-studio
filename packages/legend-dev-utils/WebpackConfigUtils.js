@@ -239,7 +239,8 @@ export const getWebAppBaseWebpackConfig = (
     appConfig,
     babelConfigPath,
     enableReactFastRefresh,
-    enableServiceWorker,
+    // service work config : { fileName: string, import: string }
+    serviceWorkerConfig,
   },
 ) => {
   if (!dirname) {
@@ -258,11 +259,11 @@ export const getWebAppBaseWebpackConfig = (
     ...baseConfig,
     entry: {
       index: mainEntryPath,
-      ...(enableServiceWorker
+      ...(serviceWorkerConfig
         ? {
             'service-worker': {
-              filename: 'ServiceWorker.js',
-              import: './ServiceWorker.js',
+              filename: serviceWorkerConfig.filename,
+              import: serviceWorkerConfig.import,
             },
           }
         : {}),

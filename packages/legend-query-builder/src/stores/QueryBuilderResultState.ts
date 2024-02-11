@@ -35,7 +35,6 @@ import {
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
 } from '@finos/legend-graph';
-import { downloadStream } from '@finos/legend-lego/download-helper';
 
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
@@ -47,6 +46,7 @@ import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHel
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
+import { downloadStream } from '@finos/legend-application';
 
 export const DEFAULT_LIMIT = 1000;
 
@@ -256,13 +256,14 @@ export class QueryBuilderResultState {
               this.queryBuilderState.graphManagerState,
             ),
           },
-        )) as ReadableStream;
+        )) as Response;
       const report = reportGraphAnalytics(
         this.queryBuilderState.graphManagerState.graph,
       );
       downloadStream(
         result,
         `result.${getContentTypeFileExtension(contentType)}`,
+        exportData.contentType,
       )
         .then(() => {
           const reportWithState = Object.assign(
