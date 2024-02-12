@@ -18,13 +18,13 @@ import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 import { FunctionActivator } from './FunctionActivator.js';
 import type { SnowflakeAppDeploymentConfiguration } from '../../functionActivator/SnowflakeAppDeploymentConfiguration.js';
+import type { DeploymentOwner } from './Ownership.js';
 
 export class SnowflakeApp extends FunctionActivator {
   applicationName!: string;
   description: string | undefined;
-  owner: string | undefined;
+  declare ownership: DeploymentOwner;
   declare activationConfiguration: SnowflakeAppDeploymentConfiguration;
-
   accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {
@@ -36,7 +36,7 @@ export class SnowflakeApp extends FunctionActivator {
       CORE_HASH_STRUCTURE.SNOWFLAKE_APP,
       this.applicationName,
       this.description ?? '',
-      this.owner ?? '',
+      this.ownership,
       this.activationConfiguration,
     ]);
   }

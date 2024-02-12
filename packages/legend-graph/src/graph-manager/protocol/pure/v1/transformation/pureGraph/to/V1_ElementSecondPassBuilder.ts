@@ -104,7 +104,10 @@ import {
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
-import { V1_buildSnowflakeAppDeploymentConfiguration } from './helpers/V1_FunctionActivatorBuilderHelper.js';
+import {
+  V1_buildDeploymentOwnership,
+  V1_buildSnowflakeAppDeploymentConfiguration,
+} from './helpers/V1_FunctionActivatorBuilderHelper.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -161,6 +164,10 @@ export class V1_ElementSecondPassBuilder
             }) === element.function.path.replaceAll(/\s*/gu, ''),
         ),
       ),
+    );
+    metamodel.ownership = V1_buildDeploymentOwnership(
+      element.ownership,
+      metamodel,
     );
     metamodel.activationConfiguration =
       V1_buildSnowflakeAppDeploymentConfiguration(

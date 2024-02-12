@@ -19,6 +19,7 @@ import { PackageableElement } from '../PackageableElement.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { ConcreteFunctionDefinition } from './ConcreteFunctionDefinition.js';
 import type { DeploymentConfiguration } from '../../functionActivator/DeploymentConfiguration.js';
+import type { Ownership } from './Ownership.js';
 
 export abstract class FunctionActivator
   extends PackageableElement
@@ -32,4 +33,5 @@ export abstract class FunctionActivator
    */
   function!: PackageableElementReference<ConcreteFunctionDefinition>;
   activationConfiguration!: DeploymentConfiguration;
+  ownership?: Ownership;
 }
