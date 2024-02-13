@@ -65,6 +65,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import { V1_FunctionStoreTestData } from '../../../model/packageableElements/function/test/V1_FunctionStoreTestData.js';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
+import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();
@@ -176,6 +177,11 @@ const transformProperty = (element: Property): V1_Property => {
   property.type =
     element.genericType.ownerReference.valueForSerialization ?? '';
   property.aggregation = element.aggregation;
+  if (element.defaultValue) {
+    const defaultVal = new V1_DefaultValue();
+    defaultVal.value = element.defaultValue.value;
+    property.defaultValue = defaultVal;
+  }
   return property;
 };
 

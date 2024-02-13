@@ -1,7 +1,7 @@
 Class model::Student
 {
-  name: String[1];
-  age: Integer[1];
+  name: String[1] = 'Nicole';
+  age: Integer[1] = 1;
   (composite) profile: model::StudentProfile[1];
   (composite) theses: model::Thesis[*];
   (shared) locker: model::Locker[1];
