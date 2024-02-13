@@ -33,11 +33,11 @@ import type { EditorState } from '../../stores/editor/editor-state/EditorState.j
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { forwardRef } from 'react';
 
-const WorkspaceReviewPanelSplashScreen: React.FC = () => (
+const ProjectReviewerPanelSplashScreen: React.FC = () => (
   <div className="workspace-review-panel__splash-screen"></div>
 );
 
-const WorkspaceReviewPanelHeaderTabContextMenu = observer(
+const ProjectReviewerPanelHeaderTabContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
@@ -65,7 +65,7 @@ const WorkspaceReviewPanelHeaderTabContextMenu = observer(
   }),
 );
 
-export const WorkspaceReviewPanel = observer(() => {
+export const ProjectReviewerPanel = observer(() => {
   const editorStore = useEditorStore();
   const currentTabState =
     editorStore.tabManagerState.currentTab instanceof EntityDiffViewState
@@ -95,7 +95,7 @@ export const WorkspaceReviewPanel = observer(() => {
       currentTabState?.setDiffMode(mode);
 
   if (!currentTabState) {
-    return <WorkspaceReviewPanelSplashScreen />;
+    return <ProjectReviewerPanelSplashScreen />;
   }
   return (
     <div className="panel workspace-review-panel">
@@ -113,7 +113,7 @@ export const WorkspaceReviewPanel = observer(() => {
               <ContextMenu
                 className="workspace-review-panel__header__tab__content"
                 content={
-                  <WorkspaceReviewPanelHeaderTabContextMenu
+                  <ProjectReviewerPanelHeaderTabContextMenu
                     editorState={editorState}
                   />
                 }

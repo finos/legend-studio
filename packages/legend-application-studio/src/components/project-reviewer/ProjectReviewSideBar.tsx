@@ -31,13 +31,13 @@ import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, ReviewState } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../stores/editor/EditorSDLCState.js';
-import { useWorkspaceReviewStore } from './WorkspaceReviewStoreProvider.js';
+import { useProjectReviewerStore } from './ProjectReviewStoreProvider.js';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { formatDistanceToNow } from '@finos/legend-shared';
 
-export const WorkspaceReviewSideBar = observer(() => {
-  const reviewStore = useWorkspaceReviewStore();
+export const ProjectReviewerSideBar = observer(() => {
+  const reviewStore = useProjectReviewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const workspaceContainsSnapshotDependencies =
