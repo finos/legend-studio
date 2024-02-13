@@ -50,6 +50,8 @@ export class DerivedProperty
    */
   parameters?: object | undefined;
 
+  defaultValue = undefined;
+
   constructor(
     name: string,
     multiplicity: Multiplicity,
