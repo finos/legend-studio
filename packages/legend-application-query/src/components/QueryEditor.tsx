@@ -44,6 +44,9 @@ import {
   clsx,
   ModalHeaderActions,
   TimesIcon,
+  Panel,
+  PanelFullContent,
+  CustomSelectorInput,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -54,6 +57,7 @@ import {
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
   generateQuerySetupRoute,
+  generateExistingQueryEditorRoute,
 } from '../__lib__/LegendQueryNavigation.js';
 import {
   createViewProjectHandler,
@@ -84,6 +88,13 @@ import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation
 import { debounce } from '@finos/legend-shared';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import { QUERY_EDITOR_TEST_ID } from '../__lib__/LegendQueryTesting.js';
+import {
+  compareSemVerVersions,
+  generateGAVCoordinates,
+} from '@finos/legend-storage';
+import type { Query } from '@finos/legend-graph';
+import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
+import { buildVersionOption, type VersionOption } from './QuerySetup.js';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -188,7 +199,7 @@ const SaveQueryDialog = observer(
     const saveQuery = applicationStore.guardUnhandledError(
       async (): Promise<void> => {
         flowResult(
-          existingEditorStore.updateState.updateQuery(undefined),
+          existingEditorStore.updateState.updateQuery(undefined, undefined),
         ).catch(applicationStore.alertUnhandledError);
       },
     );
@@ -265,7 +276,7 @@ const QueryEditorExistingQueryHeader = observer(
     };
     const renameQuery = (val: string): void => {
       if (queryRenameName !== existingEditorStore.lightQuery.name) {
-        flowResult(updateState.updateQuery(val)).catch(
+        flowResult(updateState.updateQuery(val, undefined)).catch(
           applicationStore.alertUnhandledError,
         );
       }
@@ -360,6 +371,154 @@ const QueryEditorExistingQueryHeader = observer(
   },
 );
 
+const QueryEditorExistingQueryInfoModal = observer(
+  (props: { existingEditorStore: ExistingQueryEditorStore; query: Query }) => {
+    const { existingEditorStore, query } = props;
+    const updateState = existingEditorStore.updateState;
+    const applicationStore = existingEditorStore.applicationStore;
+    const versionOptions = [
+      LATEST_VERSION_ALIAS,
+      ...updateState.projectVersions,
+    ]
+      .slice()
+      .sort((v1, v2) => compareSemVerVersions(v2, v1))
+      .map(buildVersionOption);
+    const updateQueryVersionId = applicationStore.guardUnhandledError(
+      async (): Promise<void> => {
+        flowResult(
+          existingEditorStore.updateState.updateQuery(
+            undefined,
+            updateState.queryVersionId,
+          ),
+        )
+          .then(() =>
+            updateState.editorStore.applicationStore.navigationService.navigator.goToLocation(
+              generateExistingQueryEditorRoute(query.id),
+            ),
+          )
+          .catch(applicationStore.alertUnhandledError);
+      },
+    );
+    const selectedVersionOption = updateState.queryVersionId
+      ? buildVersionOption(updateState.queryVersionId)
+      : buildVersionOption(query.versionId);
+    const onVersionOptionChange = async (
+      option: VersionOption | null,
+    ): Promise<void> => {
+      if (option?.value && option.value !== updateState.queryVersionId) {
+        updateState.setQueryVersionId(option.value);
+      }
+    };
+    const closeModal = (): void => {
+      updateState.setQueryVersionId(query.versionId);
+      updateState.setShowQueryInfo(false);
+    };
+    useEffect(() => {
+      flowResult(
+        updateState.fetchProjectVersions(query.groupId, query.artifactId),
+      ).catch(applicationStore.alertUnhandledError);
+    }, [applicationStore, query.artifactId, query.groupId, updateState]);
+
+    return (
+      <Dialog
+        open={updateState.showQueryInfo}
+        onClose={closeModal}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="search-modal"
+        >
+          <ModalTitle title="Query Info" />
+          <Panel>
+            <PanelFullContent>
+              <div className="query-preview__field">
+                <div className="query-preview__field__label">Project</div>
+                <div className="query-preview__field__value">
+                  {generateGAVCoordinates(
+                    query.groupId,
+                    query.artifactId,
+                    undefined,
+                  )}
+                </div>
+              </div>
+              <div className="query-preview__field">
+                <div className="query-preview__field__label">Mapping</div>
+                <div className="query-preview__field__value">
+                  {query.mapping.value.name}
+                </div>
+              </div>
+              <div className="query-preview__field">
+                <div className="query-preview__field__label">Runtime</div>
+                <div className="query-preview__field__value">
+                  {query.runtime.value.name}
+                </div>
+              </div>
+              <div className="query-preview__field">
+                <div className="query-preview__field__label">Version</div>
+                <div className="query-preview__field__input">
+                  <CustomSelectorInput
+                    className="query-setup__wizard__selector"
+                    options={versionOptions}
+                    isLoading={
+                      updateState.fetchProjectVersionState.isInProgress
+                    }
+                    onChange={onVersionOptionChange}
+                    value={selectedVersionOption}
+                    placeholder={
+                      updateState.fetchProjectVersionState.isInProgress
+                        ? 'Fetching project versions'
+                        : 'Choose a version'
+                    }
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
+                  />
+                </div>
+              </div>
+              {query.owner && (
+                <div className="query-preview__field">
+                  <div className="query-preview__field__label">Owner</div>
+                  <div className="query-preview__field__value">
+                    {query.owner}
+                  </div>
+                </div>
+              )}
+            </PanelFullContent>
+          </Panel>
+          <div className="query-preview__field__actions">
+            <div className="query-preview__field__warning">
+              {updateState.queryVersionId &&
+                updateState.queryVersionId !== query.versionId && (
+                  <>
+                    <div className="query-preview__field__warning__icon">
+                      <ExclamationTriangleIcon />
+                    </div>
+                    <div className="query-preview__field__warning__label">
+                      Update action will reload query
+                    </div>
+                  </>
+                )}
+            </div>
+            <div className="search-modal__actions">
+              <button className="btn btn--dark" onClick={updateQueryVersionId}>
+                Update
+              </button>
+              <button className="btn btn--dark" onClick={closeModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
 const QueryEditorHeaderContent = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -369,6 +528,11 @@ const QueryEditorHeaderContent = observer(
     const renameQuery = (): void => {
       if (editorStore instanceof ExistingQueryEditorStore) {
         editorStore.updateState.setQueryRenamer(true);
+      }
+    };
+    const showQueryInfo = (): void => {
+      if (editorStore instanceof ExistingQueryEditorStore) {
+        editorStore.updateState.setShowQueryInfo(true);
       }
     };
     // actions
@@ -596,6 +760,15 @@ const QueryEditorHeaderContent = observer(
                     Rename Query
                   </MenuContentItem>
                 )}
+                {isExistingQuery && (
+                  <MenuContentItem
+                    className="query-editor__header__action__options"
+                    onClick={showQueryInfo}
+                    disabled={!isExistingQuery}
+                  >
+                    Get Query Info
+                  </MenuContentItem>
+                )}
                 <MenuContentItem
                   className="query-editor__header__action__options"
                   disabled={editorStore.isViewProjectActionDisabled}
@@ -625,6 +798,14 @@ const QueryEditorHeaderContent = observer(
           {editorStore.queryCreatorState.showCreateModal && (
             <CreateQueryDialog />
           )}
+          {isExistingQuery &&
+            editorStore.updateState.showQueryInfo &&
+            editorStore.query && (
+              <QueryEditorExistingQueryInfoModal
+                existingEditorStore={editorStore}
+                query={editorStore.query}
+              />
+            )}
         </div>
       </div>
     );
