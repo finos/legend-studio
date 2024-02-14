@@ -403,6 +403,24 @@
     }
   }
 
+  .query-preview__field__label {
+    color: var(--color-white);
+  }
+
+  .query-preview__field__value {
+    background: var(--color-white);
+    color: var(--color-legacylight-dark-grey-200);
+    border: 0.1rem solid var(--color-legacylight-dark-grey-400);
+  }
+
+  .query-preview__field__warning__icon {
+    color: var(--color-legacylight-orange-100);
+  }
+
+  .query-preview__field__warning__label {
+    color: var(--color-legacylight-orange-100);
+  }
+
   // ---------------------------- Property Search -------------------------------
 
   .query-builder-property-search-panel {
