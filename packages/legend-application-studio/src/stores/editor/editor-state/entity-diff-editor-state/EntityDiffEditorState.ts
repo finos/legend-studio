@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EditorState } from '../../editor-state/EditorState.js';
+import { EditorDiffViewerState } from '../diff-viewer-state/EditorDiffViewerState.js';
 
 export enum SPECIAL_REVISION_ALIAS {
   LOCAL = 'LOCAL_REVISION',
@@ -43,6 +43,6 @@ export const getPrettyLabelForRevision = (
   }
 };
 
-export abstract class EntityDiffViewerState extends EditorState {
+export abstract class EntityDiffViewerState extends EditorDiffViewerState {
   abstract refresh(): void;
 }

@@ -20,21 +20,72 @@ import {
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
+  ActionState,
+  assertNonEmptyString,
 } from '@finos/legend-shared';
 import {
   makeObservable,
   action,
-  flowResult,
   observable,
   flow,
   computed,
+  flowResult,
 } from 'mobx';
 import type { EditorStore } from '../editor/EditorStore.js';
 import { ACTIVITY_MODE } from '../editor/EditorConfig.js';
-import type { Entity } from '@finos/legend-storage';
-import { Project, Review, type Patch } from '@finos/legend-server-sdlc';
+import {
+  EntityDiff,
+  type ProjectConfiguration,
+  Comparison,
+  reprocessEntityDiffs,
+  Project,
+  Review,
+  type Patch,
+  ReviewApproval,
+} from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import type { Entity } from '@finos/legend-storage';
+import { EntityDiffViewState } from '../editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { SPECIAL_REVISION_ALIAS } from '../editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+
+export class ProjectReviewReport {
+  diffs: EntityDiff[];
+  fromEntities: Entity[] = [];
+  toEntities: Entity[] = [];
+  fromToProjectConfig:
+    | [PlainObject<ProjectConfiguration>, PlainObject<ProjectConfiguration>]
+    | undefined;
+
+  constructor(diffs: EntityDiff[]) {
+    this.diffs = diffs;
+  }
+
+  findFromEntity(entityPath: string): Entity | undefined {
+    return this.fromEntities.find((e) => e.path === entityPath);
+  }
+
+  findToEntity(entityPath: string): Entity | undefined {
+    return this.toEntities.find((e) => e.path === entityPath);
+  }
+
+  withFromEntities(val: Entity[]): ProjectReviewReport {
+    this.fromEntities = val;
+    return this;
+  }
+
+  withToEntities(val: Entity[]): ProjectReviewReport {
+    this.toEntities = val;
+    return this;
+  }
+
+  withProjectConfigChange(
+    val: [PlainObject<ProjectConfiguration>, PlainObject<ProjectConfiguration>],
+  ): ProjectReviewReport {
+    this.fromToProjectConfig = val;
+    return this;
+  }
+}
 
 export class ProjectReviewerStore {
   readonly editorStore: EditorStore;
@@ -44,12 +95,18 @@ export class ProjectReviewerStore {
   currentPatch?: Patch | undefined;
   currentReviewId?: string | undefined;
   currentReview?: Review | undefined;
-  isFetchingCurrentReview = false;
-  isFetchingComparison = false;
-  isApprovingReview = false;
-  isClosingReview = false;
-  isCommittingReview = false;
-  isReopeningReview = false;
+  // comparison
+  fetchComparisonState = ActionState.create();
+  reviewComparison?: Comparison | undefined;
+  reviewReport?: ProjectReviewReport | undefined;
+
+  fetchCurrentReviewState = ActionState.create();
+  approveState = ActionState.create();
+  reviewApproval: ReviewApproval | undefined;
+
+  closeState = ActionState.create();
+  commitState = ActionState.create();
+  reOpenState = ActionState.create();
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -58,21 +115,25 @@ export class ProjectReviewerStore {
       currentPatch: observable,
       currentReviewId: observable,
       currentReview: observable,
-      isFetchingCurrentReview: observable,
-      isFetchingComparison: observable,
-      isApprovingReview: observable,
-      isClosingReview: observable,
-      isCommittingReview: observable,
-      isReopeningReview: observable,
+      fetchCurrentReviewState: observable,
+      fetchComparisonState: observable,
+      approveState: observable,
+      closeState: observable,
+      commitState: observable,
+      reOpenState: observable,
+      reviewReport: observable,
+      reviewApproval: observable,
       projectId: computed,
       patchReleaseVersionId: computed,
       reviewId: computed,
       review: computed,
       setProjectIdAndReviewId: action,
-      initialize: flow,
+      refresh: action,
+      initializeEngine: flow,
       fetchReviewComparison: flow,
       fetchProject: flow,
-      getReview: flow,
+      fetchReviewApprovals: flow,
+      fetchReview: flow,
       approveReview: flow,
       commitReview: flow,
       reOpenReview: flow,
@@ -99,14 +160,47 @@ export class ProjectReviewerStore {
     return guaranteeNonNullable(this.currentReview, 'Review must exist');
   }
 
+  get comparison(): Comparison {
+    return guaranteeNonNullable(
+      this.reviewComparison,
+      'review Comparison must exist',
+    );
+  }
+
+  get approvalString(): string | undefined {
+    const approvals = this.reviewApproval?.approvedBy;
+    if (approvals?.length) {
+      return `Approved by ${approvals.map((e) => e.name).join(',')}.`;
+    }
+    return undefined;
+  }
+
   setProjectIdAndReviewId(projectId: string, reviewId: string): void {
     this.currentProjectId = projectId;
     this.currentReviewId = reviewId;
   }
 
-  *initialize(): GeneratorFn<void> {
+  initialize(): void {
+    flowResult(this.initializeEngine()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+    flowResult(this.fetchReview()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+    flowResult(this.fetchProject()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+    flowResult(this.fetchReviewApprovals()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+    flowResult(this.fetchReviewComparison()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+  }
+
+  *initializeEngine(): GeneratorFn<void> {
     try {
-      // setup engine
+      // setup engine used for to/from grammar transfomation
       yield this.editorStore.graphManagerState.graphManager.initialize(
         {
           env: this.editorStore.applicationStore.config.env,
@@ -132,44 +226,105 @@ export class ProjectReviewerStore {
     }
   }
 
+  openReviewChange(diff: EntityDiff): void {
+    const fromEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath ? this.reviewReport?.findFromEntity(entityPath) : undefined;
+    const toEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath ? this.reviewReport?.findToEntity(entityPath) : undefined;
+    const fromEntity = EntityDiff.shouldOldEntityExist(diff)
+      ? guaranteeNonNullable(
+          fromEntityGetter(diff.getValidatedOldPath()),
+          `Can't find entity with path  '${diff.oldPath}'`,
+        )
+      : undefined;
+    const toEntity = EntityDiff.shouldNewEntityExist(diff)
+      ? guaranteeNonNullable(
+          toEntityGetter(diff.getValidatedNewPath()),
+          `Can't find entity with path  '${diff.newPath}'`,
+        )
+      : undefined;
+    const diffState = new EntityDiffViewState(
+      this.editorStore,
+      SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,
+      SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,
+      diff.oldPath,
+      diff.newPath,
+      fromEntity,
+      toEntity,
+      fromEntityGetter,
+      toEntityGetter,
+    );
+
+    this.editorStore.tabManagerState.openTab(
+      this.editorStore.tabManagerState.tabs.find((t) => t.match(diffState)) ??
+        diffState,
+    );
+  }
+
+  refresh(): void {
+    this.editorStore.tabManagerState.closeAllTabs();
+    this.reviewComparison = undefined;
+    this.reviewReport = undefined;
+    flowResult(this.fetchReviewComparison()).catch(
+      this.editorStore.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /**
+   * To save load time, this function will levergae the reviewId coming from the URl and doesn't
+   * assume the review has completed been fetched
+   */
   *fetchReviewComparison(): GeneratorFn<void> {
-    this.isFetchingComparison = true;
+    this.fetchComparisonState.inProgress();
     try {
-      const [fromEntities, toEntities] = (yield Promise.all([
+      const [comparison, fromEntities, toEntities] = (yield Promise.all([
+        this.editorStore.sdlcServerClient.getReviewComparision(
+          this.projectId,
+          this.patchReleaseVersionId,
+          this.reviewId,
+        ),
         this.editorStore.sdlcServerClient.getReviewFromEntities(
           this.projectId,
           this.patchReleaseVersionId,
-          this.review.id,
+          this.reviewId,
         ),
         this.editorStore.sdlcServerClient.getReviewToEntities(
           this.projectId,
           this.patchReleaseVersionId,
-          this.review.id,
+          this.reviewId,
         ),
-      ])) as [Entity[], Entity[]];
-      this.editorStore.changeDetectionState.workspaceBaseRevisionState.setEntities(
-        fromEntities,
+      ])) as [PlainObject<Comparison>, Entity[], Entity[]];
+      const resolvedComparison = Comparison.serialization.fromJson(comparison);
+      this.reviewComparison = resolvedComparison;
+      const report = new ProjectReviewReport(
+        reprocessEntityDiffs(resolvedComparison.entityDiffs),
       );
-      this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
-        toEntities,
-      );
-      yield Promise.all([
-        this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
-          fromEntities,
-          LogEvent.create(
-            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_WORKSPACE_HASHES_INDEX__SUCCESS,
+      report.withFromEntities(fromEntities).withToEntities(toEntities);
+      this.reviewReport = report;
+      if (comparison.projectConfigurationUpdated) {
+        const [fromConfig, toConfig] = (yield Promise.all([
+          this.editorStore.sdlcServerClient.getReviewFromConfiguration(
+            this.projectId,
+            this.patchReleaseVersionId,
+            this.reviewId,
           ),
-        ),
-        this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
-          toEntities,
-          LogEvent.create(
-            LEGEND_STUDIO_APP_EVENT.CHANGE_DETECTION_BUILD_LOCAL_HASHES_INDEX__SUCCESS,
+          this.editorStore.sdlcServerClient.getReviewToConfiguration(
+            this.projectId,
+            this.patchReleaseVersionId,
+            this.reviewId,
           ),
-        ),
-      ]);
-      yield flowResult(
-        this.editorStore.changeDetectionState.computeAggregatedWorkspaceChanges(),
-      );
+        ])) as [
+          PlainObject<ProjectConfiguration> | undefined,
+          PlainObject<ProjectConfiguration> | undefined,
+        ];
+        if (fromConfig && toConfig) {
+          report.withProjectConfigChange([fromConfig, toConfig]);
+        }
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -178,7 +333,7 @@ export class ProjectReviewerStore {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.isFetchingComparison = false;
+      this.fetchComparisonState.complete();
     }
   }
 
@@ -199,9 +354,32 @@ export class ProjectReviewerStore {
     }
   }
 
-  *getReview(): GeneratorFn<void> {
+  *fetchReviewApprovals(): GeneratorFn<void> {
     try {
-      this.isFetchingCurrentReview = true;
+      this.reviewApproval = ReviewApproval.serialization.fromJson(
+        (yield this.editorStore.sdlcServerClient.getReviewApprovals(
+          this.projectId,
+          this.patchReleaseVersionId,
+          this.reviewId,
+        )) as PlainObject<ReviewApproval>,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+    }
+  }
+
+  *fetchReview(): GeneratorFn<void> {
+    try {
+      // TODO: can we assume review also an integer ?
+      assertNonEmptyString(
+        this.currentReviewId,
+        'Review ID provided must be a valid non empty string',
+      );
+      this.fetchCurrentReviewState.inProgress();
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getReview(
           this.projectId,
@@ -217,12 +395,12 @@ export class ProjectReviewerStore {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.isFetchingCurrentReview = false;
+      this.fetchCurrentReviewState.complete();
     }
   }
 
   *approveReview(): GeneratorFn<void> {
-    this.isApprovingReview = true;
+    this.approveState.inProgress();
     try {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.approveReview(
@@ -239,12 +417,12 @@ export class ProjectReviewerStore {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.isApprovingReview = false;
+      this.approveState.complete();
     }
   }
 
   *commitReview(): GeneratorFn<void> {
-    this.isCommittingReview = true;
+    this.commitState.inProgress();
     try {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.commitReview(
@@ -262,12 +440,12 @@ export class ProjectReviewerStore {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.isCommittingReview = false;
+      this.commitState.complete();
     }
   }
 
   *reOpenReview(): GeneratorFn<void> {
-    this.isReopeningReview = true;
+    this.reOpenState.inProgress();
     try {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.reopenReview(
@@ -284,12 +462,12 @@ export class ProjectReviewerStore {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.isReopeningReview = false;
+      this.reOpenState.complete();
     }
   }
 
   *closeReview(): GeneratorFn<void> {
-    this.isClosingReview = true;
+    this.closeState.inProgress();
     try {
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.closeReview(
@@ -306,7 +484,7 @@ export class ProjectReviewerStore {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.isClosingReview = false;
+      this.closeState.complete();
     }
   }
 }

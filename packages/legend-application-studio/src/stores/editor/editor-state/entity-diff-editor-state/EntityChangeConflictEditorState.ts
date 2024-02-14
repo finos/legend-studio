@@ -181,7 +181,7 @@ export class EntityChangeConflictEditorState extends EntityDiffViewerState {
       entityPath: string | undefined,
     ) => Entity | undefined,
   ) {
-    super(editorStore);
+    super(baseRevision, currentChangeRevision, editorStore);
 
     makeObservable<
       EntityChangeConflictEditorState,
