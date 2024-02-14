@@ -36,7 +36,7 @@ import { Project, Review, type Patch } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
-export class WorkspaceReviewStore {
+export class ProjectReviewerStore {
   readonly editorStore: EditorStore;
 
   currentProjectId?: string | undefined;

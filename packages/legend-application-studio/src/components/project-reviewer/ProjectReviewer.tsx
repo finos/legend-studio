@@ -17,11 +17,11 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  useWorkspaceReviewStore,
-  withWorkspaceReviewStore,
-} from './WorkspaceReviewStoreProvider.js';
-import { WorkspaceReviewSideBar } from './WorkspaceReviewSideBar.js';
-import { WorkspaceReviewPanel } from './WorkspaceReviewPanel.js';
+  useProjectReviewerStore,
+  withProjectReviewerStore,
+} from './ProjectReviewStoreProvider.js';
+import { ProjectReviewerSideBar } from './ProjectReviewSideBar.js';
+import { ProjectReviewerPanel } from './ProjectReviewPanel.js';
 import { ACTIVITY_MODE } from '../../stores/editor/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
@@ -38,7 +38,7 @@ import {
   AssistantIcon,
 } from '@finos/legend-art';
 import {
-  type WorkspaceReviewPathParams,
+  type ProjectReviewerPathParams,
   generateSetupRoute,
 } from '../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
@@ -49,8 +49,8 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 
-const WorkspaceReviewStatusBar = observer(() => {
-  const reviewStore = useWorkspaceReviewStore();
+const ProjectReviewerStatusBar = observer(() => {
+  const reviewStore = useProjectReviewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const currentUserId =
@@ -149,8 +149,8 @@ const WorkspaceReviewStatusBar = observer(() => {
   );
 });
 
-const WorkspaceReviewExplorer = observer(() => {
-  const reviewStore = useWorkspaceReviewStore();
+const ProjectReviewerExplorer = observer(() => {
+  const reviewStore = useProjectReviewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
 
@@ -179,26 +179,26 @@ const WorkspaceReviewExplorer = observer(() => {
         {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
         direction={1}
       >
-        <WorkspaceReviewSideBar />
+        <ProjectReviewerSideBar />
       </ResizablePanel>
       <ResizablePanelSplitter />
       <ResizablePanel
         {...sideBarCollapsiblePanelGroupProps.remainingPanel}
         minSize={300}
       >
-        <WorkspaceReviewPanel />
+        <ProjectReviewerPanel />
       </ResizablePanel>
     </ResizablePanelGroup>
   );
 });
 
-export const WorkspaceReview = withEditorStore(
-  withWorkspaceReviewStore(
+export const ProjectReviewer = withEditorStore(
+  withProjectReviewerStore(
     observer(() => {
-      const params = useParams<WorkspaceReviewPathParams>();
+      const params = useParams<ProjectReviewerPathParams>();
       const projectId = params.projectId;
       const reviewId = params.reviewId;
-      const reviewStore = useWorkspaceReviewStore();
+      const reviewStore = useProjectReviewerStore();
       const editorStore = useEditorStore();
       const applicationStore = useApplicationStore();
       const changeActivity =
@@ -252,11 +252,11 @@ export const WorkspaceReview = withEditorStore(
                   </div>
                   <div className="workspace-review__content-container">
                     <div className="workspace-review__content">
-                      <WorkspaceReviewExplorer />
+                      <ProjectReviewerExplorer />
                     </div>
                   </div>
                 </div>
-                <WorkspaceReviewStatusBar />
+                <ProjectReviewerStatusBar />
               </>
             )}
           </div>

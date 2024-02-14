@@ -64,7 +64,7 @@ export const LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN = Object.freeze({
   SHOWCASE_PROJECT: `/showcase/*`,
 });
 
-export type WorkspaceReviewPathParams = {
+export type ProjectReviewerPathParams = {
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.PROJECT_ID]: string;
   [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.REVIEW_ID]: string;
 };

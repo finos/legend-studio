@@ -17,7 +17,7 @@
 import { useEffect } from 'react';
 import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
-import { WorkspaceReview } from './workspace-review/WorkspaceReview.js';
+import { ProjectReviewer } from './project-reviewer/ProjectReviewer.js';
 import { ProjectViewer } from './project-view/ProjectViewer.js';
 import { observer } from 'mobx-react-lite';
 import { clsx, GhostIcon, MarkdownTextViewer } from '@finos/legend-art';
@@ -172,7 +172,7 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                   path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
                   component={
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    WorkspaceReview as TEMPORARY__ReactRouterComponentType
+                    ProjectReviewer as TEMPORARY__ReactRouterComponentType
                   }
                 />
                 <Route
