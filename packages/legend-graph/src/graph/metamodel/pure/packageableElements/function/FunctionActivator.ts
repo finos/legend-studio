@@ -32,6 +32,6 @@ export abstract class FunctionActivator
    * @discrepancy model
    */
   function!: PackageableElementReference<ConcreteFunctionDefinition>;
-  activationConfiguration!: DeploymentConfiguration;
-  ownership?: Ownership;
+  activationConfiguration: DeploymentConfiguration | undefined;
+  ownership!: Ownership;
 }

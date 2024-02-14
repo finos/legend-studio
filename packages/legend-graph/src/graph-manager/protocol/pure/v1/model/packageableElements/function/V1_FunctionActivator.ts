@@ -30,7 +30,7 @@ export abstract class V1_FunctionActivator
 {
   function!: V1_PackageableElementPointer;
   activationConfiguration: V1_DeploymentConfiguration | undefined;
-  ownership?: V1_Ownership;
+  ownership!: V1_Ownership;
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
 }

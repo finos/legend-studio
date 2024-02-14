@@ -83,9 +83,13 @@ import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_
 import type { SnowflakeApp } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 import {
   V1_transformDeployment,
+  V1_transformHostedServiceDeploymentConfiguration,
+  V1_transformOwnership,
   V1_transformSnowflakeAppDeploymentConfiguration,
 } from './V1_FunctionActivatorTransformer.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
+import type { HostedService } from '../../../../../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
+import { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -160,6 +164,32 @@ class V1_PackageableElementTransformer
       V1_transformSnowflakeAppDeploymentConfiguration(
         element.activationConfiguration,
       );
+    return protocol;
+  }
+
+  visit_HostedService(element: HostedService): V1_PackageableElement {
+    const protocol = new V1_HostedService();
+    V1_initPackageableElement(protocol, element);
+    protocol.function = new V1_PackageableElementPointer(
+      PackageableElementPointerType.FUNCTION,
+      generateFunctionPrettyName(element.function.value, {
+        fullPath: true,
+        spacing: false,
+        notIncludeParamName: true,
+      }),
+    );
+    protocol.documentation = element.documentation;
+    protocol.pattern = element.pattern;
+    protocol.autoActivateUpdates = element.autoActivateUpdates;
+    protocol.storeModel = element.storeModel;
+    protocol.generateLineage = element.generateLineage;
+    protocol.ownership = V1_transformOwnership(element.ownership);
+    if (element.activationConfiguration) {
+      protocol.activationConfiguration =
+        V1_transformHostedServiceDeploymentConfiguration(
+          element.activationConfiguration,
+        );
+    }
     return protocol;
   }
 

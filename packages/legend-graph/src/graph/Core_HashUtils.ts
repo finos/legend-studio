@@ -346,6 +346,8 @@ export enum CORE_HASH_STRUCTURE {
 
   // -------------------------------------- Function Activator --------------------------------------
   SNOWFLAKE_APP = 'SNOWFLAKE_APP',
+  HOSTED_SERVICE = 'HOSTED_SERVICE',
+  HOSTED_SERVICE_OWNER = 'HOSTED_SERVICE_OWNER',
 }
 
 export const hashObjectWithoutSourceInformation = (val: object): string =>

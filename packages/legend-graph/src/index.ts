@@ -81,7 +81,13 @@ export { INTERNAL__UnknownPackageableElement } from './graph/metamodel/pure/pack
 export {
   Ownership,
   DeploymentOwner,
+  UserList,
 } from './graph/metamodel/pure/packageableElements/function/Ownership.js';
+export {
+  HostedService,
+  DEFAULT_HOSTED_SERVICE_PATTERN,
+} from './graph/metamodel/pure/packageableElements/function/HostedService.js';
+export { HostedServiceDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 

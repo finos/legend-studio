@@ -105,9 +105,12 @@ import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableEl
 import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import {
-  V1_buildDeploymentOwnership,
+  V1_buildHostedServiceDeploymentConfiguration,
   V1_buildSnowflakeAppDeploymentConfiguration,
+  V1_buildDeploymentOwnership,
+  V1_builHostedServiceOwnership,
 } from './helpers/V1_FunctionActivatorBuilderHelper.js';
+import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -174,6 +177,38 @@ export class V1_ElementSecondPassBuilder
         element.activationConfiguration,
         this.context,
       );
+  }
+
+  visit_HostedService(element: V1_HostedService): void {
+    assertNonEmptyString(
+      element.pattern,
+      `Hosted Service 'pattern' field is missing or empty`,
+    );
+    const metamodel = this.context.currentSubGraph.getOwnFunctionActivator(
+      V1_buildFullPath(element.package, element.name),
+    );
+    metamodel.function = PackageableElementExplicitReference.create(
+      guaranteeNonNullable(
+        this.context.graph.functions.find(
+          (fn) =>
+            generateFunctionPrettyName(fn, {
+              fullPath: true,
+              spacing: false,
+              notIncludeParamName: true,
+            }) === element.function.path.replaceAll(/\s*/gu, ''),
+        ),
+      ),
+    );
+    metamodel.ownership = V1_builHostedServiceOwnership(
+      element.ownership,
+      metamodel,
+    );
+    if (element.activationConfiguration) {
+      metamodel.activationConfiguration =
+        V1_buildHostedServiceDeploymentConfiguration(
+          element.activationConfiguration,
+        );
+    }
   }
 
   visit_INTERNAL__UnknownStore(element: V1_INTERNAL__UnknownStore): void {

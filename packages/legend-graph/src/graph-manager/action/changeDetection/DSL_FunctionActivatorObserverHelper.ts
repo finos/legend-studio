@@ -18,7 +18,12 @@ import { computed, makeObservable, observable } from 'mobx';
 import type { SnowflakeAppDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
 import { skipObserved } from './CoreObserverHelper.js';
 import { observe_ConnectionPointer } from './DSL_Mapping_ObserverHelper.js';
-import type { DeploymentOwner } from '../../../graph/metamodel/pure/packageableElements/function/Ownership.js';
+import {
+  DeploymentOwner,
+  UserList,
+  type Ownership,
+} from '../../../graph/metamodel/pure/packageableElements/function/Ownership.js';
+import type { HostedServiceDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 
 export const observe_SnowflakeAppDeploymentConfiguration = skipObserved(
   (
@@ -42,6 +47,42 @@ export const observe_DeploymentOwnership = skipObserved(
       id: observable,
       hashCode: computed,
     });
+    return metamodel;
+  },
+);
+
+export const observe_UserListOwnership = skipObserved(
+  (metamodel: UserList): UserList => {
+    makeObservable(metamodel, {
+      users: observable,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_FunctionActivatorOwnership = (
+  metamodel: Ownership,
+): Ownership => {
+  if (metamodel instanceof DeploymentOwner) {
+    return observe_DeploymentOwnership(metamodel);
+  } else if (metamodel instanceof UserList) {
+    return observe_UserListOwnership(metamodel);
+  }
+  return metamodel;
+};
+
+export const observe_HostedServiceDeploymentConfiguration = skipObserved(
+  (
+    metamodel: HostedServiceDeploymentConfiguration,
+  ): HostedServiceDeploymentConfiguration => {
+    if (metamodel.host && metamodel.port && metamodel.path) {
+      makeObservable(metamodel, {
+        host: observable,
+        port: observable,
+        path: observable,
+      });
+    }
     return metamodel;
   },
 );

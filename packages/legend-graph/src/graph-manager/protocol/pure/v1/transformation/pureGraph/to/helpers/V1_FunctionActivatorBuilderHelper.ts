@@ -22,13 +22,17 @@ import { V1_buildConnection } from './V1_ConnectionBuilderHelper.js';
 import { UnsupportedOperationError, guaranteeType } from '@finos/legend-shared';
 import {
   DeploymentOwner,
+  UserList,
   type Ownership,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/Ownership.js';
 import {
   V1_DeploymentOwner,
+  V1_UserList,
   type V1_Ownership,
 } from '../../../../model/packageableElements/function/V1_Ownership.js';
 import type { FunctionActivator } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
+import { HostedServiceDeploymentConfiguration } from '../../../../../../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
+import type { V1_HostedServiceDeploymentConfiguration } from '../../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
 
 export const V1_buildSnowflakeAppDeploymentConfiguration = (
   element: V1_SnowflakeAppDeploymentConfiguration,
@@ -48,11 +52,33 @@ export const V1_buildSnowflakeAppDeploymentConfiguration = (
 };
 
 export const V1_buildDeploymentOwnership = (
-  ownership: V1_Ownership,
+  ownership: V1_DeploymentOwner,
   functionActivator: FunctionActivator,
+): DeploymentOwner => new DeploymentOwner(ownership.id, functionActivator);
+
+export const V1_buildUserList = (
+  ownership: V1_UserList,
+  functionActivator: FunctionActivator,
+): UserList => new UserList(ownership.users, functionActivator);
+
+export const V1_builHostedServiceOwnership = (
+  ownership: V1_Ownership,
+  parentService: FunctionActivator,
 ): Ownership => {
   if (ownership instanceof V1_DeploymentOwner) {
-    return new DeploymentOwner(ownership.id, functionActivator);
+    return V1_buildDeploymentOwnership(ownership, parentService);
+  } else if (ownership instanceof V1_UserList) {
+    return V1_buildUserList(ownership, parentService);
   }
   throw new UnsupportedOperationError();
+};
+
+export const V1_buildHostedServiceDeploymentConfiguration = (
+  element: V1_HostedServiceDeploymentConfiguration,
+): HostedServiceDeploymentConfiguration => {
+  const metamodel = new HostedServiceDeploymentConfiguration();
+  metamodel.host = element.host;
+  metamodel.port = element.port;
+  metamodel.path = element.path;
+  return metamodel;
 };
