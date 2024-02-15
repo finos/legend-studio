@@ -15,11 +15,7 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import {
-  createMock,
-  integrationTest,
-  unitTest,
-} from '@finos/legend-shared/test';
+import { createMock, integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
   create_RawLambda,
@@ -216,7 +212,7 @@ describe(integrationTest('Query builder result state'), () => {
   );
 });
 
-describe(unitTest('Query builder export button'), () => {
+describe(integrationTest('Query builder export button'), () => {
   test('Check that "View Query Usage..." button is disabled if no plugins with extraQueryUsageConfigurations are present', async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__ResultState_entities,
