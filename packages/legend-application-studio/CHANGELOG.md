@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.15.4
+
+### Patch Changes
+
+- [#2939](https://github.com/finos/legend-studio/pull/2939) [`2a544332a`](https://github.com/finos/legend-studio/commit/2a544332ac776e61cfcf41e75a62c58f9b00b813) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add ownership to snowflake app
+
 ## 28.15.3
 
 ## 28.15.2
