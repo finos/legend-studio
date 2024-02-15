@@ -27,27 +27,55 @@ import { UnsupportedElementEditorState } from '../../../stores/editor/editor-sta
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/editor/EditorConfig.js';
+import { INTERNAL__UnknownPackageableElement } from '@finos/legend-graph';
+import { isType } from '@finos/legend-shared';
 
 export const UnsupportedEditorPanel = observer(
-  (props: { text: string; isReadOnly: boolean }) => {
-    const { text, isReadOnly } = props;
+  (props: {
+    text: string;
+    isReadOnly: boolean;
+    unsupportedElementEditorState?: UnsupportedElementEditorState;
+  }) => {
+    const { text, isReadOnly, unsupportedElementEditorState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
+
+    const isUnknownEntity = unsupportedElementEditorState
+      ? isType(
+          unsupportedElementEditorState.element,
+          INTERNAL__UnknownPackageableElement,
+        )
+      : false;
+
     const handleTextModeClick = applicationStore.guardUnhandledError(() =>
       flowResult(editorStore.toggleTextMode()),
     );
+
+    const handleJsonModeClick = (): void => {
+      unsupportedElementEditorState?.setEditMode(ELEMENT_NATIVE_VIEW_MODE.JSON);
+    };
 
     return (
       <BlankPanelContent>
         <div className="unsupported-element-editor__main">
           <div className="unsupported-element-editor__summary">{text}</div>
-          {!isReadOnly && (
-            <Button
-              className="unsupported-element-editor__to-text-mode__btn"
-              onClick={handleTextModeClick}
-              text="Edit in text mode"
-            />
-          )}
+          <div className="unsupported-element-editor__actions">
+            {!isReadOnly && (
+              <Button
+                className="unsupported-element-editor__to-text-mode__btn"
+                onClick={handleTextModeClick}
+                text="Edit in text mode"
+              />
+            )}
+            {isUnknownEntity && (
+              <Button
+                className="unsupported-element-editor__to-text-mode__btn unsupported-element-editor__btn--dark"
+                onClick={handleJsonModeClick}
+                text="View content"
+              />
+            )}
+          </div>
         </div>
       </BlankPanelContent>
     );
@@ -82,6 +110,7 @@ export const UnsupportedElementEditor = observer(() => {
           <UnsupportedEditorPanel
             text="Can't display this element in form-mode"
             isReadOnly={isReadOnly}
+            unsupportedElementEditorState={unsupportedElementEditorState}
           />
         </PanelContent>
       </Panel>
