@@ -21,7 +21,7 @@ import {
   withProjectReviewerStore,
 } from './ProjectReviewStoreProvider.js';
 import { ProjectReviewerSideBar } from './ProjectReviewSideBar.js';
-import { ProjectReviewerPanel } from './ProjectReviewPanel.js';
+import { ProjectReviewerPanel } from './ProjectReviewerPanel.js';
 import { ACTIVITY_MODE } from '../../stores/editor/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
@@ -33,7 +33,6 @@ import {
   ResizablePanelSplitter,
   CheckListIcon,
   CodeBranchIcon,
-  CogIcon,
   UserIcon,
   AssistantIcon,
 } from '@finos/legend-art';
@@ -41,7 +40,6 @@ import {
   type ProjectReviewerPathParams,
   generateSetupRoute,
 } from '../../__lib__/LegendStudioNavigation.js';
-import { flowResult } from 'mobx';
 import {
   useEditorStore,
   withEditorStore,
@@ -59,15 +57,15 @@ const ProjectReviewerStatusBar = observer(() => {
     ? reviewStore.currentProject.name
     : reviewStore.projectId;
   const review = reviewStore.review;
-  const reviewStatus = reviewStore.isApprovingReview
+  const reviewStatus = reviewStore.approveState.isInProgress
     ? 'approving review...'
-    : reviewStore.isCommittingReview
+    : reviewStore.commitState.isInProgress
     ? 'committing review...'
-    : reviewStore.isClosingReview
+    : reviewStore.closeState.isInProgress
     ? 'closing review...'
-    : reviewStore.isReopeningReview
+    : reviewStore.reOpenState.isInProgress
     ? 'reopening review...'
-    : reviewStore.isFetchingComparison
+    : reviewStore.fetchComparisonState.isInProgress
     ? 'loading changes...'
     : undefined;
   const toggleAssistant = (): void =>
@@ -150,9 +148,7 @@ const ProjectReviewerStatusBar = observer(() => {
 });
 
 const ProjectReviewerExplorer = observer(() => {
-  const reviewStore = useProjectReviewerStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
 
   // layout
   const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
@@ -166,13 +162,6 @@ const ProjectReviewerExplorer = observer(() => {
       size: editorStore.sideBarDisplayState.size,
     },
   );
-
-  useEffect(() => {
-    flowResult(reviewStore.fetchReviewComparison()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [applicationStore, reviewStore]);
-
   return (
     <ResizablePanelGroup orientation="vertical">
       <ResizablePanel
@@ -200,30 +189,20 @@ export const ProjectReviewer = withEditorStore(
       const reviewId = params.reviewId;
       const reviewStore = useProjectReviewerStore();
       const editorStore = useEditorStore();
-      const applicationStore = useApplicationStore();
       const changeActivity =
         (activity: ACTIVITY_MODE): (() => void) =>
         (): void =>
           editorStore.setActiveActivity(activity);
-
       useEffect(() => {
         reviewStore.setProjectIdAndReviewId(projectId, reviewId);
-        flowResult(reviewStore.initialize()).catch(
-          applicationStore.alertUnhandledError,
-        );
-        flowResult(reviewStore.getReview()).catch(
-          applicationStore.alertUnhandledError,
-        );
-        flowResult(reviewStore.fetchProject()).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }, [applicationStore, reviewStore, projectId, reviewId]);
+        reviewStore.initialize();
+      }, [reviewStore, projectId, reviewId]);
 
       return (
         <div className="app__page">
           <div className="workspace-review">
             <PanelLoadingIndicator
-              isLoading={reviewStore.isFetchingCurrentReview}
+              isLoading={reviewStore.fetchCurrentReviewState.isInProgress}
             />
             {reviewStore.currentReview && (
               <>
@@ -238,15 +217,6 @@ export const ProjectReviewer = withEditorStore(
                         onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
                       >
                         <CheckListIcon />
-                      </button>
-                    </div>
-                    <div className="activity-bar__setting">
-                      <button
-                        className="activity-bar__item"
-                        tabIndex={-1}
-                        title="Settings..."
-                      >
-                        <CogIcon />
                       </button>
                     </div>
                   </div>

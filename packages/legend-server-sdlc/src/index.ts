@@ -21,9 +21,11 @@ export * from './models/entity/EntityChangeConflict.js';
 export * from './models/entity/EntityChangeUtils.js';
 
 export * from './models/comparison/EntityDiff.js';
+export * from './models/comparison/Comparison.js';
 
 export * from './models/review/Review.js';
 export * from './models/review/ReviewCommands.js';
+export * from './models/review/ReviewApproval.js';
 
 export * from './models/workflow/Workflow.js';
 export * from './models/workflow/WorkflowJob.js';
@@ -56,5 +58,6 @@ export * from './models/User.js';
 export * from './models/patch/Patch.js';
 
 export * from './util/ProjectUtil.js';
+export * from './util/ComparisonHelper.js';
 
 export { SDLCServerClient } from './SDLCServerClient.js';

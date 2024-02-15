@@ -59,6 +59,8 @@ import type {
   ProjectAccessRole,
 } from './models/project/ProjectAccess.js';
 import type { Patch } from './models/patch/Patch.js';
+import type { Comparison } from './models/comparison/Comparison.js';
+import type { ReviewApproval } from './models/review/ReviewApproval.js';
 
 enum SDLC_ACTIVITY_TRACE {
   IMPORT_PROJECT = 'import project',
@@ -911,8 +913,16 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     patchReleaseVersionId: string | undefined,
     reviewId: string,
-  ): Promise<PlainObject<Review>> =>
+  ): Promise<PlainObject<ReviewApproval>> =>
     this.get(this._review(projectId, patchReleaseVersionId, reviewId));
+  getReviewApprovals = (
+    projectId: string,
+    patchReleaseVersionId: string | undefined,
+    reviewId: string,
+  ): Promise<PlainObject<Review>> =>
+    this.get(
+      `${this._review(projectId, patchReleaseVersionId, reviewId)}/approval`,
+    );
   createReview = (
     projectId: string,
     patchReleaseVersionId: string | undefined,
@@ -975,11 +985,44 @@ export class SDLCServerClient extends AbstractServerClient {
   ): string =>
     `${this._review(projectId, patchReleaseVersionId, reviewId)}/comparison`;
 
+  getReviewComparision = (
+    projectId: string,
+    patchReleaseVersionId: string | undefined,
+    reviewId: string,
+  ): Promise<PlainObject<Comparison>> =>
+    this.get(
+      `${this._reviewComparison(projectId, patchReleaseVersionId, reviewId)}`,
+    );
+  getReviewFromConfiguration = (
+    projectId: string,
+    patchReleaseVersionId: string | undefined,
+    reviewId: string,
+  ): Promise<PlainObject<ProjectConfiguration>> =>
+    this.get(
+      `${this._reviewComparison(
+        projectId,
+        patchReleaseVersionId,
+        reviewId,
+      )}/from/configuration`,
+    );
+
+  getReviewToConfiguration = (
+    projectId: string,
+    patchReleaseVersionId: string | undefined,
+    reviewId: string,
+  ): Promise<PlainObject<ProjectConfiguration>> =>
+    this.get(
+      `${this._reviewComparison(
+        projectId,
+        patchReleaseVersionId,
+        reviewId,
+      )}/to/configuration`,
+    );
   getReviewFromEntities = (
     projectId: string,
     patchReleaseVersionId: string | undefined,
     reviewId: string,
-  ): Promise<PlainObject<Entity>[]> =>
+  ): Promise<Entity[]> =>
     this.get(
       `${this._reviewComparison(
         projectId,
@@ -991,7 +1034,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     patchReleaseVersionId: string | undefined,
     reviewId: string,
-  ): Promise<PlainObject<Entity>[]> =>
+  ): Promise<Entity[]> =>
     this.get(
       `${this._reviewComparison(
         projectId,

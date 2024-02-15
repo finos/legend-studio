@@ -32,6 +32,9 @@ import { EntityDiffView } from '../editor/editor-group/diff-editor/EntityDiffVie
 import type { EditorState } from '../../stores/editor/editor-state/EditorState.js';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { forwardRef } from 'react';
+import { EditorDiffViewerState } from '../../stores/editor/editor-state/diff-viewer-state/EditorDiffViewerState.js';
+import { ProjectConfigDiffView } from '../editor/editor-group/diff-editor/ProjectConfigDiffView.js';
+import { ProjectConfigurationDiffEditorState } from '../../stores/editor/editor-state/diff-viewer-state/ProjectConfigurationDiffEditorState.js';
 
 const ProjectReviewerPanelSplashScreen: React.FC = () => (
   <div className="workspace-review-panel__splash-screen"></div>
@@ -68,11 +71,11 @@ const ProjectReviewerPanelHeaderTabContextMenu = observer(
 export const ProjectReviewerPanel = observer(() => {
   const editorStore = useEditorStore();
   const currentTabState =
-    editorStore.tabManagerState.currentTab instanceof EntityDiffViewState
+    editorStore.tabManagerState.currentTab instanceof EditorDiffViewerState
       ? editorStore.tabManagerState.currentTab
       : undefined;
   const openedTabStates = editorStore.tabManagerState.tabs.filter(
-    filterByType(EntityDiffViewState),
+    filterByType(EditorDiffViewerState),
   );
   const closeTab =
     (diffState: EditorState): React.MouseEventHandler =>
@@ -91,12 +94,25 @@ export const ProjectReviewerPanel = observer(() => {
       editorStore.tabManagerState.openTab(editorState);
   const switchViewMode =
     (mode: DIFF_VIEW_MODE): (() => void) =>
-    (): void =>
-      currentTabState?.setDiffMode(mode);
+    (): void => {
+      if (currentTabState instanceof EntityDiffViewState) {
+        currentTabState.setDiffMode(mode);
+      }
+    };
 
   if (!currentTabState) {
     return <ProjectReviewerPanelSplashScreen />;
   }
+  const renderActiveTabState = (
+    tab: EditorDiffViewerState,
+  ): React.ReactNode => {
+    if (tab instanceof EntityDiffViewState) {
+      return <EntityDiffView entityDiffViewState={tab} />;
+    } else if (tab instanceof ProjectConfigurationDiffEditorState) {
+      return <ProjectConfigDiffView configDiffState={tab} />;
+    }
+    return null;
+  };
   return (
     <div className="panel workspace-review-panel">
       <div className="panel__header workspace-review-panel__header">
@@ -137,38 +153,40 @@ export const ProjectReviewerPanel = observer(() => {
           ))}
         </div>
         <div className="workspace-review-panel__header__actions">
-          <DropdownMenu
-            className="workspace-review-panel__element-view__type"
-            title="View as..."
-            content={
-              <div className="workspace-review-panel__element-view__options">
-                <div
-                  className="workspace-review-panel__element-view__option"
-                  onClick={switchViewMode(DIFF_VIEW_MODE.GRAMMAR)}
-                >
-                  {DIFF_VIEW_MODE.GRAMMAR}
+          {currentTabState instanceof EntityDiffViewState && (
+            <DropdownMenu
+              className="workspace-review-panel__element-view__type"
+              title="View as..."
+              content={
+                <div className="workspace-review-panel__element-view__options">
+                  <div
+                    className="workspace-review-panel__element-view__option"
+                    onClick={switchViewMode(DIFF_VIEW_MODE.GRAMMAR)}
+                  >
+                    {DIFF_VIEW_MODE.GRAMMAR}
+                  </div>
+                  <div
+                    className="workspace-review-panel__element-view__option"
+                    onClick={switchViewMode(DIFF_VIEW_MODE.JSON)}
+                  >
+                    {DIFF_VIEW_MODE.JSON}
+                  </div>
                 </div>
-                <div
-                  className="workspace-review-panel__element-view__option"
-                  onClick={switchViewMode(DIFF_VIEW_MODE.JSON)}
-                >
-                  {DIFF_VIEW_MODE.JSON}
-                </div>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+              }}
+            >
+              <div className="workspace-review-panel__element-view__type__label">
+                {currentTabState.diffMode}
               </div>
-            }
-            menuProps={{
-              anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-              transformOrigin: { vertical: 'top', horizontal: 'right' },
-            }}
-          >
-            <div className="workspace-review-panel__element-view__type__label">
-              {currentTabState.diffMode}
-            </div>
-          </DropdownMenu>
+            </DropdownMenu>
+          )}
         </div>
       </div>
       <div className="panel__content workspace-review-panel__content">
-        <EntityDiffView entityDiffViewState={currentTabState} />
+        {renderActiveTabState(currentTabState)}
       </div>
     </div>
   );
