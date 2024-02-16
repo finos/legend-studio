@@ -22,6 +22,7 @@ import {
   guaranteeNonNullable,
   ActionState,
   assertNonEmptyString,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   makeObservable,
@@ -53,37 +54,56 @@ export class ProjectReviewReport {
   diffs: EntityDiff[];
   fromEntities: Entity[] = [];
   toEntities: Entity[] = [];
+  private fromConfig: PlainObject<ProjectConfiguration> | undefined;
+  private toConfig: PlainObject<ProjectConfiguration> | undefined;
   fromToProjectConfig:
     | [PlainObject<ProjectConfiguration>, PlainObject<ProjectConfiguration>]
     | undefined;
 
   constructor(diffs: EntityDiff[]) {
     this.diffs = diffs;
+
+    makeObservable(this, {
+      fromEntities: observable,
+      toEntities: observable,
+      fromToProjectConfig: observable,
+      addFromConfig: action,
+      addToConfig: action,
+    });
+  }
+
+  addFromConfig(config: PlainObject<ProjectConfiguration>): void {
+    this.fromConfig = config;
+    this.createFromToConfigIfPossible();
+  }
+
+  addToConfig(config: PlainObject<ProjectConfiguration>): void {
+    this.toConfig = config;
+    this.createFromToConfigIfPossible();
+  }
+
+  private createFromToConfigIfPossible(): void {
+    if (this.fromConfig && this.toConfig) {
+      this.fromToProjectConfig = [this.fromConfig, this.toConfig];
+    }
   }
 
   findFromEntity(entityPath: string): Entity | undefined {
     return this.fromEntities.find((e) => e.path === entityPath);
   }
 
+  addFromEntity(entity: Entity): ProjectReviewReport {
+    this.fromEntities.push(entity);
+    return this;
+  }
+
+  addToEntity(entity: Entity): ProjectReviewReport {
+    this.toEntities.push(entity);
+    return this;
+  }
+
   findToEntity(entityPath: string): Entity | undefined {
     return this.toEntities.find((e) => e.path === entityPath);
-  }
-
-  withFromEntities(val: Entity[]): ProjectReviewReport {
-    this.fromEntities = val;
-    return this;
-  }
-
-  withToEntities(val: Entity[]): ProjectReviewReport {
-    this.toEntities = val;
-    return this;
-  }
-
-  withProjectConfigChange(
-    val: [PlainObject<ProjectConfiguration>, PlainObject<ProjectConfiguration>],
-  ): ProjectReviewReport {
-    this.fromToProjectConfig = val;
-    return this;
   }
 }
 
@@ -96,8 +116,7 @@ export class ProjectReviewerStore {
   currentReviewId?: string | undefined;
   currentReview?: Review | undefined;
   // comparison
-  fetchComparisonState = ActionState.create();
-  reviewComparison?: Comparison | undefined;
+  buildReviewReportState = ActionState.create();
   reviewReport?: ProjectReviewReport | undefined;
 
   fetchCurrentReviewState = ActionState.create();
@@ -116,7 +135,7 @@ export class ProjectReviewerStore {
       currentReviewId: observable,
       currentReview: observable,
       fetchCurrentReviewState: observable,
-      fetchComparisonState: observable,
+      buildReviewReportState: observable,
       approveState: observable,
       closeState: observable,
       commitState: observable,
@@ -158,13 +177,6 @@ export class ProjectReviewerStore {
 
   get review(): Review {
     return guaranteeNonNullable(this.currentReview, 'Review must exist');
-  }
-
-  get comparison(): Comparison {
-    return guaranteeNonNullable(
-      this.reviewComparison,
-      'review Comparison must exist',
-    );
   }
 
   get approvalString(): string | undefined {
@@ -267,7 +279,6 @@ export class ProjectReviewerStore {
 
   refresh(): void {
     this.editorStore.tabManagerState.closeAllTabs();
-    this.reviewComparison = undefined;
     this.reviewReport = undefined;
     flowResult(this.fetchReviewComparison()).catch(
       this.editorStore.applicationStore.alertUnhandledError,
@@ -279,52 +290,66 @@ export class ProjectReviewerStore {
    * assume the review has completed been fetched
    */
   *fetchReviewComparison(): GeneratorFn<void> {
-    this.fetchComparisonState.inProgress();
+    this.buildReviewReportState.inProgress();
     try {
-      const [comparison, fromEntities, toEntities] = (yield Promise.all([
-        this.editorStore.sdlcServerClient.getReviewComparision(
+      const comparison = Comparison.serialization.fromJson(
+        (yield this.editorStore.sdlcServerClient.getReviewComparision(
           this.projectId,
           this.patchReleaseVersionId,
           this.reviewId,
-        ),
-        this.editorStore.sdlcServerClient.getReviewFromEntities(
-          this.projectId,
-          this.patchReleaseVersionId,
-          this.reviewId,
-        ),
-        this.editorStore.sdlcServerClient.getReviewToEntities(
-          this.projectId,
-          this.patchReleaseVersionId,
-          this.reviewId,
-        ),
-      ])) as [PlainObject<Comparison>, Entity[], Entity[]];
-      const resolvedComparison = Comparison.serialization.fromJson(comparison);
-      this.reviewComparison = resolvedComparison;
-      const report = new ProjectReviewReport(
-        reprocessEntityDiffs(resolvedComparison.entityDiffs),
+        )) as PlainObject<Comparison>,
       );
-      report.withFromEntities(fromEntities).withToEntities(toEntities);
+      const report = new ProjectReviewReport(
+        reprocessEntityDiffs(comparison.entityDiffs),
+      );
       this.reviewReport = report;
+      const fromToRequests = Promise.all([
+        ...report.diffs
+          .map((diff) => diff.oldPath)
+          .filter(isNonNullable)
+          .map((fromDiff) =>
+            this.editorStore.sdlcServerClient
+              .getReviewFromEntity(
+                this.projectId,
+                this.patchReleaseVersionId,
+                this.reviewId,
+                fromDiff,
+              )
+              .then((fromEntity: Entity) => report.addFromEntity(fromEntity)),
+          ),
+        ...report.diffs
+          .map((diff) => diff.newPath)
+          .filter(isNonNullable)
+          .map((toDiff) =>
+            this.editorStore.sdlcServerClient
+              .getReviewToEntity(
+                this.projectId,
+                this.patchReleaseVersionId,
+                this.reviewId,
+                toDiff,
+              )
+              .then((toEntity: Entity) => report.addToEntity(toEntity)),
+          ),
+      ]);
       if (comparison.projectConfigurationUpdated) {
-        const [fromConfig, toConfig] = (yield Promise.all([
-          this.editorStore.sdlcServerClient.getReviewFromConfiguration(
-            this.projectId,
-            this.patchReleaseVersionId,
-            this.reviewId,
-          ),
-          this.editorStore.sdlcServerClient.getReviewToConfiguration(
-            this.projectId,
-            this.patchReleaseVersionId,
-            this.reviewId,
-          ),
-        ])) as [
-          PlainObject<ProjectConfiguration> | undefined,
-          PlainObject<ProjectConfiguration> | undefined,
+        [
+          this.editorStore.sdlcServerClient
+            .getReviewFromConfiguration(
+              this.projectId,
+              this.patchReleaseVersionId,
+              this.reviewId,
+            )
+            .then((config) => report.addFromConfig(config)),
+          this.editorStore.sdlcServerClient
+            .getReviewToConfiguration(
+              this.projectId,
+              this.patchReleaseVersionId,
+              this.reviewId,
+            )
+            .then((config) => report.addToConfig(config)),
         ];
-        if (fromConfig && toConfig) {
-          report.withProjectConfigChange([fromConfig, toConfig]);
-        }
       }
+      yield fromToRequests;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -333,7 +358,7 @@ export class ProjectReviewerStore {
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
-      this.fetchComparisonState.complete();
+      this.buildReviewReportState.complete();
     }
   }
 
