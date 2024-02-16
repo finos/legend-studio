@@ -158,6 +158,7 @@ export enum PackageableElementPointerType {
   FUNCTION = 'FUNCTION',
   FILE_GENERATION = 'FILE_GENERATION',
   SERVICE = 'SERVICE',
+  DATA = 'DATA',
 }
 
 export enum SUPPORTED_FUNCTIONS {
