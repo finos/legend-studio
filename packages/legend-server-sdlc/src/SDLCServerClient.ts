@@ -1022,13 +1022,26 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     patchReleaseVersionId: string | undefined,
     reviewId: string,
-  ): Promise<Entity[]> =>
+  ): Promise<Entity> =>
     this.get(
       `${this._reviewComparison(
         projectId,
         patchReleaseVersionId,
         reviewId,
       )}/from/entities`,
+    );
+  getReviewFromEntity = (
+    projectId: string,
+    patchReleaseVersionId: string | undefined,
+    reviewId: string,
+    entityPath: string,
+  ): Promise<Entity> =>
+    this.get(
+      `${this._reviewComparison(
+        projectId,
+        patchReleaseVersionId,
+        reviewId,
+      )}/from/entities/${entityPath}`,
     );
   getReviewToEntities = (
     projectId: string,
@@ -1041,6 +1054,19 @@ export class SDLCServerClient extends AbstractServerClient {
         patchReleaseVersionId,
         reviewId,
       )}/to/entities`,
+    );
+  getReviewToEntity = (
+    projectId: string,
+    patchReleaseVersionId: string | undefined,
+    reviewId: string,
+    entityPath: string,
+  ): Promise<Entity> =>
+    this.get(
+      `${this._reviewComparison(
+        projectId,
+        patchReleaseVersionId,
+        reviewId,
+      )}/to/entities/${entityPath}`,
     );
 
   // ------------------------------------------- Conflict Resolution -------------------------------------------

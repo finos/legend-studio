@@ -90,7 +90,7 @@ export const ProjectReviewerSideBar = observer(() => {
   }
   // Actions
   const isDispatchingAction =
-    reviewStore.fetchComparisonState.isInProgress ||
+    reviewStore.buildReviewReportState.isInProgress ||
     reviewStore.approveState.isInProgress ||
     reviewStore.closeState.isInProgress ||
     reviewStore.commitState.isInProgress ||
