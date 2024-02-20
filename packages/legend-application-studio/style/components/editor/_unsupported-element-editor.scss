@@ -78,4 +78,14 @@
     height: 2.8rem;
     width: 15rem;
   }
+
+  &__btn--dark {
+    background: var(--color-dark-grey-200);
+  }
+
+  &__actions {
+    @include flexCenter;
+
+    flex-direction: row;
+  }
 }
