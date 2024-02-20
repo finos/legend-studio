@@ -17,11 +17,11 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  useWorkspaceReviewStore,
-  withWorkspaceReviewStore,
-} from './WorkspaceReviewStoreProvider.js';
-import { WorkspaceReviewSideBar } from './WorkspaceReviewSideBar.js';
-import { WorkspaceReviewPanel } from './WorkspaceReviewPanel.js';
+  useProjectReviewerStore,
+  withProjectReviewerStore,
+} from './ProjectReviewStoreProvider.js';
+import { ProjectReviewerSideBar } from './ProjectReviewSideBar.js';
+import { ProjectReviewerPanel } from './ProjectReviewerPanel.js';
 import { ACTIVITY_MODE } from '../../stores/editor/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
@@ -33,15 +33,13 @@ import {
   ResizablePanelSplitter,
   CheckListIcon,
   CodeBranchIcon,
-  CogIcon,
   UserIcon,
   AssistantIcon,
 } from '@finos/legend-art';
 import {
-  type WorkspaceReviewPathParams,
+  type ProjectReviewerPathParams,
   generateSetupRoute,
 } from '../../__lib__/LegendStudioNavigation.js';
-import { flowResult } from 'mobx';
 import {
   useEditorStore,
   withEditorStore,
@@ -49,8 +47,8 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 
-const WorkspaceReviewStatusBar = observer(() => {
-  const reviewStore = useWorkspaceReviewStore();
+const ProjectReviewerStatusBar = observer(() => {
+  const reviewStore = useProjectReviewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const currentUserId =
@@ -59,15 +57,15 @@ const WorkspaceReviewStatusBar = observer(() => {
     ? reviewStore.currentProject.name
     : reviewStore.projectId;
   const review = reviewStore.review;
-  const reviewStatus = reviewStore.isApprovingReview
+  const reviewStatus = reviewStore.approveState.isInProgress
     ? 'approving review...'
-    : reviewStore.isCommittingReview
+    : reviewStore.commitState.isInProgress
     ? 'committing review...'
-    : reviewStore.isClosingReview
+    : reviewStore.closeState.isInProgress
     ? 'closing review...'
-    : reviewStore.isReopeningReview
+    : reviewStore.reOpenState.isInProgress
     ? 'reopening review...'
-    : reviewStore.isFetchingComparison
+    : reviewStore.buildReviewReportState.isInProgress
     ? 'loading changes...'
     : undefined;
   const toggleAssistant = (): void =>
@@ -149,10 +147,8 @@ const WorkspaceReviewStatusBar = observer(() => {
   );
 });
 
-const WorkspaceReviewExplorer = observer(() => {
-  const reviewStore = useWorkspaceReviewStore();
+const ProjectReviewerExplorer = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
 
   // layout
   const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
@@ -166,64 +162,47 @@ const WorkspaceReviewExplorer = observer(() => {
       size: editorStore.sideBarDisplayState.size,
     },
   );
-
-  useEffect(() => {
-    flowResult(reviewStore.fetchReviewComparison()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [applicationStore, reviewStore]);
-
   return (
     <ResizablePanelGroup orientation="vertical">
       <ResizablePanel
         {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
         direction={1}
       >
-        <WorkspaceReviewSideBar />
+        <ProjectReviewerSideBar />
       </ResizablePanel>
       <ResizablePanelSplitter />
       <ResizablePanel
         {...sideBarCollapsiblePanelGroupProps.remainingPanel}
         minSize={300}
       >
-        <WorkspaceReviewPanel />
+        <ProjectReviewerPanel />
       </ResizablePanel>
     </ResizablePanelGroup>
   );
 });
 
-export const WorkspaceReview = withEditorStore(
-  withWorkspaceReviewStore(
+export const ProjectReviewer = withEditorStore(
+  withProjectReviewerStore(
     observer(() => {
-      const params = useParams<WorkspaceReviewPathParams>();
+      const params = useParams<ProjectReviewerPathParams>();
       const projectId = params.projectId;
       const reviewId = params.reviewId;
-      const reviewStore = useWorkspaceReviewStore();
+      const reviewStore = useProjectReviewerStore();
       const editorStore = useEditorStore();
-      const applicationStore = useApplicationStore();
       const changeActivity =
         (activity: ACTIVITY_MODE): (() => void) =>
         (): void =>
           editorStore.setActiveActivity(activity);
-
       useEffect(() => {
         reviewStore.setProjectIdAndReviewId(projectId, reviewId);
-        flowResult(reviewStore.initialize()).catch(
-          applicationStore.alertUnhandledError,
-        );
-        flowResult(reviewStore.getReview()).catch(
-          applicationStore.alertUnhandledError,
-        );
-        flowResult(reviewStore.fetchProject()).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }, [applicationStore, reviewStore, projectId, reviewId]);
+        reviewStore.initialize();
+      }, [reviewStore, projectId, reviewId]);
 
       return (
         <div className="app__page">
           <div className="workspace-review">
             <PanelLoadingIndicator
-              isLoading={reviewStore.isFetchingCurrentReview}
+              isLoading={reviewStore.fetchCurrentReviewState.isInProgress}
             />
             {reviewStore.currentReview && (
               <>
@@ -240,23 +219,14 @@ export const WorkspaceReview = withEditorStore(
                         <CheckListIcon />
                       </button>
                     </div>
-                    <div className="activity-bar__setting">
-                      <button
-                        className="activity-bar__item"
-                        tabIndex={-1}
-                        title="Settings..."
-                      >
-                        <CogIcon />
-                      </button>
-                    </div>
                   </div>
                   <div className="workspace-review__content-container">
                     <div className="workspace-review__content">
-                      <WorkspaceReviewExplorer />
+                      <ProjectReviewerExplorer />
                     </div>
                   </div>
                 </div>
-                <WorkspaceReviewStatusBar />
+                <ProjectReviewerStatusBar />
               </>
             )}
           </div>

@@ -49,8 +49,6 @@ export class EntityDiffViewState extends EntityDiffViewerState {
   diffMode = DIFF_VIEW_MODE.GRAMMAR;
   fromEntityPath?: string | undefined;
   toEntityPath?: string | undefined;
-  fromRevision: SPECIAL_REVISION_ALIAS | string;
-  toRevision: SPECIAL_REVISION_ALIAS | string;
   // to and from entities
   fromEntity?: Entity | undefined;
   toEntity?: Entity | undefined;
@@ -75,7 +73,7 @@ export class EntityDiffViewState extends EntityDiffViewerState {
     fromEntityGetter?: (entityPath: string | undefined) => Entity | undefined,
     toEntityGetter?: (entityPath: string | undefined) => Entity | undefined,
   ) {
-    super(editorStore);
+    super(fromRevision, toRevision, editorStore);
 
     makeObservable<
       EntityDiffViewState,

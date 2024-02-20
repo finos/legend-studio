@@ -21,7 +21,6 @@ import {
   LogEvent,
   guaranteeNonNullable,
   type ContentType,
-  downloadFileUsingDataURI,
   ActionState,
   StopWatch,
   getContentTypeFileExtension,
@@ -33,13 +32,11 @@ import {
   type RawLambda,
   type EXECUTION_SERIALIZATION_FORMAT,
   GRAPH_MANAGER_EVENT,
-  RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
-  extractExecutionResultValues,
 } from '@finos/legend-graph';
+
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import {
   buildExecutionParameterValues,
   getExecutionQueryFromRawLambda,
@@ -49,6 +46,7 @@ import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHel
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
+import { downloadStream } from '@finos/legend-application';
 
 export const DEFAULT_LIMIT = 1000;
 
@@ -86,7 +84,6 @@ type QueryBuilderDataGridConfig = {
 
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
-  readonly exportDataState = ActionState.create();
   readonly executionPlanState: ExecutionPlanState;
 
   previewLimit = DEFAULT_LIMIT;
@@ -231,18 +228,23 @@ export class QueryBuilderResultState {
 
   *exportData(format: string): GeneratorFn<void> {
     try {
+      this.queryBuilderState.applicationStore.notificationService.notifySuccess(
+        `Export ${format} will run in background`,
+      );
       const exportData =
         this.queryBuilderState.fetchStructureState.implementation.getExportDataInfo(
           format,
         );
       const contentType = exportData.contentType;
       const serializationFormat = exportData.serializationFormat;
-      this.exportDataState.inProgress();
       const query = this.buildExecutionRawLambda({
         isExportingResult: true,
       });
+      QueryBuilderTelemetryHelper.logEvent_ExportQueryDataLaunched(
+        this.queryBuilderState.applicationStore.telemetryService,
+      );
       const result =
-        (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
+        (yield this.queryBuilderState.graphManagerState.graphManager.exportData(
           query,
           this.queryBuilderState.executionContextState.mapping,
           this.queryBuilderState.executionContextState.runtimeValue,
@@ -254,20 +256,33 @@ export class QueryBuilderResultState {
               this.queryBuilderState.graphManagerState,
             ),
           },
-        )) as ExecutionResult;
-      let content: string;
-      if (result instanceof RawExecutionResult) {
-        content = result.value === null ? 'null' : result.value.toString();
-      } else {
-        content = JSON.stringify(
-          extractExecutionResultValues(result),
-          null,
-          DEFAULT_TAB_SIZE,
-        );
-      }
-      const fileName = `result.${getContentTypeFileExtension(contentType)}`;
-      downloadFileUsingDataURI(fileName, content, contentType);
-      this.exportDataState.pass();
+        )) as Response;
+      const report = reportGraphAnalytics(
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      downloadStream(
+        result,
+        `result.${getContentTypeFileExtension(contentType)}`,
+        exportData.contentType,
+      )
+        .then(() => {
+          const reportWithState = Object.assign(
+            {},
+            report,
+            this.queryBuilderState.getStateInfo(),
+          );
+          QueryBuilderTelemetryHelper.logEvent_ExportQueryDatSucceeded(
+            this.queryBuilderState.applicationStore.telemetryService,
+            reportWithState,
+          );
+        })
+        .catch((error) => {
+          assertErrorThrown(error);
+          this.queryBuilderState.applicationStore.logService.error(
+            LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+            error,
+          );
+        });
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.logService.error(
@@ -277,7 +292,6 @@ export class QueryBuilderResultState {
       this.queryBuilderState.applicationStore.notificationService.notifyError(
         error,
       );
-      this.exportDataState.fail();
     }
   }
 

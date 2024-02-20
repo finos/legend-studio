@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
-import { isNonNullable } from '@finos/legend-shared';
+import { observable, makeObservable, action } from 'mobx';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { EntityDiff } from '../comparison/EntityDiff.js';
-import { EntityChangeType } from '../entity/EntityChange.js';
+import { createModelSchema, list, primitive } from 'serializr';
 
 export class Comparison {
   toRevisionId: string;
@@ -29,45 +29,30 @@ export class Comparison {
     fromRevisionId: string,
     toRevisionId: string,
     diffs: EntityDiff[],
-    processDiff: boolean,
   ) {
     makeObservable(this, {
       toRevisionId: observable,
       fromRevisionId: observable,
       entityDiffs: observable,
       projectConfigurationUpdated: observable,
+      setEntityDiffs: action,
     });
 
     this.fromRevisionId = fromRevisionId;
     this.toRevisionId = toRevisionId;
-    this.entityDiffs = processDiff ? this.processEntityDiffs(diffs) : diffs;
+    this.entityDiffs = diffs;
   }
 
-  processEntityDiffs(diffs: EntityDiff[]): EntityDiff[] {
-    return diffs
-      .map((delta) => {
-        switch (delta.entityChangeType) {
-          case EntityChangeType.RENAME:
-            return [
-              new EntityDiff(delta.oldPath, undefined, EntityChangeType.DELETE),
-              new EntityDiff(undefined, delta.newPath, EntityChangeType.CREATE),
-            ];
-          case EntityChangeType.DELETE:
-            delta.newPath = undefined;
-            break;
-          case EntityChangeType.CREATE:
-            delta.oldPath = undefined;
-            break;
-          default:
-            break;
-        }
-        return new EntityDiff(
-          delta.oldPath,
-          delta.newPath,
-          delta.entityChangeType,
-        );
-      })
-      .flat()
-      .filter(isNonNullable);
+  setEntityDiffs(diffs: EntityDiff[]): void {
+    this.entityDiffs = diffs;
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(Comparison, {
+      toRevisionId: primitive(),
+      fromRevisionId: primitive(),
+      projectConfigurationUpdated: primitive(),
+      entityDiffs: list(usingModelSchema(EntityDiff.serialization.schema)),
+    }),
+  );
 }

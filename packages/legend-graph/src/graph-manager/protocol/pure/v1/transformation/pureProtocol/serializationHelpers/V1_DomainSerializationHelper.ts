@@ -28,6 +28,7 @@ import {
   customEquivalentList,
   customList,
   customListWithSchema,
+  optionalCustom,
   optionalCustomList,
   usingConstantValueSchema,
   usingModelSchema,
@@ -59,13 +60,18 @@ import {
 } from './V1_RawValueSpecificationSerializationHelper.js';
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
-import { V1_SnowflakeAppDeploymentConfigurationAppModelSchema } from './V1_FunctionActivatorSerializationHelper.js';
+import {
+  V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
+  V1_deserializeDeploymentOwnership,
+  V1_serializeDeploymentOwership,
+} from './V1_FunctionActivatorSerializationHelper.js';
 import {
   V1_deserializeTestSuite,
   V1_serializeTestSuite,
 } from './V1_TestSerializationHelper.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
+import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -155,7 +161,6 @@ export const V1_measureModelSchema = createModelSchema(V1_Measure, {
 export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   _type: usingConstantValueSchema(V1_SNOWFLAKE_APP_TYPE),
   description: optional(primitive()),
-  owner: optional(primitive()),
   applicationName: primitive(),
   function: usingModelSchema(V1_packageableElementPointerModelSchema),
   name: primitive(),
@@ -169,12 +174,20 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   activationConfiguration: usingModelSchema(
     V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
   ),
+  ownership: optionalCustom(
+    (val) => V1_serializeDeploymentOwership(val),
+    (val) => V1_deserializeDeploymentOwnership(val),
+  ),
 });
 
 // ------------------------------------- Class -------------------------------------
 
+export const V1_defaultValueModelSchema = createModelSchema(V1_DefaultValue, {
+  value: raw(),
+});
 export const V1_propertyModelSchema = createModelSchema(V1_Property, {
   aggregation: optional(primitive()),
+  defaultValue: optional(usingModelSchema(V1_defaultValueModelSchema)),
   multiplicity: usingModelSchema(V1_multiplicityModelSchema),
   name: primitive(),
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {

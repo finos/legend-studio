@@ -78,6 +78,10 @@ export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packa
 export { SnowflakeApp } from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
 export { INTERNAL__UnknownPackageableElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
+export {
+  Ownership,
+  DeploymentOwner,
+} from './graph/metamodel/pure/packageableElements/function/Ownership.js';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 

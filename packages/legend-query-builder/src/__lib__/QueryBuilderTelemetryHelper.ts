@@ -38,6 +38,10 @@ export class QueryBuilderTelemetryHelper {
     service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, {});
   }
 
+  static logEvent_ExportQueryDataLaunched(service: TelemetryService): void {
+    service.logEvent(QUERY_BUILDER_EVENT.EXPORT_QUERY_DATA__LAUNCH, {});
+  }
+
   static logEvent_ExecutionPlanGenerationLaunched(
     service: TelemetryService,
   ): void {
@@ -53,6 +57,13 @@ export class QueryBuilderTelemetryHelper {
     data: QueryExecution_TelemetryData,
   ): void {
     service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__SUCCESS, data);
+  }
+
+  static logEvent_ExportQueryDatSucceeded(
+    service: TelemetryService,
+    data: QueryExecution_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.EXPORT_QUERY_DATA__SUCCESS, data);
   }
 
   static logEvent_ExecutionPlanGenerationSucceeded(

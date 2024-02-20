@@ -20,6 +20,7 @@ import {
   clsx,
   PanelLoadingIndicator,
   TruncatedGitMergeIcon,
+  RefreshIcon,
   TimesIcon,
   ArrowUpIcon,
   CheckIcon,
@@ -29,19 +30,27 @@ import {
 import { EntityDiffViewState } from '../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import { flowResult } from 'mobx';
-import { type EntityDiff, ReviewState } from '@finos/legend-server-sdlc';
+import {
+  type EntityDiff,
+  ReviewState,
+  EntityChangeType,
+  getChangeTypeIconFromChange,
+} from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../stores/editor/EditorSDLCState.js';
-import { useWorkspaceReviewStore } from './WorkspaceReviewStoreProvider.js';
+import { useProjectReviewerStore } from './ProjectReviewStoreProvider.js';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { formatDistanceToNow } from '@finos/legend-shared';
+import { SPECIAL_REVISION_ALIAS } from '../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { ProjectConfigurationDiffEditorState } from '../../stores/editor/editor-state/diff-viewer-state/ProjectConfigurationDiffEditorState.js';
 
-export const WorkspaceReviewSideBar = observer(() => {
-  const reviewStore = useWorkspaceReviewStore();
+export const ProjectReviewerSideBar = observer(() => {
+  const reviewStore = useProjectReviewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const workspaceContainsSnapshotDependencies =
     editorStore.projectConfigurationEditorState.containsSnapshotDependencies;
+  const approvalString = reviewStore.approvalString;
   // Review infos
   const review = reviewStore.review;
   const currentUser = editorStore.sdlcServerClient.currentUser;
@@ -81,11 +90,11 @@ export const WorkspaceReviewSideBar = observer(() => {
   }
   // Actions
   const isDispatchingAction =
-    reviewStore.isFetchingComparison ||
-    reviewStore.isApprovingReview ||
-    reviewStore.isClosingReview ||
-    reviewStore.isCommittingReview ||
-    reviewStore.isReopeningReview;
+    reviewStore.buildReviewReportState.isInProgress ||
+    reviewStore.approveState.isInProgress ||
+    reviewStore.closeState.isInProgress ||
+    reviewStore.commitState.isInProgress ||
+    reviewStore.reOpenState.isInProgress;
   const closeReview = applicationStore.guardUnhandledError(() =>
     flowResult(reviewStore.closeReview()),
   );
@@ -98,8 +107,12 @@ export const WorkspaceReviewSideBar = observer(() => {
   const approveReview = applicationStore.guardUnhandledError(() =>
     flowResult(reviewStore.approveReview()),
   );
+
+  const refresh = (): void => {
+    reviewStore.refresh();
+  };
   // Changes
-  const changes = editorStore.changeDetectionState.aggregatedWorkspaceChanges;
+  const changes = reviewStore.reviewReport?.diffs ?? [];
   const currentTabState = editorStore.tabManagerState.currentTab;
   const isSelectedDiff = (diff: EntityDiff): boolean =>
     currentTabState instanceof EntityDiffViewState &&
@@ -108,7 +121,25 @@ export const WorkspaceReviewSideBar = observer(() => {
   const openChange =
     (diff: EntityDiff): (() => void) =>
     (): void =>
-      editorStore.workspaceReviewState.openReviewChange(diff);
+      reviewStore.openReviewChange(diff);
+
+  const openConfiguration = (): void => {
+    const diffs = reviewStore.reviewReport?.fromToProjectConfig;
+    if (diffs) {
+      const newTab = new ProjectConfigurationDiffEditorState(
+        diffs[0],
+        diffs[1],
+        reviewStore.editorStore,
+        SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,
+        SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,
+      );
+      reviewStore.editorStore.tabManagerState.openTab(
+        reviewStore.editorStore.tabManagerState.tabs.find((t) =>
+          t.match(newTab),
+        ) ?? newTab,
+      );
+    }
+  };
 
   return (
     <div className="panel workspace-review__side-bar">
@@ -119,6 +150,14 @@ export const WorkspaceReviewSideBar = observer(() => {
           </div>
         </div>
         <div className="panel__header__actions side-bar__header__actions">
+          <button
+            className="panel__header__action side-bar__header__action workspace-review__close-btn"
+            tabIndex={-1}
+            title="Retrieves latest changes from review"
+            onClick={refresh}
+          >
+            <RefreshIcon />
+          </button>
           {review.state !== ReviewState.COMMITTED && (
             <button
               className="panel__header__action side-bar__header__action workspace-review__close-btn"
@@ -157,6 +196,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                 </span>
               </div>
             </div>
+
             {review.state === ReviewState.CLOSED && (
               <button
                 className="workspace-review__side-bar__review__info__action btn--dark btn--sm"
@@ -207,6 +247,11 @@ export const WorkspaceReviewSideBar = observer(() => {
               </>
             )}
           </div>
+          {approvalString && (
+            <div className="workspace-review__side-bar__review__info__content__status">
+              {approvalString}
+            </div>
+          )}
           <div className="workspace-review__side-bar__review__info__content__status">
             {reviewStatus}
           </div>
@@ -242,6 +287,41 @@ export const WorkspaceReviewSideBar = observer(() => {
                     openDiff={openChange(diff)}
                   />
                 ))}
+
+              {Boolean(reviewStore.reviewReport?.fromToProjectConfig) && (
+                <button
+                  className={clsx('side-bar__panel__item', {
+                    'side-bar__panel__item--selected':
+                      editorStore.tabManagerState.currentTab instanceof
+                      ProjectConfigurationDiffEditorState,
+                  })}
+                  tabIndex={-1}
+                  title={`Project Configuration Modified`}
+                  onClick={openConfiguration}
+                >
+                  <div className="diff-panel__item__info">
+                    <span
+                      className={clsx(
+                        'diff-panel__item__info-name',
+                        `diff-panel__item__info-name--${EntityChangeType.MODIFY.toLowerCase()}`,
+                      )}
+                    >
+                      config
+                    </span>
+                    <span className="diff-panel__item__info-path">
+                      project configuration
+                    </span>
+                  </div>
+                  <div
+                    className={clsx(
+                      'diff-panel__item__type',
+                      `diff-panel__item__type--${EntityChangeType.MODIFY.toLowerCase()}`,
+                    )}
+                  >
+                    {getChangeTypeIconFromChange(EntityChangeType.MODIFY)}
+                  </div>
+                </button>
+              )}
             </PanelContent>
           </div>
         </div>

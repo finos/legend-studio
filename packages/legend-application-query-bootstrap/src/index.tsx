@@ -62,6 +62,7 @@ export class LegendQueryWebApplication {
       .setup({ baseAddress: baseUrl })
       .withPresets(LegendQueryWebApplication.getPresetCollection())
       .withPlugins(LegendQueryWebApplication.getPluginCollection())
+      .withDownloadHelper()
       .start()
       .catch((e: unknown) => {
         throw e;

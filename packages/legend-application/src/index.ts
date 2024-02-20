@@ -43,6 +43,7 @@ export {
   type NavigationLocation,
   type NavigationZone,
 } from './stores/navigation/NavigationService.js';
+export { downloadStream } from './util/DownloadHelperServiceWorker.js';
 export * from './stores/storage/ApplicationStorage.js';
 export * from './stores/storage/StorageService.js';
 export * from './stores/SettingService.js';

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
 import type { SnowflakeAppDeploymentConfiguration } from '../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
 import { skipObserved } from './CoreObserverHelper.js';
 import { observe_ConnectionPointer } from './DSL_Mapping_ObserverHelper.js';
+import type { DeploymentOwner } from '../../../graph/metamodel/pure/packageableElements/function/Ownership.js';
 
 export const observe_SnowflakeAppDeploymentConfiguration = skipObserved(
   (
@@ -31,6 +32,16 @@ export const observe_SnowflakeAppDeploymentConfiguration = skipObserved(
       observe_ConnectionPointer(metamodel.activationConnection);
     }
 
+    return metamodel;
+  },
+);
+
+export const observe_DeploymentOwnership = skipObserved(
+  (metamodel: DeploymentOwner): DeploymentOwner => {
+    makeObservable(metamodel, {
+      id: observable,
+      hashCode: computed,
+    });
     return metamodel;
   },
 );

@@ -71,6 +71,7 @@ import {
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/function/test/FunctionTest.js';
 import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
 import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
+import { DefaultValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/DefaultValue.js';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -219,6 +220,11 @@ export const V1_buildProperty = (
   pureProperty.stereotypes = property.stereotypes
     .map((stereotype) => context.resolveStereotype(stereotype))
     .filter(isNonNullable);
+  if (property.defaultValue) {
+    const defautVal = new DefaultValue();
+    defautVal.value = property.defaultValue.value;
+    pureProperty.defaultValue = defautVal;
+  }
   pureProperty.taggedValues = property.taggedValues
     .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
     .filter(isNonNullable);

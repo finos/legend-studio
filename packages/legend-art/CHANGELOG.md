@@ -1,5 +1,15 @@
 # @finos/legend-art
 
+## 7.1.19
+
+## 7.1.18
+
+## 7.1.17
+
+### Patch Changes
+
+- [#2910](https://github.com/finos/legend-studio/pull/2910) [`8fff150fe`](https://github.com/finos/legend-studio/commit/8fff150fe24c98bf94afb383ae8c81bd1d26fc17) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Reduce the bundle size of react-icons by importing icons from react-icons/../index.js
+
 ## 7.1.16
 
 ### Patch Changes

@@ -1,5 +1,23 @@
 # @finos/legend-application-query
 
+## 13.2.4
+
+### Patch Changes
+
+- [#2919](https://github.com/finos/legend-studio/pull/2919) [`31d516c1e`](https://github.com/finos/legend-studio/commit/31d516c1e8e095c8655fe2effea74d900c0932c8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Provide query information to users and make query version changeable
+
+## 13.2.3
+
+## 13.2.2
+
+## 13.2.1
+
+## 13.2.0
+
+### Minor Changes
+
+- [#2923](https://github.com/finos/legend-studio/pull/2923) [`f557af7b1`](https://github.com/finos/legend-studio/commit/f557af7b1ce0bfe879703c0ada0bd038bbec86c5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable ServiceWork in Studio and Query Application Launching.
+
 ## 13.1.51
 
 ## 13.1.50

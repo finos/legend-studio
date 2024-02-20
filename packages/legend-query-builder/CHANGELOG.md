@@ -1,5 +1,19 @@
 # @finos/legend-query-builder
 
+## 4.14.4
+
+## 4.14.3
+
+## 4.14.2
+
+## 4.14.1
+
+## 4.14.0
+
+### Minor Changes
+
+- [#2923](https://github.com/finos/legend-studio/pull/2923) [`f557af7b1`](https://github.com/finos/legend-studio/commit/f557af7b1ce0bfe879703c0ada0bd038bbec86c5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Leverage DownloadHelper with service worker enabled to export query data to handle large streams of data.
+
 ## 4.13.14
 
 ## 4.13.13

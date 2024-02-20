@@ -225,7 +225,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                 const updateQueryAndProceed = async (): Promise<void> => {
                   try {
                     await flowResult(
-                      editorStore.updateState.updateQuery(undefined),
+                      editorStore.updateState.updateQuery(undefined, undefined),
                     );
                     proceed();
                   } catch (error) {

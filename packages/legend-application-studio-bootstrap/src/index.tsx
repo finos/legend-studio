@@ -73,6 +73,7 @@ export class LegendStudioWebApplication {
       .setup({ baseAddress: baseUrl })
       .withPresets(LegendStudioWebApplication.getPresetCollection())
       .withPlugins(LegendStudioWebApplication.getPluginCollection())
+      .withDownloadHelper()
       .start()
       .catch((e: unknown) => {
         throw e;

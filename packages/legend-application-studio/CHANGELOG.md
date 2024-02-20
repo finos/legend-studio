@@ -1,5 +1,23 @@
 # @finos/legend-application-studio
 
+## 28.15.4
+
+### Patch Changes
+
+- [#2939](https://github.com/finos/legend-studio/pull/2939) [`2a544332a`](https://github.com/finos/legend-studio/commit/2a544332ac776e61cfcf41e75a62c58f9b00b813) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add ownership to snowflake app
+
+## 28.15.3
+
+## 28.15.2
+
+## 28.15.1
+
+## 28.15.0
+
+### Minor Changes
+
+- [#2923](https://github.com/finos/legend-studio/pull/2923) [`f557af7b1`](https://github.com/finos/legend-studio/commit/f557af7b1ce0bfe879703c0ada0bd038bbec86c5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable ServiceWork in Studio and Query Application Launching.
+
 ## 28.14.9
 
 ## 28.14.8

@@ -22,6 +22,8 @@ import {
   PackageableElementExplicitReference,
   observe_SnowflakeAppDeploymentConfiguration,
   observe_SnowflakeApp,
+  DeploymentOwner,
+  observe_DeploymentOwnership,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -43,7 +45,7 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
     makeObservable(this, {
       activator: computed,
       reprocess: action,
-      updateOwner: action,
+      updateOwnership: action,
       updateAppDescription: action,
       updateApplicationName: action,
       updateConnection: action,
@@ -70,8 +72,9 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
     );
   }
 
-  updateOwner(val: string): void {
-    this.activator.owner = val;
+  updateOwnership(val: string): void {
+    this.activator.ownership = new DeploymentOwner(val, this.activator);
+    observe_DeploymentOwnership(this.activator.ownership);
   }
 
   updateApplicationName(val: string): void {

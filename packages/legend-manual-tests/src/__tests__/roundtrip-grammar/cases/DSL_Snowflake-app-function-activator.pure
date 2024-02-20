@@ -3,6 +3,7 @@ SnowflakeApp model::NewActivator
 {
    applicationName : '';
    function : model::Firm_QueryFunction():TabularDataSet[1];
+   ownership : '';
    activationConfiguration : model::SnowFlakeConnection;
 }
 
@@ -10,6 +11,7 @@ SnowflakeApp model::NewActivatorWithParam
 {
    applicationName : '';
    function : model::Firm_QueryFunction(String[1]):TabularDataSet[1];
+   ownership : '';
    activationConfiguration : model::SnowFlakeConnection;
 }
 

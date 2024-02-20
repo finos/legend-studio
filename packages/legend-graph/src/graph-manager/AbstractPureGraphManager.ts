@@ -492,6 +492,15 @@ export abstract class AbstractPureGraphManager {
     report?: GraphManagerOperationReport,
   ): Promise<ExecutionResult>;
 
+  abstract exportData(
+    lambda: RawLambda,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
+    graph: PureModel,
+    options?: ExecutionOptions,
+    report?: GraphManagerOperationReport,
+  ): Promise<Response>;
+
   abstract cancelUserExecutions(broadcastToCluster: boolean): Promise<string>;
 
   abstract DEPRECATED__runLegacyMappingTests(
