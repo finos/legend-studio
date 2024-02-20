@@ -40,6 +40,7 @@ export class V1_ResolutionQuery implements Hashable {
   queries!: V1_RawLambda[];
   keyType?: string | undefined;
   optional?: boolean | undefined;
+  filter?: V1_RawLambda | undefined;
   precedence!: number;
 
   get hashCode(): string {
@@ -48,6 +49,7 @@ export class V1_ResolutionQuery implements Hashable {
       this.keyType ?? '',
       this.optional?.toString() ?? '',
       this.precedence.toString(),
+      this.filter ?? '',
       hashArray(this.queries),
     ]);
   }
