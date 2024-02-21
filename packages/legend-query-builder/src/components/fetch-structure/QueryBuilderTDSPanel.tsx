@@ -144,8 +144,9 @@ const QueryBuilderProjectionColumnContextMenu = observer(
 const QueryBuilderSimpleProjectionColumnEditor = observer(
   (props: {
     projectionColumnState: QueryBuilderSimpleProjectionColumnState;
+    setIsEditingColumnName: (isEditing: boolean) => void;
   }) => {
-    const { projectionColumnState } = props;
+    const { projectionColumnState, setIsEditingColumnName } = props;
     const onPropertyExpressionChange = (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ): void =>
@@ -158,10 +159,12 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
     return (
       <div className="query-builder__projection__column__value__property">
         <QueryBuilderPropertyExpressionBadge
+          columnName={projectionColumnState.columnName}
           propertyExpressionState={
             projectionColumnState.propertyExpressionState
           }
           onPropertyExpressionChange={onPropertyExpressionChange}
+          setIsEditingColumnName={setIsEditingColumnName}
         />
       </div>
     );
@@ -362,6 +365,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
+    const [isEditingColumnName, setIsEditingColumnName] = useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
@@ -742,29 +746,43 @@ const QueryBuilderProjectionColumnEditor = observer(
               dragSourceConnector={dragHandleRef}
               className="query-builder__projection__column__drag-handle__container"
             />
-            <div className="query-builder__projection__column__name">
-              <InputWithInlineValidation
-                className="query-builder__projection__column__name__input input-group__input"
-                spellCheck={false}
-                value={projectionColumnState.columnName}
-                onChange={changeColumnName}
-                error={isDuplicatedColumnName ? 'Duplicated column' : undefined}
-              />
-            </div>
-            <div className="query-builder__projection__column__value">
-              {projectionColumnState instanceof
-                QueryBuilderSimpleProjectionColumnState && (
-                <QueryBuilderSimpleProjectionColumnEditor
-                  projectionColumnState={projectionColumnState}
+            {isEditingColumnName ? (
+              <div className="query-builder__projection__column__name">
+                <InputWithInlineValidation
+                  className="query-builder__projection__column__name__input input-group__input"
+                  spellCheck={false}
+                  value={projectionColumnState.columnName}
+                  onChange={changeColumnName}
+                  onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (event.key === 'Enter') {
+                      setIsEditingColumnName(false);
+                    }
+                  }}
+                  onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
+                    setIsEditingColumnName(false);
+                  }}
+                  error={
+                    isDuplicatedColumnName ? 'Duplicated column' : undefined
+                  }
                 />
-              )}
-              {projectionColumnState instanceof
-                QueryBuilderDerivationProjectionColumnState && (
-                <QueryBuilderDerivationProjectionColumnEditor
-                  projectionColumnState={projectionColumnState}
-                />
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="query-builder__projection__column__value">
+                {projectionColumnState instanceof
+                  QueryBuilderSimpleProjectionColumnState && (
+                  <QueryBuilderSimpleProjectionColumnEditor
+                    projectionColumnState={projectionColumnState}
+                    setIsEditingColumnName={setIsEditingColumnName}
+                  />
+                )}
+                {projectionColumnState instanceof
+                  QueryBuilderDerivationProjectionColumnState && (
+                  <QueryBuilderDerivationProjectionColumnEditor
+                    projectionColumnState={projectionColumnState}
+                  />
+                )}
+              </div>
+            )}
             <div className="query-builder__projection__column__aggregate">
               <div className="query-builder__projection__column__aggregate__operator">
                 {aggregateColumnState && (

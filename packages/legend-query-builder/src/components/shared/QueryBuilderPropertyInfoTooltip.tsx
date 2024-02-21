@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type TooltipPlacement, Tooltip } from '@finos/legend-art';
+import {
+  ShareBoxIcon,
+  type TooltipPlacement,
+  Tooltip,
+} from '@finos/legend-art';
 import {
   type AbstractProperty,
   type Type,
@@ -25,6 +29,7 @@ import {
   PURE_DOC_TAG,
 } from '@finos/legend-graph';
 import { useState } from 'react';
+import type { QueryBuilderExplorerState } from '../../stores/explorer/QueryBuilderExplorerState.js';
 
 export const QueryBuilderTaggedValueInfoTooltip: React.FC<{
   taggedValues: TaggedValue[];
@@ -112,14 +117,25 @@ export const QueryBuilderTaggedValueInfoTooltip: React.FC<{
 };
 
 export const QueryBuilderPropertyInfoTooltip: React.FC<{
+  title: string;
   property: AbstractProperty;
   path: string;
   isMapped: boolean;
   children: React.ReactElement;
   placement?: TooltipPlacement | undefined;
   type?: Type | undefined;
+  explorerState?: QueryBuilderExplorerState | undefined;
 }> = (props) => {
-  const { property, path, isMapped, children, placement, type } = props;
+  const {
+    title,
+    property,
+    path,
+    isMapped,
+    children,
+    placement,
+    type,
+    explorerState,
+  } = props;
 
   return (
     <Tooltip
@@ -138,6 +154,7 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
       }}
       title={
         <div className="query-builder__tooltip__content">
+          <div className="query-builder__tooltip__header">{title}</div>
           <div className="query-builder__tooltip__item">
             <div className="query-builder__tooltip__item__label">Type</div>
             <div className="query-builder__tooltip__item__value">
@@ -147,6 +164,14 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
           <div className="query-builder__tooltip__item">
             <div className="query-builder__tooltip__item__label">Path</div>
             <div className="query-builder__tooltip__item__value">{path}</div>
+            <div className="query-builder__tooltip__item__action">
+              <button
+                onClick={() => explorerState?.highlightTreeNode(path)}
+                title="Show in tree"
+              >
+                <ShareBoxIcon color="white" />
+              </button>
+            </div>
           </div>
           <div className="query-builder__tooltip__item">
             <div className="query-builder__tooltip__item__label">

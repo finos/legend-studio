@@ -214,6 +214,13 @@ const QueryBuilderTreeNodeViewer = observer(
           <div className="query-builder-property-search-panel__node__actions">
             {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
               <QueryBuilderPropertyInfoTooltip
+                title={
+                  parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                    ? prettyPropertyNameForSubType(node.id)
+                    : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                    ? prettyPropertyNameForSubTypeClass(node.id)
+                    : prettyPropertyNameFromNodeId(node.id)
+                }
                 property={node.property}
                 path={node.id}
                 isMapped={node.mappingData.mapped}

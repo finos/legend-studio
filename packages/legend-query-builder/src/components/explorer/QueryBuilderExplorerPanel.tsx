@@ -582,7 +582,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     'query-builder-explorer-tree__node__label--with-preview':
                       allowPreview,
                   },
+                  {
+                    'query-builder-explorer-tree__node__label--highlight':
+                      node.isHighlighting,
+                  },
                 )}
+                onAnimationEnd={() => node.setIsHighlighting(false)}
               >
                 <div
                   className={clsx(
@@ -639,6 +644,17 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 )}
                 {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
                   <QueryBuilderPropertyInfoTooltip
+                    title={
+                      explorerState.humanizePropertyName
+                        ? node instanceof
+                          QueryBuilderExplorerTreeSubTypeNodeData
+                          ? TYPE_CAST_TOKEN + prettyCONSTName(node.label)
+                          : prettyCONSTName(node.label)
+                        : node instanceof
+                          QueryBuilderExplorerTreeSubTypeNodeData
+                        ? TYPE_CAST_TOKEN + node.label
+                        : node.label
+                    }
                     property={node.property}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
