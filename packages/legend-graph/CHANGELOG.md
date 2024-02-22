@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 31.8.0
+
+### Minor Changes
+
+- [#2944](https://github.com/finos/legend-studio/pull/2944) [`a3730a223`](https://github.com/finos/legend-studio/commit/a3730a223fc961dcb3c9fe2054daf5c072c1e49d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add handling of `defaultValues` for class properties.
+
+### Patch Changes
+
+- [#2939](https://github.com/finos/legend-studio/pull/2939) [`2a544332a`](https://github.com/finos/legend-studio/commit/2a544332ac776e61cfcf41e75a62c58f9b00b813) ([@janeenyamak1](https://github.com/janeenyamak1)) - Add ownership to snowflake app
+
 ## 31.7.3
 
 ## 31.7.2

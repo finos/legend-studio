@@ -15,10 +15,29 @@
  */
 
 import { observable, computed, makeObservable } from 'mobx';
-import { guaranteeNonNullable, IllegalStateError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  IllegalStateError,
+  SerializationFactory,
+} from '@finos/legend-shared';
 import { EntityChangeType } from '../entity/EntityChange.js';
 import { extractEntityNameFromPath } from '@finos/legend-storage';
+import { createModelSchema, optional, primitive } from 'serializr';
 
+export const getChangeTypeIconFromChange = (val: EntityChangeType): string => {
+  switch (val) {
+    case EntityChangeType.CREATE:
+      return 'N';
+    case EntityChangeType.DELETE:
+      return 'D';
+    case EntityChangeType.MODIFY:
+      return 'M';
+    case EntityChangeType.RENAME:
+      return 'R';
+    default:
+      return '';
+  }
+};
 export class EntityDiff {
   newPath?: string | undefined;
   oldPath?: string | undefined;
@@ -60,19 +79,17 @@ export class EntityDiff {
     return `old-${this.oldPath ?? ''}--new-${this.newPath ?? ''}`;
   }
 
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(EntityDiff, {
+      oldPath: optional(primitive()),
+
+      newPath: optional(primitive()),
+      entityChangeType: primitive(),
+    }),
+  );
+
   getChangeTypeIcon(): string {
-    switch (this.entityChangeType) {
-      case EntityChangeType.CREATE:
-        return 'N';
-      case EntityChangeType.DELETE:
-        return 'D';
-      case EntityChangeType.MODIFY:
-        return 'M';
-      case EntityChangeType.RENAME:
-        return 'R';
-      default:
-        return '';
-    }
+    return getChangeTypeIconFromChange(this.entityChangeType);
   }
 
   static shouldOldEntityExist = (diff: EntityDiff): boolean =>

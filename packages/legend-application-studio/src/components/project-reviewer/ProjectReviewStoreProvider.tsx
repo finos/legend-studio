@@ -16,43 +16,43 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { WorkspaceReviewStore } from '../../stores/workspace-review/WorkspaceReviewStore.js';
+import { ProjectReviewerStore } from '../../stores/project-reviewer/ProjectReviewerStore.js';
 import { EDITOR_MODE } from '../../stores/editor/EditorConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 
-const WorkspaceReviewStoreContext = createContext<
-  WorkspaceReviewStore | undefined
+const ProjectReviewerStoreContext = createContext<
+  ProjectReviewerStore | undefined
 >(undefined);
 
-export const WorkspaceReviewStoreProvider = ({
+export const ProjectReviewerStoreProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
   const editorStore = useEditorStore();
   editorStore.setMode(EDITOR_MODE.REVIEW);
-  const store = useLocalObservable(() => new WorkspaceReviewStore(editorStore));
+  const store = useLocalObservable(() => new ProjectReviewerStore(editorStore));
   return (
-    <WorkspaceReviewStoreContext.Provider value={store}>
+    <ProjectReviewerStoreContext.Provider value={store}>
       {children}
-    </WorkspaceReviewStoreContext.Provider>
+    </ProjectReviewerStoreContext.Provider>
   );
 };
 
-export const useWorkspaceReviewStore = (): WorkspaceReviewStore =>
+export const useProjectReviewerStore = (): ProjectReviewerStore =>
   guaranteeNonNullable(
-    useContext(WorkspaceReviewStoreContext),
+    useContext(ProjectReviewerStoreContext),
     `Can't find workspace review store in context`,
   );
 
-export const withWorkspaceReviewStore = (
+export const withProjectReviewerStore = (
   WrappedComponent: React.FC,
 ): React.FC =>
-  function WithWorkspaceReviewStore() {
+  function WithProjecteReviewerStore() {
     return (
-      <WorkspaceReviewStoreProvider>
+      <ProjectReviewerStoreProvider>
         <WrappedComponent />
-      </WorkspaceReviewStoreProvider>
+      </ProjectReviewerStoreProvider>
     );
   };

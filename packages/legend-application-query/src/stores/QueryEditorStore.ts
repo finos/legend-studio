@@ -41,6 +41,10 @@ import {
 import {
   type LightQuery,
   type RawLambda,
+  type Runtime,
+  type Service,
+  type ValueSpecification,
+  type GraphInitializationReport,
   GraphManagerState,
   Query,
   PureExecution,
@@ -49,15 +53,11 @@ import {
   GRAPH_MANAGER_EVENT,
   extractElementNameFromPath,
   Mapping,
-  type Runtime,
-  type Service,
-  type ValueSpecification,
   createGraphBuilderReport,
   LegendSDLC,
   QuerySearchSpecification,
   toLightQuery,
   QueryParameterValue,
-  type GraphInitializationReport,
   reportGraphAnalytics,
   cloneQueryStereotype,
   cloneQueryTaggedValue,
@@ -836,8 +836,12 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
 export class ExistingQueryUpdateState {
   readonly editorStore: ExistingQueryEditorStore;
   readonly updateQueryState = ActionState.create();
+  fetchProjectVersionState = ActionState.create();
   queryRenamer = false;
   saveModal = false;
+  showQueryInfo = false;
+  queryVersionId: string | undefined;
+  projectVersions: string[] = [];
   updateDiffState: QueryBuilderDiffViewState | undefined;
 
   constructor(editorState: ExistingQueryEditorStore) {
@@ -846,17 +850,38 @@ export class ExistingQueryUpdateState {
     makeObservable(this, {
       queryRenamer: observable,
       saveModal: observable,
+      showQueryInfo: observable,
+      queryVersionId: observable,
+      projectVersions: observable,
       updateDiffState: observable,
       updateQueryState: observable,
+      fetchProjectVersionState: observable,
       showSaveModal: action,
+      setShowQueryInfo: action,
+      setProjectVersions: action,
+      setQueryVersionId: action,
       closeSaveModal: action,
       setQueryRenamer: action,
       updateQuery: flow,
+      fetchProjectVersions: flow,
     });
+    this.queryVersionId = this.editorStore.query?.versionId;
   }
 
   setQueryRenamer(val: boolean): void {
     this.queryRenamer = val;
+  }
+
+  setShowQueryInfo(val: boolean): void {
+    this.showQueryInfo = val;
+  }
+
+  setProjectVersions(val: string[]): void {
+    this.projectVersions = val;
+  }
+
+  setQueryVersionId(val: string): void {
+    this.queryVersionId = val;
   }
 
   showSaveModal(): void {
@@ -874,7 +899,30 @@ export class ExistingQueryUpdateState {
     this.updateDiffState = undefined;
   }
 
-  *updateQuery(queryName: string | undefined): GeneratorFn<void> {
+  *fetchProjectVersions(
+    groupId: string,
+    artifactId: string,
+  ): GeneratorFn<void> {
+    try {
+      this.fetchProjectVersionState.inProgress();
+      const versions = (yield this.editorStore.depotServerClient.getVersions(
+        groupId,
+        artifactId,
+        true,
+      )) as string[];
+      this.setProjectVersions(versions);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.fetchProjectVersionState.complete();
+    }
+  }
+
+  *updateQuery(
+    queryName: string | undefined,
+    queryVersionId: string | undefined,
+  ): GeneratorFn<void> {
     try {
       this.updateQueryState.inProgress();
       const queryBuilderState = guaranteeNonNullable(
@@ -892,6 +940,7 @@ export class ExistingQueryUpdateState {
         config,
       )) as Query;
       query.name = queryName ?? query.name;
+      query.versionId = queryVersionId ?? query.versionId;
       const updatedQuery =
         (yield this.editorStore.graphManagerState.graphManager.updateQuery(
           query,
