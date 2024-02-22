@@ -203,7 +203,7 @@ export const TEST_DATA__roundtrip = [
                           name: 'input',
                         }
                       ]
-                      property: 'name'
+                      property: 'name',
                     },
                     {
                       _type: 'string',
