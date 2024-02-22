@@ -202,7 +202,7 @@ export const TEST_DATA__roundtrip = [
                           _type: 'var',
                           name: 'input',
                         }
-                      ]
+                      ],
                       property: 'name',
                     },
                     {
@@ -224,7 +224,7 @@ export const TEST_DATA__roundtrip = [
                 }
              ]
           },
-        ],
+        ]
       },
       precedenceRules: [
         {
