@@ -214,15 +214,15 @@ export const TEST_DATA__roundtrip = [
               ],
               parameters: [
                 {
-                   _type: 'var',
-                   class: 'mastery::test::model::Person',
-                   multiplicity: {
-                     lowerBound: 1,
-                     upperBound: 1,
-                   },
-                   name: 'input',
+                  _type: 'var',
+                  class: 'mastery::test::model::Person',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  name: 'input',
                 }
-             ]
+              ]
             },
          },
        ],
