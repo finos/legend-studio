@@ -223,8 +223,9 @@ export const TEST_DATA__roundtrip = [
                    name: 'input',
                 }
              ]
-          },
-        ]
+            },
+         }
+       ]
       },
       precedenceRules: [
         {
