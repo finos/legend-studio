@@ -72,6 +72,7 @@ import { QueryBuilderPropertySearchState } from './QueryBuilderPropertySearchSta
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { propertyExpression_setFunc } from '../shared/ValueSpecificationModifierHelper.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
+import { createRef } from 'react';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -105,6 +106,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   isPartOfDerivedPropertyBranch: boolean;
   type: Type;
   mappingData: QueryBuilderExplorerTreeNodeMappingData;
+  ref: React.RefObject<HTMLDivElement>;
 
   constructor(
     id: string,
@@ -127,6 +129,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
     this.type = type;
     this.mappingData = mappingData;
+    this.ref = createRef();
   }
 
   setIsSelected(val: boolean | undefined): void {
@@ -742,6 +745,7 @@ export class QueryBuilderExplorerState {
       }
       this.refreshTree();
       nodeToHighlight?.setIsHighlighting(true);
+      nodeToHighlight?.ref?.current?.scrollIntoView();
     }
   }
 
