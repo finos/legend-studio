@@ -746,76 +746,69 @@ const QueryBuilderProjectionColumnEditor = observer(
               dragSourceConnector={dragHandleRef}
               className="query-builder__projection__column__drag-handle__container"
             />
-            <>
-              {projectionColumnState instanceof
-                QueryBuilderSimpleProjectionColumnState && (
-                <>
-                  {isEditingColumnName ? (
-                    <div className="query-builder__projection__column__name">
-                      <InputWithInlineValidation
-                        className="query-builder__projection__column__name__input input-group__input"
-                        spellCheck={false}
-                        value={projectionColumnState.columnName}
-                        onChange={changeColumnName}
-                        onKeyDown={(
-                          event: React.KeyboardEvent<HTMLInputElement>,
-                        ) => {
-                          if (event.key === 'Enter') {
-                            setIsEditingColumnName(false);
-                          }
-                        }}
-                        onBlur={() => {
-                          setIsEditingColumnName(false);
-                        }}
-                        error={
-                          isDuplicatedColumnName
-                            ? 'Duplicated column'
-                            : undefined
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <div className="query-builder__projection__column__value">
-                      <QueryBuilderSimpleProjectionColumnEditor
-                        projectionColumnState={projectionColumnState}
-                        setIsEditingColumnName={setIsEditingColumnName}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-              {projectionColumnState instanceof
-                QueryBuilderDerivationProjectionColumnState && (
-                <>
-                  <div className="query-builder__projection__column__name">
-                    <InputWithInlineValidation
-                      className="query-builder__projection__column__name__input input-group__input"
-                      spellCheck={false}
-                      value={projectionColumnState.columnName}
-                      onChange={changeColumnName}
-                      onKeyDown={(
-                        event: React.KeyboardEvent<HTMLInputElement>,
-                      ) => {
-                        if (event.key === 'Enter') {
-                          setIsEditingColumnName(false);
-                        }
-                      }}
-                      onBlur={() => {
+            {projectionColumnState instanceof
+              QueryBuilderSimpleProjectionColumnState &&
+              (isEditingColumnName ? (
+                <div className="query-builder__projection__column__name">
+                  <InputWithInlineValidation
+                    className="query-builder__projection__column__name__input input-group__input"
+                    spellCheck={false}
+                    value={projectionColumnState.columnName}
+                    onChange={changeColumnName}
+                    onKeyDown={(
+                      event: React.KeyboardEvent<HTMLInputElement>,
+                    ) => {
+                      if (event.key === 'Enter') {
                         setIsEditingColumnName(false);
-                      }}
-                      error={
-                        isDuplicatedColumnName ? 'Duplicated column' : undefined
                       }
-                    />
-                  </div>
-                  <div className="query-builder__projection__column__value">
-                    <QueryBuilderDerivationProjectionColumnEditor
-                      projectionColumnState={projectionColumnState}
-                    />
-                  </div>
-                </>
-              )}
-            </>
+                    }}
+                    onBlur={() => {
+                      setIsEditingColumnName(false);
+                    }}
+                    error={
+                      isDuplicatedColumnName ? 'Duplicated column' : undefined
+                    }
+                  />
+                </div>
+              ) : (
+                <div className="query-builder__projection__column__value">
+                  <QueryBuilderSimpleProjectionColumnEditor
+                    projectionColumnState={projectionColumnState}
+                    setIsEditingColumnName={setIsEditingColumnName}
+                  />
+                </div>
+              ))}
+            {projectionColumnState instanceof
+              QueryBuilderDerivationProjectionColumnState && (
+              <>
+                <div className="query-builder__projection__column__name">
+                  <InputWithInlineValidation
+                    className="query-builder__projection__column__name__input input-group__input"
+                    spellCheck={false}
+                    value={projectionColumnState.columnName}
+                    onChange={changeColumnName}
+                    onKeyDown={(
+                      event: React.KeyboardEvent<HTMLInputElement>,
+                    ) => {
+                      if (event.key === 'Enter') {
+                        setIsEditingColumnName(false);
+                      }
+                    }}
+                    onBlur={() => {
+                      setIsEditingColumnName(false);
+                    }}
+                    error={
+                      isDuplicatedColumnName ? 'Duplicated column' : undefined
+                    }
+                  />
+                </div>
+                <div className="query-builder__projection__column__value">
+                  <QueryBuilderDerivationProjectionColumnEditor
+                    projectionColumnState={projectionColumnState}
+                  />
+                </div>
+              </>
+            )}
             <div className="query-builder__projection__column__aggregate">
               <div className="query-builder__projection__column__aggregate__operator">
                 {aggregateColumnState && (
