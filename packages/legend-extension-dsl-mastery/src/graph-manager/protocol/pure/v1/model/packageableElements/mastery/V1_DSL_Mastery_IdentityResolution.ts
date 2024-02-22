@@ -46,10 +46,10 @@ export class V1_ResolutionQuery implements Hashable {
   get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.RESOLUTION_QUERY,
+      this.filter ?? '',
       this.keyType ?? '',
       this.optional?.toString() ?? '',
       this.precedence.toString(),
-      this.filter ?? '',
       hashArray(this.queries),
     ]);
   }
