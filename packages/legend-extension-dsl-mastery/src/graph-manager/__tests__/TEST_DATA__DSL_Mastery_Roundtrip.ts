@@ -224,8 +224,8 @@ export const TEST_DATA__roundtrip = [
                 }
              ]
             },
-         }
-       ]
+         },
+       ],
       },
       precedenceRules: [
         {
