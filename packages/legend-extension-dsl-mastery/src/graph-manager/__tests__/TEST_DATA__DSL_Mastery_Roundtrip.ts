@@ -188,6 +188,41 @@ export const TEST_DATA__roundtrip = [
                 ],
               },
             ],
+            filter: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'input',
+                        }
+                      ]
+                      property: 'name'
+                    },
+                    {
+                      _type: 'string',
+                      value: 'Bob',
+                    }
+                  ]
+                }
+              ],
+              parameters: [
+                {
+                   _type: 'var',
+                   class: 'mastery::test::model::Person',
+                   multiplicity: {
+                     lowerBound: 1,
+                     upperBound: 1,
+                   },
+                   name: 'input',
+                }
+             ]
           },
         ],
       },
