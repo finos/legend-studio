@@ -451,7 +451,7 @@ export const QueryBuilderPropertyExpressionBadge = observer(
             <div
               className="query-builder-property-expression-badge__property"
               title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
-              onDoubleClick={() => {
+              onClick={() => {
                 setIsEditingColumnName?.(true);
               }}
             >
