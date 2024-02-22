@@ -201,16 +201,16 @@ export const TEST_DATA__roundtrip = [
                         {
                           _type: 'var',
                           name: 'input',
-                        }
+                        },
                       ],
                       property: 'name',
                     },
                     {
                       _type: 'string',
                       value: 'Bob',
-                    }
-                  ]
-                }
+                    },
+                  ],
+                },
               ],
               parameters: [
                 {
@@ -221,11 +221,11 @@ export const TEST_DATA__roundtrip = [
                     upperBound: 1,
                   },
                   name: 'input',
-                }
-              ]
+                },
+              ],
             },
-         },
-       ],
+          },
+        ],
       },
       precedenceRules: [
         {
