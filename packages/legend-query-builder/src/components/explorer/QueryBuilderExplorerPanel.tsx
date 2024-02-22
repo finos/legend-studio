@@ -567,7 +567,10 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           {(node instanceof QueryBuilderExplorerTreePropertyNodeData ||
             node instanceof QueryBuilderExplorerTreeSubTypeNodeData) && (
             <>
-              <div className="tree-view__node__icon query-builder-explorer-tree__node__icon">
+              <div
+                className="tree-view__node__icon query-builder-explorer-tree__node__icon"
+                ref={node.ref}
+              >
                 <div className="query-builder-explorer-tree__expand-icon">
                   {nodeExpandIcon}
                 </div>
