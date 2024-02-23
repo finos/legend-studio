@@ -422,14 +422,9 @@ export const QueryBuilder = observer(
           redo();
         }
       };
-      if (
-        queryBuilderRef.current &&
-        (queryBuilderRef.current === document.activeElement ||
-          document.activeElement?.contains(queryBuilderRef.current))
-      ) {
-        document.addEventListener('keydown', onCtrlZ);
-        document.addEventListener('keydown', onCtrlY);
-      }
+      document.addEventListener('keydown', onCtrlZ);
+      document.addEventListener('keydown', onCtrlY);
+
       return () => {
         document.removeEventListener('keydown', onCtrlZ);
         document.addEventListener('keydown', onCtrlY);

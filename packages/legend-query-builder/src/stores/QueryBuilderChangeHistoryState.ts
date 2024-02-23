@@ -25,7 +25,7 @@ export class QueryBuilderChangeHistoryState {
 
   querySnapshotBuffer: RawLambda[] = [];
   currentQuery: RawLambda | undefined;
-  pointer = 0;
+  pointer = -1;
   bufferSize = 10;
 
   constructor(queryBuilderState: QueryBuilderState) {
