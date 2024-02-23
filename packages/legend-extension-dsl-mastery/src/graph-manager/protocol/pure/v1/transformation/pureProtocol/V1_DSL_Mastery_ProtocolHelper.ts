@@ -667,6 +667,7 @@ const V1_recordSourceSchema = (
  **********/
 
 const V1_resolutionQuerySchema = createModelSchema(V1_ResolutionQuery, {
+  filter: optional(usingModelSchema(V1_rawLambdaModelSchema)),
   keyType: optional(primitive()),
   optional: optional(primitive()),
   precedence: primitive(),

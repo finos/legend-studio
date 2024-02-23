@@ -591,6 +591,9 @@ export const V1_transformResolutionQuery = (
   context: V1_GraphTransformerContext,
 ): V1_ResolutionQuery => {
   const resolutionQuery = new V1_ResolutionQuery();
+  resolutionQuery.filter = element.filter
+    ? V1_transformRawLambda(element.filter, context)
+    : undefined;
   resolutionQuery.keyType = element.keyType;
   resolutionQuery.optional = element.optional;
   resolutionQuery.precedence = element.precedence;

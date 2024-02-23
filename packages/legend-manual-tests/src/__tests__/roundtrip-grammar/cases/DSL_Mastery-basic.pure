@@ -162,6 +162,7 @@ MasterRecordDefinition alloy::mastery::WidgetMasterRecord
                    ];
           keyType: AlternateKey;
           precedence: 2;
+          filter: {input: org::dataeng::Widget[1]|$input.widgetId == 'Test'};
         }
       ]
   }

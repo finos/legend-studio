@@ -582,6 +582,13 @@ export const V1_buildResolutionQuery = (
   context: V1_GraphBuilderContext,
 ): ResolutionQuery => {
   const resolutionQuery = new ResolutionQuery();
+  resolutionQuery.filter = protocol.filter
+    ? V1_buildRawLambdaWithResolvedPaths(
+        protocol.filter.parameters,
+        protocol.filter.body,
+        context,
+      )
+    : undefined;
   resolutionQuery.keyType = protocol.keyType;
   resolutionQuery.optional = protocol.optional;
   resolutionQuery.precedence = protocol.precedence;

@@ -32,6 +32,7 @@ export class IdentityResolution implements Hashable {
 }
 
 export class ResolutionQuery implements Hashable {
+  filter?: RawLambda | undefined;
   keyType?: string | undefined;
   optional?: boolean | undefined;
   precedence!: number;
@@ -45,6 +46,7 @@ export class ResolutionQuery implements Hashable {
   get hashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.RESOLUTION_QUERY,
+      this.filter ?? '',
       this.keyType ?? '',
       this.optional?.toString() ?? '',
       this.precedence.toString(),
