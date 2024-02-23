@@ -87,6 +87,29 @@
 
     justify-content: flex-end;
     flex: 1;
+
+    &__undo-redo {
+      @include flexVCenter;
+
+      &__button {
+        color: var(--color-light-blue-50);
+        margin-left: 1rem;
+        margin-right: 1rem;
+
+        svg {
+          font-size: 1.1rem;
+        }
+
+        &__label {
+          font-size: 1.2rem;
+          font-weight: 700;
+        }
+      }
+
+      &__button[disabled] {
+        color: var(--color-dark-grey-500);
+      }
+    }
   }
 
   &__header__advanced-dropdown {

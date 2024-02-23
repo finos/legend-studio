@@ -384,6 +384,8 @@ import {
   FaRegCalendarAlt,
   FaCalculator,
   FaReadme,
+  FaRedo,
+  FaUndo,
 } from 'react-icons/fa/index.js';
 
 export const HistoryIcon = FaHistory;
@@ -515,6 +517,8 @@ export const LevelDownIcon = FaLevelDownAlt; // to be reviewed/combined
 export const CalendarIcon = FaRegCalendarAlt;
 export const CalculatorIcon = FaCalculator;
 export const ReadMeIcon = FaReadme;
+export const UndoIcon = FaUndo;
+export const RedoIcon = FaRedo;
 
 //======================================================= GI =======================================================
 import {

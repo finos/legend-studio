@@ -23,7 +23,7 @@ import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { expect, test } from '@jest/globals';
-import { waitFor, getByText } from '@testing-library/react';
+import { waitFor, getByText, fireEvent } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { TEST__setUpQueryBuilder } from '../../components/__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
@@ -89,5 +89,11 @@ test(integrationTest('Test change detection'), () => {
     expect(queryBuilderState.hashCode).toBe(
       queryBuilderState.changeDetectionState.hashCodeSnapshot,
     );
+
+    // Test Redo/Undo action in Query Builder
+    fireEvent.click(renderResult.getByText('Undo'));
+    await waitFor(() => getByText(projectionCols, 'Name'));
+    fireEvent.click(renderResult.getByText('Redo'));
+    await waitFor(() => getByText(projectionCols, 'Legal Name'));
   };
 });
