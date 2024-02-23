@@ -42,6 +42,8 @@ import {
   ModalFooterButton,
   CalendarClockIcon,
   ChatIcon,
+  UndoIcon,
+  RedoIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -74,6 +76,7 @@ import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
 import { QueryChat } from './QueryChat.js';
+import { useCallback, useEffect, useRef } from 'react';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -225,6 +228,7 @@ const QueryBuilderPostGraphFetchPanel = observer(
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const queryBuilderRef = useRef<HTMLDivElement>(null);
     const isQuerySupported = queryBuilderState.isQuerySupported;
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
@@ -367,10 +371,75 @@ export const QueryBuilder = observer(
       }
       return null;
     };
+
+    const undo = useCallback((): void => {
+      queryBuilderState.changeHistoryState.undo();
+    }, [queryBuilderState.changeHistoryState]);
+
+    const redo = useCallback((): void => {
+      queryBuilderState.changeHistoryState.redo();
+    }, [queryBuilderState.changeHistoryState]);
+
+    useEffect(() => {
+      // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
+      // we use a empty RawLambda with an empty class and this useEffect is called earlier than initializeWithQuery()
+      if (
+        (queryBuilderState.isQuerySupported && queryBuilderState.class) ||
+        !queryBuilderState.isQuerySupported
+      ) {
+        queryBuilderState.changeHistoryState.cacheNewQuery(
+          queryBuilderState.buildQuery(),
+        );
+      }
+    }, [queryBuilderState, queryBuilderState.hashCode]);
+
+    // bind ctl + z to undo, ctl + y to redo
+    useEffect(() => {
+      const onCtrlZ = (event: KeyboardEvent): void => {
+        if (
+          event.ctrlKey &&
+          event.key === 'z' &&
+          // make undo/redo is contextual e.g. if there is a new modal open e.g. parameter modal, it won't close this modal and modify underlying query
+          queryBuilderRef.current &&
+          (queryBuilderRef.current === document.activeElement ||
+            document.activeElement?.contains(queryBuilderRef.current))
+        ) {
+          event.preventDefault();
+          undo();
+        }
+      };
+      const onCtrlY = (event: KeyboardEvent): void => {
+        if (
+          event.ctrlKey &&
+          event.key === 'y' &&
+          // make undo/redo is contextual e.g. if there is a new modal open e.g. parameter modal, it won't close this modal and modify underlying query
+          queryBuilderRef.current &&
+          (queryBuilderRef.current === document.activeElement ||
+            document.activeElement?.contains(queryBuilderRef.current))
+        ) {
+          event.preventDefault();
+          redo();
+        }
+      };
+      if (
+        queryBuilderRef.current &&
+        (queryBuilderRef.current === document.activeElement ||
+          document.activeElement?.contains(queryBuilderRef.current))
+      ) {
+        document.addEventListener('keydown', onCtrlZ);
+        document.addEventListener('keydown', onCtrlY);
+      }
+      return () => {
+        document.removeEventListener('keydown', onCtrlZ);
+        document.addEventListener('keydown', onCtrlY);
+      };
+    }, [redo, undo]);
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
+        ref={queryBuilderRef}
       >
         <BackdropContainer
           elementId={QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
@@ -404,6 +473,30 @@ export const QueryBuilder = observer(
                 )}
               </div>
               <div className="query-builder__header__actions">
+                <div className="query-builder__header__actions__undo-redo">
+                  <button
+                    className="query-builder__header__actions__undo-redo__button"
+                    onClick={undo}
+                    tabIndex={-1}
+                    disabled={!queryBuilderState.changeHistoryState.canUndo}
+                  >
+                    <UndoIcon />
+                    <div className="query-builder__header__actions__undo-redo__button__label">
+                      Undo
+                    </div>
+                  </button>
+                  <button
+                    className="query-builder__header__actions__undo-redo__button"
+                    onClick={redo}
+                    tabIndex={-1}
+                    disabled={!queryBuilderState.changeHistoryState.canRedo}
+                  >
+                    <RedoIcon />
+                    <div className="query-builder__header__actions__undo-redo__button__label">
+                      Redo
+                    </div>
+                  </button>
+                </div>
                 <DropdownMenu
                   className="query-builder__header__advanced-dropdown"
                   title="Show Advanced Menu..."
