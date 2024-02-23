@@ -473,6 +473,7 @@ export const QueryBuilder = observer(
                     className="query-builder__header__actions__undo-redo__button"
                     onClick={undo}
                     tabIndex={-1}
+                    title={'Undo(ctrl + z)'}
                     disabled={!queryBuilderState.changeHistoryState.canUndo}
                   >
                     <UndoIcon />
@@ -484,6 +485,7 @@ export const QueryBuilder = observer(
                     className="query-builder__header__actions__undo-redo__button"
                     onClick={redo}
                     tabIndex={-1}
+                    title={'Redo(ctrl + y)'}
                     disabled={!queryBuilderState.changeHistoryState.canRedo}
                   >
                     <RedoIcon />
