@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.8.1
+
+### Patch Changes
+
+- [#2959](https://github.com/finos/legend-studio/pull/2959) [`75d25e499`](https://github.com/finos/legend-studio/commit/75d25e499a1179ef08e0b20fe89adcab681b723a) ([@PaulWorkStuff](https://github.com/PaulWorkStuff)) - Export INTERNAL\_\_UnknownPackageableElement
+
 ## 31.8.0
 
 ### Minor Changes

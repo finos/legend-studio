@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-mastery
 
+## 3.0.137
+
+### Patch Changes
+
+- [#2961](https://github.com/finos/legend-studio/pull/2961) [`e02441647`](https://github.com/finos/legend-studio/commit/e02441647162921f0e166ed934c23b71fe2d6f7f) ([@sahil37](https://github.com/sahil37)) - feat: adding filter field to resolution key
+
 ## 3.0.136
 
 ## 3.0.135

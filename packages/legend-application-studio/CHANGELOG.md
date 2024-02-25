@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.15.5
+
+### Patch Changes
+
+- [#2959](https://github.com/finos/legend-studio/pull/2959) [`75d25e499`](https://github.com/finos/legend-studio/commit/75d25e499a1179ef08e0b20fe89adcab681b723a) ([@PaulWorkStuff](https://github.com/PaulWorkStuff)) - Show JSON content for unknown entity in JSON view
+
 ## 28.15.4
 
 ### Patch Changes
