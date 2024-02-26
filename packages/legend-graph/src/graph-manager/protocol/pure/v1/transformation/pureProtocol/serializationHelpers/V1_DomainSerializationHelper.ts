@@ -61,9 +61,12 @@ import {
 import { V1_INTERNAL__UnknownFunctionActivator } from '../../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 import { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import {
+  V1_HostedServiceDeploymentConfigurationAppModelSchema,
   V1_SnowflakeAppDeploymentConfigurationAppModelSchema,
   V1_deserializeDeploymentOwnership,
   V1_serializeDeploymentOwership,
+  V1_serializeOwnership,
+  V1_deserializeOwnership,
 } from './V1_FunctionActivatorSerializationHelper.js';
 import {
   V1_deserializeTestSuite,
@@ -72,6 +75,7 @@ import {
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
+import { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -81,6 +85,7 @@ export const V1_UNIT_ELEMENT_PROTOCOL_TYPE = 'unit';
 export const V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE = 'association';
 export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
 export const V1_SNOWFLAKE_APP_TYPE = 'snowflakeApp';
+export const V1_HOSTED_SERVICE_TYPE = 'hostedService';
 
 export const V1_propertyPointerModelSchema = createModelSchema(
   V1_PropertyPointer,
@@ -177,6 +182,31 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   ownership: optionalCustom(
     (val) => V1_serializeDeploymentOwership(val),
     (val) => V1_deserializeDeploymentOwnership(val),
+  ),
+});
+
+export const V1_HostedServiceModelSchema = createModelSchema(V1_HostedService, {
+  _type: usingConstantValueSchema(V1_HOSTED_SERVICE_TYPE),
+  documentation: optional(primitive()),
+  pattern: primitive(),
+  autoActivateUpdates: primitive(),
+  storeModel: primitive(),
+  generateLineage: primitive(),
+  function: usingModelSchema(V1_packageableElementPointerModelSchema),
+  name: primitive(),
+  package: primitive(),
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  ownership: optionalCustom(
+    (val) => V1_serializeOwnership(val),
+    (val) => V1_deserializeOwnership(val),
+  ),
+  activationConfiguration: optional(
+    usingModelSchema(V1_HostedServiceDeploymentConfigurationAppModelSchema),
   ),
 });
 

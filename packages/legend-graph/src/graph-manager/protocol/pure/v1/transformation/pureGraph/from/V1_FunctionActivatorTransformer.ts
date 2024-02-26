@@ -18,11 +18,18 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { SnowflakeAppDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
 import {
   DeploymentOwner,
+  UserList,
   type Ownership,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/function/Ownership.js';
 import { V1_SnowflakeAppDeploymentConfiguration } from '../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
-import { V1_DeploymentOwner } from '../../../model/packageableElements/function/V1_Ownership.js';
+import {
+  V1_DeploymentOwner,
+  type V1_Ownership,
+  V1_UserList,
+} from '../../../model/packageableElements/function/V1_Ownership.js';
 import { V1_transformConnectionPointer } from './V1_ConnectionTransformer.js';
+import { V1_HostedServiceDeploymentConfiguration } from '../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
+import type { HostedServiceDeploymentConfiguration } from '../../../../../../../graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 
 export const V1_transformSnowflakeAppDeploymentConfiguration = (
   element: SnowflakeAppDeploymentConfiguration,
@@ -38,20 +45,38 @@ export const V1_transformSnowflakeAppDeploymentConfiguration = (
   return protocol;
 };
 
-const transformDeployment = (element: DeploymentOwner): V1_DeploymentOwner => {
+export const V1_transformDeployment = (
+  metamodel: DeploymentOwner,
+): V1_DeploymentOwner => {
   const ownership = new V1_DeploymentOwner();
-  ownership.id = element.id;
+  ownership.id = metamodel.id;
   return ownership;
 };
 
-export const V1_transformDeployment = (
-  metamodel: Ownership,
-): V1_DeploymentOwner => {
+export const V1_transformUserList = (element: UserList): V1_UserList => {
+  const ownership = new V1_UserList();
+  ownership.users = element.users;
+  return ownership;
+};
+
+export const V1_transformOwnership = (metamodel: Ownership): V1_Ownership => {
   if (metamodel instanceof DeploymentOwner) {
-    return transformDeployment(metamodel);
+    return V1_transformDeployment(metamodel);
+  } else if (metamodel instanceof UserList) {
+    return V1_transformUserList(metamodel);
   }
   throw new UnsupportedOperationError(
     "Can't transform function activator ownership",
     metamodel,
   );
+};
+
+export const V1_transformHostedServiceDeploymentConfiguration = (
+  element: HostedServiceDeploymentConfiguration,
+): V1_HostedServiceDeploymentConfiguration => {
+  const protocol = new V1_HostedServiceDeploymentConfiguration();
+  protocol.host = element.host;
+  protocol.path = element.path;
+  protocol.port = element.port;
+  return protocol;
 };

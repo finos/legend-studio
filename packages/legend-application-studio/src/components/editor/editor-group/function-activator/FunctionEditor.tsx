@@ -159,7 +159,7 @@ enum FUNCTION_PARAMETER_TYPE {
 
 export enum FUNCTION_ACTIVATE_TYPE {
   SNOWFLAKE_NATIVE_APP = 'Snowflake Native App',
-  REST_SERVICE = 'REST Service',
+  HOSTED_SERVICE = 'REST Service',
   SERVICE_JAR = 'Service JAR',
   REFINER = 'Refiner',
   BIG_QUERY_NATIVE_APP = 'BigQuery Native App',
@@ -742,18 +742,22 @@ const FunctionPromoteEditor = observer(
               }}
             />
           );
-        case FUNCTION_ACTIVATE_TYPE.REST_SERVICE:
+        case FUNCTION_ACTIVATE_TYPE.HOSTED_SERVICE:
           return (
             <BaseCard
-              key={FUNCTION_ACTIVATE_TYPE.REST_SERVICE}
-              cardMedia={<div className="coming-soon-label">Coming Soon</div>}
+              key={FUNCTION_ACTIVATE_TYPE.HOSTED_SERVICE}
+              cardMedia={
+                <RocketIcon className="function-promote-editor__type-icon" />
+              }
               cardName={type}
               cardContent="Create a HostedService that will be deployed to a server environment and executed with a pattern"
-              isDisable={true}
               isActive={
                 activatorPromoteState.activateType ===
-                FUNCTION_ACTIVATE_TYPE.REST_SERVICE
+                FUNCTION_ACTIVATE_TYPE.HOSTED_SERVICE
               }
+              onClick={() => {
+                activatorPromoteState.setAcitvateType(type);
+              }}
             />
           );
         case FUNCTION_ACTIVATE_TYPE.SERVICE_JAR:

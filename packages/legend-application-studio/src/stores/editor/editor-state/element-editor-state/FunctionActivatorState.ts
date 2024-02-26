@@ -25,8 +25,9 @@ import {
   extractPackagePathFromPath,
   SnowflakeAppDeploymentConfiguration,
   DeploymentOwner,
+  HostedService,
 } from '@finos/legend-graph';
-import { type GeneratorFn } from '@finos/legend-shared';
+import { uuid, type GeneratorFn } from '@finos/legend-shared';
 import { FUNCTION_ACTIVATE_TYPE } from '../../../../components/editor/editor-group/function-activator/FunctionEditor.js';
 
 const BASE_ACTIVATOR_NAME = 'NewActivator';
@@ -99,6 +100,21 @@ export class FunctionActivatorState {
         snowflakeApp.activationConfiguration =
           new SnowflakeAppDeploymentConfiguration();
         return snowflakeApp;
+      }
+      case FUNCTION_ACTIVATE_TYPE.HOSTED_SERVICE: {
+        const activatorName = this.activatorPath.includes('::')
+          ? extractElementNameFromPath(this.activatorPath)
+          : this.activatorPath;
+        const hostedService = new HostedService(activatorName);
+        hostedService.documentation = '';
+        hostedService.ownership = new DeploymentOwner('', hostedService);
+        hostedService.pattern = `/${uuid()}`;
+        hostedService.autoActivateUpdates = true;
+        hostedService.storeModel = false;
+        hostedService.generateLineage = false;
+        hostedService.function =
+          PackageableElementExplicitReference.create(functionElement);
+        return hostedService;
       }
       default:
         return undefined;

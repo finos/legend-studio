@@ -34,6 +34,7 @@ import {
   Service,
   INTERNAL__UnknownFunctionActivator,
   SnowflakeApp,
+  HostedService,
 } from '@finos/legend-graph';
 import {
   type Clazz,
@@ -61,6 +62,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudi
 import { TabManagerState } from '@finos/legend-lego/application';
 import { INTERNAL__UnknownFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/INTERNAL__UnknownFunctionActivatorEditorState.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from './editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
+import { HostedServiceFunctionActivatorEditorState } from './editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
@@ -130,6 +132,11 @@ export class EditorTabManagerState extends TabManagerState {
       return new PackageableDataEditorState(this.editorStore, element);
     } else if (element instanceof SnowflakeApp) {
       return new SnowflakeAppFunctionActivatorEdtiorState(
+        this.editorStore,
+        element,
+      );
+    } else if (element instanceof HostedService) {
+      return new HostedServiceFunctionActivatorEditorState(
         this.editorStore,
         element,
       );

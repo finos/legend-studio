@@ -1,18 +1,11 @@
-###Snowflake
-SnowflakeApp model::NewActivator
+###HostedService
+HostedService model::NewActivator
 {
-   applicationName : '';
+   pattern : '/pattern';
+   ownership : Deployment { identifier: '' };
    function : model::Firm_QueryFunction():TabularDataSet[1];
-   ownership : Deployment { identifier: 'user'};
-   activationConfiguration : model::SnowFlakeConnection;
-}
-
-SnowflakeApp model::NewActivatorWithParam
-{
-   applicationName : '';
-   function : model::Firm_QueryFunction(String[1]):TabularDataSet[1];
-   ownership : Deployment { identifier: 'user'};
-   activationConfiguration : model::SnowFlakeConnection;
+   documentation : '';
+   autoActivateUpdates : true;
 }
 
 
