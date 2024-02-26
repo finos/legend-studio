@@ -18,15 +18,22 @@ import { RedoIcon } from '@finos/legend-art';
 import { useEffect } from 'react';
 
 export const RedoButton: React.FC<{
-  isRedoUnderContext: boolean;
+  parent: React.RefObject<HTMLDivElement>;
   canRedo: boolean;
   redo: () => void;
 }> = (props) => {
-  const { isRedoUnderContext, canRedo, redo } = props;
+  const { parent, canRedo, redo } = props;
 
   useEffect(() => {
     const onCtrlY = (event: KeyboardEvent): void => {
-      if (event.ctrlKey && event.key === 'y' && isRedoUnderContext) {
+      const target = event.target as Node | null;
+      if (
+        event.ctrlKey &&
+        event.key === 'y' &&
+        target !== null &&
+        parent.current !== null &&
+        (parent.current.contains(target) || target.contains(parent.current))
+      ) {
         event.preventDefault();
         redo();
       }
@@ -35,7 +42,7 @@ export const RedoButton: React.FC<{
     return () => {
       document.removeEventListener('keydown', onCtrlY);
     };
-  }, [isRedoUnderContext, redo]);
+  }, [parent, redo]);
 
   return (
     <div className="undo-redo">

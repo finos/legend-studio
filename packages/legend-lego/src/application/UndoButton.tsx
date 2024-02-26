@@ -18,15 +18,22 @@ import { UndoIcon } from '@finos/legend-art';
 import { useEffect } from 'react';
 
 export const UndoButton: React.FC<{
-  isUndoUnderContext: boolean;
+  parent: React.RefObject<HTMLDivElement>;
   canUndo: boolean;
   undo: () => void;
 }> = (props) => {
-  const { isUndoUnderContext, canUndo, undo } = props;
+  const { parent, canUndo, undo } = props;
 
   useEffect(() => {
     const onCtrlZ = (event: KeyboardEvent): void => {
-      if (event.ctrlKey && event.key === 'z' && isUndoUnderContext) {
+      const target = event.target as Node | null;
+      if (
+        event.ctrlKey &&
+        event.key === 'z' &&
+        target !== null &&
+        parent.current !== null &&
+        (parent.current.contains(target) || target.contains(parent.current))
+      ) {
         event.preventDefault();
         undo();
       }
@@ -35,7 +42,7 @@ export const UndoButton: React.FC<{
     return () => {
       document.removeEventListener('keydown', onCtrlZ);
     };
-  }, [isUndoUnderContext, undo]);
+  }, [parent, undo]);
 
   return (
     <div className="undo-redo">

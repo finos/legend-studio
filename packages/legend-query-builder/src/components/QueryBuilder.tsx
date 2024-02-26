@@ -397,22 +397,6 @@ export const QueryBuilder = observer(
       }
     }, [queryBuilderState, queryBuilderState.hashCode]);
 
-    // make undo/redo is contextual e.g. if there is a new modal open e.g. parameter modal, it won't close this modal and modify the underlying query
-    useEffect(() => {
-      const updateUndoRedoUnderContext = (): void => {
-        queryBuilderState.setIsUndoRedoUnderContext(
-          queryBuilderRef.current !== null &&
-            document.activeElement !== null &&
-            (queryBuilderRef.current === document.activeElement ||
-              document.activeElement?.contains(queryBuilderRef.current)),
-        );
-      };
-      document.addEventListener('focus', updateUndoRedoUnderContext, true);
-      return () => {
-        document.removeEventListener('focus', updateUndoRedoUnderContext, true);
-      };
-    }, [queryBuilderState]);
-
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
@@ -456,16 +440,12 @@ export const QueryBuilder = observer(
               <div className="query-builder__header__actions">
                 <div className="query-builder__header__actions__undo-redo">
                   <UndoButton
-                    isUndoUnderContext={
-                      queryBuilderState.isUndoRedoUnderContext
-                    }
+                    parent={queryBuilderRef}
                     canUndo={queryBuilderState.changeHistoryState.canUndo}
                     undo={undo}
                   />
                   <RedoButton
-                    isRedoUnderContext={
-                      queryBuilderState.isUndoRedoUnderContext
-                    }
+                    parent={queryBuilderRef}
                     canRedo={queryBuilderState.changeHistoryState.canRedo}
                     redo={redo}
                   />
