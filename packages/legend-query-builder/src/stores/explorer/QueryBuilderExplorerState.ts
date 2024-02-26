@@ -72,6 +72,7 @@ import { QueryBuilderPropertySearchState } from './QueryBuilderPropertySearchSta
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { propertyExpression_setFunc } from '../shared/ValueSpecificationModifierHelper.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
+import { createRef } from 'react';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -97,6 +98,7 @@ export interface QueryBuilderExplorerTreeDragSource {
 export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;
   isOpen?: boolean | undefined;
+  isHighlighting?: boolean | undefined;
   id: string;
   label: string;
   dndText: string;
@@ -104,6 +106,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   isPartOfDerivedPropertyBranch: boolean;
   type: Type;
   mappingData: QueryBuilderExplorerTreeNodeMappingData;
+  ref: React.RefObject<HTMLDivElement>;
 
   constructor(
     id: string,
@@ -114,7 +117,9 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     mappingData: QueryBuilderExplorerTreeNodeMappingData,
   ) {
     makeObservable(this, {
+      isHighlighting: observable,
       isSelected: observable,
+      setIsHighlighting: action,
       setIsSelected: action,
     });
 
@@ -124,10 +129,15 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
     this.type = type;
     this.mappingData = mappingData;
+    this.ref = createRef();
   }
 
   setIsSelected(val: boolean | undefined): void {
     this.isSelected = val;
+  }
+
+  setIsHighlighting(val: boolean | undefined): void {
+    this.isHighlighting = val;
   }
 }
 
@@ -663,6 +673,7 @@ export class QueryBuilderExplorerState {
       setHumanizePropertyName: action,
       setShowUnmappedProperties: action,
       setHighlightUsedProperties: action,
+      highlightTreeNode: action,
       analyzeMappingModelCoverage: flow,
       previewData: flow,
     });
@@ -715,6 +726,27 @@ export class QueryBuilderExplorerState {
           )
         : undefined,
     );
+  }
+
+  highlightTreeNode(key: string): void {
+    const nodeToHighlight = this.treeData?.nodes?.get(key);
+    if (nodeToHighlight instanceof QueryBuilderExplorerTreePropertyNodeData) {
+      let nodeToOpen: QueryBuilderExplorerTreeNodeData | null =
+        this.treeData?.nodes?.get(nodeToHighlight.parentId) ?? null;
+      while (nodeToOpen !== null) {
+        if (!nodeToOpen.isOpen) {
+          nodeToOpen.isOpen = true;
+        }
+        if (nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData) {
+          nodeToOpen = this.treeData?.nodes?.get(nodeToOpen.parentId) ?? null;
+        } else {
+          nodeToOpen = null;
+        }
+      }
+      this.refreshTree();
+      nodeToHighlight?.setIsHighlighting(true);
+      nodeToHighlight?.ref?.current?.scrollIntoView();
+    }
   }
 
   *analyzeMappingModelCoverage(): GeneratorFn<void> {
