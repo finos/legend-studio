@@ -77,7 +77,8 @@ import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
 import { QueryChat } from './QueryChat.js';
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { RedoButton, UndoButton } from '@finos/legend-lego/application';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -373,17 +374,19 @@ export const QueryBuilder = observer(
       return null;
     };
 
-    const undo = useCallback((): void => {
+    const undo = (): void => {
       queryBuilderState.changeHistoryState.undo();
-    }, [queryBuilderState.changeHistoryState]);
+    };
 
-    const redo = useCallback((): void => {
-      queryBuilderState.changeHistoryState.redo();
-    }, [queryBuilderState.changeHistoryState]);
+    const redo = (): void => {
+      if (queryBuilderState.isUndoRedoUnderContext) {
+        queryBuilderState.changeHistoryState.redo();
+      }
+    };
 
     useEffect(() => {
       // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
-      // we use a empty RawLambda with an empty class and this useEffect is called earlier than initializeWithQuery()
+      // we use an empty RawLambda with an empty class and this useEffect is called earlier than initializeWithQuery()
       if (
         (queryBuilderState.isQuerySupported && queryBuilderState.class) ||
         !queryBuilderState.isQuerySupported
@@ -394,42 +397,21 @@ export const QueryBuilder = observer(
       }
     }, [queryBuilderState, queryBuilderState.hashCode]);
 
-    // bind ctl + z to undo, ctl + y to redo
+    // make undo/redo is contextual e.g. if there is a new modal open e.g. parameter modal, it won't close this modal and modify the underlying query
     useEffect(() => {
-      const onCtrlZ = (event: KeyboardEvent): void => {
-        if (
-          event.ctrlKey &&
-          event.key === 'z' &&
-          // make undo/redo is contextual e.g. if there is a new modal open e.g. parameter modal, it won't close this modal and modify underlying query
-          queryBuilderRef.current &&
-          (queryBuilderRef.current === document.activeElement ||
-            document.activeElement?.contains(queryBuilderRef.current))
-        ) {
-          event.preventDefault();
-          undo();
-        }
+      const updateUndoRedoUnderContext = (): void => {
+        queryBuilderState.setIsUndoRedoUnderContext(
+          queryBuilderRef.current !== null &&
+            document.activeElement !== null &&
+            (queryBuilderRef.current === document.activeElement ||
+              document.activeElement?.contains(queryBuilderRef.current)),
+        );
       };
-      const onCtrlY = (event: KeyboardEvent): void => {
-        if (
-          event.ctrlKey &&
-          event.key === 'y' &&
-          // make undo/redo is contextual e.g. if there is a new modal open e.g. parameter modal, it won't close this modal and modify underlying query
-          queryBuilderRef.current &&
-          (queryBuilderRef.current === document.activeElement ||
-            document.activeElement?.contains(queryBuilderRef.current))
-        ) {
-          event.preventDefault();
-          redo();
-        }
-      };
-      document.addEventListener('keydown', onCtrlZ);
-      document.addEventListener('keydown', onCtrlY);
-
+      document.addEventListener('focus', updateUndoRedoUnderContext, true);
       return () => {
-        document.removeEventListener('keydown', onCtrlZ);
-        document.addEventListener('keydown', onCtrlY);
+        document.removeEventListener('focus', updateUndoRedoUnderContext, true);
       };
-    }, [redo, undo]);
+    }, [queryBuilderState]);
 
     return (
       <div
@@ -473,30 +455,20 @@ export const QueryBuilder = observer(
               </div>
               <div className="query-builder__header__actions">
                 <div className="query-builder__header__actions__undo-redo">
-                  <button
-                    className="query-builder__header__actions__undo-redo__button"
-                    onClick={undo}
-                    tabIndex={-1}
-                    title={'Undo(ctrl + z)'}
-                    disabled={!queryBuilderState.changeHistoryState.canUndo}
-                  >
-                    <UndoIcon />
-                    <div className="query-builder__header__actions__undo-redo__button__label">
-                      Undo
-                    </div>
-                  </button>
-                  <button
-                    className="query-builder__header__actions__undo-redo__button"
-                    onClick={redo}
-                    tabIndex={-1}
-                    title={'Redo(ctrl + y)'}
-                    disabled={!queryBuilderState.changeHistoryState.canRedo}
-                  >
-                    <RedoIcon />
-                    <div className="query-builder__header__actions__undo-redo__button__label">
-                      Redo
-                    </div>
-                  </button>
+                  <UndoButton
+                    isUndoUnderContext={
+                      queryBuilderState.isUndoRedoUnderContext
+                    }
+                    canUndo={queryBuilderState.changeHistoryState.canUndo}
+                    undo={undo}
+                  />
+                  <RedoButton
+                    isRedoUnderContext={
+                      queryBuilderState.isUndoRedoUnderContext
+                    }
+                    canRedo={queryBuilderState.changeHistoryState.canRedo}
+                    redo={redo}
+                  />
                 </div>
                 <DropdownMenu
                   className="query-builder__header__advanced-dropdown"

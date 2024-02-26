@@ -14,16 +14,27 @@
  * limitations under the License.
  */
 
-@forward 'application/fuzzy-search';
-@forward 'application/tab-manager';
-@forward 'application/activity-bar';
-@forward 'application/undo-redo-button';
-@forward 'application/documentation-link';
+@use 'mixins' as *;
 
-// Reset (override library styles)
-@forward 'reset/monaco-editor';
-@forward 'code-editor';
+.undo-redo {
+  @include flexVCenter;
 
-@forward 'data-grid';
+  &__button {
+    color: var(--color-light-blue-50);
+    margin-left: 1rem;
+    margin-right: 1rem;
 
-@forward 'graph-editor/packageable-element-option-label';
+    svg {
+      font-size: 1.1rem;
+    }
+
+    &__label {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+  }
+
+  &__button[disabled] {
+    color: var(--color-dark-grey-500);
+  }
+}
