@@ -211,3 +211,61 @@ describe(integrationTest('Query builder result state'), () => {
     },
   );
 });
+
+describe(integrationTest('Query builder export button'), () => {
+  test('Check that "View Query Usage..." button is disabled if no plugins with extraQueryUsageConfigurations are present', async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+
+    await act(async () => {
+      queryBuilderState.changeClass(_modelClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    const lambda = create_RawLambda(
+      TEST_DATA__simpleProjectionQuery.parameters,
+      TEST_DATA__simpleProjectionQuery.body,
+    );
+    await waitFor(() =>
+      getByText(
+        queryBuilderSetup,
+        extractElementNameFromPath('execution::RelationalMapping'),
+      ),
+    );
+    await waitFor(() =>
+      getByText(
+        queryBuilderSetup,
+        extractElementNameFromPath('execution::Runtime'),
+      ),
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(lambda);
+    });
+
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
+    );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+
+    const exportButton = await waitFor(() => renderResult.getByText('Export'));
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+    const viewQueryUsageButton = await waitFor(() =>
+      renderResult.getByText('View Query Usage...').closest('button'),
+    );
+    expect(viewQueryUsageButton).not.toBeNull();
+    expect(viewQueryUsageButton!.getAttribute('disabled')).toBeDefined();
+  });
+});
