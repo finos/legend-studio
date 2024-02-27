@@ -1643,7 +1643,10 @@ export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
               {
                 data: {
                   _type: 'reference',
-                  dataElement: 'data::RelationalData',
+                  dataElement: {
+                    type: 'DATA',
+                    path: 'data::RelationalData',
+                  },
                 },
                 id: 'connection_1',
               },

@@ -21,6 +21,7 @@ import {
   usingModelSchema,
   customListWithSchema,
   optionalCustomList,
+  isString,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -54,6 +55,9 @@ import {
   V1_taggedValueModelSchema,
 } from './V1_DomainSerializationHelper.js';
 import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
+import { V1_packageableElementPointerModelSchema } from './V1_CoreSerializationHelper.js';
+import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
+import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 
 export const V1_DATA_ELEMENT_PROTOCOL_TYPE = 'dataElement';
 
@@ -136,11 +140,27 @@ export const V1_externalFormatDataModelSchema = createModelSchema(
   },
 );
 
+const V1_serializeDataElementReferenceValue = (
+  json: PlainObject<V1_PackageableElementPointer> | string,
+): V1_PackageableElementPointer => {
+  // For backward compatible: see https://github.com/finos/legend-engine/pull/2621
+  if (isString(json)) {
+    return new V1_PackageableElementPointer(
+      PackageableElementPointerType.DATA,
+      json,
+    );
+  }
+  return deserialize(V1_packageableElementPointerModelSchema, json);
+};
+
 export const V1_dataElementReferenceModelSchema = createModelSchema(
   V1_DataElementReference,
   {
     _type: usingConstantValueSchema(V1_EmbeddedDataType.DATA_ELEMENT_REFERENCE),
-    dataElement: primitive(),
+    dataElement: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) => V1_serializeDataElementReferenceValue(val),
+    ),
   },
 );
 
