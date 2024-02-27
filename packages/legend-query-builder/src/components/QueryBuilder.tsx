@@ -42,6 +42,7 @@ import {
   ModalFooterButton,
   CalendarClockIcon,
   ChatIcon,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -376,6 +377,9 @@ export const QueryBuilder = observer(
           elementId={QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
         />
         <div className="query-builder__body">
+          <PanelLoadingIndicator
+            isLoading={queryBuilderState.resultState.exportState.isInProgress}
+          />
           <div className="query-builder__content">
             <div className="query-builder__header">
               <div className="query-builder__header__statuses">
