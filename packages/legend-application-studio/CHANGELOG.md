@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.15.6
+
+### Patch Changes
+
+- [#2946](https://github.com/finos/legend-studio/pull/2946) [`880066812`](https://github.com/finos/legend-studio/commit/88006681272341159dc952887317aebc834af28b) ([@janeenyamak1](https://github.com/janeenyamak1)) - Enable and support hosted service
+
 ## 28.15.5
 
 ### Patch Changes
