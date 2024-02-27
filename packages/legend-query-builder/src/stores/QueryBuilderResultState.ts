@@ -85,6 +85,7 @@ type QueryBuilderDataGridConfig = {
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
   readonly executionPlanState: ExecutionPlanState;
+  readonly exportState = ActionState.create();
 
   previewLimit = DEFAULT_LIMIT;
   pressedRunQuery = ActionState.create();
@@ -228,6 +229,7 @@ export class QueryBuilderResultState {
 
   *exportData(format: string): GeneratorFn<void> {
     try {
+      this.exportState.inProgress();
       this.queryBuilderState.applicationStore.notificationService.notifySuccess(
         `Export ${format} will run in background`,
       );
@@ -275,6 +277,7 @@ export class QueryBuilderResultState {
             this.queryBuilderState.applicationStore.telemetryService,
             reportWithState,
           );
+          this.exportState.pass();
         })
         .catch((error) => {
           assertErrorThrown(error);
@@ -284,6 +287,7 @@ export class QueryBuilderResultState {
           );
         });
     } catch (error) {
+      this.exportState.fail();
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
@@ -292,6 +296,7 @@ export class QueryBuilderResultState {
       this.queryBuilderState.applicationStore.notificationService.notifyError(
         error,
       );
+      this.exportState.complete();
     }
   }
 

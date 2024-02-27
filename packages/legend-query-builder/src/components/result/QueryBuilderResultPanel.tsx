@@ -372,6 +372,11 @@ export const QueryBuilderResultPanel = observer(
             )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
+            {resultState.exportState.isInProgress && (
+              <div className="panel__header__title__label__status">
+                Exporting...
+              </div>
+            )}
             {allowSettingLocalMode && (
               <div className="query-builder__result__advanced__mode">
                 <div className="query-builder__result__advanced__mode__label">
