@@ -69,6 +69,7 @@ import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../../__lib__/QueryBuilderDocum
 import { QueryBuilderTDSSimpleGridResult } from './tds/QueryBuilderTDSSimpleGridResult.js';
 import { getExecutedSqlFromExecutionResult } from './tds/QueryBuilderTDSResultShared.js';
 import { QueryBuilderTDSGridResult } from './tds/QueryBuilderTDSGridResult.js';
+import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 const QueryBuilderResultValues = observer(
   (props: {
@@ -182,6 +183,16 @@ export const QueryBuilderResultPanel = observer(
       isQueryValid &&
       queryBuilderState.fetchStructureState.implementation instanceof
         QueryBuilderTDSState;
+
+    const isExtraQueryUsageOptionsConfigured =
+      applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as QueryBuilder_LegendApplicationPlugin_Extension
+            ).getExtraQueryUsageConfigurations?.() ?? [],
+        ).length > 0;
 
     const runQuery = (): void => {
       resultState.setSelectedCells([]);
@@ -511,7 +522,10 @@ export const QueryBuilderResultPanel = observer(
                     onClick={(): void =>
                       resultState.setIsQueryUsageViewerOpened(true)
                     }
-                    disabled={queryBuilderState.changeDetectionState.hasChanged}
+                    disabled={
+                      queryBuilderState.changeDetectionState.hasChanged ||
+                      !isExtraQueryUsageOptionsConfigured
+                    }
                   >
                     View Query Usage...
                   </MenuContentItem>
