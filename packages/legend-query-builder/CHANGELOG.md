@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.6
+
+### Patch Changes
+
+- [#2966](https://github.com/finos/legend-studio/pull/2966) [`261c7e6d8`](https://github.com/finos/legend-studio/commit/261c7e6d83ac725afac854cbc5391a097acc8948) ([@travisstebbins](https://github.com/travisstebbins)) - Disable "View Query Usage..." button if extra query usage not configured
+
+- [#2962](https://github.com/finos/legend-studio/pull/2962) [`506a09cda`](https://github.com/finos/legend-studio/commit/506a09cdab4e58f863e2a3808e03fd1eb7bd2813) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - add loading indicator for export csv
+
 ## 4.14.5
 
 ## 4.14.4
