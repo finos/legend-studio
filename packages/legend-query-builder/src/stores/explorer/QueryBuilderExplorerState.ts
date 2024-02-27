@@ -745,7 +745,11 @@ export class QueryBuilderExplorerState {
       }
       this.refreshTree();
       nodeToHighlight?.setIsHighlighting(true);
-      nodeToHighlight?.ref?.current?.scrollIntoView();
+      // scrollIntoView must be called in a setTimeout because it must happen after
+      // the tree nodes are recursively opened and the tree is refreshed.
+      setTimeout(() => {
+        nodeToHighlight?.ref?.current?.scrollIntoView();
+      }, 0);
     }
   }
 
