@@ -426,6 +426,111 @@ test(
 );
 
 test(
+  integrationTest(
+    'Query builder allows editing column name upon clicking expression badge',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    const treeData = guaranteeNonNullable(
+      queryBuilderState.explorerState.treeData,
+    );
+    const rootNode = guaranteeType(
+      treeData.nodes.get(treeData.rootIds[0] as string),
+      QueryBuilderExplorerTreeRootNodeData,
+    );
+
+    expect(rootNode.mappingData.mapped).toBe(true);
+
+    // simpleProjection
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
+    });
+
+    // check fetch-structure
+    const projectionCols = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    const LAST_NAME_ALIAS = 'Last Name';
+    expect(
+      await waitFor(() => queryByText(projectionCols, LAST_NAME_ALIAS)),
+    ).not.toBeNull();
+    let tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    let lastNameCol = guaranteeNonNullable(
+      tdsState.projectionColumns.find((e) => e.columnName === LAST_NAME_ALIAS),
+    );
+    let lastNameProperty = guaranteeType(
+      lastNameCol,
+      QueryBuilderSimpleProjectionColumnState,
+    ).propertyExpressionState.propertyExpression.func.value;
+    expect(lastNameProperty).toBe(getClassProperty(_personClass, 'lastName'));
+
+    // edit column name
+    const lastNameColumnName = guaranteeNonNullable(
+      await waitFor(() => queryByText(projectionCols, LAST_NAME_ALIAS)),
+    );
+    fireEvent.click(lastNameColumnName);
+    const lastNameColumnNameInput = guaranteeNonNullable(
+      await waitFor(() =>
+        projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
+      ),
+    );
+    fireEvent.change(lastNameColumnNameInput, {
+      target: { value: 'Edited Last Name' },
+    });
+    fireEvent.blur(lastNameColumnNameInput);
+
+    // check fetch-structure
+    expect(
+      await waitFor(() => queryByText(projectionCols, 'Edited Last Name')),
+    ).not.toBeNull();
+    tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    lastNameCol = guaranteeNonNullable(
+      tdsState.projectionColumns.find(
+        (e) => e.columnName === 'Edited Last Name',
+      ),
+    );
+    lastNameProperty = guaranteeType(
+      lastNameCol,
+      QueryBuilderSimpleProjectionColumnState,
+    ).propertyExpressionState.propertyExpression.func.value;
+    expect(lastNameProperty).toBe(getClassProperty(_personClass, 'lastName'));
+  },
+);
+
+test(
   integrationTest('Query builder loads simple projection query when we DnD it'),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
