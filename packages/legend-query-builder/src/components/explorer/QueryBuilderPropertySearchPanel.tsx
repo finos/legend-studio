@@ -182,6 +182,12 @@ const QueryBuilderTreeNodeViewer = observer(
         node instanceof QueryBuilderExplorerTreePropertyNodeData &&
         node.parentId === pn.id,
     );
+    const propertyName =
+      parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+        ? prettyPropertyNameForSubType(node.id)
+        : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+        ? prettyPropertyNameForSubTypeClass(node.id)
+        : prettyPropertyNameFromNodeId(node.id);
 
     return (
       <div>
@@ -205,22 +211,12 @@ const QueryBuilderTreeNodeViewer = observer(
             </div>
           </div>
           <div className="tree-view__node__label query-builder-property-search-panel__node__label query-builder-property-search-panel__node__label--with-action">
-            {parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
-              ? prettyPropertyNameForSubType(node.id)
-              : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-              ? prettyPropertyNameForSubTypeClass(node.id)
-              : prettyPropertyNameFromNodeId(node.id)}
+            {propertyName}
           </div>
           <div className="query-builder-property-search-panel__node__actions">
             {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
               <QueryBuilderPropertyInfoTooltip
-                title={
-                  parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                    ? prettyPropertyNameForSubType(node.id)
-                    : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                    ? prettyPropertyNameForSubTypeClass(node.id)
-                    : prettyPropertyNameFromNodeId(node.id)
-                }
+                title={propertyName}
                 property={node.property}
                 path={node.id}
                 isMapped={node.mappingData.mapped}
