@@ -737,11 +737,10 @@ export class QueryBuilderExplorerState {
         if (!nodeToOpen.isOpen) {
           nodeToOpen.isOpen = true;
         }
-        if (nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData) {
-          nodeToOpen = this.treeData?.nodes?.get(nodeToOpen.parentId) ?? null;
-        } else {
-          nodeToOpen = null;
-        }
+        nodeToOpen =
+          nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData
+            ? this.treeData?.nodes?.get(nodeToOpen.parentId) ?? null
+            : null;
       }
       this.refreshTree();
       nodeToHighlight?.setIsHighlighting(true);
