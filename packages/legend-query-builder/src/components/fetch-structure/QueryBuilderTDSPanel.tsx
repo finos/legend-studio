@@ -365,7 +365,6 @@ const QueryBuilderProjectionColumnEditor = observer(
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const [isEditingColumnName, setIsEditingColumnName] = useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
@@ -382,6 +381,13 @@ const QueryBuilderProjectionColumnEditor = observer(
     ) => projectionColumnState.setColumnName(event.target.value);
     const isDuplicatedColumnName =
       projectionColumnState.tdsState.isDuplicateColumn(projectionColumnState);
+    const [isEditingColumnName, setIsEditingColumnName] = useState(false);
+    const columnNameInputRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+      if (isEditingColumnName) {
+        columnNameInputRef.current?.focus();
+      }
+    }, [isEditingColumnName, columnNameInputRef]);
 
     // aggregation
     const aggregateColumnState = tdsState.aggregationState.columns.find(
@@ -768,6 +774,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                     error={
                       isDuplicatedColumnName ? 'Duplicated column' : undefined
                     }
+                    ref={columnNameInputRef}
                   />
                 </div>
               ) : (
@@ -787,16 +794,6 @@ const QueryBuilderProjectionColumnEditor = observer(
                     spellCheck={false}
                     value={projectionColumnState.columnName}
                     onChange={changeColumnName}
-                    onKeyDown={(
-                      event: React.KeyboardEvent<HTMLInputElement>,
-                    ) => {
-                      if (event.key === 'Enter') {
-                        setIsEditingColumnName(false);
-                      }
-                    }}
-                    onBlur={() => {
-                      setIsEditingColumnName(false);
-                    }}
                     error={
                       isDuplicatedColumnName ? 'Duplicated column' : undefined
                     }

@@ -20,14 +20,19 @@ import {
   PencilIcon,
   TimesCircleIcon,
 } from '../icon/Icon.js';
+import { forwardRef } from 'react';
 
-export const InputWithInlineValidation: React.FC<
+type InputWithInlineValidationProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
     error?: string | undefined;
     warning?: string | undefined;
     showEditableIcon?: boolean | undefined;
-  }
-> = (props) => {
+  };
+
+export const InputWithInlineValidation = forwardRef<
+  HTMLInputElement,
+  InputWithInlineValidationProps
+>(function InputWithInlineValidation(props, ref) {
   const { error, warning, showEditableIcon, className, ...inputProps } = props;
 
   const showCautionMessage = Boolean(warning) && !error;
@@ -40,6 +45,7 @@ export const InputWithInlineValidation: React.FC<
           'input--with-validation--error': Boolean(error),
         })}
         {...inputProps}
+        ref={ref}
       />
       {showEditableIcon && !error && (
         <div className="input--with-validation__editable" title={error}>
@@ -58,4 +64,4 @@ export const InputWithInlineValidation: React.FC<
       )}
     </div>
   );
-};
+});
