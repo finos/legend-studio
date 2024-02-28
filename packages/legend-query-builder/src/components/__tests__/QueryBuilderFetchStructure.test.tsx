@@ -138,14 +138,10 @@ test(
     const FIRST_NAME_ALIAS = 'Edited First Name';
     const LAST_NAME_ALIAS = 'Last Name';
     expect(
-      await waitFor(() =>
-        projectionCols.querySelector(`input[value="${FIRST_NAME_ALIAS}"]`),
-      ),
+      await waitFor(() => queryByText(projectionCols, FIRST_NAME_ALIAS)),
     ).not.toBeNull();
     expect(
-      await waitFor(() =>
-        projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
-      ),
+      await waitFor(() => queryByText(projectionCols, LAST_NAME_ALIAS)),
     ).not.toBeNull();
     let tdsState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
@@ -189,9 +185,7 @@ test(
     );
     expect(
       await waitFor(() =>
-        projectionWithChainedPropertyCols.querySelector(
-          `input[value="${CHAINED_PROPERTY_ALIAS}"]`,
-        ),
+        queryByText(projectionWithChainedPropertyCols, CHAINED_PROPERTY_ALIAS),
       ),
     ).not.toBeNull();
     expect(tdsState.projectionColumns.length).toBe(1);
@@ -235,21 +229,13 @@ test(
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
     expect(
-      await waitFor(() =>
-        projectionCols.querySelector(`input[value="${FIRST_NAME_ALIAS}"]`),
-      ),
+      await waitFor(() => queryByText(projectionCols, FIRST_NAME_ALIAS)),
     ).not.toBeNull();
     expect(
-      await waitFor(() =>
-        projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
-      ),
+      await waitFor(() => queryByText(projectionCols, LAST_NAME_ALIAS)),
     ).not.toBeNull();
     expect(
-      await waitFor(() =>
-        projectionCols.querySelector(
-          `input[value="${CHAINED_PROPERTY_ALIAS}"]`,
-        ),
-      ),
+      await waitFor(() => queryByText(projectionCols, CHAINED_PROPERTY_ALIAS)),
     ).not.toBeNull();
     expect(tdsState.projectionColumns.length).toBe(3);
     const resultSetModifierState = tdsState.resultSetModifierState;
@@ -423,11 +409,8 @@ test(
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
     expect(
-      await waitFor(() =>
-        projectionCols.querySelector(`input[value="Full Name With Title"]`),
-      ),
+      await waitFor(() => queryByText(projectionCols, 'Full Name With Title')),
     ).not.toBeNull();
-    await waitFor(() => getByText(projectionCols, 'Name With Title'));
     expect(tdsState.projectionColumns.length).toBe(1);
     fireEvent.click(
       getByTitle(projectionCols, 'Set Derived Property Argument(s)...'),
@@ -511,15 +494,20 @@ test(
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
     const lastNameColumnName = guaranteeNonNullable(
+      await waitFor(() => queryByText(projectionCols, LAST_NAME_ALIAS)),
+    );
+    fireEvent.click(lastNameColumnName);
+    const lastNameColumnNameInput = guaranteeNonNullable(
       await waitFor(() =>
         projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
       ),
     );
-    fireEvent.change(lastNameColumnName, {
+    fireEvent.change(lastNameColumnNameInput, {
       target: { value: 'edited last name' },
     });
+    fireEvent.blur(lastNameColumnNameInput);
     const propertyExpressionBadgeDropZone = await waitFor(() =>
-      getByText(projectionPanel, 'Last Name'),
+      getByText(projectionPanel, 'edited last name'),
     );
     const firstNameNode = await waitFor(() =>
       getByText(explorerPanel, 'First Name'),
