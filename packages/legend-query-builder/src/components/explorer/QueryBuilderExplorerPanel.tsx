@@ -459,6 +459,13 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
     ) : (
       <div />
     );
+    const propertyName = explorerState.humanizePropertyName
+      ? node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+        ? TYPE_CAST_TOKEN + prettyCONSTName(node.label)
+        : prettyCONSTName(node.label)
+      : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+      ? TYPE_CAST_TOKEN + node.label
+      : node.label;
     const selectNode = (): void => onNodeSelect?.(node);
     const openNode = (): void => {
       if (!node.isOpen) {
@@ -606,13 +613,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     },
                   )}
                 >
-                  {explorerState.humanizePropertyName
-                    ? node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                      ? TYPE_CAST_TOKEN + prettyCONSTName(node.label)
-                      : prettyCONSTName(node.label)
-                    : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                    ? TYPE_CAST_TOKEN + node.label
-                    : node.label}
+                  {propertyName}
                 </div>
                 {isDerivedProperty && (
                   <div
@@ -647,17 +648,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 )}
                 {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
                   <QueryBuilderPropertyInfoTooltip
-                    title={
-                      explorerState.humanizePropertyName
-                        ? node instanceof
-                          QueryBuilderExplorerTreeSubTypeNodeData
-                          ? TYPE_CAST_TOKEN + prettyCONSTName(node.label)
-                          : prettyCONSTName(node.label)
-                        : node instanceof
-                          QueryBuilderExplorerTreeSubTypeNodeData
-                        ? TYPE_CAST_TOKEN + node.label
-                        : node.label
-                    }
+                    title={propertyName}
                     property={node.property}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
