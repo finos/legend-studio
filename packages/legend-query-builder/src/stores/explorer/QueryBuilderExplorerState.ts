@@ -106,7 +106,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   isPartOfDerivedPropertyBranch: boolean;
   type: Type;
   mappingData: QueryBuilderExplorerTreeNodeMappingData;
-  ref: React.RefObject<HTMLDivElement>;
+  elementRef: React.RefObject<HTMLDivElement>;
 
   constructor(
     id: string,
@@ -129,7 +129,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
     this.type = type;
     this.mappingData = mappingData;
-    this.ref = createRef();
+    this.elementRef = createRef();
   }
 
   setIsSelected(val: boolean | undefined): void {
@@ -747,7 +747,7 @@ export class QueryBuilderExplorerState {
       // scrollIntoView must be called in a setTimeout because it must happen after
       // the tree nodes are recursively opened and the tree is refreshed.
       setTimeout(() => {
-        nodeToHighlight?.ref?.current?.scrollIntoView();
+        nodeToHighlight?.elementRef?.current?.scrollIntoView();
       }, 0);
     }
   }
