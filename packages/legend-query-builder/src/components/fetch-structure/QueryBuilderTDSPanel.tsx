@@ -788,7 +788,7 @@ const QueryBuilderProjectionColumnEditor = observer(
             {projectionColumnState instanceof
               QueryBuilderDerivationProjectionColumnState && (
               <>
-                <div className="query-builder__projection__column__name">
+                <div className="query-builder__projection__column__name query-builder__projection__column__name__derivation">
                   <InputWithInlineValidation
                     className="query-builder__projection__column__name__input input-group__input"
                     spellCheck={false}

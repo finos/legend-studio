@@ -171,6 +171,12 @@
     height: 3.4rem;
     flex: 1;
 
+    &__derivation {
+      flex: 2;
+      min-width: 5rem;
+      max-width: 20rem;
+    }
+
     &__input {
       padding: 0.5rem;
       width: 100%;
