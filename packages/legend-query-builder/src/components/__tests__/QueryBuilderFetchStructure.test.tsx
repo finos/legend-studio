@@ -42,6 +42,7 @@ import {
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
   TEST_DATA__simpleProjectWithSubtype,
   TEST_DATA__simpleGraphFetchWithSubtype,
+  TEST_DATA__projectionWithDerivation,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -69,7 +70,10 @@ import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import {
@@ -79,6 +83,7 @@ import {
 import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
 test(
   integrationTest(
@@ -527,6 +532,110 @@ test(
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func.value;
     expect(lastNameProperty).toBe(getClassProperty(_personClass, 'lastName'));
+  },
+);
+
+test(
+  integrationTest('Query builder shows column name input for derived columns'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    const treeData = guaranteeNonNullable(
+      queryBuilderState.explorerState.treeData,
+    );
+    const rootNode = guaranteeType(
+      treeData.nodes.get(treeData.rootIds[0] as string),
+      QueryBuilderExplorerTreeRootNodeData,
+    );
+
+    expect(rootNode.mappingData.mapped).toBe(true);
+
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    // projectionWithDerivation
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__projectionWithDerivation.parameters,
+          TEST_DATA__projectionWithDerivation.body,
+        ),
+      );
+    });
+
+    // check fetch-structure
+    const projectionCols = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    const FIRST_NAME_WITH_AGE_ALIAS = 'First Name with Age';
+    expect(
+      await waitFor(() =>
+        projectionCols.querySelector(
+          `input[value="${FIRST_NAME_WITH_AGE_ALIAS}"]`,
+        ),
+      ),
+    ).not.toBeNull();
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    const firstNameWithAgeCol = guaranteeNonNullable(
+      tdsState.projectionColumns.find(
+        (e) => e.columnName === FIRST_NAME_WITH_AGE_ALIAS,
+      ),
+    );
+    guaranteeType(
+      firstNameWithAgeCol,
+      QueryBuilderDerivationProjectionColumnState,
+    );
+
+    // edit column name
+    const firstNameWithAgeColumnNameInput = guaranteeNonNullable(
+      await waitFor(() =>
+        projectionCols.querySelector(
+          `input[value="${FIRST_NAME_WITH_AGE_ALIAS}"]`,
+        ),
+      ),
+    );
+    fireEvent.change(firstNameWithAgeColumnNameInput, {
+      target: { value: 'Edited First Name with Age' },
+    });
+
+    // check fetch-structure
+    expect(
+      await waitFor(() =>
+        projectionCols.querySelector(
+          'input[value="Edited First Name with Age"]',
+        ),
+      ),
+    ).not.toBeNull();
+    guaranteeNonNullable(
+      tdsState.projectionColumns.find(
+        (e) => e.columnName === 'Edited First Name with Age',
+      ),
+    );
   },
 );
 
