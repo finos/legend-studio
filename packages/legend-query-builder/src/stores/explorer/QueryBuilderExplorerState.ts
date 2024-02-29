@@ -729,25 +729,25 @@ export class QueryBuilderExplorerState {
   }
 
   highlightTreeNode(key: string): void {
-    const nodeToHighlight = this.treeData?.nodes?.get(key);
+    const nodeToHighlight = this.treeData?.nodes.get(key);
     if (nodeToHighlight instanceof QueryBuilderExplorerTreePropertyNodeData) {
       let nodeToOpen: QueryBuilderExplorerTreeNodeData | null =
-        this.treeData?.nodes?.get(nodeToHighlight.parentId) ?? null;
+        this.treeData?.nodes.get(nodeToHighlight.parentId) ?? null;
       while (nodeToOpen !== null) {
         if (!nodeToOpen.isOpen) {
           nodeToOpen.isOpen = true;
         }
         nodeToOpen =
           nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData
-            ? this.treeData?.nodes?.get(nodeToOpen.parentId) ?? null
+            ? this.treeData?.nodes.get(nodeToOpen.parentId) ?? null
             : null;
       }
       this.refreshTree();
-      nodeToHighlight?.setIsHighlighting(true);
+      nodeToHighlight.setIsHighlighting(true);
       // scrollIntoView must be called in a setTimeout because it must happen after
       // the tree nodes are recursively opened and the tree is refreshed.
       setTimeout(() => {
-        nodeToHighlight?.elementRef?.current?.scrollIntoView();
+        nodeToHighlight.elementRef.current?.scrollIntoView();
       }, 0);
     }
   }

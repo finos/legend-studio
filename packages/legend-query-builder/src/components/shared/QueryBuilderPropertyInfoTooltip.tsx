@@ -167,7 +167,7 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
             {explorerState && (
               <div className="query-builder__tooltip__item__action">
                 <button
-                  onClick={() => explorerState?.highlightTreeNode(path)}
+                  onClick={() => explorerState.highlightTreeNode(path)}
                   title="Show in tree"
                 >
                   <ShareBoxIcon color="white" />
