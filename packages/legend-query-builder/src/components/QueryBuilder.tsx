@@ -43,8 +43,6 @@ import {
   CalendarClockIcon,
   ChatIcon,
   PanelLoadingIndicator,
-  UndoIcon,
-  RedoIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
