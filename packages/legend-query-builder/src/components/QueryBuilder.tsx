@@ -377,9 +377,7 @@ export const QueryBuilder = observer(
     };
 
     const redo = (): void => {
-      if (queryBuilderState.isUndoRedoUnderContext) {
-        queryBuilderState.changeHistoryState.redo();
-      }
+      queryBuilderState.changeHistoryState.redo();
     };
 
     useEffect(() => {

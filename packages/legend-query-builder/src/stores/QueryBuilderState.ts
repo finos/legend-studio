@@ -145,7 +145,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isCalendarEnabled = false;
   isQueryChatOpened = false;
   isLocalModeEnabled = false;
-  isUndoRedoUnderContext = true;
 
   class?: Class | undefined;
   getAllFunction: QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS =
@@ -192,7 +191,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       class: observable,
       isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
-      isUndoRedoUnderContext: observable,
       getAllFunction: observable,
 
       sideBarClassName: computed,
@@ -208,7 +206,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setIsQueryChatOpened: action,
       setIsLocalModeEnabled: action,
       setGetAllFunction: action,
-      setIsUndoRedoUnderContext: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -344,10 +341,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setIsCalendarEnabled(val: boolean): void {
     this.isCalendarEnabled = val;
-  }
-
-  setIsUndoRedoUnderContext(val: boolean): void {
-    this.isUndoRedoUnderContext = val;
   }
 
   setClass(val: Class | undefined): void {
