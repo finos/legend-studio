@@ -41,6 +41,8 @@ import {
   TEST_DATA__simpleFilterWithGroupOperationAndExists,
   TEST_DATA__simpleFilterWithThreeNodes,
   TEST_DATA__simpleLambdaWithFirstDayOfYearDateFunction,
+  TEST_DATA__simpleProjectionWithSpecicalLambdaName,
+  TEST_DATA__simpleProjectionWithSpecicalLambdaNameTarget,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -393,6 +395,69 @@ test(
       ),
     );
     expect(contentNodes.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder generates correct pure code when DnD a projection column with a special lambda name to filter panel',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithSpecicalLambdaName.parameters,
+          TEST_DATA__simpleProjectionWithSpecicalLambdaName.body,
+        ),
+      );
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const projectionPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+
+    // Drag and drop
+    const dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByTitle(projectionPanel, 'Drag Element'),
+    );
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Check whether the rawLambda we build is expected
+    expect(
+      queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        queryBuilderState.buildQuery(),
+      ),
+    ).toEqual(TEST_DATA__simpleProjectionWithSpecicalLambdaNameTarget);
   },
 );
 
