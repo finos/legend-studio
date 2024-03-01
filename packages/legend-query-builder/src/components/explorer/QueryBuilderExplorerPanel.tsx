@@ -459,6 +459,13 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
     ) : (
       <div />
     );
+    const propertyName = explorerState.humanizePropertyName
+      ? node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+        ? TYPE_CAST_TOKEN + prettyCONSTName(node.label)
+        : prettyCONSTName(node.label)
+      : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+      ? TYPE_CAST_TOKEN + node.label
+      : node.label;
     const selectNode = (): void => onNodeSelect?.(node);
     const openNode = (): void => {
       if (!node.isOpen) {
@@ -567,7 +574,10 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           {(node instanceof QueryBuilderExplorerTreePropertyNodeData ||
             node instanceof QueryBuilderExplorerTreeSubTypeNodeData) && (
             <>
-              <div className="tree-view__node__icon query-builder-explorer-tree__node__icon">
+              <div
+                className="tree-view__node__icon query-builder-explorer-tree__node__icon"
+                ref={node.elementRef}
+              >
                 <div className="query-builder-explorer-tree__expand-icon">
                   {nodeExpandIcon}
                 </div>
@@ -582,7 +592,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     'query-builder-explorer-tree__node__label--with-preview':
                       allowPreview,
                   },
+                  {
+                    'query-builder-explorer-tree__node__label--highlight':
+                      node.isHighlighting,
+                  },
                 )}
+                onAnimationEnd={() => node.setIsHighlighting(false)}
               >
                 <div
                   className={clsx(
@@ -598,13 +613,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     },
                   )}
                 >
-                  {explorerState.humanizePropertyName
-                    ? node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                      ? TYPE_CAST_TOKEN + prettyCONSTName(node.label)
-                      : prettyCONSTName(node.label)
-                    : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                    ? TYPE_CAST_TOKEN + node.label
-                    : node.label}
+                  {propertyName}
                 </div>
                 {isDerivedProperty && (
                   <div
@@ -639,6 +648,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 )}
                 {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
                   <QueryBuilderPropertyInfoTooltip
+                    title={propertyName}
                     property={node.property}
                     path={node.id}
                     isMapped={node.mappingData.mapped}

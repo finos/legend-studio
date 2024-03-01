@@ -317,6 +317,24 @@
     width: calc(100% - 4rem);
   }
 
+  &__node__label--highlight {
+    animation: highlight-keyframes 4s;
+
+    @keyframes highlight-keyframes {
+      0% {
+        background: var(--color-blue-200);
+      }
+
+      25% {
+        background: var(--color-blue-200);
+      }
+
+      100% {
+        background: unset;
+      }
+    }
+  }
+
   &__node__label__derived-property {
     display: inline-flex;
     font-weight: 700;

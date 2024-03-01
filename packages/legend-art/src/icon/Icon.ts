@@ -604,12 +604,14 @@ export const AnchorLinkIcon = FiLink;
 //======================================================= RI =======================================================
 import {
   RiShapeLine,
+  RiShareBoxFill,
   RiTestTubeFill,
   RiRobotFill,
   RiGovernmentFill,
   RiMoneyDollarCircleFill,
 } from 'react-icons/ri/index.js';
 
+export const ShareBoxIcon = RiShareBoxFill;
 export const ShapeLineIcon = RiShapeLine;
 export const TestTubeIcon = RiTestTubeFill;
 export const DroidIcon = RiRobotFill;

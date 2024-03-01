@@ -372,12 +372,21 @@ export const QueryBuilderPropertyExpressionEditor = observer(
 
 export const QueryBuilderPropertyExpressionBadge = observer(
   (props: {
+    columnName?: string;
     propertyExpressionState: QueryBuilderPropertyExpressionState;
     onPropertyExpressionChange: (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ) => void;
+    setIsEditingColumnName?: (isEditing: boolean) => void;
   }) => {
-    const { propertyExpressionState, onPropertyExpressionChange } = props;
+    const {
+      columnName,
+      propertyExpressionState,
+      onPropertyExpressionChange,
+      setIsEditingColumnName,
+    } = props;
+    const explorerState =
+      propertyExpressionState.queryBuilderState.explorerState;
     const type =
       propertyExpressionState.propertyExpression.func.value.genericType.value
         .rawType;
@@ -442,8 +451,11 @@ export const QueryBuilderPropertyExpressionBadge = observer(
             <div
               className="query-builder-property-expression-badge__property"
               title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
+              onClick={() => {
+                setIsEditingColumnName?.(true);
+              }}
             >
-              {propertyExpressionState.title}
+              {columnName ?? propertyExpressionState.title}
             </div>
             {hasDerivedPropertyInExpression && (
               <button
@@ -465,10 +477,12 @@ export const QueryBuilderPropertyExpressionBadge = observer(
               propertyExpressionState={propertyExpressionState}
             />
             <QueryBuilderPropertyInfoTooltip
+              title={propertyExpressionState.title}
               property={propertyExpressionState.propertyExpression.func.value}
               path={getPropertyPath(propertyExpressionState.propertyExpression)}
               isMapped={true}
               placement="bottom-end"
+              explorerState={explorerState}
             >
               <div className="query-builder-property-expression-badge__property__info">
                 <InfoCircleIcon />

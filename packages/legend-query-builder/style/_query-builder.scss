@@ -415,6 +415,14 @@
     opacity: 0.9 !important;
   }
 
+  &__header {
+    font-size: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-dark-grey-500);
+    user-select: none;
+    cursor: none;
+  }
+
   &__content {
     padding: 0.5rem;
   }
@@ -440,6 +448,10 @@
     // as this tooltip can contain long documentation, it's best we limit its dimension
     max-width: 50rem;
     white-space: pre-line; // properly preserve newline characters
+  }
+
+  &__item__action {
+    margin-left: 0.5rem;
   }
 
   &__combo {
