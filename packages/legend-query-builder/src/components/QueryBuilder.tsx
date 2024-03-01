@@ -383,10 +383,7 @@ export const QueryBuilder = observer(
     useEffect(() => {
       // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
       // we use an empty RawLambda with an empty class and this useEffect is called earlier than initializeWithQuery()
-      if (
-        (queryBuilderState.isQuerySupported && queryBuilderState.class) ||
-        !queryBuilderState.isQuerySupported
-      ) {
+      if (queryBuilderState.isQuerySupported && queryBuilderState.class) {
         queryBuilderState.changeHistoryState.cacheNewQuery(
           queryBuilderState.buildQuery(),
         );
@@ -437,12 +434,18 @@ export const QueryBuilder = observer(
                 <div className="query-builder__header__actions__undo-redo">
                   <UndoButton
                     parent={queryBuilderRef}
-                    canUndo={queryBuilderState.changeHistoryState.canUndo}
+                    canUndo={
+                      queryBuilderState.changeHistoryState.canUndo &&
+                      queryBuilderState.isQuerySupported
+                    }
                     undo={undo}
                   />
                   <RedoButton
                     parent={queryBuilderRef}
-                    canRedo={queryBuilderState.changeHistoryState.canRedo}
+                    canRedo={
+                      queryBuilderState.changeHistoryState.canRedo &&
+                      queryBuilderState.isQuerySupported
+                    }
                     redo={redo}
                   />
                 </div>

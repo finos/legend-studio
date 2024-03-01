@@ -82,30 +82,34 @@ export class QueryBuilderChangeHistoryState {
   }
 
   initialize(initialQuery: RawLambda): void {
-    this.initState.inProgress();
-    this.currentQuery = initialQuery;
-    this.querySnapshotBuffer.push(initialQuery);
-    this.pointer = this.pointer + 1;
-    this.initState.complete();
+    if (this.queryBuilderState.isQuerySupported) {
+      this.initState.inProgress();
+      this.currentQuery = initialQuery;
+      this.querySnapshotBuffer.push(initialQuery);
+      this.pointer = this.pointer + 1;
+      this.initState.complete();
+    }
   }
 
   cacheNewQuery(query: RawLambda): void {
-    if (query.hashCode !== this.currentQuery?.hashCode) {
-      if (
-        this.querySnapshotBuffer.length === this.bufferSize &&
-        this.pointer === this.querySnapshotBuffer.length - 1
-      ) {
-        // only record 10 query snapshots
-        this.querySnapshotBuffer = this.querySnapshotBuffer.slice(1);
-      } else {
-        this.querySnapshotBuffer = this.querySnapshotBuffer.slice(
-          0,
-          this.pointer + 1,
-        );
+    if (this.queryBuilderState.isQuerySupported) {
+      if (query.hashCode !== this.currentQuery?.hashCode) {
+        if (
+          this.querySnapshotBuffer.length === this.bufferSize &&
+          this.pointer === this.querySnapshotBuffer.length - 1
+        ) {
+          // only record 10 query snapshots
+          this.querySnapshotBuffer = this.querySnapshotBuffer.slice(1);
+        } else {
+          this.querySnapshotBuffer = this.querySnapshotBuffer.slice(
+            0,
+            this.pointer + 1,
+          );
+        }
+        this.querySnapshotBuffer.push(query);
+        this.pointer = this.querySnapshotBuffer.length - 1;
+        this.setCurrentQuery(query);
       }
-      this.querySnapshotBuffer.push(query);
-      this.pointer = this.querySnapshotBuffer.length - 1;
-      this.setCurrentQuery(query);
     }
   }
 }
