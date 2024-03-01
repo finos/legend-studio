@@ -35,10 +35,10 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
-import { type QueryBuilderAggregateCalendarFunction } from '../QueryBuilderAggregateCalendarFunction.js';
-import { QUERY_BUILDER_CALENDAR_TYPE } from '../../../../../graph-manager/QueryBuilderConst.js';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
+import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
+import { type QueryBuilderAggregateCalendarFunction } from './QueryBuilderAggregateCalendarFunction.js';
+import { QUERY_BUILDER_CALENDAR_TYPE } from '../../../../graph-manager/QueryBuilderConst.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 
 export const buildCalendarFunctionExpression = (
   calendarFunctionFullPath: string,
