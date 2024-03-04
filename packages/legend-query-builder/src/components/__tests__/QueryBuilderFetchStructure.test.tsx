@@ -297,7 +297,7 @@ test(
         modal.querySelector(`input[value="${RESULT_LIMIT}"]`),
       ),
     ).not.toBeNull();
-    fireEvent.click(getByText(modal, 'Close'));
+    fireEvent.click(getByText(modal, 'Apply'));
 
     // Test text decriptions are correctly added for result set modifiers
     await waitFor(() => renderResult.getByText('Query Options'));
