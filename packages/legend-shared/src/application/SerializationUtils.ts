@@ -54,7 +54,7 @@ export class SerializationFactory<T> {
     );
   }
 
-  toJson(val: T): PlainObject<T> {
+  toJson(val: Partial<T> | T): PlainObject<T> {
     return serialize(this.schema, val);
   }
 

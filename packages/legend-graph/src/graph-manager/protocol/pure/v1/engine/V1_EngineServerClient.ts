@@ -115,6 +115,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
 
   CREATE_QUERY = 'create query',
   UPDATE_QUERY = 'update query',
+  PATCH_QUERY = 'patch query',
   DELETE_QUERY = 'delete query',
 
   CANCEL_USER_EXECUTIONS = 'cancel user executions',
@@ -768,6 +769,15 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.putWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_QUERY),
       this._query(queryId),
+      query,
+    );
+  patchQuery = (
+    queryId: string,
+    query: PlainObject<Partial<V1_Query>>,
+  ): Promise<PlainObject<V1_Query>> =>
+    this.putWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.PATCH_QUERY),
+      `${this._query(queryId)}/patchQuery`,
       query,
     );
   deleteQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>

@@ -44,6 +44,7 @@ export class V1_Query {
   groupId!: string;
   artifactId!: string;
   versionId!: string;
+  originalVersionId?: string | undefined;
   mapping!: string;
   runtime!: string;
   content!: string;
@@ -72,6 +73,7 @@ export class V1_Query {
       ),
       taggedValues: optional(list(usingModelSchema(V1_taggedValueModelSchema))),
       versionId: primitive(),
+      originalVersionId: optional(primitive()),
     }),
     {
       deserializeNullAsUndefined: true,
@@ -86,6 +88,7 @@ export class V1_LightQuery {
   owner?: string | undefined;
   artifactId!: string;
   versionId!: string;
+  originalVersionId?: string | undefined;
   lastUpdatedAt?: number | undefined;
 
   static readonly serialization = new SerializationFactory(
@@ -97,6 +100,7 @@ export class V1_LightQuery {
       name: primitive(),
       owner: optional(primitive()),
       versionId: primitive(),
+      originalVersionId: optional(primitive()),
     }),
     {
       deserializeNullAsUndefined: true,

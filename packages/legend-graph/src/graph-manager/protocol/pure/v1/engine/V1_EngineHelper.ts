@@ -90,6 +90,7 @@ export const V1_buildLightQuery = (
     protocol.versionId,
     `Query 'versionId' field is missing`,
   );
+  metamodel.originalVersionId = protocol.originalVersionId;
   metamodel.groupId = guaranteeNonNullable(
     protocol.groupId,
     `Query 'groupId' field is missing`,
@@ -203,17 +204,33 @@ export const V1_buildQuery = (
   return metamodel;
 };
 
-export const V1_transformQuery = (metamodel: Query): V1_Query => {
+export const V1_transformQuery = (metamodel: Partial<Query>): V1_Query => {
   const protocol = new V1_Query();
-  protocol.name = metamodel.name;
-  protocol.id = metamodel.id;
-  protocol.name = metamodel.name;
-  protocol.versionId = metamodel.versionId;
-  protocol.groupId = metamodel.groupId;
-  protocol.artifactId = metamodel.artifactId;
-  protocol.mapping = metamodel.mapping.valueForSerialization ?? '';
-  protocol.runtime = metamodel.runtime.valueForSerialization ?? '';
-  protocol.content = metamodel.content;
+  if (metamodel.name) {
+    protocol.name = metamodel.name;
+  }
+  if (metamodel.id) {
+    protocol.id = metamodel.id;
+  }
+  if (metamodel.versionId) {
+    protocol.versionId = metamodel.versionId;
+  }
+  if (metamodel.groupId) {
+    protocol.groupId = metamodel.groupId;
+  }
+  if (metamodel.artifactId) {
+    protocol.artifactId = metamodel.artifactId;
+  }
+  protocol.originalVersionId = metamodel.originalVersionId;
+  if (metamodel.mapping) {
+    protocol.mapping = metamodel.mapping.valueForSerialization ?? '';
+  }
+  if (metamodel.runtime) {
+    protocol.runtime = metamodel.runtime.valueForSerialization ?? '';
+  }
+  if (metamodel.content) {
+    protocol.content = metamodel.content;
+  }
   protocol.owner = metamodel.owner;
   protocol.taggedValues = metamodel.taggedValues?.map((_taggedValue) => {
     const taggedValue = new V1_TaggedValue();

@@ -95,6 +95,7 @@ import {
 import type { Query } from '@finos/legend-graph';
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import { buildVersionOption, type VersionOption } from './QuerySetup.js';
+import { QueryEditorExistingQueryVersionRevertModal } from './QueryEdtiorExistingQueryVersionRevertModal.js';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -923,7 +924,7 @@ export const QueryEditor = observer(() => {
             <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
           </>
         )}
-        {(isLoadingEditor || !editorStore.queryBuilderState) && (
+        {isLoadingEditor && (
           <BlankPanelContent>
             {editorStore.initState.message ??
               editorStore.graphManagerState.systemBuildState.message ??
@@ -932,6 +933,13 @@ export const QueryEditor = observer(() => {
               editorStore.graphManagerState.graphBuildState.message}
           </BlankPanelContent>
         )}
+        {!isLoadingEditor &&
+          !editorStore.queryBuilderState &&
+          editorStore instanceof ExistingQueryEditorStore && (
+            <QueryEditorExistingQueryVersionRevertModal
+              existingEditorStore={editorStore}
+            />
+          )}
       </div>
     </div>
   );
