@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-import type { RawLambda } from '@finos/legend-graph';
+import { type RawLambda } from '@finos/legend-graph';
 import {
   ActionState,
+  LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { makeObservable, observable, computed, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
+import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 
 export class QueryBuilderChangeHistoryState {
   readonly queryBuilderState: QueryBuilderState;
@@ -118,7 +120,8 @@ export class QueryBuilderChangeHistoryState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.queryBuilderState.applicationStore.notificationService.notifyError(
+      this.queryBuilderState.applicationStore.logService.error(
+        LogEvent.create(QUERY_BUILDER_EVENT.CHANGE_HISTORY_ERROR),
         `Can't cache query in query builder change history buffer: ${error.message}`,
       );
     }
