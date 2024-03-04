@@ -21,6 +21,7 @@ import {
 } from '../../../../../../graph/Core_HashUtils.js';
 import type { V1_RelationalCSVData } from './V1_RelationalCSVData.js';
 import type { V1_INTERNAL__UnknownEmbeddedData } from './V1_INTERNAL__UnknownEmbeddedData.js';
+import type { V1_PackageableElementPointer } from '../packageableElements/V1_PackageableElement.js';
 
 export interface V1_EmbeddedDataVisitor<T> {
   visit_EmbeddedData(data: V1_EmbeddedData): T;
@@ -44,12 +45,12 @@ export class V1_DataElementReference
   extends V1_EmbeddedData
   implements Hashable
 {
-  dataElement!: string;
+  dataElement!: V1_PackageableElementPointer;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_ELEMENT_REFERENCE,
-      this.dataElement,
+      this.dataElement.path,
     ]);
   }
 

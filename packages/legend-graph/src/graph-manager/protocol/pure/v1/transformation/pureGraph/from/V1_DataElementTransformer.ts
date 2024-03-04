@@ -44,7 +44,10 @@ import {
   V1_RelationalCSVDataTable,
 } from '../../../model/data/V1_RelationalCSVData.js';
 import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
-import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
+import {
+  V1_initPackageableElement,
+  V1_transformElementReferencePointer,
+} from './V1_CoreTransformerHelper.js';
 import {
   V1_transformStereotype,
   V1_transformTaggedValue,
@@ -52,6 +55,7 @@ import {
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { INTERNAL__UnknownEmbeddedData } from '../../../../../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
 import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
+import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 
 // ----------------------------------------------- DATA ----------------------------------------
 
@@ -112,8 +116,10 @@ const V1_transformDataElementReference = (
   element: DataElementReference,
 ): V1_DataElementReference => {
   const dataElementReference = new V1_DataElementReference();
-  dataElementReference.dataElement =
-    element.dataElement.valueForSerialization ?? '';
+  dataElementReference.dataElement = V1_transformElementReferencePointer(
+    PackageableElementPointerType.DATA,
+    element.dataElement,
+  );
   return dataElementReference;
 };
 
