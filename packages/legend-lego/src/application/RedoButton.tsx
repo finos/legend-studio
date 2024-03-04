@@ -32,6 +32,10 @@ export const RedoButton: React.FC<{
         event.key === 'y' &&
         target !== null &&
         parent.current !== null &&
+        // This is for making sure undo/redo is contextual so that it won't modify the underlying query when a new modal is open
+        // The reason why not to do this via registerCommands() is that it's hard to compose contextual condtion without introducing an explicit
+        // dependency on parameters/constants/watermark/other modals. If we are going to introduce more modals,
+        // we have to update the condition correspondingly but developers might forget to update the condition.
         (parent.current.contains(target) || target.contains(parent.current))
       ) {
         event.preventDefault();

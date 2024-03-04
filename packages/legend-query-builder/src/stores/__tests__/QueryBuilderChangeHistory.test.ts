@@ -127,5 +127,7 @@ test(integrationTest('Test change detection'), () => {
     fireEvent.click(renderResult.getByText('Query Options'));
     fireEvent.keyDown(document, { key: 'z', code: 'KeyZ', ctrlKey: true });
     expect(renderResult.getByText('Result Set Modifier')).not.toBeNull();
+    fireEvent.click(renderResult.getByText('Close'));
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
   };
 });
