@@ -15,7 +15,11 @@
  */
 
 import type { RawLambda } from '@finos/legend-graph';
-import { ActionState, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { makeObservable, observable, computed, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
@@ -92,24 +96,31 @@ export class QueryBuilderChangeHistoryState {
   }
 
   cacheNewQuery(query: RawLambda): void {
-    if (this.queryBuilderState.isQuerySupported) {
-      if (query.hashCode !== this.currentQuery?.hashCode) {
-        if (
-          this.querySnapshotBuffer.length === this.bufferSize &&
-          this.pointer === this.querySnapshotBuffer.length - 1
-        ) {
-          // only record 10 query snapshots
-          this.querySnapshotBuffer = this.querySnapshotBuffer.slice(1);
-        } else {
-          this.querySnapshotBuffer = this.querySnapshotBuffer.slice(
-            0,
-            this.pointer + 1,
-          );
+    try {
+      if (this.queryBuilderState.isQuerySupported) {
+        if (query.hashCode !== this.currentQuery?.hashCode) {
+          if (
+            this.querySnapshotBuffer.length === this.bufferSize &&
+            this.pointer === this.querySnapshotBuffer.length - 1
+          ) {
+            // only record 10 query snapshots
+            this.querySnapshotBuffer = this.querySnapshotBuffer.slice(1);
+          } else {
+            this.querySnapshotBuffer = this.querySnapshotBuffer.slice(
+              0,
+              this.pointer + 1,
+            );
+          }
+          this.querySnapshotBuffer.push(query);
+          this.pointer = this.querySnapshotBuffer.length - 1;
+          this.setCurrentQuery(query);
         }
-        this.querySnapshotBuffer.push(query);
-        this.pointer = this.querySnapshotBuffer.length - 1;
-        this.setCurrentQuery(query);
       }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.notificationService.notifyError(
+        `Can't cache query in query builder change history buffer: ${error.message}`,
+      );
     }
   }
 }
