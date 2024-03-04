@@ -33,18 +33,28 @@ import {
   ModalFooterButton,
 } from '@finos/legend-art';
 import { SortColumnState } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  deleteEntry,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
+import { useEffect, useState } from 'react';
+import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 
 const ColumnSortEditor = observer(
-  (props: { tdsState: QueryBuilderTDSState; sortState: SortColumnState }) => {
-    const { tdsState, sortState } = props;
+  (props: {
+    sortColumns: SortColumnState[];
+    setSortColumns: (sortColumns: SortColumnState[]) => void;
+    sortState: SortColumnState;
+    tdsColumns: QueryBuilderTDSColumnState[];
+  }) => {
+    const { sortColumns, setSortColumns, sortState, tdsColumns } = props;
     const applicationStore = useApplicationStore();
-    const sortColumns = tdsState.resultSetModifierState.sortColumns;
-    const projectionOptions = tdsState.tdsColumns
+    const projectionOptions = tdsColumns
       .filter(
         (projectionCol) =>
           projectionCol === sortState.columnState ||
@@ -58,6 +68,8 @@ const ColumnSortEditor = observer(
       label: sortState.columnState.columnName,
       value: sortState,
     };
+    const sortType = sortState.sortType;
+
     const onChange = (
       val: { label: string; value: QueryBuilderTDSColumnState } | null,
     ): void => {
@@ -65,13 +77,17 @@ const ColumnSortEditor = observer(
         sortState.setColumnState(val.value);
       }
     };
-    const sortType = sortState.sortType;
 
-    const deleteColumnSort = (): void =>
-      tdsState.resultSetModifierState.deleteSortColumn(sortState);
+    const deleteColumnSort = (): void => {
+      const newSortColumns = [...sortColumns];
+      deleteEntry(newSortColumns, sortState);
+      setSortColumns(newSortColumns);
+    };
+
     const changeSortBy = (sortOp: COLUMN_SORT_TYPE) => (): void => {
       sortState.setSortType(sortOp);
     };
+
     return (
       <div className="panel__content__form__section__list__item query-builder__projection__options__sort">
         <CustomSelectorInput
@@ -129,11 +145,15 @@ const ColumnSortEditor = observer(
 );
 
 const ColumnsSortEditor = observer(
-  (props: { tdsState: QueryBuilderTDSState }) => {
-    const { tdsState } = props;
-    const resultSetModifierState = tdsState.resultSetModifierState;
-    const sortColumns = resultSetModifierState.sortColumns;
-    const projectionOptions = tdsState.projectionColumns
+  (props: {
+    projectionColumns: QueryBuilderProjectionColumnState[];
+    sortColumns: SortColumnState[];
+    setSortColumns: (sortColumns: SortColumnState[]) => void;
+    tdsColumns: QueryBuilderTDSColumnState[];
+  }) => {
+    const { projectionColumns, sortColumns, setSortColumns, tdsColumns } =
+      props;
+    const projectionOptions = projectionColumns
       .filter(
         (projectionCol) =>
           !sortColumns.some((sortCol) => sortCol.columnState === projectionCol),
@@ -147,7 +167,9 @@ const ColumnsSortEditor = observer(
         const sortColumn = new SortColumnState(
           guaranteeNonNullable(projectionOptions[0]).value,
         );
-        resultSetModifierState.addSortColumn(sortColumn);
+        const newSortColumns = [...sortColumns];
+        addUniqueEntry(newSortColumns, sortColumn);
+        setSortColumns(newSortColumns);
       }
     };
 
@@ -166,8 +188,10 @@ const ColumnsSortEditor = observer(
             {sortColumns.map((value) => (
               <ColumnSortEditor
                 key={value.columnState.uuid}
-                tdsState={tdsState}
+                sortColumns={sortColumns}
+                setSortColumns={setSortColumns}
                 sortState={value}
+                tdsColumns={tdsColumns}
               />
             ))}
           </div>
@@ -189,57 +213,87 @@ const ColumnsSortEditor = observer(
 
 export const QueryResultModifierModal = observer(
   (props: { tdsState: QueryBuilderTDSState }) => {
-    const { tdsState: tdsState } = props;
+    // Read current state
+    const { tdsState } = props;
     const resultSetModifierState = tdsState.resultSetModifierState;
-    const limitResults = resultSetModifierState.limit;
-    const distinct = resultSetModifierState.distinct;
-    const close = (): void => resultSetModifierState.setShowModal(false);
-    const toggleDistinct = (): void => resultSetModifierState.toggleDistinct();
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      const val = event.target.value;
-      resultSetModifierState.setLimit(
-        val === '' ? undefined : parseInt(val, 10),
-      );
+    const stateSortColumns = resultSetModifierState.sortColumns;
+    const stateDistinct = resultSetModifierState.distinct;
+    const stateLimitResults = resultSetModifierState.limit;
+    const stateSlice = resultSetModifierState.slice;
+
+    // Set up temp state for modal lifecycle
+    const [sortColumns, setSortColumns] = useState([...stateSortColumns]);
+    const [distinct, setDistinct] = useState(stateDistinct);
+    const [limitResults, setLimitResults] = useState(stateLimitResults);
+    const [slice, setSlice] = useState(stateSlice);
+
+    // Sync temp state with tdsState when modal is opened/closed
+    useEffect(() => {
+      setSortColumns([...stateSortColumns]);
+      setDistinct(stateDistinct);
+      setLimitResults(stateLimitResults);
+      setSlice(stateSlice);
+    }, [
+      resultSetModifierState.showModal,
+      stateSortColumns,
+      stateDistinct,
+      stateLimitResults,
+      stateSlice,
+    ]);
+
+    // Handle user actions
+    const closeModal = (): void => resultSetModifierState.setShowModal(false);
+    const applyChanges = (): void => {
+      resultSetModifierState.setSortColumns(sortColumns);
+      resultSetModifierState.setDistinct(distinct);
+      resultSetModifierState.setLimit(limitResults);
+      resultSetModifierState.setSlice(slice);
+      resultSetModifierState.setShowModal(false);
     };
 
-    const handleSliceStartChange = (start: number, end: number): void => {
-      const slice: [number, number] = [start, end];
-      resultSetModifierState.setSlice(slice);
+    const handleLimitResultsChange: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => {
+      const val = event.target.value;
+      setLimitResults(val === '' ? undefined : parseInt(val, 10));
+    };
+
+    const handleSliceChange = (start: number, end: number): void => {
+      const newSlice: [number, number] = [start, end];
+      setSlice(newSlice);
     };
 
     const clearSlice = (): void => {
-      resultSetModifierState.setSlice(undefined);
+      setSlice(undefined);
     };
 
     const addSlice = (): void => {
-      resultSetModifierState.setSlice([0, 1]);
+      setSlice([0, 1]);
     };
 
     const changeSliceStart: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
-      const currentSlice = resultSetModifierState.slice;
       const val = event.target.value;
       const start = typeof val === 'number' ? val : parseInt(val, 10);
-      if (currentSlice) {
-        handleSliceStartChange(start, currentSlice[1]);
+      if (slice) {
+        handleSliceChange(start, slice[1]);
       }
     };
     const changeSliceEnd: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
-      const currentSlice = resultSetModifierState.slice;
       const val = event.target.value;
       const end = typeof val === 'number' ? val : parseInt(val, 10);
-      if (currentSlice) {
-        handleSliceStartChange(currentSlice[0], end);
+      if (slice) {
+        handleSliceChange(slice[0], end);
       }
     };
 
     return (
       <Dialog
         open={Boolean(resultSetModifierState.showModal)}
-        onClose={close}
+        onClose={closeModal}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -250,14 +304,19 @@ export const QueryResultModifierModal = observer(
           <ModalHeader title="Result Set Modifier" />
           <ModalBody className="query-builder__projection__modal__body">
             <div className="query-builder__projection__options">
-              <ColumnsSortEditor tdsState={tdsState} />
+              <ColumnsSortEditor
+                projectionColumns={tdsState.projectionColumns}
+                sortColumns={sortColumns}
+                setSortColumns={setSortColumns}
+                tdsColumns={tdsState.tdsColumns}
+              />
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">
                   Eliminate Duplicate Rows
                 </div>
                 <div
                   className="panel__content__form__section__toggler"
-                  onClick={toggleDistinct}
+                  onClick={() => setDistinct(!distinct)}
                 >
                   <button
                     className={clsx(
@@ -289,7 +348,7 @@ export const QueryResultModifierModal = observer(
                   spellCheck={false}
                   type="number"
                   value={limitResults ?? ''}
-                  onChange={changeValue}
+                  onChange={handleLimitResultsChange}
                 />
               </div>
               <div className="panel__content__form__section">
@@ -300,13 +359,13 @@ export const QueryResultModifierModal = observer(
                   Reduce the number of rows in the provided TDS, selecting the
                   set of rows in the specified range between start and stop
                 </div>
-                {resultSetModifierState.slice ? (
+                {slice ? (
                   <>
                     <div className="query-builder__result__slice">
                       <input
                         className="input--dark query-builder__result__slice__input"
                         spellCheck={false}
-                        value={resultSetModifierState.slice[0]}
+                        value={slice[0]}
                         onChange={changeSliceStart}
                         type="number"
                       />
@@ -316,7 +375,7 @@ export const QueryResultModifierModal = observer(
                       <input
                         className="input--dark query-builder__result__slice__input"
                         spellCheck={false}
-                        value={resultSetModifierState.slice[1]}
+                        value={slice[1]}
                         onChange={changeSliceEnd}
                         type="number"
                       />
@@ -345,7 +404,8 @@ export const QueryResultModifierModal = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton onClick={applyChanges} text="Apply" />
+            <ModalFooterButton onClick={closeModal} text="Cancel" />
           </ModalFooter>
         </Modal>
       </Dialog>

@@ -16,12 +16,7 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { QueryBuilderTDSState } from './QueryBuilderTDSState.js';
-import {
-  addUniqueEntry,
-  deleteEntry,
-  type Hashable,
-  hashArray,
-} from '@finos/legend-shared';
+import { addUniqueEntry, type Hashable, hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 import { COLUMN_SORT_TYPE } from '../../../graph/QueryBuilderMetaModelConst.js';
@@ -76,8 +71,8 @@ export class QueryResultSetModifierState implements Hashable {
       slice: observable.ref,
       setShowModal: action,
       setLimit: action,
-      toggleDistinct: action,
-      deleteSortColumn: action,
+      setDistinct: action,
+      setSortColumns: action,
       addSortColumn: action,
       updateSortColumns: action,
       setSlice: action,
@@ -96,12 +91,12 @@ export class QueryResultSetModifierState implements Hashable {
     this.limit = val === undefined || val <= 0 ? undefined : val;
   }
 
-  toggleDistinct(): void {
-    this.distinct = !this.distinct;
+  setDistinct(val: boolean): void {
+    this.distinct = val;
   }
 
-  deleteSortColumn(val: SortColumnState): void {
-    deleteEntry(this.sortColumns, val);
+  setSortColumns(val: SortColumnState[]): void {
+    this.sortColumns = val;
   }
 
   addSortColumn(val: SortColumnState): void {
