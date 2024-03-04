@@ -29,9 +29,11 @@ import {
   PlayIcon,
   PanelLoadingIndicator,
   BlankPanelContent,
-  TrashIcon,
   PURE_DatabaseIcon,
   SyncIcon,
+  clsx,
+  CheckSquareIcon,
+  SquareIcon,
 } from '@finos/legend-art';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -64,14 +66,23 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
 } from '../../../stores/editor/utils/DnDUtils.js';
-import { DataGrid } from '@finos/legend-lego/data-grid';
+import {
+  DataGrid,
+  type DataGridCellRendererParams,
+  type DataGridColumnDefinition,
+  type DataGridGetContextMenuItemsParams,
+  type DataGridMenuItemDef,
+} from '@finos/legend-lego/data-grid';
 import {
   getNonNullableEntry,
   getNullableEntry,
   getNullableLastEntry,
   isNonNullable,
+  isNumber,
   isString,
+  isValidURL,
   parseCSVString,
+  prettyDuration,
   uniqBy,
 } from '@finos/legend-shared';
 import {
@@ -203,15 +214,6 @@ const PlaygroundSQLCodeEditor = observer(() => {
     IDisposable | undefined
   >(undefined);
 
-  const executeRawSQL = (): void => {
-    flowResult(playgroundState.executeRawSQL()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  };
-  const reset = (): void => {
-    playgroundState.resetSQL();
-  };
-
   useEffect(() => {
     if (!editor && codeEditorRef.current) {
       const element = codeEditorRef.current;
@@ -340,28 +342,6 @@ const PlaygroundSQLCodeEditor = observer(() => {
 
   return (
     <div className="sql-playground__code-editor">
-      <PanelLoadingIndicator isLoading={playgroundState.isExecutingRawSQL} />
-      <div className="sql-playground__code-editor__header">
-        <div className="sql-playground__code-editor__header__actions">
-          <button
-            className="sql-playground__code-editor__header__action"
-            tabIndex={-1}
-            onClick={executeRawSQL}
-            disabled={playgroundState.isExecutingRawSQL}
-            title="Execute (Ctrl + Enter)"
-          >
-            <PlayIcon />
-          </button>
-          <button
-            className="sql-playground__code-editor__header__action"
-            tabIndex={-1}
-            onClick={reset}
-            title="Reset"
-          >
-            <TrashIcon />
-          </button>
-        </div>
-      </div>
       <PanelDropZone
         className="sql-playground__code-editor__content"
         isDragOver={isDatabaseNodeDragOver}
@@ -400,9 +380,39 @@ const parseExecutionResultData = (
   return undefined;
 };
 
+const TDSResultCellRenderer = observer((params: DataGridCellRendererParams) => {
+  const cellValue = params.value as string;
+  const formattedCellValue = (): string => {
+    if (isNumber(cellValue)) {
+      return Intl.NumberFormat('en-US', {
+        maximumFractionDigits: 4,
+      }).format(Number(cellValue));
+    }
+    return cellValue;
+  };
+  const cellValueUrlLink =
+    isString(cellValue) && isValidURL(cellValue) ? cellValue : undefined;
+
+  return (
+    <div className={clsx('query-builder__result__values__table__cell')}>
+      {cellValueUrlLink ? (
+        <a href={cellValueUrlLink} target="_blank" rel="noreferrer">
+          {cellValueUrlLink}
+        </a>
+      ) : (
+        <span>{formattedCellValue()}</span>
+      )}
+    </div>
+  );
+});
+
 const PlayGroundSQLExecutionResultGrid = observer(
-  (props: { result: string }) => {
-    const { result } = props;
+  (props: {
+    result: string;
+    useAdvancedGrid?: boolean;
+    useLocalMode?: boolean;
+  }) => {
+    const { result, useAdvancedGrid, useLocalMode } = props;
     const data = parseExecutionResultData(result);
 
     if (!data) {
@@ -410,6 +420,99 @@ const PlayGroundSQLExecutionResultGrid = observer(
         <BlankPanelContent>{`Can't parse result, displaying raw form:\n${result}`}</BlankPanelContent>
       );
     }
+    if (useAdvancedGrid) {
+      if (useLocalMode) {
+        const localcolDefs = data.columns.map(
+          (colName) =>
+            ({
+              minWidth: 50,
+              sortable: true,
+              resizable: true,
+              field: colName,
+              flex: 1,
+              enablePivot: true,
+              enableRowGroup: true,
+              enableValue: true,
+              allowedAggFuncs: ['count'],
+            }) as DataGridColumnDefinition,
+        );
+
+        return (
+          <DataGrid
+            rowData={data.rowData}
+            gridOptions={{
+              suppressScrollOnNewData: true,
+              rowSelection: 'multiple',
+              pivotPanelShow: 'always',
+              rowGroupPanelShow: 'always',
+              enableRangeSelection: true,
+            }}
+            // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+            // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            suppressContextMenu={false}
+            columnDefs={localcolDefs}
+            sideBar={['columns', 'filters']}
+          />
+        );
+      }
+      const colDefs = data.columns.map(
+        (colName) =>
+          ({
+            minWidth: 50,
+            sortable: true,
+            resizable: true,
+            field: colName,
+            flex: 1,
+            cellRenderer: TDSResultCellRenderer,
+            filter: true,
+          }) as DataGridColumnDefinition,
+      );
+      const getContextMenuItems = useCallback(
+        (
+          params: DataGridGetContextMenuItemsParams<{
+            [key: string]: string;
+          }>,
+        ): (string | DataGridMenuItemDef)[] => [
+          'copy',
+          'copyWithHeaders',
+          {
+            name: 'Copy Row Value',
+            action: () => {
+              params.api.copySelectedRowsToClipboard();
+            },
+          },
+        ],
+        [],
+      );
+      return (
+        <div className="sql-playground__result__grid ag-theme-balham-dark">
+          <DataGrid
+            rowData={data.rowData}
+            overlayNoRowsTemplate={`<div class="sql-playground__result__grid--empty">No results</div>`}
+            gridOptions={{
+              suppressScrollOnNewData: true,
+              rowSelection: 'multiple',
+              enableRangeSelection: true,
+            }}
+            onRowDataUpdated={(params) => {
+              params.api.refreshCells({ force: true });
+            }}
+            suppressFieldDotNotation={true}
+            suppressClipboardPaste={false}
+            suppressContextMenu={false}
+            columnDefs={colDefs}
+            getContextMenuItems={(params): (string | DataGridMenuItemDef)[] =>
+              getContextMenuItems(params)
+            }
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="sql-playground__result__grid ag-theme-balham-dark">
         <DataGrid
@@ -512,6 +615,26 @@ export const SQLPlaygroundPanel = observer(() => {
     }
   };
 
+  const executeRawSQL = (): void => {
+    flowResult(playgroundState.executeRawSQL()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  };
+  const advancedMode = Boolean(
+    editorStore.applicationStore.config.options.queryBuilderConfig
+      ?.TEMPORARY__enableGridEnterpriseMode,
+  );
+  const resultDescription = playgroundState.sqlExecutionResult
+    ? `query ran in ${prettyDuration(
+        playgroundState.sqlExecutionResult.sqlDuration,
+        {
+          ms: true,
+        },
+      )}`
+    : undefined;
+  const toggleocalMode = (): void => {
+    playgroundState.toggleIsLocalModeEnabled();
+  };
   useEffect(() => {
     if (playgroundState.schemaExplorerState) {
       flowResult(
@@ -524,7 +647,6 @@ export const SQLPlaygroundPanel = observer(() => {
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SQL_PLAYGROUND,
     editorStore.activePanelMode === PANEL_MODE.SQL_PLAYGROUND,
   );
-
   return (
     <PanelDropZone
       isDragOver={isConnectionDragOver}
@@ -567,11 +689,7 @@ export const SQLPlaygroundPanel = observer(() => {
                     />
                     <button
                       className="sql-playground__config__database-selector__update-btn btn--sm btn--dark"
-                      disabled={
-                        !playgroundState.database ||
-                        playgroundState.isBuildingDatabase ||
-                        playgroundState.isUpdatingDatabase
-                      }
+                      disabled={!playgroundState.database}
                       onClick={updateDatabase}
                       title="Update database"
                     >
@@ -580,6 +698,11 @@ export const SQLPlaygroundPanel = observer(() => {
                   </div>
                 </div>
                 <div className="sql-playground__config__schema-explorer">
+                  <PanelLoadingIndicator
+                    isLoading={Boolean(
+                      playgroundState.schemaExplorerState?.isGeneratingDatabase,
+                    )}
+                  />
                   {playgroundState.schemaExplorerState?.treeData && (
                     <DatabaseSchemaExplorer
                       treeData={playgroundState.schemaExplorerState.treeData}
@@ -603,9 +726,70 @@ export const SQLPlaygroundPanel = observer(() => {
                     <ResizablePanelSplitterLine color="var(--color-dark-grey-250)" />
                   </ResizablePanelSplitter>
                   <ResizablePanel size={300}>
+                    <div className="panel__header">
+                      <div className="panel__header__title">
+                        <div className="panel__header__title__label">
+                          result
+                        </div>
+
+                        {playgroundState.executeRawSQLState.isInProgress && (
+                          <div className="panel__header__title__label__status">
+                            Running SQL...
+                          </div>
+                        )}
+
+                        <div className="query-builder__result__analytics">
+                          {resultDescription ?? ''}
+                        </div>
+                      </div>
+                      <div className="panel__header__actions query-builder__result__header__actions">
+                        {advancedMode && (
+                          <div className="query-builder__result__advanced__mode">
+                            <div className="query-builder__result__advanced__mode__label">
+                              Local Mode
+                            </div>
+                            <button
+                              className={clsx(
+                                'query-builder__result__advanced__mode__toggler__btn',
+                                {
+                                  'query-builder__result__advanced__mode__toggler__btn--toggled':
+                                    playgroundState.isLocalModeEnabled,
+                                },
+                              )}
+                              onClick={toggleocalMode}
+                              tabIndex={-1}
+                            >
+                              {playgroundState.isLocalModeEnabled ? (
+                                <CheckSquareIcon />
+                              ) : (
+                                <SquareIcon />
+                              )}
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="query-builder__result__execute-btn btn__dropdown-combo btn__dropdown-combo--primary">
+                          <button
+                            className="btn__dropdown-combo__label"
+                            onClick={executeRawSQL}
+                            disabled={
+                              playgroundState.executeRawSQLState.isInProgress
+                            }
+                            tabIndex={-1}
+                          >
+                            <PlayIcon className="btn__dropdown-combo__label__icon" />
+                            <div className="btn__dropdown-combo__label__title">
+                              Run Query
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                     {playgroundState.sqlExecutionResult !== undefined && (
                       <PlayGroundSQLExecutionResultGrid
-                        result={playgroundState.sqlExecutionResult}
+                        result={playgroundState.sqlExecutionResult.value}
+                        useAdvancedGrid={advancedMode}
+                        useLocalMode={playgroundState.isLocalModeEnabled}
                       />
                     )}
                     {playgroundState.sqlExecutionResult === undefined && (
