@@ -405,7 +405,11 @@ export const QueryResultModifierModal = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton onClick={applyChanges} text="Apply" />
-            <ModalFooterButton onClick={closeModal} text="Cancel" />
+            <ModalFooterButton
+              onClick={closeModal}
+              text="Cancel"
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

@@ -115,6 +115,14 @@
       margin-right: 0.5rem;
       font-size: 1.7rem;
     }
+
+    &--secondary {
+      background: var(--color-dark-grey-200);
+
+      &:hover {
+        background: var(--color-dark-grey-250);
+      }
+    }
   }
 }
 
