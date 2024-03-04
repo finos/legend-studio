@@ -104,6 +104,7 @@ import {
 } from './QueryBuilderExecutionContextState.js';
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
+import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 
 export interface QuerySDLC {}
 
@@ -136,6 +137,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   resultState: QueryBuilderResultState;
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
+  changeHistoryState: QueryBuilderChangeHistoryState;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
@@ -184,6 +186,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isCheckingEntitlments: observable,
       isCalendarEnabled: observable,
       changeDetectionState: observable,
+      changeHistoryState: observable,
       executionContextState: observable,
       class: observable,
       isQueryChatOpened: observable,
@@ -236,6 +239,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
+    this.changeHistoryState = new QueryBuilderChangeHistoryState(this);
     this.config = config;
     this.sourceInfo = sourceInfo;
   }
@@ -441,6 +445,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.explorerState.refreshTreeData();
     this.fetchStructureState.implementation.onClassChange(val);
     this.milestoningState.updateMilestoningConfiguration();
+    this.changeHistoryState.cacheNewQuery(this.buildQuery());
   }
 
   changeMapping(val: Mapping, options?: { keepQueryContent?: boolean }): void {
@@ -553,6 +558,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     });
     this.resetQueryResult();
     this.changeDetectionState.initialize(query);
+    this.changeHistoryState.initialize(query);
   }
 
   /**

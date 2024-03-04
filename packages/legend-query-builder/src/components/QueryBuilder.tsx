@@ -75,6 +75,8 @@ import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
 import { QueryChat } from './QueryChat.js';
+import { useEffect, useRef } from 'react';
+import { RedoButton, UndoButton } from '@finos/legend-lego/application';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -226,6 +228,7 @@ const QueryBuilderPostGraphFetchPanel = observer(
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const queryBuilderRef = useRef<HTMLDivElement>(null);
     const isQuerySupported = queryBuilderState.isQuerySupported;
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
@@ -368,10 +371,30 @@ export const QueryBuilder = observer(
       }
       return null;
     };
+
+    const undo = (): void => {
+      queryBuilderState.changeHistoryState.undo();
+    };
+
+    const redo = (): void => {
+      queryBuilderState.changeHistoryState.redo();
+    };
+
+    useEffect(() => {
+      // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
+      // we use an empty RawLambda with an empty class and this useEffect is called earlier than initializeWithQuery()
+      if (queryBuilderState.isQuerySupported && queryBuilderState.class) {
+        queryBuilderState.changeHistoryState.cacheNewQuery(
+          queryBuilderState.buildQuery(),
+        );
+      }
+    }, [queryBuilderState, queryBuilderState.hashCode]);
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
+        ref={queryBuilderRef}
       >
         <BackdropContainer
           elementId={QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
@@ -408,6 +431,24 @@ export const QueryBuilder = observer(
                 )}
               </div>
               <div className="query-builder__header__actions">
+                <div className="query-builder__header__actions__undo-redo">
+                  <UndoButton
+                    parent={queryBuilderRef}
+                    canUndo={
+                      queryBuilderState.changeHistoryState.canUndo &&
+                      queryBuilderState.isQuerySupported
+                    }
+                    undo={undo}
+                  />
+                  <RedoButton
+                    parent={queryBuilderRef}
+                    canRedo={
+                      queryBuilderState.changeHistoryState.canRedo &&
+                      queryBuilderState.isQuerySupported
+                    }
+                    redo={redo}
+                  />
+                </div>
                 <DropdownMenu
                   className="query-builder__header__advanced-dropdown"
                   title="Show Advanced Menu..."

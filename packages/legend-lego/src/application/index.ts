@@ -19,5 +19,7 @@ export * from './DocumentationLink.js';
 export * from './ActivityBar.js';
 export * from './TabManager.js';
 export * from './TabManagerState.js';
+export * from './UndoButton.js';
+export * from './RedoButton.js';
 
 export * from './FuzzySearchAdvancedConfigMenu.js';
