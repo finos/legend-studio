@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.9
+
+### Patch Changes
+
+- [#2969](https://github.com/finos/legend-studio/pull/2969) [`e7b7de17f`](https://github.com/finos/legend-studio/commit/e7b7de17fb3d2639f948e96c93d06d7aa131ded9) ([@travisstebbins](https://github.com/travisstebbins)) - Clean up fetch structure panel
+
 ## 4.14.8
 
 ## 4.14.7
