@@ -254,7 +254,7 @@ export const QueryResultModifierModal = observer(
     const handleLimitResultsChange: React.ChangeEventHandler<
       HTMLInputElement
     > = (event) => {
-      const val = event.target.value;
+      const val = event.target.value.replace(/[^0-9]/g, '');
       setLimitResults(val === '' ? undefined : parseInt(val, 10));
     };
 
@@ -346,7 +346,7 @@ export const QueryResultModifierModal = observer(
                 <input
                   className="panel__content__form__section__input panel__content__form__section__number-input"
                   spellCheck={false}
-                  type="number"
+                  type="text"
                   value={limitResults ?? ''}
                   onChange={handleLimitResultsChange}
                 />
