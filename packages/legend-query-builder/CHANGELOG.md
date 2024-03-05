@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.10
+
+### Patch Changes
+
+- [#2965](https://github.com/finos/legend-studio/pull/2965) [`c6dc1281b`](https://github.com/finos/legend-studio/commit/c6dc1281b120e73cc7489a5a85897dfaa667700f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support undo/redo action in query builder
+
 ## 4.14.9
 
 ### Patch Changes
