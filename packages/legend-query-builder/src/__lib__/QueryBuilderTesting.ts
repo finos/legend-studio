@@ -47,4 +47,5 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_RESULT_ANALYTICS = 'query__builder__result__analytics',
   // result modifier panel
   QUERY_BUILDER_RESULT_MODIFIER_PANEL = 'query__builder__result__modifier__panel',
+  QUERY_BUILDER_RESULT_MODIFIER_PANEL_SORT_REMOVE_BTN = 'query__builder__projection__options__sort__remove-btn',
 }

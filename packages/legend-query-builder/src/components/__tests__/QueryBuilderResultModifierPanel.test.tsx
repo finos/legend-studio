@@ -23,6 +23,9 @@ import {
   type RenderResult,
   findByText,
   findByRole,
+  findAllByTestId,
+  queryByText,
+  findAllByText,
 } from '@testing-library/react';
 import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
@@ -75,7 +78,7 @@ describe('QueryBuilderResultModifierPanel', () => {
     });
   });
 
-  test.skip(
+  test(
     integrationTest(
       'Query builder result modifier panel sets sort state when Apply is clicked',
     ),
@@ -93,20 +96,27 @@ describe('QueryBuilderResultModifierPanel', () => {
         await renderResult.findByText('Add Value'),
       );
       fireEvent.click(addValueButton);
-      fireEvent.click(
-        await findByText(resultModifierPanel, 'Edited First Name'),
-      );
-      const dropdownMenu = guaranteeNonNullable(
-        document.querySelector('.selector-input--dark__menu'),
-      ) as HTMLElement;
-      fireEvent.click(await findByText(dropdownMenu, 'Last Name'));
-      fireEvent.click(addValueButton);
       expect(
         await findByText(resultModifierPanel, 'Edited First Name'),
       ).not.toBeNull();
+      expect(await findByText(resultModifierPanel, 'asc')).not.toBeNull();
+      fireEvent.click(addValueButton);
+      expect(await findByText(resultModifierPanel, 'Last Name')).not.toBeNull();
+      expect(await findAllByText(resultModifierPanel, 'asc')).toHaveLength(2);
+      const removeButton = guaranteeNonNullable(
+        (
+          await findAllByTestId(
+            resultModifierPanel,
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL_SORT_REMOVE_BTN,
+          )
+        )?.[0],
+      );
+      fireEvent.click(removeButton);
+      expect(queryByText(resultModifierPanel, 'Edited First Name')).toBeNull();
+      expect(await findByText(resultModifierPanel, 'asc')).not.toBeNull();
 
       const applyButton = await findByRole(resultModifierPanel, 'button', {
-        name: 'Apply ',
+        name: 'Apply',
       });
       fireEvent.click(applyButton);
 
@@ -117,7 +127,7 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
       expect(
         queryBuilderTDSState.resultSetModifierState.sortColumns,
-      ).toHaveLength(2);
+      ).toHaveLength(1);
       expect(
         queryBuilderTDSState.resultSetModifierState.sortColumns[0]?.sortType,
       ).toBe(COLUMN_SORT_TYPE.ASC);
@@ -125,13 +135,57 @@ describe('QueryBuilderResultModifierPanel', () => {
         queryBuilderTDSState.resultSetModifierState.sortColumns[0]?.columnState
           .columnName,
       ).toBe('Last Name');
+    },
+  );
+
+  test(
+    integrationTest(
+      "Query builder result modifier panel doesn't set sort state when Cancel is clicked",
+    ),
+    async () => {
+      // Open Query Options panel
+      const queryOptionsButton = await renderResult.findByText('Query Options');
+      fireEvent.click(queryOptionsButton);
+      const resultModifierPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
+      );
+
+      // Verify initial state
+      const queryBuilderTDSState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
       expect(
-        queryBuilderTDSState.resultSetModifierState.sortColumns[1]?.sortType,
-      ).toBe(COLUMN_SORT_TYPE.ASC);
+        queryBuilderTDSState.resultSetModifierState.sortColumns,
+      ).toHaveLength(0);
+
+      // Set sort values
+      await findByText(resultModifierPanel, 'Sort and Order');
+      const addValueButton = guaranteeNonNullable(
+        await renderResult.findByText('Add Value'),
+      );
+      fireEvent.click(addValueButton);
       expect(
-        queryBuilderTDSState.resultSetModifierState.sortColumns[1]?.columnState
-          .columnName,
-      ).toBe('Edited First Name');
+        await findByText(resultModifierPanel, 'Edited First Name'),
+      ).not.toBeNull();
+      expect(await findByText(resultModifierPanel, 'asc')).not.toBeNull();
+
+      // Don't apply the changes
+      const cancelButton = await findByRole(resultModifierPanel, 'button', {
+        name: 'Cancel',
+      });
+      fireEvent.click(cancelButton);
+
+      // Check new state
+      expect(
+        queryBuilderTDSState.resultSetModifierState.sortColumns,
+      ).toHaveLength(0);
+
+      // Verify that panel stays synced with state
+      fireEvent.click(queryOptionsButton);
+      await findByText(resultModifierPanel, 'Sort and Order');
+      expect(queryByText(resultModifierPanel, 'Edited First Name')).toBeNull();
+      expect(queryByText(resultModifierPanel, 'asc')).toBeNull();
     },
   );
 

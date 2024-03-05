@@ -137,6 +137,9 @@ const ColumnSortEditor = observer(
           onClick={deleteColumnSort}
           tabIndex={-1}
           title="Remove"
+          data-testid={
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL_SORT_REMOVE_BTN
+          }
         >
           <TimesIcon />
         </button>
