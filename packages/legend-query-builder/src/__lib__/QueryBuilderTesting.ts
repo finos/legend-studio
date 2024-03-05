@@ -45,4 +45,6 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT = 'query-builder__tds__result-modifier-prompt',
   QUERY_BUILDER_RESULT_PANEL = 'query__builder__result__panel',
   QUERY_BUILDER_RESULT_ANALYTICS = 'query__builder__result__analytics',
+  // result modifier panel
+  QUERY_BUILDER_RESULT_MODIFIER_PANEL = 'query__builder__result__modifier__panel',
 }

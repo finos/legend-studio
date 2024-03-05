@@ -44,6 +44,7 @@ import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/td
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
 import { useEffect, useState } from 'react';
 import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
 const ColumnSortEditor = observer(
   (props: {
@@ -299,6 +300,7 @@ export const QueryResultModifierModal = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL}
       >
         <Modal darkMode={true} className="editor-modal">
           <ModalHeader title="Result Set Modifier" />
