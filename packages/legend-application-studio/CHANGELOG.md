@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.15.10
+
+### Patch Changes
+
+- [#2977](https://github.com/finos/legend-studio/pull/2977) [`09a8094ae`](https://github.com/finos/legend-studio/commit/09a8094aee79d28ebe65bb62207c4784066534ca) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enhance SQL Playground grid
+
 ## 28.15.9
 
 ## 28.15.8
