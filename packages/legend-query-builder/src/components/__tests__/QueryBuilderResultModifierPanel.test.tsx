@@ -364,4 +364,104 @@ describe('QueryBuilderResultModifierPanel', () => {
       expect(limitResultsInput.value).toBe('');
     },
   );
+
+  test(
+    integrationTest(
+      'Query builder result modifier panel sets slice when Apply is clicked',
+    ),
+    async () => {
+      // Open Query Options panel
+      const queryOptionsButton = await renderResult.findByText('Query Options');
+      fireEvent.click(queryOptionsButton);
+      const resultModifierPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
+      );
+
+      // Verify initial state
+      const queryBuilderTDSState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      expect(queryBuilderTDSState.resultSetModifierState.slice).toBeUndefined();
+
+      // Set slice
+      const addSliceButton = guaranteeNonNullable(
+        await findByRole(resultModifierPanel, 'button', {
+          name: 'Add Slice',
+        }),
+      );
+      fireEvent.click(addSliceButton);
+      const sliceStartInput = guaranteeNonNullable(
+        resultModifierPanel.querySelector('input[value="0"]'),
+      );
+      const sliceEndInput = guaranteeNonNullable(
+        resultModifierPanel.querySelector('input[value="1"]'),
+      );
+      fireEvent.change(sliceStartInput, {
+        target: { value: '10' },
+      });
+      fireEvent.change(sliceEndInput, {
+        target: { value: '20' },
+      });
+      const applyButton = await renderResult.findByRole('button', {
+        name: 'Apply',
+      });
+      fireEvent.click(applyButton);
+
+      // Check new state
+      expect(queryBuilderTDSState.resultSetModifierState.slice).toEqual([
+        10, 20,
+      ]);
+    },
+  );
+
+  test(
+    integrationTest(
+      "Query builder result modifier panel doesn't set slice when Cancel is clicked",
+    ),
+    async () => {
+      // Open Query Options panel
+      const queryOptionsButton = await renderResult.findByText('Query Options');
+      fireEvent.click(queryOptionsButton);
+      const resultModifierPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
+      );
+
+      // Verify initial state
+      const queryBuilderTDSState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      expect(queryBuilderTDSState.resultSetModifierState.slice).toBeUndefined();
+
+      // Set result limit and verify only numbers are allowed
+      const addSliceButton = guaranteeNonNullable(
+        await findByRole(resultModifierPanel, 'button', {
+          name: 'Add Slice',
+        }),
+      );
+      fireEvent.click(addSliceButton);
+      expect(
+        resultModifierPanel.querySelector('input[value="0"]'),
+      ).not.toBeNull();
+      expect(
+        resultModifierPanel.querySelector('input[value="1"]'),
+      ).not.toBeNull();
+
+      // Don't apply changes
+      const cancelButton = await renderResult.findByRole('button', {
+        name: 'Cancel',
+      });
+      fireEvent.click(cancelButton);
+
+      // Check new state
+      expect(queryBuilderTDSState.resultSetModifierState.slice).toBeUndefined();
+
+      // Verify that panel stays synced with state
+      fireEvent.click(queryOptionsButton);
+      expect(
+        await findByRole(resultModifierPanel, 'button', { name: 'Add Slice' }),
+      ).not.toBeNull();
+    },
+  );
 });
