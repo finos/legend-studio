@@ -159,6 +159,8 @@ const LambdaEditor_Inner = observer(
           applicationStore.alertUnhandledError,
         );
         setExpanded(!isExpanded);
+      } else if (!forceExpansion && parserError) {
+        setExpanded(!isExpanded);
       }
     };
 
@@ -399,7 +401,6 @@ const LambdaEditor_Inner = observer(
             <button
               className="lambda-editor__editor__expand-btn"
               onClick={toggleExpandedMode}
-              disabled={Boolean(parserError)}
               tabIndex={-1}
               title="Toggle Expand"
             >
@@ -410,7 +411,6 @@ const LambdaEditor_Inner = observer(
             <button
               className="lambda-editor__action"
               onClick={openInPopUp}
-              disabled={Boolean(parserError)}
               tabIndex={-1}
               title="Open in a popup..."
             >
@@ -569,12 +569,14 @@ const LambdaEditor_PopUp = observer(
     }
 
     useEffect(() => {
-      flowResult(
-        lambdaEditorState.convertLambdaObjectToGrammarString({
-          pretty: true,
-          preserveCompilationError: true,
-        }),
-      ).catch(applicationStore.alertUnhandledError);
+      if (!lambdaEditorState.parserError) {
+        flowResult(
+          lambdaEditorState.convertLambdaObjectToGrammarString({
+            pretty: true,
+            preserveCompilationError: true,
+          }),
+        ).catch(applicationStore.alertUnhandledError);
+      }
     }, [applicationStore, lambdaEditorState]);
 
     // dispose editor
