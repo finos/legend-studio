@@ -341,14 +341,18 @@ export const QueryResultModifierModal = observer(
                 </div>
               </div>
               <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
+                <label
+                  htmlFor="query-builder__projection__modal__limit-results-input"
+                  className="panel__content__form__section__header__label"
+                >
                   Limit Results
-                </div>
+                </label>
                 <div className="panel__content__form__section__header__prompt">
                   Specify the maximum total number of rows the output will
                   produce
                 </div>
                 <input
+                  id="query-builder__projection__modal__limit-results-input"
                   className="panel__content__form__section__input panel__content__form__section__number-input"
                   spellCheck={false}
                   type="text"

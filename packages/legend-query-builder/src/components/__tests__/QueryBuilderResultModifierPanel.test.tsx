@@ -26,6 +26,7 @@ import {
   findAllByTestId,
   queryByText,
   findAllByText,
+  findByLabelText,
 } from '@testing-library/react';
 import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
@@ -90,6 +91,15 @@ describe('QueryBuilderResultModifierPanel', () => {
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
       );
 
+      // Verify initial state
+      const queryBuilderTDSState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      expect(
+        queryBuilderTDSState.resultSetModifierState.sortColumns,
+      ).toHaveLength(0);
+
       // Set sort values
       await findByText(resultModifierPanel, 'Sort and Order');
       const addValueButton = guaranteeNonNullable(
@@ -121,10 +131,6 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(applyButton);
 
       // Check state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
       expect(
         queryBuilderTDSState.resultSetModifierState.sortColumns,
       ).toHaveLength(1);
@@ -274,6 +280,88 @@ describe('QueryBuilderResultModifierPanel', () => {
           'panel__content__form__section__toggler__btn--toggled',
         ),
       ).toBe(false);
+    },
+  );
+
+  test(
+    integrationTest(
+      'Query builder result modifier panel sets limit results when Apply is clicked',
+    ),
+    async () => {
+      // Open Query Options panel
+      const queryOptionsButton = await renderResult.findByText('Query Options');
+      fireEvent.click(queryOptionsButton);
+      const resultModifierPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
+      );
+
+      // Verify initial state
+      const queryBuilderTDSState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      expect(queryBuilderTDSState.resultSetModifierState.limit).toBeUndefined();
+
+      // Set result limit and verify only numbers are allowed
+      const limitResultsInput = guaranteeType(
+        await findByLabelText(resultModifierPanel, 'Limit Results'),
+        HTMLInputElement,
+      );
+      fireEvent.change(limitResultsInput, {
+        target: { value: '12.3-4+5' },
+      });
+      expect(limitResultsInput.value).toBe('12345');
+      const applyButton = await renderResult.findByRole('button', {
+        name: 'Apply',
+      });
+      fireEvent.click(applyButton);
+
+      // Check new state
+      expect(queryBuilderTDSState.resultSetModifierState.limit).toBe(12345);
+    },
+  );
+
+  test(
+    integrationTest(
+      "Query builder result modifier panel doesn't set limit results when Cancel is clicked",
+    ),
+    async () => {
+      // Open Query Options panel
+      const queryOptionsButton = await renderResult.findByText('Query Options');
+      fireEvent.click(queryOptionsButton);
+      const resultModifierPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
+      );
+
+      // Verify initial state
+      const queryBuilderTDSState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      expect(queryBuilderTDSState.resultSetModifierState.limit).toBeUndefined();
+
+      // Set result limit and verify only numbers are allowed
+      const limitResultsInput = guaranteeType(
+        await findByLabelText(resultModifierPanel, 'Limit Results'),
+        HTMLInputElement,
+      );
+      fireEvent.change(limitResultsInput, {
+        target: { value: '12345' },
+      });
+      expect(limitResultsInput.value).toBe('12345');
+
+      // Don't apply changes
+      const cancelButton = await renderResult.findByRole('button', {
+        name: 'Cancel',
+      });
+      fireEvent.click(cancelButton);
+
+      // Check new state
+      expect(queryBuilderTDSState.resultSetModifierState.limit).toBeUndefined();
+
+      // Verify that panel stays synced with state
+      fireEvent.click(queryOptionsButton);
+      expect(limitResultsInput.value).toBe('');
     },
   );
 });
