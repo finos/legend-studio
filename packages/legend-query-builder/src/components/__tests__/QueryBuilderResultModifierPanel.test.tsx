@@ -119,7 +119,7 @@ describe('QueryBuilderResultModifierPanel', () => {
             resultModifierPanel,
             QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL_SORT_REMOVE_BTN,
           )
-        )?.[0],
+        )[0],
       );
       fireEvent.click(removeButton);
       expect(queryByText(resultModifierPanel, 'Edited First Name')).toBeNull();
@@ -255,7 +255,7 @@ describe('QueryBuilderResultModifierPanel', () => {
         'Remove duplicate rows from the results',
       );
       const eliminateDuplicateRowsToggleButton = guaranteeNonNullable(
-        eliminateDuplicateRowsToggleText?.parentElement?.firstElementChild,
+        eliminateDuplicateRowsToggleText.parentElement?.firstElementChild,
       );
       fireEvent.click(eliminateDuplicateRowsToggleButton);
       expect(

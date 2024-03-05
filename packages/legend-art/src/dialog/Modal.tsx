@@ -105,7 +105,7 @@ export const ModalFooterButton: React.FC<{
   } = props;
   const isDarkMode = darkMode ?? true;
   const isFormatText = formatText ?? true;
-  const isSecondary = type === 'secondary' ?? false;
+  const isSecondary = type === 'secondary';
 
   return (
     <button
