@@ -69,7 +69,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
       hashArray(this.taggedValues),
       hashArray(this.stereotypes),
       hashRawLambda(undefined, this.body),
-      this.tests ? hashArray(this.tests) : '',
+      this.tests?.length ? hashArray(this.tests) : '',
     ]);
   }
 

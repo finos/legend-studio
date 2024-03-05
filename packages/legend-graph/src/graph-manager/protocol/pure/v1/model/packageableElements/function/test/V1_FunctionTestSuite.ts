@@ -27,7 +27,7 @@ export class V1_FunctionTestSuite extends V1_TestSuite {
       CORE_HASH_STRUCTURE.FUNCTION_TEST_SUITE,
       this.id,
       this.doc ?? '',
-      this.testData ? hashArray(this.testData) : '',
+      this.testData?.length ? hashArray(this.testData) : '',
       hashArray(this.tests),
     ]);
   }

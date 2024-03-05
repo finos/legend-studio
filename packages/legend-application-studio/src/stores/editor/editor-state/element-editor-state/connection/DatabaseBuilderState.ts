@@ -812,7 +812,7 @@ export class DatabaseSchemaExplorerState {
   }
 
   // this method just updates database
-  *updateDatabase(): GeneratorFn<Database> {
+  *updateDatabase(forceRename?: boolean): GeneratorFn<Database> {
     this.isUpdatingDatabase = true;
     const graph = this.editorStore.graphManagerState.createNewGraph();
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
@@ -838,12 +838,15 @@ export class DatabaseSchemaExplorerState {
       .filter(isNonNullable);
 
     // update this.database packge and name
-    this.database.package = getOrCreateGraphPackage(
-      graph,
-      extractPackagePathFromPath(this.targetDatabasePath),
-      undefined,
-    );
-    this.database.name = extractElementNameFromPath(this.targetDatabasePath);
+    if (forceRename || this.database.name === '' || !this.database.package) {
+      this.database.package = getOrCreateGraphPackage(
+        graph,
+        extractPackagePathFromPath(this.targetDatabasePath),
+        undefined,
+      );
+      this.database.name = extractElementNameFromPath(this.targetDatabasePath);
+    }
+    // update schemas
     this.database.schemas = this.database.schemas.filter((schema) => {
       if (
         schemas.find((item) => item.name === schema.name) &&
