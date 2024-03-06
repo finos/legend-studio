@@ -31,6 +31,7 @@ import {
   MenuContent,
   MenuContentItem,
   ModalFooterButton,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import { SortColumnState } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import {
@@ -229,14 +230,16 @@ export const QueryResultModifierModal = observer(
     const [sortColumns, setSortColumns] = useState([...stateSortColumns]);
     const [distinct, setDistinct] = useState(stateDistinct);
     const [limitResults, setLimitResults] = useState(stateLimitResults);
-    const [slice, setSlice] = useState(stateSlice);
+    const [slice, setSlice] = useState<
+      [number | undefined, number | undefined]
+    >(stateSlice ?? [undefined, undefined]);
 
     // Sync temp state with tdsState when modal is opened/closed
     useEffect(() => {
       setSortColumns([...stateSortColumns]);
       setDistinct(stateDistinct);
       setLimitResults(stateLimitResults);
-      setSlice(stateSlice);
+      setSlice(stateSlice ?? [undefined, undefined]);
     }, [
       resultSetModifierState.showModal,
       stateSortColumns,
@@ -251,7 +254,11 @@ export const QueryResultModifierModal = observer(
       resultSetModifierState.setSortColumns(sortColumns);
       resultSetModifierState.setDistinct(distinct);
       resultSetModifierState.setLimit(limitResults);
-      resultSetModifierState.setSlice(slice);
+      if (slice[0] !== undefined && slice[1] !== undefined) {
+        resultSetModifierState.setSlice([slice[0], slice[1]]);
+      } else {
+        resultSetModifierState.setSlice(undefined);
+      }
       resultSetModifierState.setShowModal(false);
     };
 
@@ -262,25 +269,22 @@ export const QueryResultModifierModal = observer(
       setLimitResults(val === '' ? undefined : parseInt(val, 10));
     };
 
-    const handleSliceChange = (start: number, end: number): void => {
-      const newSlice: [number, number] = [start, end];
+    const handleSliceChange = (
+      start: number | undefined,
+      end: number | undefined,
+    ): void => {
+      const newSlice: [number | undefined, number | undefined] = [start, end];
       setSlice(newSlice);
-    };
-
-    const clearSlice = (): void => {
-      setSlice(undefined);
-    };
-
-    const addSlice = (): void => {
-      setSlice([0, 1]);
     };
 
     const changeSliceStart: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
       const val = event.target.value;
-      const start = typeof val === 'number' ? val : parseInt(val, 10);
-      if (slice) {
+      if (val === '') {
+        handleSliceChange(undefined, slice[1]);
+      } else {
+        const start = typeof val === 'number' ? val : parseInt(val, 10);
         handleSliceChange(start, slice[1]);
       }
     };
@@ -288,11 +292,18 @@ export const QueryResultModifierModal = observer(
       event,
     ) => {
       const val = event.target.value;
-      const end = typeof val === 'number' ? val : parseInt(val, 10);
-      if (slice) {
+      if (val === '') {
+        handleSliceChange(slice[0], undefined);
+      } else {
+        const end = typeof val === 'number' ? val : parseInt(val, 10);
         handleSliceChange(slice[0], end);
       }
     };
+
+    // Error states
+    const isInvalidSlice =
+      (slice[0] === undefined && slice[1] !== undefined) ||
+      (slice[0] !== undefined && slice[1] === undefined);
 
     return (
       <Dialog
@@ -371,52 +382,38 @@ export const QueryResultModifierModal = observer(
                   Reduce the number of rows in the provided TDS, selecting the
                   set of rows in the specified range between start and stop
                 </div>
-                {slice ? (
-                  <>
-                    <div className="query-builder__result__slice">
-                      <input
-                        className="input--dark query-builder__result__slice__input"
-                        spellCheck={false}
-                        value={slice[0]}
-                        onChange={changeSliceStart}
-                        type="number"
-                      />
-                      <div className="query-builder__result__slice__range">
-                        ..
-                      </div>
-                      <input
-                        className="input--dark query-builder__result__slice__input"
-                        spellCheck={false}
-                        value={slice[1]}
-                        onChange={changeSliceEnd}
-                        type="number"
-                      />
-                      <button
-                        className="query-builder__projection__options__sort__remove-btn btn--dark btn--caution"
-                        onClick={clearSlice}
-                        tabIndex={-1}
-                        title="Remove"
-                      >
-                        <TimesIcon />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="panel__content__form__section__list__new-item__add">
-                    <button
-                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                      onClick={addSlice}
-                      tabIndex={-1}
-                    >
-                      Add Slice
-                    </button>
+                <div className="query-builder__result__slice">
+                  <div className="query-builder__result__slice__input__wrapper">
+                    <InputWithInlineValidation
+                      className="input--dark query-builder__result__slice__input"
+                      spellCheck={false}
+                      value={slice[0]}
+                      onChange={changeSliceStart}
+                      type="number"
+                      error={isInvalidSlice ? 'Invalid slice' : undefined}
+                    />
                   </div>
-                )}
+                  <div className="query-builder__result__slice__range">..</div>
+                  <div className="query-builder__result__slice__input__wrapper">
+                    <InputWithInlineValidation
+                      className="input--dark query-builder__result__slice__input"
+                      spellCheck={false}
+                      value={slice[1]}
+                      onChange={changeSliceEnd}
+                      type="number"
+                      error={isInvalidSlice ? 'Invalid slice' : undefined}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton onClick={applyChanges} text="Apply" />
+            <ModalFooterButton
+              onClick={applyChanges}
+              text="Apply"
+              disabled={isInvalidSlice}
+            />
             <ModalFooterButton
               onClick={closeModal}
               text="Cancel"
