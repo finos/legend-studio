@@ -38,8 +38,8 @@ import {
   MockedMonacoEditorAPI,
 } from '@finos/legend-lego/code-editor/test';
 
-const YTD = "Year to Date";
-const CME = "Current Month Estimate";
+const YTD = 'Year to Date';
+const CME = 'Current Month Estimate';
 
 test(
   integrationTest(
@@ -62,6 +62,7 @@ test(
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     await waitFor(() => getAllByText(queryBuilderSetup, 'Employee'));
+
     await waitFor(() => getAllByText(queryBuilderSetup, 'mapping'));
     const treeData = guaranteeNonNullable(
       queryBuilderState.explorerState.treeData,
@@ -97,7 +98,7 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel()
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
     ).toBe(YTD);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
@@ -162,7 +163,7 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel()
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
     ).toBe(YTD);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
@@ -228,7 +229,7 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel()
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
     ).toBe(YTD);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
@@ -302,7 +303,7 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel()
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
     ).toBe(YTD);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
@@ -393,7 +394,8 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.LDN);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel()
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
+      QueryBuilderAggregateCalendarFunction_Cme,
     ).toBe(CME);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn

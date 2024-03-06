@@ -18,6 +18,7 @@ import {
   type Hashable,
   guaranteeType,
   UnsupportedOperationError,
+  hashArray,
 } from '@finos/legend-shared';
 import {
   AbstractPropertyExpression,
@@ -25,26 +26,23 @@ import {
   LambdaFunctionInstanceValue,
   type SimpleFunctionExpression,
   type ValueSpecification,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
 } from '../projection/QueryBuilderProjectionColumnState.js';
-import type {QueryBuilderAggregateColumnState} from './QueryBuilderAggregationState.js';
-import {action, computed, makeObservable, observable} from 'mobx';
-import type {QUERY_BUILDER_CALENDAR_TYPE} from '../../../../graph-manager/QueryBuilderConst.js';
-import {DEFAULT_LAMBDA_VARIABLE_NAME} from '../../../QueryBuilderConfig.js';
-import {hashArray} from "@finos/legend-shared";
+import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
+import { action, computed, makeObservable, observable } from 'mobx';
+import type { QUERY_BUILDER_CALENDAR_TYPE } from '../../../../graph-manager/QueryBuilderConst.js';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
 import {
   buildCalendarFunctionExpression,
   updateAggregateColumnState,
 } from './QueryBuilderAggregateCalendarFunctionValueSpecificationBuilder.js';
-import {PRIMITIVE_TYPE} from "../../../../../../legend-graph/lib/graph/MetaModelConst.js";
 
-export class QueryBuilderAggregateCalendarFunction
-  implements Hashable
-{
+export class QueryBuilderAggregateCalendarFunction implements Hashable {
   dateColumn?: AbstractPropertyExpression | undefined;
   calendarType!: QUERY_BUILDER_CALENDAR_TYPE;
   endDate!: ValueSpecification;
@@ -72,7 +70,7 @@ export class QueryBuilderAggregateCalendarFunction
     this.hash = hash;
   }
 
-  getLabel() {
+  getLabel(): string {
     return this.label;
   }
 
@@ -131,7 +129,7 @@ export class QueryBuilderAggregateCalendarFunction
       | undefined;
     if (
       aggregateColumnState.projectionColumnState instanceof
-        QueryBuilderSimpleProjectionColumnState &&
+      QueryBuilderSimpleProjectionColumnState &&
       columnLambda instanceof LambdaFunctionInstanceValue
     ) {
       targetColumn = guaranteeType(
