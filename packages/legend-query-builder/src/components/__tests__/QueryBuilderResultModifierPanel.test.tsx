@@ -383,10 +383,10 @@ describe('QueryBuilderResultModifierPanel', () => {
         ),
       );
       fireEvent.change(sliceStartInput, {
-        target: { value: '10' },
+        target: { value: '1.2+3-4' },
       });
       fireEvent.change(sliceEndInput, {
-        target: { value: '20' },
+        target: { value: '2000' },
       });
       const applyButton = await renderResult.findByRole('button', {
         name: 'Apply',
@@ -395,7 +395,9 @@ describe('QueryBuilderResultModifierPanel', () => {
 
       // Check new state
       expect(await findByText(resultModifierPrompt, 'Slice')).not.toBeNull();
-      expect(await findByText(resultModifierPrompt, '10,20')).not.toBeNull();
+      expect(
+        await findByText(resultModifierPrompt, '1234,2000'),
+      ).not.toBeNull();
     },
   );
 
@@ -492,6 +494,14 @@ describe('QueryBuilderResultModifierPanel', () => {
 
       // Check apply button is enabled
       expect(applyButton.disabled).toBe(false);
+
+      // Set invalid slice (end value same as start value)
+      fireEvent.change(sliceEndInput, {
+        target: { value: '10' },
+      });
+
+      // Check apply button is disabled
+      expect(applyButton.disabled).toBe(true);
 
       // Set invalid slice (only end value)
       fireEvent.change(sliceStartInput, {
