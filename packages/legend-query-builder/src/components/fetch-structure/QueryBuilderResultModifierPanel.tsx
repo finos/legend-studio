@@ -391,7 +391,7 @@ export const QueryResultModifierModal = observer(
                       id="query-builder__projection__modal__slice-start-input"
                       className="input--dark query-builder__result__slice__input"
                       spellCheck={false}
-                      value={slice[0]}
+                      value={slice[0] ?? ''}
                       onChange={changeSliceStart}
                       type="number"
                       error={isInvalidSlice ? 'Invalid slice' : undefined}
@@ -402,7 +402,7 @@ export const QueryResultModifierModal = observer(
                     <InputWithInlineValidation
                       className="input--dark query-builder__result__slice__input"
                       spellCheck={false}
-                      value={slice[1]}
+                      value={slice[1] ?? ''}
                       onChange={changeSliceEnd}
                       type="number"
                       error={isInvalidSlice ? 'Invalid slice' : undefined}

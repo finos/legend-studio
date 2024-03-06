@@ -27,6 +27,8 @@ import {
   queryByText,
   findAllByText,
   findByLabelText,
+  findByDisplayValue,
+  queryByDisplayValue,
 } from '@testing-library/react';
 import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
@@ -35,10 +37,7 @@ import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import {
-  TEST__setUpQueryBuilder,
-  selectFromCustomSelectorInput,
-} from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
@@ -113,17 +112,10 @@ describe('QueryBuilderResultModifierPanel', () => {
         await findByText(resultModifierPanel, 'Edited First Name'),
       ).not.toBeNull();
       expect(await findByText(resultModifierPanel, 'asc')).not.toBeNull();
-      // Change Edited First Name selection to Last Name
-      selectFromCustomSelectorInput(resultModifierPanel, 'Last Name');
-      expect(queryByText(resultModifierPanel, 'Edited First Name')).toBeNull();
-      expect(await findByText(resultModifierPanel, 'Last Name')).not.toBeNull();
-      // Add Edited First Name selection back
       fireEvent.click(addValueButton);
-      expect(
-        await findByText(resultModifierPanel, 'Edited First Name'),
-      ).not.toBeNull();
+      expect(await findByText(resultModifierPanel, 'Last Name')).not.toBeNull();
       expect(await findAllByText(resultModifierPanel, 'asc')).toHaveLength(2);
-      // Remove Last Name selection
+      // Remove Edited First Name selection
       const removeButton = guaranteeNonNullable(
         (
           await findAllByTestId(
@@ -133,7 +125,7 @@ describe('QueryBuilderResultModifierPanel', () => {
         )[0],
       );
       fireEvent.click(removeButton);
-      expect(queryByText(resultModifierPanel, 'Last Name')).toBeNull();
+      expect(queryByText(resultModifierPanel, 'Edited First Name')).toBeNull();
       expect(await findByText(resultModifierPanel, 'asc')).not.toBeNull();
 
       const applyButton = await findByRole(resultModifierPanel, 'button', {
@@ -151,7 +143,7 @@ describe('QueryBuilderResultModifierPanel', () => {
       expect(
         queryBuilderTDSState.resultSetModifierState.sortColumns[0]?.columnState
           .columnName,
-      ).toBe('Edited First Name');
+      ).toBe('Last Name');
     },
   );
 
@@ -400,8 +392,9 @@ describe('QueryBuilderResultModifierPanel', () => {
         await findByLabelText(resultModifierPanel, 'Slice'),
       );
       const sliceEndInput = guaranteeNonNullable(
-        sliceStartInput.parentElement?.parentElement?.nextElementSibling
-          ?.nextElementSibling,
+        sliceStartInput.parentElement?.parentElement?.nextElementSibling?.nextElementSibling?.querySelector(
+          'input',
+        ),
       );
       fireEvent.change(sliceStartInput, {
         target: { value: '10' },
@@ -443,7 +436,7 @@ describe('QueryBuilderResultModifierPanel', () => {
       // Set result limit and verify only numbers are allowed
       const sliceStartInput = guaranteeNonNullable(
         await findByLabelText(resultModifierPanel, 'Slice'),
-      );
+      ) as HTMLInputElement;
       const sliceEndInput = guaranteeNonNullable(
         sliceStartInput.parentElement?.parentElement?.nextElementSibling?.nextElementSibling?.querySelector(
           'input',
@@ -455,8 +448,14 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.change(sliceEndInput, {
         target: { value: '20' },
       });
+      expect(
+        await findByDisplayValue(resultModifierPanel, '10'),
+      ).not.toBeNull();
+      expect(
+        await findByDisplayValue(resultModifierPanel, '20'),
+      ).not.toBeNull();
 
-      // // Don't apply changes
+      // Don't apply changes
       const cancelButton = await renderResult.findByRole('button', {
         name: 'Cancel',
       });
@@ -467,9 +466,8 @@ describe('QueryBuilderResultModifierPanel', () => {
 
       // Verify that panel stays synced with state
       fireEvent.click(queryOptionsButton);
-      expect(
-        await findByRole(resultModifierPanel, 'button', { name: 'Add Slice' }),
-      ).not.toBeNull();
+      expect(queryByDisplayValue(resultModifierPanel, '10')).toBeNull();
+      expect(queryByDisplayValue(resultModifierPanel, '20')).toBeNull();
     },
   );
 });
