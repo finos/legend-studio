@@ -375,9 +375,12 @@ export const QueryResultModifierModal = observer(
                 />
               </div>
               <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
+                <label
+                  htmlFor="query-builder__projection__modal__slice-start-input"
+                  className="panel__content__form__section__header__label"
+                >
                   Slice
-                </div>
+                </label>
                 <div className="panel__content__form__section__header__prompt">
                   Reduce the number of rows in the provided TDS, selecting the
                   set of rows in the specified range between start and stop
@@ -385,6 +388,7 @@ export const QueryResultModifierModal = observer(
                 <div className="query-builder__result__slice">
                   <div className="query-builder__result__slice__input__wrapper">
                     <InputWithInlineValidation
+                      id="query-builder__projection__modal__slice-start-input"
                       className="input--dark query-builder__result__slice__input"
                       spellCheck={false}
                       value={slice[0]}
