@@ -35,7 +35,6 @@ import {
 import {
   customListWithSchema,
   usingConstantValueSchema,
-  usingModelSchema,
 } from '@finos/legend-shared';
 import { V1_FunctionStoreTestData } from '../../../model/packageableElements/function/test/V1_FunctionStoreTestData.js';
 import {
@@ -88,8 +87,11 @@ export const V1_functionTestSuiteModelSchema = (
     _type: usingConstantValueSchema(V1_TestSuiteType.FUNCTION_TEST_SUITE),
     doc: optional(primitive()),
     id: primitive(),
-    testData: optional(
-      list(usingModelSchema(V1_FunctionStoreTestDataModelSchema(plugins))),
+    testData: customListWithSchema(
+      V1_FunctionStoreTestDataModelSchema(plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
     ),
     tests: list(
       custom(
