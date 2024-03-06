@@ -96,9 +96,9 @@ export const updateAggregateColumnState = (
     );
     assertTrue(
       dateColumn.func.value.genericType.value.rawType.name ===
-      PRIMITIVE_TYPE.STRICTDATE ||
-      dateColumn.func.value.genericType.value.rawType.name ===
-      PRIMITIVE_TYPE.DATE,
+        PRIMITIVE_TYPE.STRICTDATE ||
+        dateColumn.func.value.genericType.value.rawType.name ===
+          PRIMITIVE_TYPE.DATE,
 
       `Can't process ${extractElementNameFromPath(
         calendarFunctionFullPath,
@@ -119,7 +119,7 @@ export const updateAggregateColumnState = (
           (Array.isArray(propertyExpression.func.value.parameters)
             ? propertyExpression.func.value.parameters.length
             : 0) ===
-          propertyExpression.parametersValues.length - 1,
+            propertyExpression.parametersValues.length - 1,
           `Can't process property expression: derived property '${propertyExpression.func.value.name}' expects number of provided arguments to match number of parameters`,
         );
       }
@@ -131,7 +131,7 @@ export const updateAggregateColumnState = (
           currentPropertyExpression.functionName,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
         )
-        ) {
+      ) {
         currentPropertyExpression = guaranteeNonNullable(
           currentPropertyExpression.parametersValues[0],
         );
@@ -174,9 +174,9 @@ export const updateAggregateColumnState = (
     );
     assertTrue(
       endDate.genericType?.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE ||
-      endDate.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATE ||
-      dateColumn.func.value.genericType.value.rawType.name ===
-      PRIMITIVE_TYPE.DATE,
+        endDate.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATE ||
+        dateColumn.func.value.genericType.value.rawType.name ===
+          PRIMITIVE_TYPE.DATE,
 
       `Can't process ${extractElementNameFromPath(
         calendarFunctionFullPath,

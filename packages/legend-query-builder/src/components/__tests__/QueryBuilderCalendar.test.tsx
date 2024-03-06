@@ -394,8 +394,7 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.LDN);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
-      QueryBuilderAggregateCalendarFunction_Cme,
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
     ).toBe(CME);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn

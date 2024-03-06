@@ -129,7 +129,7 @@ export class QueryBuilderAggregateCalendarFunction implements Hashable {
       | undefined;
     if (
       aggregateColumnState.projectionColumnState instanceof
-      QueryBuilderSimpleProjectionColumnState &&
+        QueryBuilderSimpleProjectionColumnState &&
       columnLambda instanceof LambdaFunctionInstanceValue
     ) {
       targetColumn = guaranteeType(
