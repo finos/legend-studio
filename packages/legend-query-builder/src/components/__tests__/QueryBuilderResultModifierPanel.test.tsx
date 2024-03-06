@@ -38,12 +38,12 @@ import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
-import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 
 describe('QueryBuilderResultModifierPanel', () => {
-  let renderResult: RenderResult, queryBuilderState: QueryBuilderState;
+  let renderResult: RenderResult,
+    queryBuilderState: QueryBuilderState,
+    resultModifierPrompt: HTMLElement;
 
   beforeEach(async () => {
     ({ renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -79,6 +79,10 @@ describe('QueryBuilderResultModifierPanel', () => {
         ),
       );
     });
+
+    resultModifierPrompt = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
+    );
   });
 
   test(
@@ -94,13 +98,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
 
       // Verify initial state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      expect(
-        queryBuilderTDSState.resultSetModifierState.sortColumns,
-      ).toHaveLength(0);
+      expect(queryByText(resultModifierPrompt, 'Sort')).toBeNull();
+      expect(queryByText(resultModifierPrompt, 'Last Name ASC')).toBeNull();
 
       // Set sort values
       await findByText(resultModifierPanel, 'Sort and Order');
@@ -134,16 +133,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(applyButton);
 
       // Check state
-      expect(
-        queryBuilderTDSState.resultSetModifierState.sortColumns,
-      ).toHaveLength(1);
-      expect(
-        queryBuilderTDSState.resultSetModifierState.sortColumns[0]?.sortType,
-      ).toBe(COLUMN_SORT_TYPE.ASC);
-      expect(
-        queryBuilderTDSState.resultSetModifierState.sortColumns[0]?.columnState
-          .columnName,
-      ).toBe('Last Name');
+      expect(findByText(resultModifierPrompt, 'Sort')).not.toBeNull();
+      expect(findByText(resultModifierPrompt, 'Last Name ASC')).not.toBeNull();
     },
   );
 
@@ -160,13 +151,10 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
 
       // Verify initial state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
+      expect(queryByText(resultModifierPrompt, 'Sort')).toBeNull();
       expect(
-        queryBuilderTDSState.resultSetModifierState.sortColumns,
-      ).toHaveLength(0);
+        queryByText(resultModifierPrompt, 'Edited First Name ASC'),
+      ).toBeNull();
 
       // Set sort values
       await findByText(resultModifierPanel, 'Sort and Order');
@@ -186,9 +174,10 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(cancelButton);
 
       // Check new state
+      expect(queryByText(resultModifierPrompt, 'Sort')).toBeNull();
       expect(
-        queryBuilderTDSState.resultSetModifierState.sortColumns,
-      ).toHaveLength(0);
+        queryByText(resultModifierPrompt, 'Edited First Name ASC'),
+      ).toBeNull();
 
       // Verify that panel stays synced with state
       fireEvent.click(queryOptionsButton);
@@ -211,11 +200,10 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
 
       // Verify initial state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      expect(queryBuilderTDSState.resultSetModifierState.distinct).toBe(false);
+      expect(
+        queryByText(resultModifierPrompt, 'Eliminate Duplicate Rows'),
+      ).toBeNull();
+      expect(queryByText(resultModifierPrompt, 'Yes')).toBeNull();
 
       // Toggle eliminate duplicate rows
       const eliminateDuplicateRowsToggle = await findByText(
@@ -229,7 +217,10 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(applyButton);
 
       // Check new state
-      expect(queryBuilderTDSState.resultSetModifierState.distinct).toBe(true);
+      expect(
+        await findByText(resultModifierPrompt, 'Eliminate Duplicate Rows'),
+      ).not.toBeNull();
+      expect(await findByText(resultModifierPrompt, 'Yes')).not.toBeNull();
     },
   );
 
@@ -246,11 +237,10 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
 
       // Verify initial state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      expect(queryBuilderTDSState.resultSetModifierState.distinct).toBe(false);
+      expect(
+        queryByText(resultModifierPrompt, 'Eliminate Duplicate Rows'),
+      ).toBeNull();
+      expect(queryByText(resultModifierPrompt, 'Yes')).toBeNull();
 
       // Toggle eliminate duplicate rows
       const eliminateDuplicateRowsToggleText = await findByText(
@@ -274,7 +264,10 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(cancelButton);
 
       // Check new state
-      expect(queryBuilderTDSState.resultSetModifierState.distinct).toBe(false);
+      expect(
+        queryByText(resultModifierPrompt, 'Eliminate Duplicate Rows'),
+      ).toBeNull();
+      expect(queryByText(resultModifierPrompt, 'Yes')).toBeNull();
 
       // Verify that panel stays synced with state
       fireEvent.click(queryOptionsButton);
@@ -299,11 +292,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
 
       // Verify initial state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      expect(queryBuilderTDSState.resultSetModifierState.limit).toBeUndefined();
+      expect(queryByText(resultModifierPrompt, 'Max Rows')).toBeNull();
+      expect(queryByText(resultModifierPrompt, '12345')).toBeNull();
 
       // Set result limit and verify only numbers are allowed
       const limitResultsInput = guaranteeType(
@@ -320,7 +310,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(applyButton);
 
       // Check new state
-      expect(queryBuilderTDSState.resultSetModifierState.limit).toBe(12345);
+      expect(await findByText(resultModifierPrompt, 'Max Rows')).not.toBeNull();
+      expect(await findByText(resultModifierPrompt, '12345')).not.toBeNull();
     },
   );
 
@@ -337,11 +328,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
 
       // Verify initial state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      expect(queryBuilderTDSState.resultSetModifierState.limit).toBeUndefined();
+      expect(queryByText(resultModifierPrompt, 'Max Rows')).toBeNull();
+      expect(queryByText(resultModifierPrompt, '12345')).toBeNull();
 
       // Set result limit and verify only numbers are allowed
       const limitResultsInput = guaranteeType(
@@ -360,7 +348,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(cancelButton);
 
       // Check new state
-      expect(queryBuilderTDSState.resultSetModifierState.limit).toBeUndefined();
+      expect(queryByText(resultModifierPrompt, 'Max Rows')).toBeNull();
+      expect(queryByText(resultModifierPrompt, '12345')).toBeNull();
 
       // Verify that panel stays synced with state
       fireEvent.click(queryOptionsButton);
@@ -381,11 +370,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
 
       // Verify initial state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      expect(queryBuilderTDSState.resultSetModifierState.slice).toBeUndefined();
+      expect(queryByText(resultModifierPrompt, 'Slice')).toBeNull();
+      expect(queryByText(resultModifierPrompt, '10,20')).toBeNull();
 
       // Set slice
       const sliceStartInput = guaranteeNonNullable(
@@ -408,9 +394,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(applyButton);
 
       // Check new state
-      expect(queryBuilderTDSState.resultSetModifierState.slice).toEqual([
-        10, 20,
-      ]);
+      expect(await findByText(resultModifierPrompt, 'Slice')).not.toBeNull();
+      expect(await findByText(resultModifierPrompt, '10,20')).not.toBeNull();
     },
   );
 
@@ -427,11 +412,8 @@ describe('QueryBuilderResultModifierPanel', () => {
       );
 
       // Verify initial state
-      const queryBuilderTDSState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      expect(queryBuilderTDSState.resultSetModifierState.slice).toBeUndefined();
+      expect(queryByText(resultModifierPrompt, 'Slice')).toBeNull();
+      expect(queryByText(resultModifierPrompt, '10,20')).toBeNull();
 
       // Set result limit and verify only numbers are allowed
       const sliceStartInput = guaranteeNonNullable(
@@ -462,12 +444,62 @@ describe('QueryBuilderResultModifierPanel', () => {
       fireEvent.click(cancelButton);
 
       // Check new state
-      expect(queryBuilderTDSState.resultSetModifierState.slice).toBeUndefined();
+      expect(queryByText(resultModifierPrompt, 'Slice')).toBeNull();
+      expect(queryByText(resultModifierPrompt, '10,20')).toBeNull();
 
       // Verify that panel stays synced with state
       fireEvent.click(queryOptionsButton);
       expect(queryByDisplayValue(resultModifierPanel, '10')).toBeNull();
       expect(queryByDisplayValue(resultModifierPanel, '20')).toBeNull();
+    },
+  );
+
+  test(
+    integrationTest(
+      'Query builder result modifier panel disables Apply button when slice is invalid',
+    ),
+    async () => {
+      // Open Query Options panel
+      const queryOptionsButton = await renderResult.findByText('Query Options');
+      fireEvent.click(queryOptionsButton);
+      const resultModifierPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
+      );
+
+      // Set invalid slice (only start value)
+      const sliceStartInput = guaranteeNonNullable(
+        await findByLabelText(resultModifierPanel, 'Slice'),
+      ) as HTMLInputElement;
+      fireEvent.change(sliceStartInput, {
+        target: { value: '10' },
+      });
+
+      // Check apply button is disabled
+      const applyButton = (await renderResult.findByRole('button', {
+        name: 'Apply',
+      })) as HTMLButtonElement;
+      expect(applyButton.disabled).toBe(true);
+
+      // Set valid slice (start and end values)
+      const sliceEndInput = guaranteeNonNullable(
+        sliceStartInput.parentElement?.parentElement?.nextElementSibling?.nextElementSibling?.querySelector(
+          'input',
+        ),
+      );
+      fireEvent.change(sliceEndInput, {
+        target: { value: '20' },
+      });
+
+      // Check apply button is enabled
+      expect(applyButton.disabled).toBe(false);
+
+      // Set invalid slice (only end value)
+      fireEvent.change(sliceStartInput, {
+        target: { value: '' },
+      });
+
+      // Check apply button is disabled
+      expect(applyButton.disabled).toBe(true);
     },
   );
 });
