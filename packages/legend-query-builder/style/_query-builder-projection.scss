@@ -363,8 +363,13 @@
     display: flex;
   }
 
-  &__modal__body {
-    overflow: auto;
+  &__modal {
+    height: 60vh;
+    width: 50vw;
+
+    &__body {
+      overflow: auto;
+    }
   }
 
   &__options {
