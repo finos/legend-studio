@@ -280,7 +280,7 @@ export const QueryResultModifierModal = observer(
     const changeSliceStart: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
-      const val = event.target.value;
+      const val = event.target.value.replace(/[^0-9]/g, '');
       if (val === '') {
         handleSliceChange(undefined, slice[1]);
       } else {
@@ -291,7 +291,7 @@ export const QueryResultModifierModal = observer(
     const changeSliceEnd: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
-      const val = event.target.value;
+      const val = event.target.value.replace(/[^0-9]/g, '');
       if (val === '') {
         handleSliceChange(slice[0], undefined);
       } else {
@@ -303,7 +303,10 @@ export const QueryResultModifierModal = observer(
     // Error states
     const isInvalidSlice =
       (slice[0] === undefined && slice[1] !== undefined) ||
-      (slice[0] !== undefined && slice[1] === undefined);
+      (slice[0] !== undefined && slice[1] === undefined) ||
+      (slice[0] !== undefined &&
+        slice[1] !== undefined &&
+        slice[0] >= slice[1]);
 
     return (
       <Dialog
@@ -393,7 +396,7 @@ export const QueryResultModifierModal = observer(
                       spellCheck={false}
                       value={slice[0] ?? ''}
                       onChange={changeSliceStart}
-                      type="number"
+                      type="text"
                       error={isInvalidSlice ? 'Invalid slice' : undefined}
                     />
                   </div>
@@ -404,7 +407,7 @@ export const QueryResultModifierModal = observer(
                       spellCheck={false}
                       value={slice[1] ?? ''}
                       onChange={changeSliceEnd}
-                      type="number"
+                      type="text"
                       error={isInvalidSlice ? 'Invalid slice' : undefined}
                     />
                   </div>
