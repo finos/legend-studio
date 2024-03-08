@@ -150,8 +150,9 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
   (props: {
     projectionColumnState: QueryBuilderSimpleProjectionColumnState;
     setIsEditingColumnName: (isEditing: boolean) => void;
+    error?: boolean | undefined;
   }) => {
-    const { projectionColumnState, setIsEditingColumnName } = props;
+    const { projectionColumnState, setIsEditingColumnName, error } = props;
     const onPropertyExpressionChange = (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ): void =>
@@ -170,6 +171,7 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
           }
           onPropertyExpressionChange={onPropertyExpressionChange}
           setIsEditingColumnName={setIsEditingColumnName}
+          error={error}
         />
       </div>
     );
@@ -809,6 +811,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                     <QueryBuilderSimpleProjectionColumnEditor
                       projectionColumnState={projectionColumnState}
                       setIsEditingColumnName={setIsEditingColumnName}
+                      error={isDuplicatedColumnName}
                     />
                   </div>
                 )}

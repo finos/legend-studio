@@ -542,6 +542,10 @@
     &--primitive {
       color: var(--color-blue-40);
     }
+
+    &--error {
+      color: var(--color-red-200);
+    }
   }
 
   &__property {
@@ -566,14 +570,15 @@
     margin: 0.3rem;
     padding-left: 1rem;
     cursor: pointer;
+    opacity: 0.25;
 
     svg {
       font-size: 1.3rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-dark-grey-500);
     }
 
     &:hover svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-light-grey-400);
     }
   }
 

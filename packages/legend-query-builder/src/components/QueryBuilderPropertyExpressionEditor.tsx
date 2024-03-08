@@ -376,12 +376,14 @@ export const QueryBuilderPropertyExpressionBadge = observer(
       node: QueryBuilderExplorerTreePropertyNodeData,
     ) => void;
     setIsEditingColumnName?: (isEditing: boolean) => void;
+    error?: boolean | undefined;
   }) => {
     const {
       columnName,
       propertyExpressionState,
       onPropertyExpressionChange,
       setIsEditingColumnName,
+      error,
     } = props;
     const type =
       propertyExpressionState.propertyExpression.func.value.genericType.value
@@ -441,6 +443,8 @@ export const QueryBuilderPropertyExpressionBadge = observer(
                   type instanceof Enumeration,
                 'query-builder-property-expression-badge__content--primitive':
                   type instanceof PrimitiveType,
+                'query-builder-property-expression-badge__content--error':
+                  error,
               },
             )}
           >
