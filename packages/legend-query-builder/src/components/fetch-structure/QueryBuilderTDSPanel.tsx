@@ -771,7 +771,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                       .propertyExpression,
                   )}
                   isMapped={true}
-                  placement="bottom-end"
+                  placement="bottom-start"
                   explorerState={
                     projectionColumnState.propertyExpressionState
                       .queryBuilderState.explorerState
