@@ -18,6 +18,7 @@ import {
   ShareBoxIcon,
   type TooltipPlacement,
   Tooltip,
+  ClickAwayListener,
 } from '@finos/legend-art';
 import {
   type AbstractProperty,
@@ -137,73 +138,88 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
     explorerState,
   } = props;
 
+  const [open, setIsOpen] = useState(false);
+
   return (
-    <Tooltip
-      arrow={true}
-      {...(placement !== undefined ? { placement } : {})}
-      classes={{
-        tooltip: 'query-builder__tooltip',
-        arrow: 'query-builder__tooltip__arrow',
-        tooltipPlacementRight: 'query-builder__tooltip--right',
-      }}
-      TransitionProps={{
-        // disable transition
-        // NOTE: somehow, this is the only workaround we have, if for example
-        // we set `appear = true`, the tooltip will jump out of position
-        timeout: 0,
-      }}
-      title={
-        <div className="query-builder__tooltip__content">
-          <div className="query-builder__tooltip__header">{title}</div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Type</div>
-            <div className="query-builder__tooltip__item__value">
-              {type?.path ?? property.genericType.value.rawType.path}
-            </div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Path</div>
-            <div className="query-builder__tooltip__item__value">{path}</div>
-            {explorerState && (
-              <div className="query-builder__tooltip__item__action">
-                <button
-                  onClick={() => explorerState.highlightTreeNode(path)}
-                  title="Show in tree"
-                >
-                  <ShareBoxIcon color="white" />
-                </button>
+    <ClickAwayListener onClickAway={() => setIsOpen(false)}>
+      <div>
+        <Tooltip
+          arrow={true}
+          {...(placement !== undefined ? { placement } : {})}
+          classes={{
+            tooltip: 'query-builder__tooltip',
+            arrow: 'query-builder__tooltip__arrow',
+            tooltipPlacementRight: 'query-builder__tooltip--right',
+          }}
+          open={open}
+          onClose={() => setIsOpen(false)}
+          TransitionProps={{
+            // disable transition
+            // NOTE: somehow, this is the only workaround we have, if for example
+            // we set `appear = true`, the tooltip will jump out of position
+            timeout: 0,
+          }}
+          disableFocusListener={true}
+          disableHoverListener={true}
+          disableTouchListener={true}
+          title={
+            <div className="query-builder__tooltip__content">
+              <div className="query-builder__tooltip__header">{title}</div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">Type</div>
+                <div className="query-builder__tooltip__item__value">
+                  {type?.path ?? property.genericType.value.rawType.path}
+                </div>
               </div>
-            )}
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">
-              Multiplicity
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">Path</div>
+                <div className="query-builder__tooltip__item__value">
+                  {path}
+                </div>
+                {explorerState && (
+                  <div className="query-builder__tooltip__item__action">
+                    <button
+                      onClick={() => explorerState.highlightTreeNode(path)}
+                      title="Show in tree"
+                    >
+                      <ShareBoxIcon color="white" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">
+                  Multiplicity
+                </div>
+                <div className="query-builder__tooltip__item__value">
+                  {getMultiplicityDescription(property.multiplicity)}
+                </div>
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">
+                  Derived Property
+                </div>
+                <div className="query-builder__tooltip__item__value">
+                  {property instanceof DerivedProperty ? 'Yes' : 'No'}
+                </div>
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">
+                  Mapped
+                </div>
+                <div className="query-builder__tooltip__item__value">
+                  {isMapped ? 'Yes' : 'No'}
+                </div>
+              </div>
+              <QueryBuilderTaggedValueInfoTooltip
+                taggedValues={property.taggedValues}
+              />
             </div>
-            <div className="query-builder__tooltip__item__value">
-              {getMultiplicityDescription(property.multiplicity)}
-            </div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">
-              Derived Property
-            </div>
-            <div className="query-builder__tooltip__item__value">
-              {property instanceof DerivedProperty ? 'Yes' : 'No'}
-            </div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Mapped</div>
-            <div className="query-builder__tooltip__item__value">
-              {isMapped ? 'Yes' : 'No'}
-            </div>
-          </div>
-          <QueryBuilderTaggedValueInfoTooltip
-            taggedValues={property.taggedValues}
-          />
-        </div>
-      }
-    >
-      {children}
-    </Tooltip>
+          }
+        >
+          <div onClick={() => setIsOpen(true)}>{children}</div>
+        </Tooltip>
+      </div>
+    </ClickAwayListener>
   );
 };

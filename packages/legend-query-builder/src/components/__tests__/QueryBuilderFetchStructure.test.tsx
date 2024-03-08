@@ -711,10 +711,11 @@ test(
     );
     const lastNameExpressionInfoTooltipIcon = guaranteeNonNullable(
       await waitFor(
-        () => queryByText(projectionCols, LAST_NAME_ALIAS)?.nextSibling,
+        () =>
+          queryByText(projectionCols, LAST_NAME_ALIAS)?.nextSibling?.firstChild,
       ),
     );
-    fireEvent.mouseOver(lastNameExpressionInfoTooltipIcon);
+    fireEvent.click(lastNameExpressionInfoTooltipIcon);
     const tooltip = await renderResult.findByRole('tooltip');
     const pathShowInTreeButton = guaranteeNonNullable(
       await waitFor(
