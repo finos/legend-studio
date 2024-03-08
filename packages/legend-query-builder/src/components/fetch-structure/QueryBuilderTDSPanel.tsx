@@ -41,6 +41,7 @@ import {
   PanelEntryDropZonePlaceholder,
   FunctionIcon,
   CogIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -103,9 +104,13 @@ import {
   propertyExpression_setFunc,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
+import {
+  getPropertyChainName,
+  getPropertyPath,
+} from '../../stores/QueryBuilderPropertyEditorState.js';
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_CALENDAR_TYPE } from '../../graph-manager/QueryBuilderConst.js';
+import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -753,38 +758,62 @@ const QueryBuilderProjectionColumnEditor = observer(
               className="query-builder__projection__column__drag-handle__container"
             />
             {projectionColumnState instanceof
-              QueryBuilderSimpleProjectionColumnState &&
-              (isEditingColumnName ? (
-                <div className="query-builder__projection__column__name">
-                  <InputWithInlineValidation
-                    className="query-builder__projection__column__name__input input-group__input"
-                    spellCheck={false}
-                    value={projectionColumnState.columnName}
-                    onChange={changeColumnName}
-                    onKeyDown={(
-                      event: React.KeyboardEvent<HTMLInputElement>,
-                    ) => {
-                      if (event.key === 'Enter') {
+              QueryBuilderSimpleProjectionColumnState && (
+              <>
+                <QueryBuilderPropertyInfoTooltip
+                  title={projectionColumnState.propertyExpressionState.title}
+                  property={
+                    projectionColumnState.propertyExpressionState
+                      .propertyExpression.func.value
+                  }
+                  path={getPropertyPath(
+                    projectionColumnState.propertyExpressionState
+                      .propertyExpression,
+                  )}
+                  isMapped={true}
+                  placement="bottom-end"
+                  explorerState={
+                    projectionColumnState.propertyExpressionState
+                      .queryBuilderState.explorerState
+                  }
+                >
+                  <div className="query-builder-property-expression-badge__property__info">
+                    <InfoCircleIcon />
+                  </div>
+                </QueryBuilderPropertyInfoTooltip>
+                {isEditingColumnName ? (
+                  <div className="query-builder__projection__column__name">
+                    <InputWithInlineValidation
+                      className="query-builder__projection__column__name__input input-group__input"
+                      spellCheck={false}
+                      value={projectionColumnState.columnName}
+                      onChange={changeColumnName}
+                      onKeyDown={(
+                        event: React.KeyboardEvent<HTMLInputElement>,
+                      ) => {
+                        if (event.key === 'Enter') {
+                          setIsEditingColumnName(false);
+                        }
+                      }}
+                      onBlur={() => {
                         setIsEditingColumnName(false);
+                      }}
+                      error={
+                        isDuplicatedColumnName ? 'Duplicated column' : undefined
                       }
-                    }}
-                    onBlur={() => {
-                      setIsEditingColumnName(false);
-                    }}
-                    error={
-                      isDuplicatedColumnName ? 'Duplicated column' : undefined
-                    }
-                    ref={columnNameInputRef}
-                  />
-                </div>
-              ) : (
-                <div className="query-builder__projection__column__value">
-                  <QueryBuilderSimpleProjectionColumnEditor
-                    projectionColumnState={projectionColumnState}
-                    setIsEditingColumnName={setIsEditingColumnName}
-                  />
-                </div>
-              ))}
+                      ref={columnNameInputRef}
+                    />
+                  </div>
+                ) : (
+                  <div className="query-builder__projection__column__value">
+                    <QueryBuilderSimpleProjectionColumnEditor
+                      projectionColumnState={projectionColumnState}
+                      setIsEditingColumnName={setIsEditingColumnName}
+                    />
+                  </div>
+                )}
+              </>
+            )}
             {projectionColumnState instanceof
               QueryBuilderDerivationProjectionColumnState && (
               <>

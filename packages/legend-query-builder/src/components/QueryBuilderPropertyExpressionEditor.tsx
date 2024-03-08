@@ -30,7 +30,6 @@ import {
 import { observer } from 'mobx-react-lite';
 import {
   generateValueSpecificationForParameter,
-  getPropertyPath,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState.js';
@@ -40,7 +39,6 @@ import {
   type QueryBuilderExplorerTreeDragSource,
   type QueryBuilderExplorerTreePropertyNodeData,
 } from '../stores/explorer/QueryBuilderExplorerState.js';
-import { QueryBuilderPropertyInfoTooltip } from './shared/QueryBuilderPropertyInfoTooltip.js';
 import {
   type ValueSpecification,
   type VariableExpression,
@@ -385,8 +383,6 @@ export const QueryBuilderPropertyExpressionBadge = observer(
       onPropertyExpressionChange,
       setIsEditingColumnName,
     } = props;
-    const explorerState =
-      propertyExpressionState.queryBuilderState.explorerState;
     const type =
       propertyExpressionState.propertyExpression.func.value.genericType.value
         .rawType;
@@ -451,11 +447,15 @@ export const QueryBuilderPropertyExpressionBadge = observer(
             <div
               className="query-builder-property-expression-badge__property"
               title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
-              onClick={() => {
-                setIsEditingColumnName?.(true);
-              }}
             >
-              {columnName ?? propertyExpressionState.title}
+              <span
+                className="query-builder-property-expression-badge__property__content"
+                onClick={() => {
+                  setIsEditingColumnName?.(true);
+                }}
+              >
+                {columnName ?? propertyExpressionState.title}
+              </span>
             </div>
             {hasDerivedPropertyInExpression && (
               <button
@@ -476,18 +476,6 @@ export const QueryBuilderPropertyExpressionBadge = observer(
             <QueryBuilderPropertyExpressionEditor
               propertyExpressionState={propertyExpressionState}
             />
-            <QueryBuilderPropertyInfoTooltip
-              title={propertyExpressionState.title}
-              property={propertyExpressionState.propertyExpression.func.value}
-              path={getPropertyPath(propertyExpressionState.propertyExpression)}
-              isMapped={true}
-              placement="bottom-end"
-              explorerState={explorerState}
-            >
-              <div className="query-builder-property-expression-badge__property__info">
-                <InfoCircleIcon />
-              </div>
-            </QueryBuilderPropertyInfoTooltip>
           </div>
         </PanelEntryDropZonePlaceholder>
       </div>

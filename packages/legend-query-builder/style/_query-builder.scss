@@ -532,28 +532,30 @@
     color: var(--color-light-grey-0);
 
     &--class {
-      background: var(--color-purple-200);
+      color: var(--color-purple-200);
     }
 
     &--enumeration {
-      background: var(--color-medium-green-450);
+      color: var(--color-medium-green-450);
     }
 
-    // &--primitive {
-    //   background: var(--color-blue-200);
-    // }
+    &--primitive {
+      color: var(--color-blue-40);
+    }
   }
 
   &__property {
     @include ellipsisTextOverflow;
 
-    padding: 0 1rem;
-    font-size: 1.2rem;
-    font-weight: 700;
+    padding: 0 0.5rem;
+    font-size: 1.4rem;
     width: 100%;
-    color: var(--color-blue-40);
     text-decoration: underline;
     text-decoration-style: dotted;
+
+    &__content {
+      cursor: pointer;
+    }
   }
 
   &__property__info {
@@ -565,8 +567,12 @@
     cursor: pointer;
 
     svg {
-      font-size: 1.2rem;
-      color: var(--color-dark-shade-230);
+      font-size: 1.3rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &:hover svg {
+      color: var(--color-light-grey-200);
     }
   }
 
