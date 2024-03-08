@@ -539,9 +539,9 @@
       background: var(--color-medium-green-450);
     }
 
-    &--primitive {
-      background: var(--color-blue-200);
-    }
+    // &--primitive {
+    //   background: var(--color-blue-200);
+    // }
   }
 
   &__property {
@@ -551,6 +551,9 @@
     font-size: 1.2rem;
     font-weight: 700;
     width: 100%;
+    color: var(--color-blue-40);
+    text-decoration: underline;
+    text-decoration-style: dotted;
   }
 
   &__property__info {
