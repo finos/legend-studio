@@ -1,5 +1,7 @@
 # @finos/legend-application-studio
 
+## 28.15.11
+
 ## 28.15.10
 
 ### Patch Changes

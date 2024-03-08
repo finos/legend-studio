@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.22
+
+### Patch Changes
+
+- [#2986](https://github.com/finos/legend-studio/pull/2986) [`fb5c22df0`](https://github.com/finos/legend-studio/commit/fb5c22df043ca7a7bf000893a01fb84351c67135) ([@travisstebbins](https://github.com/travisstebbins)) - Add secondary property to ModalFooterButton
+
 ## 7.1.21
 
 ## 7.1.20
