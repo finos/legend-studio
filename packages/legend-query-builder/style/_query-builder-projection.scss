@@ -116,6 +116,10 @@
 
     &:hover {
       background: var(--color-dark-blue-shade-100);
+
+      .query-builder-property-expression-badge__property__info {
+        opacity: 1;
+      }
     }
 
     &__placeholder--bottom {
