@@ -547,7 +547,7 @@
   &__property {
     @include ellipsisTextOverflow;
 
-    padding: 0 0.5rem;
+    padding: 0 1rem;
     font-size: 1.4rem;
     width: 100%;
     text-decoration: underline;
@@ -564,6 +564,7 @@
     height: 2.2rem;
     width: 2.2rem;
     margin: 0.3rem;
+    padding-left: 1rem;
     cursor: pointer;
 
     svg {
