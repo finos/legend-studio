@@ -371,7 +371,7 @@ describe('QueryBuilderResultModifierPanel', () => {
 
       // Verify initial state
       expect(queryByText(resultModifierPrompt, 'Slice')).toBeNull();
-      expect(queryByText(resultModifierPrompt, '10,20')).toBeNull();
+      expect(queryByText(resultModifierPrompt, '1234,2000')).toBeNull();
 
       // Set slice
       const sliceStartInput = guaranteeNonNullable(
