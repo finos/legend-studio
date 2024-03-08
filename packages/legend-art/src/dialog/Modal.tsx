@@ -89,6 +89,7 @@ export const ModalFooterButton: React.FC<{
   className?: string;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   formatText?: boolean | undefined;
+  type?: 'primary' | 'secondary';
 }> = (props) => {
   const {
     onClick,
@@ -100,9 +101,11 @@ export const ModalFooterButton: React.FC<{
     className,
     darkMode,
     formatText,
+    type,
   } = props;
   const isDarkMode = darkMode ?? true;
   const isFormatText = formatText ?? true;
+  const isSecondary = type === 'secondary';
 
   return (
     <button
@@ -112,6 +115,9 @@ export const ModalFooterButton: React.FC<{
           'btn--dark': isDarkMode,
         },
         { 'btn--light': !isDarkMode },
+        {
+          'modal__footer__btn--secondary': isSecondary,
+        },
         className,
       )}
       title={title}
