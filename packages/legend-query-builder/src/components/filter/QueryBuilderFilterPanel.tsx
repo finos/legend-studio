@@ -76,6 +76,7 @@ import {
   assertErrorThrown,
   assertTrue,
   debounce,
+  deepClone,
   generateEnumerableNameFromToken,
   getNullableFirstEntry,
   guaranteeNonNullable,
@@ -114,6 +115,7 @@ import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetry
 import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
+import { variableExpression_setName } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 
 const isCollectionProperty = (
   propertyExpression: AbstractPropertyExpression,
@@ -144,6 +146,30 @@ const isCollectionProperty = (
     }
   }
   return false;
+};
+
+const updatePropertyExpressionRootLambdaParameterName = (
+  propertyExpression: ValueSpecification | undefined,
+  filterState: QueryBuilderFilterState,
+): void => {
+  if (!propertyExpression) {
+    return;
+  }
+  if (propertyExpression instanceof VariableExpression) {
+    variableExpression_setName(
+      propertyExpression,
+      filterState.lambdaParameterName,
+    );
+    return;
+  } else if (
+    propertyExpression instanceof AbstractPropertyExpression ||
+    propertyExpression instanceof SimpleFunctionExpression
+  ) {
+    updatePropertyExpressionRootLambdaParameterName(
+      getNullableFirstEntry(propertyExpression.parametersValues),
+      filterState,
+    );
+  }
 };
 
 /**
@@ -247,9 +273,9 @@ export const buildFilterTreeWithExists = (
       const parentPropertyChainIndex = existsLambdaPropertyChains.findIndex(
         (p) =>
           p instanceof AbstractPropertyExpression &&
-          p.func.value ===
-            targetDropNode.propertyExpressionState.propertyExpression.func
-              .value &&
+          p.func.value.hashCode ===
+            targetDropNode.propertyExpressionState.propertyExpression.func.value
+              .hashCode &&
           p.func.ownerReference.value.path ===
             targetDropNode.propertyExpressionState.propertyExpression.func
               .ownerReference.value.path,
@@ -287,9 +313,10 @@ export const buildFilterTreeWithExists = (
           (p) =>
             p instanceof AbstractPropertyExpression &&
             cn instanceof QueryBuilderFilterTreeExistsNodeData &&
-            p.func.value ===
+            p.func.value.hashCode ===
               guaranteeType(cn, QueryBuilderFilterTreeExistsNodeData)
-                .propertyExpressionState.propertyExpression.func.value &&
+                .propertyExpressionState.propertyExpression.func.value
+                .hashCode &&
             p.func.ownerReference.value.path ===
               cn.propertyExpressionState.propertyExpression.func.ownerReference
                 .value.path,
@@ -1026,10 +1053,40 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                   .columnState instanceof
                 QueryBuilderSimpleProjectionColumnState
               ) {
-                propertyExpression = (
+                const projectionColumnPropertyExpression = (
                   (item as QueryBuilderProjectionColumnDragSource)
                     .columnState as QueryBuilderSimpleProjectionColumnState
                 ).propertyExpressionState.propertyExpression;
+                /**
+                 * propertyExpression could have its own root Lambda parameter name as the below code
+                 * p|$p.legalName uses p, xx|$xx.employeeSize uses xx etc.
+                 * when building the filter tree, we should change $p.legalName back to $x.legalName to
+                 * take care of all upcoming propertyExpressions that have different root Lambda parameter names
+                 * |model::Firm.all()->filter(
+                      x|($x.legalName == '') &&
+                    ($x.employeeSize == 0)
+                  )->project(
+                  [
+                    p|$p.legalName,
+                    xx|$xx.employeeSize,
+                    d|$d.employees.firstName,
+                    x1|$x1.employees.lastName
+                  ],
+                  [
+                    'Legal Name',
+                    'Employee Size',
+                    'Employees/First Name',
+                    'Employees/Last Name'
+                  ]
+                  )
+                */
+                updatePropertyExpressionRootLambdaParameterName(
+                  projectionColumnPropertyExpression,
+                  filterState,
+                );
+                propertyExpression = deepClone(
+                  projectionColumnPropertyExpression,
+                );
               } else {
                 throw new UnsupportedOperationError(
                   `Dragging and Dropping derivation projection column is not supported.`,
@@ -1404,10 +1461,40 @@ export const QueryBuilderFilterPanel = observer(
               (item as QueryBuilderProjectionColumnDragSource)
                 .columnState instanceof QueryBuilderSimpleProjectionColumnState
             ) {
-              propertyExpression = (
+              const projectionColumnPropertyExpression = (
                 (item as QueryBuilderProjectionColumnDragSource)
                   .columnState as QueryBuilderSimpleProjectionColumnState
               ).propertyExpressionState.propertyExpression;
+              /**
+               * propertyExpression could have its own root Lambda parameter name as the below code
+               * p|$p.legalName uses p, xx|$xx.employeeSize uses xx etc.
+               * when building the filter tree, we should change $p.legalName back to $x.legalName to
+               * take care of all upcoming propertyExpressions that have different root Lambda parameter names
+               * |model::Firm.all()->filter(
+                    x|($x.legalName == '') &&
+                  ($x.employeeSize == 0)
+                )->project(
+                [
+                  p|$p.legalName,
+                  xx|$xx.employeeSize,
+                  d|$d.employees.firstName,
+                  x1|$x1.employees.lastName
+                ],
+                [
+                  'Legal Name',
+                  'Employee Size',
+                  'Employees/First Name',
+                  'Employees/Last Name'
+                ]
+                )
+              */
+              updatePropertyExpressionRootLambdaParameterName(
+                projectionColumnPropertyExpression,
+                filterState,
+              );
+              propertyExpression = deepClone(
+                projectionColumnPropertyExpression,
+              );
             } else {
               throw new UnsupportedOperationError(
                 `Dragging and Dropping derivation projection column is not supported.`,
