@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.14.11
+
+### Patch Changes
+
+- [#2986](https://github.com/finos/legend-studio/pull/2986) [`fb5c22df0`](https://github.com/finos/legend-studio/commit/fb5c22df043ca7a7bf000893a01fb84351c67135) ([@travisstebbins](https://github.com/travisstebbins)) - Refactor query options modal to have Apply and Cancel buttons
+
+- [#2988](https://github.com/finos/legend-studio/pull/2988) [`803439f7a`](https://github.com/finos/legend-studio/commit/803439f7a878c438bcc97eaa3815030b87838f9b) ([@travisstebbins](https://github.com/travisstebbins)) - Enhance query builder property info tooltip
+
+- [#2985](https://github.com/finos/legend-studio/pull/2985) [`d0f701225`](https://github.com/finos/legend-studio/commit/d0f701225f18ffd0aaf0346754843d2314e026f1) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support edit grammar with parser errors in the expanded/pop-up lambda editor
+
 ## 4.14.10
 
 ### Patch Changes
