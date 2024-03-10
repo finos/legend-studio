@@ -1277,12 +1277,6 @@ export const FunctionEditor = observer(() => {
   const openFunctionActivateModal = (): void => {
     functionEditorState.activatorPromoteState.showFunctionActivateModal();
   };
-  // tabs
-  const functionTabs = Object.values(FUNCTION_EDITOR_TAB).filter(
-    (val) =>
-      val !== FUNCTION_EDITOR_TAB.TEST_SUITES ||
-      editorStore.applicationStore.config.options.NonProductionFeatureFlag,
-  );
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.FUNCTION_EDITOR}
@@ -1304,7 +1298,7 @@ export const FunctionEditor = observer(() => {
         </div>
         <div className="panel__header function-editor__tabs__header">
           <div className="function-editor__tabs">
-            {functionTabs.map((tab) => (
+            {Object.values(FUNCTION_EDITOR_TAB).map((tab) => (
               <div
                 key={tab}
                 onClick={changeTab(tab)}
