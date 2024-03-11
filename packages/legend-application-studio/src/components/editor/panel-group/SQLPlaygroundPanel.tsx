@@ -438,25 +438,27 @@ const PlayGroundSQLExecutionResultGrid = observer(
         );
 
         return (
-          <DataGrid
-            rowData={data.rowData}
-            gridOptions={{
-              suppressScrollOnNewData: true,
-              rowSelection: 'multiple',
-              pivotPanelShow: 'always',
-              rowGroupPanelShow: 'always',
-              enableRangeSelection: true,
-            }}
-            // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
-            // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
-            onRowDataUpdated={(params) => {
-              params.api.refreshCells({ force: true });
-            }}
-            suppressFieldDotNotation={true}
-            suppressContextMenu={false}
-            columnDefs={localcolDefs}
-            sideBar={['columns', 'filters']}
-          />
+          <div className="sql-playground__result__grid ag-theme-balham-dark">
+            <DataGrid
+              rowData={data.rowData}
+              gridOptions={{
+                suppressScrollOnNewData: true,
+                rowSelection: 'multiple',
+                pivotPanelShow: 'always',
+                rowGroupPanelShow: 'always',
+                enableRangeSelection: true,
+              }}
+              // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
+              // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
+              onRowDataUpdated={(params) => {
+                params.api.refreshCells({ force: true });
+              }}
+              suppressFieldDotNotation={true}
+              suppressContextMenu={false}
+              columnDefs={localcolDefs}
+              sideBar={['columns', 'filters']}
+            />
+          </div>
         );
       }
       const colDefs = data.columns.map(
