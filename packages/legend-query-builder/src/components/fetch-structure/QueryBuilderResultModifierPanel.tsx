@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { createViewModel, type IViewModel } from 'mobx-utils';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -33,7 +34,10 @@ import {
   ModalFooterButton,
   InputWithInlineValidation,
 } from '@finos/legend-art';
-import { SortColumnState } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
+import {
+  type QueryResultSetModifierState,
+  SortColumnState,
+} from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import {
   addUniqueEntry,
   deleteEntry,
@@ -49,18 +53,20 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
 const ColumnSortEditor = observer(
   (props: {
-    sortColumns: SortColumnState[];
-    setSortColumns: (sortColumns: SortColumnState[]) => void;
+    viewModel: QueryResultSetModifierState &
+      IViewModel<QueryResultSetModifierState>;
     sortState: SortColumnState;
     tdsColumns: QueryBuilderTDSColumnState[];
   }) => {
-    const { sortColumns, setSortColumns, sortState, tdsColumns } = props;
+    const { viewModel, sortState, tdsColumns } = props;
     const applicationStore = useApplicationStore();
     const projectionOptions = tdsColumns
       .filter(
         (projectionCol) =>
           projectionCol === sortState.columnState ||
-          !sortColumns.some((sortCol) => sortCol.columnState === projectionCol),
+          !viewModel.sortColumns.some(
+            (sortCol) => sortCol.columnState === projectionCol,
+          ),
       )
       .map((projectionCol) => ({
         label: projectionCol.columnName,
@@ -81,9 +87,7 @@ const ColumnSortEditor = observer(
     };
 
     const deleteColumnSort = (): void => {
-      const newSortColumns = [...sortColumns];
-      deleteEntry(newSortColumns, sortState);
-      setSortColumns(newSortColumns);
+      deleteEntry(viewModel.sortColumns, sortState);
     };
 
     const changeSortBy = (sortOp: COLUMN_SORT_TYPE) => (): void => {
@@ -152,16 +156,17 @@ const ColumnSortEditor = observer(
 const ColumnsSortEditor = observer(
   (props: {
     projectionColumns: QueryBuilderProjectionColumnState[];
-    sortColumns: SortColumnState[];
-    setSortColumns: (sortColumns: SortColumnState[]) => void;
+    viewModel: QueryResultSetModifierState &
+      IViewModel<QueryResultSetModifierState>;
     tdsColumns: QueryBuilderTDSColumnState[];
   }) => {
-    const { projectionColumns, sortColumns, setSortColumns, tdsColumns } =
-      props;
+    const { projectionColumns, viewModel, tdsColumns } = props;
     const projectionOptions = projectionColumns
       .filter(
         (projectionCol) =>
-          !sortColumns.some((sortCol) => sortCol.columnState === projectionCol),
+          !viewModel.sortColumns.some(
+            (sortCol) => sortCol.columnState === projectionCol,
+          ),
       )
       .map((projectionCol) => ({
         label: projectionCol.columnName,
@@ -172,9 +177,7 @@ const ColumnsSortEditor = observer(
         const sortColumn = new SortColumnState(
           guaranteeNonNullable(projectionOptions[0]).value,
         );
-        const newSortColumns = [...sortColumns];
-        addUniqueEntry(newSortColumns, sortColumn);
-        setSortColumns(newSortColumns);
+        addUniqueEntry(viewModel.sortColumns, sortColumn);
       }
     };
 
@@ -190,11 +193,10 @@ const ColumnsSortEditor = observer(
         <div className="panel__content__form__section__list">
           <div className="panel__content__form__section__list__items">
             {/* TODO: support DnD sorting */}
-            {sortColumns.map((value) => (
+            {viewModel.sortColumns.map((value) => (
               <ColumnSortEditor
                 key={value.columnState.uuid}
-                sortColumns={sortColumns}
-                setSortColumns={setSortColumns}
+                viewModel={viewModel}
                 sortState={value}
                 tdsColumns={tdsColumns}
               />
@@ -221,13 +223,19 @@ export const QueryResultModifierModal = observer(
     // Read current state
     const { tdsState } = props;
     const resultSetModifierState = tdsState.resultSetModifierState;
-    const stateSortColumns = resultSetModifierState.sortColumns;
     const stateDistinct = resultSetModifierState.distinct;
     const stateLimitResults = resultSetModifierState.limit;
     const stateSlice = resultSetModifierState.slice;
 
     // Set up temp state for modal lifecycle
-    const [sortColumns, setSortColumns] = useState([...stateSortColumns]);
+    const viewModel = createViewModel(resultSetModifierState);
+    viewModel.sortColumns = resultSetModifierState.sortColumns.map(
+      (sortColumn) => {
+        const newSortColumn = new SortColumnState(sortColumn.columnState);
+        newSortColumn.setSortType(sortColumn.sortType);
+        return newSortColumn;
+      },
+    );
     const [distinct, setDistinct] = useState(stateDistinct);
     const [limitResults, setLimitResults] = useState(stateLimitResults);
     const [slice, setSlice] = useState<
@@ -236,22 +244,24 @@ export const QueryResultModifierModal = observer(
 
     // Sync temp state with tdsState when modal is opened/closed
     useEffect(() => {
-      setSortColumns([...stateSortColumns]);
       setDistinct(stateDistinct);
       setLimitResults(stateLimitResults);
       setSlice(stateSlice ?? [undefined, undefined]);
     }, [
       resultSetModifierState.showModal,
-      stateSortColumns,
       stateDistinct,
       stateLimitResults,
       stateSlice,
     ]);
 
     // Handle user actions
-    const closeModal = (): void => resultSetModifierState.setShowModal(false);
+    const closeModal = (): void => {
+      viewModel.reset();
+      resultSetModifierState.setShowModal(false);
+    };
     const applyChanges = (): void => {
-      resultSetModifierState.setSortColumns(sortColumns);
+      resultSetModifierState.setShowModal(false);
+      viewModel.submit();
       resultSetModifierState.setDistinct(distinct);
       resultSetModifierState.setLimit(limitResults);
       if (slice[0] !== undefined && slice[1] !== undefined) {
@@ -259,7 +269,6 @@ export const QueryResultModifierModal = observer(
       } else {
         resultSetModifierState.setSlice(undefined);
       }
-      resultSetModifierState.setShowModal(false);
     };
 
     const handleLimitResultsChange: React.ChangeEventHandler<
@@ -328,8 +337,7 @@ export const QueryResultModifierModal = observer(
             <div className="query-builder__projection__options">
               <ColumnsSortEditor
                 projectionColumns={tdsState.projectionColumns}
-                sortColumns={sortColumns}
-                setSortColumns={setSortColumns}
+                viewModel={viewModel}
                 tdsColumns={tdsState.tdsColumns}
               />
               <div className="panel__content__form__section">
