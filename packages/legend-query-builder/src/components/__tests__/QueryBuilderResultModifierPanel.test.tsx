@@ -228,7 +228,6 @@ describe('QueryBuilderResultModifierPanel', () => {
         (await findByText(resultModifierPanel, 'asc')).nextElementSibling,
       );
       fireEvent.click(orderDropdownButton);
-      // const dropdownMenu = await renderResult.findByRole('menu');
       const descOption = await renderResult.findByRole('button', {
         name: 'desc',
       });
