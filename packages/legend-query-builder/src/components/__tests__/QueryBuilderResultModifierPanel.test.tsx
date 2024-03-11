@@ -189,6 +189,68 @@ describe('QueryBuilderResultModifierPanel', () => {
 
   test(
     integrationTest(
+      "Query builder result modifier panel doesn't update sort order when Cancel button is clicked",
+    ),
+    async () => {
+      // Open Query Options panel
+      const queryOptionsButton = await renderResult.findByText('Query Options');
+      fireEvent.click(queryOptionsButton);
+      const resultModifierPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
+      );
+
+      // Set sort values
+      await findByText(resultModifierPanel, 'Sort and Order');
+      const addValueButton = guaranteeNonNullable(
+        await renderResult.findByText('Add Value'),
+      );
+      fireEvent.click(addValueButton);
+      expect(
+        await findByText(resultModifierPanel, 'Edited First Name'),
+      ).not.toBeNull();
+      expect(await findByText(resultModifierPanel, 'asc')).not.toBeNull();
+      const applyButton = await findByRole(resultModifierPanel, 'button', {
+        name: 'Apply',
+      });
+      fireEvent.click(applyButton);
+
+      // Check state
+      expect(findByText(resultModifierPrompt, 'Sort')).not.toBeNull();
+      expect(
+        findByText(resultModifierPrompt, 'Edited First Name ASC'),
+      ).not.toBeNull();
+
+      // Open Query Options panel
+      fireEvent.click(queryOptionsButton);
+
+      // Change asc to desc
+      const orderDropdownButton = guaranteeNonNullable(
+        (await findByText(resultModifierPanel, 'asc')).nextElementSibling,
+      );
+      fireEvent.click(orderDropdownButton);
+      const descOption = await renderResult.findByRole('button', {
+        name: 'desc',
+      });
+      fireEvent.click(descOption);
+      expect(findByText(resultModifierPanel, 'desc')).not.toBeNull();
+
+      // Don't apply the changes
+      const cancelButton = await findByRole(resultModifierPanel, 'button', {
+        name: 'Cancel',
+      });
+      fireEvent.click(cancelButton);
+
+      // Check new state
+      expect(await findByText(resultModifierPrompt, 'Sort')).not.toBeNull();
+      expect(
+        await findByText(resultModifierPrompt, 'Edited First Name ASC'),
+      ).not.toBeNull();
+      expect(queryByText(resultModifierPrompt, 'DESC')).toBeNull();
+    },
+  );
+
+  test(
+    integrationTest(
       'Query builder result modifier panel sets eliminate duplicate rows when Apply is clicked',
     ),
     async () => {

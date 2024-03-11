@@ -216,6 +216,15 @@ const ColumnsSortEditor = observer(
   },
 );
 
+const cloneSortColumnStateArray = (
+  sortColumns: SortColumnState[],
+): SortColumnState[] =>
+  sortColumns.map((sortColumn) => {
+    const newSortColumn = new SortColumnState(sortColumn.columnState);
+    newSortColumn.setSortType(sortColumn.sortType);
+    return newSortColumn;
+  });
+
 export const QueryResultModifierModal = observer(
   (props: { tdsState: QueryBuilderTDSState }) => {
     // Read current state
@@ -227,7 +236,9 @@ export const QueryResultModifierModal = observer(
     const stateSlice = resultSetModifierState.slice;
 
     // Set up temp state for modal lifecycle
-    const [sortColumns, setSortColumns] = useState([...stateSortColumns]);
+    const [sortColumns, setSortColumns] = useState(
+      cloneSortColumnStateArray(stateSortColumns),
+    );
     const [distinct, setDistinct] = useState(stateDistinct);
     const [limitResults, setLimitResults] = useState(stateLimitResults);
     const [slice, setSlice] = useState<
@@ -236,7 +247,7 @@ export const QueryResultModifierModal = observer(
 
     // Sync temp state with tdsState when modal is opened/closed
     useEffect(() => {
-      setSortColumns([...stateSortColumns]);
+      setSortColumns(cloneSortColumnStateArray(stateSortColumns));
       setDistinct(stateDistinct);
       setLimitResults(stateLimitResults);
       setSlice(stateSlice ?? [undefined, undefined]);
