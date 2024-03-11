@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.12
+
+### Patch Changes
+
+- [#2993](https://github.com/finos/legend-studio/pull/2993) [`75e01f604`](https://github.com/finos/legend-studio/commit/75e01f60466a525b85dfef84d7be4d48625728b6) ([@travisstebbins](https://github.com/travisstebbins)) - Fix query options modal sort order
+
 ## 4.14.11
 
 ### Patch Changes
