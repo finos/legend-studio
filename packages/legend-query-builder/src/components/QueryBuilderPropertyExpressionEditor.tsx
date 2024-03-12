@@ -437,8 +437,6 @@ export const QueryBuilderPropertyExpressionBadge = observer(
             className={clsx(
               'query-builder-property-expression-badge__content',
               {
-                'query-builder-property-expression-badge__content--editable':
-                  !!setIsEditingColumnName,
                 'query-builder-property-expression-badge__content--class':
                   type instanceof Class,
                 'query-builder-property-expression-badge__content--enumeration':
@@ -455,7 +453,13 @@ export const QueryBuilderPropertyExpressionBadge = observer(
               title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
             >
               <span
-                className="query-builder-property-expression-badge__property__content"
+                className={clsx(
+                  'query-builder-property-expression-badge__property__content',
+                  {
+                    'query-builder-property-expression-badge__property__content--editable':
+                      !!setIsEditingColumnName,
+                  },
+                )}
                 onClick={() => {
                   setIsEditingColumnName?.(true);
                 }}

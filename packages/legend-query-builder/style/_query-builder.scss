@@ -530,11 +530,6 @@
     height: 2.2rem;
     color: var(--color-light-grey-0);
 
-    &--editable {
-      text-decoration: underline;
-      text-decoration-style: dotted;
-    }
-
     &--class {
       color: var(--color-purple-200);
     }
@@ -560,6 +555,15 @@
 
     &__content {
       cursor: pointer;
+
+      &--editable {
+        text-decoration: underline;
+        text-decoration-style: dotted;
+
+        &:hover {
+          text-decoration-style: solid;
+        }
+      }
     }
   }
 
