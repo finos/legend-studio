@@ -530,18 +530,6 @@
     height: 2.2rem;
     color: var(--color-light-grey-0);
 
-    &--class {
-      color: var(--color-purple-200);
-    }
-
-    &--enumeration {
-      color: var(--color-medium-green-450);
-    }
-
-    &--primitive {
-      color: var(--color-blue-40);
-    }
-
     &--error {
       color: var(--color-red-200);
     }
@@ -555,6 +543,7 @@
 
     &__content {
       &--editable {
+        color: var(--color-blue-40);
         cursor: pointer;
         text-decoration: underline;
         text-decoration-style: dotted;
