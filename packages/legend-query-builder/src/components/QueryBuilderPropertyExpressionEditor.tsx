@@ -437,6 +437,8 @@ export const QueryBuilderPropertyExpressionBadge = observer(
             className={clsx(
               'query-builder-property-expression-badge__content',
               {
+                'query-builder-property-expression-badge__content--editable':
+                  !!setIsEditingColumnName,
                 'query-builder-property-expression-badge__content--class':
                   type instanceof Class,
                 'query-builder-property-expression-badge__content--enumeration':
