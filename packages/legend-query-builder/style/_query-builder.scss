@@ -554,9 +554,8 @@
     width: 100%;
 
     &__content {
-      cursor: pointer;
-
       &--editable {
+        cursor: pointer;
         text-decoration: underline;
         text-decoration-style: dotted;
 
