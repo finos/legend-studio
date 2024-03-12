@@ -25,12 +25,6 @@
   pointer-events: all;
 
   &__container {
-    // NOTE: since we use a popover for the panel, we need to
-    // disable click-away trap so we could mimic the behavior of
-    // popper. See the note on the usage of popover for virtual
-    // assistant panel for more details
-    pointer-events: none;
-
     &__root {
       border-radius: 0;
     }
