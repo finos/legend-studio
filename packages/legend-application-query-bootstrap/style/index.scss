@@ -1346,8 +1346,12 @@
       }
     }
 
-    .query-builder-property-expression-badge__property__content--editable {
-      color: var(--color-light-blue-200);
+    .query-builder-property-expression-badge__property__content {
+      color: var(--color-legacylight-dark-grey-200);
+
+      &--editable {
+        color: var(--color-light-blue-200);
+      }
     }
 
     .blank-panel-placeholder__text {
