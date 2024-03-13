@@ -443,8 +443,6 @@ export const QueryBuilderPropertyExpressionBadge = observer(
                   type instanceof Enumeration,
                 'query-builder-property-expression-badge__content--primitive':
                   type instanceof PrimitiveType,
-                'query-builder-property-expression-badge__content--error':
-                  error,
               },
             )}
           >
@@ -456,8 +454,9 @@ export const QueryBuilderPropertyExpressionBadge = observer(
                 className={clsx(
                   'query-builder-property-expression-badge__property__content',
                   {
-                    'query-builder-property-expression-badge__property__content--editable':
-                      !!setIsEditingColumnName,
+                    'query-builder-property-expression-badge__property__content--error':
+                      error,
+                    'editable-value': !!setIsEditingColumnName,
                   },
                 )}
                 onClick={() => {

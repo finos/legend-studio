@@ -288,6 +288,17 @@
       }
     }
   }
+
+  .editable-value {
+    color: var(--color-blue-40);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+
+    &:hover {
+      text-decoration-style: solid;
+    }
+  }
 }
 
 .query-builder__diff-panel {
@@ -529,10 +540,6 @@
     width: 100%;
     height: 2.2rem;
     color: var(--color-light-grey-0);
-
-    &--error {
-      color: var(--color-red-200);
-    }
   }
 
   &__property {
@@ -542,15 +549,8 @@
     width: 100%;
 
     &__content {
-      &--editable {
-        color: var(--color-blue-40);
-        cursor: pointer;
-        text-decoration: underline;
-        text-decoration-style: dotted;
-
-        &:hover {
-          text-decoration-style: solid;
-        }
+      &--error {
+        color: var(--color-red-200) !important;
       }
     }
   }
