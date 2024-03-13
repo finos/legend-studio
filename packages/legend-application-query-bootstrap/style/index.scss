@@ -762,6 +762,10 @@
       text-transform: capitalize;
     }
 
+    .query-builder .editable-value {
+      color: var(--color-light-blue-200);
+    }
+
     .query-builder__projection__column:hover {
       .query-builder-property-expression-badge__property__info {
         svg {
@@ -1371,8 +1375,8 @@
         &__content {
           color: var(--color-legacylight-dark-grey-200);
 
-          &--editable {
-            color: var(--color-light-blue-200);
+          &--error {
+            color: var(--color-red-180) !important;
           }
         }
       }
