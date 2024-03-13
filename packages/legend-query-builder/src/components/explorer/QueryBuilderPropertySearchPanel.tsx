@@ -300,10 +300,6 @@ export const QueryBuilderPropertySearchPanel = observer(
     return (
       <BasePopover
         open={propertySearchState.isSearchPanelOpen}
-        // we need to get rid of the backdrop and the click-away trap
-        // to make this popover behave like a popper
-        // NOTE: we will cancel the effect of click-away trap using CSS
-        hideBackdrop={true}
         PaperProps={{
           classes: {
             root: 'query-builder-property-search-panel__container__root',
