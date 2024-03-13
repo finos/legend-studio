@@ -772,6 +772,11 @@
           color: var(--color-legacylight-light-blue-100);
         }
       }
+
+      .query-builder-property-expression-badge__action {
+        color: var(--color-light-grey-180);
+        background: var(--color-legacylight-light-blue-100);
+      }
     }
 
     .query-builder__projection__column__drag-handle,
@@ -1378,6 +1383,13 @@
           &--error {
             color: var(--color-red-180) !important;
           }
+        }
+      }
+
+      &__action {
+        &:hover {
+          color: var(--color-light-grey-180);
+          background: var(--color-legacylight-light-blue-400) !important;
         }
       }
     }
