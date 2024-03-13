@@ -893,6 +893,12 @@
       color: var(--color-legacylight-orange-100);
     }
 
+    .query-builder-explorer-tree__node__action:hover {
+      svg {
+        color: var(--color-legacylight-light-blue-400) !important;
+      }
+    }
+
     // ------------------------------------ Function Explorer Panel ---------------------------------------
 
     .query-builder__functions-explorer__tree__type-icon svg {
