@@ -18,6 +18,7 @@ import {
   type Hashable,
   guaranteeType,
   UnsupportedOperationError,
+  hashArray,
 } from '@finos/legend-shared';
 import {
   AbstractPropertyExpression,
@@ -25,6 +26,7 @@ import {
   LambdaFunctionInstanceValue,
   type SimpleFunctionExpression,
   type ValueSpecification,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnState,
@@ -32,19 +34,25 @@ import {
   QueryBuilderDerivationProjectionColumnState,
 } from '../projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
-import { computed, makeObservable, observable, action } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import type { QUERY_BUILDER_CALENDAR_TYPE } from '../../../../graph-manager/QueryBuilderConst.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
+import {
+  buildCalendarFunctionExpression,
+  updateAggregateColumnState,
+} from './QueryBuilderAggregateCalendarFunctionValueSpecificationBuilder.js';
 
-export abstract class QueryBuilderAggregateCalendarFunction
-  implements Hashable
-{
+export class QueryBuilderAggregateCalendarFunction implements Hashable {
   dateColumn?: AbstractPropertyExpression | undefined;
   calendarType!: QUERY_BUILDER_CALENDAR_TYPE;
   endDate!: ValueSpecification;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
 
-  constructor() {
+  private func: string;
+  private label: string;
+  private hash: string;
+
+  constructor(func: string, label: string, hash: string) {
     makeObservable(this, {
       dateColumn: observable,
       lambdaParameterName: observable,
@@ -56,19 +64,60 @@ export abstract class QueryBuilderAggregateCalendarFunction
       setEndDate: action,
       hashCode: computed,
     });
+
+    this.func = func;
+    this.label = label;
+    this.hash = hash;
   }
 
-  abstract getLabel(): string;
+  getLabel(): string {
+    return this.label;
+  }
 
-  abstract isCompatibleWithColumn(
+  isCompatibleWithColumn(
     projectionColumnState: QueryBuilderProjectionColumnState,
-  ): boolean;
+  ): boolean {
+    if (
+      projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+    ) {
+      const propertyType =
+        projectionColumnState.propertyExpressionState.propertyExpression.func
+          .value.genericType.value.rawType;
+      return (
+        [
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.FLOAT,
+        ] as string[]
+      ).includes(propertyType.path);
+    }
+    return true;
+  }
 
-  abstract buildCalendarFunctionExpression(
-    propertyExpression:
-      | AbstractPropertyExpression
-      | INTERNAL__UnknownValueSpecification,
-  ): ValueSpecification;
+  buildCalendarFunctionExpression(
+    p: AbstractPropertyExpression | INTERNAL__UnknownValueSpecification,
+  ): ValueSpecification {
+    return buildCalendarFunctionExpression(
+      this.func,
+      this.dateColumn,
+      this.calendarType,
+      this.endDate,
+      p,
+    );
+  }
+
+  updateAggregateColumnState(
+    expression: SimpleFunctionExpression,
+    aggregationColumnState: QueryBuilderAggregateColumnState,
+  ): void {
+    updateAggregateColumnState(
+      expression,
+      this.func,
+      this,
+      aggregationColumnState,
+    );
+  }
 
   buildCalendarFunctionExpressionFromState(
     aggregateColumnState: QueryBuilderAggregateColumnState,
@@ -104,11 +153,6 @@ export abstract class QueryBuilderAggregateCalendarFunction
     return this.buildCalendarFunctionExpression(targetColumn);
   }
 
-  abstract updateAggregateColumnState(
-    expression: SimpleFunctionExpression,
-    aggregationColumnState: QueryBuilderAggregateColumnState,
-  ): void;
-
   setDateColumn(val: AbstractPropertyExpression): void {
     this.dateColumn = val;
   }
@@ -125,5 +169,12 @@ export abstract class QueryBuilderAggregateCalendarFunction
     this.endDate = val;
   }
 
-  abstract get hashCode(): string;
+  get hashCode(): string {
+    return hashArray([
+      this.hash,
+      this.dateColumn ?? '',
+      this.calendarType,
+      this.endDate,
+    ]);
+  }
 }

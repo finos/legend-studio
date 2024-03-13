@@ -32,13 +32,14 @@ import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/explorer/Quer
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_CALENDAR_TYPE } from '../../graph-manager/QueryBuilderConst.js';
-import { QueryBuilderAggregateCalendarFunction_Ytd } from '../../stores/fetch-structure/tds/aggregation/calendarFunctions/QueryBuilderAggregateCalendarFunction_Ytd.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { QueryBuilderAggregateCalendarFunction_Cme } from '../../stores/fetch-structure/tds/aggregation/calendarFunctions/QueryBuilderAggregateCalendarFunction_Cme.js';
 import {
   MockedMonacoEditorInstance,
   MockedMonacoEditorAPI,
 } from '@finos/legend-lego/code-editor/test';
+
+const YTD = 'Year to Date';
+const CME = 'Current Month Estimate';
 
 test(
   integrationTest(
@@ -61,6 +62,7 @@ test(
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     await waitFor(() => getAllByText(queryBuilderSetup, 'Employee'));
+
     await waitFor(() => getAllByText(queryBuilderSetup, 'mapping'));
     const treeData = guaranteeNonNullable(
       queryBuilderState.explorerState.treeData,
@@ -96,9 +98,8 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
-        QueryBuilderAggregateCalendarFunction_Ytd,
-    ).toBe(true);
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
+    ).toBe(YTD);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
         ?.func.value.name,
@@ -162,9 +163,8 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
-        QueryBuilderAggregateCalendarFunction_Ytd,
-    ).toBe(true);
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
+    ).toBe(YTD);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
         ?.func.value.name,
@@ -229,9 +229,8 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
-        QueryBuilderAggregateCalendarFunction_Ytd,
-    ).toBe(true);
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
+    ).toBe(YTD);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
         ?.func.value.name,
@@ -304,9 +303,8 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.NY);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
-        QueryBuilderAggregateCalendarFunction_Ytd,
-    ).toBe(true);
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
+    ).toBe(YTD);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
         ?.func.value.name,
@@ -396,9 +394,8 @@ test(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.calendarType,
     ).toBe(QUERY_BUILDER_CALENDAR_TYPE.LDN);
     expect(
-      tdsStateOne.aggregationState.columns[0]?.calendarFunction instanceof
-        QueryBuilderAggregateCalendarFunction_Cme,
-    ).toBe(true);
+      tdsStateOne.aggregationState.columns[0]?.calendarFunction?.getLabel(),
+    ).toBe(CME);
     expect(
       tdsStateOne.aggregationState.columns[0]?.calendarFunction?.dateColumn
         ?.func.value.name,
