@@ -118,7 +118,9 @@
       background: var(--color-dark-blue-shade-100);
 
       .query-builder-property-expression-badge__property__info {
-        opacity: 1;
+        svg {
+          color: var(--color-dark-grey-500);
+        }
       }
     }
 

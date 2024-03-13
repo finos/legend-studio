@@ -563,15 +563,14 @@
     margin: 0.3rem;
     padding-left: 1rem;
     cursor: pointer;
-    opacity: 0.25;
 
     svg {
       font-size: 1.3rem;
-      color: var(--color-dark-grey-500);
+      color: var(--color-dark-blue-shade-100);
     }
 
     &:hover svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-light-grey-200) !important;
     }
   }
 
