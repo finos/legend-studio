@@ -122,6 +122,11 @@
           color: var(--color-dark-grey-500);
         }
       }
+
+      .query-builder-property-expression-badge__action {
+        color: var(--color-dark-grey-50);
+        background: var(--color-dark-grey-500);
+      }
     }
 
     &__placeholder--bottom {

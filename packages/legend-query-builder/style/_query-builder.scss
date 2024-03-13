@@ -546,7 +546,8 @@
     @include ellipsisTextOverflow;
 
     font-size: 1.4rem;
-    width: 100%;
+    width: fit-content;
+    padding-right: 1rem;
 
     &__content {
       &--error {
@@ -583,10 +584,12 @@
     font-size: 1rem;
     font-family: 'Roboto Mono', monospace;
     color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-200);
+    background: var(--color-dark-blue-shade-100);
+    border-radius: 1.4rem;
 
     &:hover {
-      color: var(--color-light-grey-50);
+      color: var(--color-dark-grey-50);
+      background: var(--color-light-grey-200) !important;
     }
   }
 
