@@ -1346,18 +1346,8 @@
       }
     }
 
-    .query-builder-property-expression-badge__content {
-      &--class {
-        background: var(--color-purple-100);
-      }
-
-      &--enumeration {
-        background: var(--color-medium-green-450);
-      }
-
-      &--primitive {
-        background: var(--color-blue-50);
-      }
+    .query-builder-property-expression-badge__property__content--editable {
+      color: var(--color-light-blue-200);
     }
 
     .blank-panel-placeholder__text {
