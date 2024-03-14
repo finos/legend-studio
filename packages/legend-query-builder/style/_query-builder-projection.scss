@@ -116,6 +116,17 @@
 
     &:hover {
       background: var(--color-dark-blue-shade-100);
+
+      .query-builder-property-expression-badge__property__info {
+        svg {
+          color: var(--color-dark-grey-500);
+        }
+      }
+
+      .query-builder-property-expression-badge__action {
+        color: var(--color-dark-grey-50);
+        background: var(--color-dark-grey-500);
+      }
     }
 
     &__placeholder--bottom {
@@ -136,7 +147,7 @@
   }
 
   &__column__container {
-    display: flex;
+    @include flexVCenter;
   }
 
   &__column--selected-from-context-menu {
@@ -214,7 +225,8 @@
 
     height: 3.4rem;
     width: 100%;
-    margin: 0 0.5rem;
+    padding-left: 1.1rem;
+    padding-right: 1rem;
     min-width: 5rem;
   }
 

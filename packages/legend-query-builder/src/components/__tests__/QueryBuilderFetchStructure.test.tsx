@@ -712,7 +712,9 @@ test(
     const lastNameExpressionInfoTooltipIcon = guaranteeNonNullable(
       await waitFor(
         () =>
-          queryByText(projectionCols, LAST_NAME_ALIAS)?.nextSibling?.firstChild,
+          queryByText(projectionCols, LAST_NAME_ALIAS)?.closest(
+            '.query-builder__projection__column__value',
+          )?.previousElementSibling?.firstChild,
       ),
     );
     fireEvent.click(lastNameExpressionInfoTooltipIcon);
@@ -829,7 +831,7 @@ test(
     await dragAndDrop(
       firstNameNode,
       propertyExpressionBadgeDropZone,
-      propertyExpressionBadgeDropZone,
+      projectionPanel,
       'Change Property',
     );
     await waitFor(() => getByText(projectionPanel, 'First Name'));

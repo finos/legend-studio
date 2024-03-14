@@ -279,7 +279,7 @@
 
   &__node__container:hover &__node__action {
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-dark-grey-500);
     }
   }
 
@@ -376,7 +376,7 @@
     }
 
     &:hover svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-light-grey-200) !important;
     }
 
     &[disabled] svg {
