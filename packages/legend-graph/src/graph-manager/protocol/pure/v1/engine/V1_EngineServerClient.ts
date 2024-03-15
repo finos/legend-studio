@@ -106,6 +106,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   REGISTER_SERVICE = 'register service',
   GET_SERVICE_VERSION = 'get service version',
   ACTIVATE_SERVICE_GENERATION_ID = 'activate service generation id',
+  VALIDATE_SERVICE_ASSERTION_ID = 'validate service assertion id',
   RUN_SERVICE_TESTS = 'run service tests',
   GENERATE_TEST_DATA_WITH_DEFAULT_SEED = 'generate test data with default seed',
   GENERATE_TEST_DATA_WITH_SEED = 'generate test data with seed',
@@ -960,6 +961,27 @@ export class V1_EngineServerClient extends AbstractServerClient {
       {},
       {},
       { skipProcessing: true },
+    );
+
+  /**
+   * TODO: this is an internal API that should me refactored out using extension mechanism
+   */
+  TEMPORARY__postValidateAssertionId = (
+    input: PlainObject,
+    assertionId: string,
+  ): Promise<PlainObject> =>
+    this.postWithTracing(
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.VALIDATE_SERVICE_ASSERTION_ID,
+      ),
+      `${this._service()}/doValidation`,
+      input,
+      {},
+      undefined,
+      {
+        assertionId: assertionId,
+      },
+      { enableCompression: true },
     );
 
   private getRegisterServiceUrlFromExecMode = (

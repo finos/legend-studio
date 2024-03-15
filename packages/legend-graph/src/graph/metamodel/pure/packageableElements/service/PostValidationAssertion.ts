@@ -18,6 +18,26 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 
+export class PostValidationViolationsResultRow {
+  values!: [];
+}
+
+class PostValidationViolationsResult {
+  rows!: PostValidationViolationsResultRow[];
+  columns!: [];
+}
+
+class PostValidationAssertionViolations {
+  result!: PostValidationViolationsResult;
+}
+
+//TODO check if violations may need to be ExecutionResult
+export class PostValidationAssertionResult {
+  id!: string;
+  message!: string;
+  violations!: PostValidationAssertionViolations;
+}
+
 export class PostValidationAssertion implements Hashable {
   id!: string;
   assertion!: RawLambda;
