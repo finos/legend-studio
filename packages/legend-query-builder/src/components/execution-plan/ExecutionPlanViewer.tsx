@@ -148,11 +148,13 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
   executionPlanState: ExecutionPlanState;
 }> = observer((props) => {
   const { executionPlanState } = props;
-  const applicationStore = executionPlanState.applicationStore;
   const globalImplementationSupport =
     executionPlanState.plan?.globalImplementationSupport;
   const templateFunctions =
     executionPlanState.plan?.processingTemplateFunctions ?? [];
+  const isDarkMode =
+    !executionPlanState.applicationStore.layoutService
+      .TEMPORARY__isLightColorThemeEnabled;
 
   if (
     globalImplementationSupport &&
@@ -210,10 +212,7 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={30} size={400}>
                 <PanelContent
-                  darkMode={
-                    !applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled
-                  }
+                  darkMode={isDarkMode}
                   className="query-builder__java__container__panel"
                 >
                   <div className="query-builder__java__container">
@@ -773,7 +772,7 @@ const ExecutionPlanViewerContent = observer(
             <ResizablePanel size={300} minSize={300}>
               <div className="panel execution-plan-viewer__explorer">
                 <PanelSideBarHeader
-                  darkMode={true}
+                  darkMode={isDarkMode}
                   title="execution plan explorer"
                 />
                 <div className="panel__content execution-plan-viewer__explorer__content__container">
@@ -846,7 +845,7 @@ export const ExecutionPlanViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal className="editor-modal" darkMode={true}>
+        <Modal className="editor-modal" darkMode={isDarkMode}>
           <ModalHeader title="Execution Plan" />
           <ModalBody>
             {executionPlanState.debugText ? (

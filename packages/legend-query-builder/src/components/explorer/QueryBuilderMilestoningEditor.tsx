@@ -281,6 +281,7 @@ const AllVersionsInRangelMilestoningParametersEditor = observer(
 export const MilestoningParametersEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = queryBuilderState.applicationStore;
     const milestoningState = queryBuilderState.milestoningState;
     const close = (): void => milestoningState.setShowMilestoningEditor(false);
     const isCompatibleMilestoningParameter = (
@@ -302,7 +303,9 @@ export const MilestoningParametersEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal query-builder__variables__modal"
         >
           <ModalHeader title="Milestoning Parameters" />

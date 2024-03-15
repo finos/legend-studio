@@ -217,6 +217,7 @@ export const QueryBuilderSubclassInfoTooltip: React.FC<{
 const QueryBuilderExplorerPreviewDataModal = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = queryBuilderState.applicationStore;
     const previewDataState = queryBuilderState.explorerState.previewDataState;
     const close = (): void => previewDataState.setPreviewData(undefined);
 
@@ -234,7 +235,9 @@ const QueryBuilderExplorerPreviewDataModal = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal query-builder__explorer__preview-data-modal"
         >
           <ModalHeader title={prettyCONSTName(previewDataState.propertyName)} />

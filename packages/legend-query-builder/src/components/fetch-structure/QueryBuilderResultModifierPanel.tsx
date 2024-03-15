@@ -227,8 +227,10 @@ const cloneSortColumnStateArray = (
 
 export const QueryResultModifierModal = observer(
   (props: { tdsState: QueryBuilderTDSState }) => {
-    // Read current state
     const { tdsState } = props;
+    const applicationStore = tdsState.queryBuilderState.applicationStore;
+
+    // Read current state
     const resultSetModifierState = tdsState.resultSetModifierState;
     const stateSortColumns = resultSetModifierState.sortColumns;
     const stateDistinct = resultSetModifierState.distinct;
@@ -331,7 +333,9 @@ export const QueryResultModifierModal = observer(
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal query-builder__projection__modal"
         >
           <ModalHeader title="Result Set Modifier" />

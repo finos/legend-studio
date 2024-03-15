@@ -45,7 +45,12 @@ export const BlockingAlert = observer(() => {
         container: 'blocking-alert__container',
       }}
     >
-      <Modal darkMode={true} className="blocking-alert">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="blocking-alert"
+      >
         <PanelLoadingIndicator isLoading={Boolean(info.showLoading)} />
         <ModalBody>
           <div className="blocking-alert__message">{info.message}</div>

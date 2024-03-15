@@ -34,6 +34,7 @@ function QuickInputDialog<T>(props: {
 }): React.ReactElement {
   const { quickInputState } = props;
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const { placeholder, options, getSearchValue, onSelect, customization } =
     quickInputState;
   const inputRef = useRef<SelectComponent>(null);
@@ -64,7 +65,12 @@ function QuickInputDialog<T>(props: {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <Modal darkMode={true} className="search-modal">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="search-modal"
+      >
         <div className="quick-input">
           <CustomSelectorInput
             ref={inputRef}
@@ -74,7 +80,10 @@ function QuickInputDialog<T>(props: {
             filterOption={filterOption}
             placeholder={placeholder}
             escapeClearsValue={true}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             menuIsOpen={true}
             optionCustomization={{
               rowHeight: customization?.rowHeight,

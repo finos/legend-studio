@@ -265,7 +265,10 @@ const CloneQueryServiceSetupContent = observer(() => {
               placeholder={projectSelectorPlaceholder}
               isClearable={true}
               escapeClearsValue={true}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
           <div className="query-setup__wizard__group">
@@ -284,7 +287,10 @@ const CloneQueryServiceSetupContent = observer(() => {
               }
               isClearable={true}
               escapeClearsValue={true}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
         </div>
@@ -326,7 +332,10 @@ const CloneQueryServiceSetupContent = observer(() => {
                     placeholder={serviceExecutionSelectorPlaceholder}
                     isClearable={true}
                     escapeClearsValue={true}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                 </div>
               </>

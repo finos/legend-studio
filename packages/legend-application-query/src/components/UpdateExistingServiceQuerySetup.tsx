@@ -139,7 +139,10 @@ const UpdateExistingServiceQuerySetupContent = observer(() => {
             inputValue={searchText}
             onChange={onServiceOptionChange}
             placeholder="Search for service..."
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             formatOptionLabel={formatServiceOptionLabel}
           />
         </div>

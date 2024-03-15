@@ -81,7 +81,9 @@ export const DataSpacePreviewDialog = observer(() => {
       }}
     >
       <Modal
-        darkMode={true}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
         className="editor-modal data-space-preview__dialog"
       >
         <ModalHeader className="data-space-preview__dialog__header">

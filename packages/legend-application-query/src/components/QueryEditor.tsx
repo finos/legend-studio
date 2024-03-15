@@ -147,7 +147,12 @@ const CreateQueryDialog = observer(() => {
         paper: 'editor-modal__content',
       }}
     >
-      <Modal darkMode={true} className="query-export">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="query-export"
+      >
         <ModalHeader title="Create New Query" />
         <ModalBody>
           <PanelLoadingIndicator
@@ -217,7 +222,9 @@ const SaveQueryDialog = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder-text-mode__modal')}
         >
           <ModalHeader>

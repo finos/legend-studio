@@ -206,7 +206,10 @@ export const ServiceRegistrationEditor = observer(() => {
               options={envOptions}
               onChange={onServerEnvChange}
               value={selectedEnvOption}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
           <div className="panel__content__form__section">
@@ -221,7 +224,10 @@ export const ServiceRegistrationEditor = observer(() => {
               options={serviceTypesOptions}
               onChange={onServiceTypeSelectionChange}
               value={selectedServiceType}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
           {registrationState.serviceExecutionMode ===
@@ -331,7 +337,10 @@ export const ServiceRegistrationEditor = observer(() => {
               options={registrationState.versionOptions ?? []}
               onChange={onVersionSelectionChange}
               value={selectedVersion}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
               disabled={registrationState.versionOptions === undefined}
               placeholder={versionPlaceholder}
               isLoading={

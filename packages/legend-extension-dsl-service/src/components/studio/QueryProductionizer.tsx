@@ -59,6 +59,7 @@ import {
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { DocumentationLink } from '@finos/legend-lego/application';
+import { useApplicationStore } from '@finos/legend-application';
 
 export type UserOption = { label: string; value: string };
 
@@ -108,6 +109,7 @@ const withQueryProductionizerStore = (WrappedComponent: React.FC): React.FC =>
 
 const QueryPreviewModal = observer((props: { queryInfo: QueryInfo }) => {
   const { queryInfo } = props;
+  const applicationStore = useApplicationStore();
   const productionizerStore = useQueryProductionizerStore();
 
   // life-cycles
@@ -121,7 +123,12 @@ const QueryPreviewModal = observer((props: { queryInfo: QueryInfo }) => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <Modal darkMode={true} className="search-modal">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="search-modal"
+      >
         <ModalTitle title="Query Preview" />
         <Panel>
           <PanelFullContent>
@@ -400,7 +407,10 @@ const QueryProductionizerContent = observer(() => {
                     value={selectedQueryOption}
                     onChange={onQueryOptionChange}
                     placeholder="Search for query..."
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                     isClearable={true}
                     escapeClearsValue={true}
                     formatOptionLabel={formatQueryOptionLabel}
@@ -434,7 +444,10 @@ const QueryProductionizerContent = observer(() => {
                     value={selectedProjectOption}
                     onChange={onProjectOptionChange}
                     placeholder="Search for project..."
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                     isClearable={true}
                     escapeClearsValue={true}
                     formatOptionLabel={getProjectOptionLabelFormatter(
@@ -564,7 +577,10 @@ const QueryProductionizerContent = observer(() => {
                       spellCheck={false}
                       inputValue={searchText}
                       options={userOptions}
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                       onInputChange={onSearchTextChange}
                       onChange={onUserOptionChange}
                       isMulti={true}

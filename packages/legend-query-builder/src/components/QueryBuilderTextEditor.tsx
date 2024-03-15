@@ -71,7 +71,9 @@ export const QueryBuilderTextEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder-text-mode__modal', {
             'query-builder-text-mode__modal--has-error': Boolean(
               queryTextEditorState.parserError,

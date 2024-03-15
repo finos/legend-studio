@@ -87,6 +87,7 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
+  useApplicationStore,
 } from '@finos/legend-application';
 import {
   buildElementOption,
@@ -379,6 +380,7 @@ export const QueryBuilderGraphFetchExternalConfig = observer(
       value: serializationState.targetBinding,
       label: serializationState.targetBinding.name,
     };
+    const applicationStore = graphFetchState.queryBuilderState.applicationStore;
     const onBindingChange = (
       val: PackageableElementOption<Binding> | null,
     ): void => {
@@ -423,9 +425,14 @@ export const QueryBuilderGraphFetchExternalConfig = observer(
               onChange={onBindingChange}
               value={selectedBinding}
               formatOptionLabel={getBindingFormatter({
-                darkMode: true,
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled,
               })}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
           <div className="service-execution-editor__configuration__item">

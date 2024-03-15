@@ -303,6 +303,7 @@ const getMockDataEditorLanguage = (
 
 const SampleDataGenerator = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const explorerTreeState = editorStore.explorerTreeState;
   const selectedClass = explorerTreeState.classToGenerateSampleData;
   const [format, setFormat] = useState(GENERATION_DEFAULT_FORMAT);
@@ -387,10 +388,15 @@ const SampleDataGenerator = observer(() => {
             options={classOptions}
             onChange={changeClass}
             value={selectedClassOption}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             filterOption={elementFilterOption}
             formatOptionLabel={getPackageableElementOptionFormatter({
-              darkMode: true,
+              darkMode:
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled,
             })}
           />
           <div
