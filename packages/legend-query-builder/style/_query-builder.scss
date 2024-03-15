@@ -519,6 +519,14 @@
 
   &__item__action {
     margin-left: 0.5rem;
+
+    svg {
+      color: var(--color-light-grey-150);
+
+      &:hover {
+        color: white;
+      }
+    }
   }
 
   &__combo {

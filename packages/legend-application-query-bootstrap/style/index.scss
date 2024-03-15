@@ -626,6 +626,16 @@
     &__arrow {
       opacity: 1 !important;
     }
+
+    &__item__action {
+      svg {
+        color: var(--color-legacylight-light-blue-100);
+
+        &:hover {
+          color: var(--color-legacylight-light-blue-400);
+        }
+      }
+    }
   }
 
   // ---------------------------- Other -------------------------------
