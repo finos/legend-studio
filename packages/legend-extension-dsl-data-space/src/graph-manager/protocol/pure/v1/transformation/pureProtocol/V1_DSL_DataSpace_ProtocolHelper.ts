@@ -130,9 +130,12 @@ const V1_dataSpaceElementPointerModelSchema = createModelSchema(
   },
 );
 
+const V1_PACKAGEABLEELEMENT_EXECUTABLE =
+  'dataSpacePackageableElementExecutable';
 const V1_dataSpaceExecutableModelSchema = createModelSchema(
   V1_DataSpaceExecutable,
   {
+    _type: usingConstantValueSchema(V1_PACKAGEABLEELEMENT_EXECUTABLE),
     description: optional(primitive()),
     executable: usingModelSchema(V1_packageableElementPointerModelSchema),
     title: primitive(),
