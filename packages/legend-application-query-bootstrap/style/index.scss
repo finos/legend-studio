@@ -1100,19 +1100,23 @@
     }
 
     .query-builder-filter-tree__condition-node__operator__label {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
     }
 
     .query-builder-filter-tree__condition-node__operator__dropdown__trigger {
-      background: var(--color-dark-grey-350);
+      background: var(--color-blue-200);
     }
 
     .query-builder-filter-tree__group-node.query-builder-filter-tree__group-node--and {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
+
+      .query-builder-filter-tree__group-node__action {
+        background: var(--color-blue-200);
+      }
     }
 
     .query-builder-filter-tree__group-node.query-builder-filter-tree__group-node--or {
-      background: var(--color-light-grey-400);
+      background: var(--color-legacylight-orange-100);
     }
 
     .query-builder-filter-tree__node__container--selected
