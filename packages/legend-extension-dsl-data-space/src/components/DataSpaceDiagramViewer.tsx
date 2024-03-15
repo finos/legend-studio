@@ -235,6 +235,7 @@ const buildDiagramOption = (
 const DataSpaceDiagramViewerHeader = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const applicationStore = dataSpaceViewerState.applicationStore;
     const diagramViewerState = dataSpaceViewerState.diagramViewerState;
     const diagramOptions =
       dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.map(
