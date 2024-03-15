@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.14.13
+
+### Patch Changes
+
+- [#2994](https://github.com/finos/legend-studio/pull/2994) [`4f96e2f9c`](https://github.com/finos/legend-studio/commit/4f96e2f9c11efd8486630c0fb4ad6a5862b24dc1) ([@travisstebbins](https://github.com/travisstebbins)) - Restyle fetch structure and filter panels
+
+- [#2995](https://github.com/finos/legend-studio/pull/2995) [`5f2063387`](https://github.com/finos/legend-studio/commit/5f20633875de4cb4aeedc333100ae8647bb360bb) ([@travisstebbins](https://github.com/travisstebbins)) - Close explorer property search modal on blur
+
+- [#2979](https://github.com/finos/legend-studio/pull/2979) [`121acae72`](https://github.com/finos/legend-studio/commit/121acae726647613e427302f8533ad0b6226bc63) ([@gs-jp1](https://github.com/gs-jp1)) - remove code duplication in calendars
+
 ## 4.14.12
 
 ### Patch Changes
