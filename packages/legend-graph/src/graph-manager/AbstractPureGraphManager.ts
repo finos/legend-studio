@@ -686,7 +686,8 @@ export abstract class AbstractPureGraphManager {
     serviceUrl: string,
     serviceId: string,
   ): Promise<void>;
-  abstract validateService(
+  abstract runServicePostValidations(
+    service: Service,
     graph: PureModel,
     assertionId: string,
   ): Promise<PostValidationAssertionResult>;

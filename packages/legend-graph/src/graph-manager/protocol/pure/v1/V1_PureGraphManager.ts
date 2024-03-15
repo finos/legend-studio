@@ -3578,13 +3578,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async validateService(
+  async runServicePostValidations(
+    service: Service,
     graph: PureModel,
     assertionId: string,
   ): Promise<PostValidationAssertionResult> {
     const contextData = this.getFullGraphModelData(graph);
-
-    const result = await this.engine.postValidateServiceAssertion(
+    const result = await this.engine.runServicePostVal(
+      service.path,
       contextData,
       assertionId,
     );
