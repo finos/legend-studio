@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.16.0
+
+### Minor Changes
+
+- [#2999](https://github.com/finos/legend-studio/pull/2999) [`58aa24644`](https://github.com/finos/legend-studio/commit/58aa246443117c20e4e5e32cf294cb89063abbce) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Execute service post validation
+
 ## 28.15.12
 
 ## 28.15.11
