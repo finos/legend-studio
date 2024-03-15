@@ -3581,10 +3581,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     assertionId: string,
   ): Promise<PostValidationAssertionResult> {
-    // const graphEntities = graph.allOwnElements.map((element) =>
-    //   this.elementToEntity(element),
-    // );
-    // const modelText = await this.entitiesToPureProtocolText(graphEntities);
     const contextData = this.getFullGraphModelData(graph);
 
     const result = await this.engine.postValidateServiceAssertion(
