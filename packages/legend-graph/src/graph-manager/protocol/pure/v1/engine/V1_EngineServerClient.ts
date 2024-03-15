@@ -963,10 +963,8 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { skipProcessing: true },
     );
 
-  /**
-   * TODO: this is an internal API that should me refactored out using extension mechanism
-   */
-  TEMPORARY__postValidateAssertionId = (
+  runServicePostVal = (
+    servicePath: string,
     input: PlainObject,
     assertionId: string,
   ): Promise<PlainObject> =>
@@ -980,6 +978,8 @@ export class V1_EngineServerClient extends AbstractServerClient {
       undefined,
       {
         assertionId: assertionId,
+
+        servicePath: servicePath,
       },
       { enableCompression: true },
     );

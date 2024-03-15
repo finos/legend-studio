@@ -509,7 +509,8 @@ export class ServicePostValidationsState {
 
         const testResults =
           await this.editorStore.graphManagerState.graphManager
-            .validateService(
+            .runServicePostValidations(
+              this.service,
               this.editorStore.graphManagerState.graph,
               assertionId,
             )
