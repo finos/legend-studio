@@ -77,7 +77,10 @@ import type {
   CompilationResult,
   TextCompilationResult,
 } from './action/compilation/CompilationResult.js';
-import type { ParameterValue } from '../DSL_Service_Exports.js';
+import type {
+  ParameterValue,
+  PostValidationAssertionResult,
+} from '../DSL_Service_Exports.js';
 import type { ModelUnit } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import type {
   DatasetEntitlementReport,
@@ -683,6 +686,10 @@ export abstract class AbstractPureGraphManager {
     serviceUrl: string,
     serviceId: string,
   ): Promise<void>;
+  abstract validateService(
+    graph: PureModel,
+    assertionId: string,
+  ): Promise<PostValidationAssertionResult>;
 
   // ------------------------------------------- Change detection -------------------------------------------
 

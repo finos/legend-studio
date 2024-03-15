@@ -24,6 +24,7 @@ import {
   RawLambda,
   isStubbed_RawLambda,
   stub_RawLambda,
+  type PostValidationAssertionResult,
 } from '@finos/legend-graph';
 import type { ServiceEditorState } from './ServiceEditorState.js';
 import {
@@ -46,6 +47,7 @@ import {
   LogEvent,
   generateEnumerableNameFromToken,
   ActionState,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 
 export class PostValidationAssertionState extends LambdaEditorState {
@@ -432,15 +434,19 @@ export class ServicePostValidationsState {
   readonly serviceEditorState: ServiceEditorState;
   readonly editorStore: EditorStore;
   selectedPostValidationState: PostValidationState | undefined;
+  runningPostValidationAction = ActionState.create();
+  postValidationAssertionResults: PostValidationAssertionResult[] | undefined;
 
   constructor(serviceEditorState: ServiceEditorState) {
     makeObservable(this, {
       selectedPostValidationState: observable,
+      postValidationAssertionResults: observable,
       init: action,
       buildPostValidationState: action,
       addValidation: action,
       deleteValidation: action,
       changeValidation: action,
+      runVal: flow,
     });
     this.serviceEditorState = serviceEditorState;
     this.editorStore = serviceEditorState.editorStore;
@@ -489,5 +495,45 @@ export class ServicePostValidationsState {
   changeValidation(validation: PostValidation): void {
     this.selectedPostValidationState =
       this.buildPostValidationState(validation);
+  }
+
+  // Fetches validation results. Caller of validation should catch the error
+  async fetchValidationResult(): Promise<PostValidationAssertionResult[]> {
+    const validation = guaranteeNonNullable(
+      this.selectedPostValidationState?.validation,
+    );
+
+    return Promise.all(
+      validation.assertions.map(async (assertion) => {
+        const assertionId = guaranteeNonNullable(assertion.id);
+
+        const testResults =
+          await this.editorStore.graphManagerState.graphManager
+            .validateService(
+              this.editorStore.graphManagerState.graph,
+              assertionId,
+            )
+            .then((data: PostValidationAssertionResult) => data);
+
+        return guaranteeNonNullable(testResults);
+      }),
+    );
+  }
+
+  *runVal(): GeneratorFn<void> {
+    try {
+      this.runningPostValidationAction.inProgress();
+      this.postValidationAssertionResults = undefined;
+      this.postValidationAssertionResults = (yield flowResult(
+        this.fetchValidationResult(),
+      )) as PostValidationAssertionResult[];
+      this.runningPostValidationAction.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Error running validation: ${error.message}`,
+      );
+      this.runningPostValidationAction.fail();
+    }
   }
 }

@@ -73,7 +73,7 @@ import {
   type V1_DatabaseBuilderInput,
   V1_serializeDatabaseBuilderInput,
 } from './generation/V1_DatabaseBuilderInput.js';
-import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
+import { type V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
 import {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
@@ -145,6 +145,7 @@ import {
 } from './service/V1_TestDataGenerationResult.js';
 import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
 import { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
+import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -998,6 +999,19 @@ export class V1_Engine {
       serviceUrl,
       generationId,
     );
+  }
+
+  async postValidateServiceAssertion(
+    input: V1_PureModelContext,
+    assertionId: string,
+  ): Promise<PostValidationAssertionResult> {
+    const result =
+      (await this.engineServerClient.TEMPORARY__postValidateAssertionId(
+        V1_serializePureModelContext(input),
+        assertionId,
+      )) as unknown as PostValidationAssertionResult;
+
+    return result;
   }
 
   // ------------------------------------------- Query -------------------------------------------

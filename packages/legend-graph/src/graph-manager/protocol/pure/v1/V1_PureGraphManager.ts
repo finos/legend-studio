@@ -320,6 +320,7 @@ import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_Dat
 import { EngineError } from '../../../action/EngineError.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 import type { ExecutionResult } from '../../../action/execution/ExecutionResult.js';
+import type { PostValidationAssertionResult } from '../../../../DSL_Service_Exports.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3574,6 +3575,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       serviceUrl,
       serviceStorage.getGenerationId(),
     );
+  }
+
+  async validateService(
+    graph: PureModel,
+    assertionId: string,
+  ): Promise<PostValidationAssertionResult> {
+    // const graphEntities = graph.allOwnElements.map((element) =>
+    //   this.elementToEntity(element),
+    // );
+    // const modelText = await this.entitiesToPureProtocolText(graphEntities);
+    const contextData = this.getFullGraphModelData(graph);
+
+    const result = await this.engine.postValidateServiceAssertion(
+      contextData,
+      assertionId,
+    );
+    return result;
   }
 
   // --------------------------------------------- SDLC --------------------------------------------------

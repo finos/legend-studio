@@ -40,8 +40,14 @@ import {
   PanelHeader,
   PanelHeaderActions,
   PanelHeaderActionItem,
+  PlayIcon,
+  PanelTabs,
 } from '@finos/legend-art';
-import type { PostValidation } from '@finos/legend-graph';
+import type {
+  PostValidation,
+  PostValidationAssertionResult,
+  PostValidationViolationsResultRow,
+} from '@finos/legend-graph';
 import { forwardRef, useEffect, useState } from 'react';
 import {
   serviceValidation_setASsertionId,
@@ -49,6 +55,7 @@ import {
 } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
 import { flowResult } from 'mobx';
+import { useApplicationStore } from '@finos/legend-application';
 
 const ServicePostValidationAssertionEditor = observer(
   (props: { assertionState: PostValidationAssertionState }) => {
@@ -339,6 +346,7 @@ export const PostValidationItem = observer(
   }) => {
     const { postValidation, validationState, idx } = props;
     const serviceEditorState = validationState.serviceEditorState;
+    const applicationStore = useApplicationStore();
     const isReadOnly = serviceEditorState.isReadOnly;
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
@@ -353,6 +361,11 @@ export const PostValidationItem = observer(
       validationState.deleteValidation(postValidation);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+    const runVal = (): void => {
+      flowResult(validationState.runVal()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
     return (
       <ContextMenu
         className={clsx(
@@ -378,7 +391,87 @@ export const PostValidationItem = observer(
             {`validation ${idx + 1}`}
           </div>
         </button>
+        <div className="mapping-test-explorer__item__actions">
+          <button
+            className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
+            onClick={runVal}
+            disabled={validationState.runningPostValidationAction.isInProgress}
+            tabIndex={-1}
+            title={`Validate ${idx + 1}`}
+          >
+            {<PlayIcon />}
+          </button>
+        </div>
       </ContextMenu>
+    );
+  },
+);
+
+const ServicePostValidationResultViewer = observer(
+  (props: { result: PostValidationAssertionResult }) => {
+    const { result } = props;
+
+    const summaryType =
+      result.violations.result.rows.length === 0 ? 'success' : 'fail';
+
+    return (
+      <div
+        className={`testable-test-assertion-result__summary--${summaryType}`}
+      >
+        <div className="testable-test-assertion-result__summary-main">
+          Assertion Result Summary ({summaryType})
+        </div>
+        <div className="testable-test-assertion-result__summary-info">
+          Id: {result.id}
+        </div>
+        <div className="testable-test-assertion-result__summary-info">
+          Message: {result.message}
+        </div>
+        <div className="testable-test-assertion-result__summary-info">
+          Violations: {result.violations.result.rows.length}
+        </div>
+        {result.violations.result.rows.map(
+          (row: PostValidationViolationsResultRow) => (
+            <div
+              key={result.id}
+              className={`testable-test-assertion-result__summary testable-test-assertion-result__summary--${summaryType}`}
+            >
+              {row.values.map((value, valueIndex) => (
+                <div
+                  key={`${result.violations.result.columns[valueIndex]}-${value}`}
+                  className="testable-test-assertion-result__summary-info"
+                >
+                  {result.violations.result.columns[valueIndex]}: {value}
+                </div>
+              ))}
+            </div>
+          ),
+        )}
+      </div>
+    );
+  },
+);
+
+const ServicePostValidationResultsViewer = observer(
+  (props: {
+    isInProgress: boolean;
+    results: PostValidationAssertionResult[] | undefined;
+  }) => {
+    const { isInProgress, results } = props;
+
+    return (
+      <div className="testable-test-assertion-result__summary">
+        {results
+          ? results.map((result) => (
+              <ServicePostValidationResultViewer
+                key={result.id}
+                result={result}
+              />
+            ))
+          : isInProgress
+          ? 'Post validation(s) running...'
+          : 'Run post validation(s) to see results'}
+      </div>
     );
   },
 );
@@ -393,10 +486,23 @@ export const ServicePostValidationsEditor = observer(
     const serviceEditorState = validationState.serviceEditorState;
     const service = serviceEditorState.service;
     const isReadOnly = serviceEditorState.isReadOnly;
+    enum POST_VALIDATION_TAB {
+      SETUP = 'SETUP',
+      ASSERTIONS = 'ASSERTIONS',
+    }
+    const [selectedTab, setSelectedTab] = useState(POST_VALIDATION_TAB.SETUP);
     const addPostValidation = (): void => validationState.addValidation();
     useEffect(() => {
       validationState.init();
     }, [validationState]);
+    useEffect(() => {
+      if (validationState.runningPostValidationAction.isInProgress) {
+        setSelectedTab(POST_VALIDATION_TAB.ASSERTIONS);
+      }
+    }, [
+      validationState.runningPostValidationAction.isInProgress,
+      POST_VALIDATION_TAB.ASSERTIONS,
+    ]);
     return (
       <div className="service-post-validation-editor">
         <PanelHeader title="Post validations" />
@@ -443,29 +549,48 @@ export const ServicePostValidationsEditor = observer(
             </ResizablePanelSplitter>
             <ResizablePanel>
               <Panel className="service-test-editor">
-                <PanelHeader
-                  className="service-test-suite-editor__header"
-                  title="valiation"
-                  labelClassName="service-test-suite-editor__header__title__label--tests-suites"
+                <PanelTabs
+                  tabTitles={Object.keys(POST_VALIDATION_TAB)}
+                  selectedTab={selectedTab}
+                  changeTheTab={(tab) => () =>
+                    setSelectedTab(
+                      POST_VALIDATION_TAB[
+                        tab as keyof typeof POST_VALIDATION_TAB
+                      ],
+                    )
+                  }
+                  tabClassName="panel__header__tab"
                 />
-                <PanelContent className="service-test-editor__content">
-                  {validationState.selectedPostValidationState && (
-                    <ServicePostValidationEditor
-                      postValidationState={
-                        validationState.selectedPostValidationState
+                {selectedTab === POST_VALIDATION_TAB.SETUP ? (
+                  <PanelContent className="service-test-editor__content">
+                    {validationState.selectedPostValidationState && (
+                      <ServicePostValidationEditor
+                        postValidationState={
+                          validationState.selectedPostValidationState
+                        }
+                      />
+                    )}
+                    {!service.postValidations.length && (
+                      <BlankPanelPlaceholder
+                        text="Add Post Validation"
+                        onClick={addPostValidation}
+                        disabled={isReadOnly}
+                        clickActionType="add"
+                        tooltipText="Click to add post validation"
+                      />
+                    )}
+                  </PanelContent>
+                ) : null}
+                {selectedTab === POST_VALIDATION_TAB.ASSERTIONS ? (
+                  <PanelContent>
+                    <ServicePostValidationResultsViewer
+                      isInProgress={
+                        validationState.runningPostValidationAction.isInProgress
                       }
+                      results={validationState.postValidationAssertionResults}
                     />
-                  )}
-                  {!service.postValidations.length && (
-                    <BlankPanelPlaceholder
-                      text="Add Post Validation"
-                      onClick={addPostValidation}
-                      disabled={isReadOnly}
-                      clickActionType="add"
-                      tooltipText="Click to add post validation"
-                    />
-                  )}
-                </PanelContent>
+                  </PanelContent>
+                ) : null}
               </Panel>
             </ResizablePanel>
           </ResizablePanelGroup>
