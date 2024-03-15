@@ -618,9 +618,6 @@
     box-shadow:
       0 2px 1px rgb(0 0 0 / 10%),
       0 0 1px rgb(0 0 0 / 10%);
-    box-shadow:
-      0 2px 1px rgb(0 0 0 / 10%),
-      0 0 1px rgb(0 0 0 / 10%);
   }
 
   .query-builder__tooltip {
@@ -1401,15 +1398,23 @@
     }
 
     .query-builder__result__advanced__mode__label {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
       color: var(--color-light-grey-100);
+
+      .documentation-link {
+        color: var(--color-light-grey-100);
+
+        &:hover {
+          color: var(--color-blue-200);
+        }
+      }
     }
 
     .query-builder__result__advanced__mode__toggler__btn {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
 
       svg {
-        color: var(--color-dark-grey-250);
+        color: var(--color-light-grey-100);
       }
     }
 
