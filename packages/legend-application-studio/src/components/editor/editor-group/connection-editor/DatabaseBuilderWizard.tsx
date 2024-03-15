@@ -305,7 +305,12 @@ export const DatabaseBuilderWizard = observer(
           },
         }}
       >
-        <Modal darkMode={true} className="database-builder">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="database-builder"
+        >
           <ModalHeader>
             <ModalTitle title="Database Builder" />
             <ModalHeaderActions>

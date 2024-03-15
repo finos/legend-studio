@@ -67,6 +67,7 @@ const SchemaLoader = observer(
     schemaSetEditorState: InnerSchemaSetEditorState | SchemaSetEditorState;
   }) => {
     const { schemaSetEditorState } = props;
+    const applicationStore = schemaSetEditorState.editorStore.applicationStore;
     const importState = schemaSetEditorState.importSchemaContentState;
     const onClose = (): void => importState.closeModal();
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
@@ -88,7 +89,12 @@ const SchemaLoader = observer(
           appear: false, // disable transition
         }}
       >
-        <Modal darkMode={true} className="modal--scrollable patch-loader">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="modal--scrollable patch-loader"
+        >
           <ModalHeader title="Schema Content Loader" />
           <ModalBody>
             <PanelLoadingIndicator

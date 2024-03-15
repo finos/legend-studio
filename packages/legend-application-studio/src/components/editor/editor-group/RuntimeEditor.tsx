@@ -596,7 +596,10 @@ const IdentifiedConnectionEditor = observer(
                 options={connectionOptions}
                 onChange={onConnectionSelectionChange}
                 value={selectedConnectionOption}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
               />
               {!isEmbeddedConnection && (
                 <button
@@ -812,6 +815,7 @@ const RuntimeMappingEditor = observer(
   }) => {
     const { runtimeEditorState, mappingRef, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const runtimeValue = runtimeEditorState.runtimeValue;
     const mappingOptions = editorStore.graphManagerState.graph.ownMappings
       .filter((m) => !runtimeValue.mappings.map((_m) => _m.value).includes(m))
@@ -843,7 +847,9 @@ const RuntimeMappingEditor = observer(
           value={selectedMappingOption}
           placeholder="Choose a class"
           filterOption={filterOption}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
         <button
           className="btn--dark btn__icon--dark"
@@ -1054,6 +1060,7 @@ export const EmbeddedRuntimeEditor = observer(
     onClose: () => void;
   }) => {
     const { runtimeEditorState, onClose, isReadOnly } = props;
+    const applicationStore = useApplicationStore();
     const closeEditor = (): void => onClose();
     if (!runtimeEditorState) {
       return null;
@@ -1068,7 +1075,12 @@ export const EmbeddedRuntimeEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal embedded-runtime-editor">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal embedded-runtime-editor"
+        >
           <ModalHeader>
             <ModalTitle icon={<CogIcon />} title="custom runtime" />
             <ModalHeaderActions>

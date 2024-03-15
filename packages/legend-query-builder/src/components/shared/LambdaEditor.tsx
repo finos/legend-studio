@@ -605,7 +605,9 @@ const LambdaEditor_PopUp = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx(
             'editor-modal lambda-editor__popup__modal',
             {

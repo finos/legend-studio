@@ -174,6 +174,7 @@ export const DataElementReferenceDataEditor = observer(
     const dataElement =
       dataElementReferenceState.embeddedData.dataElement.value;
     const editorStore = dataElementReferenceState.editorStore;
+    const applicationStore = editorStore.applicationStore;
     const options =
       editorStore.graphManagerState.usableDataElements.map(buildElementOption);
     const selectedOption = buildElementOption(dataElement);
@@ -215,7 +216,10 @@ export const DataElementReferenceDataEditor = observer(
               options={options}
               onChange={onDataElementChange}
               value={selectedOption}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
             <button
               className="btn--dark btn--sm data-element-reference-editor__value-btn"
@@ -255,6 +259,7 @@ export const ModelEmbeddedDataEditor = observer(
         option.value.path,
     });
     const editorStore = modelStoreDataState.editorStore;
+    const applicationStore = editorStore.applicationStore;
     const _class = modelData.model.value;
     const classOptions = editorStore.graphManagerState.usableClasses.map(
       (_cl) => ({
@@ -293,10 +298,15 @@ export const ModelEmbeddedDataEditor = observer(
               options={classOptions}
               onChange={changeClass}
               value={selectedClassOption}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
               filterOption={elementFilterOption}
               formatOptionLabel={getPackageableElementOptionFormatter({
-                darkMode: true,
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled,
               })}
             />
           </div>

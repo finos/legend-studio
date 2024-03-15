@@ -198,6 +198,7 @@ const WorkflowJobLogsViewer = observer(
     logState: WorkflowLogState;
   }) => {
     const { workflowState, logState } = props;
+    const applicationStore = workflowState.editorStore.applicationStore;
     const job = guaranteeNonNullable(logState.job);
     const jobIsInProgress = job.status === WorkflowJobStatus.IN_PROGRESS;
     const closeLogViewer = (): void => {
@@ -220,7 +221,12 @@ const WorkflowJobLogsViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
           <PanelLoadingIndicator
             isLoading={logState.fetchJobLogState.isInProgress}
           />

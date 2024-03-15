@@ -122,6 +122,7 @@ export const ClassMappingSelectorModal = observer(
       classMappingFilterFn,
     } = props;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
 
     // Class mapping selector
     const classMappingSelectorRef = useRef<SelectComponent>(null);
@@ -172,7 +173,10 @@ export const ClassMappingSelectorModal = observer(
             placeholder="Choose a class mapping..."
             filterOption={filterOption}
             isClearable={true}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
         </Modal>
       </Dialog>

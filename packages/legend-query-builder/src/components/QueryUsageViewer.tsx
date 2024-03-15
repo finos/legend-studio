@@ -56,7 +56,12 @@ export const QueryUsageViewer = observer(
         open={resultState.isQueryUsageViewerOpened}
         onClose={() => resultState.setIsQueryUsageViewerOpened(false)}
       >
-        <Modal className="query-builder__usage-viewer__modal" darkMode={true}>
+        <Modal
+          className="query-builder__usage-viewer__modal"
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
           <ModalHeader title="Query Usage" />
           <ModalBody className="query-builder__usage-viewer__body">
             <>

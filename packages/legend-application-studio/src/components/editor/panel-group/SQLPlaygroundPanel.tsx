@@ -670,7 +670,10 @@ export const SQLPlaygroundPanel = observer(() => {
                       options={connectionOptions}
                       onChange={changeConnection}
                       value={selectedConnectionOption}
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                       placeholder="Choose a connection..."
                       filterOption={connectionFilterOption}
                     />
@@ -685,7 +688,10 @@ export const SQLPlaygroundPanel = observer(() => {
                       options={connectionOptions}
                       onChange={changeConnection}
                       value={selectedConnectionOption}
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                       placeholder="Choose a connection..."
                       filterOption={connectionFilterOption}
                     />

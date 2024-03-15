@@ -111,7 +111,12 @@ const ShareProjectModal = observer(
 
     return (
       <Dialog onClose={closeModal} open={open}>
-        <Modal darkMode={true} className="modal--no-padding">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="modal--no-padding"
+        >
           <PanelLoadingIndicator isLoading={isDispatchingAction} />
           <ModalBody>
             <div className="project-overview__share-project__modal__info-entry">
@@ -134,7 +139,10 @@ const ShareProjectModal = observer(
                             }
                           : null
                       }
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                     />
                   </div>
                 ) : (
@@ -680,7 +688,10 @@ const PatchEditor = observer(() => {
                 placeholder={'Select source version'}
                 isClearable={true}
                 escapeClearsValue={true}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
               />
             </div>
           </div>
@@ -747,7 +758,10 @@ const PatchEditor = observer(() => {
                     placeholder={'Select patch you want to release'}
                     isClearable={true}
                     escapeClearsValue={true}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                 </div>
               </div>

@@ -135,7 +135,9 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal query-builder__variables__modal"
         >
           <ModalHeader
@@ -244,7 +246,9 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder__constants__modal', {
             'query-builder__constants__modal--has-error': Boolean(
               lambdaState.parserError,

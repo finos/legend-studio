@@ -72,6 +72,7 @@ import { ServiceEditorState } from '../../../../stores/editor/editor-state/eleme
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
     const { executionState } = props;
+    const applicationStore = executionState.editorStore.applicationStore;
     // execution
     const executionResultText = executionState.executionResultText;
     const closeExecutionResultViewer = (): void =>
@@ -87,7 +88,12 @@ const ServiceExecutionResultViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
           <ModalHeader title="Execution Result" />
           <ModalBody>
             <CodeEditor

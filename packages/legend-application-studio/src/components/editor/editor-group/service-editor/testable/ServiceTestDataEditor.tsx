@@ -97,6 +97,7 @@ export const RowIdentifierEditor = observer(
     rowIdentifierState: RowIdentifierState;
   }) => {
     const { tableRowIdentifierState, rowIdentifierState } = props;
+    const applicationStore = useApplicationStore();
     const columnOptions = tableRowIdentifierState.table.columns
       .filter(filterByType(Column))
       .map((_c) => ({
@@ -147,7 +148,10 @@ export const RowIdentifierEditor = observer(
 
               value: rowIdentifierState.column,
             }}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
           <BasicValueSpecificationEditor
             valueSpecification={rowIdentifierState.value}
@@ -195,6 +199,7 @@ export const TableRowIdentifierEditor = observer(
     tableRowIdentifierState: TableRowIdentifierState;
   }) => {
     const { connectionTestDataState, tableRowIdentifierState } = props;
+    const applicationStore = useApplicationStore();
     const tables = connectionTestDataState.getAvailableTables();
     const tableOptions = tables.map((_t) => ({
       label: `${_t.schema.name}.${_t.name}`,
@@ -232,7 +237,10 @@ export const TableRowIdentifierEditor = observer(
 
               value: tableRowIdentifierState.table,
             }}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
         </div>
         <div className="panel__content__form__section">
@@ -298,7 +306,9 @@ export const SeedDataInputModal = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal lambda-parameter-values__modal"
         >
           <ModalHeader title="Create Seed Data Input (BETA)" />
@@ -335,6 +345,7 @@ export const UseDataElementModal = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
     const { connectionTestDataState } = props;
     const editorStore = connectionTestDataState.editorStore;
+    const applicationStore = editorStore.applicationStore;
     const useSharedModal = connectionTestDataState.useSharedModal;
     const closeModal = (): void =>
       connectionTestDataState.setUseSharedModal(false);
@@ -373,7 +384,12 @@ export const UseDataElementModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true} className="service-test-data-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="service-test-data-modal"
+        >
           <ModalBody>
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
@@ -386,7 +402,10 @@ export const UseDataElementModal = observer(
                   options={dataElementOptions}
                   onChange={onDataElementChange}
                   value={selectedDataElement}
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </div>
             </div>
@@ -689,6 +708,7 @@ export const NewConnectionDataModal = observer(
   (props: { testDataState: ServiceTestDataState }) => {
     const { testDataState } = props;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const dataElementOptions =
       editorStore.graphManagerState.usableDataElements.map(buildElementOption);
     const newConnectionState = testDataState.newConnectionDataState;
@@ -804,7 +824,10 @@ export const NewConnectionDataModal = observer(
                   onChange={onConnectionSelectionChange}
                   value={selectedConnection}
                   isClearable={false}
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </div>
             </div>
@@ -822,7 +845,10 @@ export const NewConnectionDataModal = observer(
                   onChange={onEmbeddedTypeChange}
                   value={selectedEmbeddedType}
                   isClearable={false}
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </div>
             </div>
@@ -838,7 +864,10 @@ export const NewConnectionDataModal = observer(
                     options={dataElementOptions}
                     onChange={onDataElementChange}
                     value={selectedDataElement}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                 </div>
               </div>

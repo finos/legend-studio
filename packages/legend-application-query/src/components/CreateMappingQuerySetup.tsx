@@ -284,7 +284,10 @@ const CreateMappingQuerySetupContent = observer(() => {
               placeholder={projectSelectorPlaceholder}
               isClearable={true}
               escapeClearsValue={true}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
           <div className="query-setup__wizard__group">
@@ -303,7 +306,10 @@ const CreateMappingQuerySetupContent = observer(() => {
               }
               isClearable={true}
               escapeClearsValue={true}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
         </div>
@@ -351,9 +357,14 @@ const CreateMappingQuerySetupContent = observer(() => {
                     }
                     isClearable={true}
                     escapeClearsValue={true}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                     formatOptionLabel={getPackageableElementOptionFormatter({
-                      darkMode: true,
+                      darkMode:
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled,
                     })}
                   />
                 </div>
@@ -372,9 +383,14 @@ const CreateMappingQuerySetupContent = observer(() => {
                     placeholder={runtimeSelectorPlaceholder}
                     isClearable={true}
                     escapeClearsValue={true}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                     formatOptionLabel={getPackageableElementOptionFormatter({
-                      darkMode: true,
+                      darkMode:
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled,
                     })}
                   />
                 </div>

@@ -89,6 +89,7 @@ const PureExecutionContextConfigurationEditor = observer(
     const { executionContextState, pureExecutionState } = props;
     const executionContext = executionContextState.executionContext;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const serviceState =
       editorStore.tabManagerState.getCurrentEditorState(ServiceEditorState);
     const isReadOnly = serviceState.isReadOnly;
@@ -275,7 +276,10 @@ const PureExecutionContextConfigurationEditor = observer(
                 options={mappingOptions}
                 onChange={onMappingSelectionChange}
                 value={selectedMappingOption}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
                 hasError={isMappingEmpty}
               />
               <button
@@ -297,7 +301,10 @@ const PureExecutionContextConfigurationEditor = observer(
                 options={runtimeOptions}
                 onChange={onRuntimeSelectionChange}
                 value={selectedRuntimeOption}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
               />
               {!isRuntimePointer && (
                 <button
@@ -341,6 +348,7 @@ export const ChangeExecutionModal = observer(
     isReadOnly: boolean;
   }) => {
     const { executionState, isReadOnly } = props;
+    const applicationStore = executionState.editorStore.applicationStore;
     const closeModal = (): void => executionState.setShowChangeExecModal(false);
     const isChangingToMulti =
       executionState instanceof SingleServicePureExecutionState;
@@ -394,7 +402,10 @@ export const ChangeExecutionModal = observer(
             onChange={_onChange}
             value={currentOption}
             escapeClearsValue={true}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             disable={isReadOnly}
           />
         );

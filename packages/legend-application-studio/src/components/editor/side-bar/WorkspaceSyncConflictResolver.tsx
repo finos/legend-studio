@@ -108,7 +108,12 @@ export const WorkspaceSyncConflictResolver = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <Modal darkMode={true} className="editor-modal query-builder__dialog">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="editor-modal query-builder__dialog"
+      >
         <ModalHeader title="Resolve Merge Conflicts" />
         <ModalBody>
           <ResizablePanelGroup orientation="vertical">

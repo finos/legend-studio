@@ -135,6 +135,7 @@ const CreateTestSuiteModal = observer(
     const mappingEditorState = mappingTestableState.mappingEditorState;
     const mapping = mappingEditorState.mapping;
     const editorStore = mappingEditorState.editorStore;
+    const applicationStore = editorStore.applicationStore;
     // Class mapping selector
     const compatibleClasses = getMappingCompatibleClasses(
       mapping,
@@ -192,7 +193,11 @@ const CreateTestSuiteModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true}>
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
           <ModalHeader>
             <ModalTitle title="Create Mapping Test Suite" />
           </ModalHeader>
@@ -241,7 +246,10 @@ const CreateTestSuiteModal = observer(
                 onChange={changeClassOption}
                 value={selectedClassOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({})}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
                 placeholder="Choose a class..."
                 isClearable={true}
               />
@@ -276,6 +284,7 @@ const CreateTestModal = observer(
     const testData = suite.tests.filter(filterByType(MappingTest))[0]
       ?.storeTestData[0];
     const editorStore = mappingSuiteState.editorStore;
+    const applicationStore = editorStore.applicationStore;
     // test name
     const [id, setId] = useState<string | undefined>(undefined);
     const isValid = id && !id.includes(' ');
@@ -327,7 +336,11 @@ const CreateTestModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true}>
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
           <ModalHeader>
             <ModalTitle title="Create Mapping Test" />
           </ModalHeader>
@@ -352,7 +365,10 @@ const CreateTestModal = observer(
                   options={mappedClassOptions}
                   onChange={changeClassOption}
                   value={selectedClassOption}
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                   placeholder="Choose a class..."
                   isClearable={true}
                 />
@@ -383,6 +399,7 @@ const CreateStoreTestDataModal = observer(
     const { mappingTestState } = props;
     const mappingTestableDataState = mappingTestState.dataState;
     const editorStore = mappingTestableDataState.editorStore;
+    const applicationStore = editorStore.applicationStore;
     const mapping = mappingTestableDataState.mappingTestableState.mapping;
     const isReadOnly =
       mappingTestableDataState.mappingTestableState.mappingEditorState
@@ -502,7 +519,12 @@ const CreateStoreTestDataModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true} className="search-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="search-modal"
+        >
           <ModalTitle title="Create Store Test Data" />
           <ModalBody>
             <div className="panel__content__form__section">
@@ -515,7 +537,10 @@ const CreateStoreTestDataModal = observer(
                 onChange={changeStoreOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({})}
                 value={selectedStoreOption}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
                 placeholder="Choose a store..."
                 isClearable={true}
               />
@@ -535,7 +560,10 @@ const CreateStoreTestDataModal = observer(
                   onChange={onEmbeddedTypeChange}
                   value={embeddedDataTypeOption}
                   isClearable={false}
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </div>
             </div>
@@ -551,7 +579,10 @@ const CreateStoreTestDataModal = observer(
                     options={dataElementOptions}
                     onChange={onDataElementChange}
                     value={selectedDataElement}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                 </div>
               </div>

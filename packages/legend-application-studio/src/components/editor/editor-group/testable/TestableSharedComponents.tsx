@@ -82,6 +82,7 @@ import {
   BasicValueSpecificationEditor,
   buildDefaultInstanceValue,
 } from '@finos/legend-query-builder';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const SharedDataElementModal = observer(
   (props: {
@@ -92,6 +93,7 @@ export const SharedDataElementModal = observer(
     close: () => void;
   }) => {
     const { filterBy, isReadOnly, close, editorStore, handler } = props;
+    const applicationStore = editorStore.applicationStore;
     const dataElements =
       editorStore.graphManagerState.graph.dataElements.filter((e) =>
         filterBy ? filterBy(e) : true,
@@ -123,7 +125,12 @@ export const SharedDataElementModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true} className="service-test-data-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="service-test-data-modal"
+        >
           <ModalBody>
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
@@ -137,7 +144,10 @@ export const SharedDataElementModal = observer(
                   onChange={onDataElementChange}
                   formatOptionLabel={getPackageableElementOptionFormatter({})}
                   value={selectedDataElement}
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </div>
             </div>
@@ -313,6 +323,8 @@ const EqualToAsssertionEditor = observer(
 const EqualToJsonAssertFailViewer = observer(
   (props: { equalToJsonAssertFailState: EqualToJsonAssertFailState }) => {
     const { equalToJsonAssertFailState } = props;
+    const applicationStore =
+      equalToJsonAssertFailState.resultState.editorStore.applicationStore;
     const open = (): void => equalToJsonAssertFailState.setDiffModal(true);
     const close = (): void => equalToJsonAssertFailState.setDiffModal(false);
     const expected = equalToJsonAssertFailState.status.expected;
@@ -333,7 +345,13 @@ const EqualToJsonAssertFailViewer = observer(
               paper: 'editor-modal__content',
             }}
           >
-            <Modal darkMode={true} className="editor-modal">
+            <Modal
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              className="editor-modal"
+            >
               <ModalHeader>
                 <div className="equal-to-json-result__diff__summary">
                   <div className="equal-to-json-result__diff__header__label">
@@ -682,6 +700,7 @@ export const ExternalFormatParameterEditorModal = observer(
       updateParamValue,
       contentTypeParamPair,
     } = props;
+    const applicationStore = useApplicationStore();
     const paramValue =
       varExpression.genericType?.value.rawType === PrimitiveType.BYTE
         ? atob((valueSpec as PrimitiveInstanceValue).values[0] as string)
@@ -694,7 +713,9 @@ export const ExternalFormatParameterEditorModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal lambda-editor__popup__modal')}
         >
           <ModalHeader>

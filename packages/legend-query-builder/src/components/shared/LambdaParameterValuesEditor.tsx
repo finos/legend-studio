@@ -71,7 +71,9 @@ export const LambdaParameterValuesEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal lambda-parameter-values__modal"
         >
           <ModalHeader title="Set Parameter Values" />

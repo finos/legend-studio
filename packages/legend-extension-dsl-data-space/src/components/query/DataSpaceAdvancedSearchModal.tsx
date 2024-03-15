@@ -153,7 +153,9 @@ export const DataSpaceAdvancedSearchModal = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal data-space-advanced-search__dialog"
         >
           <ModalHeader className="data-space-advanced-search__dialog__header">
@@ -185,7 +187,10 @@ export const DataSpaceAdvancedSearchModal = observer(
                 placeholder="Search for data space by name..."
                 isClearable={true}
                 escapeClearsValue={true}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
                 formatOptionLabel={formatDataSpaceOptionLabel}
               />
               <button
