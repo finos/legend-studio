@@ -433,6 +433,10 @@
       color: var(--color-legacylight-dark-grey-200);
     }
 
+    &__form__section__toggler__btn svg {
+      color: var(--color-light-grey-250);
+    }
+
     &__form__section__toggler__btn--toggled svg {
       color: var(--color-legacylight-light-blue-100);
     }
@@ -445,8 +449,18 @@
       color: var(--color-legacylight-dark-grey-200);
     }
 
-    &__node__container:hover svg {
-      color: var(--color-dark-grey-350);
+    &__node__container:hover {
+      .query-builder-property-search-panel__type-icon svg {
+        color: var(--color-primitive);
+      }
+
+      .query-builder-property-search-panel__node__info svg {
+        color: var(--color-legacylight-light-blue-100);
+      }
+    }
+
+    &__node__info:hover svg {
+      color: var(--color-legacylight-light-blue-400) !important;
     }
 
     &__input {
@@ -567,6 +581,14 @@
 
     .Mui-checked {
       color: var(--color-legacylight-light-blue-200);
+    }
+
+    .documentation-link {
+      color: var(--color-legacylight-light-blue-100);
+
+      &:hover {
+        color: var(--color-legacylight-light-blue-400);
+      }
     }
   }
 
