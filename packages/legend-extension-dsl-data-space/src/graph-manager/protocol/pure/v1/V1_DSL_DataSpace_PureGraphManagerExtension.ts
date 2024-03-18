@@ -70,6 +70,7 @@ import {
   DataSpaceAssociationDocumentationEntry,
   DataSpaceMultiExecutionServiceExecutableInfo,
   DataSpaceMultiExecutionServiceKeyedExecutableInfo,
+  DataSpaceTemplateExecutableInfo,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
 import {
@@ -81,6 +82,7 @@ import {
   V1_DataSpaceServiceExecutableInfo,
   V1_deserializeDataSpaceAnalysisResult,
   V1_DataSpaceMultiExecutionServiceExecutableInfo,
+  V1_DataSpaceTemplateExecutableInfo,
 } from './engine/analytics/V1_DataSpaceAnalysis.js';
 import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 
@@ -487,8 +489,17 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         const executable = new DataSpaceExecutableAnalysisResult();
         executable.title = executableProtocol.title;
         executable.description = executableProtocol.description;
-        executable.executable = executableProtocol.executable;
+        if (executableProtocol.executable) {
+          executable.executable = executableProtocol.executable;
+        }
         if (
+          executableProtocol.info instanceof V1_DataSpaceTemplateExecutableInfo
+        ) {
+          const templateExecutableInfo = new DataSpaceTemplateExecutableInfo();
+          templateExecutableInfo.query = executableProtocol.info.query;
+          templateExecutableInfo.executionContextKey =
+            executableProtocol.info.executionContextKey;
+        } else if (
           executableProtocol.info instanceof V1_DataSpaceServiceExecutableInfo
         ) {
           const serviceExecutableInfo = new DataSpaceServiceExecutableInfo();

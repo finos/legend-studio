@@ -129,6 +129,10 @@ export abstract class DataSpaceExecutableInfo {
   query!: string;
 }
 
+export class DataSpaceTemplateExecutableInfo extends DataSpaceExecutableInfo {
+  executionContextKey!: string;
+}
+
 export class DataSpaceServiceExecutableInfo extends DataSpaceExecutableInfo {
   pattern!: string;
   mapping?: string | undefined;
@@ -173,7 +177,7 @@ export class DataSpaceExecutableAnalysisResult {
 
   title!: string;
   description?: string | undefined;
-  executable!: string;
+  executable?: string;
   info?: DataSpaceExecutableInfo | undefined;
   result!: DataSpaceExecutableResult;
 }

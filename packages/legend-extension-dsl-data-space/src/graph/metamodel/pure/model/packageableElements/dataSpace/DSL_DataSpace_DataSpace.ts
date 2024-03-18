@@ -16,7 +16,6 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
-  PackageableElement,
   type PackageableElementReference,
   type Mapping,
   type PackageableRuntime,
@@ -25,6 +24,8 @@ import {
   type Enumeration,
   type Association,
   type Package,
+  type RawLambda,
+  PackageableElement,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
@@ -63,17 +64,49 @@ export class DataSpaceElementPointer implements Hashable {
   }
 }
 
-export class DataSpaceExecutable implements Hashable {
+export abstract class DataSpaceExecutable implements Hashable {
   title!: string;
   description?: string | undefined;
-  executable!: PackageableElementReference<PackageableElement>;
 
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
       this.title,
       this.description ?? '',
+    ]);
+  }
+}
+
+export class DataSpacePackageableElementExecutable
+  extends DataSpaceExecutable
+  implements Hashable
+{
+  executable!: PackageableElementReference<PackageableElement>;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE,
+      this.title,
+      this.description ?? '',
       this.executable.valueForSerialization ?? '',
+    ]);
+  }
+}
+
+export class DataSpaceExecutableTemplate
+  extends DataSpaceExecutable
+  implements Hashable
+{
+  query!: RawLambda;
+  executionContextKey?: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_TEMPLATE_EXECUTABLE,
+      this.title,
+      this.description ?? '',
+      this.query,
+      this.executionContextKey ?? '',
     ]);
   }
 }

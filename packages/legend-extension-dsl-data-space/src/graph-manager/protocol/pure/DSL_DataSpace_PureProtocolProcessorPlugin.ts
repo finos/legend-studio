@@ -20,10 +20,11 @@ import {
   V1_DataSpace,
   V1_DataSpaceDiagram,
   V1_DataSpaceElementPointer,
-  V1_DataSpaceExecutable,
   V1_DataSpaceExecutionContext,
+  V1_DataSpacePackageableElementExecutable,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
+  V1_DataSpaceTemplateExecutable,
 } from './v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   type PlainObject,
@@ -45,14 +46,15 @@ import {
 import { V1_resolveDataSpace } from './v1/transformation/pureGraph/V1_DSL_DataSpace_GraphBuilderHelper.js';
 import { getOwnDataSpace } from '../../DSL_DataSpace_GraphManagerHelper.js';
 import {
+  type DataSpaceElement,
   DataSpace,
-  DataSpaceExecutable,
   DataSpaceExecutionContext,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
-  type DataSpaceElement,
   DataSpaceDiagram,
   DataSpaceElementPointer,
+  DataSpaceExecutableTemplate,
+  DataSpacePackageableElementExecutable,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
   type PackageableElement,
@@ -65,6 +67,17 @@ import {
   type V1_PackageableElement,
   type V1_PureModelContextData,
   type V1_TaggedValue,
+  type Mapping,
+  type MappingInclude,
+  type PackageableElementReference,
+  type V1_MappingInclude,
+  type DSL_Mapping_PureProtocolProcessorPlugin_Extension,
+  type V1_MappingIncludeBuilder,
+  type V1_MappingIncludeTransformer,
+  type V1_MappingIncludeProtocolSerializer,
+  type V1_MappingIncludeProtocolDeserializer,
+  type V1_MappingIncludeIdentifierBuilder,
+  type V1_RawLambda,
   V1_taggedValueModelSchema,
   PackageableElementExplicitReference,
   V1_PackageableElementPointer,
@@ -79,17 +92,9 @@ import {
   Class,
   Enumeration,
   Association,
-  type Mapping,
-  type MappingInclude,
-  type PackageableElementReference,
   Package,
-  type V1_MappingInclude,
-  type DSL_Mapping_PureProtocolProcessorPlugin_Extension,
-  type V1_MappingIncludeBuilder,
-  type V1_MappingIncludeTransformer,
-  type V1_MappingIncludeProtocolSerializer,
-  type V1_MappingIncludeProtocolDeserializer,
-  type V1_MappingIncludeIdentifierBuilder,
+  V1_RawValueSpecificationTransformer,
+  V1_buildRawLambdaWithResolvedPaths,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { V1_MappingIncludeDataSpace } from './v1/model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
@@ -206,14 +211,41 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
           if (elementProtocol.executables) {
             element.executables = elementProtocol.executables.map(
               (executableProtocol) => {
-                const executable = new DataSpaceExecutable();
-                executable.title = executableProtocol.title;
-                executable.description = executableProtocol.description;
-                executable.executable = context.resolveElement(
-                  executableProtocol.executable.path,
-                  false,
-                );
-                return executable;
+                if (
+                  executableProtocol instanceof V1_DataSpaceTemplateExecutable
+                ) {
+                  const executable = new DataSpaceExecutableTemplate();
+                  executable.title = executableProtocol.title;
+                  executable.description = executableProtocol.description;
+                  executable.query = V1_buildRawLambdaWithResolvedPaths(
+                    executableProtocol.query.parameters,
+                    executableProtocol.query.body,
+                    context,
+                  );
+                  if (executableProtocol.executionContextKey) {
+                    executable.executionContextKey =
+                      executableProtocol.executionContextKey;
+                  }
+                  return executable;
+                } else if (
+                  executableProtocol instanceof
+                  V1_DataSpacePackageableElementExecutable
+                ) {
+                  const executable =
+                    new DataSpacePackageableElementExecutable();
+                  executable.title = executableProtocol.title;
+                  executable.description = executableProtocol.description;
+                  executable.executable = context.resolveElement(
+                    executableProtocol.executable.path,
+                    false,
+                  );
+                  return executable;
+                } else {
+                  throw new UnsupportedOperationError(
+                    `Can't build data space executable`,
+                    executableProtocol,
+                  );
+                }
               },
             );
           }
@@ -353,14 +385,37 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
             return elementPointer;
           });
           protocol.executables = metamodel.executables?.map((executable) => {
-            const executableProtocol = new V1_DataSpaceExecutable();
-            executableProtocol.title = executable.title;
-            executableProtocol.description = executable.description;
-            executableProtocol.executable = new V1_PackageableElementPointer(
-              undefined,
-              executable.executable.valueForSerialization ?? '',
-            );
-            return executableProtocol;
+            if (executable instanceof DataSpaceExecutableTemplate) {
+              const executableProtocol = new V1_DataSpaceTemplateExecutable();
+              executableProtocol.title = executable.title;
+              executableProtocol.description = executable.description;
+              if (executable.executionContextKey) {
+                executableProtocol.executionContextKey =
+                  executable.executionContextKey;
+              }
+              executableProtocol.query =
+                executable.query.accept_RawValueSpecificationVisitor(
+                  new V1_RawValueSpecificationTransformer(context),
+                ) as V1_RawLambda;
+              return executableProtocol;
+            } else if (
+              executable instanceof DataSpacePackageableElementExecutable
+            ) {
+              const executableProtocol =
+                new V1_DataSpacePackageableElementExecutable();
+              executableProtocol.title = executable.title;
+              executableProtocol.description = executable.description;
+              executableProtocol.executable = new V1_PackageableElementPointer(
+                undefined,
+                executable.executable.valueForSerialization ?? '',
+              );
+              return executableProtocol;
+            } else {
+              throw new UnsupportedOperationError(
+                `Can't transform data space executable`,
+                executable,
+              );
+            }
           });
           protocol.diagrams = metamodel.diagrams?.map((diagram) => {
             const diagramProtocol = new V1_DataSpaceDiagram();

@@ -30,6 +30,7 @@ import {
   V1_taggedValueModelSchema,
   V1_packageableElementPointerModelSchema,
   V1_PackageableElementPointer,
+  V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -43,19 +44,24 @@ import {
 } from '@finos/legend-shared';
 import {
   type V1_DataSpaceSupportInfo,
+  type V1_DataSpaceExecutable,
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
   V1_DataSpaceSupportCombinedInfo,
-  V1_DataSpaceExecutable,
   V1_DataSpaceDiagram,
   V1_DataSpaceElementPointer,
+  V1_DataSpaceTemplateExecutable,
+  V1_DataSpacePackageableElementExecutable,
 } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import { V1_MappingIncludeDataSpace } from '../../model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
 
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
 const V1_DATA_SPACE_SUPPORT_EMAIL_TYPE = 'email';
 const V1_DATA_SPACE_SUPPORT_COMBINED_INFO_TYPE = 'combined';
+const V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE =
+  'dataSpacePackageableElementExecutable';
+const V1_DATA_SPACE_TEMPLATE_EXECUTABLE = 'dataSpaceTemplateExecutable';
 
 const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
   V1_DataSpaceExecutionContext,
@@ -130,17 +136,60 @@ const V1_dataSpaceElementPointerModelSchema = createModelSchema(
   },
 );
 
-const V1_PACKAGEABLEELEMENT_EXECUTABLE =
-  'dataSpacePackageableElementExecutable';
-const V1_dataSpaceExecutableModelSchema = createModelSchema(
-  V1_DataSpaceExecutable,
+const V1_dataSpacePackageableElementExecutableModelSchema = createModelSchema(
+  V1_DataSpacePackageableElementExecutable,
   {
-    _type: usingConstantValueSchema(V1_PACKAGEABLEELEMENT_EXECUTABLE),
+    _type: usingConstantValueSchema(
+      V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE,
+    ),
     description: optional(primitive()),
-    executable: usingModelSchema(V1_packageableElementPointerModelSchema),
     title: primitive(),
+    executable: usingModelSchema(V1_packageableElementPointerModelSchema),
   },
 );
+
+const V1_dataSpaceTemplateExecutableModelSchema = createModelSchema(
+  V1_DataSpaceTemplateExecutable,
+  {
+    _type: usingConstantValueSchema(V1_DATA_SPACE_TEMPLATE_EXECUTABLE),
+    description: optional(primitive()),
+    title: primitive(),
+    query: usingModelSchema(V1_rawLambdaModelSchema),
+    executionContextKey: optional(primitive()),
+  },
+);
+
+const V1_serializeDataspaceExecutable = (
+  protocol: V1_DataSpaceExecutable,
+): PlainObject<V1_DataSpaceExecutable> => {
+  if (protocol instanceof V1_DataSpaceTemplateExecutable) {
+    return serialize(V1_dataSpaceTemplateExecutableModelSchema, protocol);
+  } else if (protocol instanceof V1_DataSpacePackageableElementExecutable) {
+    return serialize(
+      V1_dataSpacePackageableElementExecutableModelSchema,
+      protocol,
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize data space executable`,
+    protocol,
+  );
+};
+
+export const V1_deserializeDataspaceExecutable = (
+  json: PlainObject<V1_DataSpaceExecutable>,
+): V1_DataSpaceSupportInfo => {
+  switch (json._type) {
+    case V1_DATA_SPACE_TEMPLATE_EXECUTABLE:
+      return deserialize(V1_dataSpaceTemplateExecutableModelSchema, json);
+    case V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE:
+    default:
+      return deserialize(
+        V1_dataSpacePackageableElementExecutableModelSchema,
+        json,
+      );
+  }
+};
 
 const V1_dataSpaceDiagramModelSchema = createModelSchema(V1_DataSpaceDiagram, {
   description: optional(primitive()),
@@ -154,7 +203,12 @@ const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   description: optional(primitive()),
   diagrams: list(object(V1_dataSpaceDiagramModelSchema)),
   elements: optionalCustomListWithSchema(V1_dataSpaceElementPointerModelSchema),
-  executables: list(object(V1_dataSpaceExecutableModelSchema)),
+  executables: list(
+    custom(
+      (val) => V1_serializeDataspaceExecutable(val),
+      (val) => V1_deserializeDataspaceExecutable(val),
+    ),
+  ),
   executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
   featuredDiagrams: optionalCustomListWithSchema(
     V1_packageableElementPointerModelSchema,
