@@ -660,6 +660,111 @@
     }
   }
 
+  // ---------------------------- Virtual Assistant -------------------
+  .virtual-assistant__station {
+    .virtual-assistant__station__trigger {
+      background: var(--color-white);
+    }
+  }
+
+  .virtual-assistant__panel {
+    background: var(--color-white);
+    color: var(--color-legacylight-dark-grey-200);
+
+    .virtual-assistant__panel__header {
+      background: var(--color-legacylight-light-grey-100);
+      color: var(--color-dark-grey-300);
+
+      &__tab {
+        svg {
+          color: var(--color-light-grey-400);
+        }
+
+        &:hover {
+          background: var(--color-dark-blue-shade-100);
+        }
+
+        &__content {
+          border-bottom-color: var(--color-light-grey-400);
+        }
+      }
+
+      &__tab--active {
+        svg {
+          color: var(--color-dark-grey-400);
+        }
+
+        &:hover {
+          svg {
+            color: var(--color-dark-grey-400);
+          }
+        }
+
+        .virtual-assistant__panel__header__tab__content {
+          border-bottom-color: var(--color-yellow-300) !important;
+        }
+      }
+    }
+
+    &__content {
+      .virtual-assistant__search {
+        &__input {
+          &__search__icon svg {
+            color: var(--dark-grey-400);
+          }
+
+          &__advanced-config__panel {
+            background: var(--color-legacylight-light-grey-200);
+
+            &__header__label {
+              color: var(--color-legacylight-dark-grey-200);
+              background: var(--color-legacylight-light-grey-300);
+
+              &__hint svg {
+                color: var(--color-legacylight-light-blue-100);
+              }
+
+              &__hint:hover svg {
+                color: var(--color-legacylight-light-blue-400);
+              }
+            }
+
+            .mui-radio-group__group {
+              color: var(--color-legacylight-dark-grey-200);
+            }
+          }
+        }
+
+        .virtual-assistant__doc-entry {
+          &__expand-icon svg {
+            color: var(--color-legacylight-dark-grey-200);
+          }
+
+          &__expand-icon--disabled svg {
+            color: var(--color-legacylight-light-grey-300);
+          }
+
+          &__title {
+            color: var(--color-legacylight-dark-grey-200);
+
+            &--link {
+              color: var(--color-blue-40);
+            }
+          }
+
+          &__content__markdown-text {
+            background: var(--color-legacylight-light-grey-100);
+            color: var(--color-legacylight-dark-grey-200);
+
+            code {
+              background: var(--color-legacylight-light-grey-300);
+            }
+          }
+        }
+      }
+    }
+  }
+
   // ---------------------------- Other -------------------------------
 
   .execution-plan-viewer__panel__view-mode__option {
