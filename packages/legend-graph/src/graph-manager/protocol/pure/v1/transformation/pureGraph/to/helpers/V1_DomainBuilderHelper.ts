@@ -383,7 +383,7 @@ const V1_buildFunctionStoreTestData = (
 ): FunctionStoreTestData => {
   const storeTestData = new FunctionStoreTestData();
   storeTestData.doc = element.doc;
-  storeTestData.store = context.resolveStore(element.store);
+  storeTestData.store = context.resolveStore(element.store.path);
   storeTestData.data = V1_buildEmbeddedData(element.data, context);
   return storeTestData;
 };

@@ -33,6 +33,7 @@ import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile
 import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import {
   V1_initPackageableElement,
+  V1_transformElementReferencePointer,
   V1_transformMultiplicity,
 } from './V1_CoreTransformerHelper.js';
 import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
@@ -66,6 +67,7 @@ import { V1_FunctionStoreTestData } from '../../../model/packageableElements/fun
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
+import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();
@@ -268,7 +270,10 @@ const V1_transformFunctionSuite = (
     testSuite.testData = element.testData.map((elementData) => {
       const pTestData = new V1_FunctionStoreTestData();
       pTestData.doc = elementData.doc;
-      pTestData.store = elementData.store.valueForSerialization ?? '';
+      pTestData.store = V1_transformElementReferencePointer(
+        PackageableElementPointerType.STORE,
+        elementData.store,
+      );
       pTestData.data = V1_transformEmbeddedData(elementData.data, context);
       return pTestData;
     });

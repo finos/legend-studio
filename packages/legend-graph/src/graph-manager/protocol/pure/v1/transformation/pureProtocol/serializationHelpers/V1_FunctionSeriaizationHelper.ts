@@ -22,6 +22,8 @@ import {
   list,
   custom,
   raw,
+  serialize,
+  deserialize,
 } from 'serializr';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import { V1_FunctionTestSuite } from '../../../model/packageableElements/function/test/V1_FunctionTestSuite.js';
@@ -34,7 +36,9 @@ import {
 } from './V1_TestSerializationHelper.js';
 import {
   customListWithSchema,
+  isString,
   usingConstantValueSchema,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { V1_FunctionStoreTestData } from '../../../model/packageableElements/function/test/V1_FunctionStoreTestData.js';
 import {
@@ -45,7 +49,12 @@ import {
   V1_FunctionParameterValue,
   V1_FunctionTest,
 } from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
-import { ATOMIC_TEST_TYPE } from '../../../../../../../graph/MetaModelConst.js';
+import {
+  ATOMIC_TEST_TYPE,
+  PackageableElementPointerType,
+} from '../../../../../../../graph/MetaModelConst.js';
+import { V1_packageableElementPointerModelSchema } from './V1_CoreSerializationHelper.js';
+import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 
 export const V1_parameterValueModelSchema = createModelSchema(
   V1_FunctionParameterValue,
@@ -68,6 +77,19 @@ export const V1_functionTestModelSchema = createModelSchema(V1_FunctionTest, {
   parameters: customListWithSchema(V1_parameterValueModelSchema),
 });
 
+const V1_serializeDataElementReferenceValue = (
+  json: PlainObject<V1_PackageableElementPointer> | string,
+): V1_PackageableElementPointer => {
+  // For backward compatible: see https://github.com/finos/legend-engine/pull/2621
+  if (isString(json)) {
+    return new V1_PackageableElementPointer(
+      PackageableElementPointerType.STORE,
+      json,
+    );
+  }
+  return deserialize(V1_packageableElementPointerModelSchema, json);
+};
+
 const V1_FunctionStoreTestDataModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_FunctionStoreTestData> =>
@@ -77,7 +99,10 @@ const V1_FunctionStoreTestDataModelSchema = (
       (val) => V1_deserializeEmbeddedDataType(val, plugins),
     ),
     doc: optional(primitive()),
-    store: primitive(),
+    store: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) => V1_serializeDataElementReferenceValue(val),
+    ),
   });
 
 export const V1_functionTestSuiteModelSchema = (
