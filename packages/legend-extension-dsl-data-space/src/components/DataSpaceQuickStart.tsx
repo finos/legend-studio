@@ -147,6 +147,8 @@ const DataSpaceExecutableTDSResultView = observer(
       extractTDSExecutableActionConfigurations.find(
         (config) => config.key === selectedTab,
       );
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
     return (
       <div className="data-space__viewer__quickstart__item__content">
@@ -275,7 +277,16 @@ const DataSpaceExecutableTDSResultView = observer(
         </div>
         <div className="data-space__viewer__quickstart__item__content__tab__content">
           {selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
-            <div className="data-space__viewer__quickstart__tds__column-specs data-space__viewer__grid ag-theme-balham-dark">
+            <div
+              className={clsx(
+                'data-space__viewer__quickstart__tds__column-specs',
+                'data-space__viewer__grid',
+                {
+                  'ag-theme-balham': !darkMode,
+                  'ag-theme-balham-dark': darkMode,
+                },
+              )}
+            >
               <DataGrid
                 rowData={columnSpecifications}
                 gridOptions={{
