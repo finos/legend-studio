@@ -113,9 +113,8 @@ export const ModalFooterButton: React.FC<{
         'btn modal__footer__btn',
         {
           'btn--dark': isDarkMode,
-        },
-        { 'btn--light': !isDarkMode },
-        {
+          'btn--light': !isDarkMode,
+          'modal__footer__btn--primary': !isSecondary,
           'modal__footer__btn--secondary': isSecondary,
         },
         className,
