@@ -237,6 +237,16 @@
     background: var(--color-legacylight-light-blue-100);
   }
 
+  .modal__footer__btn--secondary {
+    background: var(--color-legacylight-light-grey-200);
+    color: var(--color-legacylight-dark-grey-400);
+    border: 1px solid var(--color-legacylight-light-grey-300);
+
+    &:hover {
+      background: var(--color-legacylight-light-grey-300);
+    }
+  }
+
   .code-editor__container {
     background: var(--color-white);
   }
@@ -247,12 +257,11 @@
   }
 
   .query-builder__projection__options__sort__sortby {
-    background: var(--color-dark-grey-400);
-    color: var(--color-light-grey-100);
+    background: var(--color-legacylight-light-blue-200);
   }
 
   .query-builder__projection__options__sort__sortby--btn {
-    background: var(--color-legacylight-light-blue-100);
+    background: var(--color-blue-200);
   }
 
   .lambda-editor__popup__content {
