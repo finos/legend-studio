@@ -207,7 +207,8 @@
 
 .query-builder-graph-fetch-config {
   width: 40vw;
-  height: 75rem;
+  height: fit-content;
+  max-height: 75rem;
   padding: 0;
   overflow: hidden;
 
