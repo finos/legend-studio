@@ -117,10 +117,6 @@
   .btn--dark[disabled] {
     background: var(--color-dark-grey-500);
     color: var(--color-white);
-
-    &:hover {
-      background: var(--color-dark-grey-400);
-    }
   }
 
   .btn--dark.btn--caution:focus,
@@ -250,7 +246,7 @@
     background: var(--color-legacylight-orange-100);
     color: var(--color-white);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: var(--color-legacylight-orange-150);
     }
   }
