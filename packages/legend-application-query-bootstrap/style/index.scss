@@ -289,6 +289,10 @@
     }
   }
 
+  .data-access-overview__header {
+    color: var(--color-white);
+  }
+
   // ------------------------------------ OLAP Panel Modal ---------------------------------------
   .query-builder__olap__modal {
     .query-builder__olap__column__sortby__none,
