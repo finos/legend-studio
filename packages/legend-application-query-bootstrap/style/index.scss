@@ -308,7 +308,7 @@
 
     .query-builder__olap__column__sortby__operator__label,
     .query-builder__olap__column__operation__operator__label {
-      background: var(--color-legacylight-light-blue-200);
+      background: var(--color-legacylight-light-blue-100);
     }
 
     .query-builder__olap__column__operation__operator__badge {
@@ -1349,11 +1349,11 @@
     }
 
     .query-builder-post-filter-tree__group-node.query-builder-post-filter-tree__group-node--and {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
     }
 
     .query-builder-post-filter-tree__group-node.query-builder-post-filter-tree__group-node--or {
-      background: var(--color-light-grey-400);
+      background: var(--color-legacylight-orange-100);
     }
 
     .query-builder-post-filter-tree__node__container--selected
@@ -1389,7 +1389,7 @@
 
     .query-builder__olap__column__sortby__operator__label,
     .query-builder__olap__column__operation__operator__label {
-      background: var(--color-legacylight-light-blue-200);
+      background: var(--color-legacylight-light-blue-100);
       color: var(--color-light-grey-100);
     }
 
