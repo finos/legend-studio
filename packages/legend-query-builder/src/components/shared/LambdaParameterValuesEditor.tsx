@@ -133,6 +133,7 @@ export const LambdaParameterValuesEditor = observer(
               inProgressText={isClosingAction ? 'Closing...' : undefined}
               onClick={close}
               text="Close"
+              type="secondary"
             />
           </ModalFooter>
         </Modal>

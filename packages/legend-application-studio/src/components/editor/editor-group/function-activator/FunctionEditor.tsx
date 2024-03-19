@@ -852,6 +852,7 @@ const FunctionPromoteEditor = observer(
               className="function-promote-editor__action-btn"
               onClick={closeModal}
               title="Close"
+              type="secondary"
             >
               Cancel
             </ModalFooterButton>

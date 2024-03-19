@@ -527,7 +527,11 @@ const QueryBuilderWindowColumnModalEditor = observer(
             {createNewWindow ? (
               <ModalFooterButton text="Create" onClick={create} />
             ) : (
-              <ModalFooterButton text="Close" onClick={close} />
+              <ModalFooterButton
+                text="Close"
+                onClick={close}
+                type="secondary"
+              />
             )}
           </ModalFooter>
         </Modal>

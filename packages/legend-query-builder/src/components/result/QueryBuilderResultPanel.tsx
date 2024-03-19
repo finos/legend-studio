@@ -346,6 +346,7 @@ export const QueryBuilderResultPanel = observer(
                 <ModalFooterButton
                   onClick={() => setShowSqlModal(false)}
                   text="Close"
+                  type="secondary"
                 />
               </ModalFooter>
             </Modal>

@@ -332,7 +332,11 @@ export const SeedDataInputModal = observer(
             </button>
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton onClick={closeModal} text="Close" />
+            <ModalFooterButton
+              onClick={closeModal}
+              text="Close"
+              type="secondary"
+            />
             <ModalFooterButton onClick={generateWithSeedData} text="Generate" />
           </ModalFooter>
         </Modal>
