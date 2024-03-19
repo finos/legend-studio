@@ -224,6 +224,21 @@ const LambdaEditor_Inner = observer(
       }
     }, [editor, isExpanded]);
 
+    // set styling when theme changes
+    useEffect(() => {
+      if (editor) {
+        editor.updateOptions({
+          theme: applicationStore.layoutService
+            .TEMPORARY__isLightColorThemeEnabled
+            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
+            : CODE_EDITOR_THEME.DEFAULT_DARK,
+        });
+      }
+    }, [
+      editor,
+      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+    ]);
+
     // set backdrop to force user to fix parser error when it happens
     useEffect(() => {
       if (parserError) {
