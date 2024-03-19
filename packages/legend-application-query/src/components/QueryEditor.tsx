@@ -513,19 +513,19 @@ const QueryEditorExistingQueryInfoModal = observer(
                 )}
             </div>
             <div className="search-modal__actions">
-              <button
-                className="btn btn--dark"
-                onClick={updateQueryVersionId}
+              <ModalFooterButton
+                text="Update"
                 disabled={
                   !updateState.queryVersionId ||
                   updateState.queryVersionId === query.versionId
                 }
-              >
-                Update
-              </button>
-              <button className="btn btn--dark" onClick={closeModal}>
-                Close
-              </button>
+                onClick={updateQueryVersionId}
+              />
+              <ModalFooterButton
+                text="Close"
+                onClick={closeModal}
+                type="secondary"
+              />
             </div>
           </div>
         </Modal>
