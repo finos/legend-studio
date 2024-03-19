@@ -584,11 +584,11 @@
   // ---------------------------- Search config -------------------------------
 
   .fuzzy-search__advanced-config__panel {
-    background: var(--color-white);
+    background: var(--color-legacylight-light-grey-100);
 
     &__header__label {
       color: var(--color-legacylight-dark-grey-400);
-      background: var(--color-legacylight-light-grey-100);
+      background: var(--color-legacylight-light-grey-200);
     }
 
     &__header__hint {
@@ -706,11 +706,11 @@
           }
 
           &__advanced-config__panel {
-            background: var(--color-legacylight-light-grey-200);
+            background: var(--color-legacylight-light-grey-100);
 
             &__header__label {
               color: var(--color-legacylight-dark-grey-200);
-              background: var(--color-legacylight-light-grey-300);
+              background: var(--color-legacylight-light-grey-200);
 
               &__hint svg {
                 color: var(--color-legacylight-light-blue-100);
