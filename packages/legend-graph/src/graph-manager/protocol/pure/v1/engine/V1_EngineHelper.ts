@@ -64,6 +64,7 @@ import type { QuerySearchSpecification } from '../../../../../graph-manager/acti
 import {
   V1_QueryProjectCoordinates,
   V1_QuerySearchSpecification,
+  V1_QuerySearchTermSpecification,
 } from './query/V1_QuerySearchSpecification.js';
 import { V1_TaggedValue } from '../model/packageableElements/domain/V1_TaggedValue.js';
 import { V1_TagPtr } from '../model/packageableElements/domain/V1_TagPtr.js';
@@ -243,7 +244,13 @@ export const V1_transformQuerySearchSpecification = (
   metamodel: QuerySearchSpecification,
 ): V1_QuerySearchSpecification => {
   const protocol = new V1_QuerySearchSpecification();
-  protocol.searchTerm = metamodel.searchTerm;
+  if (metamodel.searchTermSpecification) {
+    const termSpec = new V1_QuerySearchTermSpecification();
+    termSpec.exactMatchName = metamodel.searchTermSpecification.exactMatchName;
+    termSpec.includeOwner = metamodel.searchTermSpecification.includeOwner;
+    termSpec.searchTerm = metamodel.searchTermSpecification.searchTerm;
+    protocol.searchTermSpecification = termSpec;
+  }
   protocol.limit = metamodel.limit;
   protocol.showCurrentUserQueriesOnly = metamodel.showCurrentUserQueriesOnly;
   protocol.projectCoordinates = metamodel.projectCoordinates?.map(

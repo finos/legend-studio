@@ -416,10 +416,9 @@ export class QueryProductionizerStore {
       searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadQueriesState.inProgress();
     try {
-      const searchSpecification = new QuerySearchSpecification();
-      searchSpecification.searchTerm = isValidSearchString
-        ? searchText
-        : undefined;
+      const searchSpecification = QuerySearchSpecification.createDefault(
+        isValidSearchString ? searchText : undefined,
+      );
       searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
       this.queries = (yield this.graphManagerState.graphManager.searchQueries(
         searchSpecification,

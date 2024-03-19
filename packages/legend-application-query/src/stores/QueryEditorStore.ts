@@ -506,12 +506,10 @@ export abstract class QueryEditorStore {
     const isValidSearchString =
       searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     try {
-      const searchSpecification = new QuerySearchSpecification();
+      const searchSpecification = QuerySearchSpecification.createDefault(
+        isValidSearchString ? searchText : undefined,
+      );
       searchSpecification.showCurrentUserQueriesOnly = true;
-      searchSpecification.exactMatchName = true;
-      searchSpecification.searchTerm = isValidSearchString
-        ? searchText
-        : undefined;
       searchSpecification.limit = 1;
       const queries = (yield this.graphManagerState.graphManager.searchQueries(
         searchSpecification,
