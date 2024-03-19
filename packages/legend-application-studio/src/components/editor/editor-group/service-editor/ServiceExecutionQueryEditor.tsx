@@ -30,6 +30,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   ModalHeader,
 } from '@finos/legend-art';
 import {
@@ -103,12 +104,12 @@ const ServiceExecutionResultViewer = observer(
             />
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn btn--dark"
+            <ModalFooterButton
+              className="modal__footer__close-btn"
               onClick={closeExecutionResultViewer}
-            >
-              Close
-            </button>
+              text="Close"
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

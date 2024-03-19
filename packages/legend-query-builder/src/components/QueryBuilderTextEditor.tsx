@@ -137,13 +137,13 @@ export const QueryBuilderTextEditor = observer(
                 text="Discard Changes"
               />
             )}
-            <button
-              className="btn btn--dark"
+            <ModalFooterButton
               onClick={close}
               disabled={
                 Boolean(queryTextEditorState.parserError) ||
                 queryBuilderState.textEditorState.closingQueryState.isInProgress
               }
+              type="secondary"
             >
               {queryBuilderState.textEditorState.closingQueryState
                 .isInProgress ? (
@@ -156,7 +156,7 @@ export const QueryBuilderTextEditor = observer(
               ) : (
                 <> Close </>
               )}
-            </button>
+            </ModalFooterButton>
           </ModalFooter>
         </Modal>
       </Dialog>

@@ -36,6 +36,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { ExternalFormatSchema as Schema } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
@@ -141,13 +142,12 @@ const SchemaLoader = observer(
             )}
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn btn--dark blocking-alert__action--standard"
+            <ModalFooterButton
+              className="blocking-alert__action--standard"
+              text="Import Schemas"
               onClick={importSchemas}
               disabled={!importState.files?.length}
-            >
-              Import Schemas
-            </button>
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

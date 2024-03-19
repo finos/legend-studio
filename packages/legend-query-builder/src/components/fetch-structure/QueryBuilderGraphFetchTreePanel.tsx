@@ -347,12 +347,13 @@ const PureSerializationConfigModal = observer(
                 onClick={removeConfig}
               />
             )}
-            <button
-              className="btn modal__footer__close-btn btn--dark"
+            <ModalFooterButton
+              className="modal__footer__close-btn"
               onClick={handleAction}
+              type={toAdd ? 'primary' : 'secondary'}
             >
               {toAdd ? 'Add Config' : 'Close'}
-            </button>
+            </ModalFooterButton>
           </ModalFooter>
         </Modal>
       </Dialog>

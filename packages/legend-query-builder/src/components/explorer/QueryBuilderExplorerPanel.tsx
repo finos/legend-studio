@@ -279,7 +279,7 @@ const QueryBuilderExplorerPreviewDataModal = observer(
             )}
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton text="Close" onClick={close} />
+            <ModalFooterButton text="Close" onClick={close} type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>

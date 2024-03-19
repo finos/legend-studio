@@ -369,7 +369,11 @@ const EqualToJsonAssertFailViewer = observer(
                 <JSONDiffView from={expected} to={actual} lossless={true} />
               </ModalBody>
               <ModalFooter>
-                <ModalFooterButton text="Close" onClick={close} />
+                <ModalFooterButton
+                  text="Close"
+                  onClick={close}
+                  type="secondary"
+                />
               </ModalFooter>
             </Modal>
           </Dialog>
@@ -739,9 +743,11 @@ export const ExternalFormatParameterEditorModal = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button className="btn btn--dark" onClick={onClose}>
-              Close
-            </button>
+            <ModalFooterButton
+              text="Close"
+              onClick={onClose}
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

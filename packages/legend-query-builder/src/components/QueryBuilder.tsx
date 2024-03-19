@@ -778,7 +778,11 @@ export const QueryBuilder = observer(
                   </div>
                 </ModalBody>
                 <ModalFooter>
-                  <ModalFooterButton text="Close" onClick={handleClose} />
+                  <ModalFooterButton
+                    text="Close"
+                    onClick={handleClose}
+                    type="secondary"
+                  />
                 </ModalFooter>
               </Modal>
             </Dialog>

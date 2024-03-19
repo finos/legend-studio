@@ -890,7 +890,11 @@ export const ExecutionPlanViewer = observer(
             )}
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton onClick={closePlanViewer} text="Close" />
+            <ModalFooterButton
+              onClick={closePlanViewer}
+              text="Close"
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

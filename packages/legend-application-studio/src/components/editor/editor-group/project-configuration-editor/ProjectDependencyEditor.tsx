@@ -737,7 +737,11 @@ const ProjectDependencyReportModal = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton onClick={closeModal} text="Close" />
+            <ModalFooterButton
+              onClick={closeModal}
+              text="Close"
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
