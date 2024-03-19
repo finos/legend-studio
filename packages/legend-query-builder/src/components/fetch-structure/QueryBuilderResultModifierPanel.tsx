@@ -407,7 +407,7 @@ export const QueryResultModifierModal = observer(
                   <div className="query-builder__result__slice__input__wrapper">
                     <InputWithInlineValidation
                       id="query-builder__projection__modal__slice-start-input"
-                      className="input--dark query-builder__result__slice__input"
+                      className="input--dark query-builder__result__slice__input panel__content__form__section__input"
                       spellCheck={false}
                       value={slice[0] ?? ''}
                       onChange={changeSliceStart}
@@ -418,7 +418,7 @@ export const QueryResultModifierModal = observer(
                   <div className="query-builder__result__slice__range">..</div>
                   <div className="query-builder__result__slice__input__wrapper">
                     <InputWithInlineValidation
-                      className="input--dark query-builder__result__slice__input"
+                      className="input--dark query-builder__result__slice__input panel__content__form__section__input"
                       spellCheck={false}
                       value={slice[1] ?? ''}
                       onChange={changeSliceEnd}

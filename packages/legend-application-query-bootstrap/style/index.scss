@@ -117,6 +117,10 @@
   .btn--dark[disabled] {
     background: var(--color-dark-grey-500);
     color: var(--color-white);
+
+    &:hover {
+      background: var(--color-dark-grey-400);
+    }
   }
 
   .btn--dark.btn--caution:focus,
@@ -180,6 +184,11 @@
     }
   }
 
+  .panel__content__form__section__input.input--with-validation--error,
+  .panel__content__form__section__input.input--with-validation--error:focus {
+    border-color: var(--color-red-180);
+  }
+
   .query-builder__variables__variable__label {
     color: var(--color-legacylight-dark-grey-200);
   }
@@ -237,13 +246,21 @@
     background: var(--color-legacylight-light-blue-100);
   }
 
-  .modal__footer__btn--secondary {
-    background: var(--color-legacylight-light-grey-200);
-    color: var(--color-legacylight-dark-grey-400);
-    border: 1px solid var(--color-legacylight-light-grey-300);
+  .modal__footer__btn--primary {
+    background: var(--color-legacylight-orange-100);
+    color: var(--color-white);
 
     &:hover {
-      background: var(--color-legacylight-light-grey-300);
+      background: var(--color-legacylight-orange-150);
+    }
+  }
+
+  .modal__footer__btn--secondary {
+    background: var(--color-legacylight-light-blue-100);
+    color: var(--color-white);
+
+    &:hover {
+      background: var(--color-legacylight-light-blue-200);
     }
   }
 
