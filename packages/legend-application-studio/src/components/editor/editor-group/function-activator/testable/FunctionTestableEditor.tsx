@@ -844,7 +844,7 @@ const CreateTestModal = observer(
               onClick={create}
               text="Create"
             />
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -1066,7 +1066,7 @@ const CreateFucntionTestSuiteModal = observer(
               onClick={create}
               text="Create"
             />
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>

@@ -207,7 +207,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                 onClick={onAction}
               />
             )}
-            <ModalFooterButton text="Close" onClick={close} />
+            <ModalFooterButton text="Close" onClick={close} type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>

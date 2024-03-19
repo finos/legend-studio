@@ -231,7 +231,7 @@ const VariableExpressionEditor = observer(
                 onClick={onAction}
               />
             )}
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>

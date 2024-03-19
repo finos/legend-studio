@@ -255,7 +255,7 @@ const SaveQueryDialog = observer(
               disabled={Boolean(existingEditorStore.isPerformingBlockingAction)}
               onClick={saveQuery}
             />
-            <ModalFooterButton text="Close" onClick={close} />
+            <ModalFooterButton text="Close" onClick={close} type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>
