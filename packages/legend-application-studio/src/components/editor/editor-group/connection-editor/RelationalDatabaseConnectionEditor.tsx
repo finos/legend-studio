@@ -237,7 +237,11 @@ const LocalH2DatasourceSpecificationEditor = observer(
                   />
                 </ModalBody>
                 <ModalFooter>
-                  <ModalFooterButton onClick={closePopUp} text="Close" />
+                  <ModalFooterButton
+                    onClick={closePopUp}
+                    text="Close"
+                    type="secondary"
+                  />
                 </ModalFooter>
               </Modal>
             </Dialog>

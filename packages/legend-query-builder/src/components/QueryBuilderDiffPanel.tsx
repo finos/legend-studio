@@ -157,7 +157,11 @@ export const QueryBuilderDiffViewPanelDiaglog = observer(
             <QueryBuilderDiffViewPanel diffViewState={diffViewState} />
           </ModalBody>
           <ModalFooter className="query-builder__diff-panel__actions">
-            <ModalFooterButton title="Close Modal" onClick={close}>
+            <ModalFooterButton
+              title="Close Modal"
+              onClick={close}
+              type="secondary"
+            >
               Close
             </ModalFooterButton>
           </ModalFooter>

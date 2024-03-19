@@ -31,6 +31,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import type {
   EntityChangeConflict,
@@ -260,17 +261,18 @@ export const WorkspaceSyncConflictResolver = observer(() => {
           </ResizablePanelGroup>
         </ModalBody>
         <ModalFooter>
-          <button
-            className="btn btn--dark"
-            disabled={Boolean(conflicts.length)}
+          <ModalFooterButton
+            text="Apply Resolutions"
             title="Apply Resolutions"
+            disabled={Boolean(conflicts.length)}
             onClick={applyResolutions}
-          >
-            Apply Resolutions
-          </button>
-          <button className="btn btn--dark" title="Aborts" onClick={abort}>
-            Abort
-          </button>
+          />
+          <ModalFooterButton
+            text="Abort"
+            title="Aborts"
+            onClick={abort}
+            type="secondary"
+          />
         </ModalFooter>
       </Modal>
     </Dialog>

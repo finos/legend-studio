@@ -857,7 +857,7 @@ const FunctionPromoteEditor = observer(
               Cancel
             </ModalFooterButton>
             <ModalFooterButton
-              className=" function-promote-editor__action-btn function-promote-editor__action-btn--primitive"
+              className="function-promote-editor__action-btn function-promote-editor__action-btn--primitive"
               disabled={
                 !activatorPromoteState.activateType ||
                 !validateFunctionActivator(activatorPromoteState.activateType)

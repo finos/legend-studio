@@ -290,13 +290,12 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn btn--dark"
+            <ModalFooterButton
+              text="Close"
               onClick={close}
               disabled={Boolean(lambdaState.parserError)}
-            >
-              Close
-            </button>
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

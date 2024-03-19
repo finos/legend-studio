@@ -28,6 +28,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalTitle,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   disposeCodeEditor,
@@ -656,19 +657,17 @@ const LambdaEditor_PopUp = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn btn--dark btn--caution"
+            <ModalFooterButton
+              className="btn--caution"
+              text="Discard changes"
               onClick={discardChanges}
-            >
-              Discard changes
-            </button>
-            <button
-              className="btn btn--dark"
+            />
+            <ModalFooterButton
+              text="Close"
               onClick={onClose}
               disabled={Boolean(lambdaEditorState.parserError)}
-            >
-              Close
-            </button>
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

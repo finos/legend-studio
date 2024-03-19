@@ -35,6 +35,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffSideBarItem } from '../editor-group/diff-editor/EntityDiffView.js';
@@ -121,13 +122,12 @@ const PatchLoader = observer(() => {
           )}
         </ModalBody>
         <ModalFooter>
-          <button
-            className="btn btn--dark blocking-alert__action--standard"
+          <ModalFooterButton
+            className="blocking-alert__action--standard"
+            text="Apply Patch"
             onClick={upload}
             disabled={!patchState.changes?.length || !patchState.isValidPatch}
-          >
-            Apply Patch
-          </button>
+          />
         </ModalFooter>
       </Modal>
     </Dialog>

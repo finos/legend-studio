@@ -34,6 +34,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   MenuContentItem,
   MenuContent,
   PanelFormBooleanField,
@@ -162,13 +163,12 @@ const ShareProjectModal = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn--wide btn--dark"
+            <ModalFooterButton
+              className="btn--wide"
+              text="Copy Link"
               disabled={isFetchingProject}
               onClick={copyProjectElementLink}
-            >
-              Copy Link
-            </button>
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

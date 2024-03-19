@@ -878,16 +878,13 @@ export const NewConnectionDataModal = observer(
             )}
           </ModalBody>
           <ModalFooter>
-            <button
-              type="button" // prevent this toggler being activated on form submission
-              className="btn btn--dark"
+            <ModalFooterButton
               onClick={closeModal}
-            >
-              Cancel
-            </button>
-            <button className="btn btn--dark" disabled={isDisabled}>
-              Create
-            </button>
+              text="Cancel"
+              type="secondary"
+              preventFormSubmit={true} // prevent this toggler being activated on form submission
+            />
+            <ModalFooterButton text="Create" disabled={isDisabled} />
           </ModalFooter>
         </form>
       </Dialog>

@@ -107,6 +107,7 @@ export const QueryUsageViewer = observer(
             <ModalFooterButton
               onClick={() => resultState.setIsQueryUsageViewerOpened(false)}
               text="Close"
+              type="secondary"
             />
           </ModalFooter>
         </Modal>

@@ -237,7 +237,11 @@ const TestFailViewer = observer(
               )}
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton text="Close" onClick={closeLogViewer} />
+            <ModalFooterButton
+              text="Close"
+              onClick={closeLogViewer}
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
