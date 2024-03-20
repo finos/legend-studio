@@ -41,11 +41,12 @@ import {
   ThinChevronRightIcon,
   InfoCircleIcon,
 } from '@finos/legend-art';
-import type { LightQuery } from '@finos/legend-graph';
+import type { LightQuery, RawLambda } from '@finos/legend-graph';
 import {
   debounce,
   formatDistanceToNow,
   guaranteeNonNullable,
+  isNonNullable,
   quantifyList,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -104,6 +105,21 @@ export const QueryLoader = observer(
     const searchInputRef = useRef<HTMLInputElement>(null);
     const queryRenameInputRef = useRef<HTMLInputElement>(null);
     const results = queryLoaderState.queries;
+    const curatedTemplateQueries =
+      queryLoaderState.curatedTemplateQuerySepcifications
+        .map((s) =>
+          queryLoaderState.queryBuilderState
+            ? s.getCuratedTemplateQueries(queryLoaderState.queryBuilderState)
+            : [],
+        )
+        .flat();
+    const loadCuratedTemplateQuery = guaranteeNonNullable(
+      queryLoaderState.curatedTemplateQuerySepcifications
+        // already using an arrow function suggested by @typescript-eslint/unbound-method
+        // eslint-disable-next-line
+        .map((s) => () => s.loadCuratedTemplateQuery)
+        .filter(isNonNullable)[0],
+    );
     const [isMineOnly, setIsMineOnly] = useState(false);
     const [showQueryNameEditInput, setShowQueryNameEditInput] = useState<
       number | undefined
@@ -167,6 +183,11 @@ export const QueryLoader = observer(
       debouncedLoadQueries.cancel();
       debouncedLoadQueries(queryLoaderState.searchText);
     };
+    const toggleCuratedTemplate = (): void => {
+      queryLoaderState.setIsCuratedTemplateToggled(
+        !queryLoaderState.isCuratedTemplateToggled,
+      );
+    };
 
     useEffect(() => {
       flowResult(queryLoaderState.searchQueries('')).catch(
@@ -201,10 +222,16 @@ export const QueryLoader = observer(
         }
       };
 
-    const showPreview = (queryId: string): void => {
-      flowResult(queryLoaderState.getPreviewQueryContent(queryId)).catch(
-        applicationStore.alertUnhandledError,
-      );
+    const showPreview = (
+      queryId: string | undefined,
+      template?: {
+        queryName: string;
+        queryContent: RawLambda;
+      },
+    ): void => {
+      flowResult(
+        queryLoaderState.getPreviewQueryContent(queryId, template),
+      ).catch(applicationStore.alertUnhandledError);
       queryLoaderState.setShowPreviewViewer(true);
     };
 
@@ -270,6 +297,18 @@ export const QueryLoader = observer(
                   )}
                 </div>
               )}
+              <div className="query-loader__filter__extra__filters">
+                <button
+                  className={clsx('query-loader__filter__toggler__btn', {
+                    'query-loader__filter__toggler__btn--toggled':
+                      queryLoaderState.isCuratedTemplateToggled,
+                  })}
+                  onClick={toggleCuratedTemplate}
+                  tabIndex={-1}
+                >
+                  Curated Template Query
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -303,136 +342,203 @@ export const QueryLoader = observer(
                     `Found ${quantifyList(results, 'match', 'matches')}`
                   )}
                 </div>
-                {results
-                  .slice(0, QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
-                  .map((query, idx) => (
-                    <div
-                      className="query-loader__result"
-                      title={`Click to ${loadActionLabel}...`}
-                      key={query.id}
-                      onClick={() => queryLoaderState.loadQuery(query)}
-                    >
-                      <div className="query-loader__result__content">
-                        {showQueryNameEditInput === idx ? (
-                          <div className="query-loader__result__title__editor">
-                            <input
-                              className="query-loader__result__title__editor__input input--dark"
-                              spellCheck={false}
-                              ref={queryRenameInputRef}
-                              value={queryNameInputValue}
-                              onChange={changeQueryNameInputValue}
-                              onKeyDown={(event) => {
-                                if (event.code === 'Enter') {
-                                  event.stopPropagation();
-                                  renameQuery(query)();
-                                } else if (event.code === 'Escape') {
-                                  event.stopPropagation();
-                                  hideEditQueryNameInput();
-                                }
-                              }}
-                              onBlur={() => hideEditQueryNameInput()}
-                              // avoid clicking on the input causing the call to load query
-                              onClick={(event) => event.stopPropagation()}
-                            />
-                          </div>
-                        ) : (
-                          <div
-                            className="query-loader__result__title"
-                            title={query.name}
-                          >
-                            {query.name}
-                          </div>
-                        )}
-                        <div className="query-loader__result__description">
-                          <div className="query-loader__result__description__date__icon">
-                            <LastModifiedIcon />
-                          </div>
-                          <div className="query-loader__result__description__date">
-                            {query.lastUpdatedAt
-                              ? formatDistanceToNow(
-                                  new Date(query.lastUpdatedAt),
-                                  {
-                                    includeSeconds: true,
-                                    addSuffix: true,
-                                  },
-                                )
-                              : '(unknown)'}
-                          </div>
-                          <div
-                            className={clsx(
-                              'query-loader__result__description__author__icon',
-                              {
-                                'query-loader__result__description__author__icon--owner':
-                                  query.isCurrentUserQuery,
-                              },
-                            )}
-                          >
-                            <UserIcon />
-                          </div>
-                          <div className="query-loader__result__description__author__name">
-                            {query.isCurrentUserQuery ? (
-                              <div
-                                title={query.owner}
-                                className="query-loader__result__description__owner"
-                              >
-                                Me
-                              </div>
-                            ) : (
-                              query.owner
-                            )}
+                {!queryLoaderState.isCuratedTemplateToggled &&
+                  results
+                    .slice(0, QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
+                    .map((query, idx) => (
+                      <div
+                        className="query-loader__result"
+                        title={`Click to ${loadActionLabel}...`}
+                        key={query.id}
+                        onClick={() => queryLoaderState.loadQuery(query)}
+                      >
+                        <div className="query-loader__result__content">
+                          {showQueryNameEditInput === idx ? (
+                            <div className="query-loader__result__title__editor">
+                              <input
+                                className="query-loader__result__title__editor__input input--dark"
+                                spellCheck={false}
+                                ref={queryRenameInputRef}
+                                value={queryNameInputValue}
+                                onChange={changeQueryNameInputValue}
+                                onKeyDown={(event) => {
+                                  if (event.code === 'Enter') {
+                                    event.stopPropagation();
+                                    renameQuery(query)();
+                                  } else if (event.code === 'Escape') {
+                                    event.stopPropagation();
+                                    hideEditQueryNameInput();
+                                  }
+                                }}
+                                onBlur={() => hideEditQueryNameInput()}
+                                // avoid clicking on the input causing the call to load query
+                                onClick={(event) => event.stopPropagation()}
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              className="query-loader__result__title"
+                              title={query.name}
+                            >
+                              {query.name}
+                            </div>
+                          )}
+                          <div className="query-loader__result__description">
+                            <div className="query-loader__result__description__date__icon">
+                              <LastModifiedIcon />
+                            </div>
+                            <div className="query-loader__result__description__date">
+                              {query.lastUpdatedAt
+                                ? formatDistanceToNow(
+                                    new Date(query.lastUpdatedAt),
+                                    {
+                                      includeSeconds: true,
+                                      addSuffix: true,
+                                    },
+                                  )
+                                : '(unknown)'}
+                            </div>
+                            <div
+                              className={clsx(
+                                'query-loader__result__description__author__icon',
+                                {
+                                  'query-loader__result__description__author__icon--owner':
+                                    query.isCurrentUserQuery,
+                                },
+                              )}
+                            >
+                              <UserIcon />
+                            </div>
+                            <div className="query-loader__result__description__author__name">
+                              {query.isCurrentUserQuery ? (
+                                <div
+                                  title={query.owner}
+                                  className="query-loader__result__description__owner"
+                                >
+                                  Me
+                                </div>
+                              ) : (
+                                query.owner
+                              )}
+                            </div>
                           </div>
                         </div>
+                        <DropdownMenu
+                          className="query-loader__result__actions-menu"
+                          title="More Actions..."
+                          content={
+                            <MenuContent>
+                              <MenuContentItem
+                                onClick={(): void => showPreview(query.id)}
+                              >
+                                Show Query Preview
+                              </MenuContentItem>
+                              {!queryLoaderState.isReadOnly && (
+                                <MenuContentItem
+                                  disabled={!query.isCurrentUserQuery}
+                                  onClick={deleteQuery(query)}
+                                >
+                                  Delete
+                                </MenuContentItem>
+                              )}
+                              {!queryLoaderState.isReadOnly && (
+                                <MenuContentItem
+                                  disabled={!query.isCurrentUserQuery}
+                                  onClick={showEditQueryNameInput(
+                                    query.name,
+                                    idx,
+                                  )}
+                                >
+                                  Rename
+                                </MenuContentItem>
+                              )}
+                            </MenuContent>
+                          }
+                          menuProps={{
+                            anchorOrigin: {
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: 'left',
+                            },
+                            elevation: 7,
+                          }}
+                        >
+                          <MoreVerticalIcon />
+                        </DropdownMenu>
+                        <div className="query-loader__result__arrow">
+                          <ThinChevronRightIcon />
+                        </div>
                       </div>
-                      <DropdownMenu
-                        className="query-loader__result__actions-menu"
-                        title="More Actions..."
-                        content={
-                          <MenuContent>
-                            <MenuContentItem
-                              onClick={(): void => showPreview(query.id)}
-                            >
-                              Show Query Preview
-                            </MenuContentItem>
-                            {!queryLoaderState.isReadOnly && (
-                              <MenuContentItem
-                                disabled={!query.isCurrentUserQuery}
-                                onClick={deleteQuery(query)}
-                              >
-                                Delete
-                              </MenuContentItem>
-                            )}
-                            {!queryLoaderState.isReadOnly && (
-                              <MenuContentItem
-                                disabled={!query.isCurrentUserQuery}
-                                onClick={showEditQueryNameInput(
-                                  query.name,
-                                  idx,
-                                )}
-                              >
-                                Rename
-                              </MenuContentItem>
-                            )}
-                          </MenuContent>
-                        }
-                        menuProps={{
-                          anchorOrigin: {
-                            vertical: 'bottom',
-                            horizontal: 'left',
-                          },
-                          transformOrigin: {
-                            vertical: 'top',
-                            horizontal: 'left',
-                          },
-                          elevation: 7,
+                    ))}
+                {queryLoaderState.queryBuilderState &&
+                  queryLoaderState.isCuratedTemplateToggled &&
+                  curatedTemplateQueries
+                    .slice(0, QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
+                    .map((templateQuery, idx) => (
+                      <div
+                        className="query-loader__result"
+                        title={`Click to ${loadActionLabel}...`}
+                        key={templateQuery.title}
+                        onClick={() => {
+                          loadCuratedTemplateQuery()(
+                            templateQuery,
+                            guaranteeNonNullable(
+                              queryLoaderState.queryBuilderState,
+                            ),
+                          );
+                          queryLoaderState.setQueryLoaderDialogOpen(false);
                         }}
                       >
-                        <MoreVerticalIcon />
-                      </DropdownMenu>
-                      <div className="query-loader__result__arrow">
-                        <ThinChevronRightIcon />
+                        <div className="query-loader__result__content">
+                          <div
+                            className="query-loader__result__title"
+                            title={templateQuery.title}
+                          >
+                            {templateQuery.title}
+                          </div>
+                          <div className="query-loader__result__description">
+                            {templateQuery.description}
+                          </div>
+                        </div>
+                        <DropdownMenu
+                          className="query-loader__result__actions-menu"
+                          title="More Actions..."
+                          content={
+                            <MenuContent>
+                              <MenuContentItem
+                                onClick={(): void =>
+                                  showPreview(undefined, {
+                                    queryContent: templateQuery.query,
+                                    queryName: templateQuery.title,
+                                  })
+                                }
+                              >
+                                Show Query Preview
+                              </MenuContentItem>
+                            </MenuContent>
+                          }
+                          menuProps={{
+                            anchorOrigin: {
+                              vertical: 'bottom',
+                              horizontal: 'left',
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: 'left',
+                            },
+                            elevation: 7,
+                          }}
+                        >
+                          <MoreVerticalIcon />
+                        </DropdownMenu>
+                        <div className="query-loader__result__arrow">
+                          <ThinChevronRightIcon />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
               </>
             )}
             {!queryLoaderState.searchQueriesState.hasCompleted && (
