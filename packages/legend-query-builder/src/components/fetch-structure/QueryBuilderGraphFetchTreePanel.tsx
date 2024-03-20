@@ -87,7 +87,6 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
-  useApplicationStore,
 } from '@finos/legend-application';
 import {
   buildElementOption,
