@@ -248,9 +248,24 @@ export abstract class V1_DataSpaceExecutableInfo {
   query!: string;
 }
 
+const V1_DATA_SPACE_TEMPLATE_EXECUTABLE_INFO_TYPE = 'templateExecutableInfo';
 const V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE = 'service';
 const V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE =
   'multiExecutionService';
+
+export class V1_DataSpaceTemplateExecutableInfo extends V1_DataSpaceExecutableInfo {
+  executionContextKey!: string;
+}
+
+const V1_DataSpaceTemplateExecutableInfoModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataSpaceTemplateExecutableInfo> =>
+  createModelSchema(V1_DataSpaceTemplateExecutableInfo, {
+    _type: usingConstantValueSchema(
+      V1_DATA_SPACE_TEMPLATE_EXECUTABLE_INFO_TYPE,
+    ),
+    executionContextKey: primitive(),
+  });
 
 export class V1_DataSpaceServiceExecutableInfo extends V1_DataSpaceExecutableInfo {
   pattern!: string;
@@ -328,6 +343,11 @@ const V1_deserializeDataSpaceExecutableInfo = (
   json: PlainObject<V1_DataSpaceExecutableInfo>,
 ): V1_DataSpaceExecutableInfo => {
   switch (json._type) {
+    case V1_DATA_SPACE_TEMPLATE_EXECUTABLE_INFO_TYPE:
+      return deserialize(
+        V1_DataSpaceTemplateExecutableInfoModelSchema(plugins),
+        json,
+      );
     case V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE:
       return deserialize(
         V1_dataSpaceServiceExecutableInfoModelSchema(plugins),
@@ -399,7 +419,7 @@ const V1_deserializeDataSpaceExecutableResult = (
 export class V1_DataSpaceExecutableAnalysisResult {
   title!: string;
   description?: string | undefined;
-  executable!: string;
+  executable?: string;
   info?: V1_DataSpaceExecutableInfo | undefined;
   result!: V1_DataSpaceExecutableResult;
 }
@@ -408,7 +428,7 @@ const V1_dataSpaceExecutableAnalysisResultModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataSpaceExecutableAnalysisResult> =>
   createModelSchema(V1_DataSpaceExecutableAnalysisResult, {
-    executable: primitive(),
+    executable: optional(primitive()),
     description: optional(primitive()),
     info: optionalCustom(
       () => SKIP,

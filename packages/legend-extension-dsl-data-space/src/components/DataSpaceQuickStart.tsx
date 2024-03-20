@@ -121,9 +121,11 @@ const DataSpaceExecutableTDSResultView = observer(
         executableAnalysisResult.info instanceof
           DataSpaceMultiExecutionServiceExecutableInfo
       ) {
-        dataSpaceViewerState.openServiceQuery(
-          executableAnalysisResult.executable,
-        );
+        if (executableAnalysisResult.executable) {
+          dataSpaceViewerState.openServiceQuery(
+            executableAnalysisResult.executable,
+          );
+        }
       }
     };
     const columnSpecifications = tdsResult.columns;

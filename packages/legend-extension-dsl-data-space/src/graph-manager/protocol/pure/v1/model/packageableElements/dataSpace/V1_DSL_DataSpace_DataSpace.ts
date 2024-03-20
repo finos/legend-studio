@@ -17,11 +17,12 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_DataSpace_HashUtils.js';
 import {
-  V1_PackageableElement,
+  type V1_RawLambda,
   type V1_PackageableElementPointer,
   type V1_PackageableElementVisitor,
   type V1_StereotypePtr,
   type V1_TaggedValue,
+  V1_PackageableElement,
 } from '@finos/legend-graph';
 
 export class V1_DataSpaceExecutionContext implements Hashable {
@@ -56,17 +57,49 @@ export class V1_DataSpaceElementPointer implements Hashable {
   }
 }
 
-export class V1_DataSpaceExecutable implements Hashable {
+export abstract class V1_DataSpaceExecutable implements Hashable {
   title!: string;
   description?: string | undefined;
-  executable!: V1_PackageableElementPointer;
 
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
       this.title,
       this.description ?? '',
+    ]);
+  }
+}
+
+export class V1_DataSpacePackageableElementExecutable
+  extends V1_DataSpaceExecutable
+  implements Hashable
+{
+  executable!: V1_PackageableElementPointer;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE,
+      this.title,
+      this.description ?? '',
       this.executable.path,
+    ]);
+  }
+}
+
+export class V1_DataSpaceTemplateExecutable
+  extends V1_DataSpaceExecutable
+  implements Hashable
+{
+  query!: V1_RawLambda;
+  executionContextKey?: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_TEMPLATE_EXECUTABLE,
+      this.title,
+      this.description ?? '',
+      this.query,
+      this.executionContextKey ?? '',
     ]);
   }
 }
