@@ -49,7 +49,10 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
+import {
+  renderDataSpaceQueryBuilderTemplateQueryPanelContent,
+  renderDataSpaceQueryBuilderSetupPanelContent,
+} from '../../components/query/DataSpaceQueryBuilder.js';
 import {
   DataSpace,
   type DataSpaceExecutionContext,
@@ -141,11 +144,15 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
 
+  override TEMPORARY__templateQueryPanelContentRenderer = (): React.ReactNode =>
+    renderDataSpaceQueryBuilderTemplateQueryPanelContent(this);
+
   dataSpace: DataSpace;
   executionContext!: DataSpaceExecutionContext;
   dataSpaces: DataSpaceInfo[] = [];
   showRuntimeSelector = false;
   advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
+  isTemplateQueryDialogOpen = false;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -172,10 +179,12 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       executionContext: observable,
       showRuntimeSelector: observable,
       advancedSearchState: observable,
+      isTemplateQueryDialogOpen: observable,
       showAdvancedSearchPanel: action,
       hideAdvancedSearchPanel: action,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
+      setTemplateQueryDialogOpen: action,
       loadDataSpaces: flow,
     });
 
@@ -195,6 +204,10 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     return this.showRuntimeSelector
       ? 'query-builder__setup__data-space--with-runtime'
       : 'query-builder__setup__data-space';
+  }
+
+  setTemplateQueryDialogOpen(val: boolean): void {
+    this.isTemplateQueryDialogOpen = val;
   }
 
   showAdvancedSearchPanel(): void {
