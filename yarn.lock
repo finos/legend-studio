@@ -2380,6 +2380,67 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application-repl-deployment@workspace:packages/legend-application-repl-deployment":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-repl-deployment@workspace:packages/legend-application-repl-deployment"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-application-repl": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
+    copy-webpack-plugin: "npm:11.0.0"
+    cross-env: "npm:7.0.3"
+    eslint: "npm:8.52.0"
+    npm-run-all: "npm:4.1.5"
+    rimraf: "npm:5.0.5"
+    typescript: "npm:5.2.2"
+    webpack: "npm:5.89.0"
+    webpack-bundle-analyzer: "npm:4.9.1"
+    webpack-cli: "npm:5.1.4"
+    webpack-dev-server: "npm:4.15.1"
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-application-repl@workspace:*, @finos/legend-application-repl@workspace:packages/legend-application-repl":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-repl@workspace:packages/legend-application-repl"
+  dependencies:
+    "@ag-grid-community/client-side-row-model": "npm:30.2.0"
+    "@ag-grid-community/core": "npm:30.2.0"
+    "@ag-grid-community/react": "npm:30.2.0"
+    "@ag-grid-community/styles": "npm:30.2.0"
+    "@ag-grid-enterprise/core": "npm:30.2.0"
+    "@ag-grid-enterprise/menu": "npm:30.2.0"
+    "@ag-grid-enterprise/row-grouping": "npm:30.2.0"
+    "@ag-grid-enterprise/server-side-row-model": "npm:30.2.0"
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@jest/globals": "npm:29.7.0"
+    "@types/react": "npm:18.2.31"
+    "@types/react-dom": "npm:18.2.14"
+    cross-env: "npm:7.0.3"
+    eslint: "npm:8.52.0"
+    jest: "npm:29.7.0"
+    mobx: "npm:6.10.2"
+    mobx-react-lite: "npm:4.0.5"
+    monaco-editor: "npm:0.44.0"
+    npm-run-all: "npm:4.1.5"
+    react: "npm:18.2.0"
+    react-dnd: "npm:16.0.1"
+    react-dom: "npm:18.2.0"
+    rimraf: "npm:5.0.5"
+    sass: "npm:1.69.4"
+    serializr: "npm:3.0.2"
+    typescript: "npm:5.2.2"
+  peerDependencies:
+    react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-application-studio-bootstrap@workspace:*, @finos/legend-application-studio-bootstrap@workspace:packages/legend-application-studio-bootstrap":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-studio-bootstrap@workspace:packages/legend-application-studio-bootstrap"

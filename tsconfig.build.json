@@ -29,6 +29,8 @@
     },
     // pure ide
     { "path": "packages/legend-application-pure-ide/tsconfig.build.json" },
+     // repl
+     { "path": "packages/legend-application-repl/tsconfig.build.json" },
     // extensions
     { "path": "packages/legend-extension-assortment/tsconfig.build.json" },
     { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },

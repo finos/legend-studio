@@ -1,0 +1,88 @@
+{
+  "name": "@finos/legend-application-repl",
+  "version": "0.0.0",
+  "description": "Legend REPL Grid client application core",
+  "keywords": [
+    "legend",
+    "legend-application",
+    "legend-repl",
+    "repl"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-repl",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-application-repl"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./lib/index.js",
+    "./lib/index.css": "./lib/index.css"
+  },
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:sass && yarn build:ts",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
+    "build:ts": "tsc --project ./tsconfig.build.json",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
+    "dev": "npm-run-all --parallel dev:sass dev:ts",
+    "dev:sass": "sass style:lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@ag-grid-community/client-side-row-model": "30.2.0",
+    "@ag-grid-community/core": "30.2.0",
+    "@ag-grid-community/react": "30.2.0",
+    "@ag-grid-community/styles": "30.2.0",
+    "@ag-grid-enterprise/core": "30.2.0",
+    "@ag-grid-enterprise/menu": "30.2.0",
+    "@ag-grid-enterprise/row-grouping": "30.2.0",
+    "@ag-grid-enterprise/server-side-row-model": "30.2.0",
+    "@finos/legend-application": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-lego": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
+    "@types/react": "18.2.31",
+    "@types/react-dom": "18.2.14",
+    "mobx": "6.10.2",
+    "mobx-react-lite": "4.0.5",
+    "monaco-editor": "0.44.0",
+    "react": "18.2.0",
+    "react-dnd": "16.0.1",
+    "react-dom": "18.2.0",
+    "serializr": "3.0.2"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "@jest/globals": "29.7.0",
+    "cross-env": "7.0.3",
+    "eslint": "8.52.0",
+    "jest": "29.7.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "5.0.5",
+    "sass": "1.69.4",
+    "typescript": "5.2.2"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  },
+  "extensions": {
+    "applicationREPLGridClientPlugin": "@finos/legend-application-repl-plugin-core"
+  }
+}

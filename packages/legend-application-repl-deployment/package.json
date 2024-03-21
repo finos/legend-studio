@@ -1,0 +1,62 @@
+{
+  "name": "@finos/legend-application-repl-deployment",
+  "version": "0.0.0",
+  "description": "Legend REPL web application deployment",
+  "keywords": [
+    "legend",
+    "legend-application",
+    "legend-repl",
+    "deployment"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-repl-deployment",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-application-repl-deployment"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
+    "bundle": "yarn clean && yarn build:webpack && node ./scripts/setup.js --dir ./dist/repl",
+    "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
+    "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js --dir ./dist/repl",
+    "clean": "yarn clean:cache && rimraf \"dist\"",
+    "clean:cache": "rimraf \"build\"",
+    "dev": "npm-run-all --parallel dev:ts dev:webpack",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "dev:webpack": "cross-env NODE_ENV=development webpack serve --mode development",
+    "dev:webpack:debug": "cross-env NODE_ENV=development DEVELOPMENT_MODE=debug webpack serve --mode development",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:pre-prepare": "yarn clean && yarn build:webpack && node ./scripts/setup.js --dir ./dist/repl --use-dynamic-repl-server",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /repl",
+    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js --dir ./dev"
+  },
+  "dependencies": {
+    "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-repl": "workspace:*",
+    "@finos/legend-art": "workspace:*",
+    "@finos/legend-lego": "workspace:*"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "copy-webpack-plugin": "11.0.0",
+    "cross-env": "7.0.3",
+    "eslint": "8.52.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "5.0.5",
+    "typescript": "5.2.2",
+    "webpack": "5.89.0",
+    "webpack-bundle-analyzer": "4.9.1",
+    "webpack-cli": "5.1.4",
+    "webpack-dev-server": "4.15.1"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  }
+}
