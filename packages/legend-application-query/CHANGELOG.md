@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.2.16
+
+### Patch Changes
+
+- [#2947](https://github.com/finos/legend-studio/pull/2947) [`897d3de3b`](https://github.com/finos/legend-studio/commit/897d3de3b76af2c0516df990550e46078634cbb3) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Provide a way to update version if query is incompatible with current version
+
 ## 13.2.15
 
 ### Patch Changes
