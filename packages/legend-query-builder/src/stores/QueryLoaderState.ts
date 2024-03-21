@@ -40,7 +40,7 @@ import type {
   QueryBuilder_LegendApplicationPlugin_Extension,
 } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 
-export const QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT = 20;
+export const QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT = 50;
 
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -212,10 +212,9 @@ export class QueryLoaderState {
     this.showingDefaultQueries = false;
     this.searchQueriesState.inProgress();
     try {
-      let searchSpecification = new QuerySearchSpecification();
-      searchSpecification.searchTerm = searchText;
+      let searchSpecification =
+        QuerySearchSpecification.createDefault(searchText);
       searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT + 1;
-      searchSpecification.exactMatchName = true;
       searchSpecification.showCurrentUserQueriesOnly =
         this.showCurrentUserQueriesOnly;
       if (this.queryBuilderState) {

@@ -35,8 +35,25 @@ export class V1_QueryProjectCoordinates {
   );
 }
 
+export class V1_QuerySearchTermSpecification {
+  searchTerm!: string;
+  exactMatchName: boolean | undefined;
+  includeOwner: boolean | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_QuerySearchTermSpecification, {
+      searchTerm: primitive(),
+      exactMatchName: optional(primitive()),
+      includeOwner: optional(primitive()),
+    }),
+    {
+      deserializeNullAsUndefined: true,
+    },
+  );
+}
+
 export class V1_QuerySearchSpecification {
-  searchTerm?: string | undefined;
+  searchTermSpecification?: V1_QuerySearchTermSpecification | undefined;
   projectCoordinates?: V1_QueryProjectCoordinates[] | undefined;
   taggedValues?: V1_TaggedValue[] | undefined;
   stereotypes?: V1_StereotypePtr[] | undefined;
@@ -51,7 +68,9 @@ export class V1_QuerySearchSpecification {
       projectCoordinates: optional(
         list(usingModelSchema(V1_QueryProjectCoordinates.serialization.schema)),
       ),
-      searchTerm: optional(primitive()),
+      searchTermSpecification: optional(
+        usingModelSchema(V1_QuerySearchTermSpecification.serialization.schema),
+      ),
       showCurrentUserQueriesOnly: optional(primitive()),
       stereotypes: optional(
         list(usingModelSchema(V1_stereotypePtrModelSchema)),
