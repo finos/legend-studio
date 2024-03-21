@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.15
+
+### Patch Changes
+
+- [#3005](https://github.com/finos/legend-studio/pull/3005) [`3b6e37db4`](https://github.com/finos/legend-studio/commit/3b6e37db47beb28f86cfa5c4ac2cf4e8620f1e20) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Uplift query search and include owner in search.
+
 ## 4.14.14
 
 ## 4.14.13

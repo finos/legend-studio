@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.2.15
+
+### Patch Changes
+
+- [#3005](https://github.com/finos/legend-studio/pull/3005) [`3b6e37db4`](https://github.com/finos/legend-studio/commit/3b6e37db47beb28f86cfa5c4ac2cf4e8620f1e20) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Uplift query search and include owner in search.
+
 ## 13.2.14
 
 ## 13.2.13
