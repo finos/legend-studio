@@ -215,6 +215,10 @@
     background: var(--color-legacylight-light-grey-100);
   }
 
+  .modal__body {
+    background: var(--color-legacylight-light-grey-100);
+  }
+
   .modal__footer {
     border: none;
     background: var(--color-legacylight-light-grey-100);
@@ -694,6 +698,10 @@
 
     .query-editor__header__action.btn--dark:hover {
       background: var(--color-legacylight-light-blue-270);
+    }
+
+    .query-editor__blocking-alert__summary-text {
+      color: var(--color-legacylight-dark-grey-400);
     }
 
     .query-editor__header__action__icon {

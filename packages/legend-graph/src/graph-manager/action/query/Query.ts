@@ -38,6 +38,7 @@ export class Query {
   name!: string;
   id!: string;
   versionId!: string;
+  originalVersionId?: string | undefined;
   groupId!: string;
   artifactId!: string;
   mapping!: PackageableElementReference<Mapping>;
@@ -63,6 +64,7 @@ export class LightQuery {
   name!: string;
   id!: string;
   versionId!: string;
+  originalVersionId?: string | undefined;
   groupId!: string;
   artifactId!: string;
   owner?: string | undefined;
@@ -78,6 +80,7 @@ export const toLightQuery = (query: Query): LightQuery => {
   lightQuery.groupId = query.groupId;
   lightQuery.artifactId = query.artifactId;
   lightQuery.versionId = query.versionId;
+  lightQuery.originalVersionId = query.originalVersionId;
   lightQuery.owner = query.owner;
   lightQuery.isCurrentUserQuery = query.isCurrentUserQuery;
   return lightQuery;
@@ -104,6 +107,7 @@ export interface QueryInfo {
   name: string;
   id: string;
   versionId: string;
+  origignalVersionId?: string | undefined;
   groupId: string;
   artifactId: string;
   mapping: string;

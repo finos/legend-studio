@@ -1056,6 +1056,15 @@ export class V1_Engine {
     );
   }
 
+  async patchQuery(query: Partial<V1_Query>): Promise<V1_Query> {
+    return V1_Query.serialization.fromJson(
+      await this.engineServerClient.patchQuery(
+        guaranteeNonNullable(query.id, `can't patch query without query id`),
+        V1_Query.serialization.toJson(query),
+      ),
+    );
+  }
+
   async deleteQuery(queryId: string): Promise<V1_Query> {
     return V1_Query.serialization.fromJson(
       await this.engineServerClient.deleteQuery(queryId),

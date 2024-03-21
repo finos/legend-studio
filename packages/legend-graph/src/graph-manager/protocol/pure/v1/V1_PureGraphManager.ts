@@ -2972,6 +2972,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async patchQuery(query: Partial<Query>, graph: PureModel): Promise<Query> {
+    return V1_buildQuery(
+      await this.engine.patchQuery(V1_transformQuery(query)),
+      graph,
+      this.engine.getCurrentUserId(),
+    );
+  }
+
   async renameQuery(queryId: string, queryName: string): Promise<LightQuery> {
     const query = await this.engine.getQuery(queryId);
     query.name = queryName;

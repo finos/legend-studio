@@ -80,6 +80,8 @@ import {
   type DepotServerClient,
   resolveVersion,
   StoreProjectData,
+  LATEST_VERSION_ALIAS,
+  VersionedProjectData,
 } from '@finos/legend-server-depot';
 import {
   DEFAULT_TAB_SIZE,
@@ -215,6 +217,15 @@ export class QueryCreatorState {
       )) as Query;
       query.name = this.queryName;
       query.id = uuid();
+      query.originalVersionId =
+        query.versionId === LATEST_VERSION_ALIAS
+          ? VersionedProjectData.serialization.fromJson(
+              (yield this.editorStore.depotServerClient.getLatestVersion(
+                query.groupId,
+                query.artifactId,
+              )) as PlainObject<VersionedProjectData>,
+            ).versionId
+          : query.versionId;
       if (this.originalQuery) {
         query.stereotypes =
           this.originalQuery.stereotypes?.map(cloneQueryStereotype);
@@ -862,6 +873,7 @@ export class ExistingQueryUpdateState {
       setQueryRenamer: action,
       updateQuery: flow,
       fetchProjectVersions: flow,
+      updateQueryVersionId: flow,
     });
     this.queryVersionId = this.editorStore.query?.versionId;
   }
@@ -962,6 +974,48 @@ export class ExistingQueryUpdateState {
       config.onQueryUpdate?.(updatedQuery);
       queryBuilderState.changeDetectionState.initialize(rawLambda);
       this.closeSaveModal();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.updateQueryState.complete();
+    }
+  }
+
+  *updateQueryVersionId(
+    queryId: string,
+    queryVersionId: string,
+  ): GeneratorFn<void> {
+    try {
+      this.updateQueryState.inProgress();
+      const newQuery = new Query();
+      // since we only need to update version id, we just need to provide value for version id and keep others undefined/null
+      newQuery.id = queryId;
+      newQuery.versionId = queryVersionId;
+      const updatedQuery =
+        (yield this.editorStore.graphManagerState.graphManager.patchQuery(
+          newQuery,
+          this.editorStore.graphManagerState.graph,
+        )) as Query;
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        `Successfully updated query!`,
+      );
+      LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        {
+          query: {
+            id: updatedQuery.id,
+            name: updatedQuery.name,
+            groupId: updatedQuery.groupId,
+            artifactId: updatedQuery.artifactId,
+            versionId: updatedQuery.versionId,
+          },
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
