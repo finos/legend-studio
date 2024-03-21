@@ -620,6 +620,11 @@ export const QueryBuilderSidebar = observer(
             )}
           </div>
         </div>
+        <div className="query-builder__template-query">
+          {queryBuilderState.TEMPORARY__templateQueryPanelContentRenderer?.() ?? (
+            <></>
+          )}
+        </div>
         <div className="query-builder__side-bar__content">{children}</div>
       </div>
     );

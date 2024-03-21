@@ -27,6 +27,11 @@ import {
   CheckIcon,
   MenuContentItemLabel,
   SearchIcon,
+  FilterIcon,
+  PanelHeader,
+  BasePopover,
+  TagIcon,
+  ClickAwayListener,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -47,11 +52,12 @@ import {
 } from '@finos/legend-graph';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { debounce, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
   DataSpace,
+  DataSpaceExecutableTemplate,
   type DataSpaceExecutionContext,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
@@ -389,6 +395,136 @@ export const renderDataSpaceQueryBuilderSetupPanelContent = (
   queryBuilderState: DataSpaceQueryBuilderState,
 ): React.ReactNode => (
   <DataSpaceQueryBuilderSetupPanelContent
+    queryBuilderState={queryBuilderState}
+  />
+);
+
+const DataSpaceTemplateQueryDialog = observer(
+  (props: {
+    triggerElement: HTMLElement | null;
+    queryBuilderState: DataSpaceQueryBuilderState;
+    templateQueries: DataSpaceExecutableTemplate[];
+  }) => {
+    const { triggerElement, queryBuilderState, templateQueries } = props;
+
+    const handleClose = (): void => {
+      queryBuilderState.setTemplateQueryDialogOpen(false);
+    };
+    const loadQuery = (template: DataSpaceExecutableTemplate): void => {
+      const executionContext =
+        queryBuilderState.dataSpace.executionContexts.find(
+          (c) => c.name === template.executionContextKey,
+        );
+      if (
+        executionContext &&
+        executionContext.hashCode !==
+          queryBuilderState.executionContext.hashCode
+      ) {
+        queryBuilderState.setExecutionContext(executionContext);
+        queryBuilderState.propagateExecutionContextChange(executionContext);
+        queryBuilderState.initializeWithQuery(template.query);
+        queryBuilderState.onExecutionContextChange?.(executionContext);
+      } else {
+        queryBuilderState.initializeWithQuery(template.query);
+      }
+      handleClose();
+    };
+
+    return (
+      <ClickAwayListener onClickAway={handleClose}>
+        <div>
+          <BasePopover
+            open={queryBuilderState.isTemplateQueryDialogOpen}
+            PaperProps={{
+              classes: {
+                root: '"query-builder__data-space__template-query-panel__container__root',
+              },
+            }}
+            className="query-builder__data-space__template-query-panel__container"
+            onClose={handleClose}
+            anchorEl={triggerElement}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+          >
+            <div className="query-builder__data-space__template-query-panel">
+              <div className="query-builder__data-space__template-query-panel__header">
+                Curated Template Queries
+              </div>
+              {templateQueries.map((query) => (
+                <button
+                  className="query-builder__data-space__template-query-panel__query"
+                  key={query.title}
+                  title="click to load template query"
+                  onClick={() => loadQuery(query)}
+                >
+                  <TagIcon className="query-builder__data-space__template-query-panel__query__icon" />
+                  <div className="query-builder__data-space__template-query-panel__query__content">
+                    <div className="query-builder__data-space__template-query-panel__query__content__title">
+                      {query.title}
+                    </div>
+                    {query.description && (
+                      <div className="query-builder__data-space__template-query-panel__query__content__description">
+                        {query.description}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </BasePopover>
+        </div>
+      </ClickAwayListener>
+    );
+  },
+);
+
+const DataSpaceQueryBuilderTemplateQueryPanel = observer(
+  (props: { queryBuilderState: DataSpaceQueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const templateQueryButtonRef = useRef<HTMLButtonElement>(null);
+    const templateQueries = queryBuilderState.dataSpace.executables?.filter(
+      (e) => e instanceof DataSpaceExecutableTemplate,
+    ) as DataSpaceExecutableTemplate[];
+
+    const showTemplateQueries = (): void => {
+      queryBuilderState.setTemplateQueryDialogOpen(true);
+    };
+
+    return (
+      <PanelHeader className="query-builder__data-space__template-query">
+        <div className="query-builder__data-space__template-query__title">
+          <FilterIcon />
+        </div>
+        <button
+          className="query-builder__data-space__template-query__btn"
+          ref={templateQueryButtonRef}
+          disabled={templateQueries.length <= 0}
+          onClick={showTemplateQueries}
+        >
+          Template ( {templateQueries.length} )
+        </button>
+        {queryBuilderState.isTemplateQueryDialogOpen && (
+          <DataSpaceTemplateQueryDialog
+            triggerElement={templateQueryButtonRef.current}
+            queryBuilderState={queryBuilderState}
+            templateQueries={templateQueries}
+          />
+        )}
+      </PanelHeader>
+    );
+  },
+);
+
+export const renderDataSpaceQueryBuilderTemplateQueryPanelContent = (
+  queryBuilderState: DataSpaceQueryBuilderState,
+): React.ReactNode => (
+  <DataSpaceQueryBuilderTemplateQueryPanel
     queryBuilderState={queryBuilderState}
   />
 );

@@ -473,6 +473,22 @@
     }
   }
 
+  // ---------------------------- Template Query -------------------------------
+
+  .query-builder__data-space__template-query-panel__header {
+    color: var(--color-dark-grey-300);
+  }
+
+  .query-builder__data-space__query-filter__title {
+    color: var(--color-dark-grey-300);
+  }
+
+  .query-builder__data-space__template-query__title {
+    svg {
+      color: var(--color-dark-grey-300);
+    }
+  }
+
   // ---------------------------- SQL Query Execution Node -------------------------------
 
   .execution-plan-viewer__explorer__content__container {
@@ -1367,6 +1383,7 @@
         color: var(--color-dark-grey-250);
       }
     }
+
     // ------------------------------------ Other / Modal ---------------------------------------
 
     .query-builder__tooltip {
