@@ -110,6 +110,8 @@
 
 ## null
 
+## null
+
 ### Patch Changes
 
 - [#2644](https://github.com/finos/legend-studio/pull/2644) [`de0a1252b`](https://github.com/finos/legend-studio/commit/de0a1252b36b38ef593c7a2dcef63a22596dde9f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Test null is correctly rendered in query builder result panel
