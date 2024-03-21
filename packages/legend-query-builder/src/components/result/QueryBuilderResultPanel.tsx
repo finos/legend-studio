@@ -226,7 +226,6 @@ export const QueryBuilderResultPanel = observer(
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
 
     const allowSettingLocalMode =
-      queryBuilderState.isQuerySupported &&
       queryBuilderState.config?.TEMPORARY__enableGridEnterpriseMode;
 
     const copyExpression = (value: string): void => {
