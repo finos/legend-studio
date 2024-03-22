@@ -167,6 +167,7 @@ export class QueryLoaderState {
 
   reset(): void {
     this.setShowCurrentUserQueriesOnly(false);
+    this.setIsCuratedTemplateToggled(false);
   }
 
   *initialize(queryBuilderState: QueryBuilderState): GeneratorFn<void> {
