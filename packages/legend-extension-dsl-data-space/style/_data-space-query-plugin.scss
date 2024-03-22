@@ -253,42 +253,60 @@
   &__query {
     @include flexCenter;
 
-    align-items: flex-start;
-    margin-top: 1rem;
-    width: 100%;
-
     &__icon {
-      color: var(--color-legacylight-orange-100);
       width: 5%;
+      color: var(--color-legacylight-orange-100);
       margin-left: 1rem;
       align-items: center;
     }
 
-    &__content {
-      width: 95%;
+    &__entry {
+      @include flexCenter;
 
-      &__title {
-        @include flexVCenter;
+      align-items: flex-start;
+      margin-top: 1rem;
+      width: 85%;
 
-        padding: 0 1rem;
-        text-align: left;
-        color: var(--color-blue-50);
+      &__content {
+        width: 100%;
+        margin-left: 1rem;
+
+        &__title {
+          @include flexVCenter;
+
+          text-align: left;
+          color: var(--color-blue-50);
+        }
+
+        &__description {
+          @include flexVCenter;
+
+          text-align: left;
+          margin-top: 0.5rem;
+          color: var(--color-dark-grey-500);
+        }
       }
+    }
 
-      &__description {
-        @include flexVCenter;
+    &__share {
+      width: 10%;
+      color: var(--color-blue-50);
+      margin-right: 1rem;
+      margin-top: 1rem;
 
-        padding: 0 1rem;
-        text-align: left;
-        margin-top: 0.5rem;
-        color: var(--color-dark-grey-500);
+      &__label {
+        font-size: 1.2rem;
       }
     }
   }
 
-  &__query:hover {
+  &__query__entry:hover {
     text-decoration: underline;
     color: var(--color-blue-50);
+  }
+
+  &__query__share:hover {
+    color: var(--color-blue-40);
   }
 }
 

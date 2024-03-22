@@ -32,6 +32,7 @@ import {
   BasePopover,
   TagIcon,
   ClickAwayListener,
+  ShareIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -63,6 +64,7 @@ import {
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
 import type { EditorStore } from '@finos/legend-application-studio';
+import { generateDataSpaceTemplateQueryViewerRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 
 export type DataSpaceOption = {
   label: string;
@@ -406,7 +408,7 @@ const DataSpaceTemplateQueryDialog = observer(
     templateQueries: DataSpaceExecutableTemplate[];
   }) => {
     const { triggerElement, queryBuilderState, templateQueries } = props;
-
+    const applicationStore = useApplicationStore();
     const handleClose = (): void => {
       queryBuilderState.setTemplateQueryDialogOpen(false);
     };
@@ -428,6 +430,24 @@ const DataSpaceTemplateQueryDialog = observer(
         queryBuilderState.initializeWithQuery(template.query);
       }
       handleClose();
+    };
+
+    const shareTemplateQuery = (
+      template: DataSpaceExecutableTemplate,
+    ): void => {
+      if (queryBuilderState.projectInfo?.groupId) {
+        applicationStore.navigationService.navigator.visitAddress(
+          applicationStore.navigationService.navigator.generateAddress(
+            generateDataSpaceTemplateQueryViewerRoute(
+              queryBuilderState.projectInfo.groupId,
+              queryBuilderState.projectInfo.artifactId,
+              queryBuilderState.projectInfo.versionId,
+              queryBuilderState.dataSpace.path,
+              template.title,
+            ),
+          ),
+        );
+      }
     };
 
     return (
@@ -457,24 +477,38 @@ const DataSpaceTemplateQueryDialog = observer(
                 Curated Template Queries
               </div>
               {templateQueries.map((query) => (
-                <button
-                  className="query-builder__data-space__template-query-panel__query"
+                <div
                   key={query.title}
-                  title="click to load template query"
-                  onClick={() => loadQuery(query)}
+                  className="query-builder__data-space__template-query-panel__query"
                 >
                   <TagIcon className="query-builder__data-space__template-query-panel__query__icon" />
-                  <div className="query-builder__data-space__template-query-panel__query__content">
-                    <div className="query-builder__data-space__template-query-panel__query__content__title">
-                      {query.title}
-                    </div>
-                    {query.description && (
-                      <div className="query-builder__data-space__template-query-panel__query__content__description">
-                        {query.description}
+                  <button
+                    className="query-builder__data-space__template-query-panel__query__entry"
+                    title="click to load template query"
+                    onClick={() => loadQuery(query)}
+                  >
+                    <div className="query-builder__data-space__template-query-panel__query__entry__content">
+                      <div className="query-builder__data-space__template-query-panel__query__entry__content__title">
+                        {query.title}
                       </div>
-                    )}
-                  </div>
-                </button>
+                      {query.description && (
+                        <div className="query-builder__data-space__template-query-panel__query__entry__content__description">
+                          {query.description}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                  <button
+                    className="query-builder__data-space__template-query-panel__query__share"
+                    title="Share..."
+                    onClick={() => shareTemplateQuery(query)}
+                  >
+                    <ShareIcon />
+                    <div className="query-builder__data-space__template-query-panel__query__share__label">
+                      Share
+                    </div>
+                  </button>
+                </div>
               ))}
             </div>
           </BasePopover>
