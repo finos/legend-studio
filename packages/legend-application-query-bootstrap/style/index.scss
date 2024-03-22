@@ -479,14 +479,22 @@
     color: var(--color-dark-grey-300);
   }
 
-  .query-builder__data-space__query-filter__title {
-    color: var(--color-dark-grey-300);
-  }
-
   .query-builder__data-space__template-query__title {
     svg {
       color: var(--color-dark-grey-300);
     }
+  }
+
+  .query-builder__data-space__template-query-panel__query__entry__content__title {
+    color: var(--color-light-blue-50);
+  }
+
+  .query-builder__data-space__template-query-panel__query__share {
+    color: var(--color-light-blue-50);
+  }
+
+  .query-builder__data-space__template-query-panel__query__share:hover {
+    color: var(--color-light-blue-20);
   }
 
   // ---------------------------- SQL Query Execution Node -------------------------------
