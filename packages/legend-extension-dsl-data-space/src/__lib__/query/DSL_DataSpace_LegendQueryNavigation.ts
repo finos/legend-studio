@@ -29,10 +29,17 @@ export enum DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN {
   DATA_SPACE_PATH = 'dataSpacePath',
   EXECUTION_CONTEXT = 'executionContext',
   RUNTIME_PATH = 'runtimePath',
+  TEMPLATE = 'template',
 }
 
 export enum DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN {
   CLASS_PATH = 'class',
+}
+
+export enum DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN {
+  GAV = 'gav',
+  DATA_SPACE_PATH = 'dataSpacePath',
+  TEMPLATE_QUERY_TITLE = 'templateQueryTitle',
 }
 
 export type DataSpaceQueryCreatorPathParams = {
@@ -42,6 +49,12 @@ export type DataSpaceQueryCreatorPathParams = {
   [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.RUNTIME_PATH]?: string;
 };
 
+export type DataSpaceTemplateQueryCreatorPathParams = {
+  [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]: string;
+  [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH]: string;
+  [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE_QUERY_TITLE]: string;
+};
+
 export type DataSpaceQueryEditorQueryParams = {
   [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]?: string | undefined;
 };
@@ -49,6 +62,7 @@ export type DataSpaceQueryEditorQueryParams = {
 export const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: `/dataspace`,
   CREATE: `/dataspace/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.RUNTIME_PATH}?`,
+  TEMPLATE_QUERY: `/dataspace/:${DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE}/:${DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE_QUERY_TITLE}`,
 });
 
 export const generateDataSpaceQuerySetupRoute = (): string =>
@@ -85,4 +99,23 @@ export const generateDataSpaceQueryCreatorRoute = (
         ? encodeURIComponent(classPath)
         : undefined,
     }),
+  );
+
+export const generateDataSpaceTemplateQueryViewerRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  dataSpacePath: string,
+  templateQueryTitle: string,
+): string =>
+  generatePath(
+    generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.TEMPLATE_QUERY),
+    {
+      [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
+        generateGAVCoordinates(groupId, artifactId, versionId),
+      [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH]:
+        dataSpacePath,
+      [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE_QUERY_TITLE]:
+        templateQueryTitle,
+    },
   );
