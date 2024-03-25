@@ -70,6 +70,7 @@ import type {
   DataSpace,
   DataSpaceExecutionContext,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import { DataSpaceTemplateQueryCreator } from './DataSpaceTemplateQueryCreator.js';
 
 const resolveExecutionContext = (
   dataSpace: DataSpace,
@@ -102,6 +103,13 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
         key: 'data-space-query-setup-application-page',
         addressPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP],
         renderer: DataSpaceQuerySetup,
+      },
+      // data space template query creator
+      // Heads-up: TEMPLATE_QUERY must come before CREATE as it has a more specific pattern than CREATE.
+      {
+        key: 'data-space-template-query-viewer-application-page',
+        addressPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.TEMPLATE_QUERY],
+        renderer: DataSpaceTemplateQueryCreator,
       },
       // data space query editor
       {
