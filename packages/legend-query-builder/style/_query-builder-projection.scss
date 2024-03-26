@@ -148,6 +148,12 @@
 
   &__column__container {
     @include flexVCenter;
+
+    cursor: grab;
+
+    &--grabbing {
+      cursor: grabbing;
+    }
   }
 
   &__column--selected-from-context-menu {

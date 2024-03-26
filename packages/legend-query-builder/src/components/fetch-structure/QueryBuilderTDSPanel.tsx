@@ -34,7 +34,6 @@ import {
   PanelContent,
   TrashIcon,
   PanelDnDEntry,
-  PanelEntryDragHandle,
   CalendarIcon,
   CalendarClockIcon,
   CustomSelectorInput,
@@ -752,13 +751,12 @@ const QueryBuilderProjectionColumnEditor = observer(
             data-testid={
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION_COLUMN
             }
-            className="query-builder__projection__column__container"
+            ref={dragHandleRef}
+            className={clsx('query-builder__projection__column__container', {
+              'query-builder__projection__column__container--dragging':
+                projectionColumnBeingDragged !== undefined,
+            })}
           >
-            <PanelEntryDragHandle
-              isDragging={false}
-              dragSourceConnector={dragHandleRef}
-              className="query-builder__projection__column__drag-handle__container"
-            />
             {projectionColumnState instanceof
               QueryBuilderSimpleProjectionColumnState && (
               <>
