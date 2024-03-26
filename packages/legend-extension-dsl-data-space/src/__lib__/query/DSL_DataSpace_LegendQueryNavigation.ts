@@ -115,6 +115,8 @@ export const generateDataSpaceTemplateQueryViewerRoute = (
         generateGAVCoordinates(groupId, artifactId, versionId),
       [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH]:
         dataSpacePath,
+      [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE]:
+        DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE,
       [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE_QUERY_TITLE]:
         templateQueryTitle,
     },
