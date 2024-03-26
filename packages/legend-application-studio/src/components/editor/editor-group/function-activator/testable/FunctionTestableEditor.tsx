@@ -998,9 +998,9 @@ const FunctionTestSuiteEditor = observer(
 
 const CreateFucntionTestSuiteModal = observer(
   (props: { functionTestableEditorState: FunctionTestableState }) => {
-    const { functionTestableEditorState: functiontestableEditorState } = props;
+    const { functionTestableEditorState } = props;
     const applicationStore =
-      functiontestableEditorState.editorStore.applicationStore;
+      functionTestableEditorState.editorStore.applicationStore;
     const inputRef = useRef<HTMLInputElement>(null);
     const handleEnter = (): void => inputRef.current?.focus();
     const [suiteName, setSuiteName] = useState<string | undefined>(undefined);
@@ -1008,10 +1008,10 @@ const CreateFucntionTestSuiteModal = observer(
     const isValid = suiteName && testName;
 
     // model
-    const close = (): void => functiontestableEditorState.setCreateSuite(false);
+    const close = (): void => functionTestableEditorState.setCreateSuite(false);
     const create = (): void => {
       if (suiteName && testName) {
-        functiontestableEditorState.createSuite(suiteName, testName);
+        functionTestableEditorState.createSuite(suiteName, testName);
       }
     };
     return (
