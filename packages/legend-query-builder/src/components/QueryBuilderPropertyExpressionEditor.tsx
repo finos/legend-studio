@@ -368,6 +368,32 @@ export const QueryBuilderPropertyExpressionEditor = observer(
   },
 );
 
+export const QueryBuilderPropertyNameDisplay = observer(
+  (props: {
+    columnName: string;
+    error: boolean | undefined;
+    setIsEditingColumnName?: ((isEditing: boolean) => void) | undefined;
+    title: string;
+  }) => {
+    const { columnName, error, setIsEditingColumnName, title } = props;
+    return (
+      <div className="query-builder-property-name-display" title={title}>
+        <span
+          className={clsx('query-builder-property-name-display__content', {
+            'query-builder-property-name-display__content--error': error,
+            'editable-value': !!setIsEditingColumnName,
+          })}
+          onClick={() => {
+            setIsEditingColumnName?.(true);
+          }}
+        >
+          {columnName}
+        </span>
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderPropertyExpressionBadge = observer(
   (props: {
     columnName?: string;
@@ -446,26 +472,12 @@ export const QueryBuilderPropertyExpressionBadge = observer(
               },
             )}
           >
-            <div
-              className="query-builder-property-expression-badge__property"
+            <QueryBuilderPropertyNameDisplay
+              columnName={columnName ?? propertyExpressionState.title}
+              error={error}
+              setIsEditingColumnName={setIsEditingColumnName}
               title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
-            >
-              <span
-                className={clsx(
-                  'query-builder-property-expression-badge__property__content',
-                  {
-                    'query-builder-property-expression-badge__property__content--error':
-                      error,
-                    'editable-value': !!setIsEditingColumnName,
-                  },
-                )}
-                onClick={() => {
-                  setIsEditingColumnName?.(true);
-                }}
-              >
-                {columnName ?? propertyExpressionState.title}
-              </span>
-            </div>
+            />
             {hasDerivedPropertyInExpression && (
               <button
                 className={clsx(

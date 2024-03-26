@@ -180,7 +180,7 @@
     }
   }
 
-  &__column__name {
+  &__column__name__editor {
     @include flexVCenter;
 
     margin-left: 0.5rem;
@@ -216,6 +216,10 @@
       width: calc(100% - 20.5rem);
       height: 2.8rem;
     }
+  }
+
+  &__derivation__name-display {
+    padding-left: 1.1rem;
   }
 
   &__column__value {

@@ -528,6 +528,20 @@
   }
 }
 
+.query-builder-property-name-display {
+  @include ellipsisTextOverflow;
+
+  font-size: 1.4rem;
+  width: fit-content;
+  padding-right: 1rem;
+
+  &__content {
+    &--error {
+      color: var(--color-red-200) !important;
+    }
+  }
+}
+
 .query-builder-property-expression-badge {
   @include flexVCenter;
 
@@ -540,20 +554,6 @@
     width: 100%;
     height: 2.2rem;
     color: var(--color-light-grey-0);
-  }
-
-  &__property {
-    @include ellipsisTextOverflow;
-
-    font-size: 1.4rem;
-    width: fit-content;
-    padding-right: 1rem;
-
-    &__content {
-      &--error {
-        color: var(--color-red-200) !important;
-      }
-    }
   }
 
   &__property__info {

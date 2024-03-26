@@ -19,6 +19,7 @@ import { observer } from 'mobx-react-lite';
 import {
   clsx,
   BlankPanelPlaceholder,
+  CalculatorIcon,
   TimesIcon,
   DropdownMenu,
   MenuContent,
@@ -61,7 +62,10 @@ import {
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
-import { QueryBuilderPropertyExpressionBadge } from '../QueryBuilderPropertyExpressionEditor.js';
+import {
+  QueryBuilderPropertyNameDisplay,
+  QueryBuilderPropertyExpressionBadge,
+} from '../QueryBuilderPropertyExpressionEditor.js';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { flowResult } from 'mobx';
@@ -109,7 +113,10 @@ import {
 } from '../../stores/QueryBuilderPropertyEditorState.js';
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_CALENDAR_TYPE } from '../../graph-manager/QueryBuilderConst.js';
-import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
+import {
+  QueryBuilderDerivationInfoTooltip,
+  QueryBuilderPropertyInfoTooltip,
+} from '../shared/QueryBuilderPropertyInfoTooltip.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -704,6 +711,7 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [handleDrop],
     );
+
     return (
       <PanelDnDEntry
         ref={ref}
@@ -782,9 +790,9 @@ const QueryBuilderProjectionColumnEditor = observer(
                   </div>
                 </QueryBuilderPropertyInfoTooltip>
                 {isEditingColumnName ? (
-                  <div className="query-builder__projection__column__name">
+                  <div className="query-builder__projection__column__name__editor">
                     <InputWithInlineValidation
-                      className="query-builder__projection__column__name__input input-group__input"
+                      className="query-builder__projection__column__name__editor__input input-group__input"
                       spellCheck={false}
                       value={projectionColumnState.columnName}
                       onChange={changeColumnName}
@@ -818,17 +826,48 @@ const QueryBuilderProjectionColumnEditor = observer(
             {projectionColumnState instanceof
               QueryBuilderDerivationProjectionColumnState && (
               <>
-                <div className="query-builder__projection__column__name query-builder__projection__column__name__derivation">
-                  <InputWithInlineValidation
-                    className="query-builder__projection__column__name__input input-group__input"
-                    spellCheck={false}
-                    value={projectionColumnState.columnName}
-                    onChange={changeColumnName}
-                    error={
-                      isDuplicatedColumnName ? 'Duplicated column' : undefined
-                    }
-                  />
-                </div>
+                <QueryBuilderDerivationInfoTooltip
+                  title={projectionColumnState.columnName}
+                  type={projectionColumnState.returnType}
+                  placement="bottom-start"
+                >
+                  <div className="query-builder-property-expression-badge__property__info">
+                    <CalculatorIcon />
+                  </div>
+                </QueryBuilderDerivationInfoTooltip>
+                {isEditingColumnName ? (
+                  <div className="query-builder__projection__column__name__editor">
+                    <InputWithInlineValidation
+                      className="query-builder__projection__column__name__editor__input input-group__input"
+                      spellCheck={false}
+                      value={projectionColumnState.columnName}
+                      onChange={changeColumnName}
+                      onKeyDown={(
+                        event: React.KeyboardEvent<HTMLInputElement>,
+                      ) => {
+                        if (event.key === 'Enter') {
+                          setIsEditingColumnName(false);
+                        }
+                      }}
+                      onBlur={() => {
+                        setIsEditingColumnName(false);
+                      }}
+                      error={
+                        isDuplicatedColumnName ? 'Duplicated column' : undefined
+                      }
+                      ref={columnNameInputRef}
+                    />
+                  </div>
+                ) : (
+                  <div className="query-builder__projection__derivation__name-display">
+                    <QueryBuilderPropertyNameDisplay
+                      columnName={projectionColumnState.columnName}
+                      error={isDuplicatedColumnName}
+                      setIsEditingColumnName={setIsEditingColumnName}
+                      title={projectionColumnState.columnName}
+                    />
+                  </div>
+                )}
                 <div className="query-builder__projection__column__value">
                   <QueryBuilderDerivationProjectionColumnEditor
                     projectionColumnState={projectionColumnState}
