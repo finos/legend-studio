@@ -39,7 +39,7 @@ import {
   DataSpaceProjectInfo,
 } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
-import { generateDataSpaceTemplateQueryViewerRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
+import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import {
   DataSpaceExecutableTemplate,
   type DataSpaceExecutionContext,
@@ -149,7 +149,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       (dataSpaceInfo: DataSpaceInfo) => {
         if (dataSpaceInfo.defaultExecutionContext) {
           this.applicationStore.navigationService.navigator.goToLocation(
-            generateDataSpaceTemplateQueryViewerRoute(
+            generateDataSpaceTemplateQueryCreatorRoute(
               guaranteeNonNullable(dataSpaceInfo.groupId),
               guaranteeNonNullable(dataSpaceInfo.artifactId),
               LATEST_VERSION_ALIAS, //always default to latest
@@ -167,7 +167,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       dataSpaceAnalysisResult,
       (ec: DataSpaceExecutionContext) => {
         this.applicationStore.navigationService.navigator.updateCurrentLocation(
-          generateDataSpaceTemplateQueryViewerRoute(
+          generateDataSpaceTemplateQueryCreatorRoute(
             this.groupId,
             this.artifactId,
             this.versionId,

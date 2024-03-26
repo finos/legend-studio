@@ -24,7 +24,9 @@ import {
 import packageJson from '../../package.json' assert { type: 'json' };
 import type {
   LoadQueryFilterOption,
+  QueryBuilderState,
   QueryBuilder_LegendApplicationPlugin_Extension,
+  TemplateQueryPanelContentRenderer,
 } from '@finos/legend-query-builder';
 import { DataSpaceQueryBuilderState } from '../stores/query/DataSpaceQueryBuilderState.js';
 import {
@@ -34,6 +36,7 @@ import {
 import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
 import type { QuerySearchSpecification } from '@finos/legend-graph';
 import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
+import { renderDataSpaceQueryBuilderTemplateQueryPanelContent } from './query/DataSpaceQueryBuilderTemplateQueryPanelContent.js';
 
 export class DSL_DataSpace_LegendApplicationPlugin
   extends LegendApplicationPlugin
@@ -111,6 +114,19 @@ export class DSL_DataSpace_LegendApplicationPlugin
           }
           return searchSpecification;
         },
+      },
+    ];
+  }
+
+  getExtraTemplateQueryPanelContentRenderer(): TemplateQueryPanelContentRenderer[] {
+    return [
+      (queryBuilderState: QueryBuilderState): React.ReactNode => {
+        if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+          return renderDataSpaceQueryBuilderTemplateQueryPanelContent(
+            queryBuilderState,
+          );
+        }
+        return undefined;
       },
     ];
   }
