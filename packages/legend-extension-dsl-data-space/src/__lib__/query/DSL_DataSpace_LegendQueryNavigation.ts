@@ -101,7 +101,7 @@ export const generateDataSpaceQueryCreatorRoute = (
     }),
   );
 
-export const generateDataSpaceTemplateQueryViewerRoute = (
+export const generateDataSpaceTemplateQueryCreatorRoute = (
   groupId: string,
   artifactId: string,
   versionId: string,

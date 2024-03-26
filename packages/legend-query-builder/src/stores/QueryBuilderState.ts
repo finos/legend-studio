@@ -161,10 +161,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   // we probably want to refactor to an extension mechanism
   TEMPORARY__setupPanelContentRenderer?: (() => React.ReactNode) | undefined;
 
-  TEMPORARY__templateQueryPanelContentRenderer?:
-    | (() => React.ReactNode)
-    | undefined;
-
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,

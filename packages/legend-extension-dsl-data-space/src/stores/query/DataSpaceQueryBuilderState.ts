@@ -49,10 +49,7 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import {
-  renderDataSpaceQueryBuilderTemplateQueryPanelContent,
-  renderDataSpaceQueryBuilderSetupPanelContent,
-} from '../../components/query/DataSpaceQueryBuilder.js';
+import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
 import {
   DataSpace,
   type DataSpaceExecutionContext,
@@ -143,9 +140,6 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
-
-  override TEMPORARY__templateQueryPanelContentRenderer = (): React.ReactNode =>
-    renderDataSpaceQueryBuilderTemplateQueryPanelContent(this);
 
   dataSpace: DataSpace;
   executionContext!: DataSpaceExecutionContext;
