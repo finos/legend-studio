@@ -86,6 +86,9 @@ import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Mu
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import { V1_ClassInstance } from '../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import { V1_CByteArray } from '../../../model/valueSpecification/raw/V1_CByteArray.js';
+import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/V1_ColSpecArray.js';
+import { V1_ColSpec } from '../../../model/valueSpecification/raw/V1_ColSpec.js';
+import { V1_RelationStoreAccessor } from '../../../model/valueSpecification/raw/V1_RelationStoreAccessor.js';
 
 enum V1_ExecutionContextType {
   BASE_EXECUTION_CONTEXT = 'BaseExecutionContext',
@@ -111,6 +114,10 @@ export enum V1_ClassInstanceType {
   PURE_LIST = 'listInstance',
   RUNTIME_INSTANCE = 'runtimeInstance',
   SERIALIZATION_CONFIG = 'alloySerializationConfig',
+
+  COL_SPEC = 'colSpec',
+  COL_SPEC_ARRAY = 'colSpecArray',
+  RELATION_STORE_ACCESSOR = '>',
 
   TDS_AGGREGATE_VALUE = 'tdsAggregateValue',
   TDS_COLUMN_INFORMATION = 'tdsColumnInformation',
@@ -696,6 +703,30 @@ const tdsSortInformationModelSchema = createModelSchema(V1_TDSSortInformation, {
   direction: primitive(),
 });
 
+const relationStoreAccessorModelSchema = createModelSchema(
+  V1_RelationStoreAccessor,
+  {
+    path: list(primitive()),
+  },
+);
+
+const colSpecModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ColSpec> =>
+  createModelSchema(V1_ColSpec, {
+    function1: optional(usingModelSchema(lambdaModelSchema(plugins))),
+    function2: optional(usingModelSchema(lambdaModelSchema(plugins))),
+    name: primitive(),
+    type: optional(primitive()),
+  });
+
+const colSpecArrayModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ColSpecArray> =>
+  createModelSchema(V1_ColSpecArray, {
+    colSpecs: list(usingModelSchema(colSpecModelSchema(plugins))),
+  });
+
 const tdsOlapRankModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_TDSOlapRank> =>
@@ -745,6 +776,12 @@ export function V1_deserializeClassInstanceValue(
       return deserialize(tdsOlapRankModelSchema(plugins), json);
     case V1_ClassInstanceType.TDS_SORT_INFORMATION:
       return deserialize(tdsSortInformationModelSchema, json);
+    case V1_ClassInstanceType.COL_SPEC:
+      return deserialize(colSpecModelSchema(plugins), json);
+    case V1_ClassInstanceType.COL_SPEC_ARRAY:
+      return deserialize(colSpecArrayModelSchema(plugins), json);
+    case V1_ClassInstanceType.RELATION_STORE_ACCESSOR:
+      return deserialize(relationStoreAccessorModelSchema, json);
     default: {
       const deserializers = plugins.flatMap(
         (plugin) =>
@@ -793,6 +830,12 @@ export function V1_serializeClassInstanceValue(
     return serialize(tdsOlapRankModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_TDSSortInformation) {
     return serialize(tdsSortInformationModelSchema, protocol);
+  } else if (protocol instanceof V1_ColSpec) {
+    return serialize(colSpecModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_ColSpecArray) {
+    return serialize(colSpecArrayModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_RelationStoreAccessor) {
+    return serialize(relationStoreAccessorModelSchema, protocol);
   }
   const serializers = plugins.flatMap(
     (plugin) =>

@@ -40,6 +40,9 @@
     // pure ide
     { "path": "packages/legend-application-pure-ide" },
     { "path": "packages/legend-application-pure-ide-deployment" },
+     // repl
+     { "path": "packages/legend-application-repl" },
+     { "path": "packages/legend-application-repl-deployment" },
     // extensions
     { "path": "packages/legend-extension-tracer-zipkin" },
     { "path": "packages/legend-extension-assortment" },

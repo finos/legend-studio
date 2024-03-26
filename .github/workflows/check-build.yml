@@ -37,6 +37,8 @@ jobs:
             os: ubuntu-latest
           - application: '@finos/legend-application-pure-ide-deployment'
             os: ubuntu-latest
+          - application: '@finos/legend-application-repl-deployment'
+            os: ubuntu-latest
           - application: '@finos/legend-server-showcase-deployment'
             os: ubuntu-latest
     steps:
