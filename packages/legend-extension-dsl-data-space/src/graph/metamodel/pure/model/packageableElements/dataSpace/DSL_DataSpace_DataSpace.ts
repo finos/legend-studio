@@ -25,6 +25,7 @@ import {
   type Association,
   type Package,
   type RawLambda,
+  type DataElementReference,
   PackageableElement,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
@@ -36,6 +37,7 @@ export class DataSpaceExecutionContext implements Hashable {
   description?: string | undefined;
   mapping!: PackageableElementReference<Mapping>;
   defaultRuntime!: PackageableElementReference<PackageableRuntime>;
+  testData: DataElementReference | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -45,6 +47,7 @@ export class DataSpaceExecutionContext implements Hashable {
       this.description ?? '',
       this.mapping.valueForSerialization ?? '',
       this.defaultRuntime.valueForSerialization ?? '',
+      this.testData ?? '',
     ]);
   }
 }

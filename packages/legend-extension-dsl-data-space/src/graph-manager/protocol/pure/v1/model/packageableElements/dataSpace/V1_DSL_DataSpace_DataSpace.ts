@@ -23,6 +23,7 @@ import {
   type V1_StereotypePtr,
   type V1_TaggedValue,
   V1_PackageableElement,
+  type V1_DataElementReference,
 } from '@finos/legend-graph';
 
 export class V1_DataSpaceExecutionContext implements Hashable {
@@ -31,6 +32,7 @@ export class V1_DataSpaceExecutionContext implements Hashable {
   description?: string | undefined;
   mapping!: V1_PackageableElementPointer;
   defaultRuntime!: V1_PackageableElementPointer;
+  testData: V1_DataElementReference | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -40,6 +42,7 @@ export class V1_DataSpaceExecutionContext implements Hashable {
       this.description ?? '',
       this.mapping.path,
       this.defaultRuntime.path,
+      this.testData ?? '',
     ]);
   }
 }

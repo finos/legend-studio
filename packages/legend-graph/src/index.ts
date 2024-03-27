@@ -411,6 +411,7 @@ export {
 } from './graph/metamodel/pure/data/EmbeddedData.js';
 export {
   V1_EmbeddedData,
+  V1_DataElementReference,
   V1_ExternalFormatData,
   type V1_EmbeddedDataVisitor,
 } from './graph-manager/protocol/pure/v1/model/data/V1_EmbeddedData.js';
@@ -479,6 +480,7 @@ export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapp
 export {
   Runtime,
   EngineRuntime,
+  SingleConnectionRuntime,
   RuntimePointer,
   IdentifiedConnection,
   StoreConnections,
@@ -558,6 +560,7 @@ export { V1_PackageableRuntime } from './graph-manager/protocol/pure/v1/model/pa
 export { V1_Store } from './graph-manager/protocol/pure/v1/model/packageableElements/store/V1_Store.js';
 export {
   V1_EngineRuntime,
+  V1_SingleConnectionEngineRuntime,
   V1_LegacyRuntime,
   V1_Runtime,
   V1_IdentifiedConnection,

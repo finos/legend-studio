@@ -16,7 +16,7 @@
 import {
   type EmbeddedData,
   type ModelData,
-  type DataElement,
+  DataElement,
   RelationalCSVData,
   type Database,
   type RelationalCSVDataTable,
@@ -310,6 +310,11 @@ export class RelationalCSVDataState extends EmbeddedDataState {
 export interface EmbeddedDataStateOption {
   hideSource?: boolean;
 }
+export class UnsupportedDataState extends EmbeddedDataState {
+  label(): string {
+    return 'Unsupported embedded data';
+  }
+}
 
 export class DataElementReferenceState extends EmbeddedDataState {
   override embeddedData: DataElementReference;
@@ -341,17 +346,15 @@ export class DataElementReferenceState extends EmbeddedDataState {
   }
 
   buildValueState(options?: EmbeddedDataStateOption): EmbeddedDataState {
-    return buildEmbeddedDataEditorState(
-      this.embeddedData.dataElement.value.data,
-      this.editorStore,
-      this.options,
-    );
-  }
-}
-
-export class UnsupportedDataState extends EmbeddedDataState {
-  label(): string {
-    return 'Unsupported embedded data';
+    const packagableEl = this.embeddedData.dataElement.value;
+    if (packagableEl instanceof DataElement) {
+      return buildEmbeddedDataEditorState(
+        packagableEl.data,
+        this.editorStore,
+        this.options,
+      );
+    }
+    return new UnsupportedDataState(this.editorStore, this.embeddedData);
   }
 }
 

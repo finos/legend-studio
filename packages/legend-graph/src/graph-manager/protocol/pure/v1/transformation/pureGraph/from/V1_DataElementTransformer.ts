@@ -28,7 +28,7 @@ import {
   type RelationalCSVDataTable,
   RelationalCSVData,
 } from '../../../../../../../graph/metamodel/pure/data/RelationalCSVData.js';
-import type { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_EmbeddedData,
@@ -114,10 +114,37 @@ export const V1_transformExternalFormatData = (
 
 const V1_transformDataElementReference = (
   element: DataElementReference,
+  context: V1_GraphTransformerContext,
 ): V1_DataElementReference => {
   const dataElementReference = new V1_DataElementReference();
+  const val = element.dataElement.value;
+  if (val instanceof DataElement) {
+    dataElementReference.dataElement = V1_transformElementReferencePointer(
+      PackageableElementPointerType.DATA,
+      element.dataElement,
+    );
+    return dataElementReference;
+  }
+  const extraEmbeddedDataTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Data_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraElementPointerTypes?.() ?? [],
+  );
+  let type: string | undefined;
+  for (const transformer of extraEmbeddedDataTransformers) {
+    type = transformer(val);
+    if (type) {
+      break;
+    }
+  }
+  if (!type) {
+    throw new UnsupportedOperationError(
+      `No packagable pointer found for element: ${element.dataElement.valueForSerialization}`,
+    );
+  }
   dataElementReference.dataElement = V1_transformElementReferencePointer(
-    PackageableElementPointerType.DATA,
+    type,
     element.dataElement,
   );
   return dataElementReference;
@@ -154,7 +181,7 @@ export function V1_transformEmbeddedData(
   } else if (metamodel instanceof ExternalFormatData) {
     return V1_transformExternalFormatData(metamodel);
   } else if (metamodel instanceof DataElementReference) {
-    return V1_transformDataElementReference(metamodel);
+    return V1_transformDataElementReference(metamodel, context);
   } else if (metamodel instanceof RelationalCSVData) {
     return V1_transformRelationalCSVData(metamodel);
   }

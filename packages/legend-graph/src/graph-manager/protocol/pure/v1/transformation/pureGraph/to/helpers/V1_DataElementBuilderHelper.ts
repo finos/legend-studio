@@ -111,8 +111,9 @@ class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
     dataElementReference: V1_DataElementReference,
   ): EmbeddedData {
     const metamodel = new DataElementReference();
-    metamodel.dataElement = this.context.resolveDataElement(
+    metamodel.dataElement = this.context.resolveElement(
       dataElementReference.dataElement.path,
+      false,
     );
     return metamodel;
   }

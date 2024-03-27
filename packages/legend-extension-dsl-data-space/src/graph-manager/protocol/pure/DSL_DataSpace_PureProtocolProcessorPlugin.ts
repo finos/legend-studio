@@ -33,6 +33,7 @@ import {
   UnsupportedOperationError,
   isNonNullable,
   assertType,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
@@ -95,6 +96,11 @@ import {
   Package,
   V1_RawValueSpecificationTransformer,
   V1_buildRawLambdaWithResolvedPaths,
+  type V1_ElementPointerType,
+  V1_buildEmbeddedData,
+  V1_transformEmbeddedData,
+  DataElementReference,
+  V1_DataElementReference,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { V1_MappingIncludeDataSpace } from './v1/model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
@@ -102,6 +108,8 @@ import { MappingIncludeDataSpace } from '../../../graph/metamodel/pure/model/pac
 
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
+
+export const DATA_SPACE_ELEMENT_POINTER = 'DATASPACE';
 
 export class DSL_DataSpace_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
@@ -147,6 +155,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               PackageableElementExplicitReference.create(
                 context.graph.getRuntime(contextProtocol.defaultRuntime.path),
               );
+            execContext.testData = contextProtocol.testData
+              ? guaranteeType(
+                  V1_buildEmbeddedData(contextProtocol.testData, context),
+                  DataElementReference,
+                )
+              : undefined;
             return execContext;
           });
           element.defaultExecutionContext = guaranteeNonNullable(
@@ -314,6 +328,17 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
     ];
   }
 
+  override V1_getExtraElementPointerTypes(): V1_ElementPointerType[] {
+    return [
+      (elementProtocol: PackageableElement): string | undefined => {
+        if (elementProtocol instanceof DataSpace) {
+          return DATA_SPACE_ELEMENT_POINTER;
+        }
+        return undefined;
+      },
+    ];
+  }
+
   override V1_getExtraElementProtocolSerializers(): V1_ElementProtocolSerializer[] {
     return [
       (
@@ -371,6 +396,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 PackageableElementPointerType.RUNTIME,
                 execContext.defaultRuntime.valueForSerialization ?? '',
               );
+              contextProtocol.testData = execContext.testData
+                ? guaranteeType(
+                    V1_transformEmbeddedData(execContext.testData, context),
+                    V1_DataElementReference,
+                  )
+                : undefined;
               return contextProtocol;
             },
           );

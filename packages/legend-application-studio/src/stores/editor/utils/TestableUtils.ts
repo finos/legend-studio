@@ -58,6 +58,7 @@ import {
   PrimitiveInstanceValue,
   PrimitiveType,
   LambdaFunctionInstanceValue,
+  DataElement,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -65,6 +66,7 @@ import {
   generateEnumerableNameFromToken,
   getNullableFirstEntry,
   guaranteeNonEmptyString,
+  guaranteeType,
   isNonNullable,
   LogEvent,
   returnUndefOnError,
@@ -197,7 +199,8 @@ export class EmbeddedDataCreatorFromEmbeddedData
     return val;
   }
   visit_DataElementReference(data: DataElementReference): EmbeddedData {
-    return data.dataElement.value.data.accept_EmbeddedDataVisitor(
+    const datElement = guaranteeType(data.dataElement.value, DataElement);
+    return datElement.data.accept_EmbeddedDataVisitor(
       new EmbeddedDataCreatorFromEmbeddedData(this.editorStore),
     );
   }

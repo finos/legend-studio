@@ -31,6 +31,7 @@ import {
   V1_packageableElementPointerModelSchema,
   V1_PackageableElementPointer,
   V1_rawLambdaModelSchema,
+  V1_dataElementReferenceModelSchema,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -71,6 +72,7 @@ const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
     mapping: usingModelSchema(V1_packageableElementPointerModelSchema),
     name: primitive(),
     title: optional(primitive()),
+    testData: optional(usingModelSchema(V1_dataElementReferenceModelSchema)),
   },
 );
 
