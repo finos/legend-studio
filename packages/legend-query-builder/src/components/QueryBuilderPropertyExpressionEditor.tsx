@@ -396,9 +396,9 @@ export const QueryBuilderEditablePropertyName = observer(
     }, [isEditingColumnName, columnNameInputRef]);
 
     return isEditingColumnName ? (
-      <div className="query-builder__column__name__editor">
+      <div className="query-builder__property__name__editor">
         <InputWithInlineValidation
-          className="query-builder__column__name__editor__input input-group__input"
+          className="query-builder__property__name__editor__input input-group__input"
           spellCheck={false}
           value={columnName}
           onChange={changeColumnName}
@@ -415,10 +415,10 @@ export const QueryBuilderEditablePropertyName = observer(
         />
       </div>
     ) : (
-      <div className="query-builder-property-name-display" title={title}>
+      <div className="query-builder__property__name__display" title={title}>
         <span
-          className={clsx('query-builder-property-name-display__content', {
-            'query-builder-property-name-display__content--error': error,
+          className={clsx('query-builder__property__name__display__content', {
+            'query-builder__property__name__display__content--error': error,
             'editable-value': changeColumnName,
           })}
           onClick={() => {
