@@ -412,6 +412,13 @@ export const QueryBuilderEditablePropertyName = observer(
           }}
           error={error}
           ref={columnNameInputRef}
+          draggable={true}
+          onDragStart={(e: React.DragEvent<HTMLInputElement>) => {
+            // The below 2 lines are to allow dragging to select text in the input instead of
+            // dragging the draggable element containing the input.
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         />
       </div>
     ) : (
