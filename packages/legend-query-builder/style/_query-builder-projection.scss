@@ -186,13 +186,7 @@
     margin-left: 0.5rem;
     margin-right: 0.5rem;
     height: 3.4rem;
-    flex: 1;
-
-    &__derivation {
-      flex: 2;
-      min-width: 5rem;
-      max-width: 20rem;
-    }
+    flex: 2;
 
     &__input {
       padding: 0.5rem;
@@ -220,6 +214,8 @@
 
   &__derivation__name-display {
     padding-left: 1.1rem;
+    max-width: fit-content;
+    min-width: 5rem;
   }
 
   &__column__value {
@@ -227,7 +223,7 @@
 
     height: 100%;
     flex: 4;
-    min-width: 5rem;
+    min-width: 10rem;
   }
 
   &__column__value__property {
