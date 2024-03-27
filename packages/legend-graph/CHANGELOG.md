@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.9.4
+
+### Patch Changes
+
+- [#3017](https://github.com/finos/legend-studio/pull/3017) [`3d1574733`](https://github.com/finos/legend-studio/commit/3d157473363ec3ff9e90216afdce2d1ac556da6c) ([@gayathrir11](https://github.com/gayathrir11)) - Add models for new `ClassInstance` valueSpecification types
+
 ## 31.9.3
 
 ## 31.9.2

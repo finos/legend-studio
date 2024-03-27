@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.92
+
+### Patch Changes
+
+- [#3011](https://github.com/finos/legend-studio/pull/3011) [`2ffb0ad8f`](https://github.com/finos/legend-studio/commit/2ffb0ad8f702a1ac422157a9f096702bb700b8b9) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support share dataspace template query in Legend Query
+
 ## 10.1.91
 
 ## 10.1.90
