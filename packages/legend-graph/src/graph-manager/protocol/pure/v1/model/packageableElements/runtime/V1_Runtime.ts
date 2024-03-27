@@ -78,6 +78,16 @@ export class V1_EngineRuntime extends V1_Runtime implements Hashable {
   }
 }
 
+export class V1_SingleConnectionEngineRuntime extends V1_EngineRuntime {
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SINGLE_ENGINE_RUNTIME,
+      hashArray(this.mappings),
+      hashArray(this.connectionStores),
+      hashArray(this.connections),
+    ]);
+  }
+}
 export class V1_LegacyRuntime extends V1_Runtime implements Hashable {
   mappings: V1_PackageableElementPointer[] = [];
   connections: V1_Connection[] = [];

@@ -124,6 +124,28 @@ export class EngineRuntime extends Runtime implements Hashable {
   }
 }
 
+export class SingleConnectionRuntime extends EngineRuntime {
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SINGLE_ENGINE_RUNTIME,
+      hashArray(
+        this.mappings.map((mapping) =>
+          hashElementPointer(
+            PackageableElementPointerType.MAPPING,
+            mapping.valueForSerialization ?? '',
+          ),
+        ),
+      ),
+      hashArray(this.connectionStores),
+      hashArray(
+        this.connections.filter(
+          // TODO: use `isStubbed_StoreConnections` when we refactor hashing
+          (connection) => connection.storeConnections.length,
+        ),
+      ),
+    ]);
+  }
+}
 export class RuntimePointer extends Runtime implements Hashable {
   packageableRuntime: PackageableElementReference<PackageableRuntime>;
 

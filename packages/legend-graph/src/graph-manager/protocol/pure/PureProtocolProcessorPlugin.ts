@@ -46,6 +46,10 @@ export type V1_ElementTransformer = (
   context: V1_GraphTransformerContext,
 ) => V1_PackageableElement | undefined;
 
+export type V1_ElementPointerType = (
+  metamodel: PackageableElement,
+) => string | undefined;
+
 export type V1_ElementProtocolSerializer = (
   protocol: V1_PackageableElement,
   plugins: PureProtocolProcessorPlugin[],
@@ -157,6 +161,11 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of methods to derive the classifier path of a packageable element.
    */
   V1_getExtraElementClassifierPathGetters?(): V1_ElementProtocolClassifierPathGetter[];
+
+  /**
+   * Get list of element pointer type
+   */
+  V1_getExtraElementPointerTypes?(): V1_ElementPointerType[];
 
   /**
    * Get the list of builders for packageable element: i.e. protocol model -> metamodel.

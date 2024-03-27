@@ -24,9 +24,13 @@ import {
   StoreConnections,
   IdentifiedConnection,
   ConnectionStores,
+  SingleConnectionRuntime,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
-import type { V1_EngineRuntime } from '../../../../model/packageableElements/runtime/V1_Runtime.js';
+import {
+  V1_SingleConnectionEngineRuntime,
+  type V1_EngineRuntime,
+} from '../../../../model/packageableElements/runtime/V1_Runtime.js';
 import { V1_buildConnection } from './V1_ConnectionBuilderHelper.js';
 import { ConnectionPointer } from '../../../../../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
 import { PackageableElementExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
@@ -35,7 +39,10 @@ export const V1_buildEngineRuntime = (
   runtime: V1_EngineRuntime,
   context: V1_GraphBuilderContext,
 ): EngineRuntime => {
-  const runtimeValue = new EngineRuntime();
+  const runtimeValue =
+    runtime instanceof V1_SingleConnectionEngineRuntime
+      ? new SingleConnectionRuntime()
+      : new EngineRuntime();
   runtimeValue.mappings = runtime.mappings.map((mapping) =>
     context.resolveMapping(mapping.path),
   );

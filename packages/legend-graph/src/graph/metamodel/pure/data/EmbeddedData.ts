@@ -19,11 +19,11 @@ import {
   CORE_HASH_STRUCTURE,
   hashObjectWithoutSourceInformation,
 } from '../../../../graph/Core_HashUtils.js';
-import type { DataElement } from '../packageableElements/data/DataElement.js';
 import type { Class } from '../packageableElements/domain/Class.js';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
 import type { RelationalCSVData } from './RelationalCSVData.js';
 import type { INTERNAL__UnknownEmbeddedData } from './INTERNAL__UnknownEmbeddedData.js';
+import type { PackageableElement } from '../packageableElements/PackageableElement.js';
 
 export interface EmbeddedDataVisitor<T> {
   visit_EmbeddedData(data: EmbeddedData): T;
@@ -41,7 +41,7 @@ export abstract class EmbeddedData implements Hashable {
 }
 
 export class DataElementReference extends EmbeddedData implements Hashable {
-  dataElement!: PackageableElementReference<DataElement>;
+  dataElement!: PackageableElementReference<PackageableElement>;
 
   get hashCode(): string {
     return hashArray([
