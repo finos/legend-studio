@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { useCallback } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react';
 import {
   clsx,
   Dialog,
@@ -26,6 +32,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalFooterButton,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -368,23 +375,56 @@ export const QueryBuilderPropertyExpressionEditor = observer(
   },
 );
 
-export const QueryBuilderPropertyNameDisplay = observer(
+export const QueryBuilderEditablePropertyName = observer(
   (props: {
     columnName: string;
-    error: boolean | undefined;
-    setIsEditingColumnName?: ((isEditing: boolean) => void) | undefined;
+    changeColumnName?:
+      | ((event: ChangeEvent<HTMLInputElement>) => void)
+      | undefined;
+    error: string | undefined;
     title: string;
   }) => {
-    const { columnName, error, setIsEditingColumnName, title } = props;
-    return (
+    const { columnName, changeColumnName, error, title } = props;
+
+    const [isEditingColumnName, setIsEditingColumnName] = useState(false);
+    const columnNameInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      if (isEditingColumnName) {
+        columnNameInputRef.current?.focus();
+      }
+    }, [isEditingColumnName, columnNameInputRef]);
+
+    return isEditingColumnName ? (
+      <div className="query-builder__column__name__editor">
+        <InputWithInlineValidation
+          className="query-builder__column__name__editor__input input-group__input"
+          spellCheck={false}
+          value={columnName}
+          onChange={changeColumnName}
+          onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+            if (event.key === 'Enter') {
+              setIsEditingColumnName(false);
+            }
+          }}
+          onBlur={() => {
+            setIsEditingColumnName(false);
+          }}
+          error={error}
+          ref={columnNameInputRef}
+        />
+      </div>
+    ) : (
       <div className="query-builder-property-name-display" title={title}>
         <span
           className={clsx('query-builder-property-name-display__content', {
             'query-builder-property-name-display__content--error': error,
-            'editable-value': !!setIsEditingColumnName,
+            'editable-value': changeColumnName,
           })}
           onClick={() => {
-            setIsEditingColumnName?.(true);
+            if (changeColumnName) {
+              setIsEditingColumnName?.(true);
+            }
           }}
         >
           {columnName}
@@ -401,14 +441,14 @@ export const QueryBuilderPropertyExpressionBadge = observer(
     onPropertyExpressionChange: (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ) => void;
-    setIsEditingColumnName?: (isEditing: boolean) => void;
-    error?: boolean | undefined;
+    changeColumnName?: (event: ChangeEvent<HTMLInputElement>) => void;
+    error?: string | undefined;
   }) => {
     const {
       columnName,
       propertyExpressionState,
       onPropertyExpressionChange,
-      setIsEditingColumnName,
+      changeColumnName,
       error,
     } = props;
     const type =
@@ -472,10 +512,10 @@ export const QueryBuilderPropertyExpressionBadge = observer(
               },
             )}
           >
-            <QueryBuilderPropertyNameDisplay
+            <QueryBuilderEditablePropertyName
               columnName={columnName ?? propertyExpressionState.title}
+              changeColumnName={changeColumnName}
               error={error}
-              setIsEditingColumnName={setIsEditingColumnName}
               title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
             />
             {hasDerivedPropertyInExpression && (
