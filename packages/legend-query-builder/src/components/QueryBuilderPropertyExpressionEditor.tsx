@@ -430,7 +430,7 @@ export const QueryBuilderEditablePropertyName = observer(
           })}
           onClick={() => {
             if (changeColumnName) {
-              setIsEditingColumnName?.(true);
+              setIsEditingColumnName(true);
             }
           }}
         >
