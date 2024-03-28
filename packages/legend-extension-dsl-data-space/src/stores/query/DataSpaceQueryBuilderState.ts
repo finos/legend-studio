@@ -146,6 +146,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   dataSpaces: DataSpaceInfo[] = [];
   showRuntimeSelector = false;
   advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
+  isTemplateQueryDialogOpen = false;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -172,10 +173,12 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       executionContext: observable,
       showRuntimeSelector: observable,
       advancedSearchState: observable,
+      isTemplateQueryDialogOpen: observable,
       showAdvancedSearchPanel: action,
       hideAdvancedSearchPanel: action,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
+      setTemplateQueryDialogOpen: action,
       loadDataSpaces: flow,
     });
 
@@ -195,6 +198,10 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     return this.showRuntimeSelector
       ? 'query-builder__setup__data-space--with-runtime'
       : 'query-builder__setup__data-space';
+  }
+
+  setTemplateQueryDialogOpen(val: boolean): void {
+    this.isTemplateQueryDialogOpen = val;
   }
 
   showAdvancedSearchPanel(): void {
