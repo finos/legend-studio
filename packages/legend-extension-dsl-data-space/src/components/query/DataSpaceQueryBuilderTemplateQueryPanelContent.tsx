@@ -26,7 +26,11 @@ import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 import { DataSpaceExecutableTemplate } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 
 const DataSpaceTemplateQueryDialog = observer(
@@ -40,7 +44,8 @@ const DataSpaceTemplateQueryDialog = observer(
     const handleClose = (): void => {
       queryBuilderState.setTemplateQueryDialogOpen(false);
     };
-    const loadQuery = (template: DataSpaceExecutableTemplate): void => {
+
+    const loadTemplateQuery = (template: DataSpaceExecutableTemplate): void => {
       const executionContext =
         queryBuilderState.dataSpace.executionContexts.find(
           (c) => c.name === template.executionContextKey,
@@ -60,7 +65,31 @@ const DataSpaceTemplateQueryDialog = observer(
       handleClose();
     };
 
-    const shareTemplateQuery = (
+    const loadQuery = (template: DataSpaceExecutableTemplate): void => {
+      if (queryBuilderState.changeDetectionState.hasChanged) {
+        applicationStore.alertService.setActionAlertInfo({
+          message:
+            'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void => loadTemplateQuery(template),
+            },
+            {
+              label: 'Abort',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      } else {
+        loadTemplateQuery(template);
+      }
+    };
+
+    const visitTemplateQuery = (
       template: DataSpaceExecutableTemplate,
     ): void => {
       if (queryBuilderState.projectInfo?.groupId) {
@@ -128,12 +157,12 @@ const DataSpaceTemplateQueryDialog = observer(
                   </button>
                   <button
                     className="query-builder__data-space__template-query-panel__query__share"
-                    title="Share..."
-                    onClick={() => shareTemplateQuery(query)}
+                    title="Visit..."
+                    onClick={() => visitTemplateQuery(query)}
                   >
                     <ShareIcon />
                     <div className="query-builder__data-space__template-query-panel__query__share__label">
-                      Share
+                      Visit
                     </div>
                   </button>
                 </div>
@@ -152,33 +181,36 @@ const DataSpaceQueryBuilderTemplateQueryPanel = observer(
     const templateQueryButtonRef = useRef<HTMLButtonElement>(null);
     const templateQueries = queryBuilderState.dataSpace.executables?.filter(
       (e) => e instanceof DataSpaceExecutableTemplate,
-    ) as DataSpaceExecutableTemplate[];
+    ) as DataSpaceExecutableTemplate[] | undefined;
 
     const showTemplateQueries = (): void => {
       queryBuilderState.setTemplateQueryDialogOpen(true);
     };
 
     return (
-      <PanelHeader className="query-builder__data-space__template-query">
-        <div className="query-builder__data-space__template-query__title">
-          <FilterIcon />
-        </div>
-        <button
-          className="query-builder__data-space__template-query__btn"
-          ref={templateQueryButtonRef}
-          disabled={templateQueries.length <= 0}
-          onClick={showTemplateQueries}
-        >
-          Template ( {templateQueries.length} )
-        </button>
-        {queryBuilderState.isTemplateQueryDialogOpen && (
-          <DataSpaceTemplateQueryDialog
-            triggerElement={templateQueryButtonRef.current}
-            queryBuilderState={queryBuilderState}
-            templateQueries={templateQueries}
-          />
+      <>
+        {templateQueries && templateQueries.length > 0 && (
+          <PanelHeader className="query-builder__data-space__template-query">
+            <div className="query-builder__data-space__template-query__title">
+              <FilterIcon />
+            </div>
+            <button
+              className="query-builder__data-space__template-query__btn"
+              ref={templateQueryButtonRef}
+              onClick={showTemplateQueries}
+            >
+              Template ( {templateQueries.length} )
+            </button>
+            {queryBuilderState.isTemplateQueryDialogOpen && (
+              <DataSpaceTemplateQueryDialog
+                triggerElement={templateQueryButtonRef.current}
+                queryBuilderState={queryBuilderState}
+                templateQueries={templateQueries}
+              />
+            )}
+          </PanelHeader>
         )}
-      </PanelHeader>
+      </>
     );
   },
 );
