@@ -372,7 +372,10 @@ const ServiceGeneralEditor = observer(() => {
                 options={OWNERSHIP_OPTIONS}
                 onChange={onOwnershipChange}
                 value={serviceState.selectedOwnership}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
               />
             </div>
             {ownership instanceof DeploymentOwnership && (

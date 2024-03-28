@@ -203,7 +203,12 @@ export const LegendStudioAppInfo: React.FC<{
 
   return (
     <Dialog onClose={closeModal} open={open}>
-      <Modal darkMode={true} className="modal--scrollable app__info">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="modal--scrollable app__info"
+      >
         <ModalHeader>
           <ModalTitle icon={<InfoCircleIcon />} title="About" />
           <ModalHeaderActions>

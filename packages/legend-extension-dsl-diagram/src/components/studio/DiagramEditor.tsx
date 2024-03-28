@@ -152,6 +152,7 @@ const DiagramEditorContextMenu = observer(
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
     const { open, onClose } = props;
+    const applicationStore = useApplicationStore();
     return (
       <Dialog
         open={open}
@@ -163,7 +164,9 @@ const DiagramRendererHotkeyInfosModal = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="modal--scrollable diagram-editor__hotkeys__dialog"
         >
           <ModalHeader title="Diagram Hotkeys" />
@@ -1037,6 +1040,7 @@ const DiagramEditorInlinePropertyEditorContent = observer(
   }) => {
     const { inlinePropertyEditorState } = props;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const diagramEditorState = inlinePropertyEditorState.diagramEditorState;
     const isReadOnly = diagramEditorState.isReadOnly;
     const propertyNameInputRef = useRef<HTMLInputElement>(null);
@@ -1110,7 +1114,10 @@ const DiagramEditorInlinePropertyEditorContent = observer(
             onChange={changePropertyType}
             value={selectedPropertyType}
             placeholder="Choose a type..."
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             filterOption={propertyTypeFilterOption}
           />
         )}

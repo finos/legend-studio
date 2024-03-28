@@ -71,7 +71,9 @@ export const QueryBuilderTextEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder-text-mode__modal', {
             'query-builder-text-mode__modal--has-error': Boolean(
               queryTextEditorState.parserError,
@@ -135,13 +137,13 @@ export const QueryBuilderTextEditor = observer(
                 text="Discard Changes"
               />
             )}
-            <button
-              className="btn btn--dark"
+            <ModalFooterButton
               onClick={close}
               disabled={
                 Boolean(queryTextEditorState.parserError) ||
                 queryBuilderState.textEditorState.closingQueryState.isInProgress
               }
+              type="secondary"
             >
               {queryBuilderState.textEditorState.closingQueryState
                 .isInProgress ? (
@@ -154,7 +156,7 @@ export const QueryBuilderTextEditor = observer(
               ) : (
                 <> Close </>
               )}
-            </button>
+            </ModalFooterButton>
           </ModalFooter>
         </Modal>
       </Dialog>

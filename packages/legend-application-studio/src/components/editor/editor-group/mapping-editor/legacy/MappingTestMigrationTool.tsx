@@ -44,6 +44,7 @@ export const MappingTestMigrationTool = observer(
     migrationState: MappingTestMigrationState;
   }) => {
     const { mappingEditorState, migrationState } = props;
+    const applicationStore = mappingEditorState.editorStore.applicationStore;
     const isLoading =
       migrationState.confirmationState?.calculatingDiffs.isInProgress;
     const close = (): void => {
@@ -69,7 +70,9 @@ export const MappingTestMigrationTool = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder-text-mode__modal')}
         >
           <ModalHeader title="Migrate Legacy Tests"></ModalHeader>

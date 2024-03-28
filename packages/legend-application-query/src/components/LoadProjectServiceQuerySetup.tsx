@@ -118,7 +118,10 @@ const LoadProjectServiceQuerySetupContent = observer(() => {
             isLoading={setupStore.loadProjectsState.isInProgress}
             onChange={onProjectOptionChange}
             placeholder={projectSelectorPlaceholder}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
         </div>
       </div>

@@ -134,7 +134,9 @@ export const CreateWorkspaceModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="workspace-setup__create-workspace-modal"
         >
           <div className="modal__title">
@@ -187,7 +189,10 @@ export const CreateWorkspaceModal = observer(
                   value={selectedPatchOption}
                   isClearable={true}
                   escapeClearsValue={true}
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </div>
               <PanelFormBooleanField

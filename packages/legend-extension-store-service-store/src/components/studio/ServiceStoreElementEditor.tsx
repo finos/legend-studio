@@ -57,6 +57,7 @@ export const ServiceStoreConnectionEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { connectionValueState, isReadOnly } = props;
+    const applicationStore = connectionValueState.editorStore.applicationStore;
     const connection = connectionValueState.connection;
 
     const stores =
@@ -95,7 +96,10 @@ export const ServiceStoreConnectionEditor = observer(
             options={stores}
             onChange={onStoreChange}
             value={selectedStore}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             disabled={isReadOnly}
           />
         </div>

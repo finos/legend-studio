@@ -86,6 +86,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import { useApplicationStore } from '@finos/legend-application';
 
 export type StringValuePatternOption = {
   value: string;
@@ -103,6 +104,7 @@ export const QueryParamsEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { serviceRequestPattern, isReadOnly } = props;
+    const applicationStore = useApplicationStore();
     const stringValuePatternOptions = Object.values(StringValuePatternType).map(
       (stringValuePatternType) => ({
         value: stringValuePatternType,
@@ -217,7 +219,10 @@ export const QueryParamsEditor = observer(
                         : stringValuePatternOptions.at(1)
                     }
                     placeholder="Choose a string value pattern type"
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                   <div className="query-params-editor__actions">
                     <button
@@ -273,6 +278,7 @@ export const HeaderParamsEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { serviceRequestPattern, isReadOnly } = props;
+    const applicationStore = useApplicationStore();
     const stringValuePatternOptions = Object.values(StringValuePatternType).map(
       (stringValuePatternType) => ({
         value: stringValuePatternType,
@@ -387,7 +393,10 @@ export const HeaderParamsEditor = observer(
                         : stringValuePatternOptions.at(1)
                     }
                     placeholder="Choose a string value pattern type"
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                   <div className="header-params-editor__actions">
                     <button
@@ -443,6 +452,7 @@ export const BodyPatternsEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { serviceRequestPattern, isReadOnly } = props;
+    const applicationStore = useApplicationStore();
     const stringValuePatternOptions = Object.values(StringValuePatternType).map(
       (stringValuePatternType) => ({
         value: stringValuePatternType,
@@ -527,7 +537,10 @@ export const BodyPatternsEditor = observer(
                         : stringValuePatternOptions.at(1)
                     }
                     placeholder="Choose a string value pattern type"
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                   <div className="body-patterns-editor__actions">
                     <button

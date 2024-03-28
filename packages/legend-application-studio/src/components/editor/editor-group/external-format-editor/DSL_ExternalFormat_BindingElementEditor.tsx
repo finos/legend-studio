@@ -186,6 +186,7 @@ const BindingGeneralEditor = observer(
   (props: { editorState: BindingEditorState; isReadOnly: boolean }) => {
     const { editorState, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const binding = editorState.binding;
     const schemaSets = Array.from(
       editorStore.graphManagerState.graph.allOwnElements,
@@ -246,7 +247,10 @@ const BindingGeneralEditor = observer(
             onChange={onContentTypeChange}
             value={selectedContentType}
             placeholder="Choose a content type"
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
         </div>
         <div className="binding-general-editor__section__header__label">
@@ -262,7 +266,10 @@ const BindingGeneralEditor = observer(
             value={selectedSchemaSet}
             isClearable={true}
             placeholder="Choose a schema set"
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
         </div>
         <div className="binding-general-editor__section__header__label">
@@ -278,7 +285,10 @@ const BindingGeneralEditor = observer(
             value={selectedSchemaId}
             isClearable={true}
             placeholder="Choose a schema ID"
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
         </div>
       </div>

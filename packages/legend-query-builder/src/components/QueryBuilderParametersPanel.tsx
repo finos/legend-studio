@@ -155,7 +155,9 @@ const VariableExpressionEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal query-builder__variables__modal"
         >
           <ModalHeader
@@ -229,7 +231,7 @@ const VariableExpressionEditor = observer(
                 onClick={onAction}
               />
             )}
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>

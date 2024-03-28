@@ -236,7 +236,12 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
           },
         }}
       >
-        <Modal className="modal search-modal" darkMode={true}>
+        <Modal
+          className="modal search-modal"
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
           <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
             ref={sourceSelectorRef}
@@ -244,7 +249,10 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             onChange={changeSourceType}
             value={selectedSourceType}
             placeholder="Choose a source..."
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             isClearable={true}
             filterOption={sourceFilterOption}
             formatOptionLabel={formatSourceOptionLabel}

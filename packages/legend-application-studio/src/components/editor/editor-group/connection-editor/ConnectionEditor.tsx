@@ -39,7 +39,10 @@ import {
   modelConnection_setClass,
   modelConnection_setUrl,
 } from '../../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
-import { useApplicationNavigationContext } from '@finos/legend-application';
+import {
+  useApplicationNavigationContext,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
@@ -55,6 +58,7 @@ const ModelConnectionEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly, disableChangingClass } = props;
     const connection = connectionValueState.connection;
+    const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
     // classOptions
     const classOptions =
@@ -89,9 +93,14 @@ const ModelConnectionEditor = observer(
             options={classOptions}
             onChange={onSourceClassChange}
             value={{ label: sourceClass.name, value: sourceClass }}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             formatOptionLabel={getPackageableElementOptionFormatter({
-              darkMode: true,
+              darkMode:
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled,
             })}
           />
         </div>

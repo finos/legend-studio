@@ -316,7 +316,13 @@ export const QueryBuilderResultPanel = observer(
             open={Boolean(showSqlModal)}
             onClose={() => setShowSqlModal(false)}
           >
-            <Modal className="editor-modal" darkMode={true}>
+            <Modal
+              className="editor-modal"
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+            >
               <ModalHeader title="Executed SQL Query" />
               <ModalBody className="query-builder__sql__modal">
                 <>
@@ -340,6 +346,7 @@ export const QueryBuilderResultPanel = observer(
                 <ModalFooterButton
                   onClick={() => setShowSqlModal(false)}
                   text="Close"
+                  type="secondary"
                 />
               </ModalFooter>
             </Modal>

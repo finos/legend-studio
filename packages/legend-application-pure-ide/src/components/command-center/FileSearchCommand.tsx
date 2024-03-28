@@ -90,7 +90,10 @@ export const FileSearchCommand = observer(() => {
             onInputChange={onSearchTextChange}
             placeholder="Enter file name or path"
             escapeClearsValue={true}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             isLoading={loadingOptionsState.isInProgress}
           />
           <button

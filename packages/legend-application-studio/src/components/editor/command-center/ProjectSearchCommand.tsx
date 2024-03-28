@@ -40,6 +40,7 @@ import {
 
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const selectorRef = useRef<SelectComponent>(null);
   const closeModal = (): void => editorStore.setShowSearchElementCommand(false);
   const types = editorStore.getSupportedElementTypes();
@@ -98,7 +99,12 @@ export const ProjectSearchCommand = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <Modal darkMode={true} className="search-modal">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="search-modal"
+      >
         <div className="project-search-command">
           <DropdownMenu
             className="project-search-command__type"
@@ -144,9 +150,14 @@ export const ProjectSearchCommand = observer(() => {
               elementType ? elementType.toLowerCase() : 'elements'
             } by path`}
             escapeClearsValue={true}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             formatOptionLabel={getPackageableElementOptionFormatter({
-              darkMode: true,
+              darkMode:
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled,
             })}
           />
         </div>

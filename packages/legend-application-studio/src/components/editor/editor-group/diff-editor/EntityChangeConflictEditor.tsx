@@ -743,7 +743,10 @@ export const EntityChangeConflictEditor = observer(
                 currentMode,
                 conflictEditorState.getModeComparisonViewInfo(currentMode),
               )}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
         </div>

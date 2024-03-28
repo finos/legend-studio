@@ -34,6 +34,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   MenuContentItem,
   MenuContent,
   PanelFormBooleanField,
@@ -111,7 +112,12 @@ const ShareProjectModal = observer(
 
     return (
       <Dialog onClose={closeModal} open={open}>
-        <Modal darkMode={true} className="modal--no-padding">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="modal--no-padding"
+        >
           <PanelLoadingIndicator isLoading={isDispatchingAction} />
           <ModalBody>
             <div className="project-overview__share-project__modal__info-entry">
@@ -134,7 +140,10 @@ const ShareProjectModal = observer(
                             }
                           : null
                       }
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                     />
                   </div>
                 ) : (
@@ -154,13 +163,12 @@ const ShareProjectModal = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn--wide btn--dark"
+            <ModalFooterButton
+              className="btn--wide"
+              text="Copy Link"
               disabled={isFetchingProject}
               onClick={copyProjectElementLink}
-            >
-              Copy Link
-            </button>
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -680,7 +688,10 @@ const PatchEditor = observer(() => {
                 placeholder={'Select source version'}
                 isClearable={true}
                 escapeClearsValue={true}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
               />
             </div>
           </div>
@@ -747,7 +758,10 @@ const PatchEditor = observer(() => {
                     placeholder={'Select patch you want to release'}
                     isClearable={true}
                     escapeClearsValue={true}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                 </div>
               </div>

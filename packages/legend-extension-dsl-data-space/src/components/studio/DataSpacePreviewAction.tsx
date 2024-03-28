@@ -59,6 +59,7 @@ export const DataSpacePreviewAction = observer(
 
 export const DataSpacePreviewDialog = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const dataSpacePreviewState =
     DataSpacePreviewState.retrieveNullableState(editorStore);
   if (!dataSpacePreviewState) {
@@ -81,7 +82,9 @@ export const DataSpacePreviewDialog = observer(() => {
       }}
     >
       <Modal
-        darkMode={true}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
         className="editor-modal data-space-preview__dialog"
       >
         <ModalHeader className="data-space-preview__dialog__header">

@@ -49,6 +49,9 @@ const QueryResultCellRenderer = observer(
       resultState.queryBuilderState.fetchStructureState.implementation;
     const applicationStore = resultState.queryBuilderState.applicationStore;
     const cellValue = params.value as QueryBuilderTDSResultCellDataType;
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+
     const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
       if (isNumber(cellValue)) {
         return Intl.NumberFormat(DEFAULT_LOCALE, {
@@ -311,7 +314,10 @@ const QueryResultCellRenderer = observer(
           !resultState.mousedOverCell
         }
         menuProps={{ elevation: 7 }}
-        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
+        className={clsx('query-builder__result__tds-grid', {
+          'ag-theme-balham': !darkMode,
+          'ag-theme-balham-dark': darkMode,
+        })}
       >
         <div
           className={clsx('query-builder__result__values__table__cell', {
@@ -342,6 +348,9 @@ export const QueryBuilderTDSSimpleGridResult = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
     const resultState = queryBuilderState.resultState;
+    const darkMode =
+      !queryBuilderState.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
     const colDefs = executionResult.result.columns.map(
       (colName) =>
         ({
@@ -364,9 +373,10 @@ export const QueryBuilderTDSSimpleGridResult = observer(
         className="query-builder__result__values__table"
       >
         <div
-          className={clsx(
-            'ag-theme-balham-dark query-builder__result__tds-grid',
-          )}
+          className={clsx('query-builder__result__tds-grid', {
+            'ag-theme-balham': !darkMode,
+            'ag-theme-balham-dark': darkMode,
+          })}
         >
           <DataGrid
             rowData={getRowDataFromExecutionResult(executionResult)}

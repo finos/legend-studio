@@ -315,7 +315,12 @@ const SandboxAccessModal = observer(() => {
 
   return (
     <Dialog open={true} onClose={closeModal}>
-      <Modal darkMode={true} className="sandbox-project-modal">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="sandbox-project-modal"
+      >
         <div className="sandbox-project-modal__header">
           <div className="sandbox-project-modal__header__label">
             Create Sandbox Project
@@ -511,7 +516,10 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             placeholder="Search for project..."
                             isClearable={true}
                             escapeClearsValue={true}
-                            darkMode={true}
+                            darkMode={
+                              !applicationStore.layoutService
+                                .TEMPORARY__isLightColorThemeEnabled
+                            }
                             formatOptionLabel={getProjectOptionLabelFormatter(
                               applicationStore,
                               setupStore.currentProjectConfigurationStatus,
@@ -569,7 +577,10 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             }
                             isClearable={true}
                             escapeClearsValue={true}
-                            darkMode={true}
+                            darkMode={
+                              !applicationStore.layoutService
+                                .TEMPORARY__isLightColorThemeEnabled
+                            }
                             optionCustomization={{
                               rowHeight: window.innerHeight * 0.03,
                             }}

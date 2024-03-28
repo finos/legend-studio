@@ -217,9 +217,17 @@ const AccessStatusCellRenderer = observer(
 const DataAccessOverviewGrid = observer(
   (props: { dataAccessState: DataAccessState }) => {
     const { dataAccessState } = props;
+    const darkMode =
+      !dataAccessState.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     return (
-      <div className="data-access-overview__grid ag-theme-balham-dark">
+      <div
+        className={clsx('data-access-overview__grid', {
+          'ag-theme-balham': !darkMode,
+          'ag-theme-balham-dark': darkMode,
+        })}
+      >
         <DataGrid
           rowData={dataAccessState.datasets}
           gridOptions={{

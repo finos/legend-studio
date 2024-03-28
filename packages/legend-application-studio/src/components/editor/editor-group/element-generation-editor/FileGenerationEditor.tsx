@@ -420,6 +420,7 @@ const GenerationEnumPropertyEditor = observer(
     getConfigValue: (name: string) => unknown;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
+    const applicationStore = useApplicationStore();
     const getEnumLabel = (_enum: string): string =>
       isValidFullPath(_enum)
         ? resolvePackagePathAndElementName(_enum)[1]
@@ -451,7 +452,9 @@ const GenerationEnumPropertyEditor = observer(
           value={{ label: getEnumLabel(value), value }}
           isClearable={true}
           escapeClearsValue={true}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           disable={isReadOnly}
         />
       </div>

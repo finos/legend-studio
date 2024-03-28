@@ -444,7 +444,10 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
                     options={OWNERSHIP_OPTIONS}
                     onChange={onOwnershipChange}
                     value={editorState.selectedOwnership}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                 </div>
                 {ownership instanceof DeploymentOwner && (

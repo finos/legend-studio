@@ -134,7 +134,9 @@ export const QueryConnectionDatabaseBuilderEditor = observer(
           </button>
         </div>
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="query-connection-database-builder-editor__modal"
         >
           <div className="query-connection-database-builder-editor__modal__content">
@@ -274,7 +276,9 @@ export const QueryConnectionModelsEditor = observer(
           <PanelHeader title="Model Builder" />
         </div>
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="query-connection-connection-model-editor__modal"
         >
           <div className="query-connection-connection-model-editor__modal">

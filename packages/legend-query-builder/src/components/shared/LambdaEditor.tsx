@@ -28,6 +28,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalTitle,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import {
   disposeCodeEditor,
@@ -223,6 +224,21 @@ const LambdaEditor_Inner = observer(
         }
       }
     }, [editor, isExpanded]);
+
+    // set styling when theme changes
+    useEffect(() => {
+      if (editor) {
+        editor.updateOptions({
+          theme: applicationStore.layoutService
+            .TEMPORARY__isLightColorThemeEnabled
+            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
+            : CODE_EDITOR_THEME.DEFAULT_DARK,
+        });
+      }
+    }, [
+      editor,
+      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+    ]);
 
     // set backdrop to force user to fix parser error when it happens
     useEffect(() => {
@@ -605,7 +621,9 @@ const LambdaEditor_PopUp = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx(
             'editor-modal lambda-editor__popup__modal',
             {
@@ -639,19 +657,17 @@ const LambdaEditor_PopUp = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn btn--dark btn--caution"
+            <ModalFooterButton
+              className="btn--caution"
+              text="Discard changes"
               onClick={discardChanges}
-            >
-              Discard changes
-            </button>
-            <button
-              className="btn btn--dark"
+            />
+            <ModalFooterButton
+              text="Close"
               onClick={onClose}
               disabled={Boolean(lambdaEditorState.parserError)}
-            >
-              Close
-            </button>
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

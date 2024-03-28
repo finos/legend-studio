@@ -626,6 +626,7 @@ const ImportProjectTab = observer(() => {
 
 export const CreateProjectModal = observer(() => {
   const setupStore = useWorkspaceSetupStore();
+  const applicationStore = setupStore.applicationStore;
   const allowCreatingNewProject =
     setupStore.sdlcServerClient.features.canCreateProject;
   const [selectedTab, setSelectedTab] = useState(
@@ -654,7 +655,12 @@ export const CreateProjectModal = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <Modal darkMode={true} className="workspace-setup__create-project-modal">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="workspace-setup__create-project-modal"
+      >
         <div className="workspace-setup__create-project-modal__header">
           <div className="workspace-setup__create-project-modal__header__label">
             Create Project

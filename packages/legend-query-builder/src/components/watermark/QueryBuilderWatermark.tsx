@@ -127,6 +127,7 @@ const WatermarkValueEditor = observer(
 export const QueryBuilderWatermarkEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = queryBuilderState.applicationStore;
     const watermarkState = queryBuilderState.watermarkState;
     const handleClose = (): void => {
       watermarkState.setIsEditingWatermark(false);
@@ -142,7 +143,12 @@ export const QueryBuilderWatermarkEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
           <ModalHeader title="Watermark" />
           <ModalBody>
             <PanelForm>

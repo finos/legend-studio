@@ -372,7 +372,10 @@ const ParameterBasicEditor = observer(
               value={selectedType}
               placeholder="Choose a type..."
               filterOption={filterOption}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           )}
           {!isReadOnly && !isEditingType && (
@@ -567,7 +570,10 @@ const ReturnTypeEditor = observer(
             value={selectedType}
             placeholder="Choose a type..."
             filterOption={filterOption}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
         )}
         {!isReadOnly && !isEditingType && (
@@ -814,7 +820,12 @@ const FunctionPromoteEditor = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true} className="function-promote-editor">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="function-promote-editor"
+        >
           <ModalBody className="function-promote-editor__content">
             <div className="function-promote-editor__content__prompt">
               Select any one of the following activator types to continue
@@ -841,11 +852,12 @@ const FunctionPromoteEditor = observer(
               className="function-promote-editor__action-btn"
               onClick={closeModal}
               title="Close"
+              type="secondary"
             >
               Cancel
             </ModalFooterButton>
             <ModalFooterButton
-              className=" function-promote-editor__action-btn function-promote-editor__action-btn--primitive"
+              className="function-promote-editor__action-btn function-promote-editor__action-btn--primitive"
               disabled={
                 !activatorPromoteState.activateType ||
                 !validateFunctionActivator(activatorPromoteState.activateType)

@@ -59,6 +59,7 @@ import {
 const QueryPreviewViewer = observer(
   (props: { queryLoaderState: QueryLoaderState }) => {
     const { queryLoaderState } = props;
+    const applicationStore = queryLoaderState.applicationStore;
     const close = (): void => {
       queryLoaderState.setShowPreviewViewer(false);
     };
@@ -72,7 +73,12 @@ const QueryPreviewViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal className="editor-modal" darkMode={true}>
+        <Modal
+          className="editor-modal"
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
           <ModalHeader
             title={
               guaranteeNonNullable(queryLoaderState.queryPreviewContent).name
@@ -89,7 +95,7 @@ const QueryPreviewViewer = observer(
             />
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -456,6 +462,7 @@ export const QueryLoaderDialog = observer(
     loadActionLabel?: string | undefined;
   }) => {
     const { queryLoaderState, title, loadActionLabel } = props;
+    const applicationStore = queryLoaderState.applicationStore;
 
     const close = (): void => {
       queryLoaderState.setQueryLoaderDialogOpen(false);
@@ -475,7 +482,9 @@ export const QueryLoaderDialog = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="modal query-loader__dialog__body__content"
         >
           <div className="modal query-loader__dialog__header">

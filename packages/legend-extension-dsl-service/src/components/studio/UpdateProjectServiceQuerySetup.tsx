@@ -373,7 +373,10 @@ export const UpdateProjectServiceQuerySetup =
                       value={selectedProjectOption}
                       onChange={onProjectOptionChange}
                       placeholder="Search for project..."
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                       isClearable={true}
                       escapeClearsValue={true}
                       formatOptionLabel={getProjectOptionLabelFormatter(
@@ -416,7 +419,10 @@ export const UpdateProjectServiceQuerySetup =
                       }
                       isClearable={true}
                       escapeClearsValue={true}
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                     />
                     <button
                       className="service-query-setup__selector__action btn--dark"
@@ -451,7 +457,10 @@ export const UpdateProjectServiceQuerySetup =
                           ? 'Choose an existing service'
                           : 'You have no services to load'
                       }
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                       isClearable={true}
                       escapeClearsValue={true}
                       formatOptionLabel={formatServiceOptionLabel}

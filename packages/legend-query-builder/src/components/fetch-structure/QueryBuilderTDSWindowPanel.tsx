@@ -274,7 +274,9 @@ const QueryBuilderWindowColumnModalEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx([
             'query-builder__olap__modal',
             {
@@ -525,7 +527,11 @@ const QueryBuilderWindowColumnModalEditor = observer(
             {createNewWindow ? (
               <ModalFooterButton text="Create" onClick={create} />
             ) : (
-              <ModalFooterButton text="Close" onClick={close} />
+              <ModalFooterButton
+                text="Close"
+                onClick={close}
+                type="secondary"
+              />
             )}
           </ModalFooter>
         </Modal>

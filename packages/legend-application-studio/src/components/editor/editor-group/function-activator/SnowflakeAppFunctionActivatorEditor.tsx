@@ -223,7 +223,10 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
                         )
                       : undefined
                   }
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                   placeholder="Choose a connection"
                   filterOption={connectionFilterOption}
                 />

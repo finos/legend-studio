@@ -316,7 +316,10 @@ const RegisterServiceModal = observer(() => {
                 options={envConfigOptions}
                 onChange={onEnvConfigChange}
                 value={selectedEnvConfigOption}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
                 isClearable={true}
                 escapeClearsValue={true}
                 placeholder="Choose a registration environment"

@@ -135,7 +135,9 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal query-builder__variables__modal"
         >
           <ModalHeader
@@ -205,7 +207,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                 onClick={onAction}
               />
             )}
-            <ModalFooterButton text="Close" onClick={close} />
+            <ModalFooterButton text="Close" onClick={close} type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -244,7 +246,9 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder__constants__modal', {
             'query-builder__constants__modal--has-error': Boolean(
               lambdaState.parserError,
@@ -286,13 +290,12 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn btn--dark"
+            <ModalFooterButton
+              text="Close"
               onClick={close}
               disabled={Boolean(lambdaState.parserError)}
-            >
-              Close
-            </button>
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

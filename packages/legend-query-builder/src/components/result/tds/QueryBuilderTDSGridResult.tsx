@@ -230,6 +230,8 @@ export const QueryBuilderTDSGridResult = observer(
     const colDefs = isLocalModeEnabled
       ? getLocalColDefs(executionResult, resultState)
       : getColDefs(executionResult, resultState);
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
     const onSaveGridColumnState = (): void => {
       if (!columnAPi) {
@@ -338,9 +340,10 @@ export const QueryBuilderTDSGridResult = observer(
         className="query-builder__result__values__table"
       >
         <div
-          className={clsx(
-            'ag-theme-balham-dark query-builder__result__tds-grid',
-          )}
+          className={clsx('query-builder__result__tds-grid', {
+            'ag-theme-balham': !darkMode,
+            'ag-theme-balham-dark': darkMode,
+          })}
         >
           {isLocalModeEnabled ? (
             <DataGrid

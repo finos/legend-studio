@@ -89,6 +89,7 @@ const ModelGenerationItem = observer(
     const { nodeState, specState, options } = props;
     const generationTreeNode = nodeState.node;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const modelGenerationRef = generationTreeNode.generationElement;
     const modelGeneration = modelGenerationRef.value;
     const value = { label: modelGeneration.name, value: modelGeneration };
@@ -204,7 +205,9 @@ const ModelGenerationItem = observer(
           options={options}
           onChange={onChange}
           value={value}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
         <button
           className="btn--dark btn--sm"
@@ -350,6 +353,7 @@ const FileGenerationItem = observer(
     const { fileGeneraitonRef, generationSpecificationEditorState, options } =
       props;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const fileGeneration = fileGeneraitonRef.value;
     const value = { label: fileGeneration.name, value: fileGeneration };
     const onChange = (
@@ -376,7 +380,9 @@ const FileGenerationItem = observer(
           options={options}
           onChange={onChange}
           value={value}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
         <button
           className="btn--dark btn--sm"

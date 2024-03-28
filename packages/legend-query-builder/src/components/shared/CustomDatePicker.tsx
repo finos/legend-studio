@@ -913,6 +913,7 @@ const CustomDateInstanceValueEditor: React.FC<{
     setDatePickerOption,
     observerContext,
   } = props;
+  const applicationStore = useApplicationStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const [durationValue, setDurationValue] = useState(
     customDateOptionValue.duration,
@@ -1015,7 +1016,9 @@ const CustomDateInstanceValueEditor: React.FC<{
             );
           }}
           value={{ value: unitValue, label: unitValue }}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
       <div className="value-spec-editor__date-picker__custom-date__input">
@@ -1038,7 +1041,9 @@ const CustomDateInstanceValueEditor: React.FC<{
             );
           }}
           value={{ value: directionValue, label: directionValue }}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
       <div className="value-spec-editor__date-picker__custom-date__input">
@@ -1058,7 +1063,9 @@ const CustomDateInstanceValueEditor: React.FC<{
             changeValue(durationValue, unitValue, directionValue, val.value);
           }}
           value={{ value: referenceMomentValue, label: referenceMomentValue }}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
     </div>
@@ -1079,6 +1086,7 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
     setValueSpecification,
     setDatePickerOption,
   } = props;
+  const applicationStore = useApplicationStore();
   const selectorRef = useRef<SelectComponent>(null);
   const [unitValue, setUnitValue] = useState(
     customDateAdjustOptionValue instanceof CustomFirstDayOfOption
@@ -1130,7 +1138,9 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
             }
           }}
           value={unitValue ? { value: unitValue, label: unitValue } : null}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
     </div>
@@ -1151,6 +1161,7 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
     setValueSpecification,
     setDatePickerOption,
   } = props;
+  const applicationStore = useApplicationStore();
   const selectorRef = useRef<SelectComponent>(null);
   const [dayOfWeekValue, setDayOfWeekValue] = useState(
     customDateAdjustOptionValue instanceof CustomPreviousDayOfWeekOption
@@ -1200,7 +1211,9 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
               ? { value: dayOfWeekValue, label: dayOfWeekValue }
               : null
           }
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
     </div>

@@ -398,7 +398,10 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                     value={selectedServiceOption}
                     onChange={onServiceOptionChange}
                     placeholder="Search for service..."
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                     isClearable={true}
                     escapeClearsValue={true}
                     formatOptionLabel={formatServiceOptionLabel}
@@ -439,7 +442,10 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                     }
                     isClearable={true}
                     escapeClearsValue={true}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                   <button
                     className="service-query-setup__selector__action btn--dark"
