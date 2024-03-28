@@ -37,7 +37,8 @@
     "./ProjectReferenceConfigChecker": "./ProjectReferenceConfigChecker.js",
     "./TypescriptConfigUtils": "./TypescriptConfigUtils.js",
     "./WebpackConfigUtils": "./WebpackConfigUtils.js",
-    "./tsconfig.base.json": "./tsconfig.base.json"
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./DownloadServiceWorkerHelper.js": "./DownloadServiceWorkerHelper"
   },
   "types": "index.d.ts",
   "scripts": {

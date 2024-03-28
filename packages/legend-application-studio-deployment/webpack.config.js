@@ -39,7 +39,10 @@ export default (env, arg) => {
     enableReactFastRefresh: isEnvDevelopment,
     serviceWorkerConfig: {
       filename: 'ServiceWorker.js',
-      import: resolve(__dirname, './ServiceWorker.js'),
+      import: resolve(
+        __dirname,
+        '../../node_modules/@finos/legend-dev-utils/DownloadServiceWorkerHelper.js',
+      ),
     },
   });
   const config = {
