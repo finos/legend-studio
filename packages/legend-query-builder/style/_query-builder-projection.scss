@@ -148,6 +148,12 @@
 
   &__column__container {
     @include flexVCenter;
+
+    cursor: grab;
+
+    &--grabbing {
+      cursor: grabbing;
+    }
   }
 
   &__column--selected-from-context-menu {
@@ -166,49 +172,11 @@
 
   &__column__derivation {
     height: 100%;
-    width: 100%;
-    padding: 0.3rem;
+    flex: 4;
+    padding-left: 1rem;
 
     .lambda-editor__error-feedback {
       background: var(--color-red-200);
-    }
-  }
-
-  &__column__name {
-    @include flexVCenter;
-
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
-    height: 3.4rem;
-    flex: 1;
-
-    &__derivation {
-      flex: 2;
-      min-width: 5rem;
-      max-width: 20rem;
-    }
-
-    &__input {
-      padding: 0.5rem;
-      width: 100%;
-      height: 2.8rem;
-      line-height: 2.8rem;
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      color: var(--color-light-grey-200);
-
-      &:focus {
-        border: 0.1rem solid var(--color-blue-200);
-        outline: none;
-      }
-    }
-
-    &__property {
-      @include flexVCenter;
-
-      margin: 0 0.5rem;
-      width: calc(100% - 20.5rem);
-      height: 2.8rem;
     }
   }
 
@@ -217,17 +185,8 @@
 
     height: 100%;
     flex: 4;
-    min-width: 5rem;
-  }
-
-  &__column__value__property {
-    @include flexVCenter;
-
-    height: 3.4rem;
-    width: 100%;
-    padding-left: 1.1rem;
-    padding-right: 1rem;
-    min-width: 5rem;
+    min-width: 10rem;
+    padding: 0 1rem;
   }
 
   &__column__aggregate {

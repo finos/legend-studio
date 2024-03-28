@@ -505,7 +505,7 @@ test(
       cols.find((q) => queryByText(q, 'First Name')),
       `Can't find first name projectioncol`,
     );
-    let dragSource = getByTitle(firstNameCol, 'Drag Element');
+    let dragSource = firstNameCol;
     const postFilterDrop = getByText(
       postFilterPanel,
       `Add a post-filter condition`,
@@ -543,7 +543,7 @@ test(
       cols.find((q) => queryByText(q, 'Age')),
       `Can't find age projection col`,
     );
-    dragSource = getByTitle(ageNameCol, 'Drag Element');
+    dragSource = ageNameCol;
     fireEvent.dragStart(dragSource);
     fireEvent.dragEnter(postFilterPanel);
     fireEvent.dragOver(postFilterPanel);

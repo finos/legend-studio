@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { useCallback } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react';
 import {
   clsx,
   Dialog,
@@ -26,6 +32,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalFooterButton,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -368,6 +375,72 @@ export const QueryBuilderPropertyExpressionEditor = observer(
   },
 );
 
+export const QueryBuilderEditablePropertyName = observer(
+  (props: {
+    columnName: string;
+    changeColumnName?:
+      | ((event: ChangeEvent<HTMLInputElement>) => void)
+      | undefined;
+    error: string | undefined;
+    title: string;
+  }) => {
+    const { columnName, changeColumnName, error, title } = props;
+
+    const [isEditingColumnName, setIsEditingColumnName] = useState(false);
+    const columnNameInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      if (isEditingColumnName) {
+        columnNameInputRef.current?.focus();
+      }
+    }, [isEditingColumnName, columnNameInputRef]);
+
+    return isEditingColumnName ? (
+      <div className="query-builder__property__name__editor">
+        <InputWithInlineValidation
+          className="query-builder__property__name__editor__input input-group__input"
+          spellCheck={false}
+          value={columnName}
+          onChange={changeColumnName}
+          onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+            if (event.key === 'Enter') {
+              setIsEditingColumnName(false);
+            }
+          }}
+          onBlur={() => {
+            setIsEditingColumnName(false);
+          }}
+          error={error}
+          ref={columnNameInputRef}
+          draggable={true}
+          onDragStart={(e: React.DragEvent<HTMLInputElement>) => {
+            // The below 2 lines are to allow dragging to select text in the input instead of
+            // dragging the draggable element containing the input.
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        />
+      </div>
+    ) : (
+      <div className="query-builder__property__name__display" title={title}>
+        <span
+          className={clsx('query-builder__property__name__display__content', {
+            'query-builder__property__name__display__content--error': error,
+            'editable-value': changeColumnName,
+          })}
+          onClick={() => {
+            if (changeColumnName) {
+              setIsEditingColumnName(true);
+            }
+          }}
+        >
+          {columnName}
+        </span>
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderPropertyExpressionBadge = observer(
   (props: {
     columnName?: string;
@@ -375,14 +448,14 @@ export const QueryBuilderPropertyExpressionBadge = observer(
     onPropertyExpressionChange: (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ) => void;
-    setIsEditingColumnName?: (isEditing: boolean) => void;
-    error?: boolean | undefined;
+    changeColumnName?: (event: ChangeEvent<HTMLInputElement>) => void;
+    error?: string | undefined;
   }) => {
     const {
       columnName,
       propertyExpressionState,
       onPropertyExpressionChange,
-      setIsEditingColumnName,
+      changeColumnName,
       error,
     } = props;
     const type =
@@ -446,26 +519,12 @@ export const QueryBuilderPropertyExpressionBadge = observer(
               },
             )}
           >
-            <div
-              className="query-builder-property-expression-badge__property"
+            <QueryBuilderEditablePropertyName
+              columnName={columnName ?? propertyExpressionState.title}
+              changeColumnName={changeColumnName}
+              error={error}
               title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
-            >
-              <span
-                className={clsx(
-                  'query-builder-property-expression-badge__property__content',
-                  {
-                    'query-builder-property-expression-badge__property__content--error':
-                      error,
-                    'editable-value': !!setIsEditingColumnName,
-                  },
-                )}
-                onClick={() => {
-                  setIsEditingColumnName?.(true);
-                }}
-              >
-                {columnName ?? propertyExpressionState.title}
-              </span>
-            </div>
+            />
             {hasDerivedPropertyInExpression && (
               <button
                 className={clsx(
