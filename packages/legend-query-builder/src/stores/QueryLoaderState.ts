@@ -19,12 +19,13 @@ import {
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import {
-  type LightQuery,
   QuerySearchSpecification,
+  GRAPH_MANAGER_EVENT,
   type QueryInfo,
+  type LightQuery,
   type BasicGraphManagerState,
   type Query,
-  GRAPH_MANAGER_EVENT,
+  type RawLambda,
 } from '@finos/legend-graph';
 import {
   ActionState,
@@ -36,6 +37,7 @@ import {
 import { makeObservable, observable, action, flow } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type {
+  CuratedTemplateQuerySpecification,
   LoadQueryFilterOption,
   QueryBuilder_LegendApplicationPlugin_Extension,
 } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
@@ -73,8 +75,10 @@ export class QueryLoaderState {
   extraFilters = new Map<string, boolean>();
   extraFilterOptions: LoadQueryFilterOption[] = [];
   queries: LightQuery[] = [];
+  curatedTemplateQuerySepcifications: CuratedTemplateQuerySpecification[] = [];
 
   isQueryLoaderDialogOpen = false;
+  isCuratedTemplateToggled = false;
   showingDefaultQueries = true;
   showPreviewViewer = false;
   queryPreviewContent?: QueryInfo;
@@ -107,11 +111,14 @@ export class QueryLoaderState {
       showCurrentUserQueriesOnly: observable,
       showPreviewViewer: observable,
       searchText: observable,
+      isCuratedTemplateToggled: observable,
+      curatedTemplateQuerySepcifications: observable,
       setSearchText: action,
       setQueryLoaderDialogOpen: action,
       setQueries: action,
       setShowCurrentUserQueriesOnly: action,
       setShowPreviewViewer: action,
+      setIsCuratedTemplateToggled: action,
       searchQueries: flow,
       getPreviewQueryContent: flow,
       deleteQuery: flow,
@@ -132,6 +139,10 @@ export class QueryLoaderState {
     this.onQueryDeleted = options.onQueryDeleted;
     this.handleFetchDefaultQueriesFailure =
       options.handleFetchDefaultQueriesFailure;
+  }
+
+  setIsCuratedTemplateToggled(val: boolean): void {
+    this.isCuratedTemplateToggled = val;
   }
 
   setSearchText(val: string): void {
@@ -156,6 +167,7 @@ export class QueryLoaderState {
 
   reset(): void {
     this.setShowCurrentUserQueriesOnly(false);
+    this.setIsCuratedTemplateToggled(false);
   }
 
   *initialize(queryBuilderState: QueryBuilderState): GeneratorFn<void> {
@@ -174,6 +186,15 @@ export class QueryLoaderState {
     extraFilters.forEach(
       (filter) => filter && this.extraFilters.set(filter, false),
     );
+    this.curatedTemplateQuerySepcifications =
+      this.applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as QueryBuilder_LegendApplicationPlugin_Extension
+            ).getCuratedTemplateQuerySpecifications?.() ?? [],
+        );
   }
 
   *searchQueries(searchText: string): GeneratorFn<void> {
@@ -287,17 +308,42 @@ export class QueryLoaderState {
     }
   }
 
-  *getPreviewQueryContent(queryId: string): GeneratorFn<void> {
+  *getPreviewQueryContent(
+    queryId: string | undefined,
+    template?: {
+      queryName: string;
+      queryContent: RawLambda;
+    },
+  ): GeneratorFn<void> {
     this.previewQueryState.inProgress();
     try {
-      const queryInfo = (yield this.graphManagerState.graphManager.getQueryInfo(
-        queryId,
-      )) as QueryInfo;
-      this.queryPreviewContent = queryInfo;
-      this.queryPreviewContent.content =
-        (yield this.graphManagerState.graphManager.prettyLambdaContent(
-          queryInfo.content,
-        )) as string;
+      if (queryId) {
+        const queryInfo =
+          (yield this.graphManagerState.graphManager.getQueryInfo(
+            queryId,
+          )) as QueryInfo;
+        this.queryPreviewContent = queryInfo;
+        this.queryPreviewContent.content =
+          (yield this.graphManagerState.graphManager.prettyLambdaContent(
+            queryInfo.content,
+          )) as string;
+      } else if (template) {
+        this.queryPreviewContent = {
+          name: template.queryName,
+          id: '',
+          versionId: '',
+          groupId: '',
+          artifactId: '',
+          mapping: '',
+          runtime: '',
+          content: '',
+        } as QueryInfo;
+        this.queryPreviewContent.content =
+          (yield this.graphManagerState.graphManager.lambdaToPureCode(
+            template.queryContent,
+            true,
+          )) as string;
+      }
       this.previewQueryState.pass();
     } catch (error) {
       assertErrorThrown(error);
