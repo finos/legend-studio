@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.9.5
+
+### Patch Changes
+
+- [#3022](https://github.com/finos/legend-studio/pull/3022) [`88f77a667`](https://github.com/finos/legend-studio/commit/88f77a667e2ad277344af66a95e7adab9b1da07f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle model join by adding `SingleConnectionRuntime` and having DataElementReference point to Dataspace data.
+
 ## 31.9.4
 
 ### Patch Changes
