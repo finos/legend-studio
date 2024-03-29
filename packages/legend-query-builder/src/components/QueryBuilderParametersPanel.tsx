@@ -138,7 +138,7 @@ const VariableExpressionEditor = observer(
         varState,
         selectedMultiplicity.value,
       );
-      variableExpression_setName(varState, selectedName ?? '');
+      variableExpression_setName(varState, selectedName);
       if (isCreating) {
         queryParametersState.addParameter(lambdaParameterState);
       }

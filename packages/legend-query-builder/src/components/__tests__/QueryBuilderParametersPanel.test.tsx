@@ -346,12 +346,12 @@ test(
     fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
     // select Number from dropdown
     const typeContainer = guaranteeNonNullable(
-      renderResult.getByText('Type')?.parentElement,
+      renderResult.getByText('Type').parentElement,
     );
     selectFromCustomSelectorInput(typeContainer, 'Number');
     // select Optional from dropdown
     const multiplicityContainer = guaranteeNonNullable(
-      renderResult.getByText('Multiplicity')?.parentElement,
+      renderResult.getByText('Multiplicity').parentElement,
     );
     selectFromCustomSelectorInput(multiplicityContainer, '[0..1] - Optional');
     const createButton = renderResult.getByRole('button', { name: 'Create' });
@@ -417,12 +417,12 @@ test(
     fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
     // select Number from dropdown
     const typeContainer = guaranteeNonNullable(
-      renderResult.getByText('Type')?.parentElement,
+      renderResult.getByText('Type').parentElement,
     );
     selectFromCustomSelectorInput(typeContainer, 'Number');
     // select Optional from dropdown
     const multiplicityContainer = guaranteeNonNullable(
-      renderResult.getByText('Multiplicity')?.parentElement,
+      renderResult.getByText('Multiplicity').parentElement,
     );
     selectFromCustomSelectorInput(multiplicityContainer, '[0..1] - Optional');
     fireEvent.click(renderResult.getByRole('button', { name: 'Update' }));
@@ -487,12 +487,12 @@ test(
     fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
     // select Number from dropdown
     let typeContainer = guaranteeNonNullable(
-      renderResult.getByText('Type')?.parentElement,
+      renderResult.getByText('Type').parentElement,
     );
     selectFromCustomSelectorInput(typeContainer, 'Number');
     // select Optional from dropdown
     let multiplicityContainer = guaranteeNonNullable(
-      renderResult.getByText('Multiplicity')?.parentElement,
+      renderResult.getByText('Multiplicity').parentElement,
     );
     selectFromCustomSelectorInput(multiplicityContainer, '[0..1] - Optional');
     fireEvent.click(renderResult.getByRole('button', { name: 'Cancel' }));
@@ -516,11 +516,11 @@ test(
       await waitFor(() => renderResult.getByDisplayValue('var_1')),
     ).not.toBeNull();
     typeContainer = guaranteeNonNullable(
-      renderResult.getByText('Type')?.parentElement,
+      renderResult.getByText('Type').parentElement,
     );
     expect(getCustomSelectorInputValue(typeContainer)).toBe('String');
     multiplicityContainer = guaranteeNonNullable(
-      renderResult.getByText('Multiplicity')?.parentElement,
+      renderResult.getByText('Multiplicity').parentElement,
     );
     expect(getCustomSelectorInputValue(multiplicityContainer)).toBe(
       '[1] - Required',
