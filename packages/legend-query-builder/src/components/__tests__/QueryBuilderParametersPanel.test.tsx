@@ -309,6 +309,70 @@ test(
 
 test(
   integrationTest(
+    'Query builder uses modal values when creating new parameter',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+
+    // Create parameter and change values
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    const parameterNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('var_1'),
+    );
+    fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
+    // select Number from dropdown
+    const typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type')?.parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+    // select Optional from dropdown
+    const multiplicityContainer = guaranteeNonNullable(
+      renderResult.getByText('Multiplicity')?.parentElement,
+    );
+    selectFromCustomSelectorInput(multiplicityContainer, '[0..1] - Optional');
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Check values
+    expect(
+      await waitFor(() => getByText(parametersPanel, 'var_2')),
+    ).not.toBeNull();
+    expect(
+      await waitFor(() => getByText(parametersPanel, 'Number')),
+    ).not.toBeNull();
+    expect(
+      queryBuilderState.parametersState.parameterStates[0]?.parameter
+        .multiplicity,
+    ).toBe(Multiplicity.ZERO_ONE);
+  },
+);
+
+test(
+  integrationTest(
     'Query builder updates parameter when Apply button is clicked',
   ),
   async () => {

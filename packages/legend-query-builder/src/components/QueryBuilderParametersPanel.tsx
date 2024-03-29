@@ -133,15 +133,14 @@ const VariableExpressionEditor = observer(
     };
 
     const handleApply = (): void => {
+      lambdaParameterState.changeVariableType(selectedType.value);
+      lambdaParameterState.changeMultiplicity(
+        varState,
+        selectedMultiplicity.value,
+      );
+      variableExpression_setName(varState, selectedName ?? '');
       if (isCreating) {
         queryParametersState.addParameter(lambdaParameterState);
-      } else {
-        lambdaParameterState.changeVariableType(selectedType.value);
-        lambdaParameterState.changeMultiplicity(
-          varState,
-          selectedMultiplicity.value,
-        );
-        variableExpression_setName(varState, selectedName ?? '');
       }
       handleCancel();
     };
