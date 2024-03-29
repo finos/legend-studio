@@ -128,7 +128,7 @@ const VariableExpressionEditor = observer(
         : undefined;
 
     // modal lifecycle actions
-    const handleClose = (): void => {
+    const handleCancel = (): void => {
       queryParametersState.setSelectedParameter(undefined);
     };
 
@@ -143,13 +143,13 @@ const VariableExpressionEditor = observer(
         );
         variableExpression_setName(varState, selectedName ?? '');
       }
-      handleClose();
+      handleCancel();
     };
 
     return (
       <Dialog
         open={Boolean(lambdaParameterState)}
-        onClose={handleClose}
+        onClose={handleCancel}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -230,8 +230,8 @@ const VariableExpressionEditor = observer(
               onClick={handleApply}
             />
             <ModalFooterButton
-              onClick={handleClose}
-              text="Close"
+              onClick={handleCancel}
+              text="Cancel"
               type="secondary"
             />
           </ModalFooter>
