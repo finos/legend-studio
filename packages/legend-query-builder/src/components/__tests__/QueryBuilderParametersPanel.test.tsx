@@ -33,22 +33,19 @@ import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA_
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import {
   create_RawLambda,
-  PrimitiveType,
   PRIMITIVE_TYPE,
   stub_RawLambda,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
 import {
   MockedMonacoEditorInstance,
   MockedMonacoEditorAPI,
 } from '@finos/legend-lego/code-editor/test';
-import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
 
 test(
   integrationTest(
-    'Query builder shows validation error for parameter name if existing duplicate constant name',
+    'Query builder shows validation error for creating parameter name if existing duplicate constant name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -102,123 +99,6 @@ test(
     expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
       true,
     );
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder shows validation error for constant name if existing duplicate parameter name',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__simpleProjection.parameters,
-          TEST_DATA__simpleProjection.body,
-        ),
-      );
-      // NOTE: Render result will not currently find the
-      // 'show constant(s)' panel so we will directly force
-      // the panel to show for now
-      queryBuilderState.constantState.setShowConstantPanel(true);
-    });
-
-    await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
-    );
-    const constantsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
-    );
-
-    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-    });
-    const constantNameInput = renderResult.getByDisplayValue('c_var_1');
-    fireEvent.change(constantNameInput, { target: { value: 'var_1' } });
-    expect(
-      await waitFor(() =>
-        renderResult.getByText('Constant name already exists'),
-      ),
-    ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      true,
-    );
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder shows humanized date label value for constant variable with type Date',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__simpleProjection.parameters,
-          TEST_DATA__simpleProjection.body,
-        ),
-      );
-      queryBuilderState.constantState.setShowConstantPanel(true);
-    });
-
-    await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
-    );
-    const constantsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
-    );
-    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-      const selectedConstant = queryBuilderState.constantState.selectedConstant;
-      if (
-        selectedConstant instanceof QueryBuilderSimpleConstantExpressionState
-      ) {
-        selectedConstant.changeValSpecType(PrimitiveType.STRICTDATE);
-      }
-    });
-
-    await waitFor(() =>
-      renderResult.getByTitle('Click to edit and pick from more date options'),
-    );
-    fireEvent.click(
-      renderResult.getByTitle('Click to edit and pick from more date options'),
-    );
-
-    await waitFor(() =>
-      renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY),
-    );
-    fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY));
-
-    await waitFor(() => renderResult.getByText('Create'));
-    fireEvent.click(renderResult.getByText('Create'));
-
-    expect(
-      await waitFor(() =>
-        getByText(constantsPanel, CUSTOM_DATE_PICKER_OPTION.TODAY),
-      ),
-    ).not.toBeNull();
   },
 );
 
@@ -394,78 +274,6 @@ test(
     executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
     expect(getByText(executeDialog, 'Set Parameter Values'));
     expect(getByText(executeDialog, 'var_1')).toStrictEqual(parameterValue);
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder disables constant creation and shows validation error if invalid constant name',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__simpleProjection.parameters,
-          TEST_DATA__simpleProjection.body,
-        ),
-      );
-      queryBuilderState.constantState.setShowConstantPanel(true);
-    });
-
-    await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
-    );
-    const constantsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
-    );
-
-    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-    });
-    const constantNameInput = renderResult.getByDisplayValue('c_var_1');
-    fireEvent.change(constantNameInput, {
-      target: { value: '1startsWithNumber' },
-    });
-    expect(
-      await waitFor(() =>
-        renderResult.getByText(
-          'Constant name must be text with no spaces and not start with an uppercase letter or number',
-        ),
-      ),
-    ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      true,
-    );
-    fireEvent.change(constantNameInput, {
-      target: { value: 'validInput' },
-    });
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      false,
-    );
-    fireEvent.change(constantNameInput, {
-      target: { value: 'invalidInput!' },
-    });
-    expect(
-      await waitFor(() =>
-        renderResult.getByText(
-          'Constant name must be text with no spaces and not start with an uppercase letter or number',
-        ),
-      ),
-    ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      true,
-    );
   },
 );
 
