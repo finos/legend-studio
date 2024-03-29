@@ -52,15 +52,19 @@ import {
 import { STYLE_PREFIX, STYLE_PREFIX__DARK } from '@finos/legend-art';
 import { expect } from '@jest/globals';
 
+const getSelectorContainerClassName = (lightMode?: boolean): string =>
+  '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;
+
+const getSelectorInputClassName = (lightMode?: boolean): string =>
+  '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__single-value`;
+
 export const selectFromCustomSelectorInput = (
   selectorContainer: HTMLElement,
   optionText: string,
   lightMode?: boolean,
 ): void => {
-  const selectorContainerClassName =
-    '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;
-  const selectorInputValue =
-    '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__single-value`;
+  const selectorContainerClassName = getSelectorContainerClassName(lightMode);
+  const selectorInputValue = getSelectorInputClassName(lightMode);
 
   let foundOptionText = false;
   const selector = selectorContainer.querySelector(
@@ -104,6 +108,22 @@ export const selectFromCustomSelectorInput = (
       `The option is unavailable in the selector dropdown. Kindly review the input: ${optionText}`,
     );
   }
+};
+
+export const getCustomSelectorInputValue = (
+  selectorContainer: HTMLElement,
+  lightMode?: boolean,
+): string | null => {
+  const selectorContainerClassName = getSelectorContainerClassName(lightMode);
+  const selectorInputValue = getSelectorInputClassName(lightMode);
+
+  const selector = guaranteeNonNullable(
+    selectorContainer.querySelector(selectorContainerClassName),
+  ) as HTMLSelectElement;
+  const selectorInput = guaranteeNonNullable(
+    selector.querySelector(selectorInputValue),
+  );
+  return selectorInput.textContent;
 };
 
 export const dragAndDrop = async (
