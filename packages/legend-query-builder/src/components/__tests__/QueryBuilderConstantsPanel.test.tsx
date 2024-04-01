@@ -25,6 +25,7 @@ import {
   getAllByTitle,
   queryByText,
   getByDisplayValue,
+  getByRole,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -33,15 +34,14 @@ import {
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
-import {
-  PrimitiveType,
-  create_RawLambda,
-  stub_RawLambda,
-} from '@finos/legend-graph';
+import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
+import {
+  TEST__setUpQueryBuilder,
+  selectFromCustomSelectorInput,
+} from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(integrationTest('Query builder parameter default values'), async () => {
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -72,7 +72,7 @@ test(integrationTest('Query builder parameter default values'), async () => {
   expect(getByText(executeDialog, 'Set Parameter Values'));
   expect(getByText(executeDialog, 'var_1')).not.toBeNull();
   expect(getByPlaceholderText(executeDialog, '(empty)')).not.toBeNull();
-  fireEvent.click(getByText(executeDialog, 'Close'));
+  fireEvent.click(getByRole(executeDialog, 'button', { name: 'Close' }));
   // constants
   const constantPanel = renderResult.getByTestId(
     QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
@@ -89,7 +89,7 @@ test(integrationTest('Query builder parameter default values'), async () => {
   getByText(editConstantDiaglog, 'Update Constant');
   getByDisplayValue(editConstantDiaglog, 'c1');
   getByDisplayValue(editConstantDiaglog, 'value1');
-  fireEvent.click(getByText(editConstantDiaglog, 'Close'));
+  fireEvent.click(getByRole(editConstantDiaglog, 'button', { name: 'Cancel' }));
 
   // conert to derivation
   fireEvent.contextMenu(getByText(constantPanel, 'c1'));
@@ -105,6 +105,65 @@ test(integrationTest('Query builder parameter default values'), async () => {
   expect(queryByText(constantPanel, 'Calculated Constant')).toBeNull();
   getByText(constantPanel, 'Add a Constant');
 });
+
+test(
+  integrationTest(
+    'Query builder shows validation error for creating constant name if existing duplicate constant name',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show constant(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create first constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('c_var_1')),
+    ).not.toBeNull();
+    await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Create second constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    const constantNameInput = renderResult.getByDisplayValue('c_var_2');
+    fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+
+    // Check for validation error
+    expect(
+      await waitFor(() =>
+        renderResult.getByText('Constant name already exists'),
+      ),
+    ).not.toBeNull();
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Create' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  },
+);
 
 test(
   integrationTest(
@@ -138,6 +197,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
 
     await act(async () => {
@@ -145,16 +205,149 @@ test(
         return;
       }
     });
+
+    // Update constant name
     const constantNameInput = renderResult.getByDisplayValue('c_var_1');
     fireEvent.change(constantNameInput, { target: { value: 'var_1' } });
+
+    // Check for validation error
     expect(
       await waitFor(() =>
         renderResult.getByText('Constant name already exists'),
       ),
     ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      true,
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Create' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder shows validation error for updating constant name if existing duplicate constant name',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
     );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show constant(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create first constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('c_var_1')),
+    ).not.toBeNull();
+    await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Create second constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('c_var_2')),
+    ).not.toBeNull();
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Update second constant name
+    fireEvent.click(await waitFor(() => getByText(constantsPanel, 'c_var_2')));
+    await waitFor(() => renderResult.getByText('Update Constant'));
+    const constantNameInput = renderResult.getByDisplayValue('c_var_2');
+    fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+
+    // Check for validation error
+    expect(
+      await waitFor(() =>
+        renderResult.getByText('Constant name already exists'),
+      ),
+    ).not.toBeNull();
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Update' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder shows validation error for updating constant name if existing duplicate parameter name',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show constant(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('c_var_1')),
+    ).not.toBeNull();
+    await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Update constant name
+    fireEvent.click(await waitFor(() => getByText(constantsPanel, 'c_var_1')));
+    await waitFor(() => renderResult.getByText('Update Constant'));
+    const constantNameInput = renderResult.getByDisplayValue('c_var_1');
+    fireEvent.change(constantNameInput, { target: { value: 'var_1' } });
+
+    // Check for validation error
+    expect(
+      await waitFor(() =>
+        renderResult.getByText('Constant name already exists'),
+      ),
+    ).not.toBeNull();
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Update' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
   },
 );
 
@@ -205,15 +398,19 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      true,
-    );
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Create' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
     fireEvent.change(constantNameInput, {
       target: { value: 'validInput' },
     });
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      false,
-    );
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Create' })
+        .hasAttribute('disabled'),
+    ).toBe(false);
     fireEvent.change(constantNameInput, {
       target: { value: 'invalidInput!' },
     });
@@ -224,9 +421,11 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      true,
-    );
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Create' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
   },
 );
 
@@ -264,13 +463,13 @@ test(
       if (!queryBuilderState.constantState.selectedConstant) {
         return;
       }
-      const selectedConstant = queryBuilderState.constantState.selectedConstant;
-      if (
-        selectedConstant instanceof QueryBuilderSimpleConstantExpressionState
-      ) {
-        selectedConstant.changeValSpecType(PrimitiveType.STRICTDATE);
-      }
     });
+
+    // select Number from dropdown
+    const typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'StrictDate');
 
     await waitFor(() =>
       renderResult.getByTitle('Click to edit and pick from more date options'),
@@ -283,9 +482,15 @@ test(
       renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY),
     );
     fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY));
-
-    await waitFor(() => renderResult.getByText('Create'));
-    fireEvent.click(renderResult.getByText('Create'));
+    fireEvent.keyDown(
+      renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+    await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     expect(
       await waitFor(() =>
