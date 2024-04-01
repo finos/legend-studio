@@ -388,8 +388,26 @@ const NumberPrimitiveInstanceValueEditor = observer(
       ? Number.parseInt(Number(value).toString(), 10)
       : Number(value);
 
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    const updateValueSpecification = (val: string): void => {
+      const parsedValue = isInteger
+        ? Number.parseInt(Number(val).toString(), 10)
+        : Number(val);
+      if (!isNaN(parsedValue) && parsedValue !== valueSpecification.values[0]) {
+        instanceValue_setValue(
+          valueSpecification,
+          parsedValue,
+          0,
+          obseverContext,
+        );
+        setValueSpecification(valueSpecification);
+      }
+    };
+
+    const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
       setValue(event.target.value);
+      updateValueSpecification(event.target.value);
     };
 
     // Support expression evaluation
@@ -397,15 +415,16 @@ const NumberPrimitiveInstanceValueEditor = observer(
       if (isNaN(numericValue)) {
         try {
           const calculatedValue = guaranteeIsNumber(evaluate(value));
-          setValue(
-            isInteger
-              ? Number.parseInt(calculatedValue.toString(), 10).toString()
-              : Number(calculatedValue).toString(),
-          );
+          updateValueSpecification(calculatedValue.toString());
+          setValue(calculatedValue.toString());
         } catch {
+          updateValueSpecification(
+            (valueSpecification.values[0] as number).toString(),
+          );
           setValue((valueSpecification.values[0] as number).toString());
         }
       } else {
+        updateValueSpecification(numericValue.toString());
         setValue(numericValue.toString());
       }
     };
@@ -420,28 +439,13 @@ const NumberPrimitiveInstanceValueEditor = observer(
     };
 
     useEffect(() => {
-      setValue((valueSpecification.values[0] as number).toString());
-    }, [valueSpecification.values]);
-
-    useEffect(() => {
       if (
         !isNaN(numericValue) &&
         numericValue !== valueSpecification.values[0]
       ) {
-        instanceValue_setValue(
-          valueSpecification,
-          numericValue,
-          0,
-          obseverContext,
-        );
-        setValueSpecification(valueSpecification);
+        setValue((valueSpecification.values[0] as number).toString());
       }
-    }, [
-      numericValue,
-      valueSpecification,
-      setValueSpecification,
-      obseverContext,
-    ]);
+    }, [numericValue, valueSpecification]);
 
     return (
       <div className={clsx('value-spec-editor', className)}>
@@ -453,7 +457,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
             type="text" // NOTE: we leave this as text so that we can support expression evaluation
             inputMode="numeric"
             value={value}
-            onChange={changeValue}
+            onChange={handleInputChange}
             onBlur={calculateExpression}
             onKeyDown={onKeyDown}
           />

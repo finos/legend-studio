@@ -140,10 +140,10 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     const resetConstantValue = (): void => {
       const valSpec = buildDefaultInstanceValue(
         queryBuilderState.graphManagerState.graph,
-        stateType,
+        selectedType.value,
         queryBuilderState.observerContext,
       );
-      constantState.setValueSpec(valSpec);
+      setSelectedValue(valSpec);
     };
 
     return (
@@ -208,8 +208,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                 <BasicValueSpecificationEditor
                   valueSpecification={selectedValue}
                   setValueSpecification={(val: ValueSpecification): void => {
-                    setSelectedValue(val);
-                    // setSelectedValue(val);
+                    setSelectedValue(deepClone(val));
                   }}
                   graph={queryBuilderState.graphManagerState.graph}
                   obseverContext={queryBuilderState.observerContext}
