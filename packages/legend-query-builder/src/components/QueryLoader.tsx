@@ -119,13 +119,13 @@ export const QueryLoader = observer(
             : [],
         )
         .flat();
-    const loadCuratedTemplateQuery = guaranteeNonNullable(
+    const loadCuratedTemplateQuery =
       queryLoaderState.curatedTemplateQuerySepcifications
         // already using an arrow function suggested by @typescript-eslint/unbound-method
         // eslint-disable-next-line
         .map((s) => () => s.loadCuratedTemplateQuery)
-        .filter(isNonNullable)[0],
-    );
+        .filter(isNonNullable)[0];
+
     const [isMineOnly, setIsMineOnly] = useState(false);
     const [showQueryNameEditInput, setShowQueryNameEditInput] = useState<
       number | undefined
@@ -520,6 +520,7 @@ export const QueryLoader = observer(
                     ))}
                 {queryLoaderState.queryBuilderState &&
                   queryLoaderState.isCuratedTemplateToggled &&
+                  loadCuratedTemplateQuery &&
                   curatedTemplateQueries
                     .slice(0, QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
                     .map((templateQuery, idx) => (
