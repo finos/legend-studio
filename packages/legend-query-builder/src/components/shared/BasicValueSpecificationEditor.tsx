@@ -421,7 +421,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     useEffect(() => {
       setValue((valueSpecification.values[0] as number).toString());
-    }, [valueSpecification]);
+    }, [valueSpecification.values]);
 
     useEffect(() => {
       if (

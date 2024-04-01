@@ -208,9 +208,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                 <BasicValueSpecificationEditor
                   valueSpecification={selectedValue}
                   setValueSpecification={(val: ValueSpecification): void => {
-                    if (val.hashCode !== selectedValue.hashCode) {
-                      setSelectedValue(deepClone(val));
-                    }
+                    setSelectedValue(val);
                     // setSelectedValue(val);
                   }}
                   graph={queryBuilderState.graphManagerState.graph}
