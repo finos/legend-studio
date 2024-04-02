@@ -869,3 +869,61 @@ test(
     ).not.toBeNull();
   },
 );
+
+test(
+  integrationTest(
+    'Query builder constant modal evaluates expressions for numeric type',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create parameter
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    await waitFor(() => renderResult.getByText('Create Constant'));
+
+    // Set Number type
+    const typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+
+    // Set value
+    const valueInput = renderResult.getByDisplayValue('0');
+    fireEvent.change(valueInput, { target: { value: '1 + 2' } });
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('1 + 2')),
+    ).not.toBeNull();
+    fireEvent.keyDown(valueInput, {
+      key: 'Enter',
+      code: 'Enter',
+    });
+
+    // Verify expression is evaluated
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('3')),
+    ).not.toBeNull();
+  },
+);
