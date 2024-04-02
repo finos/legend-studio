@@ -54,12 +54,13 @@ import {
   type QueryBuilderConstantExpressionState,
   QueryBuilderSimpleConstantExpressionState,
   QueryBuilderCalculatedConstantExpressionState,
+  cloneQueryBuilderConstantLambdaEditorState,
 } from '../stores/QueryBuilderConstantsState.js';
 import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEditorHelper.js';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaEditor } from './shared/LambdaEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
@@ -244,8 +245,17 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
     const { constantState } = props;
     const queryBuilderState = constantState.queryBuilderState;
     const lambdaState = constantState.lambdaState;
-    const close = (): void =>
+    const lambdaStateCopy = useMemo(
+      () => cloneQueryBuilderConstantLambdaEditorState(lambdaState),
+      [lambdaState],
+    );
+    const handleCancel = (): void => {
       queryBuilderState.constantState.setSelectedConstant(undefined);
+    };
+    const handleApply = (): void => {
+      constantState.lambdaState = lambdaStateCopy;
+      handleCancel();
+    };
     const applicationStore = queryBuilderState.applicationStore;
     const changeConstantName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
@@ -254,15 +264,15 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
     };
     useEffect(() => {
       flowResult(
-        lambdaState.convertLambdaObjectToGrammarString({
+        lambdaStateCopy.convertLambdaObjectToGrammarString({
           pretty: true,
         }),
       ).catch(applicationStore.alertUnhandledError);
-    }, [applicationStore, lambdaState]);
+    }, [applicationStore, lambdaStateCopy]);
     return (
       <Dialog
         open={true}
-        onClose={close}
+        onClose={handleCancel}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -275,13 +285,13 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
           }
           className={clsx('editor-modal query-builder__constants__modal', {
             'query-builder__constants__modal--has-error': Boolean(
-              lambdaState.parserError,
+              lambdaStateCopy.parserError,
             ),
           })}
         >
           <ModalHeader>
             <div className="modal__title">Update Calculated Constants</div>
-            {lambdaState.parserError && (
+            {lambdaStateCopy.parserError && (
               <div className="modal__title__error-badge">
                 Failed to parse query
               </div>
@@ -290,7 +300,7 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
           <ModalBody>
             <div
               className={clsx('query-builder__constants__modal__content', {
-                backdrop__element: Boolean(lambdaState.parserError),
+                backdrop__element: Boolean(lambdaStateCopy.parserError),
               })}
             >
               <div className="query-builder__constants__modal__name">
@@ -305,9 +315,9 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
               <LambdaEditor
                 className="query-builder__constants__lambda-editor"
                 disabled={
-                  lambdaState.convertingLambdaToStringState.isInProgress
+                  lambdaStateCopy.convertingLambdaToStringState.isInProgress
                 }
-                lambdaEditorState={lambdaState}
+                lambdaEditorState={lambdaStateCopy}
                 forceBackdrop={false}
                 autoFocus={true}
               />
@@ -315,11 +325,19 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              text="Close"
-              onClick={close}
-              disabled={Boolean(lambdaState.parserError)}
+              className="btn btn--dark"
+              onClick={handleApply}
+              disabled={Boolean(lambdaStateCopy.parserError)}
+            >
+              Apply
+            </ModalFooterButton>
+            <ModalFooterButton
+              className="btn btn--dark"
+              onClick={handleCancel}
               type="secondary"
-            />
+            >
+              Cancel
+            </ModalFooterButton>
           </ModalFooter>
         </Modal>
       </Dialog>

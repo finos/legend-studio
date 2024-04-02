@@ -45,6 +45,7 @@ import {
   changeEntry,
   assertTrue,
   ActionState,
+  deepClone,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
@@ -386,3 +387,14 @@ export class QueryBuilderConstantsState implements Hashable {
     ]);
   }
 }
+
+export const cloneQueryBuilderConstantLambdaEditorState = (
+  state: QueryBuilderConstantLambdaEditorState,
+): QueryBuilderConstantLambdaEditorState => {
+  const clonedState = new QueryBuilderConstantLambdaEditorState(
+    deepClone(state.calculatedState),
+  );
+  clonedState.lambdaString = state.lambdaString;
+  clonedState.parserError = deepClone(state.parserError);
+  return clonedState;
+};
