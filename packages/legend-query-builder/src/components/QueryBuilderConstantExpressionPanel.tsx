@@ -133,7 +133,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     };
 
     const handleApply = (): void => {
-      variableExpression_setName(varExpression, selectedName ?? '');
+      variableExpression_setName(varExpression, selectedName);
       constantState.changeValSpecType(selectedType.value);
       constantState.setValueSpec(selectedValue);
       if (isCreating) {
