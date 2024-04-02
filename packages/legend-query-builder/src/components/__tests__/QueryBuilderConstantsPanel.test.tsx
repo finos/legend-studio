@@ -418,7 +418,7 @@ test(
 
 test(
   integrationTest(
-    'Query builder updates constant when Apply button is clicked',
+    'Query builder updates constant when Update button is clicked',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -446,7 +446,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
-    // Create parameter
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
     const createButton = renderResult.getByRole('button', { name: 'Create' });
@@ -737,7 +737,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
-    // Create parameter
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
 
@@ -794,7 +794,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
-    // Create parameter
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
 
@@ -851,7 +851,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
-    // Create parameter
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
 
@@ -905,7 +905,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
-    // Create parameter
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
 
@@ -963,7 +963,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
-    // Create parameter
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
 
@@ -1031,7 +1031,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
-    // Create parameter
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
 
@@ -1083,7 +1083,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
 
-    // Create parameter
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
 
