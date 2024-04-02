@@ -44,6 +44,7 @@ import {
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
 test(integrationTest('Query builder parameter default values'), async () => {
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -337,6 +338,97 @@ test(
     fireEvent.click(await waitFor(() => getByText(constantsPanel, 'c_var_1')));
     await waitFor(() => renderResult.getByText('Update Constant'));
     const constantNameInput = renderResult.getByDisplayValue('c_var_1');
+    fireEvent.change(constantNameInput, { target: { value: 'var_1' } });
+
+    // Check for validation error
+    expect(
+      await waitFor(() =>
+        renderResult.getByText('Constant name already exists'),
+      ),
+    ).not.toBeNull();
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Update' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder shows validation error for updating derived constant name if existing duplicate constant or parameter name',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show constant(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create first constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('c_var_1')),
+    ).not.toBeNull();
+    await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Create second constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('c_var_2')),
+    ).not.toBeNull();
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Convert second constant to derived
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+    fireEvent.contextMenu(
+      await waitFor(() => getByText(constantsPanel, 'c_var_2')),
+    );
+    fireEvent.click(renderResult.getByText('Convert To Derivation'));
+
+    // Update second constant name to existing constant name
+    fireEvent.click(await waitFor(() => getByText(constantsPanel, 'c_var_2')));
+    await waitFor(() => renderResult.getByText('Update Calculated Constants'));
+    const constantNameInput = renderResult.getByDisplayValue('c_var_2');
+    fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+
+    // Check for validation error
+    expect(
+      await waitFor(() =>
+        renderResult.getByText('Constant name already exists'),
+      ),
+    ).not.toBeNull();
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Update' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+
+    // Update second constant name to existing parameter name
     fireEvent.change(constantNameInput, { target: { value: 'var_1' } });
 
     // Check for validation error

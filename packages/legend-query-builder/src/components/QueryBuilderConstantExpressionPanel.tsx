@@ -359,7 +359,7 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
               onClick={handleApply}
               disabled={Boolean(lambdaStateCopy.parserError) || !isNameValid}
             >
-              Apply
+              Update
             </ModalFooterButton>
             <ModalFooterButton
               className="btn btn--dark"
