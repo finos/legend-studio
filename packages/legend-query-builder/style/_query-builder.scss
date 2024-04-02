@@ -722,10 +722,6 @@
     }
 
     &__name {
-      @include flexVCenter;
-
-      padding-bottom: 0.5rem;
-      padding-top: 0.5rem;
       height: 3.4rem;
 
       &__input {
@@ -740,6 +736,10 @@
           border: 0.1rem solid var(--color-blue-200);
           outline: none;
         }
+      }
+
+      .panel__content__form__section {
+        padding: 0;
       }
     }
   }

@@ -25,7 +25,6 @@ import {
   CustomSelectorInput,
   Dialog,
   InfoCircleIcon,
-  InputWithInlineValidation,
   Modal,
   ModalBody,
   ModalFooter,
@@ -66,6 +65,20 @@ import { LambdaEditor } from './shared/LambdaEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { flowResult } from 'mobx';
 
+const getConstantNameValidationMessage = (
+  constantInput: string,
+  allVariableNames: string[],
+  stateName: string,
+): string | undefined =>
+  !constantInput
+    ? `Constant name can't be empty`
+    : isValidIdentifier(constantInput) === false
+    ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
+    : allVariableNames.filter((e) => e === constantInput).length > 0 &&
+      constantInput !== stateName
+    ? 'Constant name already exists'
+    : undefined;
+
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
 const QueryBuilderSimpleConstantExpressionEditor = observer(
@@ -83,15 +96,6 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     const stateName = varExpression.name;
     const [selectedName, setSelectedName] = useState(stateName);
     const [isNameValid, setIsNameValid] = useState<boolean>(true);
-    const getValidationMessage = (constantInput: string): string | undefined =>
-      !constantInput
-        ? `Constant name can't be empty`
-        : isValidIdentifier(constantInput) === false
-        ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
-        : allVariableNames.filter((e) => e === constantInput).length > 0 &&
-          constantInput !== stateName
-        ? 'Constant name already exists'
-        : undefined;
 
     // Value
     const stateValue = constantState.value;
@@ -173,7 +177,13 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
               update={(value: string | undefined): void => {
                 setSelectedName(value ?? '');
               }}
-              validate={getValidationMessage}
+              validate={(constantInput: string) =>
+                getConstantNameValidationMessage(
+                  constantInput,
+                  allVariableNames,
+                  stateName,
+                )
+              }
               onValidate={(issue: string | undefined) => setIsNameValid(!issue)}
               value={selectedName}
               isReadOnly={false}
@@ -242,26 +252,33 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
 
 const QuerryBuilderCalculatedConstantExpressionEditor = observer(
   (props: { constantState: QueryBuilderCalculatedConstantExpressionState }) => {
+    // Read current state
     const { constantState } = props;
     const queryBuilderState = constantState.queryBuilderState;
     const lambdaState = constantState.lambdaState;
+    const applicationStore = queryBuilderState.applicationStore;
+    const allVariableNames = queryBuilderState.allVariableNames;
+    const stateName = constantState.variable.name;
+
+    // Set up temporary state for modal lifecycle
+    const [name, setName] = useState(stateName);
+    const [isNameValid, setIsNameValid] = useState<boolean>(true);
     const lambdaStateCopy = useMemo(
       () => cloneQueryBuilderConstantLambdaEditorState(lambdaState),
       [lambdaState],
     );
+
+    // Modal lifecycle actions
     const handleCancel = (): void => {
       queryBuilderState.constantState.setSelectedConstant(undefined);
     };
+
     const handleApply = (): void => {
+      variableExpression_setName(constantState.variable, name);
       constantState.lambdaState = lambdaStateCopy;
       handleCancel();
     };
-    const applicationStore = queryBuilderState.applicationStore;
-    const changeConstantName: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      variableExpression_setName(constantState.variable, event.target.value);
-    };
+
     useEffect(() => {
       flowResult(
         lambdaStateCopy.convertLambdaObjectToGrammarString({
@@ -269,6 +286,7 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
         }),
       ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, lambdaStateCopy]);
+
     return (
       <Dialog
         open={true}
@@ -304,12 +322,24 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
               })}
             >
               <div className="query-builder__constants__modal__name">
-                <InputWithInlineValidation
+                <PanelFormValidatedTextField
+                  value={name}
+                  isReadOnly={false}
                   className="query-builder__constants__modal__name__input input--dark"
-                  spellCheck={false}
-                  value={constantState.variable.name}
-                  onChange={changeConstantName}
                   placeholder="Constant Name"
+                  update={(value: string | undefined): void => {
+                    setName(value ?? '');
+                  }}
+                  validate={(constantInput: string) =>
+                    getConstantNameValidationMessage(
+                      constantInput,
+                      allVariableNames,
+                      stateName,
+                    )
+                  }
+                  onValidate={(issue: string | undefined) =>
+                    setIsNameValid(!issue)
+                  }
                 />
               </div>
               <LambdaEditor
@@ -327,7 +357,7 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
             <ModalFooterButton
               className="btn btn--dark"
               onClick={handleApply}
-              disabled={Boolean(lambdaStateCopy.parserError)}
+              disabled={Boolean(lambdaStateCopy.parserError) || !isNameValid}
             >
               Apply
             </ModalFooterButton>
