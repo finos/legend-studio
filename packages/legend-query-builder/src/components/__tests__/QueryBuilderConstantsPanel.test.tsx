@@ -352,6 +352,64 @@ test(
 );
 
 test(
+  integrationTest('Query builder uses modal values when creating new constant'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show constant(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create constant and change values
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    await waitFor(() => renderResult.getByText('Create Constant'));
+    const constantNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('c_var_1'),
+    );
+    fireEvent.change(constantNameInput, { target: { value: 'c_var_2' } });
+    // select Number from dropdown
+    const typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+    // enter value
+    const constantValueInput = await waitFor(() =>
+      renderResult.getByDisplayValue('0'),
+    );
+    fireEvent.change(constantValueInput, { target: { value: '5' } });
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Check values
+    expect(
+      await waitFor(() => getByText(constantsPanel, 'c_var_2')),
+    ).not.toBeNull();
+    expect(await waitFor(() => getByText(constantsPanel, '5'))).not.toBeNull();
+  },
+);
+
+test(
   integrationTest(
     'Query builder disables constant creation and shows validation error if invalid constant name',
   ),
