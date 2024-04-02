@@ -111,7 +111,7 @@ test(integrationTest('Query builder parameter default values'), async () => {
 
 test(
   integrationTest(
-    'Query builder shows validation error for creating constant name if existing duplicate constant name',
+    'Query builder shows validation error for creating constant name if existing duplicate constant or parameter name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -152,6 +152,8 @@ test(
     // Create second constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     const constantNameInput = renderResult.getByDisplayValue('c_var_2');
+
+    // Set value to existing constant name
     fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
 
     // Check for validation error
@@ -165,52 +167,8 @@ test(
         .getByRole('button', { name: 'Create' })
         .hasAttribute('disabled'),
     ).toBe(true);
-  },
-);
 
-test(
-  integrationTest(
-    'Query builder shows validation error for creating constant name if existing duplicate parameter name',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__simpleProjection.parameters,
-          TEST_DATA__simpleProjection.body,
-        ),
-      );
-      // NOTE: Render result will not currently find the
-      // 'show constant(s)' panel so we will directly force
-      // the panel to show for now
-      queryBuilderState.constantState.setShowConstantPanel(true);
-    });
-
-    await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
-    );
-    const constantsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
-    );
-
-    // Create constant
-    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-    });
-
-    // Update constant name
-    const constantNameInput = renderResult.getByDisplayValue('c_var_1');
+    // Set value to existing parameter name
     fireEvent.change(constantNameInput, { target: { value: 'var_1' } });
 
     // Check for validation error
@@ -229,7 +187,7 @@ test(
 
 test(
   integrationTest(
-    'Query builder shows validation error for updating constant name if existing duplicate constant name',
+    'Query builder shows validation error for updating constant name if existing duplicate constant or parameter name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -274,7 +232,7 @@ test(
     ).not.toBeNull();
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
-    // Update second constant name
+    // Update second constant name to existing constant name
     fireEvent.click(await waitFor(() => getByText(constantsPanel, 'c_var_2')));
     await waitFor(() => renderResult.getByText('Update Constant'));
     const constantNameInput = renderResult.getByDisplayValue('c_var_2');
@@ -291,53 +249,8 @@ test(
         .getByRole('button', { name: 'Update' })
         .hasAttribute('disabled'),
     ).toBe(true);
-  },
-);
 
-test(
-  integrationTest(
-    'Query builder shows validation error for updating constant name if existing duplicate parameter name',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__simpleProjection.parameters,
-          TEST_DATA__simpleProjection.body,
-        ),
-      );
-      // NOTE: Render result will not currently find the
-      // 'show constant(s)' panel so we will directly force
-      // the panel to show for now
-      queryBuilderState.constantState.setShowConstantPanel(true);
-    });
-
-    await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
-    );
-    const constantsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
-    );
-
-    // Create constant
-    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('c_var_1')),
-    ).not.toBeNull();
-    await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
-    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
-
-    // Update constant name
-    fireEvent.click(await waitFor(() => getByText(constantsPanel, 'c_var_1')));
-    await waitFor(() => renderResult.getByText('Update Constant'));
-    const constantNameInput = renderResult.getByDisplayValue('c_var_1');
+    // Update second constant name to existing parameter name
     fireEvent.change(constantNameInput, { target: { value: 'var_1' } });
 
     // Check for validation error
