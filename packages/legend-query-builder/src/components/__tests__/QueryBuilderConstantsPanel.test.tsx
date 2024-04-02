@@ -700,3 +700,60 @@ test(
     ).not.toBeNull();
   },
 );
+
+test(
+  integrationTest(
+    'Query builder constant modal resets numeric value when changing between numeric types',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create parameter
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    await waitFor(() => renderResult.getByText('Create Constant'));
+
+    // Set Number type
+    const typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+
+    // Set value
+    const valueInput = renderResult.getByDisplayValue('0');
+    fireEvent.change(valueInput, { target: { value: '5' } });
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('5')),
+    ).not.toBeNull();
+
+    // Set Integer type
+    selectFromCustomSelectorInput(typeContainer, 'Integer');
+
+    // Verify value is reset to 0
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('0')),
+    ).not.toBeNull();
+  },
+);
