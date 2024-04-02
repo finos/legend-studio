@@ -38,6 +38,7 @@ import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__setUpQueryBuilder,
+  getCustomSelectorInputValue,
   selectFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
@@ -433,7 +434,7 @@ test(
     });
 
     await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
     );
     const constantsPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
@@ -470,6 +471,83 @@ test(
     ).not.toBeNull();
     expect(
       await waitFor(() => getByText(constantsPanel, 'true')),
+    ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    "Query builder doesn't update constant when Cancel button is clicked",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    await waitFor(() => renderResult.getByText('Create Constant'));
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Update constant values
+    fireEvent.click(getByText(constantsPanel, 'c_var_1'));
+    await waitFor(() => renderResult.getByText('Update Constant'));
+    const constantNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('c_var_1'),
+    );
+    fireEvent.change(constantNameInput, { target: { value: 'c_var_2' } });
+    // select Number from dropdown
+    let typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+    // enter number for value
+    const constantValueInput = await waitFor(() =>
+      renderResult.getByDisplayValue('0'),
+    );
+    fireEvent.change(constantValueInput, { target: { value: '5' } });
+    fireEvent.click(renderResult.getByRole('button', { name: 'Cancel' }));
+
+    // Check values are the same
+    expect(
+      await waitFor(() => getByText(constantsPanel, 'c_var_1')),
+    ).not.toBeNull();
+    expect(await waitFor(() => queryByText(constantsPanel, '5'))).toBeNull();
+
+    // Check modal still contains state values
+    fireEvent.click(getByText(constantsPanel, 'c_var_1'));
+    await waitFor(() => renderResult.getByText('Update Constant'));
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('c_var_1')),
+    ).not.toBeNull();
+    typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    expect(getCustomSelectorInputValue(typeContainer)).toBe('String');
+    expect(
+      await waitFor(() => renderResult.getByPlaceholderText('(empty)')),
     ).not.toBeNull();
   },
 );
