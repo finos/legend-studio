@@ -411,6 +411,71 @@ test(
 
 test(
   integrationTest(
+    'Query builder updates constant when Apply button is clicked',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create parameter
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    await waitFor(() => renderResult.getByText('Create Constant'));
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Update consant values
+    fireEvent.click(getByText(constantsPanel, 'c_var_1'));
+    await waitFor(() => renderResult.getByText('Update Constant'));
+    const parameterNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('c_var_1'),
+    );
+    fireEvent.change(parameterNameInput, { target: { value: 'c_var_2' } });
+    // select Boolean from dropdown
+    const typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Boolean');
+    // set value to true
+    const valueToggle = guaranteeNonNullable(
+      renderResult.getByText('Value').parentElement?.querySelector('button'),
+    );
+    fireEvent.click(valueToggle);
+    fireEvent.click(renderResult.getByRole('button', { name: 'Update' }));
+
+    // Check new values
+    expect(
+      await waitFor(() => getByText(constantsPanel, 'c_var_2')),
+    ).not.toBeNull();
+    expect(
+      await waitFor(() => getByText(constantsPanel, 'true')),
+    ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
     'Query builder disables constant creation and shows validation error if invalid constant name',
   ),
   async () => {
