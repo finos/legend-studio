@@ -110,6 +110,22 @@ export const selectFromCustomSelectorInput = (
   }
 };
 
+export const selectFirstOptionFromCustomSelectorInput = (
+  selectorContainer: HTMLElement,
+  lightMode?: boolean,
+): void => {
+  const selectorContainerClassName = getSelectorContainerClassName(lightMode);
+  const selectorInputValue = getSelectorInputClassName(lightMode);
+
+  const selector = selectorContainer.querySelector(
+    selectorContainerClassName,
+  ) as HTMLSelectElement;
+
+  fireEvent.keyDown(selector, { key: 'ArrowDown' });
+  fireEvent.keyDown(selector, { key: 'Enter' });
+  expect(selector.querySelector(selectorInputValue)).not.toBeNull();
+};
+
 export const getCustomSelectorInputValue = (
   selectorContainer: HTMLElement,
   lightMode?: boolean,
