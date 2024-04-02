@@ -995,3 +995,55 @@ test(
     ).not.toBeNull();
   },
 );
+
+test(
+  integrationTest(
+    'Query builder constant modal reset button resets string type constant value',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create parameter
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    await waitFor(() => renderResult.getByText('Create Constant'));
+
+    // Set value
+    const valueInput = renderResult.getByPlaceholderText('(empty)');
+    fireEvent.change(valueInput, { target: { value: 'test string value' } });
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('test string value')),
+    ).not.toBeNull();
+
+    // Click reset button
+    const resetButton = renderResult.getByRole('button', { name: 'Reset' });
+    fireEvent.click(resetButton);
+
+    // Verify value is reset
+    expect(
+      await waitFor(() => renderResult.getByPlaceholderText('(empty)')),
+    ).not.toBeNull();
+  },
+);

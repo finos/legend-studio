@@ -190,6 +190,7 @@ const VariableExpressionParameterEditor = observer(
 
             <button
               className="value-spec-editor__variable__reset-btn"
+              name="Reset"
               title="Reset"
               onClick={resetValue}
             >
@@ -310,6 +311,7 @@ const StringPrimitiveInstanceValueEditor = observer(
         )}
         <button
           className="value-spec-editor__reset-btn"
+          name="Reset"
           title="Reset"
           onClick={resetValue}
         >
@@ -353,6 +355,7 @@ const BooleanPrimitiveInstanceValueEditor = observer(
         </button>
         <button
           className="value-spec-editor__reset-btn"
+          name="Reset"
           title="Reset"
           onClick={resetValue}
         >
@@ -473,6 +476,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
         </div>
         <button
           className="value-spec-editor__reset-btn"
+          name="Reset"
           title="Reset"
           onClick={resetValue}
         >
@@ -528,6 +532,7 @@ const EnumValueInstanceValueEditor = observer(
         />
         <button
           className="value-spec-editor__reset-btn"
+          name="Reset"
           title="Reset"
           onClick={resetValue}
         >
@@ -864,6 +869,7 @@ const CollectionValueInstanceValueEditor = observer(
             </button>
             <button
               className="value-spec-editor__reset-btn"
+              name="Reset"
               title="Reset"
               onClick={resetValue}
             >
@@ -924,6 +930,7 @@ const DateInstanceValueEditor = observer(
         />
         <button
           className="value-spec-editor__reset-btn"
+          name="Reset"
           title="Reset"
           onClick={resetValue}
         >
