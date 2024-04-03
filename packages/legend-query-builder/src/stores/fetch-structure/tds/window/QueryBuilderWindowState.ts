@@ -247,6 +247,10 @@ export class QueryBuilderWindowColumnState
     addUniqueEntry(this.windowColumns, val);
   }
 
+  setWindows(val: QueryBuilderTDSColumnState[]): void {
+    this.windowColumns = val;
+  }
+
   deleteWindow(val: QueryBuilderTDSColumnState): void {
     deleteEntry(this.windowColumns, val);
   }
