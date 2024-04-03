@@ -33,9 +33,6 @@ import {
   PrimitiveType,
   type VariableExpression,
   type ValueSpecification,
-  PrimitiveInstanceValue,
-  GenericType,
-  GenericTypeExplicitReference,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useState } from 'react';
@@ -153,14 +150,7 @@ export const QueryBuilderWatermarkEditor = observer(
     };
 
     const handleResetValue = (): void => {
-      const watermarkConstant = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(PrimitiveType.STRING),
-        ),
-      );
-
-      watermarkConstant.values = ['watermarkValue'];
-      setSelectedValue(watermarkConstant);
+      setSelectedValue(watermarkState.getDefaultValue());
     };
 
     const toggleWatermark = (): void => {
