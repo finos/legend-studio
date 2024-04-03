@@ -289,6 +289,7 @@ export class ProjectConfigurationEditorState extends EditorState {
           this.currentProjectConfiguration.groupId,
           this.currentProjectConfiguration.artifactId,
           latestStructure,
+          this.currentProjectConfiguration.verifyChangeWindow,
           `update project configuration from ${this.editorStore.applicationStore.config.appName}: update to latest project structure`,
         );
         yield flowResult(this.updateProjectConfiguration(updateCommand));
@@ -314,6 +315,7 @@ export class ProjectConfigurationEditorState extends EditorState {
         this.currentProjectConfiguration.groupId,
         this.currentProjectConfiguration.artifactId,
         undefined,
+        this.currentProjectConfiguration.verifyChangeWindow,
         `update project configuration from ${
           this.editorStore.applicationStore.config.appName
         }: changed project type to ${prettyCONSTName(newProjectType)}`,
@@ -345,6 +347,7 @@ export class ProjectConfigurationEditorState extends EditorState {
           this.currentProjectConfiguration.groupId,
           this.currentProjectConfiguration.artifactId,
           this.currentProjectConfiguration.projectStructureVersion,
+          this.currentProjectConfiguration.verifyChangeWindow,
           `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
         );
 

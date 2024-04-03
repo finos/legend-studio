@@ -570,6 +570,9 @@ const ProjectAdvancedEditor = observer(
         projectConfig.setRunDependencyTests(newVal);
       }
     };
+    const toggleVerifyChangeWindow = (): void => {
+      projectConfig.setVerifyChangeWindow(!projectConfig.verifyChangeWindow);
+    };
     const changeProjectType = (): void => {
       applicationStore.alertService.setActionAlertInfo({
         message: `${isEmbeddedMode ? embeddedToManaged : managedToEmbedded}`,
@@ -672,6 +675,39 @@ const ProjectAdvancedEditor = observer(
                   isEmbeddedMode ? 'Managed Type' : 'Embedded Type'
                 }`}
               </button>
+            </div>
+          </div>
+        </PanelForm>
+        <PanelForm>
+          <div className="platform-configurations-editor__verifyChangeWindow">
+            <div className="platform-configurations-editor__verifyChangeWindow__header">
+              <div className="platform-configurations-editor__verifyChangeWindow__header__left">
+                <div
+                  className="platform-configurations-editor__toggler"
+                  onClick={toggleVerifyChangeWindow}
+                >
+                  <button
+                    className={clsx(
+                      'platform-configurations-editor__toggler__btn',
+                      {
+                        'platform-configurations-editor__toggler__btn--toggled':
+                          Boolean(projectConfig.verifyChangeWindow),
+                      },
+                    )}
+                    disabled={isReadOnly}
+                    tabIndex={-1}
+                  >
+                    {projectConfig.verifyChangeWindow ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="platform-configurations-editor__toggler__prompt">
+                    {`Verify Change Window`}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </PanelForm>

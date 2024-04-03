@@ -52,6 +52,7 @@ export class ProjectConfiguration implements Hashable {
   projectId!: string;
   groupId!: string;
   artifactId!: string;
+  verifyChangeWindow: boolean | undefined;
   projectType: ProjectType | undefined;
   projectStructureVersion!: ProjectStructureVersion;
   platformConfigurations?: PlatformConfiguration[] | undefined;
@@ -62,6 +63,7 @@ export class ProjectConfiguration implements Hashable {
     makeObservable(this, {
       groupId: observable,
       artifactId: observable,
+      verifyChangeWindow: observable,
       projectStructureVersion: observable,
       platformConfigurations: observable,
       projectDependencies: observable,
@@ -69,6 +71,7 @@ export class ProjectConfiguration implements Hashable {
       setGroupId: action,
       setPlatformConfigurations: action,
       setArtifactId: action,
+      setVerifyChangeWindow: action,
       deleteProjectDependency: action,
       addProjectDependency: action,
       setRunDependencyTests: action,
@@ -81,6 +84,7 @@ export class ProjectConfiguration implements Hashable {
     createModelSchema(ProjectConfiguration, {
       artifactId: primitive(),
       groupId: primitive(),
+      verifyChangeWindow: optional(primitive()),
       platformConfigurations: optionalCustomListWithSchema(
         PlatformConfiguration.serialization.schema,
       ),
@@ -115,6 +119,10 @@ export class ProjectConfiguration implements Hashable {
     this.artifactId = val;
   }
 
+  setVerifyChangeWindow(val: boolean): void {
+    this.verifyChangeWindow = val;
+  }
+
   deleteProjectDependency(val: ProjectDependency): void {
     deleteEntry(this.projectDependencies, val);
   }
@@ -135,6 +143,7 @@ export class ProjectConfiguration implements Hashable {
       SDLC_HASH_STRUCTURE.PROJECT_CONFIGURATION,
       this.groupId,
       this.artifactId,
+      this.verifyChangeWindow?.toString() ?? '',
       hashArray(this.platformConfigurations ?? []),
       this.projectStructureVersion.version.toString(),
       this.projectStructureVersion.extensionVersion?.toString() ?? '',

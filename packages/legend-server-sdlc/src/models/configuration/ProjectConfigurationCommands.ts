@@ -59,6 +59,7 @@ export class UpdatePlatformConfigurationsCommand {
 export class UpdateProjectConfigurationCommand {
   artifactId: string;
   groupId: string;
+  verifyChangeWindow: boolean | undefined;
   message: string;
   platformConfigurations?: UpdatePlatformConfigurationsCommand;
   projectDependenciesToAdd?: ProjectDependency[];
@@ -71,11 +72,13 @@ export class UpdateProjectConfigurationCommand {
     groupId: string,
     artifactId: string,
     projectStructureVersion: ProjectStructureVersion | undefined,
+    verifyChangeWindow: boolean | undefined,
     message: string,
   ) {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.projectStructureVersion = projectStructureVersion;
+    this.verifyChangeWindow = verifyChangeWindow;
     this.message = message;
   }
 
@@ -83,6 +86,7 @@ export class UpdateProjectConfigurationCommand {
     createModelSchema(UpdateProjectConfigurationCommand, {
       artifactId: primitive(),
       groupId: primitive(),
+      verifyChangeWindow: optional(primitive()),
       message: primitive(),
       platformConfigurations: optional(
         usingModelSchema(

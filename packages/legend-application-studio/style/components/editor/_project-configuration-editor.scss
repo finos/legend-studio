@@ -504,6 +504,25 @@
       margin-top: 0.5rem;
     }
   }
+
+  &__verifyChangeWindow {
+    border: 0.1rem solid var(--color-dark-grey-100);
+    margin-top: 1rem;
+    border-radius: 0.2rem;
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      height: 4.4rem;
+      padding: 0 0.5rem 0 1rem;
+      background: var(--color-dark-grey-100);
+    }
+
+    &__content {
+      padding: 1rem;
+    }
+  }
 }
 
 .project-dependency-report {

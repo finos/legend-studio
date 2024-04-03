@@ -641,6 +641,7 @@ export class QueryProductionizerStore {
                 currentProjectConfiguration.groupId,
                 currentProjectConfiguration.artifactId,
                 currentProjectConfiguration.projectStructureVersion,
+                currentProjectConfiguration.verifyChangeWindow,
                 'productionize-query: add service dependencies',
               );
             projectConfigurationUpdateCommand.projectDependenciesToAdd =
