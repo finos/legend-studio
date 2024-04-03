@@ -391,7 +391,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
       ? Number.parseInt(Number(value).toString(), 10)
       : Number(value);
 
-    const updateValueSpecification = (val: string): void => {
+    const updateValueSpecIfValid = (val: string): void => {
       const parsedValue = isInteger
         ? Number.parseInt(Number(val).toString(), 10)
         : Number(val);
@@ -410,7 +410,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
       event,
     ) => {
       setValue(event.target.value);
-      updateValueSpecification(event.target.value);
+      updateValueSpecIfValid(event.target.value);
     };
 
     // Support expression evaluation
@@ -418,16 +418,16 @@ const NumberPrimitiveInstanceValueEditor = observer(
       if (isNaN(numericValue)) {
         try {
           const calculatedValue = guaranteeIsNumber(evaluate(value));
-          updateValueSpecification(calculatedValue.toString());
+          updateValueSpecIfValid(calculatedValue.toString());
           setValue(calculatedValue.toString());
         } catch {
-          updateValueSpecification(
+          updateValueSpecIfValid(
             (valueSpecification.values[0] as number).toString(),
           );
           setValue((valueSpecification.values[0] as number).toString());
         }
       } else {
-        updateValueSpecification(numericValue.toString());
+        updateValueSpecIfValid(numericValue.toString());
         setValue(numericValue.toString());
       }
     };
