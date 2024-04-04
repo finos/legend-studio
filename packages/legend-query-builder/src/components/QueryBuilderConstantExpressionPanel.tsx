@@ -68,14 +68,14 @@ import { flowResult } from 'mobx';
 const getConstantNameValidationMessage = (
   constantInput: string,
   allVariableNames: string[],
-  stateName: string,
+  currentConstantName: string,
 ): string | undefined =>
   !constantInput
     ? `Constant name can't be empty`
     : isValidIdentifier(constantInput) === false
     ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
     : allVariableNames.filter((e) => e === constantInput).length > 0 &&
-      constantInput !== stateName
+      constantInput !== currentConstantName
     ? 'Constant name already exists'
     : undefined;
 
