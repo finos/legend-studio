@@ -21,6 +21,7 @@ export enum LEGEND_REPL_EVENT {
 
 export const FILTER_FUNCTION_NAME = 'filter';
 export const SORT_FUNCTION_NAME = 'sort';
+export const SLICE_FUNCTION_NAME = 'slice';
 export const GROUPBY_FUNCTION_NAME = 'groupBy';
 export const NOT_FUNCTION_NAME = 'not';
 

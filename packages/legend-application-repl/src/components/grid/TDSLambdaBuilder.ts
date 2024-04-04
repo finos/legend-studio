@@ -58,6 +58,7 @@ import {
   FILTER_FUNCTION_NAME,
   GROUPBY_FUNCTION_NAME,
   NOT_FUNCTION_NAME,
+  SLICE_FUNCTION_NAME,
   SORT_FUNCTION_NAME,
 } from '../../Const.js';
 
@@ -384,6 +385,24 @@ const processSortOperations = (
   updateParentFunction(expressions, SORT_FUNCTION_NAME, [sortCollection]);
 };
 
+const processSliceFunction = (
+  expressions: V1_ValueSpecification[],
+  start: number | undefined,
+  end: number | undefined,
+): void => {
+  if (start === undefined || end === undefined) {
+    return;
+  }
+  const startValue = new V1_CInteger();
+  startValue.value = start;
+  const endValue = new V1_CInteger();
+  endValue.value = end;
+  updateParentFunction(expressions, SLICE_FUNCTION_NAME, [
+    startValue,
+    endValue,
+  ]);
+};
+
 export const buildLambdaExpressions = (
   funcBody: V1_ValueSpecification,
   request: TDSRequest,
@@ -407,6 +426,7 @@ export const buildLambdaExpressions = (
   processFilterOperations(expressions, request.filter);
   processGroupByOperations(expressions, request.groupBy, request.columns);
   processSortOperations(expressions, request.sort, request.groupBy);
+  processSliceFunction(expressions, request.startRow, request.endRow);
   const lambda = new V1_Lambda();
   lambda.body = expressions;
   return lambda;
