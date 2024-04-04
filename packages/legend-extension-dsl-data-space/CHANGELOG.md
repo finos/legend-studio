@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.94
+
+### Patch Changes
+
+- [#3019](https://github.com/finos/legend-studio/pull/3019) [`13bd7ad50`](https://github.com/finos/legend-studio/commit/13bd7ad500a6133b136c5b6ae0ef98e95f16d7da) ([@travisstebbins](https://github.com/travisstebbins)) - Fix query light mode inconsistencies
+
+- [#3006](https://github.com/finos/legend-studio/pull/3006) [`fb98bd37d`](https://github.com/finos/legend-studio/commit/fb98bd37dad819fc613b166aa0c29b94513da909) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support loading template query inside query builder
+
 ## 10.1.93
 
 ## 10.1.92
