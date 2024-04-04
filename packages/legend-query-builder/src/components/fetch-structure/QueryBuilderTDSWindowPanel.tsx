@@ -382,7 +382,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                         },
                       )}
                     >
-                      {operationState.operator.getLabel()}
+                      {selectedOperationState.operator.getLabel()}
                     </div>
                     {windowOpColumn && (
                       <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
