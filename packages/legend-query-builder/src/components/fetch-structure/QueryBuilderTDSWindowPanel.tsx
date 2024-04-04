@@ -593,10 +593,14 @@ const QueryBuilderWindowColumnModalEditor = observer(
           </div>
           <ModalFooter>
             <ModalFooterButton
-              text={isNewWindowFunction ? 'Create' : 'Update'}
+              text={isNewWindowFunction ? 'Create' : 'Apply'}
               onClick={handleApply}
             />
-            <ModalFooterButton text="Cancel" onClick={handleCancel} />
+            <ModalFooterButton
+              text="Cancel"
+              onClick={handleCancel}
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
