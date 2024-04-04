@@ -45,7 +45,7 @@ import {
   type QueryBuilderVariableDragSource,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
-import { deepClone } from '@finos/legend-shared';
+import { clone, deepClone } from '@finos/legend-shared';
 
 const isParamaterCompatibleWithWaterMark = (
   parameter: VariableExpression,
@@ -111,7 +111,7 @@ const WatermarkValueEditor = observer(
             <BasicValueSpecificationEditor
               valueSpecification={selectedValue}
               setValueSpecification={(val: ValueSpecification): void => {
-                setSelectedValue(deepClone(val));
+                setSelectedValue(clone(val));
               }}
               graph={graph}
               obseverContext={watermarkState.queryBuilderState.observerContext}
