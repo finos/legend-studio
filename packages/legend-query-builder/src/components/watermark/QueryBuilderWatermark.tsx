@@ -175,7 +175,7 @@ export const QueryBuilderWatermarkEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-          className="editor-modal"
+          className="editor-modal query-builder__watermark__modal"
         >
           <ModalHeader title="Watermark" />
           <ModalBody>
