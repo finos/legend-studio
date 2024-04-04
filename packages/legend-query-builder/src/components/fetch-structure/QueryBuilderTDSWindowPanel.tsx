@@ -219,61 +219,61 @@ const QueryBuilderWindowColumnModalEditor = observer(
 
     // Window operator
     const operators = windowState.operators;
-    const operationState = windowColumnState.operatorState;
-    const [selectedOperationState, setSelectedOperationState] = useState(() =>
-      deepClone(operationState),
+    const operatorState = windowColumnState.operatorState;
+    const [selectedOperatorState, setSelectedOperatorState] = useState(() =>
+      deepClone(operatorState),
     );
-    const windowOpColumn =
-      selectedOperationState instanceof
+    const windowOperatorColumn =
+      selectedOperatorState instanceof
       QueryBuilderTDS_WindowAggreationOperatorState
-        ? selectedOperationState.columnState
+        ? selectedOperatorState.columnState
         : undefined;
-    const changeOperatorCol = (
+    const changeWindowOperatorColumn = (
       val: { label: string; value: QueryBuilderTDSColumnState } | null,
     ): void => {
       if (
-        selectedOperationState instanceof
+        selectedOperatorState instanceof
           QueryBuilderTDS_WindowAggreationOperatorState &&
         val !== null
       ) {
-        const newOpertorState = clone(selectedOperationState);
+        const newOpertorState = clone(selectedOperatorState);
         newOpertorState.setColumnState(val.value);
-        setSelectedOperationState(newOpertorState);
+        setSelectedOperatorState(newOpertorState);
       }
     };
     const changeOperator =
-      (olapOp: QueryBuilderTDS_WindowOperator) => (): void => {
+      (newOperator: QueryBuilderTDS_WindowOperator) => (): void => {
         const stateAndName =
           windowColumnState.getChangeOperatorStateAndColumnName(
-            selectedOperationState.operator,
-            windowOpColumn,
-            olapOp,
+            selectedOperatorState.operator,
+            windowOperatorColumn,
+            newOperator,
           );
         if (stateAndName) {
-          setSelectedOperationState(stateAndName.operatorState);
+          setSelectedOperatorState(stateAndName.operatorState);
           setSelectedColumnName(stateAndName.columnName);
         }
       };
-    const windowOptions = isNewWindowFunction
+    const windowColumnOptions = isNewWindowFunction
       ? tdsState.tdsColumns
       : windowColumnState.possibleReferencedColumns;
-    const windowOptionsLabels = windowOptions.map((w) => ({
+    const windowColumnOptionLabels = windowColumnOptions.map((w) => ({
       label: w.columnName,
       value: w,
     }));
 
-    // Window
-    const [selectedValues, setSelectedValues] = useState([
+    // Window columns
+    const [selectedWindowColumns, setSelectedWindowColumns] = useState([
       ...windowColumnState.windowColumns,
     ]);
-    const addOptions = windowOptions.filter(
+    const windowColumnAddOptions = windowColumnOptions.filter(
       (e) => !windowColumnState.windowColumns.includes(e),
     );
-    const addWindowValue = (): void => {
-      if (addOptions.length > 0) {
-        setSelectedValues([
-          ...selectedValues,
-          guaranteeNonNullable(addOptions[0]),
+    const addWindowColumn = (): void => {
+      if (windowColumnAddOptions.length > 0) {
+        setSelectedWindowColumns([
+          ...selectedWindowColumns,
+          guaranteeNonNullable(windowColumnAddOptions[0]),
         ]);
       }
     };
@@ -315,19 +315,10 @@ const QueryBuilderWindowColumnModalEditor = observer(
 
     const handleApply = (): void => {
       windowColumnState.setColumnName(selectedColumnName);
-      // if (
-      //   operationState instanceof
-      //     QueryBuilderTDS_WindowAggreationOperatorState &&
-      //   windowOpColumn !== null &&
-      //   windowOpColumn !== undefined
-      // ) {
-      //   operationState.setColumnState(windowOpColumn);
-      // }
-      // windowColumnState.changeOperator(selectedOperationState.operator);
-      windowState.addWindowColumn(windowColumnState);
-      windowColumnState.setOperatorState(selectedOperationState);
-      windowColumnState.setWindows(selectedValues);
+      windowColumnState.setOperatorState(selectedOperatorState);
+      windowColumnState.setWindows(selectedWindowColumns);
       windowColumnState.setSortBy(selectedSortBy);
+      windowState.addWindowColumn(windowColumnState);
       handleCancel();
     };
 
@@ -378,22 +369,22 @@ const QueryBuilderWindowColumnModalEditor = observer(
                         'query-builder__olap__column__operation__operator__label',
                         {
                           'query-builder__olap__column__operation__operator__label__agg':
-                            !windowOpColumn,
+                            !windowOperatorColumn,
                         },
                       )}
                     >
-                      {selectedOperationState.operator.getLabel()}
+                      {selectedOperatorState.operator.getLabel()}
                     </div>
-                    {windowOpColumn && (
+                    {windowOperatorColumn && (
                       <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
                         <CustomSelectorInput
                           className="query-builder__olap__tds__column__dropdown"
-                          options={windowOptionsLabels}
-                          disabled={windowOptionsLabels.length < 1}
-                          onChange={changeOperatorCol}
+                          options={windowColumnOptionLabels}
+                          disabled={windowColumnOptionLabels.length < 1}
+                          onChange={changeWindowOperatorColumn}
                           value={{
-                            value: windowOpColumn,
-                            label: windowOpColumn.columnName,
+                            value: windowOperatorColumn,
+                            label: windowOperatorColumn.columnName,
                           }}
                           darkMode={
                             !applicationStore.layoutService
@@ -453,29 +444,29 @@ const QueryBuilderWindowColumnModalEditor = observer(
               </div>
               <div className="panel__content__form__section__header__prompt">
                 Represents the window of columns that will partition the rows
-                for which to apply the aggragte function
+                for which to apply the aggregate function
               </div>
               <div className="panel__content__form__section__list">
                 <div className="panel__content__form__section__list__items">
-                  {selectedValues.map((value, idx) => (
+                  {selectedWindowColumns.map((value, idx) => (
                     <TDSColumnSelectorEditor
                       key={value.uuid}
                       colValue={value}
                       setColumn={(v: QueryBuilderTDSColumnState) =>
-                        (selectedValues[idx] = v)
+                        (selectedWindowColumns[idx] = v)
                       }
                       deleteColumn={(v: QueryBuilderTDSColumnState) =>
-                        deleteEntry(selectedValues, v)
+                        deleteEntry(selectedWindowColumns, v)
                       }
-                      tdsColOptions={windowOptions}
+                      tdsColOptions={windowColumnOptions}
                     />
                   ))}
                 </div>
                 <div className="panel__content__form__section__list__new-item__add">
                   <button
                     className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                    disabled={!addOptions.length}
-                    onClick={addWindowValue}
+                    disabled={!windowColumnAddOptions.length}
+                    onClick={addWindowColumn}
                     tabIndex={-1}
                   >
                     Add Value
@@ -502,8 +493,8 @@ const QueryBuilderWindowColumnModalEditor = observer(
                     <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
                       <CustomSelectorInput
                         className="query-builder__olap__tds__column__dropdown"
-                        options={windowOptionsLabels}
-                        disabled={windowOptionsLabels.length < 1}
+                        options={windowColumnOptionLabels}
+                        disabled={windowColumnOptionLabels.length < 1}
                         onChange={changeSortCol}
                         value={{
                           value: selectedSortBy.columnState,
