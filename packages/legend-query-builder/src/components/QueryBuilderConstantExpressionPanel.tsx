@@ -234,7 +234,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              text={isCreating ? 'Create' : 'Update'}
+              text={isCreating ? 'Create' : 'Apply'}
               disabled={!isNameValid}
               onClick={handleApply}
             />
@@ -359,7 +359,7 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
               onClick={handleApply}
               disabled={Boolean(lambdaStateCopy.parserError) || !isNameValid}
             >
-              Update
+              Apply
             </ModalFooterButton>
             <ModalFooterButton
               className="btn btn--dark"

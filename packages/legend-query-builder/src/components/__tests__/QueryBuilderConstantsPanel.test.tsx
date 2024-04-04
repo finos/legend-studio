@@ -246,7 +246,7 @@ test(
     ).not.toBeNull();
     expect(
       renderResult
-        .getByRole('button', { name: 'Update' })
+        .getByRole('button', { name: 'Apply' })
         .hasAttribute('disabled'),
     ).toBe(true);
 
@@ -261,7 +261,7 @@ test(
     ).not.toBeNull();
     expect(
       renderResult
-        .getByRole('button', { name: 'Update' })
+        .getByRole('button', { name: 'Apply' })
         .hasAttribute('disabled'),
     ).toBe(true);
   },
@@ -337,7 +337,7 @@ test(
     ).not.toBeNull();
     expect(
       renderResult
-        .getByRole('button', { name: 'Update' })
+        .getByRole('button', { name: 'Apply' })
         .hasAttribute('disabled'),
     ).toBe(true);
 
@@ -352,7 +352,7 @@ test(
     ).not.toBeNull();
     expect(
       renderResult
-        .getByRole('button', { name: 'Update' })
+        .getByRole('button', { name: 'Apply' })
         .hasAttribute('disabled'),
     ).toBe(true);
   },
@@ -469,7 +469,7 @@ test(
       renderResult.getByText('Value').parentElement?.querySelector('button'),
     );
     fireEvent.click(valueToggle);
-    fireEvent.click(renderResult.getByRole('button', { name: 'Update' }));
+    fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
 
     // Check new values
     expect(
