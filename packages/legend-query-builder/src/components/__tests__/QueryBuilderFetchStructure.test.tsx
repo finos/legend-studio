@@ -432,7 +432,7 @@ test(
 
 test(
   integrationTest(
-    'Query builder allows editing column name upon clicking expression badge',
+    'Query builder allows editing simple column name upon clicking column name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -536,7 +536,9 @@ test(
 );
 
 test(
-  integrationTest('Query builder shows column name input for derived columns'),
+  integrationTest(
+    'Query builder allows editing derivation column name upon clicking column name',
+  ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__ComplexRelationalModel,
@@ -592,9 +594,7 @@ test(
     const FIRST_NAME_WITH_AGE_ALIAS = 'First Name with Age';
     expect(
       await waitFor(() =>
-        projectionCols.querySelector(
-          `input[value="${FIRST_NAME_WITH_AGE_ALIAS}"]`,
-        ),
+        queryByText(projectionCols, FIRST_NAME_WITH_AGE_ALIAS),
       ),
     ).not.toBeNull();
     const tdsState = guaranteeType(
@@ -612,6 +612,12 @@ test(
     );
 
     // edit column name
+    const firstNameWithAgeColumnName = guaranteeNonNullable(
+      await waitFor(() =>
+        queryByText(projectionCols, FIRST_NAME_WITH_AGE_ALIAS),
+      ),
+    );
+    fireEvent.click(firstNameWithAgeColumnName);
     const firstNameWithAgeColumnNameInput = guaranteeNonNullable(
       await waitFor(() =>
         projectionCols.querySelector(
@@ -622,20 +628,21 @@ test(
     fireEvent.change(firstNameWithAgeColumnNameInput, {
       target: { value: 'Edited First Name with Age' },
     });
+    fireEvent.blur(firstNameWithAgeColumnNameInput);
 
     // check fetch-structure
     expect(
       await waitFor(() =>
-        projectionCols.querySelector(
-          'input[value="Edited First Name with Age"]',
+        queryByText(projectionCols, 'Edited First Name with Age'),
+      ),
+    ).not.toBeNull();
+    expect(
+      await waitFor(() =>
+        tdsState.projectionColumns.find(
+          (e) => e.columnName === 'Edited First Name with Age',
         ),
       ),
     ).not.toBeNull();
-    guaranteeNonNullable(
-      tdsState.projectionColumns.find(
-        (e) => e.columnName === 'Edited First Name with Age',
-      ),
-    );
   },
 );
 

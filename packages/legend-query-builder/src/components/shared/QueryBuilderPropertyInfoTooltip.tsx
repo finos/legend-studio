@@ -117,26 +117,18 @@ export const QueryBuilderTaggedValueInfoTooltip: React.FC<{
   );
 };
 
-export const QueryBuilderPropertyInfoTooltip: React.FC<{
+const QueryBuilderBaseInfoTooltip: React.FC<{
   title: string;
-  property: AbstractProperty;
-  path: string;
-  isMapped: boolean;
-  children: React.ReactElement;
+  data: {
+    label: string;
+    value: string;
+    actionButton?: JSX.Element | undefined;
+  }[];
   placement?: TooltipPlacement | undefined;
-  type?: Type | undefined;
-  explorerState?: QueryBuilderExplorerState | undefined;
+  children: React.ReactElement;
+  footerElement?: React.ReactElement;
 }> = (props) => {
-  const {
-    title,
-    property,
-    path,
-    isMapped,
-    children,
-    placement,
-    type,
-    explorerState,
-  } = props;
+  const { title, data, placement, children, footerElement } = props;
 
   const [open, setIsOpen] = useState(false);
 
@@ -165,55 +157,18 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
           title={
             <div className="query-builder__tooltip__content">
               <div className="query-builder__tooltip__header">{title}</div>
-              <div className="query-builder__tooltip__item">
-                <div className="query-builder__tooltip__item__label">Type</div>
-                <div className="query-builder__tooltip__item__value">
-                  {type?.path ?? property.genericType.value.rawType.path}
-                </div>
-              </div>
-              <div className="query-builder__tooltip__item">
-                <div className="query-builder__tooltip__item__label">Path</div>
-                <div className="query-builder__tooltip__item__value">
-                  {path}
-                </div>
-                {explorerState && (
-                  <div className="query-builder__tooltip__item__action">
-                    <button
-                      onClick={() => explorerState.highlightTreeNode(path)}
-                      title="Show in tree"
-                    >
-                      <ShareBoxIcon color="white" />
-                    </button>
+              {data.map((elem) => (
+                <div key={elem.label} className="query-builder__tooltip__item">
+                  <div className="query-builder__tooltip__item__label">
+                    {elem.label}
                   </div>
-                )}
-              </div>
-              <div className="query-builder__tooltip__item">
-                <div className="query-builder__tooltip__item__label">
-                  Multiplicity
+                  <div className="query-builder__tooltip__item__value">
+                    {elem.value}
+                  </div>
+                  {elem.actionButton}
                 </div>
-                <div className="query-builder__tooltip__item__value">
-                  {getMultiplicityDescription(property.multiplicity)}
-                </div>
-              </div>
-              <div className="query-builder__tooltip__item">
-                <div className="query-builder__tooltip__item__label">
-                  Derived Property
-                </div>
-                <div className="query-builder__tooltip__item__value">
-                  {property instanceof DerivedProperty ? 'Yes' : 'No'}
-                </div>
-              </div>
-              <div className="query-builder__tooltip__item">
-                <div className="query-builder__tooltip__item__label">
-                  Mapped
-                </div>
-                <div className="query-builder__tooltip__item__value">
-                  {isMapped ? 'Yes' : 'No'}
-                </div>
-              </div>
-              <QueryBuilderTaggedValueInfoTooltip
-                taggedValues={property.taggedValues}
-              />
+              ))}
+              {footerElement}
             </div>
           }
         >
@@ -221,5 +176,101 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
         </Tooltip>
       </div>
     </ClickAwayListener>
+  );
+};
+
+export const QueryBuilderPropertyInfoTooltip: React.FC<{
+  title: string;
+  property: AbstractProperty;
+  path: string;
+  isMapped: boolean;
+  children: React.ReactElement;
+  placement?: TooltipPlacement | undefined;
+  type?: Type | undefined;
+  explorerState?: QueryBuilderExplorerState | undefined;
+}> = (props) => {
+  const {
+    title,
+    property,
+    path,
+    isMapped,
+    children,
+    placement,
+    type,
+    explorerState,
+  } = props;
+
+  const data = [
+    {
+      label: 'Type',
+      value: type?.path ?? property.genericType.value.rawType.path,
+    },
+    {
+      label: 'Path',
+      value: path,
+      actionButton: explorerState ? (
+        <div className="query-builder__tooltip__item__action">
+          <button
+            onClick={() => explorerState.highlightTreeNode(path)}
+            title="Show in tree"
+          >
+            <ShareBoxIcon color="white" />
+          </button>
+        </div>
+      ) : undefined,
+    },
+    {
+      label: 'Multiplicity',
+      value: getMultiplicityDescription(property.multiplicity),
+    },
+    {
+      label: 'Derived Property',
+      value: property instanceof DerivedProperty ? 'Yes' : 'No',
+    },
+    {
+      label: 'Mapped',
+      value: isMapped ? 'Yes' : 'No',
+    },
+  ];
+
+  return (
+    <QueryBuilderBaseInfoTooltip
+      title={title}
+      data={data}
+      placement={placement}
+      footerElement={
+        <QueryBuilderTaggedValueInfoTooltip
+          taggedValues={property.taggedValues}
+        />
+      }
+    >
+      {children}
+    </QueryBuilderBaseInfoTooltip>
+  );
+};
+
+export const QueryBuilderDerivationInfoTooltip: React.FC<{
+  title: string;
+  children: React.ReactElement;
+  placement?: TooltipPlacement | undefined;
+  type?: Type | undefined;
+}> = (props) => {
+  const { title, children, placement, type } = props;
+
+  const data = [
+    {
+      label: 'Type',
+      value: type?.path ?? 'undefined',
+    },
+  ];
+
+  return (
+    <QueryBuilderBaseInfoTooltip
+      title={title}
+      data={data}
+      placement={placement}
+    >
+      {children}
+    </QueryBuilderBaseInfoTooltip>
   );
 };
