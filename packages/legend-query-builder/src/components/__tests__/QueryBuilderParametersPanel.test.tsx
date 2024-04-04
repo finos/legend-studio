@@ -33,22 +33,83 @@ import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA_
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import {
   create_RawLambda,
-  PrimitiveType,
+  Multiplicity,
   PRIMITIVE_TYPE,
   stub_RawLambda,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
+import {
+  TEST__setUpQueryBuilder,
+  getCustomSelectorInputValue,
+  selectFromCustomSelectorInput,
+} from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import {
   MockedMonacoEditorInstance,
   MockedMonacoEditorAPI,
 } from '@finos/legend-lego/code-editor/test';
-import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest(
-    'Query builder shows validation error for parameter name if existing duplicate constant name',
+    'Query builder shows validation error for creating parameter name if existing duplicate parameter name',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+
+    // Create first parameter
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Create second parameter
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    const parameterNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('var_2'),
+    );
+    fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
+
+    // Check for validation error
+    expect(
+      await waitFor(() =>
+        renderResult.getByText('Parameter name already exists'),
+      ),
+    ).not.toBeNull();
+
+    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
+      true,
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder shows validation error for creating parameter name if existing duplicate constant name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -75,12 +136,15 @@ test(
     const constantsPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
+
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     expect(
       await waitFor(() => renderResult.getByDisplayValue('c_var_1')),
     ).not.toBeNull();
     await waitFor(() => renderResult.getByText('Create'));
     fireEvent.click(renderResult.getByText('Create'));
+
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
     );
@@ -88,6 +152,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
     );
 
+    // Create parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
     const parameterNameInput = renderResult.getByDisplayValue('var_1');
@@ -107,7 +172,7 @@ test(
 
 test(
   integrationTest(
-    'Query builder shows validation error for constant name if existing duplicate parameter name',
+    'Query builder shows validation error for updating parameter name if existing duplicate parameter name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -119,39 +184,51 @@ test(
     );
     await act(async () => {
       queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__simpleProjection.parameters,
-          TEST_DATA__simpleProjection.body,
-        ),
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
       );
       // NOTE: Render result will not currently find the
-      // 'show constant(s)' panel so we will directly force
+      // 'show parameter(s)' panel so we will directly force
       // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
       queryBuilderState.constantState.setShowConstantPanel(true);
     });
 
     await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
     );
-    const constantsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
     );
 
-    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    // Create first parameter
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    // const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-    });
-    const constantNameInput = renderResult.getByDisplayValue('c_var_1');
-    fireEvent.change(constantNameInput, { target: { value: 'var_1' } });
+    // Create second parameter
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    await waitFor(() => renderResult.getByDisplayValue('var_2'));
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Update second parameter name
+    fireEvent.click(await waitFor(() => getByText(parametersPanel, 'var_2')));
+    await waitFor(() => renderResult.getByText('Update Parameter'));
+    const parameterNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('var_2'),
+    );
+    fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
+
+    // Check for validation error
     expect(
       await waitFor(() =>
-        renderResult.getByText('Constant name already exists'),
+        renderResult.getByText('Parameter name already exists'),
       ),
     ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
+
+    expect(renderResult.getByText('Update').hasAttribute('disabled')).toBe(
       true,
     );
   },
@@ -159,7 +236,7 @@ test(
 
 test(
   integrationTest(
-    'Query builder shows humanized date label value for constant variable with type Date',
+    'Query builder shows validation error for updating parameter name if existing duplicate constant name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -171,11 +248,12 @@ test(
     );
     await act(async () => {
       queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__simpleProjection.parameters,
-          TEST_DATA__simpleProjection.body,
-        ),
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
       );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
       queryBuilderState.constantState.setShowConstantPanel(true);
     });
 
@@ -185,40 +263,268 @@ test(
     const constantsPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
+
+    // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-      const selectedConstant = queryBuilderState.constantState.selectedConstant;
-      if (
-        selectedConstant instanceof QueryBuilderSimpleConstantExpressionState
-      ) {
-        selectedConstant.changeValSpecType(PrimitiveType.STRICTDATE);
-      }
-    });
-
-    await waitFor(() =>
-      renderResult.getByTitle('Click to edit and pick from more date options'),
-    );
-    fireEvent.click(
-      renderResult.getByTitle('Click to edit and pick from more date options'),
-    );
-
-    await waitFor(() =>
-      renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY),
-    );
-    fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY));
-
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('c_var_1')),
+    ).not.toBeNull();
     await waitFor(() => renderResult.getByText('Create'));
     fireEvent.click(renderResult.getByText('Create'));
 
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+
+    // Create parameter
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Update parameter name
+    fireEvent.click(getByText(parametersPanel, 'var_1'));
+    await waitFor(() => renderResult.getByText('Update Parameter'));
+    const parameterNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('var_1'),
+    );
+    fireEvent.change(parameterNameInput, { target: { value: 'c_var_1' } });
+
+    // Check for validation error
     expect(
       await waitFor(() =>
-        getByText(constantsPanel, CUSTOM_DATE_PICKER_OPTION.TODAY),
+        renderResult.getByText('Parameter name already exists'),
       ),
     ).not.toBeNull();
+
+    expect(renderResult.getByText('Update').hasAttribute('disabled')).toBe(
+      true,
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder uses modal values when creating new parameter',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+
+    // Create parameter and change values
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    const parameterNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('var_1'),
+    );
+    fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
+    // select Number from dropdown
+    const typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+    // select Optional from dropdown
+    const multiplicityContainer = guaranteeNonNullable(
+      renderResult.getByText('Multiplicity').parentElement,
+    );
+    selectFromCustomSelectorInput(multiplicityContainer, '[0..1] - Optional');
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Check values
+    expect(
+      await waitFor(() => getByText(parametersPanel, 'var_2')),
+    ).not.toBeNull();
+    expect(
+      await waitFor(() => getByText(parametersPanel, 'Number')),
+    ).not.toBeNull();
+    expect(
+      queryBuilderState.parametersState.parameterStates[0]?.parameter
+        .multiplicity,
+    ).toBe(Multiplicity.ZERO_ONE);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder updates parameter when Apply button is clicked',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+
+    // Create parameter
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Update parameter values
+    fireEvent.click(getByText(parametersPanel, 'var_1'));
+    await waitFor(() => renderResult.getByText('Update Parameter'));
+    const parameterNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('var_1'),
+    );
+    fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
+    // select Number from dropdown
+    const typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+    // select Optional from dropdown
+    const multiplicityContainer = guaranteeNonNullable(
+      renderResult.getByText('Multiplicity').parentElement,
+    );
+    selectFromCustomSelectorInput(multiplicityContainer, '[0..1] - Optional');
+    fireEvent.click(renderResult.getByRole('button', { name: 'Update' }));
+
+    // Check new values
+    expect(
+      await waitFor(() => getByText(parametersPanel, 'var_2')),
+    ).not.toBeNull();
+    expect(
+      await waitFor(() => getByText(parametersPanel, 'Number')),
+    ).not.toBeNull();
+    expect(
+      queryBuilderState.parametersState.parameterStates[0]?.parameter
+        .multiplicity,
+    ).toBe(Multiplicity.ZERO_ONE);
+  },
+);
+
+test(
+  integrationTest(
+    "Query builder doesn't update parameter when Cancel button is clicked",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+
+    // Create parameter
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // Update parameter values
+    fireEvent.click(getByText(parametersPanel, 'var_1'));
+    await waitFor(() => renderResult.getByText('Update Parameter'));
+    const parameterNameInput = await waitFor(() =>
+      renderResult.getByDisplayValue('var_1'),
+    );
+    fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
+    // select Number from dropdown
+    let typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+    // select Optional from dropdown
+    let multiplicityContainer = guaranteeNonNullable(
+      renderResult.getByText('Multiplicity').parentElement,
+    );
+    selectFromCustomSelectorInput(multiplicityContainer, '[0..1] - Optional');
+    fireEvent.click(renderResult.getByRole('button', { name: 'Cancel' }));
+
+    // Check values are the same
+    expect(
+      await waitFor(() => getByText(parametersPanel, 'var_1')),
+    ).not.toBeNull();
+    expect(
+      await waitFor(() => getByText(parametersPanel, 'String')),
+    ).not.toBeNull();
+    expect(
+      queryBuilderState.parametersState.parameterStates[0]?.parameter
+        .multiplicity,
+    ).toBe(Multiplicity.ONE);
+
+    // Check modal still contains state values
+    fireEvent.click(getByText(parametersPanel, 'var_1'));
+    await waitFor(() => renderResult.getByText('Update Parameter'));
+    expect(
+      await waitFor(() => renderResult.getByDisplayValue('var_1')),
+    ).not.toBeNull();
+    typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    expect(getCustomSelectorInputValue(typeContainer)).toBe('String');
+    multiplicityContainer = guaranteeNonNullable(
+      renderResult.getByText('Multiplicity').parentElement,
+    );
+    expect(getCustomSelectorInputValue(multiplicityContainer)).toBe(
+      '[1] - Required',
+    );
   },
 );
 
@@ -394,78 +700,6 @@ test(
     executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
     expect(getByText(executeDialog, 'Set Parameter Values'));
     expect(getByText(executeDialog, 'var_1')).toStrictEqual(parameterValue);
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder disables constant creation and shows validation error if invalid constant name',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__simpleProjection.parameters,
-          TEST_DATA__simpleProjection.body,
-        ),
-      );
-      queryBuilderState.constantState.setShowConstantPanel(true);
-    });
-
-    await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
-    );
-    const constantsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
-    );
-
-    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-    });
-    const constantNameInput = renderResult.getByDisplayValue('c_var_1');
-    fireEvent.change(constantNameInput, {
-      target: { value: '1startsWithNumber' },
-    });
-    expect(
-      await waitFor(() =>
-        renderResult.getByText(
-          'Constant name must be text with no spaces and not start with an uppercase letter or number',
-        ),
-      ),
-    ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      true,
-    );
-    fireEvent.change(constantNameInput, {
-      target: { value: 'validInput' },
-    });
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      false,
-    );
-    fireEvent.change(constantNameInput, {
-      target: { value: 'invalidInput!' },
-    });
-    expect(
-      await waitFor(() =>
-        renderResult.getByText(
-          'Constant name must be text with no spaces and not start with an uppercase letter or number',
-        ),
-      ),
-    ).not.toBeNull();
-    expect(renderResult.getByText('Create').hasAttribute('disabled')).toBe(
-      true,
-    );
   },
 );
 

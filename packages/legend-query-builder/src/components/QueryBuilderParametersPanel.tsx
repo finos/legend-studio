@@ -78,13 +78,12 @@ const VariableExpressionEditor = observer(
     const isCreating =
       !queryParametersState.parameterStates.includes(lambdaParameterState);
     const varState = lambdaParameterState.parameter;
-    const multiplity = varState.multiplicity;
 
     // type
-    const variableType =
-      lambdaParameterState.variableType ?? PrimitiveType.STRING;
-    const selectedType = buildElementOption(variableType);
-    const selectedMultiplicity = buildMultiplicityOption(multiplity);
+    const stateType = lambdaParameterState.variableType ?? PrimitiveType.STRING;
+    const [selectedType, setSelectedType] = useState(
+      buildElementOption(stateType),
+    );
     const typeOptions: PackageableElementOption<Type>[] =
       queryBuilderState.graphManagerState.graph.primitiveTypes
         .map(buildElementOption)
@@ -94,12 +93,14 @@ const VariableExpressionEditor = observer(
           ),
         );
     const changeType = (val: PackageableElementOption<Type>): void => {
-      if (variableType !== val.value) {
-        lambdaParameterState.changeVariableType(val.value);
-      }
+      setSelectedType(val);
     };
 
     // multiplicity
+    const stateMultiplicity = varState.multiplicity;
+    const [selectedMultiplicity, setSelectedMultiplicity] = useState(
+      buildMultiplicityOption(stateMultiplicity),
+    );
     const validParamMultiplicityList = [
       Multiplicity.ONE,
       Multiplicity.ZERO_ONE,
@@ -108,46 +109,46 @@ const VariableExpressionEditor = observer(
     const multilicityOptions: MultiplicityOption[] =
       validParamMultiplicityList.map(buildMultiplicityOption);
     const changeMultiplicity = (val: MultiplicityOption): void => {
-      lambdaParameterState.changeMultiplicity(varState, val.value);
+      setSelectedMultiplicity(val);
     };
 
-    const parameterNameValue = varState.name;
-
+    // name
+    const stateName = varState.name;
+    const [selectedName, setSelectedName] = useState(stateName);
     const [isNameValid, setIsNameValid] = useState<boolean>(true);
 
     const getValidationMessage = (input: string): string | undefined =>
       !input
         ? `Parameter name can't be empty`
-        : allVariableNames.filter((e) => e === input).length >
-          (isCreating ? 0 : 1)
-        ? 'Parameter name already exists'
-        : (isCreating &&
-            queryParametersState.parameterStates.find(
-              (p) => p.parameter.name === input,
-            )) ||
-          (!isCreating &&
-            queryParametersState.parameterStates.filter(
-              (p) => p.parameter.name === input,
-            ).length > 1)
+        : allVariableNames.filter((e) => e === input).length > 0 &&
+          input !== stateName
         ? 'Parameter name already exists'
         : isValidIdentifier(input, true) === false
         ? 'Parameter name must be text with no spaces and not start with an uppercase letter or number'
         : undefined;
 
-    const close = (): void => {
+    // modal lifecycle actions
+    const handleCancel = (): void => {
       queryParametersState.setSelectedParameter(undefined);
     };
-    const onAction = (): void => {
+
+    const handleApply = (): void => {
+      lambdaParameterState.changeVariableType(selectedType.value);
+      lambdaParameterState.changeMultiplicity(
+        varState,
+        selectedMultiplicity.value,
+      );
+      variableExpression_setName(varState, selectedName);
       if (isCreating) {
         queryParametersState.addParameter(lambdaParameterState);
       }
-      close();
+      handleCancel();
     };
 
     return (
       <Dialog
         open={Boolean(lambdaParameterState)}
-        onClose={close}
+        onClose={handleCancel}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -165,9 +166,9 @@ const VariableExpressionEditor = observer(
             <PanelFormValidatedTextField
               name="Parameter Name"
               prompt="Name of the parameter. Should be descriptive of its purpose."
-              value={parameterNameValue}
+              value={selectedName}
               update={(value: string | undefined): void => {
-                variableExpression_setName(varState, value ?? '');
+                setSelectedName(value ?? '');
               }}
               validate={getValidationMessage}
               onValidate={(issue: string | undefined) => setIsNameValid(!issue)}
@@ -222,14 +223,16 @@ const VariableExpressionEditor = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            {isCreating && (
-              <ModalFooterButton
-                text="Create"
-                disabled={!isNameValid}
-                onClick={onAction}
-              />
-            )}
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton
+              text={isCreating ? 'Create' : 'Update'}
+              disabled={!isNameValid}
+              onClick={handleApply}
+            />
+            <ModalFooterButton
+              onClick={handleCancel}
+              text="Cancel"
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
