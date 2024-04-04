@@ -147,7 +147,7 @@ export class QueryBuilderTDS_WindowAggreationOperatorState extends QueryBuilderT
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_AGG_OPERATION_STATE,
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_GROUPBY_AGG_OPERATOR_STATE,
       this.lambdaParameterName,
       this.operator,
       this.columnState.columnName,
@@ -162,21 +162,21 @@ export class QueryBuilderWindowColumnState
   readonly windowState: QueryBuilderWindowState;
   windowColumns: QueryBuilderTDSColumnState[] = [];
   sortByState: WindowGroupByColumnSortByState | undefined;
-  operationState: QueryBuilderTDS_WindowOperatorState;
+  operatorState: QueryBuilderTDS_WindowOperatorState;
   columnName: string;
 
   constructor(
     windowState: QueryBuilderWindowState,
     windowColumns: QueryBuilderTDSColumnState[],
     sortType: WindowGroupByColumnSortByState | undefined,
-    operationState: QueryBuilderTDS_WindowOperatorState,
+    operatorState: QueryBuilderTDS_WindowOperatorState,
     columnName: string,
   ) {
     super();
     makeObservable(this, {
       windowColumns: observable,
       sortByState: observable,
-      operationState: observable,
+      operatorState: observable,
       columnName: observable,
       setOperatorState: observable,
       setColumnName: action,
@@ -191,7 +191,7 @@ export class QueryBuilderWindowColumnState
     this.windowState = windowState;
     this.windowColumns = windowColumns;
     this.sortByState = sortType;
-    this.operationState = operationState;
+    this.operatorState = operatorState;
     this.columnName = columnName;
   }
 
@@ -212,9 +212,9 @@ export class QueryBuilderWindowColumnState
 
   get referencedTDSColumns(): QueryBuilderTDSColumnState[] {
     const operatorReference =
-      this.operationState instanceof
+      this.operatorState instanceof
       QueryBuilderTDS_WindowAggreationOperatorState
-        ? [this.operationState.columnState]
+        ? [this.operatorState.columnState]
         : [];
     const soryByReference = this.sortByState
       ? [this.sortByState.columnState]
@@ -223,7 +223,7 @@ export class QueryBuilderWindowColumnState
   }
 
   getColumnType(): Type | undefined {
-    return this.operationState.operator.getOperatorReturnType(
+    return this.operatorState.operator.getOperatorReturnType(
       this.windowState.tdsState.queryBuilderState.graphManagerState.graph,
     );
   }
@@ -233,7 +233,7 @@ export class QueryBuilderWindowColumnState
   }
 
   setOperatorState(op: QueryBuilderTDS_WindowOperatorState): void {
-    this.operationState = op;
+    this.operatorState = op;
   }
 
   setSortBy(val: WindowGroupByColumnSortByState | undefined): void {
@@ -307,10 +307,10 @@ export class QueryBuilderWindowColumnState
 
   changeOperator(windowOp: QueryBuilderTDS_WindowOperator): void {
     const stateAndName = this.getChangeOperatorStateAndColumnName(
-      this.operationState.operator,
-      this.operationState instanceof
+      this.operatorState.operator,
+      this.operatorState instanceof
         QueryBuilderTDS_WindowAggreationOperatorState
-        ? this.operationState.columnState
+        ? this.operatorState.columnState
         : undefined,
       windowOp,
     );
@@ -344,7 +344,7 @@ export class QueryBuilderWindowColumnState
       QUERY_BUILDER_STATE_HASH_STRUCTURE.TDS_WINDOW_COLUMN_STATE,
       hashArray(this.windowColumns),
       this.sortByState ?? '',
-      this.operationState,
+      this.operatorState,
       this.columnName,
     ]);
   }
@@ -383,14 +383,14 @@ export class QueryBuilderWindowState implements Hashable {
     const windowCols = this.windowColumns;
     windowCols.forEach((item, index) => {
       if (
-        item.operationState instanceof
+        item.operatorState instanceof
         QueryBuilderTDS_WindowAggreationOperatorState
       ) {
         if (
-          item.operationState.columnState instanceof
+          item.operatorState.columnState instanceof
           QueryBuilderWindowColumnState
         ) {
-          const windowColumnName = item.operationState.columnState.columnName;
+          const windowColumnName = item.operatorState.columnState.columnName;
           const hasExistingColumn = item.windowState.isColumnOrderValid(
             windowColumnName,
             index,

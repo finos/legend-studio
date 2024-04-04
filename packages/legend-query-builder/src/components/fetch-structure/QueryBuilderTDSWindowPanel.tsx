@@ -201,20 +201,6 @@ const QueryBuilderWindowColumnModalEditor = observer(
       !windowState.windowColumns.includes(windowColumnState);
     const tdsState = windowState.tdsState;
     const applicationStore = useApplicationStore();
-    const isDuplicatedColumnName = !windowState.windowColumns.includes(
-      windowColumnState,
-    )
-      ? windowState.tdsState.tdsColumns
-          .map((c) => c.columnName)
-          .includes(windowColumnState.columnName)
-      : windowState.tdsState.isDuplicateColumn(windowColumnState);
-    const windowOptions = isNewWindowFunction
-      ? tdsState.tdsColumns
-      : windowColumnState.possibleReferencedColumns;
-    const windowOptionsLabels = windowOptions.map((w) => ({
-      label: w.columnName,
-      value: w,
-    }));
 
     // Column name
     const [selectedColumnName, setSelectedColumnName] = useState(
@@ -223,10 +209,17 @@ const QueryBuilderWindowColumnModalEditor = observer(
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => setSelectedColumnName(event.target.value);
+    const isDuplicatedColumnName = !windowState.windowColumns.includes(
+      windowColumnState,
+    )
+      ? windowState.tdsState.tdsColumns
+          .map((c) => c.columnName)
+          .includes(windowColumnState.columnName)
+      : windowState.tdsState.isDuplicateColumn(windowColumnState);
 
-    // Operator
+    // Window operator
     const operators = windowState.operators;
-    const operationState = windowColumnState.operationState;
+    const operationState = windowColumnState.operatorState;
     const [selectedOperationState, setSelectedOperationState] = useState(() =>
       deepClone(operationState),
     );
@@ -261,6 +254,13 @@ const QueryBuilderWindowColumnModalEditor = observer(
           setSelectedColumnName(stateAndName.columnName);
         }
       };
+    const windowOptions = isNewWindowFunction
+      ? tdsState.tdsColumns
+      : windowColumnState.possibleReferencedColumns;
+    const windowOptionsLabels = windowOptions.map((w) => ({
+      label: w.columnName,
+      value: w,
+    }));
 
     // Window
     const [selectedValues, setSelectedValues] = useState([
@@ -786,7 +786,7 @@ const QueryBuilderWindowColumnEditor = observer(
     };
 
     // operator
-    const operationState = windowColumnState.operationState;
+    const operationState = windowColumnState.operatorState;
     const aggregateColumn =
       operationState instanceof QueryBuilderTDS_WindowAggreationOperatorState
         ? operationState.columnState
