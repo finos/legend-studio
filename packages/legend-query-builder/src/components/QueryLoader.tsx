@@ -325,18 +325,20 @@ export const QueryLoader = observer(
                   )}
                 </div>
               )}
-              <div className="query-loader__filter__extra__filters">
-                <button
-                  className={clsx('query-loader__filter__toggler__btn', {
-                    'query-loader__filter__toggler__btn--toggled':
-                      queryLoaderState.isCuratedTemplateToggled,
-                  })}
-                  onClick={toggleCuratedTemplate}
-                  tabIndex={-1}
-                >
-                  Curated Template Query
-                </button>
-              </div>
+              {queryLoaderState.extraFilters.has('Current Data Space') && (
+                <div className="query-loader__filter__extra__filters">
+                  <button
+                    className={clsx('query-loader__filter__toggler__btn', {
+                      'query-loader__filter__toggler__btn--toggled':
+                        queryLoaderState.isCuratedTemplateToggled,
+                    })}
+                    onClick={toggleCuratedTemplate}
+                    tabIndex={-1}
+                  >
+                    Curated Template Query
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
