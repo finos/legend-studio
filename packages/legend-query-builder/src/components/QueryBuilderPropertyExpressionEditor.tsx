@@ -308,6 +308,8 @@ const DerivedPropertyExpressionEditor = observer(
 export const QueryBuilderPropertyExpressionEditor = observer(
   (props: { propertyExpressionState: QueryBuilderPropertyExpressionState }) => {
     const { propertyExpressionState } = props;
+    const applicationStore =
+      propertyExpressionState.queryBuilderState.applicationStore;
     const handleClose = (): void =>
       propertyExpressionState.setIsEditingDerivedProperty(false);
     const isParameterCompatibleWithDerivedProperty = (
@@ -341,7 +343,9 @@ export const QueryBuilderPropertyExpressionEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal query-builder-property-editor"
         >
           <ModalHeader title="Derived Property" />

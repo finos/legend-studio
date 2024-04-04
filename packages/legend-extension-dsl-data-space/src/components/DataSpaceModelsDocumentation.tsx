@@ -543,14 +543,20 @@ const DataSpaceModelsDocumentationGridPanel = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const documentationState = dataSpaceViewerState.modelsDocumentationState;
+    const darkMode =
+      !dataSpaceViewerState.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     return (
       <div
         className={clsx(
-          'data-space__viewer__models-documentation__grid data-space__viewer__grid ag-theme-balham-dark',
+          'data-space__viewer__models-documentation__grid',
+          'data-space__viewer__grid',
           {
             'data-space__viewer__models-documentation__grid--shrink':
               documentationState.showFilterPanel,
+            'ag-theme-balham': !darkMode,
+            'ag-theme-balham-dark': darkMode,
           },
         )}
       >

@@ -123,6 +123,7 @@ const buildElementTypeOption = (type: string): ElementTypeSelectOption => ({
 
 const NewDataElementDriverEditor = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const newDataELementDriver =
     editorStore.newElementState.getNewElementDriver(NewDataElementDriver);
   const selectedOption = newDataELementDriver.embeddedDataOption
@@ -160,7 +161,9 @@ const NewDataElementDriverEditor = observer(() => {
         options={options}
         onChange={onTypeSelectionChange}
         value={selectedOption}
-        darkMode={true}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
       />
     </div>
   );
@@ -168,6 +171,7 @@ const NewDataElementDriverEditor = observer(() => {
 
 const NewRuntimeDriverEditor = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const newRuntimeDriver = editorStore.newElementState.getNewElementDriver(
     NewPackageableRuntimeDriver,
   );
@@ -195,7 +199,9 @@ const NewRuntimeDriverEditor = observer(() => {
         options={mappingOptions}
         onChange={onMappingSelectionChange}
         value={selectedMappingOption}
-        darkMode={true}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
       />
     </div>
   );
@@ -205,6 +211,7 @@ const NewPureModelConnectionDriverEditor = observer(
   (props: { newConnectionValueDriver: NewPureModelConnectionDriver }) => {
     const { newConnectionValueDriver } = props;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     // class
     const _class = newConnectionValueDriver.class;
     const classOptions = editorStore.graphManagerState.usableClasses
@@ -237,9 +244,14 @@ const NewPureModelConnectionDriverEditor = observer(
             options={classOptions}
             onChange={onClassSelectionChange}
             value={selectedClassOption}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             formatOptionLabel={getPackageableElementOptionFormatter({
-              darkMode: true,
+              darkMode:
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled,
             })}
           />
         </div>
@@ -266,6 +278,7 @@ const NewConnectionValueDriverEditor = observer(() => {
 
 const NewConnectionDriverEditor = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const newConnectionDriver = editorStore.newElementState.getNewElementDriver(
     NewPackageableConnectionDriver,
   );
@@ -330,7 +343,9 @@ const NewConnectionDriverEditor = observer(() => {
           options={connectionOptions}
           onChange={onConnectionChange}
           value={currentConnectionTypeOption}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
       <div className="panel__content__form__section__header__label">
@@ -342,7 +357,9 @@ const NewConnectionDriverEditor = observer(() => {
           options={storeOptions}
           onChange={onStoreSelectionChange}
           value={selectedStoreOption}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
       <NewConnectionValueDriverEditor />
@@ -352,6 +369,7 @@ const NewConnectionDriverEditor = observer(() => {
 
 const NewServiceDriverEditor = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const runtimeSelectorPlaceholder = 'Choose a compatible runtime...';
   const newServiceDriver =
     editorStore.newElementState.getNewElementDriver(NewServiceDriver);
@@ -389,7 +407,9 @@ const NewServiceDriverEditor = observer(() => {
           options={mappingOptions}
           onChange={onMappingChange}
           value={newServiceDriver.mappingOption}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
       </div>
       <div className="panel__content__form__section__header__label">
@@ -401,7 +421,9 @@ const NewServiceDriverEditor = observer(() => {
           options={newServiceDriver.runtimeOptions}
           onChange={onRuntimeChange}
           value={newServiceDriver.runtimeOption}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           placeholder={runtimeSelectorPlaceholder}
         />
       </div>
@@ -411,6 +433,7 @@ const NewServiceDriverEditor = observer(() => {
 
 const NewFileGenerationDriverEditor = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const newConnectionDriver = editorStore.newElementState.getNewElementDriver(
     NewFileGenerationDriver,
   );
@@ -431,7 +454,9 @@ const NewFileGenerationDriverEditor = observer(() => {
         options={options}
         onChange={onTypeSelectionChange}
         value={newConnectionDriver.typeOption}
-        darkMode={true}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
       />
     </div>
   );
@@ -552,7 +577,10 @@ export const CreateNewLocalConnectionModal = observer(() => {
               onChange={handleTypeChange}
               value={selectedTypeOption}
               isClearable={false}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           )}
           <input
@@ -662,7 +690,10 @@ export const CreateNewElementModal = observer(() => {
               onChange={handleTypeChange}
               value={selectedTypeOption}
               isClearable={false}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           )}
           <input

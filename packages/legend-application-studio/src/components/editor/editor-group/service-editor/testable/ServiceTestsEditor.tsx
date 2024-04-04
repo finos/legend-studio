@@ -88,6 +88,7 @@ import {
 export const NewParameterModal = observer(
   (props: { setupState: ServiceTestSetupState; isReadOnly: boolean }) => {
     const { setupState, isReadOnly } = props;
+    const applicationStore = setupState.editorStore.applicationStore;
     const currentOption = {
       value: setupState.newParameterValueName,
       label: setupState.newParameterValueName,
@@ -122,7 +123,10 @@ export const NewParameterModal = observer(
             onChange={onChange}
             value={currentOption}
             escapeClearsValue={true}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             disable={isReadOnly}
           />
           <div className="search-modal__actions">
@@ -296,6 +300,7 @@ const ServiceTestSetupEditor = observer(
   (props: { serviceTestState: ServiceTestState }) => {
     const { serviceTestState } = props;
     const setupState = serviceTestState.setupState;
+    const applicationStore = setupState.editorStore.applicationStore;
     const test = serviceTestState.test;
     const format = test.serializationFormat;
     const selectedSerializationFormat = setupState.getSelectedFormatOption();
@@ -365,7 +370,10 @@ const ServiceTestSetupEditor = observer(
                       value={selectedSerializationFormat}
                       isClearable={true}
                       escapeClearsValue={true}
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                       disable={isReadOnly}
                     />
                   </div>
@@ -386,7 +394,10 @@ const ServiceTestSetupEditor = observer(
                         value={selectedKeys}
                         isClearable={true}
                         escapeClearsValue={true}
-                        darkMode={true}
+                        darkMode={
+                          !applicationStore.layoutService
+                            .TEMPORARY__isLightColorThemeEnabled
+                        }
                         isMulti={true}
                         disable={isReadOnly}
                         placeholder="Choose keys..."

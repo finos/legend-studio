@@ -414,6 +414,9 @@ const PlayGroundSQLExecutionResultGrid = observer(
   }) => {
     const { result, useAdvancedGrid, useLocalMode } = props;
     const data = parseExecutionResultData(result);
+    const applicationStore = useApplicationStore();
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
     if (!data) {
       return (
@@ -438,7 +441,12 @@ const PlayGroundSQLExecutionResultGrid = observer(
         );
 
         return (
-          <div className="sql-playground__result__grid ag-theme-balham-dark">
+          <div
+            className={clsx('sql-playground__result__grid', {
+              'ag-theme-balham': !darkMode,
+              'ag-theme-balham-dark': darkMode,
+            })}
+          >
             <DataGrid
               rowData={data.rowData}
               gridOptions={{
@@ -491,7 +499,12 @@ const PlayGroundSQLExecutionResultGrid = observer(
         [],
       );
       return (
-        <div className="sql-playground__result__grid ag-theme-balham-dark">
+        <div
+          className={clsx('sql-playground__result__grid', {
+            'ag-theme-balham': !darkMode,
+            'ag-theme-balham-dark': darkMode,
+          })}
+        >
           <DataGrid
             rowData={data.rowData}
             overlayNoRowsTemplate={`<div class="sql-playground__result__grid--empty">No results</div>`}
@@ -516,7 +529,12 @@ const PlayGroundSQLExecutionResultGrid = observer(
     }
 
     return (
-      <div className="sql-playground__result__grid ag-theme-balham-dark">
+      <div
+        className={clsx('sql-playground__result__grid', {
+          'ag-theme-balham': !darkMode,
+          'ag-theme-balham-dark': darkMode,
+        })}
+      >
         <DataGrid
           rowData={data.rowData}
           overlayNoRowsTemplate={`<div class="sql-playground__result__grid--empty">No results</div>`}
@@ -670,7 +688,10 @@ export const SQLPlaygroundPanel = observer(() => {
                       options={connectionOptions}
                       onChange={changeConnection}
                       value={selectedConnectionOption}
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                       placeholder="Choose a connection..."
                       filterOption={connectionFilterOption}
                     />
@@ -685,7 +706,10 @@ export const SQLPlaygroundPanel = observer(() => {
                       options={connectionOptions}
                       onChange={changeConnection}
                       value={selectedConnectionOption}
-                      darkMode={true}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
                       placeholder="Choose a connection..."
                       filterOption={connectionFilterOption}
                     />

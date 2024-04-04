@@ -228,6 +228,7 @@ const QueryBuilderPostGraphFetchPanel = observer(
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = queryBuilderState.applicationStore;
     const queryBuilderRef = useRef<HTMLDivElement>(null);
     const isQuerySupported = queryBuilderState.isQuerySupported;
     const fetchStructureState = queryBuilderState.fetchStructureState;
@@ -751,7 +752,13 @@ export const QueryBuilder = observer(
                 paper: 'editor-modal__content',
               }}
             >
-              <Modal darkMode={true} className="editor-modal">
+              <Modal
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+                className="editor-modal"
+              >
                 <ModalHeader title="Query Entitlements" />
                 <ModalBody className="query-builder__data-access-overview">
                   <div className="query-builder__data-access-overview__container">
@@ -771,7 +778,11 @@ export const QueryBuilder = observer(
                   </div>
                 </ModalBody>
                 <ModalFooter>
-                  <ModalFooterButton text="Close" onClick={handleClose} />
+                  <ModalFooterButton
+                    text="Close"
+                    onClick={handleClose}
+                    type="secondary"
+                  />
                 </ModalFooter>
               </Modal>
             </Dialog>

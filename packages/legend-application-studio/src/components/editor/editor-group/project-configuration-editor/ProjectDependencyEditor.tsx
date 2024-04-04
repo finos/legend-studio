@@ -595,6 +595,7 @@ const ProjectDependencyReportModal = observer(
     tab: DEPENDENCY_REPORT_TAB;
   }) => {
     const { dependencyEditorState } = props;
+    const applicationStore = dependencyEditorState.editorStore.applicationStore;
     const reportTab = dependencyEditorState.reportTab;
     const tabs = Object.values(DEPENDENCY_REPORT_TAB);
     const changeTab =
@@ -642,7 +643,12 @@ const ProjectDependencyReportModal = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
           <ModalHeader title="Dependency Explorer" />
           <ModalBody>
             <div className="panel project-dependency-report">
@@ -731,7 +737,11 @@ const ProjectDependencyReportModal = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton onClick={closeModal} text="Close" />
+            <ModalFooterButton
+              onClick={closeModal}
+              text="Close"
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -897,7 +907,9 @@ const ProjectVersionDependencyEditor = observer(
           value={selectedProjectOption}
           isLoading={configState.fetchingProjectVersionsState.isInProgress}
           formatOptionLabel={formatOptionLabel}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
         <CustomSelectorInput
           className="project-dependency-editor__selector"
@@ -918,7 +930,9 @@ const ProjectVersionDependencyEditor = observer(
               .fetchingProjectVersionsState.isInProgress ||
             fetchSelectedProjectVersionsStatus.isInProgress
           }
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
         <DropdownMenu
           className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--medium"

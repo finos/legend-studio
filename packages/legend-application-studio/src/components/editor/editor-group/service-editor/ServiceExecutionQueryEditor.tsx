@@ -30,6 +30,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
   ModalHeader,
 } from '@finos/legend-art';
 import {
@@ -72,6 +73,7 @@ import { ServiceEditorState } from '../../../../stores/editor/editor-state/eleme
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
     const { executionState } = props;
+    const applicationStore = executionState.editorStore.applicationStore;
     // execution
     const executionResultText = executionState.executionResultText;
     const closeExecutionResultViewer = (): void =>
@@ -87,7 +89,12 @@ const ServiceExecutionResultViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
           <ModalHeader title="Execution Result" />
           <ModalBody>
             <CodeEditor
@@ -97,12 +104,12 @@ const ServiceExecutionResultViewer = observer(
             />
           </ModalBody>
           <ModalFooter>
-            <button
-              className="btn modal__footer__close-btn btn--dark"
+            <ModalFooterButton
+              className="modal__footer__close-btn"
               onClick={closeExecutionResultViewer}
-            >
-              Close
-            </button>
+              text="Close"
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

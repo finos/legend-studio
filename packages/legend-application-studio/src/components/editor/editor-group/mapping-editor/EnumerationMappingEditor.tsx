@@ -88,6 +88,7 @@ const EnumerationMappingSourceSelectorModal = observer(
   }) => {
     const { enumerationMapping, closeModal, open } = props;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const options = [PrimitiveType.INTEGER, PrimitiveType.STRING]
       .map(buildElementOption)
       .concat(
@@ -140,7 +141,12 @@ const EnumerationMappingSourceSelectorModal = observer(
           },
         }}
       >
-        <Modal className="search-modal" darkMode={true}>
+        <Modal
+          className="search-modal"
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
           <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
             ref={sourceSelectorRef}
@@ -149,7 +155,10 @@ const EnumerationMappingSourceSelectorModal = observer(
             value={selectedSourceType}
             placeholder="Choose a type..."
             isClearable={true}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             filterOption={filterOption}
             formatOptionLabel={getPackageableElementOptionFormatter({})}
           />

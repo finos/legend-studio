@@ -168,6 +168,7 @@ import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostPro
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 import { prettyCONSTName, uniq } from '@finos/legend-shared';
+import { useApplicationStore } from '@finos/legend-application';
 
 export type RelationalDatabaseConnectionOption = {
   label: React.ReactNode;
@@ -201,6 +202,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
     sourceSpec: LocalH2DatasourceSpecification;
     isReadOnly: boolean;
   }) => {
+    const applicationStore = useApplicationStore();
     const { sourceSpec, isReadOnly } = props;
     const [showPopUp, setShowPopUp] = useState(false);
     const openInPopUp = (): void => setShowPopUp(true);
@@ -213,7 +215,13 @@ const LocalH2DatasourceSpecificationEditor = observer(
         {showPopUp && (
           <div>
             <Dialog open={showPopUp} onClose={closePopUp}>
-              <Modal darkMode={true} className="editor-modal">
+              <Modal
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+                className="editor-modal"
+              >
                 <ModalHeader title="test data setup SQL" />
                 <ModalBody className="modal__body__large">
                   <CodeEditor
@@ -229,7 +237,11 @@ const LocalH2DatasourceSpecificationEditor = observer(
                   />
                 </ModalBody>
                 <ModalFooter>
-                  <ModalFooterButton onClick={closePopUp} text="Close" />
+                  <ModalFooterButton
+                    onClick={closePopUp}
+                    text="Close"
+                    type="secondary"
+                  />
                 </ModalFooter>
               </Modal>
             </Dialog>
@@ -1105,6 +1117,7 @@ const RelationalConnectionStoreEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { connectionValueState, isReadOnly } = props;
+    const applicationStore = connectionValueState.editorStore.applicationStore;
     const connection = connectionValueState.connection;
     // store
     const isStoreEmpty = connectionValueState.storeValidationResult;
@@ -1155,7 +1168,10 @@ const RelationalConnectionStoreEditor = observer(
               options={options}
               onChange={onStoreChange}
               value={selectedStore}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
               disabled={isReadOnly}
               hasError={isStoreEmpty}
             />
@@ -1605,6 +1621,7 @@ export const RelationalConnectionGeneralEditor = observer(
     const { connectionValueState, isReadOnly, hideHeader } = props;
     const connection = connectionValueState.connection;
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const plugins = editorStore.pluginManager.getApplicationPlugins();
     const databseTypeConfigs =
       connectionValueState.editorStore.graphState
@@ -1708,7 +1725,10 @@ export const RelationalConnectionGeneralEditor = observer(
                   options={dbTypes}
                   onChange={onTypeChange}
                   value={selectedDbType}
-                  darkMode={true}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </PanelFormSection>
             </PanelContent>
@@ -1732,7 +1752,10 @@ export const RelationalConnectionGeneralEditor = observer(
                     options={dbTypes}
                     onChange={onTypeChange}
                     value={selectedDbType}
-                    darkMode={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
                   />
                 </PanelFormSection>
                 <PanelFormBooleanField
@@ -1770,7 +1793,10 @@ export const RelationalConnectionGeneralEditor = observer(
                           value={selectedSourceSpec(
                             connection.datasourceSpecification,
                           )}
-                          darkMode={true}
+                          darkMode={
+                            !applicationStore.layoutService
+                              .TEMPORARY__isLightColorThemeEnabled
+                          }
                         />
                       </PanelFormSection>
                       <PanelDivider />
@@ -1804,7 +1830,10 @@ export const RelationalConnectionGeneralEditor = observer(
                           value={selectedAuth(
                             connection.authenticationStrategy,
                           )}
-                          darkMode={true}
+                          darkMode={
+                            !applicationStore.layoutService
+                              .TEMPORARY__isLightColorThemeEnabled
+                          }
                         />
                       </PanelFormSection>
                       <PanelDivider />

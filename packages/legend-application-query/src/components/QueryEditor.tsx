@@ -147,7 +147,12 @@ const CreateQueryDialog = observer(() => {
         paper: 'editor-modal__content',
       }}
     >
-      <Modal darkMode={true} className="query-export">
+      <Modal
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        className="query-export"
+      >
         <ModalHeader title="Create New Query" />
         <ModalBody>
           <PanelLoadingIndicator
@@ -217,7 +222,9 @@ const SaveQueryDialog = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder-text-mode__modal')}
         >
           <ModalHeader>
@@ -249,7 +256,7 @@ const SaveQueryDialog = observer(
               disabled={Boolean(existingEditorStore.isPerformingBlockingAction)}
               onClick={saveQuery}
             />
-            <ModalFooterButton text="Close" onClick={close} />
+            <ModalFooterButton text="Close" onClick={close} type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -506,19 +513,19 @@ const QueryEditorExistingQueryInfoModal = observer(
                 )}
             </div>
             <div className="search-modal__actions">
-              <button
-                className="btn btn--dark"
-                onClick={updateQueryVersionId}
+              <ModalFooterButton
+                text="Update"
                 disabled={
                   !updateState.queryVersionId ||
                   updateState.queryVersionId === query.versionId
                 }
-              >
-                Update
-              </button>
-              <button className="btn btn--dark" onClick={closeModal}>
-                Close
-              </button>
+                onClick={updateQueryVersionId}
+              />
+              <ModalFooterButton
+                text="Close"
+                onClick={closeModal}
+                type="secondary"
+              />
             </div>
           </div>
         </Modal>

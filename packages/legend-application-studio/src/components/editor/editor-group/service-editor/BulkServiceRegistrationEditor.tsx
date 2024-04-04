@@ -213,7 +213,10 @@ export const BulkServiceRegistrationEditor = observer(() => {
               options={envOptions}
               onChange={onServerEnvChange}
               value={selectedEnvOption}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
           <div className="panel__content__form__section">
@@ -228,7 +231,10 @@ export const BulkServiceRegistrationEditor = observer(() => {
               options={serviceTypesOptions}
               onChange={onServiceTypeSelectionChange}
               value={selectedServiceType}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
           {globalBulkServiceRegistrationState.serviceConfigState
@@ -294,7 +300,10 @@ export const BulkServiceRegistrationEditor = observer(() => {
               }
               onChange={onVersionSelectionChange}
               value={selectedVersion}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
               disabled={
                 globalBulkServiceRegistrationState.serviceConfigState
                   .versionOptions === undefined

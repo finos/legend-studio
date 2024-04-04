@@ -162,6 +162,8 @@ const ServiceFailViewer = observer(
     failure: ServiceRegistrationResult | undefined;
   }) => {
     const { globalBulkServiceRegistrationState, failure } = props;
+    const applicationStore =
+      globalBulkServiceRegistrationState.editorStore.applicationStore;
     const closeLogViewer = (): void =>
       globalBulkServiceRegistrationState.setFailingView(undefined);
     return (
@@ -174,7 +176,12 @@ const ServiceFailViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
           <ModalHeader title={guaranteeNonNullable(failure?.service).path} />
           <ModalBody>
             {failure instanceof ServiceRegistrationFail && (
@@ -186,7 +193,11 @@ const ServiceFailViewer = observer(
             )}
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton text="Close" onClick={closeLogViewer} />
+            <ModalFooterButton
+              text="Close"
+              onClick={closeLogViewer}
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -199,6 +210,7 @@ export const RegisterService = observer(
     globalBulkServiceRegistrationState: GlobalBulkServiceRegistrationState;
   }) => {
     const editorStore = useEditorStore();
+    const applicationStore = editorStore.applicationStore;
     const services = editorStore.graphManagerState.graph.ownServices;
     const toggleSelectAllServices = (): void => {
       editorStore.globalBulkServiceRegistrationState.selectAllServices
@@ -334,7 +346,10 @@ export const RegisterService = observer(
             }
           >
             <Modal
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
               className={clsx(
                 'editor-modal bulk-service-registration__service__editor',
               )}

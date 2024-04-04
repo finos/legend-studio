@@ -494,6 +494,7 @@ const EnumValueInstanceValueEditor = observer(
       setValueSpecification,
       obseverContext,
     } = props;
+    const applicationStore = useApplicationStore();
     const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
     const enumValue = enumValueRef.value;
     const options = enumValue._OWNER.values.map((value) => ({
@@ -517,7 +518,9 @@ const EnumValueInstanceValueEditor = observer(
           options={options}
           onChange={changeValue}
           value={{ value: enumValue, label: enumValue.name }}
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
         />
         <button
           className="value-spec-editor__reset-btn"

@@ -184,6 +184,7 @@ const TestFailViewer = observer(
     failure: TestError | AssertFail;
   }) => {
     const { globalTestRunnerState, failure } = props;
+    const applicationStore = globalTestRunnerState.editorStore.applicationStore;
     const id =
       failure instanceof TestError
         ? failure.atomicTest.id
@@ -201,7 +202,12 @@ const TestFailViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="editor-modal">
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          className="editor-modal"
+        >
           <PanelLoadingIndicator
             isLoading={globalTestRunnerState.isDispatchingOwnProjectAction}
           />
@@ -231,7 +237,11 @@ const TestFailViewer = observer(
               )}
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton text="Close" onClick={closeLogViewer} />
+            <ModalFooterButton
+              text="Close"
+              onClick={closeLogViewer}
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

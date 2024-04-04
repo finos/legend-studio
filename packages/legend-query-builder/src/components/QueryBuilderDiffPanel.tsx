@@ -121,6 +121,8 @@ export const QueryBuilderDiffViewPanel = observer(
 export const QueryBuilderDiffViewPanelDiaglog = observer(
   (props: { diffViewState: QueryBuilderDiffViewState }) => {
     const { diffViewState } = props;
+    const applicationStore =
+      diffViewState.changeDetectionState.querybuilderState.applicationStore;
     const close = (): void =>
       diffViewState.changeDetectionState.hideDiffViewPanel();
     return (
@@ -134,7 +136,9 @@ export const QueryBuilderDiffViewPanelDiaglog = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder-text-mode__modal')}
         >
           <ModalHeader>
@@ -153,7 +157,11 @@ export const QueryBuilderDiffViewPanelDiaglog = observer(
             <QueryBuilderDiffViewPanel diffViewState={diffViewState} />
           </ModalBody>
           <ModalFooter className="query-builder__diff-panel__actions">
-            <ModalFooterButton title="Close Modal" onClick={close}>
+            <ModalFooterButton
+              title="Close Modal"
+              onClick={close}
+              type="secondary"
+            >
               Close
             </ModalFooterButton>
           </ModalFooter>

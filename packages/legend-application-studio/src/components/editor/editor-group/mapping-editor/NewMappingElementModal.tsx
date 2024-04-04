@@ -59,6 +59,7 @@ interface ClassMappingSubTypeOption {
 
 export const NewMappingElementModal = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = editorStore.applicationStore;
   const mappingEditorState =
     editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
   const spec = mappingEditorState.newMappingElementSpec;
@@ -238,7 +239,10 @@ export const NewMappingElementModal = observer(() => {
               formatOptionLabel={getPackageableElementOptionFormatter({})}
               placeholder="Choose a target"
               isClearable={true}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           )}
           {showId && (
@@ -266,7 +270,10 @@ export const NewMappingElementModal = observer(() => {
                 options={classMappingTypeOptions}
                 onChange={changeClassMappingType}
                 value={classMappingType}
-                darkMode={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
                 placeholder="Choose a class mapping type"
               />
             </>

@@ -235,6 +235,7 @@ const buildDiagramOption = (
 const DataSpaceDiagramViewerHeader = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const applicationStore = dataSpaceViewerState.applicationStore;
     const diagramViewerState = dataSpaceViewerState.diagramViewerState;
     const diagramOptions =
       dataSpaceViewerState.dataSpaceAnalysisResult.diagrams.map(
@@ -275,7 +276,10 @@ const DataSpaceDiagramViewerHeader = observer(
             onChange={onDiagramOptionChange}
             value={selectedDiagramOption}
             placeholder="Search for a diagram"
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
           />
           <div className="data-space__viewer__diagram-viewer__header__navigation__pager">
             <input

@@ -105,12 +105,12 @@
   }
 
   .btn--dark.btn--caution {
-    background: var(--color-legacylight-orange-100);
+    background: var(--color-legacylight-orange-150);
     color: var(--color-white);
   }
 
   .btn--dark.btn--caution:hover {
-    background: var(--color-legacylight-orange-150);
+    background: var(--color-legacylight-orange-100);
   }
 
   .btn--dark.btn--caution[disabled],
@@ -131,6 +131,10 @@
 
   .btn--medium:hover {
     background: var(--color-legacylight-light-blue-270);
+  }
+
+  .mui-radio-group__group {
+    color: var(--color-legacylight-dark-grey-200);
   }
 
   // ---------------------------- Table -------------------------------
@@ -174,6 +178,11 @@
     &:focus {
       border-color: var(--color-legacylight-light-blue-100);
     }
+  }
+
+  .panel__content__form__section__input.input--with-validation--error,
+  .panel__content__form__section__input.input--with-validation--error:focus {
+    border-color: var(--color-red-180);
   }
 
   .query-builder__variables__variable__label {
@@ -233,6 +242,36 @@
     background: var(--color-legacylight-light-blue-100);
   }
 
+  .modal__footer__btn--primary {
+    background: var(--color-blue-200);
+    color: var(--color-white);
+
+    &:hover:not(:disabled) {
+      background: var(--color-legacylight-light-blue-100);
+      color: var(--color-black);
+    }
+  }
+
+  .modal__footer__btn--primary.btn--caution {
+    background: var(--color-legacylight-orange-150);
+    color: var(--color-white);
+
+    &:hover:not(:disabled) {
+      background: var(--color-legacylight-orange-100);
+      color: var(--color-white);
+    }
+  }
+
+  .modal__footer__btn--secondary {
+    background: var(--color-legacylight-dark-grey-400);
+    color: var(--color-white);
+
+    &:hover {
+      background: var(--color-legacylight-light-grey-400);
+      color: var(--color-black);
+    }
+  }
+
   .code-editor__container {
     background: var(--color-white);
   }
@@ -243,12 +282,11 @@
   }
 
   .query-builder__projection__options__sort__sortby {
-    background: var(--color-dark-grey-400);
-    color: var(--color-light-grey-100);
+    background: var(--color-legacylight-light-blue-200);
   }
 
   .query-builder__projection__options__sort__sortby--btn {
-    background: var(--color-legacylight-light-blue-100);
+    background: var(--color-blue-200);
   }
 
   .lambda-editor__popup__content {
@@ -263,32 +301,43 @@
     }
   }
 
-  // ------------------------------------ Modal OLAP Panel ---------------------------------------
-
-  .query-builder__olap__column__operation__operator__label,
-  .query-builder__olap__column__sortby__none,
-  .query-builder__olap__column__sortby__operator__dropdown__trigger,
-  .query-builder__olap__column__operation__operator__dropdown__trigger {
-    background: var(--color-dark-grey-300);
+  .data-access-overview__header {
+    color: var(--color-white);
   }
 
-  .query-builder__olap__column__sortby__operator__badge {
-    background: var(--color-dark-grey-400);
-  }
-
-  .query-builder__olap__column__operation__operator__badge,
-  .query-builder__olap__column__sortby__operator__badge {
-    background: var(--color-dark-grey-400);
-    color: var(--color-light-grey-100);
-
-    svg {
-      color: var(--color-legacylight-light-grey-100);
+  // ------------------------------------ OLAP Panel Modal ---------------------------------------
+  .query-builder__olap__modal {
+    .query-builder__olap__column__sortby__none,
+    .query-builder__olap__column__sortby__operator__dropdown__trigger,
+    .query-builder__olap__column__operation__operator__dropdown__trigger {
+      background: var(--color-blue-50);
     }
-  }
 
-  .query-builder__olap__column__sortby__operator__label,
-  .query-builder__olap__column__operation__operator__label {
-    background: var(--color-dark-grey-400);
+    .query-builder__olap__column__sortby__operator__badge {
+      background: var(--color-blue-200);
+      color: var(--color-light-grey-100);
+
+      svg {
+        color: var(--color-legacylight-light-grey-100);
+      }
+    }
+
+    .query-builder__olap__column__sortby__operator__label,
+    .query-builder__olap__column__operation__operator__label {
+      background: var(--color-legacylight-light-blue-100);
+    }
+
+    .query-builder__olap__column__operation__operator__badge {
+      background: var(--color-legacylight-light-blue-200);
+
+      svg {
+        color: var(--color-light-grey-100);
+      }
+    }
+
+    .query-builder__olap__column__operation__operator__dropdown__trigger {
+      background: var(--color-blue-200);
+    }
   }
 
   // ---------------------------- Basic Value Specification Editor  -------------------------------
@@ -305,7 +354,7 @@
 
   .value-spec-editor__date-picker__trigger {
     background: var(--color-white);
-    border-color: var(--color-light-grey-300);
+    border: 1px solid var(--color-light-grey-300);
     color: var(--color-legacylight-dark-grey-200);
   }
 
@@ -437,6 +486,10 @@
       color: var(--color-legacylight-dark-grey-200);
     }
 
+    &__form__section__toggler__btn svg {
+      color: var(--color-light-grey-250);
+    }
+
     &__form__section__toggler__btn--toggled svg {
       color: var(--color-legacylight-light-blue-100);
     }
@@ -449,8 +502,18 @@
       color: var(--color-legacylight-dark-grey-200);
     }
 
-    &__node__container:hover svg {
-      color: var(--color-dark-grey-350);
+    &__node__container:hover {
+      .query-builder-property-search-panel__type-icon svg {
+        color: var(--color-primitive);
+      }
+
+      .query-builder-property-search-panel__node__info svg {
+        color: var(--color-legacylight-light-blue-100);
+      }
+    }
+
+    &__node__info:hover svg {
+      color: var(--color-legacylight-light-blue-400) !important;
     }
 
     &__input {
@@ -578,11 +641,11 @@
   // ---------------------------- Search config -------------------------------
 
   .fuzzy-search__advanced-config__panel {
-    background: var(--color-white);
+    background: var(--color-legacylight-light-grey-100);
 
     &__header__label {
       color: var(--color-legacylight-dark-grey-400);
-      background: var(--color-legacylight-light-grey-100);
+      background: var(--color-legacylight-light-grey-200);
     }
 
     &__header__hint {
@@ -596,6 +659,14 @@
     .Mui-checked {
       color: var(--color-legacylight-light-blue-200);
     }
+
+    .documentation-link {
+      color: var(--color-legacylight-light-blue-100);
+
+      &:hover {
+        color: var(--color-legacylight-light-blue-400);
+      }
+    }
   }
 
   // ---------------------------- Service Register Modal -------------------------------
@@ -608,6 +679,139 @@
 
   .service-register-modal__group__content {
     border-color: var(--color-light-grey-250);
+  }
+
+  // ---------------------------- Tooltip -----------------------------
+  .MuiTooltip-tooltip {
+    background: white !important;
+    color: var(--color-legacylight-dark-grey-200);
+    border: 1px solid var(--color-legacylight-light-grey-200);
+    box-shadow:
+      0 2px 1px rgb(0 0 0 / 10%),
+      0 0 1px rgb(0 0 0 / 10%);
+  }
+
+  .query-builder__tooltip {
+    opacity: 1 !important;
+
+    &__arrow {
+      opacity: 1 !important;
+    }
+
+    &__item__action {
+      svg {
+        color: var(--color-legacylight-light-blue-100);
+
+        &:hover {
+          color: var(--color-legacylight-light-blue-400);
+        }
+      }
+    }
+  }
+
+  // ---------------------------- Virtual Assistant -------------------
+  .virtual-assistant__station {
+    .virtual-assistant__station__trigger {
+      background: var(--color-white);
+    }
+  }
+
+  .virtual-assistant__panel {
+    background: var(--color-white);
+    color: var(--color-legacylight-dark-grey-200);
+
+    .virtual-assistant__panel__header {
+      background: var(--color-legacylight-light-grey-100);
+      color: var(--color-dark-grey-300);
+
+      &__tab {
+        svg {
+          color: var(--color-light-grey-400);
+        }
+
+        &:hover {
+          background: var(--color-dark-blue-shade-100);
+        }
+
+        &__content {
+          border-bottom-color: var(--color-light-grey-400);
+        }
+      }
+
+      &__tab--active {
+        svg {
+          color: var(--color-dark-grey-400);
+        }
+
+        &:hover {
+          svg {
+            color: var(--color-dark-grey-400);
+          }
+        }
+
+        .virtual-assistant__panel__header__tab__content {
+          border-bottom-color: var(--color-yellow-300) !important;
+        }
+      }
+    }
+
+    &__content {
+      .virtual-assistant__search {
+        &__input {
+          &__search__icon svg {
+            color: var(--dark-grey-400);
+          }
+
+          &__advanced-config__panel {
+            background: var(--color-legacylight-light-grey-100);
+
+            &__header__label {
+              color: var(--color-legacylight-dark-grey-200);
+              background: var(--color-legacylight-light-grey-200);
+
+              &__hint svg {
+                color: var(--color-legacylight-light-blue-100);
+              }
+
+              &__hint:hover svg {
+                color: var(--color-legacylight-light-blue-400);
+              }
+            }
+
+            .mui-radio-group__group {
+              color: var(--color-legacylight-dark-grey-200);
+            }
+          }
+        }
+
+        .virtual-assistant__doc-entry {
+          &__expand-icon svg {
+            color: var(--color-legacylight-dark-grey-200);
+          }
+
+          &__expand-icon--disabled svg {
+            color: var(--color-legacylight-light-grey-300);
+          }
+
+          &__title {
+            color: var(--color-legacylight-dark-grey-200);
+
+            &--link {
+              color: var(--color-blue-40);
+            }
+          }
+
+          &__content__markdown-text {
+            background: var(--color-legacylight-light-grey-100);
+            color: var(--color-legacylight-dark-grey-200);
+
+            code {
+              background: var(--color-legacylight-light-grey-300);
+            }
+          }
+        }
+      }
+    }
   }
 
   // ---------------------------- Other -------------------------------
@@ -1046,14 +1250,14 @@
 
     .query-builder__projection__column__aggregate__operator__badge,
     .query-builder__olap__column__sortby__operator__badge {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
       color: var(--color-light-grey-100);
     }
 
     .query-builder__projection__column__aggregate__operator__dropdown__trigger,
     .query-builder__olap__column__sortby__operator__dropdown__trigger,
     .query-builder__olap__column__operation__operator__dropdown__trigger {
-      background: var(--color-dark-grey-350);
+      background: var(--color-blue-200);
 
       svg {
         color: var(--color-light-grey-100);
@@ -1114,19 +1318,23 @@
     }
 
     .query-builder-filter-tree__condition-node__operator__label {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
     }
 
     .query-builder-filter-tree__condition-node__operator__dropdown__trigger {
-      background: var(--color-dark-grey-350);
+      background: var(--color-blue-200);
     }
 
     .query-builder-filter-tree__group-node.query-builder-filter-tree__group-node--and {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
+
+      .query-builder-filter-tree__group-node__action {
+        background: var(--color-blue-200);
+      }
     }
 
     .query-builder-filter-tree__group-node.query-builder-filter-tree__group-node--or {
-      background: var(--color-light-grey-400);
+      background: var(--color-magenta-300);
     }
 
     .query-builder-filter-tree__node__container--selected
@@ -1177,19 +1385,19 @@
     }
 
     .query-builder-post-filter-tree__condition-node__operator__label {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
     }
 
     .query-builder-post-filter-tree__condition-node__operator__dropdown__trigger {
-      background: var(--color-dark-grey-350);
+      background: var(--color-blue-200);
     }
 
     .query-builder-post-filter-tree__group-node.query-builder-post-filter-tree__group-node--and {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
     }
 
     .query-builder-post-filter-tree__group-node.query-builder-post-filter-tree__group-node--or {
-      background: var(--color-light-grey-400);
+      background: var(--color-magenta-300);
     }
 
     .query-builder-post-filter-tree__node__container--selected
@@ -1220,12 +1428,12 @@
 
     .query-builder__olap__column__sortby__none,
     .query-builder__olap__column__window__content__label {
-      background: var(--color-dark-grey-300);
+      background: var(--color-blue-50);
     }
 
     .query-builder__olap__column__sortby__operator__label,
     .query-builder__olap__column__operation__operator__label {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-100);
       color: var(--color-light-grey-100);
     }
 
@@ -1380,27 +1588,27 @@
     }
 
     .query-builder__result__advanced__mode__label {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
       color: var(--color-light-grey-100);
+
+      .documentation-link {
+        color: var(--color-light-grey-100);
+
+        &:hover {
+          color: var(--color-blue-200);
+        }
+      }
     }
 
     .query-builder__result__advanced__mode__toggler__btn {
-      background: var(--color-dark-grey-400);
+      background: var(--color-legacylight-light-blue-200);
 
       svg {
-        color: var(--color-dark-grey-250);
+        color: var(--color-light-grey-100);
       }
     }
 
     // ------------------------------------ Other / Modal ---------------------------------------
-
-    .query-builder__tooltip {
-      opacity: 1 !important;
-
-      &__arrow {
-        opacity: 1 !important;
-      }
-    }
 
     .query-builder-property-expression-badge {
       &__property {

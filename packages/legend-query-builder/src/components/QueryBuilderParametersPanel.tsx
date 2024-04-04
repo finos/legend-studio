@@ -156,7 +156,9 @@ const VariableExpressionEditor = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className="editor-modal query-builder__variables__modal"
         >
           <ModalHeader

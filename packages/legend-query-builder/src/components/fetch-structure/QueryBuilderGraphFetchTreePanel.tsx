@@ -346,12 +346,13 @@ const PureSerializationConfigModal = observer(
                 onClick={removeConfig}
               />
             )}
-            <button
-              className="btn modal__footer__close-btn btn--dark"
+            <ModalFooterButton
+              className="modal__footer__close-btn"
               onClick={handleAction}
+              type={toAdd ? 'primary' : 'secondary'}
             >
               {toAdd ? 'Add Config' : 'Close'}
-            </button>
+            </ModalFooterButton>
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -379,6 +380,7 @@ export const QueryBuilderGraphFetchExternalConfig = observer(
       value: serializationState.targetBinding,
       label: serializationState.targetBinding.name,
     };
+    const applicationStore = graphFetchState.queryBuilderState.applicationStore;
     const onBindingChange = (
       val: PackageableElementOption<Binding> | null,
     ): void => {
@@ -423,9 +425,14 @@ export const QueryBuilderGraphFetchExternalConfig = observer(
               onChange={onBindingChange}
               value={selectedBinding}
               formatOptionLabel={getBindingFormatter({
-                darkMode: true,
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled,
               })}
-              darkMode={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
             />
           </div>
           <div className="service-execution-editor__configuration__item">

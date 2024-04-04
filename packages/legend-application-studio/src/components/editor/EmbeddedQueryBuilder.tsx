@@ -78,7 +78,9 @@ const QueryBuilderDialog = observer(
         }}
       >
         <Modal
-          darkMode={true}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
           className={clsx('editor-modal query-builder__dialog', {
             'query-builder__dialog--expanded': isMaximized,
           })}

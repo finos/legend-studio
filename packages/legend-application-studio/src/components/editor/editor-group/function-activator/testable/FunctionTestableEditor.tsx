@@ -515,6 +515,7 @@ const FunctionTestParameterEditor = observer(
 const NewParameterModal = observer(
   (props: { functionTestState: FunctionTestState; isReadOnly: boolean }) => {
     const { functionTestState, isReadOnly } = props;
+    const applicationStore = functionTestState.editorStore.applicationStore;
     const currentOption = {
       value: functionTestState.newParameterValueName,
       label: functionTestState.newParameterValueName,
@@ -550,7 +551,10 @@ const NewParameterModal = observer(
             onChange={onChange}
             value={currentOption}
             escapeClearsValue={true}
-            darkMode={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
             disable={isReadOnly}
           />
           <div className="search-modal__actions">
@@ -793,6 +797,7 @@ const FunctionTestItem = observer(
 const CreateTestModal = observer(
   (props: { functionSuiteState: FunctionTestSuiteState }) => {
     const { functionSuiteState } = props;
+    const applicationStore = functionSuiteState.editorStore.applicationStore;
     const suite = functionSuiteState.suite;
     // test name
     const [id, setId] = useState<string | undefined>(undefined);
@@ -816,7 +821,11 @@ const CreateTestModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true}>
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
           <ModalHeader>
             <ModalTitle title="Create Function Test" />
           </ModalHeader>
@@ -835,7 +844,7 @@ const CreateTestModal = observer(
               onClick={create}
               text="Create"
             />
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -988,8 +997,10 @@ const FunctionTestSuiteEditor = observer(
 );
 
 const CreateFucntionTestSuiteModal = observer(
-  (props: { functiontestableEditorState: FunctionTestableState }) => {
-    const { functiontestableEditorState } = props;
+  (props: { functionTestableEditorState: FunctionTestableState }) => {
+    const { functionTestableEditorState } = props;
+    const applicationStore =
+      functionTestableEditorState.editorStore.applicationStore;
     const inputRef = useRef<HTMLInputElement>(null);
     const handleEnter = (): void => inputRef.current?.focus();
     const [suiteName, setSuiteName] = useState<string | undefined>(undefined);
@@ -997,10 +1008,10 @@ const CreateFucntionTestSuiteModal = observer(
     const isValid = suiteName && testName;
 
     // model
-    const close = (): void => functiontestableEditorState.setCreateSuite(false);
+    const close = (): void => functionTestableEditorState.setCreateSuite(false);
     const create = (): void => {
       if (suiteName && testName) {
-        functiontestableEditorState.createSuite(suiteName, testName);
+        functionTestableEditorState.createSuite(suiteName, testName);
       }
     };
     return (
@@ -1013,7 +1024,11 @@ const CreateFucntionTestSuiteModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <Modal darkMode={true}>
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
           <ModalHeader>
             <ModalTitle title="Create Mapping Test Suite" />
           </ModalHeader>
@@ -1051,7 +1066,7 @@ const CreateFucntionTestSuiteModal = observer(
               onClick={create}
               text="Create"
             />
-            <ModalFooterButton onClick={close} text="Close" />
+            <ModalFooterButton onClick={close} text="Close" type="secondary" />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -1187,7 +1202,7 @@ export const FunctionTestableEditor = observer(
           </ResizablePanelGroup>
           {functionTestableState.createSuiteModal && (
             <CreateFucntionTestSuiteModal
-              functiontestableEditorState={functionTestableState}
+              functionTestableEditorState={functionTestableState}
             />
           )}
           {functionTestableState.testableComponentToRename && (

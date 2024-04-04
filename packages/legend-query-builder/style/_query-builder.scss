@@ -519,6 +519,14 @@
 
   &__item__action {
     margin-left: 0.5rem;
+
+    svg {
+      color: var(--color-light-grey-150);
+
+      &:hover {
+        color: white;
+      }
+    }
   }
 
   &__combo {
@@ -1359,9 +1367,12 @@
     }
 
     &__toggler__btn {
+      @include flexVCenter;
+
       align-self: flex-start;
       background: var(--color-dark-grey-280);
       padding: 0 0.5rem 0 0;
+      height: 2.2rem;
 
       svg {
         font-size: 2rem;
@@ -1427,10 +1438,6 @@
     &__input {
       height: 2.8rem;
       width: 100%;
-
-      &:not(:focus) {
-        border: 0.1rem solid var(--color-dark-grey-250);
-      }
 
       &[disabled] {
         cursor: not-allowed;
