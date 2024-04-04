@@ -49,6 +49,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
 import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoningEditor.js';
+import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 export const getParameterValue = (
   parameter: ValueSpecification | undefined,
@@ -602,6 +603,22 @@ export const QueryBuilderSidebar = observer(
     children: React.ReactNode;
   }) => {
     const { queryBuilderState, children } = props;
+    const applicationStore = useApplicationStore();
+    const extraTemplateQueryPanelContentRenderer =
+      applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as QueryBuilder_LegendApplicationPlugin_Extension
+            ).getExtraTemplateQueryPanelContentRenderer?.() ?? [],
+        );
+    const templateQueryPanelContentTab =
+      extraTemplateQueryPanelContentRenderer[0] ? (
+        extraTemplateQueryPanelContentRenderer[0](queryBuilderState)
+      ) : (
+        <></>
+      );
 
     return (
       <div
@@ -619,6 +636,9 @@ export const QueryBuilderSidebar = observer(
               <BasicQueryBuilderSetup queryBuilderState={queryBuilderState} />
             )}
           </div>
+        </div>
+        <div className="query-builder__template-query">
+          {templateQueryPanelContentTab}
         </div>
         <div className="query-builder__side-bar__content">{children}</div>
       </div>

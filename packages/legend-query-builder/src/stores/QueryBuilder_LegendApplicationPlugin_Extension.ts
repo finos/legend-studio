@@ -53,6 +53,10 @@ export type QueryChatRenderer = (
   queryBuilderState: QueryBuilderState,
 ) => React.ReactNode;
 
+export type TemplateQueryPanelContentRenderer = (
+  queryBuilderState: QueryBuilderState,
+) => React.ReactNode;
+
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
   /**
@@ -79,4 +83,9 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of query chat configurations
    */
   getExtraQueryChatRenderers?(): QueryChatRenderer[];
+
+  /**
+   * Get the list of template query panel content render
+   */
+  getExtraTemplateQueryPanelContentRenderer?(): TemplateQueryPanelContentRenderer[];
 }
