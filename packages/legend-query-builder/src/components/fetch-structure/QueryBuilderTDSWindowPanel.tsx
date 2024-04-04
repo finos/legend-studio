@@ -51,6 +51,8 @@ import {
 } from '@finos/legend-art';
 import {
   assertErrorThrown,
+  clone,
+  deepClone,
   deleteEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -225,29 +227,39 @@ const QueryBuilderWindowColumnModalEditor = observer(
     // Operator
     const operators = windowState.operators;
     const operationState = windowColumnState.operationState;
+    const [selectedOperationState, setSelectedOperationState] = useState(
+      deepClone(operationState),
+    );
     const windowOpColumn =
-      operationState instanceof QueryBuilderTDS_WindowAggreationOperatorState
-        ? operationState.columnState
+      selectedOperationState instanceof
+      QueryBuilderTDS_WindowAggreationOperatorState
+        ? selectedOperationState.columnState
         : undefined;
-    const [selectedOperatorColumn, setSelectedOperatorColumn] =
-      useState(windowOpColumn);
     const changeOperatorCol = (
       val: { label: string; value: QueryBuilderTDSColumnState } | null,
     ): void => {
       if (
-        operationState instanceof
+        selectedOperationState instanceof
           QueryBuilderTDS_WindowAggreationOperatorState &&
         val !== null
       ) {
-        setSelectedOperatorColumn(val.value);
+        const newOpertorState = clone(selectedOperationState);
+        newOpertorState.setColumnState(val.value);
+        setSelectedOperationState(newOpertorState);
       }
     };
-    const [selectedOperator, setSelectedOperator] = useState(
-      operationState.operator,
-    );
     const changeOperator =
       (olapOp: QueryBuilderTDS_WindowOperator) => (): void => {
-        setSelectedOperator(olapOp);
+        const stateAndName =
+          windowColumnState.getChangeOperatorStateAndColumnName(
+            selectedOperationState.operator,
+            windowOpColumn,
+            olapOp,
+          );
+        if (stateAndName) {
+          setSelectedOperationState(stateAndName.operatorState);
+          setSelectedColumnName(stateAndName.columnName);
+        }
       };
 
     // Window
@@ -303,16 +315,17 @@ const QueryBuilderWindowColumnModalEditor = observer(
 
     const handleApply = (): void => {
       windowColumnState.setColumnName(selectedColumnName);
-      if (
-        operationState instanceof
-          QueryBuilderTDS_WindowAggreationOperatorState &&
-        selectedOperatorColumn !== null &&
-        selectedOperatorColumn !== undefined
-      ) {
-        operationState.setColumnState(selectedOperatorColumn);
-      }
-      windowColumnState.changeOperator(selectedOperator);
+      // if (
+      //   operationState instanceof
+      //     QueryBuilderTDS_WindowAggreationOperatorState &&
+      //   windowOpColumn !== null &&
+      //   windowOpColumn !== undefined
+      // ) {
+      //   operationState.setColumnState(windowOpColumn);
+      // }
+      // windowColumnState.changeOperator(selectedOperationState.operator);
       windowState.addWindowColumn(windowColumnState);
+      windowColumnState.setOperatorState(selectedOperationState);
       windowColumnState.setWindows(selectedValues);
       windowColumnState.setSortBy(selectedSortBy);
       handleCancel();
@@ -371,7 +384,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                     >
                       {operationState.operator.getLabel()}
                     </div>
-                    {selectedOperatorColumn && (
+                    {windowOpColumn && (
                       <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
                         <CustomSelectorInput
                           className="query-builder__olap__tds__column__dropdown"
@@ -379,8 +392,8 @@ const QueryBuilderWindowColumnModalEditor = observer(
                           disabled={windowOptionsLabels.length < 1}
                           onChange={changeOperatorCol}
                           value={{
-                            value: selectedOperatorColumn,
-                            label: selectedOperatorColumn.columnName,
+                            value: windowOpColumn,
+                            label: windowOpColumn.columnName,
                           }}
                           darkMode={
                             !applicationStore.layoutService

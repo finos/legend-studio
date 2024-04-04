@@ -266,41 +266,57 @@ export class QueryBuilderWindowColumnState
     return [];
   }
 
-  changeOperator(windowOp: QueryBuilderTDS_WindowOperator): void {
-    const currentOperator = this.operationState.operator;
-    const currentAggregateColumn =
-      this.operationState instanceof
-      QueryBuilderTDS_WindowAggreationOperatorState
-        ? this.operationState.columnState
-        : undefined;
-    if (currentOperator !== windowOp) {
-      if (windowOp.isColumnAggregator()) {
+  getChangeOperatorStateAndColumnName(
+    currentOperator: QueryBuilderTDS_WindowOperator,
+    currentColumn: QueryBuilderTDSColumnState | undefined,
+    newOperator: QueryBuilderTDS_WindowOperator,
+  ):
+    | { operatorState: QueryBuilderTDS_WindowOperatorState; columnName: string }
+    | undefined {
+    if (currentOperator !== newOperator) {
+      if (newOperator.isColumnAggregator()) {
         const compatibleAggCol =
-          currentAggregateColumn &&
-          windowOp.isCompatibleWithColumn(currentAggregateColumn)
-            ? currentAggregateColumn
-            : this.possibleAggregatedColumns(windowOp)[0];
+          currentColumn && newOperator.isCompatibleWithColumn(currentColumn)
+            ? currentColumn
+            : this.possibleAggregatedColumns(newOperator)[0];
         if (compatibleAggCol) {
-          this.setOperatorState(
-            new QueryBuilderTDS_WindowAggreationOperatorState(
+          return {
+            operatorState: new QueryBuilderTDS_WindowAggreationOperatorState(
               this.windowState,
-              windowOp,
+              newOperator,
               compatibleAggCol,
             ),
-          );
-          this.setColumnName(
-            `${windowOp.getLabel()} of ${compatibleAggCol.columnName}`,
-          );
+            columnName: `${newOperator.getLabel()} of ${
+              compatibleAggCol.columnName
+            }`,
+          };
         }
       } else {
-        this.setOperatorState(
-          new QueryBuilderTDS_WindowRankOperatorState(
+        return {
+          operatorState: new QueryBuilderTDS_WindowRankOperatorState(
             this.windowState,
-            windowOp,
+            newOperator,
           ),
-        );
-        this.setColumnName(`${windowOp.getLabel()}`);
+          columnName: `${newOperator.getLabel()}`,
+        };
       }
+    }
+    return undefined;
+  }
+
+  changeOperator(windowOp: QueryBuilderTDS_WindowOperator): void {
+    const stateAndName = this.getChangeOperatorStateAndColumnName(
+      this.operationState.operator,
+      this.operationState instanceof
+        QueryBuilderTDS_WindowAggreationOperatorState
+        ? this.operationState.columnState
+        : undefined,
+      windowOp,
+    );
+
+    if (stateAndName) {
+      this.setOperatorState(stateAndName.operatorState);
+      this.setColumnName(stateAndName.columnName);
     }
   }
 
