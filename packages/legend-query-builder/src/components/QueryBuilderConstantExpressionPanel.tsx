@@ -25,7 +25,6 @@ import {
   CustomSelectorInput,
   Dialog,
   InfoCircleIcon,
-  InputWithInlineValidation,
   Modal,
   ModalBody,
   ModalFooter,
@@ -43,7 +42,10 @@ import {
   Multiplicity,
   isValidIdentifier,
 } from '@finos/legend-graph';
-import { generateEnumerableNameFromToken } from '@finos/legend-shared';
+import {
+  deepClone,
+  generateEnumerableNameFromToken,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { DEFAULT_CONSTANT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -51,37 +53,69 @@ import {
   type QueryBuilderConstantExpressionState,
   QueryBuilderSimpleConstantExpressionState,
   QueryBuilderCalculatedConstantExpressionState,
+  cloneQueryBuilderConstantLambdaEditorState,
 } from '../stores/QueryBuilderConstantsState.js';
 import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEditorHelper.js';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaEditor } from './shared/LambdaEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { flowResult } from 'mobx';
 
+const getConstantNameValidationMessage = (
+  constantInput: string,
+  allVariableNames: string[],
+  currentConstantName: string,
+): string | undefined =>
+  !constantInput
+    ? `Constant name can't be empty`
+    : isValidIdentifier(constantInput) === false
+    ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
+    : allVariableNames.filter((e) => e === constantInput).length > 0 &&
+      constantInput !== currentConstantName
+    ? 'Constant name already exists'
+    : undefined;
+
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.
 const QueryBuilderSimpleConstantExpressionEditor = observer(
   (props: { constantState: QueryBuilderSimpleConstantExpressionState }) => {
+    // Read current state
     const { constantState } = props;
+    const varExpression = constantState.variable;
     const queryBuilderState = constantState.queryBuilderState;
     const applicationStore = queryBuilderState.applicationStore;
     const variableState = queryBuilderState.constantState;
-    const varExpression = constantState.variable;
-    const variableName = varExpression.name;
     const allVariableNames = queryBuilderState.allVariableNames;
     const isCreating = !variableState.constants.includes(constantState);
-    const valueSpec = constantState.value;
-    const variableType =
-      constantState.value.genericType?.value.rawType ?? PrimitiveType.STRING;
-    const selectedType = buildElementOption(variableType);
 
+    // Name
+    const stateName = varExpression.name;
+    const [selectedName, setSelectedName] = useState(stateName);
+    const [isNameValid, setIsNameValid] = useState<boolean>(true);
+
+    // Value
+    const stateValue = constantState.value;
+    const [selectedValue, setSelectedValue] = useState(deepClone(stateValue));
+
+    // Type
+    const stateType =
+      constantState.value.genericType?.value.rawType ?? PrimitiveType.STRING;
+    const [selectedType, setSelectedType] = useState(
+      buildElementOption(stateType),
+    );
     const changeType = (val: PackageableElementOption<Type>): void => {
-      if (variableType !== val.value) {
-        constantState.changeValSpecType(val.value);
+      if (val.value !== selectedType.value) {
+        setSelectedType(val);
+        const newValSpec = buildDefaultInstanceValue(
+          queryBuilderState.graphManagerState.graph,
+          val.value,
+          queryBuilderState.observerContext,
+        );
+        setSelectedValue(newValSpec);
       }
     };
     const typeOptions: PackageableElementOption<Type>[] =
@@ -93,41 +127,34 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           ),
         );
 
-    const [isNameValid, setIsNameValid] = useState<boolean>(true);
-
-    const getValidationMessage = (constantInput: string): string | undefined =>
-      !constantInput
-        ? `Constant name can't be empty`
-        : isValidIdentifier(constantInput) === false
-        ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
-        : allVariableNames.filter((e) => e === constantInput).length >
-          (isCreating ? 0 : 1)
-        ? 'Constant name already exists'
-        : undefined;
-
-    const close = (): void => {
+    // Modal lifecycle actions
+    const handleCancel = (): void => {
       variableState.setSelectedConstant(undefined);
     };
 
-    const onAction = (): void => {
+    const handleApply = (): void => {
+      variableExpression_setName(varExpression, selectedName);
+      constantState.changeValSpecType(selectedType.value);
+      constantState.setValueSpec(selectedValue);
       if (isCreating) {
         variableState.addConstant(constantState);
       }
-      close();
+      handleCancel();
     };
+
     const resetConstantValue = (): void => {
       const valSpec = buildDefaultInstanceValue(
         queryBuilderState.graphManagerState.graph,
-        variableType,
+        selectedType.value,
         queryBuilderState.observerContext,
       );
-      constantState.setValueSpec(valSpec);
+      setSelectedValue(valSpec);
     };
 
     return (
       <Dialog
         open={Boolean(constantState)}
-        onClose={close}
+        onClose={handleCancel}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -148,11 +175,17 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
               name="Constant Name"
               prompt="Name of constant. Should be descriptive of its purpose."
               update={(value: string | undefined): void => {
-                variableExpression_setName(varExpression, value ?? '');
+                setSelectedName(value ?? '');
               }}
-              validate={getValidationMessage}
+              validate={(constantInput: string) =>
+                getConstantNameValidationMessage(
+                  constantInput,
+                  allVariableNames,
+                  stateName,
+                )
+              }
               onValidate={(issue: string | undefined) => setIsNameValid(!issue)}
-              value={variableName}
+              value={selectedName}
               isReadOnly={false}
             />
             <PanelFormSection>
@@ -184,15 +217,15 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
               </div>
               <div className="query-builder__variable-editor">
                 <BasicValueSpecificationEditor
-                  valueSpecification={valueSpec}
+                  valueSpecification={selectedValue}
                   setValueSpecification={(val: ValueSpecification): void => {
-                    constantState.setValueSpec(val);
+                    setSelectedValue(deepClone(val));
                   }}
                   graph={queryBuilderState.graphManagerState.graph}
                   obseverContext={queryBuilderState.observerContext}
                   typeCheckOption={{
-                    expectedType: variableType,
-                    match: variableType === PrimitiveType.DATETIME,
+                    expectedType: selectedType.value,
+                    match: selectedType.value === PrimitiveType.DATETIME,
                   }}
                   resetValue={resetConstantValue}
                 />
@@ -200,14 +233,16 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
             </PanelFormSection>
           </ModalBody>
           <ModalFooter>
-            {isCreating && (
-              <ModalFooterButton
-                text="Create"
-                disabled={!isNameValid}
-                onClick={onAction}
-              />
-            )}
-            <ModalFooterButton text="Close" onClick={close} type="secondary" />
+            <ModalFooterButton
+              text={isCreating ? 'Create' : 'Apply'}
+              disabled={!isNameValid}
+              onClick={handleApply}
+            />
+            <ModalFooterButton
+              text="Cancel"
+              onClick={handleCancel}
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -217,28 +252,45 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
 
 const QuerryBuilderCalculatedConstantExpressionEditor = observer(
   (props: { constantState: QueryBuilderCalculatedConstantExpressionState }) => {
+    // Read current state
     const { constantState } = props;
     const queryBuilderState = constantState.queryBuilderState;
     const lambdaState = constantState.lambdaState;
-    const close = (): void =>
-      queryBuilderState.constantState.setSelectedConstant(undefined);
     const applicationStore = queryBuilderState.applicationStore;
-    const changeConstantName: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      variableExpression_setName(constantState.variable, event.target.value);
+    const allVariableNames = queryBuilderState.allVariableNames;
+    const stateName = constantState.variable.name;
+
+    // Set up temporary state for modal lifecycle
+    const [name, setName] = useState(stateName);
+    const [isNameValid, setIsNameValid] = useState<boolean>(true);
+    const lambdaStateCopy = useMemo(
+      () => cloneQueryBuilderConstantLambdaEditorState(lambdaState),
+      [lambdaState],
+    );
+
+    // Modal lifecycle actions
+    const handleCancel = (): void => {
+      queryBuilderState.constantState.setSelectedConstant(undefined);
     };
+
+    const handleApply = (): void => {
+      variableExpression_setName(constantState.variable, name);
+      constantState.lambdaState = lambdaStateCopy;
+      handleCancel();
+    };
+
     useEffect(() => {
       flowResult(
-        lambdaState.convertLambdaObjectToGrammarString({
+        lambdaStateCopy.convertLambdaObjectToGrammarString({
           pretty: true,
         }),
       ).catch(applicationStore.alertUnhandledError);
-    }, [applicationStore, lambdaState]);
+    }, [applicationStore, lambdaStateCopy]);
+
     return (
       <Dialog
         open={true}
-        onClose={close}
+        onClose={handleCancel}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -251,13 +303,13 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
           }
           className={clsx('editor-modal query-builder__constants__modal', {
             'query-builder__constants__modal--has-error': Boolean(
-              lambdaState.parserError,
+              lambdaStateCopy.parserError,
             ),
           })}
         >
           <ModalHeader>
             <div className="modal__title">Update Calculated Constants</div>
-            {lambdaState.parserError && (
+            {lambdaStateCopy.parserError && (
               <div className="modal__title__error-badge">
                 Failed to parse query
               </div>
@@ -266,24 +318,36 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
           <ModalBody>
             <div
               className={clsx('query-builder__constants__modal__content', {
-                backdrop__element: Boolean(lambdaState.parserError),
+                backdrop__element: Boolean(lambdaStateCopy.parserError),
               })}
             >
               <div className="query-builder__constants__modal__name">
-                <InputWithInlineValidation
+                <PanelFormValidatedTextField
+                  value={name}
+                  isReadOnly={false}
                   className="query-builder__constants__modal__name__input input--dark"
-                  spellCheck={false}
-                  value={constantState.variable.name}
-                  onChange={changeConstantName}
                   placeholder="Constant Name"
+                  update={(value: string | undefined): void => {
+                    setName(value ?? '');
+                  }}
+                  validate={(constantInput: string) =>
+                    getConstantNameValidationMessage(
+                      constantInput,
+                      allVariableNames,
+                      stateName,
+                    )
+                  }
+                  onValidate={(issue: string | undefined) =>
+                    setIsNameValid(!issue)
+                  }
                 />
               </div>
               <LambdaEditor
                 className="query-builder__constants__lambda-editor"
                 disabled={
-                  lambdaState.convertingLambdaToStringState.isInProgress
+                  lambdaStateCopy.convertingLambdaToStringState.isInProgress
                 }
-                lambdaEditorState={lambdaState}
+                lambdaEditorState={lambdaStateCopy}
                 forceBackdrop={false}
                 autoFocus={true}
               />
@@ -291,11 +355,19 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              text="Close"
-              onClick={close}
-              disabled={Boolean(lambdaState.parserError)}
+              className="btn btn--dark"
+              onClick={handleApply}
+              disabled={Boolean(lambdaStateCopy.parserError) || !isNameValid}
+            >
+              Apply
+            </ModalFooterButton>
+            <ModalFooterButton
+              className="btn btn--dark"
+              onClick={handleCancel}
               type="secondary"
-            />
+            >
+              Cancel
+            </ModalFooterButton>
           </ModalFooter>
         </Modal>
       </Dialog>
@@ -355,6 +427,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
       }
       return null;
     };
+
     const getExtraContextMenu = (
       val: QueryBuilderConstantExpressionState,
     ):
