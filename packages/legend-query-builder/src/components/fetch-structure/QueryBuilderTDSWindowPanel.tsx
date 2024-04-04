@@ -217,7 +217,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
     }));
 
     // Column name
-    const [selectedColumnName, setSelectedColumnName] = useState<string>(
+    const [selectedColumnName, setSelectedColumnName] = useState(
       windowColumnState.columnName,
     );
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
@@ -227,7 +227,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
     // Operator
     const operators = windowState.operators;
     const operationState = windowColumnState.operationState;
-    const [selectedOperationState, setSelectedOperationState] = useState(
+    const [selectedOperationState, setSelectedOperationState] = useState(() =>
       deepClone(operationState),
     );
     const windowOpColumn =

@@ -184,6 +184,7 @@ export class QueryBuilderWindowColumnState
       changeWindow: action,
       deleteWindow: action,
       addWindow: action,
+      setWindows: action,
       changeOperator: action,
       changeSortBy: action,
     });
