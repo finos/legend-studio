@@ -35,7 +35,7 @@ import {
   type ValueSpecification,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import type { QueryBuilderWatermarkState } from '../../stores/watermark/QueryBuilderWatermarkState.js';
@@ -45,6 +45,7 @@ import {
   type QueryBuilderVariableDragSource,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
+import { clone, deepClone } from '@finos/legend-shared';
 
 const isParamaterCompatibleWithWaterMark = (
   parameter: VariableExpression,
@@ -54,18 +55,25 @@ const isParamaterCompatibleWithWaterMark = (
 
 const WatermarkValueEditor = observer(
   (props: {
-    watermarkValue: ValueSpecification;
+    selectedValue: ValueSpecification;
+    setSelectedValue: (val: ValueSpecification) => void;
+    handleResetValue: () => void;
     watermarkState: QueryBuilderWatermarkState;
   }) => {
-    const { watermarkValue, watermarkState } = props;
+    const {
+      selectedValue,
+      setSelectedValue,
+      handleResetValue,
+      watermarkState,
+    } = props;
 
     const graph = watermarkState.queryBuilderState.graphManagerState.graph;
 
     const handleDrop = useCallback(
       (item: QueryBuilderVariableDragSource): void => {
-        watermarkState.setValue(item.variable);
+        setSelectedValue(item.variable);
       },
-      [watermarkState],
+      [setSelectedValue],
     );
 
     const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop<
@@ -101,20 +109,18 @@ const WatermarkValueEditor = observer(
             dropTargetConnector={dropTargetConnector}
           >
             <BasicValueSpecificationEditor
-              valueSpecification={watermarkValue}
+              valueSpecification={selectedValue}
               setValueSpecification={(val: ValueSpecification): void => {
-                watermarkState.setValue(val);
+                setSelectedValue(clone(val));
               }}
               graph={graph}
               obseverContext={watermarkState.queryBuilderState.observerContext}
               typeCheckOption={{
                 expectedType: PrimitiveType.STRING,
               }}
-              resetValue={(): void => {
-                watermarkState.resetValue();
-              }}
+              resetValue={handleResetValue}
               isConstant={watermarkState.queryBuilderState.constantState.isValueSpecConstant(
-                watermarkValue,
+                selectedValue,
               )}
             />
           </PanelDropZone>
@@ -129,14 +135,36 @@ export const QueryBuilderWatermarkEditor = observer(
     const { queryBuilderState } = props;
     const applicationStore = queryBuilderState.applicationStore;
     const watermarkState = queryBuilderState.watermarkState;
-    const handleClose = (): void => {
+
+    const [selectedValue, setSelectedValue] = useState(
+      deepClone(watermarkState.value),
+    );
+
+    const handleCancel = (): void => {
       watermarkState.setIsEditingWatermark(false);
+    };
+
+    const handleApply = (): void => {
+      watermarkState.setValue(selectedValue);
+      handleCancel();
+    };
+
+    const handleResetValue = (): void => {
+      setSelectedValue(watermarkState.getDefaultValue());
+    };
+
+    const toggleWatermark = (): void => {
+      if (selectedValue) {
+        setSelectedValue(undefined);
+      } else {
+        handleResetValue();
+      }
     };
 
     return (
       <Dialog
         open={Boolean(watermarkState.isEditingWatermark)}
-        onClose={handleClose}
+        onClose={handleCancel}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -147,22 +175,24 @@ export const QueryBuilderWatermarkEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-          className="editor-modal"
+          className="editor-modal query-builder__watermark__modal"
         >
           <ModalHeader title="Watermark" />
           <ModalBody>
             <PanelForm>
               <PanelFormBooleanField
                 isReadOnly={false}
-                value={watermarkState.value !== undefined}
+                value={selectedValue !== undefined}
                 prompt="Enable watermark"
-                update={(): void => watermarkState.enableWatermark()}
+                update={toggleWatermark}
               />
-              {watermarkState.value && (
+              {selectedValue && (
                 <>
                   <WatermarkValueEditor
+                    selectedValue={selectedValue}
+                    setSelectedValue={setSelectedValue}
+                    handleResetValue={handleResetValue}
                     watermarkState={watermarkState}
-                    watermarkValue={watermarkState.value}
                   />
                   <PanelDivider />
                   <VariableSelector
@@ -174,7 +204,12 @@ export const QueryBuilderWatermarkEditor = observer(
             </PanelForm>
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton text="Done" onClick={handleClose} />
+            <ModalFooterButton text="Apply" onClick={handleApply} />
+            <ModalFooterButton
+              text="Cancel"
+              onClick={handleCancel}
+              type="secondary"
+            />
           </ModalFooter>
         </Modal>
       </Dialog>

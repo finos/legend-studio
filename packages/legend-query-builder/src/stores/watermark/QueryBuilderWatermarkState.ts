@@ -39,8 +39,6 @@ export class QueryBuilderWatermarkState implements Hashable {
       value: observable,
       isEditingWatermark: observable,
       setValue: action,
-      resetValue: action,
-      enableWatermark: action,
       setIsEditingWatermark: action,
       hashCode: computed,
     });
@@ -48,7 +46,7 @@ export class QueryBuilderWatermarkState implements Hashable {
     this.queryBuilderState = queryBuilderState;
   }
 
-  resetValue(): void {
+  getDefaultValue(): ValueSpecification {
     const watermarkConstant = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
         new GenericType(PrimitiveType.STRING),
@@ -56,19 +54,11 @@ export class QueryBuilderWatermarkState implements Hashable {
     );
 
     watermarkConstant.values = ['watermarkValue'];
-    this.setValue(watermarkConstant);
+    return watermarkConstant;
   }
 
   setIsEditingWatermark(val: boolean): void {
     this.isEditingWatermark = val;
-  }
-
-  enableWatermark(): void {
-    if (this.value) {
-      this.setValue(undefined);
-    } else {
-      this.resetValue();
-    }
   }
 
   setValue(val: ValueSpecification | undefined): void {

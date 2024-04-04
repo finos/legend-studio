@@ -2268,3 +2268,10 @@
 .query-builder__template-query {
   padding: 0.3rem;
 }
+
+.query-builder__watermark {
+  &__modal {
+    max-width: 70rem;
+    max-height: 50rem;
+  }
+}

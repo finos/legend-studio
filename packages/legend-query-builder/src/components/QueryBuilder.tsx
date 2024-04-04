@@ -413,6 +413,7 @@ export const QueryBuilder = observer(
                     onClick={openWatermark}
                     tabIndex={-1}
                     title="Used watermark"
+                    name="Used watermark"
                   >
                     <WaterDropIcon />
                   </button>
