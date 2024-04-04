@@ -267,7 +267,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
       ...windowColumnState.windowColumns,
     ]);
     const windowColumnAddOptions = windowColumnOptions.filter(
-      (e) => !windowColumnState.windowColumns.includes(e),
+      (e) => !selectedWindowColumns.includes(e),
     );
     const addWindowColumn = (): void => {
       if (windowColumnAddOptions.length > 0) {
@@ -276,6 +276,19 @@ const QueryBuilderWindowColumnModalEditor = observer(
           guaranteeNonNullable(windowColumnAddOptions[0]),
         ]);
       }
+    };
+    const updateWindowColumn = (
+      idx: number,
+      column: QueryBuilderTDSColumnState,
+    ): void => {
+      const newWindowColumns = clone(selectedWindowColumns);
+      newWindowColumns[idx] = column;
+      setSelectedWindowColumns(newWindowColumns);
+    };
+    const deleteWindowColumn = (column: QueryBuilderTDSColumnState): void => {
+      const newWindowColumns = clone(selectedWindowColumns);
+      deleteEntry(newWindowColumns, column);
+      setSelectedWindowColumns(newWindowColumns);
     };
 
     // Sort by
@@ -453,10 +466,10 @@ const QueryBuilderWindowColumnModalEditor = observer(
                       key={value.uuid}
                       colValue={value}
                       setColumn={(v: QueryBuilderTDSColumnState) =>
-                        (selectedWindowColumns[idx] = v)
+                        updateWindowColumn(idx, v)
                       }
                       deleteColumn={(v: QueryBuilderTDSColumnState) =>
-                        deleteEntry(selectedWindowColumns, v)
+                        deleteWindowColumn(v)
                       }
                       tdsColOptions={windowColumnOptions}
                     />
