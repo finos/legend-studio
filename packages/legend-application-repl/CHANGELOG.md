@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 0.0.3
+
+### Patch Changes
+
+- [#3034](https://github.com/finos/legend-studio/pull/3034) [`eb5904699`](https://github.com/finos/legend-studio/commit/eb5904699304d4ee84c0b9e0b0fa135570adce84) ([@gayathrir11](https://github.com/gayathrir11)) - Support pagination push-down operation for repl
+
 ## 0.0.2
 
 ## 0.0.1

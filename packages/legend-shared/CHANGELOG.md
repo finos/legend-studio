@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 10.0.34
+
+### Patch Changes
+
+- [#3032](https://github.com/finos/legend-studio/pull/3032) [`61a95131c`](https://github.com/finos/legend-studio/commit/61a95131c5842445933785bbeb2167db127a0551) ([@travisstebbins](https://github.com/travisstebbins)) - Export lodash clone function
+
 ## 10.0.33
 
 ## 10.0.32

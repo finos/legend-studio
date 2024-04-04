@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 11.30.0
+
+### Patch Changes
+
+- [#3019](https://github.com/finos/legend-studio/pull/3019) [`13bd7ad50`](https://github.com/finos/legend-studio/commit/13bd7ad500a6133b136c5b6ae0ef98e95f16d7da) ([@travisstebbins](https://github.com/travisstebbins)) - Fix query light mode inconsistencies
+
 ## 11.29.0
 
 ## 11.28.0

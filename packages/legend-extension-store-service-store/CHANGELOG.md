@@ -1,5 +1,11 @@
 # @finos/legend-extension-store-service-store
 
+## 2.0.150
+
+### Patch Changes
+
+- [#3019](https://github.com/finos/legend-studio/pull/3019) [`13bd7ad50`](https://github.com/finos/legend-studio/commit/13bd7ad500a6133b136c5b6ae0ef98e95f16d7da) ([@travisstebbins](https://github.com/travisstebbins)) - Fix query light mode inconsistencies
+
 ## 2.0.149
 
 ## 2.0.148

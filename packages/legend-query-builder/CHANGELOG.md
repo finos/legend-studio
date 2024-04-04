@@ -1,5 +1,19 @@
 # @finos/legend-query-builder
 
+## 4.14.19
+
+### Patch Changes
+
+- [#3030](https://github.com/finos/legend-studio/pull/3030) [`9d0e67b3f`](https://github.com/finos/legend-studio/commit/9d0e67b3fbe7dd66bde9f6fc24a029b1fa649ec7) ([@travisstebbins](https://github.com/travisstebbins)) - Enhance parameters modal
+
+- [#3021](https://github.com/finos/legend-studio/pull/3021) [`e16b1c8bd`](https://github.com/finos/legend-studio/commit/e16b1c8bd4a0cdbafbcc0185f8f2cd10532befe7) ([@travisstebbins](https://github.com/travisstebbins)) - Allow DND from entire fetch panel structure column row
+
+- [#3019](https://github.com/finos/legend-studio/pull/3019) [`13bd7ad50`](https://github.com/finos/legend-studio/commit/13bd7ad500a6133b136c5b6ae0ef98e95f16d7da) ([@travisstebbins](https://github.com/travisstebbins)) - Fix query light mode inconsistencies
+
+- [#3031](https://github.com/finos/legend-studio/pull/3031) [`73f698d36`](https://github.com/finos/legend-studio/commit/73f698d36a183904d5b731981f61d22a1b2d1e0a) ([@travisstebbins](https://github.com/travisstebbins)) - Enhance constants modal
+
+- [#3032](https://github.com/finos/legend-studio/pull/3032) [`61a95131c`](https://github.com/finos/legend-studio/commit/61a95131c5842445933785bbeb2167db127a0551) ([@travisstebbins](https://github.com/travisstebbins)) - Enhance watermark modal
+
 ## 4.14.18
 
 ## 4.14.17
