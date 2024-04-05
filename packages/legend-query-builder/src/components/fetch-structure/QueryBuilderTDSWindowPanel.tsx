@@ -235,8 +235,12 @@ const QueryBuilderWindowColumnModalEditor = observer(
         val !== null
       ) {
         const newOpertorState = clone(selectedOperatorState);
+        const newColumnName = newOpertorState.operator.isColumnAggregator()
+          ? `${newOpertorState.operator.getLabel()} of ${val.value.columnName}`
+          : val.value.columnName;
         newOpertorState.setColumnState(val.value);
         setSelectedOperatorState(newOpertorState);
+        setSelectedColumnName(newColumnName);
       }
     };
     const changeOperator =
