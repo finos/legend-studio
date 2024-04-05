@@ -195,9 +195,12 @@ export const QueryLoader = observer(
       );
       queryLoaderState.setShowCurrentUserQueriesOnly(false);
       setIsMineOnly(false);
-      queryLoaderState.extraFilters.set(
-        'Current Data Space',
-        !queryLoaderState.isCuratedTemplateToggled,
+      queryLoaderState.extraQueryFilterOptionsRelatedToTemplateQuery.forEach(
+        (op) =>
+          queryLoaderState.extraFilters.set(
+            op,
+            !queryLoaderState.isCuratedTemplateToggled,
+          ),
       );
       queryLoaderState.showingDefaultQueries =
         queryLoaderState.isCuratedTemplateToggled;
@@ -325,7 +328,8 @@ export const QueryLoader = observer(
                   )}
                 </div>
               )}
-              {queryLoaderState.extraFilters.has('Current Data Space') && (
+              {queryLoaderState.extraQueryFilterOptionsRelatedToTemplateQuery
+                .length > 0 && (
                 <div className="query-loader__filter__extra__filters">
                   <button
                     className={clsx('query-loader__filter__toggler__btn', {

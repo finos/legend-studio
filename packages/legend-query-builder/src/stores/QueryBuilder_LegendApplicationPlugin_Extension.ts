@@ -87,6 +87,13 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
   getExtraLoadQueryFilterOptions?(): LoadQueryFilterOption[];
 
   /**
+   * Get the list of filter options related to template query
+   */
+  getQueryFilterOptionsRelatedToTemplateQuery?(): (
+    queryBuilderState: QueryBuilderState,
+  ) => string[];
+
+  /**
    * Get the list of warehouse entitlement configurations
    */
   getWarehouseEntitlementRenders?(): WarehouseEntitlementRender[];

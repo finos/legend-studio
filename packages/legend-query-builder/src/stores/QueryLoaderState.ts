@@ -74,6 +74,7 @@ export class QueryLoaderState {
   showCurrentUserQueriesOnly = false; // TODO: if we start having more native filters, we should make them part of `extraFilters`
   extraFilters = new Map<string, boolean>();
   extraFilterOptions: LoadQueryFilterOption[] = [];
+  extraQueryFilterOptionsRelatedToTemplateQuery: string[] = [];
   queries: LightQuery[] = [];
   curatedTemplateQuerySepcifications: CuratedTemplateQuerySpecification[] = [];
 
@@ -81,7 +82,7 @@ export class QueryLoaderState {
   isCuratedTemplateToggled = false;
   showingDefaultQueries = true;
   showPreviewViewer = false;
-  queryPreviewContent?: QueryInfo;
+  queryPreviewContent?: QueryInfo | { name: string; content: string };
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -180,6 +181,17 @@ export class QueryLoaderState {
             plugin as QueryBuilder_LegendApplicationPlugin_Extension
           ).getExtraLoadQueryFilterOptions?.() ?? [],
       );
+    this.extraQueryFilterOptionsRelatedToTemplateQuery =
+      this.applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (plugin as QueryBuilder_LegendApplicationPlugin_Extension)
+              .getQueryFilterOptionsRelatedToTemplateQuery?.()(
+                guaranteeNonNullable(this.queryBuilderState),
+              )
+              .flat() ?? [],
+        );
     const extraFilters = this.extraFilterOptions.map((filterOption) =>
       filterOption.label(guaranteeNonNullable(this.queryBuilderState)),
     );
@@ -330,12 +342,6 @@ export class QueryLoaderState {
       } else if (template) {
         this.queryPreviewContent = {
           name: template.queryName,
-          id: '',
-          versionId: '',
-          groupId: '',
-          artifactId: '',
-          mapping: '',
-          runtime: '',
           content: '',
         } as QueryInfo;
         this.queryPreviewContent.content =

@@ -122,6 +122,17 @@ export class DSL_DataSpace_LegendApplicationPlugin
     ];
   }
 
+  getQueryFilterOptionsRelatedToTemplateQuery(): (
+    queryBuilderState: QueryBuilderState,
+  ) => string[] {
+    return (queryBuilderState): string[] => {
+      if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+        return ['Current Data Space'];
+      }
+      return [];
+    };
+  }
+
   getExtraTemplateQueryPanelContentRenderer(): TemplateQueryPanelContentRenderer[] {
     return [
       (queryBuilderState: QueryBuilderState): React.ReactNode => {
