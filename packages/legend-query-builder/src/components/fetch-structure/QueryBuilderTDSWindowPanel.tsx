@@ -209,13 +209,11 @@ const QueryBuilderWindowColumnModalEditor = observer(
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => setSelectedColumnName(event.target.value);
-    const isDuplicatedColumnName = !windowState.windowColumns.includes(
-      windowColumnState,
-    )
-      ? windowState.tdsState.tdsColumns
-          .map((c) => c.columnName)
-          .includes(windowColumnState.columnName)
-      : windowState.tdsState.isDuplicateColumn(windowColumnState);
+    const isDuplicatedColumnName =
+      windowState.tdsState.tdsColumns
+        .map((c) => c.columnName)
+        .filter((name) => name === selectedColumnName).length > 0 &&
+      selectedColumnName !== windowColumnState.columnName;
 
     // Window operator
     const operators = windowState.operators;
@@ -589,7 +587,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
               <InputWithInlineValidation
                 className="query-builder__olap__column__name__input input-group__input"
                 spellCheck={false}
-                value={windowColumnState.columnName}
+                value={selectedColumnName}
                 onChange={changeColumnName}
                 error={isDuplicatedColumnName ? 'Duplicated column' : undefined}
               />
@@ -599,6 +597,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
             <ModalFooterButton
               text={isNewWindowFunction ? 'Create' : 'Apply'}
               onClick={handleApply}
+              disabled={isDuplicatedColumnName}
             />
             <ModalFooterButton
               text="Cancel"
