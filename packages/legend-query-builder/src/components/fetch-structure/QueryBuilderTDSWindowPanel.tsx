@@ -254,10 +254,10 @@ const QueryBuilderWindowColumnModalEditor = observer(
           setSelectedColumnName(stateAndName.columnName);
         }
       };
-    const windowColumnOptions = isNewWindowFunction
+    const allColumns = isNewWindowFunction
       ? tdsState.tdsColumns
       : windowColumnState.possibleReferencedColumns;
-    const windowColumnOptionLabels = windowColumnOptions.map((w) => ({
+    const allColumnsOptions = allColumns.map((w) => ({
       label: w.columnName,
       value: w,
     }));
@@ -266,14 +266,14 @@ const QueryBuilderWindowColumnModalEditor = observer(
     const [selectedWindowColumns, setSelectedWindowColumns] = useState([
       ...windowColumnState.windowColumns,
     ]);
-    const windowColumnAddOptions = windowColumnOptions.filter(
+    const availableColumns = allColumns.filter(
       (e) => !selectedWindowColumns.includes(e),
     );
     const addWindowColumn = (): void => {
-      if (windowColumnAddOptions.length > 0) {
+      if (availableColumns.length > 0) {
         setSelectedWindowColumns([
           ...selectedWindowColumns,
-          guaranteeNonNullable(windowColumnAddOptions[0]),
+          guaranteeNonNullable(availableColumns[0]),
         ]);
       }
     };
@@ -392,8 +392,8 @@ const QueryBuilderWindowColumnModalEditor = observer(
                       <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
                         <CustomSelectorInput
                           className="query-builder__olap__tds__column__dropdown"
-                          options={windowColumnOptionLabels}
-                          disabled={windowColumnOptionLabels.length < 1}
+                          options={allColumnsOptions}
+                          disabled={allColumnsOptions.length < 1}
                           onChange={changeWindowOperatorColumn}
                           value={{
                             value: windowOperatorColumn,
@@ -471,14 +471,14 @@ const QueryBuilderWindowColumnModalEditor = observer(
                       deleteColumn={(v: QueryBuilderTDSColumnState) =>
                         deleteWindowColumn(v)
                       }
-                      tdsColOptions={windowColumnOptions}
+                      tdsColOptions={availableColumns}
                     />
                   ))}
                 </div>
                 <div className="panel__content__form__section__list__new-item__add">
                   <button
                     className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                    disabled={!windowColumnAddOptions.length}
+                    disabled={!availableColumns.length}
                     onClick={addWindowColumn}
                     tabIndex={-1}
                   >
@@ -506,8 +506,8 @@ const QueryBuilderWindowColumnModalEditor = observer(
                     <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
                       <CustomSelectorInput
                         className="query-builder__olap__tds__column__dropdown"
-                        options={windowColumnOptionLabels}
-                        disabled={windowColumnOptionLabels.length < 1}
+                        options={allColumnsOptions}
+                        disabled={allColumnsOptions.length < 1}
                         onChange={changeSortCol}
                         value={{
                           value: selectedSortBy.columnState,
