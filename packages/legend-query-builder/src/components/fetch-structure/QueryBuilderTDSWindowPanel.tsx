@@ -96,14 +96,20 @@ const createWindowColumnState = (
       operator,
       columnState,
     );
+    const columnName = operator.isColumnAggregator()
+      ? `${operator.getLabel()} of ${columnState.columnName}`
+      : columnState.columnName;
     return new QueryBuilderWindowColumnState(
       tdsState.windowState,
       [],
       undefined,
       opState,
-      `${operator.getLabel()} ${columnState.columnName}`,
+      columnName,
     );
   } else {
+    const columnName = nonColoperator.isColumnAggregator()
+      ? `${nonColoperator.getLabel()} of ${columnState.columnName}`
+      : columnState.columnName;
     return new QueryBuilderWindowColumnState(
       tdsState.windowState,
       [columnState],
@@ -112,7 +118,7 @@ const createWindowColumnState = (
         tdsState.windowState,
         nonColoperator,
       ),
-      `${nonColoperator.getLabel()} ${columnState.columnName}`,
+      columnName,
     );
   }
 };
