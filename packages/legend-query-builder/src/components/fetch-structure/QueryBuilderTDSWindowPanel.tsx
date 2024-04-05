@@ -215,11 +215,14 @@ const QueryBuilderWindowColumnModalEditor = observer(
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => setSelectedColumnName(event.target.value);
-    const isDuplicatedColumnName =
-      windowState.tdsState.tdsColumns
-        .map((c) => c.columnName)
-        .filter((name) => name === selectedColumnName).length > 0 &&
-      selectedColumnName !== windowColumnState.columnName;
+    const isDuplicatedColumnName = isNewWindowFunction
+      ? windowState.tdsState.tdsColumns
+          .map((c) => c.columnName)
+          .filter((name) => name === selectedColumnName).length > 0
+      : windowState.tdsState.tdsColumns
+          .map((c) => c.columnName)
+          .filter((name) => name === selectedColumnName).length > 0 &&
+        selectedColumnName !== windowColumnState.columnName;
 
     // Window operator
     const operators = windowState.operators;
