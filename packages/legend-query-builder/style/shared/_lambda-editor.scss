@@ -25,12 +25,8 @@
   border-radius: 0.2rem;
 
   .monaco-editor {
-    // Since `monaco-editor` does not support having mutliple editors with different themes so we have to
+    // Since `monaco-editor` does not support having multiple editors with different themes so we have to
     // hack CSS for now until we can completely convert element editor to dark theme
-    .margin,
-    .monaco-editor-background {
-      background: var(--color-dark-grey-300) !important;
-    }
 
     .decorationsOverviewRuler {
       display: none;
