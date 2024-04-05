@@ -290,22 +290,21 @@ const QueryBuilderWindowColumnModalEditor = observer(
     };
 
     // Sort by
-    const [selectedSortBy, setSelectedSortBy] = useState(
-      windowColumnState.sortByState,
+    const [selectedSortBy, setSelectedSortBy] = useState(() =>
+      deepClone(windowColumnState.sortByState),
     );
     const changeSortBy = (sortOp: COLUMN_SORT_TYPE | undefined) => (): void => {
       if (selectedSortBy?.sortType !== sortOp) {
         if (sortOp) {
-          const sortInfoOpState =
-            selectedSortBy ??
-            new WindowGroupByColumnSortByState(
-              guaranteeNonNullable(
-                windowColumnState.possibleReferencedColumns[0],
-              ),
-              sortOp,
-            );
-          sortInfoOpState.setSortType(sortOp);
-          setSelectedSortBy(sortInfoOpState);
+          const newSortByState = new WindowGroupByColumnSortByState(
+            selectedSortBy?.columnState
+              ? selectedSortBy.columnState
+              : guaranteeNonNullable(
+                  windowColumnState.possibleReferencedColumns[0],
+                ),
+            sortOp,
+          );
+          setSelectedSortBy(newSortByState);
         } else {
           setSelectedSortBy(undefined);
         }
@@ -315,7 +314,11 @@ const QueryBuilderWindowColumnModalEditor = observer(
       val: { label: string; value: QueryBuilderTDSColumnState } | null,
     ): void => {
       if (selectedSortBy && val !== null) {
-        selectedSortBy.setColumnState(val.value);
+        const newSortByState = new WindowGroupByColumnSortByState(
+          val.value,
+          selectedSortBy.sortType,
+        );
+        setSelectedSortBy(newSortByState);
       }
     };
 
