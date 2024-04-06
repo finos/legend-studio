@@ -23,6 +23,8 @@ import {
 } from '@finos/legend-application';
 import packageJson from '../../package.json' assert { type: 'json' };
 import type {
+  CuratedTemplateQuery,
+  CuratedTemplateQuerySpecification,
   LoadQueryFilterOption,
   QueryBuilderState,
   QueryBuilder_LegendApplicationPlugin_Extension,
@@ -37,6 +39,8 @@ import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG } from '../__lib__/DSL
 import type { QuerySearchSpecification } from '@finos/legend-graph';
 import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 import { renderDataSpaceQueryBuilderTemplateQueryPanelContent } from './query/DataSpaceQueryBuilderTemplateQueryPanelContent.js';
+import { DataSpaceExecutableTemplate } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import { filterByType } from '@finos/legend-shared';
 
 export class DSL_DataSpace_LegendApplicationPlugin
   extends LegendApplicationPlugin
@@ -118,6 +122,17 @@ export class DSL_DataSpace_LegendApplicationPlugin
     ];
   }
 
+  getQueryFilterOptionsRelatedToTemplateQuery(): (
+    queryBuilderState: QueryBuilderState,
+  ) => string[] {
+    return (queryBuilderState): string[] => {
+      if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+        return ['Current Data Space'];
+      }
+      return [];
+    };
+  }
+
   getExtraTemplateQueryPanelContentRenderer(): TemplateQueryPanelContentRenderer[] {
     return [
       (queryBuilderState: QueryBuilderState): React.ReactNode => {
@@ -127,6 +142,64 @@ export class DSL_DataSpace_LegendApplicationPlugin
           );
         }
         return undefined;
+      },
+    ];
+  }
+
+  getCuratedTemplateQuerySpecifications(): CuratedTemplateQuerySpecification[] {
+    return [
+      {
+        getCuratedTemplateQueries: (
+          queryBuilderState,
+        ): CuratedTemplateQuery[] => {
+          if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+            const executableTemplates =
+              queryBuilderState.dataSpace.executables?.filter(
+                filterByType(DataSpaceExecutableTemplate),
+              );
+            return executableTemplates
+              ? executableTemplates.map(
+                  (e) =>
+                    ({
+                      title: e.title,
+                      description: e.description,
+                      query: e.query,
+                      executionContextKey:
+                        e.executionContextKey ??
+                        queryBuilderState.dataSpace.defaultExecutionContext
+                          .name,
+                    }) as CuratedTemplateQuery,
+                )
+              : [];
+          }
+          return [];
+        },
+        loadCuratedTemplateQuery: (
+          templateQuery: CuratedTemplateQuery,
+          queryBuilderState: QueryBuilderState,
+        ): void => {
+          if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+            if (
+              queryBuilderState.executionContext.name !==
+              templateQuery.executionContextKey
+            ) {
+              const executionContext =
+                queryBuilderState.dataSpace.executionContexts.find(
+                  (c) => c.name === templateQuery.executionContextKey,
+                );
+              if (executionContext) {
+                queryBuilderState.setExecutionContext(executionContext);
+                queryBuilderState.propagateExecutionContextChange(
+                  executionContext,
+                );
+                queryBuilderState.initializeWithQuery(templateQuery.query);
+                queryBuilderState.onExecutionContextChange?.(executionContext);
+              }
+            } else {
+              queryBuilderState.initializeWithQuery(templateQuery.query);
+            }
+          }
+        },
       },
     ];
   }

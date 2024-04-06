@@ -16,11 +16,28 @@
 
 import type { LegendApplicationPlugin } from '@finos/legend-application';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import type { QuerySearchSpecification } from '@finos/legend-graph';
+import type { QuerySearchSpecification, RawLambda } from '@finos/legend-graph';
 import type {
   DataAccessState,
   DatasetAccessInfo,
 } from './data-access/DataAccessState.js';
+
+export type CuratedTemplateQuery = {
+  title: string;
+  description: string | undefined;
+  query: RawLambda;
+  executionContextKey: string;
+};
+
+export type CuratedTemplateQuerySpecification = {
+  getCuratedTemplateQueries(
+    queryBuilderState: QueryBuilderState,
+  ): CuratedTemplateQuery[];
+  loadCuratedTemplateQuery(
+    templateQuery: CuratedTemplateQuery,
+    queryBuilderState: QueryBuilderState,
+  ): void;
+};
 
 export type LoadQueryFilterOption = {
   key: string;
@@ -60,9 +77,21 @@ export type TemplateQueryPanelContentRenderer = (
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
   /**
+   * Get the list of template query specifications
+   */
+  getCuratedTemplateQuerySpecifications?(): CuratedTemplateQuerySpecification[];
+
+  /**
    * Get the list of filter options for query loader.
    */
   getExtraLoadQueryFilterOptions?(): LoadQueryFilterOption[];
+
+  /**
+   * Get the list of filter options related to template query
+   */
+  getQueryFilterOptionsRelatedToTemplateQuery?(): (
+    queryBuilderState: QueryBuilderState,
+  ) => string[];
 
   /**
    * Get the list of warehouse entitlement configurations
