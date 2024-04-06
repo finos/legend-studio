@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 11.31.0
+
+### Patch Changes
+
+- [#3038](https://github.com/finos/legend-studio/pull/3038) [`598297842`](https://github.com/finos/legend-studio/commit/5982978427b58f874a054388807c4c289aae6eaf) ([@travisstebbins](https://github.com/travisstebbins)) - Fix filter panel text color in light mode
+
 ## 11.30.0
 
 ### Patch Changes

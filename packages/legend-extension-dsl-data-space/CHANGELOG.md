@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.1.95
+
+### Patch Changes
+
+- [#3008](https://github.com/finos/legend-studio/pull/3008) [`bb233a4b4`](https://github.com/finos/legend-studio/commit/bb233a4b43e3ff9bd90383ebd818c9852a71a4b8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support loading template query from Query Loader
+
 ## 10.1.94
 
 ### Patch Changes
