@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.20
+
+### Patch Changes
+
+- [#3038](https://github.com/finos/legend-studio/pull/3038) [`598297842`](https://github.com/finos/legend-studio/commit/5982978427b58f874a054388807c4c289aae6eaf) ([@travisstebbins](https://github.com/travisstebbins)) - Fix derived constant lambda editor colors in light mode
+
+- [#3008](https://github.com/finos/legend-studio/pull/3008) [`bb233a4b4`](https://github.com/finos/legend-studio/commit/bb233a4b43e3ff9bd90383ebd818c9852a71a4b8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support loading template query from Query Loader
+
 ## 4.14.19
 
 ### Patch Changes
