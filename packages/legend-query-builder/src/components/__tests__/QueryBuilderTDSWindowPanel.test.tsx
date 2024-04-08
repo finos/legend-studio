@@ -303,7 +303,7 @@ test(
     );
     selectFromCustomSelectorInput(windowOperatorContainer, 'Last Name');
     const operatorDropdown = guaranteeNonNullable(
-      renderResult.getAllByTitle('Choose Window Function Operator...')?.[1],
+      renderResult.getAllByTitle('Choose Window Function Operator...')[1],
     );
     fireEvent.click(operatorDropdown);
     fireEvent.click(renderResult.getByText('count'));
@@ -320,7 +320,7 @@ test(
     sortByDropdown = guaranteeNonNullable(
       renderResult.getAllByTitle(
         'Choose Window Function SortBy Operator...',
-      )?.[1],
+      )[1],
     );
     fireEvent.click(sortByDropdown);
     fireEvent.click(renderResult.getByText('desc'));
@@ -444,7 +444,7 @@ test(
     selectFromCustomSelectorInput(windowOperatorContainer, 'Last Name');
     expect(getByText(windowOperatorContainer, 'Last Name')).not.toBeNull();
     const operatorDropdown = guaranteeNonNullable(
-      renderResult.getAllByTitle('Choose Window Function Operator...')?.[1],
+      renderResult.getAllByTitle('Choose Window Function Operator...')[1],
     );
     fireEvent.click(operatorDropdown);
     fireEvent.click(renderResult.getByText('count'));
@@ -464,7 +464,7 @@ test(
     sortByDropdown = guaranteeNonNullable(
       renderResult.getAllByTitle(
         'Choose Window Function SortBy Operator...',
-      )?.[1],
+      )[1],
     );
     fireEvent.click(sortByDropdown);
     fireEvent.click(renderResult.getByText('desc'));
