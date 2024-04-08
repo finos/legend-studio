@@ -440,6 +440,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                     </div>
                     <DropdownMenu
                       className="query-builder__olap__column__operation__operator__dropdown"
+                      title="Choose Window Function Operator..."
                       disabled={!operators.length}
                       content={
                         <MenuContent>
@@ -466,16 +467,10 @@ const QueryBuilderWindowColumnModalEditor = observer(
                         elevation: 7,
                       }}
                     >
-                      <div
-                        className="query-builder__olap__column__operation__operator__badge"
-                        title="Choose Window Function Operator..."
-                      >
+                      <div className="query-builder__olap__column__operation__operator__badge">
                         <SigmaIcon />
                       </div>
-                      <div
-                        className="query-builder__olap__column__operation__operator__dropdown__trigger"
-                        title="Choose Window Function Operator..."
-                      >
+                      <div className="query-builder__olap__column__operation__operator__dropdown__trigger">
                         <CaretDownIcon />
                       </div>
                     </DropdownMenu>
@@ -559,6 +554,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                   )}
                   <DropdownMenu
                     className="query-builder__olap__column__sortby__operator__dropdown"
+                    title="Choose Window Function SortBy Operator..."
                     content={
                       <MenuContent>
                         <MenuContentItem
@@ -595,14 +591,12 @@ const QueryBuilderWindowColumnModalEditor = observer(
                         },
                       )}
                       tabIndex={-1}
-                      title="Choose Window Function SortBy Operator..."
                     >
                       <SortIcon />
                     </div>
                     <div
                       className="query-builder__olap__column__sortby__operator__dropdown__trigger"
                       tabIndex={-1}
-                      title="Choose Window Function SortBy Operator..."
                     >
                       <CaretDownIcon />
                     </div>
@@ -1015,6 +1009,7 @@ const QueryBuilderWindowColumnEditor = observer(
               <DropdownMenu
                 className="query-builder__olap__column__operation__operator__dropdown"
                 disabled={!operators.length}
+                title="Choose Window Function Operator..."
                 content={
                   <MenuContent>
                     {operators.map((op) => (
@@ -1034,16 +1029,10 @@ const QueryBuilderWindowColumnEditor = observer(
                   elevation: 7,
                 }}
               >
-                <div
-                  className="query-builder__olap__column__operation__operator__badge"
-                  title="Choose Window Function Operator..."
-                >
+                <div className="query-builder__olap__column__operation__operator__badge">
                   <SigmaIcon />
                 </div>
-                <div
-                  className="query-builder__olap__column__operation__operator__dropdown__trigger"
-                  title="Choose Window Function Operator..."
-                >
+                <div className="query-builder__olap__column__operation__operator__dropdown__trigger">
                   <CaretDownIcon />
                 </div>
               </DropdownMenu>
@@ -1144,6 +1133,7 @@ const QueryBuilderWindowColumnEditor = observer(
               )}
               <DropdownMenu
                 className="query-builder__olap__column__sortby__operator__dropdown"
+                title="Choose Window Function SortBy Operator..."
                 content={
                   <MenuContent>
                     <MenuContentItem
@@ -1179,14 +1169,10 @@ const QueryBuilderWindowColumnEditor = observer(
                         Boolean(sortByState),
                     },
                   )}
-                  title="Choose Window Function SortBy Operator..."
                 >
                   <SortIcon />
                 </div>
-                <div
-                  className="query-builder__olap__column__sortby__operator__dropdown__trigger"
-                  title="Choose Window Function SortBy Operator..."
-                >
+                <div className="query-builder__olap__column__sortby__operator__dropdown__trigger">
                   <CaretDownIcon />
                 </div>
               </DropdownMenu>
