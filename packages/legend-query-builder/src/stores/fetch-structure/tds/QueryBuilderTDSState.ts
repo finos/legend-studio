@@ -289,13 +289,16 @@ export class QueryBuilderTDSState
         'Query has calendar function with no date column specified',
       );
     }
-    const hasDuplicatedProjectionColumns = this.projectionColumns.some(
-      (column) =>
-        this.projectionColumns.filter((c) => c.columnName === column.columnName)
+    const allColumnNames = this.projectionColumns
+      .map((c) => c.columnName)
+      .concat(this.windowState.windowColumns.map((c) => c.columnName));
+    const hasDuplicateColumns = allColumnNames.some(
+      (columnName1) =>
+        allColumnNames.filter((columnName2) => columnName1 === columnName2)
           .length > 1,
     );
-    if (hasDuplicatedProjectionColumns) {
-      validationIssues.push('Query has duplicated projection columns');
+    if (hasDuplicateColumns) {
+      validationIssues.push('Query has duplicated column names');
       return validationIssues;
     }
     const hasNoProjectionColumns = this.projectionColumns.length === 0;
