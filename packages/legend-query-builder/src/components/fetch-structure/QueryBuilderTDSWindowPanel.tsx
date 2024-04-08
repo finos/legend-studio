@@ -409,17 +409,6 @@ const QueryBuilderWindowColumnModalEditor = observer(
               <div className="panel__content__form__section__list">
                 <div className="panel__content__form__section__list__items">
                   <div className="query-builder__olap__column__operation__operator">
-                    <div
-                      className={clsx(
-                        'query-builder__olap__column__operation__operator__label',
-                        {
-                          'query-builder__olap__column__operation__operator__label__agg':
-                            !windowOperatorColumn,
-                        },
-                      )}
-                    >
-                      {selectedOperatorState.operator.getLabel()}
-                    </div>
                     {windowOperatorColumn && (
                       <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
                         <CustomSelectorInput
@@ -438,6 +427,17 @@ const QueryBuilderWindowColumnModalEditor = observer(
                         />
                       </div>
                     )}
+                    <div
+                      className={clsx(
+                        'query-builder__olap__column__operation__operator__label',
+                        {
+                          'query-builder__olap__column__operation__operator__label__agg':
+                            !windowOperatorColumn,
+                        },
+                      )}
+                    >
+                      {selectedOperatorState.operator.getLabel()}
+                    </div>
                     <DropdownMenu
                       className="query-builder__olap__column__operation__operator__dropdown"
                       disabled={!operators.length}
@@ -530,11 +530,6 @@ const QueryBuilderWindowColumnModalEditor = observer(
               <div className="panel__content__form__section__list">
                 <div className="query-builder__olap__column__sortby__operator">
                   {selectedSortBy && (
-                    <div className="query-builder__olap__column__sortby__operator__label">
-                      {selectedSortBy.sortType.toLowerCase()}
-                    </div>
-                  )}
-                  {selectedSortBy && (
                     <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
                       <CustomSelectorInput
                         className="query-builder__olap__tds__column__dropdown"
@@ -555,6 +550,11 @@ const QueryBuilderWindowColumnModalEditor = observer(
                   {!selectedSortBy && (
                     <div className="query-builder__olap__column__sortby__none">
                       (none)
+                    </div>
+                  )}
+                  {selectedSortBy && (
+                    <div className="query-builder__olap__column__sortby__operator__label">
+                      {selectedSortBy.sortType.toLowerCase()}
                     </div>
                   )}
                   <DropdownMenu
@@ -992,6 +992,15 @@ const QueryBuilderWindowColumnEditor = observer(
           />
           <div className="query-builder__olap__column__operation">
             <div className="query-builder__olap__column__operation__operator">
+              {aggregateColumn && (
+                <TDSColumnReferenceEditor
+                  tdsColumn={aggregateColumn}
+                  handleChange={handleOpDrop}
+                  selectionEditor={{
+                    options: windowColumnState.possibleReferencedColumns,
+                  }}
+                />
+              )}
               <div
                 className={clsx(
                   'query-builder__olap__column__operation__operator__label',
@@ -1003,15 +1012,6 @@ const QueryBuilderWindowColumnEditor = observer(
               >
                 {operationState.operator.getLabel()}
               </div>
-              {aggregateColumn && (
-                <TDSColumnReferenceEditor
-                  tdsColumn={aggregateColumn}
-                  handleChange={handleOpDrop}
-                  selectionEditor={{
-                    options: windowColumnState.possibleReferencedColumns,
-                  }}
-                />
-              )}
               <DropdownMenu
                 className="query-builder__olap__column__operation__operator__dropdown"
                 disabled={!operators.length}
@@ -1124,11 +1124,6 @@ const QueryBuilderWindowColumnEditor = observer(
           <div className="query-builder__olap__column__sortby">
             <div className="query-builder__olap__column__sortby__operator">
               {sortByState && (
-                <div className="query-builder__olap__column__sortby__operator__label">
-                  {sortByState.sortType.toLowerCase()}
-                </div>
-              )}
-              {sortByState && (
                 <TDSColumnReferenceEditor
                   tdsColumn={sortByState.columnState}
                   handleChange={handleSortDrop}
@@ -1140,6 +1135,11 @@ const QueryBuilderWindowColumnEditor = observer(
               {!sortByState && (
                 <div className="query-builder__olap__column__sortby__none">
                   (none)
+                </div>
+              )}
+              {sortByState && (
+                <div className="query-builder__olap__column__sortby__operator__label">
+                  {sortByState.sortType.toLowerCase()}
                 </div>
               )}
               <DropdownMenu
