@@ -1085,7 +1085,7 @@ const QueryBuilderWindowColumnEditor = observer(
                         deleteColumn={(v: QueryBuilderTDSColumnState): void =>
                           windowColumnState.deleteWindow(v)
                         }
-                        tdsColOptions={windowOptions}
+                        tdsColOptions={addWindowOptions}
                       />
                     ))}
                   </div>
