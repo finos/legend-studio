@@ -106,7 +106,7 @@ test(
 
 test(
   integrationTest(
-    "Window column modal editor doesn't allow duplicate column name",
+    "Window column modal editor doesn't allow same name as projection column",
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -152,6 +152,67 @@ test(
     fireEvent.change(windowFunctionNameInput, {
       target: { value: 'Edited First Name' },
     });
+
+    // Check for validation error
+    expect(
+      renderResult
+        .getByRole('button', { name: 'Create' })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  },
+);
+
+test(
+  integrationTest(
+    "Window column modal editor doesn't allow same name as another window column",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'Show Window Function(s)' panel so we will directly force
+      // the panel to show for now
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowWindowFuncPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+      ),
+    );
+    const windowFunctionPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+
+    // Create window function
+    fireEvent.click(
+      getByTitle(windowFunctionPanel, 'Create Window Function Column'),
+    );
+    await waitFor(() =>
+      renderResult.getByText('Create Window Function Column'),
+    );
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Create another window function (should have same name by default)
+    fireEvent.click(
+      getByTitle(windowFunctionPanel, 'Create Window Function Column'),
+    );
+    await waitFor(() =>
+      renderResult.getByText('Create Window Function Column'),
+    );
 
     // Check for validation error
     expect(
