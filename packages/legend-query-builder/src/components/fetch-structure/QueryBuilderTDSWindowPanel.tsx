@@ -52,7 +52,6 @@ import {
 import {
   assertErrorThrown,
   clone,
-  deepClone,
   deleteEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -227,9 +226,21 @@ const QueryBuilderWindowColumnModalEditor = observer(
     // Window operator
     const operators = windowState.operators;
     const operatorState = windowColumnState.operatorState;
-    const [selectedOperatorState, setSelectedOperatorState] = useState(() =>
-      deepClone(operatorState),
-    );
+    const [selectedOperatorState, setSelectedOperatorState] = useState(() => {
+      if (
+        operatorState instanceof QueryBuilderTDS_WindowAggreationOperatorState
+      ) {
+        return new QueryBuilderTDS_WindowAggreationOperatorState(
+          operatorState.windowState,
+          operatorState.operator,
+          operatorState.columnState,
+        );
+      }
+      return new QueryBuilderTDS_WindowRankOperatorState(
+        operatorState.windowState,
+        operatorState.operator,
+      );
+    });
     const windowOperatorColumn =
       selectedOperatorState instanceof
       QueryBuilderTDS_WindowAggreationOperatorState
@@ -303,9 +314,16 @@ const QueryBuilderWindowColumnModalEditor = observer(
     };
 
     // Sort by
-    const [selectedSortBy, setSelectedSortBy] = useState(() =>
-      deepClone(windowColumnState.sortByState),
-    );
+    const [selectedSortBy, setSelectedSortBy] = useState(() => {
+      const sortBy = windowColumnState.sortByState;
+      if (sortBy) {
+        return new WindowGroupByColumnSortByState(
+          sortBy.columnState,
+          sortBy.sortType,
+        );
+      }
+      return undefined;
+    });
     const changeSortBy = (sortOp: COLUMN_SORT_TYPE | undefined) => (): void => {
       if (selectedSortBy?.sortType !== sortOp) {
         if (sortOp) {
