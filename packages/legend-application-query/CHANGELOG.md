@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.3.0
+
+### Minor Changes
+
+- [#3042](https://github.com/finos/legend-studio/pull/3042) [`5ea34a9af`](https://github.com/finos/legend-studio/commit/5ea34a9af28454cff201a061f4880364e80582ca) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Persist grid config in local mode when running TDS queries.
+
 ## 13.2.20
 
 ## 13.2.19
