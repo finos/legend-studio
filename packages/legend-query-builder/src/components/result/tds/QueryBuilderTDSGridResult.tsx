@@ -99,7 +99,7 @@ const getLocalColDefs = (
       enableValue: true,
       ...getAggregationTDSColumnCustomizations(executionResult, colName),
     } as DataGridColumnDefinition;
-    const persistedColumn = resultState.gridConfig.columns.find(
+    const persistedColumn = resultState.gridConfig?.columns.find(
       (c) => c.colId === colName,
     );
     if (persistedColumn) {
@@ -240,6 +240,7 @@ export const QueryBuilderTDSGridResult = observer(
       resultState.setGridConfig({
         columns: columnAPi.getColumnState(),
         isPivotModeEnabled: columnAPi.isPivotMode(),
+        isLocalModeEnabled: true,
       });
     };
 
@@ -351,7 +352,7 @@ export const QueryBuilderTDSGridResult = observer(
               onGridReady={(params): void => {
                 setColumnApi(params.columnApi);
                 params.columnApi.setPivotMode(
-                  resultState.gridConfig.isPivotModeEnabled,
+                  Boolean(resultState.gridConfig?.isPivotModeEnabled),
                 );
               }}
               gridOptions={{

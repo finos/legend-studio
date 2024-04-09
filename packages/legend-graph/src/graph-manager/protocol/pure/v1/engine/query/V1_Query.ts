@@ -15,7 +15,7 @@
  */
 
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema, list, optional, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive, raw } from 'serializr';
 import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../../model/packageableElements/domain/V1_TaggedValue.js';
 import {
@@ -38,6 +38,12 @@ export class V1_QueryParameterValue {
   );
 }
 
+export interface V1_QueryGridConfig {
+  columns: object[];
+  isPivotModeEnabled: boolean | undefined;
+  isLocalModeEnabled: boolean | undefined;
+}
+
 export class V1_Query {
   name!: string;
   id!: string;
@@ -53,6 +59,7 @@ export class V1_Query {
   stereotypes?: V1_StereotypePtr[] | undefined;
   defaultParameterValues?: V1_QueryParameterValue[] | undefined;
   lastUpdatedAt?: number | undefined;
+  gridConfig?: V1_QueryGridConfig | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
@@ -74,6 +81,7 @@ export class V1_Query {
       taggedValues: optional(list(usingModelSchema(V1_taggedValueModelSchema))),
       versionId: primitive(),
       originalVersionId: optional(primitive()),
+      gridConfig: optional(raw()),
     }),
     {
       deserializeNullAsUndefined: true,

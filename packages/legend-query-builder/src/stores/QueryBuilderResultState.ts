@@ -31,6 +31,7 @@ import {
   type ExecutionResult,
   type RawLambda,
   type EXECUTION_SERIALIZATION_FORMAT,
+  type QueryGridConfig,
   GRAPH_MANAGER_EVENT,
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
@@ -79,7 +80,8 @@ export interface QueryBuilderTDSResultCellCoordinate {
 
 type QueryBuilderDataGridConfig = {
   columns: DataGridColumnState[];
-  isPivotModeEnabled: boolean;
+  isPivotModeEnabled: boolean | undefined;
+  isLocalModeEnabled: boolean | undefined;
 };
 
 export class QueryBuilderResultState {
@@ -101,7 +103,7 @@ export class QueryBuilderResultState {
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
   isSelectingCells: boolean;
 
-  gridConfig!: QueryBuilderDataGridConfig;
+  gridConfig: QueryBuilderDataGridConfig | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
@@ -128,6 +130,7 @@ export class QueryBuilderResultState {
       setMouseOverCell: action,
       setQueryRunPromise: action,
       setIsQueryUsageViewerOpened: action,
+      handlePreConfiguredGridConfig: action,
       exportData: flow,
       runQuery: flow,
       cancelQuery: flow,
@@ -136,10 +139,7 @@ export class QueryBuilderResultState {
     this.isSelectingCells = false;
 
     this.selectedCells = [];
-    this.gridConfig = {
-      columns: [],
-      isPivotModeEnabled: false,
-    };
+    this.gridConfig = undefined;
     this.queryBuilderState = queryBuilderState;
     this.executionPlanState = new ExecutionPlanState(
       this.queryBuilderState.applicationStore,
@@ -147,7 +147,7 @@ export class QueryBuilderResultState {
     );
   }
 
-  setGridConfig(val: QueryBuilderDataGridConfig): void {
+  setGridConfig(val: QueryBuilderDataGridConfig | undefined): void {
     this.gridConfig = val;
   }
 
@@ -189,6 +189,26 @@ export class QueryBuilderResultState {
 
   setIsQueryUsageViewerOpened(val: boolean): void {
     this.isQueryUsageViewerOpened = val;
+  }
+
+  handlePreConfiguredGridConfig(config: QueryGridConfig): void {
+    const newConfig = {
+      columns: config.columns as DataGridColumnState[],
+      isPivotModeEnabled: Boolean(config.isPivotModeEnabled),
+      isLocalModeEnabled: Boolean(config.isLocalModeEnabled),
+    };
+    this.setGridConfig(newConfig);
+  }
+
+  getQueryGridConfig(): QueryGridConfig | undefined {
+    if (this.gridConfig) {
+      return {
+        columns: this.gridConfig.columns as object[],
+        isPivotModeEnabled: Boolean(this.gridConfig.isPivotModeEnabled),
+        isLocalModeEnabled: Boolean(this.gridConfig.isLocalModeEnabled),
+      };
+    }
+    return undefined;
   }
 
   get checkForStaleResults(): boolean {
