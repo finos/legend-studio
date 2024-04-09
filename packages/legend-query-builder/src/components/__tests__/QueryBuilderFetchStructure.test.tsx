@@ -1305,3 +1305,142 @@ test(
     ).toStrictEqual(TEST_DATA__simpleGraphFetchWithSubtype);
   },
 );
+
+test(
+  integrationTest(
+    "Query builder doesn't show 'No Projection Columns' message when first opened",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(create_RawLambda([], []));
+    });
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+
+    // Verify no columns in fetch structure
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsState.projectionColumns).toHaveLength(0);
+    // Verify no error message is shown
+    expect(renderResult.queryByText('1 issue')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    "Query builder shows 'No Projection Columns' message when fetch structure is empty and undo is still possible",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    const projectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+
+    // Drag and drop to the projection panel
+    const dropZone = await waitFor(() =>
+      getByText(projectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() => getByText(explorerPanel, 'Age'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      projectionPanel,
+      'Add a projection column',
+    );
+
+    // Verify column is present and noterror message
+    expect(
+      await waitFor(() => getByText(projectionPanel, 'Age')),
+    ).not.toBeNull();
+    expect(renderResult.queryByText('1 issue')).toBeNull();
+
+    // Delete the column
+    fireEvent.click(renderResult.getByRole('button', { name: 'Remove' }));
+
+    // Verify no column and error message
+    expect(await waitFor(() => queryByText(projectionPanel, 'Age'))).toBeNull();
+    expect(renderResult.getByText('1 issue')).not.toBeNull();
+
+    // Drag and drop to the projection panel again
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      projectionPanel,
+      'Add a projection column',
+    );
+    await waitFor(() => getByText(projectionPanel, 'Age'));
+
+    // Verify column is present and no error message
+    expect(
+      await waitFor(() => getByText(projectionPanel, 'Age')),
+    ).not.toBeNull();
+    expect(renderResult.queryByText('1 issue')).toBeNull();
+
+    // Delete the column
+    fireEvent.click(renderResult.getByRole('button', { name: 'Remove' }));
+
+    // Verify no column and error message
+    expect(await waitFor(() => queryByText(projectionPanel, 'Age'))).toBeNull();
+    expect(renderResult.getByText('1 issue')).not.toBeNull();
+
+    // Click undo and check column is present and no error message
+    fireEvent.click(renderResult.getByText('Undo'));
+    expect(
+      await waitFor(() => getByText(projectionPanel, 'Age')),
+    ).not.toBeNull();
+    expect(renderResult.queryByText('1 issue')).toBeNull();
+
+    // Click undo and check no column and error message
+    fireEvent.click(renderResult.getByText('Undo'));
+    expect(await waitFor(() => queryByText(projectionPanel, 'Age'))).toBeNull();
+    expect(renderResult.getByText('1 issue')).not.toBeNull();
+
+    // Click undo and check column is present and no error message
+    fireEvent.click(renderResult.getByText('Undo'));
+    expect(
+      await waitFor(() => getByText(projectionPanel, 'Age')),
+    ).not.toBeNull();
+    expect(renderResult.queryByText('1 issue')).toBeNull();
+
+    // Click undo last possible time and check no column and no error message
+    fireEvent.click(renderResult.getByText('Undo'));
+    expect(await waitFor(() => queryByText(projectionPanel, 'Age'))).toBeNull();
+    expect(renderResult.queryByText('1 issue')).toBeNull();
+  },
+);
