@@ -80,11 +80,6 @@ export class QueryBuilderChangeHistoryState {
         preserveParameterValues: true,
         preserveResult: true,
       });
-      if (this.pointer === -1) {
-        this.queryBuilderState.fetchStructureState.implementation.setIsInitialQuery(
-          true,
-        );
-      }
     }
   }
 

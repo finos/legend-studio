@@ -21,7 +21,7 @@ import type {
   VariableExpression,
 } from '@finos/legend-graph';
 import type { Hashable } from '@finos/legend-shared';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { computed, makeObservable } from 'mobx';
 import type { QueryBuilderExplorerTreePropertyNodeData } from '../explorer/QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import type { LambdaFunctionBuilderOption } from '../QueryBuilderValueSpecificationBuilderHelper.js';
@@ -38,19 +38,16 @@ export abstract class QueryBuilderFetchStructureImplementationState
 {
   readonly queryBuilderState: QueryBuilderState;
   readonly fetchStructureState: QueryBuilderFetchStructureState;
-  isInitialQuery = true;
 
   constructor(
     queryBuilderState: QueryBuilderState,
     fetchStructureState: QueryBuilderFetchStructureState,
   ) {
     makeObservable(this, {
-      isInitialQuery: observable,
       usedExplorerTreePropertyNodeIDs: computed,
       fetchStructureValidationIssues: computed,
       allValidationIssues: computed,
       hashCode: computed,
-      setIsInitialQuery: action,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -78,9 +75,6 @@ export abstract class QueryBuilderFetchStructureImplementationState
   abstract initialize(): void;
   abstract initializeWithQuery(): void;
   abstract get hashCode(): string;
-  setIsInitialQuery = (val: boolean): void => {
-    this.isInitialQuery = val;
-  };
 
   get TEMPORARY__showPostFetchStructurePanel(): boolean {
     return this.queryBuilderState.filterState.showPanel;
