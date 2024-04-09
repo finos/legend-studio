@@ -24,7 +24,10 @@ import {
   getByText,
   getAllByText,
 } from '@testing-library/react';
-import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
+import {
+  TEST_DATA__simpleProjection,
+  TEST_DATA_projectionWithWindowFunction,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
@@ -310,6 +313,59 @@ test(
         .getByRole('button', { name: 'Create' })
         .hasAttribute('disabled'),
     ).toBe(true);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder window function shows validation error if invalid column order',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA_projectionWithWindowFunction.parameters,
+          TEST_DATA_projectionWithWindowFunction.body,
+        ),
+      );
+    });
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    tdsState.setShowWindowFuncPanel(true);
+
+    await act(async () => {
+      tdsState.windowState.moveColumn(1, 0);
+    });
+
+    const windowPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+
+    expect(getAllByText(windowPanel, '1 issue')).not.toBeNull();
+
+    expect(
+      (
+        queryBuilderState.fetchStructureState
+          .implementation as QueryBuilderTDSState
+      ).windowState.windowValidationIssues.length,
+    ).toBe(1);
+
+    expect(
+      (
+        queryBuilderState.fetchStructureState
+          .implementation as QueryBuilderTDSState
+      ).windowState.invalidWindowColumnNames[0]?.invalidColumnName,
+    ).toBe('sum sum Age');
   },
 );
 
