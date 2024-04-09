@@ -34,6 +34,12 @@ export class QueryParameterValue {
   content!: string;
 }
 
+export interface QueryGridConfig {
+  columns: object[];
+  isPivotModeEnabled: boolean | undefined;
+  isLocalModeEnabled: boolean | undefined;
+}
+
 export class Query {
   name!: string;
   id!: string;
@@ -58,6 +64,7 @@ export class Query {
 
   lastUpdatedAt?: number | undefined;
   isCurrentUserQuery = false;
+  gridConfig?: QueryGridConfig | undefined;
 }
 
 export class LightQuery {

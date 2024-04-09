@@ -200,7 +200,9 @@ export const V1_buildQuery = (
       return paramValue;
     },
   );
-
+  if (protocol.gridConfig) {
+    metamodel.gridConfig = protocol.gridConfig;
+  }
   return metamodel;
 };
 
@@ -254,6 +256,9 @@ export const V1_transformQuery = (metamodel: Partial<Query>): V1_Query => {
     stereotype.value = _stereotype.stereotype;
     return stereotype;
   });
+  if (metamodel.gridConfig) {
+    protocol.gridConfig = metamodel.gridConfig;
+  }
   return protocol;
 };
 

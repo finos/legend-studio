@@ -43,6 +43,7 @@ import {
   type RawLambda,
   type Runtime,
   type Service,
+  type QueryGridConfig,
   type ValueSpecification,
   type GraphInitializationReport,
   GraphManagerState,
@@ -214,6 +215,7 @@ export class QueryCreatorState {
         rawLambda,
         queryBuilderState.getCurrentParameterValues(),
         config,
+        queryBuilderState.getGridConfig(),
       )) as Query;
       query.name = this.queryName;
       query.id = uuid();
@@ -397,6 +399,7 @@ export abstract class QueryEditorStore {
     rawLambda: RawLambda,
     parameters: Map<string, ValueSpecification> | undefined,
     config: QueryPersistConfiguration | undefined,
+    gridConfigConfig?: QueryGridConfig,
   ): Promise<Query> {
     try {
       assertNonNullable(
@@ -443,6 +446,7 @@ export abstract class QueryEditorStore {
           error,
         );
       }
+      query.gridConfig = gridConfigConfig ?? undefined;
       return query;
     } catch (error) {
       assertErrorThrown(error);
@@ -477,7 +481,7 @@ export abstract class QueryEditorStore {
       const stopWatch = new StopWatch();
 
       // TODO: when we genericize the way to initialize an application page
-      this.applicationStore.assistantService.setIsHidden(false);
+      this.applicationStore.assistantService.setIsHidden(true);
 
       // initialize the graph manager
       yield this.graphManagerState.graphManager.initialize(
@@ -948,6 +952,7 @@ export class ExistingQueryUpdateState {
         rawLambda,
         queryBuilderState.getCurrentParameterValues(),
         config,
+        queryBuilderState.getGridConfig(),
       )) as Query;
       query.name = queryName ?? query.name;
       query.versionId = queryVersionId ?? query.versionId;
@@ -1155,7 +1160,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         PackageableElementExplicitReference.create(query.runtime.value),
       ),
     );
-
     // leverage initialization of query builder state to ensure we handle unsupported queries
     let defaultParameters: Map<string, ValueSpecification> | undefined =
       undefined;
@@ -1178,6 +1182,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     queryBuilderState.initializeWithQuery(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
       defaultParameters,
+      query.gridConfig,
     );
     initailizeQueryStateReport.timings =
       this.applicationStore.timeService.finalizeTimingsRecord(

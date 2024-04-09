@@ -305,7 +305,6 @@ export const QueryBuilderResultPanel = observer(
         !queryBuilderState.isLocalModeEnabled,
       );
     };
-
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}

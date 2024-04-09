@@ -53,6 +53,7 @@ import {
   type GraphManagerState,
   type ValueSpecification,
   type Type,
+  type QueryGridConfig,
   GRAPH_MANAGER_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
@@ -393,13 +394,20 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
   }
 
-  resetQueryResult(options?: { preserveResult?: boolean | undefined }): void {
+  resetQueryResult(options?: {
+    preserveResult?: boolean | undefined;
+    gridConfig?: QueryGridConfig | undefined;
+  }): void {
     const resultState = new QueryBuilderResultState(this);
     resultState.setPreviewLimit(this.resultState.previewLimit);
     if (options?.preserveResult) {
       resultState.setExecutionResult(this.resultState.executionResult);
       resultState.setExecutionDuration(this.resultState.executionDuration);
       resultState.latestRunHashCode = this.resultState.latestRunHashCode;
+    }
+    if (options?.gridConfig) {
+      this.isLocalModeEnabled = true;
+      resultState.handlePreConfiguredGridConfig(options.gridConfig);
     }
     this.resultState = resultState;
   }
@@ -472,6 +480,14 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         }
       });
       return result;
+    }
+    return undefined;
+  }
+
+  getGridConfig(): QueryGridConfig | undefined {
+    // for now we will only save in local mode
+    if (this.isLocalModeEnabled && this.resultState.gridConfig) {
+      return this.resultState.getQueryGridConfig();
     }
     return undefined;
   }
@@ -552,11 +568,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   initializeWithQuery(
     query: RawLambda,
     defaultParameterValues?: Map<string, ValueSpecification>,
+    gridConfig?: QueryGridConfig,
   ): void {
     this.rebuildWithQuery(query, {
       defaultParameterValues,
     });
-    this.resetQueryResult();
+    this.resetQueryResult({ gridConfig });
     this.changeDetectionState.initialize(query);
     this.changeHistoryState.initialize(query);
   }
