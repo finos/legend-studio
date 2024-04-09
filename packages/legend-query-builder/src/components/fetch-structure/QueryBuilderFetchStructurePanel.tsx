@@ -31,6 +31,7 @@ import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuil
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
 const QueryBuilderFetchStructureEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -81,7 +82,7 @@ export const QueryBuilderFetchStructurePanel = observer(
       };
 
     return (
-      <Panel>
+      <Panel data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE}>
         <PanelHeader>
           <div className="panel__header__title">
             <div className="panel__header__title__label">fetch structure</div>
