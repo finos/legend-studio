@@ -310,7 +310,9 @@ export class QueryBuilderTDSState
       validationIssues.push('Query has duplicated projection/window columns');
     }
 
-    const hasNoProjectionColumns = this.projectionColumns.length === 0;
+    const hasNoProjectionColumns =
+      this.projectionColumns.length === 0 &&
+      this.queryBuilderState.changeHistoryState.canUndo;
     if (hasNoProjectionColumns) {
       validationIssues.push('Query has no projection columns');
     }
