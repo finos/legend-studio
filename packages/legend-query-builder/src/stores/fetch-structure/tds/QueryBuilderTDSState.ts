@@ -310,7 +310,8 @@ export class QueryBuilderTDSState
       validationIssues.push('Query has duplicated projection/window columns');
     }
 
-    const hasNoProjectionColumns = this.projectionColumns.length === 0;
+    const hasNoProjectionColumns =
+      this.projectionColumns.length === 0 && !this.isInitialQuery;
     if (hasNoProjectionColumns) {
       validationIssues.push('Query has no projection columns');
     }
@@ -370,6 +371,7 @@ export class QueryBuilderTDSState
     this.queryBuilderState.filterState.setShowPanel(true);
     this.setShowPostFilterPanel(false);
     this.setShowWindowFuncPanel(false);
+    this.setIsInitialQuery(true);
   }
 
   override initializeWithQuery(): void {
@@ -551,6 +553,7 @@ export class QueryBuilderTDSState
     },
   ): void {
     addUniqueEntry(this.projectionColumns, val);
+    this.setIsInitialQuery(false);
 
     if (!options?.skipSorting) {
       // sort columns: aggregate columns go last
