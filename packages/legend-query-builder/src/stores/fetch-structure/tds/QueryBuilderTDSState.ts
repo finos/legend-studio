@@ -278,6 +278,7 @@ export class QueryBuilderTDSState
 
   get fetchStructureValidationIssues(): string[] {
     const validationIssues: string[] = [];
+
     const hasInValidCalendarAggregateColumns =
       this.aggregationState.columns.some(
         (column) =>
@@ -289,22 +290,29 @@ export class QueryBuilderTDSState
         'Query has calendar function with no date column specified',
       );
     }
-    const allColumnNames = this.projectionColumns
-      .map((c) => c.columnName)
-      .concat(this.windowState.windowColumns.map((c) => c.columnName));
-    const hasDuplicateColumns = allColumnNames.some(
-      (columnName1) =>
-        allColumnNames.filter((columnName2) => columnName1 === columnName2)
+
+    const hasDuplicatedProjectionColumns = this.projectionColumns.some(
+      (column) =>
+        this.projectionColumns.filter((c) => c.columnName === column.columnName)
           .length > 1,
     );
-    if (hasDuplicateColumns) {
-      validationIssues.push('Query has duplicated column names');
-      return validationIssues;
+    if (hasDuplicatedProjectionColumns) {
+      validationIssues.push('Query has duplicated projection columns');
     }
+
+    const hasDuplicatedProjectionWindowColumns = this.projectionColumns.some(
+      (column) =>
+        this.windowState.windowColumns.filter(
+          (c) => c.columnName === column.columnName,
+        ).length > 0,
+    );
+    if (hasDuplicatedProjectionWindowColumns) {
+      validationIssues.push('Query has duplicated projection/window columns');
+    }
+
     const hasNoProjectionColumns = this.projectionColumns.length === 0;
     if (hasNoProjectionColumns) {
       validationIssues.push('Query has no projection columns');
-      return validationIssues;
     }
     return validationIssues;
   }

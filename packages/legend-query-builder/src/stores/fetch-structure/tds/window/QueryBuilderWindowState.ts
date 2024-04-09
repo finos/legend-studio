@@ -424,6 +424,17 @@ export class QueryBuilderWindowState implements Hashable {
     if (hasDuplicatedWindowColumns) {
       issues.push(`Query has duplicated window columns`);
     }
+
+    const hasDuplicatedProjectionWindowColumns = this.windowColumns.some(
+      (column) =>
+        this.tdsState.projectionColumns.filter(
+          (c) => c.columnName === column.columnName,
+        ).length > 0,
+    );
+    if (hasDuplicatedProjectionWindowColumns) {
+      issues.push('Query has duplicated projection/window columns');
+    }
+
     return issues;
   }
 
