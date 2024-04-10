@@ -908,6 +908,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                       "This column is used and can't be removed"
                     : 'Remove'
                 }
+                name="Remove"
               >
                 <TimesIcon />
               </button>
