@@ -47,8 +47,8 @@ import {
 } from '@finos/legend-graph';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { useEffect, useMemo, useState } from 'react';
-import { debounce, guaranteeType } from '@finos/legend-shared';
+import { useEffect } from 'react';
+import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
   DataSpace,
@@ -129,7 +129,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: DataSpaceQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const [dataSpaceSearchText, setDataSpaceSearchText] = useState('');
 
     // data space
     const dataSpaceOptions =
@@ -152,23 +151,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       queryBuilderState.onDataSpaceChange(option.value);
     };
 
-    // data space search text
-    const debouncedLoadDataSpaces = useMemo(
-      () =>
-        debounce((input: string): void => {
-          flowResult(queryBuilderState.loadDataSpaces(input)).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }, 500),
-      [applicationStore, queryBuilderState],
-    );
-    const onDataSpaceSearchTextChange = (value: string): void => {
-      if (value !== dataSpaceSearchText) {
-        setDataSpaceSearchText(value);
-        debouncedLoadDataSpaces.cancel();
-        debouncedLoadDataSpaces(value);
-      }
-    };
     const openDataSpaceAdvancedSearch = (): void =>
       queryBuilderState.showAdvancedSearchPanel();
 
@@ -232,7 +214,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     );
 
     useEffect(() => {
-      flowResult(queryBuilderState.loadDataSpaces('')).catch(
+      flowResult(queryBuilderState.loadDataSpaces()).catch(
         applicationStore.alertUnhandledError,
       );
     }, [queryBuilderState, applicationStore]);
@@ -287,8 +269,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 options={dataSpaceOptions}
                 isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
-                onInputChange={onDataSpaceSearchTextChange}
-                inputValue={dataSpaceSearchText}
                 onChange={onDataSpaceOptionChange}
                 value={selectedDataSpaceOption}
                 placeholder="Search for data space..."

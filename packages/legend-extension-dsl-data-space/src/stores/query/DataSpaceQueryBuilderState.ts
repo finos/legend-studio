@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type GenericLegendApplicationStore,
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-} from '@finos/legend-application';
+import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderConfig,
   QueryBuilderState,
@@ -240,21 +236,17 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.showRuntimeSelector = val;
   }
 
-  *loadDataSpaces(searchText: string): GeneratorFn<void> {
+  *loadDataSpaces(): GeneratorFn<void> {
     if (this.projectInfo) {
-      const isValidSearchString =
-        searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
       this.loadDataSpacesState.inProgress();
       const toGetSnapShot =
         this.projectInfo.versionId === SNAPSHOT_VERSION_ALIAS;
       try {
         this.dataSpaces = (
-          (yield this.depotServerClient.getEntitiesByClassifierPath(
+          (yield this.depotServerClient.getEntitiesByClassifier(
             DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
             {
-              search: isValidSearchString ? searchText : undefined,
               scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
-              limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
             },
           )) as StoredEntity[]
         ).map((storedEntity) =>

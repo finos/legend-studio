@@ -156,7 +156,7 @@ export class UpdateServiceQuerySetupStore {
     this.loadServicesState.inProgress();
     try {
       this.services = (
-        (yield this.depotServerClient.getEntitiesByClassifierPath(
+        (yield this.depotServerClient.DEPRECATED_getEntitiesByClassifierPath(
           CORE_PURE_PATH.SERVICE,
           {
             search: isValidSearchString ? searchText : undefined,

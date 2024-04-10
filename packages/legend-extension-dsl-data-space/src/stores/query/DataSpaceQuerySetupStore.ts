@@ -27,11 +27,7 @@ import {
   type StoredEntity,
 } from '@finos/legend-server-depot';
 import type { GraphManagerState, RawLambda } from '@finos/legend-graph';
-import {
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  type GenericLegendApplicationStore,
-} from '@finos/legend-application';
+import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type QueryBuilderConfig,
@@ -132,18 +128,14 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
     this.advancedSearchState = undefined;
   }
 
-  *loadDataSpaces(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
+  *loadDataSpaces(): GeneratorFn<void> {
     this.loadDataSpacesState.inProgress();
     try {
       this.dataSpaces = (
-        (yield this.depotServerClient.getEntitiesByClassifierPath(
+        (yield this.depotServerClient.getEntitiesByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
-            search: isValidSearchString ? searchText : undefined,
             scope: DepotScope.RELEASES,
-            limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) => extractDataSpaceInfo(storedEntity, false));
