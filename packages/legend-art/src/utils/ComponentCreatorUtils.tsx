@@ -26,9 +26,17 @@ export const generateSimpleDIVComponent = (
   const component: React.FC<{
     children?: React.ReactNode;
     className?: string;
+    'data-testid'?: string;
   }> = (props) => {
     const { children, className } = props;
-    return <div className={clsx(divClassName, className)}>{children}</div>;
+    return (
+      <div
+        className={clsx(divClassName, className)}
+        data-testid={props['data-testid']}
+      >
+        {children}
+      </div>
+    );
   };
   component.displayName = componentName;
   return component;

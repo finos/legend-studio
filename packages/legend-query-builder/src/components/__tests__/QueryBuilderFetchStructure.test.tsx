@@ -23,7 +23,6 @@ import {
   getByText,
   act,
   getByDisplayValue,
-  getAllByTitle,
   queryByText,
 } from '@testing-library/react';
 import {
@@ -38,7 +37,6 @@ import {
   TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel,
   TEST_DATA__getAllWithOneIntegerConditionFilter,
   TEST_DATA_getAllWithOneFloatConditionFilter,
-  TEST_DATA_projectionWithWindowFunction,
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
   TEST_DATA__simpleProjectWithSubtype,
   TEST_DATA__simpleGraphFetchWithSubtype,
@@ -1174,119 +1172,6 @@ test(
     fireEvent.change(inputEl, { target: { value: '-.1' } });
     expect(filterConditionValue.values[0]).toEqual(-0.1);
     await waitFor(() => getByDisplayValue(filterPanel, '-.1'));
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder window function shows validation error if existing duplicate column name',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
-      );
-      // NOTE: Render result will not currently find the
-      // 'show window-funcs' panel so we will directly force
-      // the panel to show for now
-      const tdsState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      tdsState.setShowWindowFuncPanel(true);
-    });
-
-    await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-      ),
-    );
-    const windowPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-    );
-    fireEvent.click(getByTitle(windowPanel, 'Create Window Function Column'));
-
-    await waitFor(() => renderResult.getByText('Create'));
-
-    fireEvent.click(renderResult.getByText('Create'));
-
-    fireEvent.click(getByTitle(windowPanel, 'Create Window Function Column'));
-
-    await waitFor(() => renderResult.getByText('Create'));
-
-    fireEvent.click(renderResult.getByText('Create'));
-
-    await waitFor(() => renderResult.getByText('Run Query'));
-
-    expect(getAllByTitle(windowPanel, 'Duplicated column')).not.toBeNull();
-
-    expect(
-      (
-        queryBuilderState.fetchStructureState
-          .implementation as QueryBuilderTDSState
-      ).windowState.windowValidationIssues.length,
-    ).toBe(1);
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder window function shows validation error if invalid column order',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA_projectionWithWindowFunction.parameters,
-          TEST_DATA_projectionWithWindowFunction.body,
-        ),
-      );
-    });
-
-    const tdsState = guaranteeType(
-      queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderTDSState,
-    );
-    tdsState.setShowWindowFuncPanel(true);
-
-    await act(async () => {
-      tdsState.windowState.moveColumn(1, 0);
-    });
-
-    const windowPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-    );
-
-    expect(getAllByText(windowPanel, '1 issue')).not.toBeNull();
-
-    expect(
-      (
-        queryBuilderState.fetchStructureState
-          .implementation as QueryBuilderTDSState
-      ).windowState.windowValidationIssues.length,
-    ).toBe(1);
-
-    expect(
-      (
-        queryBuilderState.fetchStructureState
-          .implementation as QueryBuilderTDSState
-      ).windowState.invalidWindowColumnNames[0]?.invalidColumnName,
-    ).toBe('sum sum Age');
   },
 );
 

@@ -77,7 +77,7 @@ const appendOLAPGroupByColumnState = (
   }
 
   // create olap operation expression
-  const operationState = olapGroupByColumnState.operationState;
+  const operationState = olapGroupByColumnState.operatorState;
   const olapFunc = extractElementNameFromPath(operationState.operator.pureFunc);
   const olapFuncExpression = new SimpleFunctionExpression(olapFunc);
   olapFuncExpression.parametersValues = [
