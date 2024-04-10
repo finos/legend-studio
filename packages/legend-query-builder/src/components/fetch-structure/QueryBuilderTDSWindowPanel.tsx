@@ -89,15 +89,19 @@ const createWindowColumnState = (
   const nonColoperator = guaranteeNonNullable(
     tdsState.windowState.operators.filter((o) => !o.isColumnAggregator())[0],
   );
+  const columnName = operator
+    ? operator.isColumnAggregator()
+      ? `${operator.getLabel()} of ${columnState.columnName}`
+      : columnState.columnName
+    : nonColoperator.isColumnAggregator()
+    ? `${nonColoperator.getLabel()} of ${columnState.columnName}`
+    : columnState.columnName;
   if (operator) {
     const opState = new QueryBuilderTDS_WindowAggreationOperatorState(
       tdsState.windowState,
       operator,
       columnState,
     );
-    const columnName = operator.isColumnAggregator()
-      ? `${operator.getLabel()} of ${columnState.columnName}`
-      : columnState.columnName;
     return new QueryBuilderWindowColumnState(
       tdsState.windowState,
       [],
@@ -106,9 +110,6 @@ const createWindowColumnState = (
       columnName,
     );
   } else {
-    const columnName = nonColoperator.isColumnAggregator()
-      ? `${nonColoperator.getLabel()} of ${columnState.columnName}`
-      : columnState.columnName;
     return new QueryBuilderWindowColumnState(
       tdsState.windowState,
       [columnState],
