@@ -40,11 +40,7 @@ import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
-import {
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-  type GenericLegendApplicationStore,
-} from '@finos/legend-application';
+import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { generateServiceQueryCreatorRoute } from '@finos/legend-application-query';
@@ -128,20 +124,16 @@ export class DataSpaceAdvancedSearchState {
     this.toGetSnapShot = val;
   }
 
-  *loadDataSpaces(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
+  *loadDataSpaces(): GeneratorFn<void> {
     this.loadDataSpacesState.inProgress();
     try {
       this.dataSpaces = (
-        (yield this.depotServerClient.getEntitiesByClassifierPath(
+        (yield this.depotServerClient.getEntitiesByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
-            search: isValidSearchString ? searchText : undefined,
             scope: this.toGetSnapShot
               ? DepotScope.SNAPSHOT
               : DepotScope.RELEASES,
-            limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) =>

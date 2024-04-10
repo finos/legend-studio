@@ -33,10 +33,10 @@ import {
   ModalHeaderActions,
 } from '@finos/legend-art';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { DataSpaceViewer } from '../DataSpaceViewer.js';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import type { DataSpaceAdvancedSearchState } from '../../stores/query/DataSpaceAdvancedSearchState.js';
@@ -55,17 +55,15 @@ export const DataSpaceAdvancedSearchModal = observer(
     const { searchState, onClose } = props;
     const applicationStore = useApplicationStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
-    const [searchText, setSearchText] = useState('');
     const handleEnter = (): void => dataSpaceSearchRef.current?.focus();
     const proceedToCreateQuery = (): void => {
       flowResult(searchState.proceedToCreateQuery()).catch(
         applicationStore.alertUnhandledError,
       );
     };
-
     const toggleGetSnapshot = (): void => {
       searchState.setToGetSnapShot(!searchState.toGetSnapShot);
-      flowResult(searchState.loadDataSpaces(searchText)).catch(
+      flowResult(searchState.loadDataSpaces()).catch(
         applicationStore.alertUnhandledError,
       );
     };
@@ -106,26 +104,9 @@ export const DataSpaceAdvancedSearchModal = observer(
     };
 
     // search text
-    const debouncedLoadDataSpaces = useMemo(
-      () =>
-        debounce((input: string): void => {
-          flowResult(searchState.loadDataSpaces(input)).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }, 500),
-      [applicationStore, searchState],
-    );
-    const onSearchTextChange = (value: string): void => {
-      if (value !== searchText) {
-        setSearchText(value);
-        debouncedLoadDataSpaces.cancel();
-        debouncedLoadDataSpaces(value);
-      }
-    };
 
     useEffect(() => {
-      searchState.loadDataSpaces('');
-      flowResult(searchState.loadDataSpaces('')).catch(
+      flowResult(searchState.loadDataSpaces()).catch(
         applicationStore.alertUnhandledError,
       );
     }, [searchState, applicationStore]);
@@ -180,8 +161,6 @@ export const DataSpaceAdvancedSearchModal = observer(
                 className="data-space-advanced-search__dialog__input__selector"
                 options={dataSpaceOptions}
                 isLoading={searchState.loadDataSpacesState.isInProgress}
-                onInputChange={onSearchTextChange}
-                inputValue={searchText}
                 onChange={onDataSpaceOptionChange}
                 value={selectedDataSpaceOption}
                 placeholder="Search for data space by name..."

@@ -127,7 +127,7 @@ export class DepotServerClient extends AbstractServerClient {
   }
 
   // NOTE: this is experimental API to get elements by classifier path
-  getEntitiesByClassifierPath = (
+  DEPRECATED_getEntitiesByClassifierPath = (
     classifierPath: string,
     options?: {
       search?: string | undefined;
@@ -145,6 +145,23 @@ export class DepotServerClient extends AbstractServerClient {
         search: options?.search,
         scope: options?.scope,
         limit: options?.limit,
+      },
+    );
+
+  getEntitiesByClassifier = (
+    classifierPath: string,
+    options?: {
+      scope?: DepotScope | undefined;
+    },
+  ): Promise<PlainObject<StoredEntity>[]> =>
+    this.get(
+      `${this.baseUrl}/classifiers/${encodeURIComponent(
+        classifierPath,
+      )}/entities`,
+      undefined,
+      undefined,
+      {
+        scope: options?.scope,
       },
     );
 
