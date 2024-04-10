@@ -48,6 +48,14 @@
     background: var(--color-dark-grey-200);
     color: var(--color-light-grey-200);
     padding-left: 1rem;
+
+    .panel__header__title {
+      overflow: hidden;
+    }
+
+    .panel__header__actions {
+      margin-left: auto;
+    }
   }
 
   &__content__container {

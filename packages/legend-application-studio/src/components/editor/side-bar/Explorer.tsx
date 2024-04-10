@@ -1437,23 +1437,20 @@ export const Explorer = observer(() => {
       <div className="panel__content side-bar__content">
         <div className="panel explorer">
           <div className="panel__header explorer__header">
-            <div className="panel__header__title">
-              {sdlcState.currentProject && (
-                <>
-                  <div className="panel__header__title__label">
-                    {sdlcState.currentWorkspace && !editorStore.isInViewerMode
-                      ? 'workspace'
-                      : 'project'}
-                  </div>
-                  <div className="panel__header__title__content">
-                    {editorStore.isInViewerMode &&
-                      sdlcState.currentProject.name}
-                    {!editorStore.isInViewerMode &&
-                      (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
-                  </div>
-                </>
-              )}
-            </div>
+            {sdlcState.currentProject && (
+              <>
+                <div className="panel__header__title__label">
+                  {sdlcState.currentWorkspace && !editorStore.isInViewerMode
+                    ? 'workspace'
+                    : 'project'}
+                </div>
+                <div className="panel__header__title__content">
+                  {editorStore.isInViewerMode && sdlcState.currentProject.name}
+                  {!editorStore.isInViewerMode &&
+                    (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
+                </div>
+              </>
+            )}
             <ProjectExplorerActionPanel
               disabled={!editorStore.explorerTreeState.buildState.hasCompleted}
             />
