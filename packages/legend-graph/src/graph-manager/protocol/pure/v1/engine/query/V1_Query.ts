@@ -42,6 +42,7 @@ export interface V1_QueryGridConfig {
   columns: object[];
   isPivotModeEnabled: boolean | undefined;
   isLocalModeEnabled: boolean | undefined;
+  previewLimit?: number | undefined;
 }
 
 export class V1_Query {
