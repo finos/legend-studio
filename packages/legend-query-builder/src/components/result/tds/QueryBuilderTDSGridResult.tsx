@@ -241,6 +241,7 @@ export const QueryBuilderTDSGridResult = observer(
         columns: columnAPi.getColumnState(),
         isPivotModeEnabled: columnAPi.isPivotMode(),
         isLocalModeEnabled: true,
+        previewLimit: resultState.previewLimit,
       });
     };
 

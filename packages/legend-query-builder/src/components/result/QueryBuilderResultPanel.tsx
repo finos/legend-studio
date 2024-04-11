@@ -288,6 +288,7 @@ export const QueryBuilderResultPanel = observer(
       } else {
         queryBuilderState.resultState.setPreviewLimit(previewLimitValue);
       }
+      queryBuilderState.resultState.updatePreviewLimitInConfig();
     };
 
     const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
