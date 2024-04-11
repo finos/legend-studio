@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.26
+
+### Patch Changes
+
+- [#3041](https://github.com/finos/legend-studio/pull/3041) [`c8c79fdb4`](https://github.com/finos/legend-studio/commit/c8c79fdb4c20208c910d025454aa3c529d060d59) ([@travisstebbins](https://github.com/travisstebbins)) - Allow generateSimpleDIVComponent return component to take data-testid prop
+
 ## 7.1.25
 
 ### Patch Changes

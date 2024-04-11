@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.16.9
+
+### Patch Changes
+
+- [#3046](https://github.com/finos/legend-studio/pull/3046) [`de2945713`](https://github.com/finos/legend-studio/commit/de2945713111d47798406033e70128e307c04bf4) ([@travisstebbins](https://github.com/travisstebbins)) - Handle long project names in explorer
+
 ## 28.16.8
 
 ## 28.16.7

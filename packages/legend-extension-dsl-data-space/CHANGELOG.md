@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.2.0
+
+### Minor Changes
+
+- [#3049](https://github.com/finos/legend-studio/pull/3049) [`627242e96`](https://github.com/finos/legend-studio/commit/627242e9600dbfe8d7b72a2c4d6e41b43ff7f03d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Change loadDataspace api to fetch all dataspaces and do search in memory.
+
 ## 10.1.96
 
 ## 10.1.95

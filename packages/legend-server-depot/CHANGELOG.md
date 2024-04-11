@@ -1,5 +1,7 @@
 # @finos/legend-server-depot
 
+## 6.0.39
+
 ## 6.0.38
 
 ## 6.0.37
