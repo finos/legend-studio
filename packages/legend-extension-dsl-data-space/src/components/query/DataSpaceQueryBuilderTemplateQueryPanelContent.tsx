@@ -100,7 +100,7 @@ const DataSpaceTemplateQueryDialog = observer(
               queryBuilderState.projectInfo.artifactId,
               queryBuilderState.projectInfo.versionId,
               queryBuilderState.dataSpace.path,
-              template.title,
+              template.id,
             ),
           ),
         );

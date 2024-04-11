@@ -58,7 +58,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly artifactId: string;
   readonly versionId: string;
   readonly dataSpacePath: string;
-  readonly templateQueryTitle: string;
+  readonly templateQueryId: string;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -67,7 +67,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     artifactId: string,
     versionId: string,
     dataSpacePath: string,
-    templateQueryTitle: string,
+    templateQueryId: string,
   ) {
     super(applicationStore, depotServerClient);
 
@@ -75,7 +75,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     this.artifactId = artifactId;
     this.versionId = versionId;
     this.dataSpacePath = dataSpacePath;
-    this.templateQueryTitle = templateQueryTitle;
+    this.templateQueryId = templateQueryId;
   }
 
   getProjectInfo(): ProjectGAVCoordinates {
@@ -94,8 +94,8 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     const dataSpaceExecutableTemplate = guaranteeNonNullable(
       dataSpace.executables
         ?.filter(filterByType(DataSpaceExecutableTemplate))
-        .find((executable) => executable.title === this.templateQueryTitle),
-      `Can't find template query with title '${this.templateQueryTitle}'`,
+        .find((executable) => executable.id === this.templateQueryId),
+      `Can't find template query with id '${this.templateQueryId}'`,
     );
     const executionContext = guaranteeNonNullable(
       dataSpaceExecutableTemplate.executionContextKey
@@ -154,7 +154,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
               guaranteeNonNullable(dataSpaceInfo.artifactId),
               LATEST_VERSION_ALIAS, //always default to latest
               dataSpaceInfo.path,
-              this.templateQueryTitle,
+              this.templateQueryId,
             ),
           );
         } else {
@@ -172,7 +172,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
             this.artifactId,
             this.versionId,
             dataSpace.path,
-            this.templateQueryTitle,
+            this.templateQueryId,
           ),
         );
       },
@@ -196,7 +196,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       defaultName: options?.update
         ? `${extractElementNameFromPath(this.dataSpacePath)}`
         : `New Query for ${extractElementNameFromPath(this.dataSpacePath)}[${
-            this.templateQueryTitle
+            this.templateQueryId
           }]`,
       decorator: (query: Query): void => {
         query.id = uuid();

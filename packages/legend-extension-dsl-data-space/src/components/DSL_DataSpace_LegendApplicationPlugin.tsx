@@ -161,6 +161,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
               ? executableTemplates.map(
                   (e) =>
                     ({
+                      id: e.id,
                       title: e.title,
                       description: e.description,
                       query: e.query,

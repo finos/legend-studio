@@ -130,6 +130,7 @@ export abstract class DataSpaceExecutableInfo {
 }
 
 export class DataSpaceTemplateExecutableInfo extends DataSpaceExecutableInfo {
+  id!: string;
   executionContextKey!: string;
 }
 

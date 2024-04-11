@@ -156,6 +156,7 @@ const V1_dataSpaceTemplateExecutableModelSchema = createModelSchema(
     _type: usingConstantValueSchema(V1_DATA_SPACE_TEMPLATE_EXECUTABLE),
     description: optional(primitive()),
     title: primitive(),
+    id: primitive(),
     query: usingModelSchema(V1_rawLambdaModelSchema),
     executionContextKey: optional(primitive()),
   },

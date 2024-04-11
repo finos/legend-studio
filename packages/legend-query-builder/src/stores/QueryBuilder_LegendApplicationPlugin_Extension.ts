@@ -23,6 +23,7 @@ import type {
 } from './data-access/DataAccessState.js';
 
 export type CuratedTemplateQuery = {
+  id: string;
   title: string;
   description: string | undefined;
   query: RawLambda;

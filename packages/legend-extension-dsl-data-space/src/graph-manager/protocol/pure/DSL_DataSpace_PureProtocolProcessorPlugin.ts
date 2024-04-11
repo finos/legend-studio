@@ -229,6 +229,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                   executableProtocol instanceof V1_DataSpaceTemplateExecutable
                 ) {
                   const executable = new DataSpaceExecutableTemplate();
+                  executable.id = executableProtocol.id;
                   executable.title = executableProtocol.title;
                   executable.description = executableProtocol.description;
                   executable.query = V1_buildRawLambdaWithResolvedPaths(
@@ -418,6 +419,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
           protocol.executables = metamodel.executables?.map((executable) => {
             if (executable instanceof DataSpaceExecutableTemplate) {
               const executableProtocol = new V1_DataSpaceTemplateExecutable();
+              executableProtocol.id = executable.id;
               executableProtocol.title = executable.title;
               executableProtocol.description = executable.description;
               if (executable.executionContextKey) {

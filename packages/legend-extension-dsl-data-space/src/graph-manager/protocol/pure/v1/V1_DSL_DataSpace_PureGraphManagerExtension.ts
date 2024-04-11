@@ -496,6 +496,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           executableProtocol.info instanceof V1_DataSpaceTemplateExecutableInfo
         ) {
           const templateExecutableInfo = new DataSpaceTemplateExecutableInfo();
+          templateExecutableInfo.id = executableProtocol.info.id;
           templateExecutableInfo.query = executableProtocol.info.query;
           templateExecutableInfo.executionContextKey =
             executableProtocol.info.executionContextKey;
