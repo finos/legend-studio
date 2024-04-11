@@ -93,12 +93,14 @@ export class V1_DataSpaceTemplateExecutable
   extends V1_DataSpaceExecutable
   implements Hashable
 {
+  id!: string;
   query!: V1_RawLambda;
   executionContextKey?: string;
 
   override get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_TEMPLATE_EXECUTABLE,
+      this.id,
       this.title,
       this.description ?? '',
       this.query,

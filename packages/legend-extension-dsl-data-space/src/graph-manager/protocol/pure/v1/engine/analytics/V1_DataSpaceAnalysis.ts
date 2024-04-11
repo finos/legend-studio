@@ -254,6 +254,7 @@ const V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE =
   'multiExecutionService';
 
 export class V1_DataSpaceTemplateExecutableInfo extends V1_DataSpaceExecutableInfo {
+  id!: string;
   executionContextKey!: string;
 }
 
@@ -264,6 +265,7 @@ const V1_DataSpaceTemplateExecutableInfoModelSchema = (
     _type: usingConstantValueSchema(
       V1_DATA_SPACE_TEMPLATE_EXECUTABLE_INFO_TYPE,
     ),
+    id: primitive(),
     executionContextKey: primitive(),
   });
 

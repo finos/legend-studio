@@ -33,8 +33,8 @@ const DataSpaceTemplateQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
   gav: string;
   dataSpacePath: string;
-  templateQueryTitle: string;
-}> = ({ children, gav, dataSpacePath, templateQueryTitle }) => {
+  templateQueryId: string;
+}> = ({ children, gav, dataSpacePath, templateQueryId }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const baseStore = useLegendQueryBaseStore();
@@ -47,7 +47,7 @@ const DataSpaceTemplateQueryCreatorStoreProvider: React.FC<{
         artifactId,
         versionId,
         dataSpacePath,
-        templateQueryTitle,
+        templateQueryId,
       ),
   );
   return (
@@ -65,16 +65,16 @@ export const DataSpaceTemplateQueryCreator = observer(() => {
     parameters[
       DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH
     ];
-  const templateQueryTitle =
+  const templateQueryId =
     parameters[
-      DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE_QUERY_TITLE
+      DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE_QUERY_ID
     ];
 
   return (
     <DataSpaceTemplateQueryCreatorStoreProvider
       gav={gav}
       dataSpacePath={dataSpacePath}
-      templateQueryTitle={templateQueryTitle}
+      templateQueryId={templateQueryId}
     >
       <QueryEditor />
     </DataSpaceTemplateQueryCreatorStoreProvider>
