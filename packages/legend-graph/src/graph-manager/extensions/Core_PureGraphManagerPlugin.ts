@@ -26,6 +26,11 @@ export class Core_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   }
 
   override getExtraExposedSystemElementPath(): string[] {
-    return [CORE_PURE_PATH.PROFILE_DOC, CORE_PURE_PATH.PROFILE_TEMPORAL];
+    return [
+      CORE_PURE_PATH.PROFILE_DOC,
+      CORE_PURE_PATH.PROFILE_TEMPORAL,
+      CORE_PURE_PATH.MAPPING,
+      CORE_PURE_PATH.RUNTIME,
+    ];
   }
 }
