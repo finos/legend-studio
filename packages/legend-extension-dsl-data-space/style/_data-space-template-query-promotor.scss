@@ -1,0 +1,151 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.template-query-promotor {
+  height: 100%;
+  position: relative;
+  background: var(--color-dark-grey-50);
+
+  &__body {
+    height: calc(100% - 2.2rem);
+    width: 100%;
+  }
+
+  &__title {
+    font-size: 3.6rem;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    color: var(--color-light-grey-200);
+    margin-bottom: 1.8rem;
+
+    &__prompt {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.4rem;
+      padding-bottom: 1rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      color: var(--color-dark-grey-500);
+    }
+  }
+
+  &__content {
+    height: 100%;
+    width: calc(100% - 5rem);
+  }
+
+  &__content__main {
+    @include absCenter;
+
+    height: 60vh;
+    width: 60vw;
+  }
+
+  &__actions {
+    margin-top: 0.5rem;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__group {
+    &__header {
+      @include flexCenter;
+
+      height: 1.8rem;
+      width: 13rem;
+      padding: 0 1rem;
+      background: var(--color-dark-grey-400);
+      color: var(--color-light-grey-0);
+      font-weight: 500;
+      font-size: 1.2rem;
+      border-radius: 0.2rem 0.2rem 0 0;
+    }
+
+    &__content {
+      padding: 0.5rem;
+      border: 0.1rem solid var(--color-dark-grey-400);
+      border-radius: 0 0.2rem 0.2rem;
+    }
+
+    &--workspace &__header {
+      background: var(--color-purple-400);
+    }
+
+    &--workspace &__content {
+      border-color: var(--color-purple-400);
+    }
+
+    &--template &__header {
+      background: var(--color-blue-200);
+    }
+
+    &--template &__content {
+      border-color: var(--color-blue-200);
+    }
+
+    & + & {
+      margin-top: 1.5rem;
+    }
+  }
+
+  &__input {
+    display: flex;
+
+    &__label {
+      @include flexVCenter;
+
+      width: 11rem;
+      background: var(--color-dark-grey-200);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.4rem;
+      padding: 0 1rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      color: var(--color-dark-grey-500);
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      height: 2.8rem;
+      width: 2.8rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0.2rem 0 0 0.2rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    &__icon--query,
+    &__icon--project,
+    &__icon--workspace {
+      font-size: 1.8rem;
+    }
+
+    &__input {
+      flex: 1 0;
+    }
+
+    & + & {
+      margin-top: 0.5rem;
+    }
+  }
+
+  &__next-btn {
+    padding: 1rem;
+  }
+}

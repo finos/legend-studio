@@ -48,7 +48,10 @@ import {
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_DataSpace_LegendStudioDocumentation.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from '../../__lib__/studio/DSL_DataSpace_LegendStudioCodeSnippet.js';
-import type { DocumentationEntry } from '@finos/legend-application';
+import type {
+  ApplicationPageEntry,
+  DocumentationEntry,
+} from '@finos/legend-application';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 import { DataSpacePreviewState } from '../../stores/studio/DataSpacePreviewState.js';
 import {
@@ -57,6 +60,8 @@ import {
 } from './DataSpacePreviewAction.js';
 import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 import { DataSpaceQueryAction } from './DataSpaceQueryAction.js';
+import { DataSpaceTemplateQueryPromotionReviewer } from './DataSpaceTemplateQueryPromoteReview.js';
+import { DATA_SPACE_QUERY_ROUTE_PATTERN } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -77,6 +82,18 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
     return [
       DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.CONCEPT_ELEMENT_DATA_SPACE,
       DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
+  override getExtraApplicationPageEntries(): ApplicationPageEntry[] {
+    return [
+      {
+        key: 'promote-as-curated-template-query-page',
+        addressPatterns: [
+          DATA_SPACE_QUERY_ROUTE_PATTERN.PROMOTE_TEMPLATE_QUERY,
+        ],
+        renderer: DataSpaceTemplateQueryPromotionReviewer,
+      },
     ];
   }
 
