@@ -16,9 +16,10 @@
 
 import packageJson from '../../../package.json' assert { type: 'json' };
 import {
-  type QuerySetupActionConfiguration,
   type ExistingQueryEditorStateBuilder,
   type ExistingQueryEditorStore,
+  type QueryEditorStore,
+  type QuerySetupActionConfiguration,
   LegendQueryApplicationPlugin,
   LEGEND_QUERY_APP_EVENT,
   createViewProjectHandler,
@@ -71,6 +72,7 @@ import type {
   DataSpaceExecutionContext,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DataSpaceTemplateQueryCreator } from './DataSpaceTemplateQueryCreator.js';
+import { DataSpaceTemplateQueryCreatorStore } from '../../stores/query/DataSpaceTemplateQueryCreatorStore.js';
 
 const resolveExecutionContext = (
   dataSpace: DataSpace,
@@ -300,6 +302,28 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
               mappingModelCoverageAnalysisResult;
           }
           return dataSpaceQueryBuilderState;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraQueryHeaders(): ((
+    editorStore: QueryEditorStore,
+  ) => React.ReactNode | undefined)[] {
+    return [
+      (editorStore: QueryEditorStore): React.ReactNode | undefined => {
+        if (editorStore instanceof DataSpaceTemplateQueryCreatorStore) {
+          return (
+            <div className="query-editor__dataspace__header">
+              <div className="query-editor__header__content__main query-editor__header__content__title__text query-editor__dataspace__header__title__text">
+                {editorStore.templateQueryTitle}
+              </div>
+              <div className="query-editor__dataspace__header__title__tag">
+                template
+              </div>
+            </div>
+          );
         }
         return undefined;
       },

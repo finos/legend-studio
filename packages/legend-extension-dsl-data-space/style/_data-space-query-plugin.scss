@@ -331,3 +331,30 @@
     font-size: 1.2rem;
   }
 }
+
+.query-editor__dataspace__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+
+  &__title__text {
+    color: var(--color-light-grey-180);
+    margin-right: 0% !important;
+  }
+
+  &__title__tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-legacylight-orange-100);
+    padding: 0 1rem;
+    height: 2.2rem;
+    margin-left: 1rem;
+    border-radius: 0.2rem 0 0 0.2rem;
+    font-size: 1.2rem;
+    user-select: none;
+    margin-right: 5%;
+  }
+}

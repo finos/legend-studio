@@ -625,8 +625,16 @@ const QueryEditorHeaderContent = observer(
           />
         );
       }
+      const extensionHeader = applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap((plugin) => plugin.getExtraQueryHeaders?.() ?? [])
+        .map((renderFunc) => renderFunc(editorStore))
+        .find((element) => element !== undefined);
+
       return (
-        <div className="query-editor__header__content__main query-editor__header__content__title" />
+        extensionHeader ?? (
+          <div className="query-editor__header__content__main query-editor__header__content__title" />
+        )
       );
     };
 
