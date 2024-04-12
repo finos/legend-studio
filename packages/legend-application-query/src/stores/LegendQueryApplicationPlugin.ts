@@ -104,4 +104,11 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   getExtraQueryEditorActionConfigurations?(
     editorStore: QueryEditorStore,
   ): QueryEditorActionConfiguration[];
+
+  /**
+   * Get the list of query headers
+   */
+  getExtraQueryHeaders?(): ((
+    editorStore: QueryEditorStore,
+  ) => React.ReactNode | undefined)[];
 }

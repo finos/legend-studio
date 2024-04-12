@@ -29,7 +29,6 @@ import {
 import {
   type DepotServerClient,
   StoreProjectData,
-  LATEST_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import { filterByType, guaranteeNonNullable, uuid } from '@finos/legend-shared';
 
@@ -59,6 +58,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly versionId: string;
   readonly dataSpacePath: string;
   readonly templateQueryId: string;
+  templateQueryTitle?: string;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -105,7 +105,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
         : dataSpace.defaultExecutionContext,
       `Can't find execution context '${dataSpaceExecutableTemplate.executionContextKey}'`,
     );
-
+    this.templateQueryTitle = dataSpaceExecutableTemplate.title;
     let dataSpaceAnalysisResult;
     try {
       const project = StoreProjectData.serialization.fromJson(
@@ -147,21 +147,9 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       dataSpace,
       executionContext,
       (dataSpaceInfo: DataSpaceInfo) => {
-        if (dataSpaceInfo.defaultExecutionContext) {
-          this.applicationStore.navigationService.navigator.goToLocation(
-            generateDataSpaceTemplateQueryCreatorRoute(
-              guaranteeNonNullable(dataSpaceInfo.groupId),
-              guaranteeNonNullable(dataSpaceInfo.artifactId),
-              LATEST_VERSION_ALIAS, //always default to latest
-              dataSpaceInfo.path,
-              this.templateQueryId,
-            ),
-          );
-        } else {
-          this.applicationStore.notificationService.notifyWarning(
-            `Can't switch data space: default execution context not specified`,
-          );
-        }
+        this.applicationStore.notificationService.notifyWarning(
+          `Can't switch data space to visit current template query`,
+        );
       },
       true,
       dataSpaceAnalysisResult,
