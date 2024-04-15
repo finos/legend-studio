@@ -29,21 +29,15 @@ import {
 import {
   ActionState,
   assertErrorThrown,
-  filterByType,
   guaranteeNonNullable,
   LogEvent,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import {
   generateDataSpaceQuerySetupRoute,
   generateDataSpaceTemplateQueryPromotionRoute,
 } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
-import {
-  type DataSpace,
-  DataSpaceExecutableTemplate,
-} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { type Entity } from '@finos/legend-storage';
 import {
   type ProjectConfigurationStatus,
@@ -76,6 +70,11 @@ import {
   ProjectConfiguration,
   EntityChangeType,
 } from '@finos/legend-server-sdlc';
+import {
+  type DSL_DataSpace_PureGraphManagerExtension,
+  DSL_DataSpace_getGraphManagerExtension,
+} from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 
 const projectDependencyToProjectCoordinates = (
   projectDependency: ProjectDependency,
@@ -98,17 +97,19 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
   readonly loadQueryState = ActionState.create();
   readonly loadWorkspacesState = ActionState.create();
   editorStore: EditorStore;
+  graphManagerExtension: DSL_DataSpace_PureGraphManagerExtension;
   currentQuery?: LightQuery | undefined;
   currentQueryInfo?: QueryInfo | undefined;
   currentQueryProject?: StoreProjectData | undefined;
   currentProject?: Project | undefined;
   currentProjectConfiguration?: ProjectConfiguration;
   currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
+  currentProjectEntities: Entity[] = [];
   dependencyEntities: Entity[] = [];
   groupWorkspaces: Workspace[] = [];
   workspaceName = '';
   dataSpacePath!: string;
-  dataSpace: DataSpace | undefined;
+  dataSpaceEntity: Entity | undefined;
   templateQueryId = 'template_id';
   templateQueryTitle = 'template_title';
   templateQueryDescription = '';
@@ -120,13 +121,15 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
   ) {
     makeObservable(this, {
       editorStore: observable,
+      graphManagerExtension: observable,
       currentQuery: observable,
       currentQueryInfo: observable,
       currentQueryProject: observable,
       currentProject: observable,
       currentProjectConfiguration: observable,
       currentProjectConfigurationStatus: observable,
-      dataSpace: observable,
+      currentProjectEntities: observable,
+      dataSpaceEntity: observable,
       groupWorkspaces: observable,
       workspaceName: observable,
       templateQueryId: observable,
@@ -156,6 +159,9 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
       sdlcServerClient,
       depotServerClient,
     );
+    this.graphManagerExtension = DSL_DataSpace_getGraphManagerExtension(
+      this.editorStore.graphManagerState.graphManager,
+    );
   }
 
   setWorkspaceName(val: string): void {
@@ -181,10 +187,13 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
   }
 
   get isTemplateQueryIdValid(): boolean {
-    return !this.dataSpace?.executables
-      ?.filter(filterByType(DataSpaceExecutableTemplate))
-      .map((et) => et.id)
-      .includes(this.templateQueryId);
+    if (this.dataSpaceEntity) {
+      return this.graphManagerExtension.IsTemplateQueryIdValid(
+        this.dataSpaceEntity,
+        this.templateQueryId,
+      );
+    }
+    return false;
   }
 
   *initialize(
@@ -209,21 +218,6 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
         {
           tracerService: this.applicationStore.tracerService,
         },
-      );
-      yield this.graphManagerState.initializeSystem();
-      // reset
-      this.graphManagerState.resetGraph();
-      // build dependencies
-      const dependencyManager =
-        this.graphManagerState.graphManager.createDependencyManager();
-      this.graphManagerState.graph.dependencyManager = dependencyManager;
-      yield this.graphManagerState.graphManager.buildDependencies(
-        this.graphManagerState.coreModel,
-        this.graphManagerState.systemModel,
-        dependencyManager,
-        new Map(),
-        this.graphManagerState.dependenciesBuildState,
-        {},
       );
       this.dataSpacePath = dataSpacePath;
       if (queryId) {
@@ -283,15 +277,14 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
           .map((p) => ProjectVersionEntities.serialization.fromJson(p))
           .flatMap((info) => info.entities);
         this.dependencyEntities = dependencyEntities;
-        yield this.graphManagerState.graphManager.buildGraph(
-          this.graphManagerState.graph,
-          [...dependencyEntities, ...currentProjectEntities],
-          this.graphManagerState.graphBuildState,
-        );
-
-        this.dataSpace = getDataSpace(
-          dataSpacePath,
-          this.graphManagerState.graph,
+        this.currentProjectEntities = currentProjectEntities;
+        this.dataSpaceEntity = guaranteeNonNullable(
+          currentProjectEntities.filter(
+            (entity: Entity) =>
+              entity.path === dataSpacePath &&
+              entity.classifierPath === DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+          )[0],
+          `Can't find dataSpace entity with path ${this.dataSpaceEntity}`,
         );
         this.initState.pass();
       }
@@ -324,7 +317,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
           this.currentQuery.artifactId,
         )) as PlainObject<StoreProjectData>,
       );
-      this.setWorkspaceName(`${DEFAULT_WORKSPACE_NAME_PREFIX}-${query.id}`);
+      this.setWorkspaceName(`${DEFAULT_WORKSPACE_NAME_PREFIX}-${query.name}`);
       this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateDataSpaceTemplateQueryPromotionRoute(
           this.currentQuery.groupId,
@@ -360,27 +353,13 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
           this.applicationStore,
           this.sdlcServerClient,
         )) as ProjectConfigurationStatus;
-
-      const workspacesInConflictResolutionIds = (
-        (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
-          project.projectId,
-          undefined,
-        )) as Workspace[]
-      ).map((workspace) => workspace.workspaceId);
       this.groupWorkspaces = (
         (yield this.sdlcServerClient.getGroupWorkspaces(
           project.projectId,
         )) as PlainObject<Workspace>[]
       )
         .map((v) => Workspace.serialization.fromJson(v))
-        .filter(
-          (workspace) =>
-            // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
-            // since that indicates bad state of the SDLC server
-            !workspacesInConflictResolutionIds.includes(
-              workspace.workspaceId,
-            ) && workspace.workspaceType === WorkspaceType.GROUP,
-        );
+        .filter((workspace) => workspace.workspaceType === WorkspaceType.GROUP);
       this.loadWorkspacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -404,7 +383,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
       !project ||
       !this.workspaceName ||
       !this.templateQueryTitle ||
-      !this.dataSpace ||
+      !this.dataSpaceEntity ||
       !this.isWorkspaceNameValid ||
       !this.isTemplateQueryIdValid
     ) {
@@ -419,27 +398,29 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      const dataSpaceExecutableTemplate = new DataSpaceExecutableTemplate();
-      dataSpaceExecutableTemplate.id = this.templateQueryId;
-      dataSpaceExecutableTemplate.title = this.templateQueryTitle;
-      dataSpaceExecutableTemplate.description = this.templateQueryDescription;
-      dataSpaceExecutableTemplate.executionContextKey = guaranteeNonNullable(
-        this.dataSpace.executionContexts.filter(
-          (ec) =>
-            ec.mapping.value.path ===
-              guaranteeNonNullable(this.currentQueryInfo).mapping &&
-            ec.defaultRuntime.value.path ===
-              guaranteeNonNullable(this.currentQueryInfo).runtime,
-        )[0]?.name,
-        'can`t find a corresponding executatin key based on query`s mapping and runtime in dataspace',
-      );
-      dataSpaceExecutableTemplate.query =
-        (yield this.graphManagerState.graphManager.pureCodeToLambda(
-          this.currentQueryInfo.content,
-        )) as RawLambda;
-      this.dataSpace.executables = this.dataSpace.executables
-        ? [...this.dataSpace.executables, dataSpaceExecutableTemplate]
-        : [dataSpaceExecutableTemplate];
+
+      // update datasapce entity
+      const updatedDataSpaceEntity =
+        (yield this.graphManagerExtension.addNewExecutableToDataSpaceEntity(
+          this.dataSpaceEntity,
+          {
+            id: this.templateQueryId,
+            title: this.templateQueryTitle,
+            mapping: guaranteeNonNullable(this.currentQueryInfo).mapping,
+            runtime: guaranteeNonNullable(this.currentQueryInfo).runtime,
+            query: (yield this.graphManagerState.graphManager.pureCodeToLambda(
+              this.currentQueryInfo.content,
+            )) as RawLambda,
+            description: this.templateQueryDescription,
+          },
+        )) as Entity;
+      guaranteeNonNullable(
+        this.currentProjectEntities.filter(
+          (entity: Entity) =>
+            entity.path === this.dataSpacePath &&
+            entity.classifierPath === DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+        )[0],
+      ).content = updatedDataSpaceEntity.content;
 
       // 2. check if the graph compiles properly
       this.applicationStore.alertService.setBlockingAlert({
@@ -447,21 +428,11 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-
-      const graphGrammar =
-        (yield this.graphManagerState.graphManager.graphToPureCode(
-          this.graphManagerState.graph,
-        )) as string;
-      const updatedProjectEntities =
-        (yield this.graphManagerState.graphManager.pureCodeToEntities(
-          graphGrammar,
-        )) as Entity[];
-
       let compilationFailed = false;
       try {
         yield this.graphManagerState.graphManager.compileEntities([
           ...this.dependencyEntities,
-          ...updatedProjectEntities,
+          ...this.currentProjectEntities,
         ]);
       } catch {
         compilationFailed = true;
@@ -488,11 +459,6 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
           );
 
           // ii. update dataspace
-          const dataspaceEntity =
-            this.graphManagerState.graphManager.elementToEntity(
-              guaranteeNonNullable(this.dataSpace),
-            );
-
           this.applicationStore.alertService.setBlockingAlert({
             message: `Generating code commit...`,
             prompt: 'Please do not close the application',
@@ -506,9 +472,9 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
                 'promote-as-template-query: promote query as a template query to dataspace',
               entityChanges: [
                 {
-                  classifierPath: dataspaceEntity.classifierPath,
-                  entityPath: dataspaceEntity.path,
-                  content: dataspaceEntity.content,
+                  classifierPath: updatedDataSpaceEntity.classifierPath,
+                  entityPath: updatedDataSpaceEntity.path,
+                  content: updatedDataSpaceEntity.content,
                   type: EntityChangeType.MODIFY,
                 },
               ],
@@ -545,6 +511,10 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
               workspaceReviewState.createWorkspaceReview(
                 workspaceReviewState.reviewTitle,
               ),
+            );
+          } else {
+            this.applicationStore.notificationService.notifyError(
+              `Can't create code review`,
             );
           }
 
