@@ -104,6 +104,7 @@ import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuil
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { getClassPropertyIcon } from '@finos/legend-lego/graph-editor';
 import { QueryBuilderRootClassInfoTooltip } from '../shared/QueryBuilderRootClassInfoTooltip.js';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
 const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -867,10 +868,14 @@ export const QueryBuilderExplorerPanel = observer(
         explorerState.refreshTree();
       }
     };
-    const toggleShowUnmappedProperties = (): void =>
+    const toggleShowUnmappedProperties = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_ShowUnmappedPropertyInExplorerTreeLaunched(
+        applicationStore.telemetryService,
+      );
       explorerState.setShowUnmappedProperties(
         !explorerState.showUnmappedProperties,
       );
+    };
     const toggleHumanizePropertyName = (): void =>
       explorerState.setHumanizePropertyName(
         !explorerState.humanizePropertyName,

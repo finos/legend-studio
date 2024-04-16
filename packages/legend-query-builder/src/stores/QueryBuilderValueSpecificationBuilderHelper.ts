@@ -35,6 +35,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaMode
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   functionExpression_setParametersValues,
+  functionExpression_setParameterValue,
   propertyExpression_setFunc,
   variableExpression_setName,
 } from './shared/ValueSpecificationModifierHelper.js';
@@ -81,7 +82,12 @@ export const buildPropertyExpressionChain = (
       parameterValue.func = nextExpression.func;
       parameterValue.parametersValues = [...nextExpression.parametersValues];
       nextExpression = parameterValue;
-      currentExpression.parametersValues[0] = parameterValue;
+      functionExpression_setParameterValue(
+        currentExpression,
+        parameterValue,
+        0,
+        queryBuilderState.observerContext,
+      );
     }
     if (
       currentExpression instanceof AbstractPropertyExpression &&

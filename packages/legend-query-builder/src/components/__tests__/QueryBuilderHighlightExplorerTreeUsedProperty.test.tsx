@@ -50,6 +50,7 @@ import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponent
 import {
   TEST_DATA__simpleGraphFetchWithSubtype,
   TEST_DATA__simpleProjectWithSubtype,
+  TEST_DATA__simpleProjectionWithSubtypesInDeepLevel,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 
 type TestCase = [
@@ -152,6 +153,21 @@ const cases: TestCase[] = [
         TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
       nodesToExpand: ['Address'],
       expectedNumberOfUsedPropertyNode: 5,
+    },
+  ],
+
+  [
+    'Simple projection (with subType) when deep-level ( > 1 layer) propery mapping points to class mapping of subType',
+    {
+      mappingPath: 'model::NewMapping',
+      runtimePath: 'model::Runtime',
+      classPath: 'model::Firm',
+      entities: TEST_DATA__SimpleSubTypeModel,
+      rawLambda: TEST_DATA__simpleProjectionWithSubtypesInDeepLevel,
+      rawMappingModelCoverageAnalysisResult:
+        TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+      nodesToExpand: ['Employees', 'Address'],
+      expectedNumberOfUsedPropertyNode: 6,
     },
   ],
 ];
