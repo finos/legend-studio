@@ -16,6 +16,7 @@
 
 import {
   type AbstractPureGraphManager,
+  type RawLambda,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
@@ -38,6 +39,20 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
     cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult | undefined>;
+
+  abstract addNewExecutableToDataSpaceEntity(
+    dataSpaceEntity: Entity,
+    executable: {
+      id: string;
+      title: string;
+      mapping: string;
+      runtime: string;
+      query: RawLambda;
+      description?: string;
+    },
+  ): Promise<Entity>;
+
+  abstract IsTemplateQueryIdValid(dataSpaceEntity: Entity, id: string): boolean;
 }
 
 export const DSL_DataSpace_getGraphManagerExtension = (

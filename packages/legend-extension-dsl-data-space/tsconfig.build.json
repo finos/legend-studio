@@ -13,6 +13,7 @@
     { "path": "../legend-application-query/tsconfig.build.json" },
     { "path": "../legend-query-builder/tsconfig.build.json" },
     { "path": "../legend-server-depot/tsconfig.build.json" },
+    { "path": "../legend-server-sdlc/tsconfig.build.json" },
     { "path": "../legend-shared/tsconfig.build.json" },
     { "path": "../legend-storage/tsconfig.build.json" },
     { "path": "../legend-application/tsconfig.build.json" },

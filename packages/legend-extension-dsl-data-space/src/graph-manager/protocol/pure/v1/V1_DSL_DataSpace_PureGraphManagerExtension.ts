@@ -15,10 +15,12 @@
  */
 
 import {
+  type AbstractPureGraphManager,
+  type PureProtocolProcessorPlugin,
+  type RawLambda,
   PureModel,
   V1_PureGraphManager,
   PureClientVersion,
-  type AbstractPureGraphManager,
   CoreModel,
   SystemModel,
   V1_Mapping,
@@ -29,13 +31,16 @@ import {
   V1_Class,
   GRAPH_MANAGER_EVENT,
   V1_buildDatasetSpecification,
-  type PureProtocolProcessorPlugin,
   V1_buildModelCoverageAnalysisResult,
+  V1_deserializePackageableElement,
+  V1_transformRawLambda,
+  V1_GraphTransformerContextBuilder,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
   ActionState,
   assertErrorThrown,
+  filterByType,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   guaranteeType,
@@ -49,8 +54,10 @@ import {
   DataSpaceSupportEmail,
 } from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
+  V1_DataSpace,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
+  V1_DataSpaceTemplateExecutable,
 } from '../../../../graph-manager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   DataSpaceAnalysisResult,
@@ -99,6 +106,62 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
   getSupportedProtocolVersion(): string {
     return PureClientVersion.V1_0_0;
+  }
+
+  getDataSpaceProtocolFromEntity(dataSpaceEntity: Entity): V1_DataSpace {
+    return guaranteeType(
+      V1_deserializePackageableElement(
+        dataSpaceEntity.content,
+        this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
+      V1_DataSpace,
+    );
+  }
+
+  IsTemplateQueryIdValid(dataSpaceEntity: Entity, id: string): boolean {
+    const dataSpaceProtocol =
+      this.getDataSpaceProtocolFromEntity(dataSpaceEntity);
+    return !dataSpaceProtocol.executables
+      ?.filter(filterByType(V1_DataSpaceTemplateExecutable))
+      .map((et) => et.id)
+      .includes(id);
+  }
+
+  async addNewExecutableToDataSpaceEntity(
+    dataSpaceEntity: Entity,
+    executable: {
+      id: string;
+      title: string;
+      mapping: string;
+      runtime: string;
+      query: RawLambda;
+      description?: string;
+    },
+  ): Promise<Entity> {
+    const dataSpaceProtocol =
+      this.getDataSpaceProtocolFromEntity(dataSpaceEntity);
+    const dataSpaceTemplateExecutable = new V1_DataSpaceTemplateExecutable();
+    dataSpaceTemplateExecutable.id = executable.id;
+    dataSpaceTemplateExecutable.title = executable.title;
+    dataSpaceTemplateExecutable.description = executable.description;
+    dataSpaceTemplateExecutable.executionContextKey = guaranteeNonNullable(
+      dataSpaceProtocol.executionContexts.filter(
+        (ec) =>
+          ec.mapping.path === executable.mapping &&
+          ec.defaultRuntime.path === executable.runtime,
+      )[0]?.name,
+      'can`t find a corresponding executatin key based on query`s mapping and runtime in dataspace',
+    );
+    dataSpaceTemplateExecutable.query = V1_transformRawLambda(
+      executable.query,
+      new V1_GraphTransformerContextBuilder(
+        this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+    dataSpaceProtocol.executables = dataSpaceProtocol.executables
+      ? [...dataSpaceProtocol.executables, dataSpaceTemplateExecutable]
+      : [dataSpaceTemplateExecutable];
+    return this.graphManager.elementProtocolToEntity(dataSpaceProtocol);
   }
 
   async analyzeDataSpace(
