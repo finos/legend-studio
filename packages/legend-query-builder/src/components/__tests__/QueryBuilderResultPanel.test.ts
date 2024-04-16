@@ -213,7 +213,7 @@ describe(integrationTest('Query builder result state'), () => {
 });
 
 describe(integrationTest('Query builder export button'), () => {
-  test('Check that "View Query Usage..." button is disabled if no plugins with extraQueryUsageConfigurations are present', async () => {
+  test('Check that "Query Code Snippets..." button is disabled if no plugins with extraQueryUsageConfigurations are present', async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__ResultState_entities,
       stub_RawLambda(),
@@ -263,7 +263,7 @@ describe(integrationTest('Query builder export button'), () => {
       fireEvent.click(exportButton);
     });
     const viewQueryUsageButton = await waitFor(() =>
-      renderResult.getByText('View Query Usage...').closest('button'),
+      renderResult.getByText('Query Code Snippets...').closest('button'),
     );
     expect(viewQueryUsageButton).not.toBeNull();
     expect(viewQueryUsageButton!.getAttribute('disabled')).toBeDefined();

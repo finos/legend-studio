@@ -538,7 +538,7 @@ export const QueryBuilderResultPanel = observer(
                       !isExtraQueryUsageOptionsConfigured
                     }
                   >
-                    View Query Usage...
+                    Query Code Snippets...
                   </MenuContentItem>
                 </MenuContent>
               }
