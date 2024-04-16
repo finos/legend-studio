@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.2.1
+
+### Patch Changes
+
+- [#3053](https://github.com/finos/legend-studio/pull/3053) [`97427fae3`](https://github.com/finos/legend-studio/commit/97427fae331658cc9575e8465b831b63ad8569f3) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display template query title and add a tag to mark template query
+
+- [#3043](https://github.com/finos/legend-studio/pull/3043) [`4cc55d572`](https://github.com/finos/legend-studio/commit/4cc55d572a8db24d89be7f4183c461be1054bb7b) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support promoting existing query as template query in dataspace
+
+- [#3048](https://github.com/finos/legend-studio/pull/3048) [`ac7448077`](https://github.com/finos/legend-studio/commit/ac7448077ce73f77d7effa759d9a851ef7d324ab) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support Id in template query
+
 ## 10.2.0
 
 ### Minor Changes
