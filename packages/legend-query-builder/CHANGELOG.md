@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.24
+
+### Patch Changes
+
+- [#3063](https://github.com/finos/legend-studio/pull/3063) [`39efcd4f7`](https://github.com/finos/legend-studio/commit/39efcd4f767db8738bf97f48007f0bbee7f81812) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the issue of not showing mapped properties whose property mapping points to class mapping of subtypes in the explorer tree
+
 ## 4.14.23
 
 ## 4.14.22

@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.9.10
+
+### Patch Changes
+
+- [#3068](https://github.com/finos/legend-studio/pull/3068) [`5fc5cbd34`](https://github.com/finos/legend-studio/commit/5fc5cbd34312ddca7ed8cfcbafee95256b3cca37) ([@rafaelbey](https://github.com/rafaelbey)) - add Mapping and PackageableRuntime support for function params
+
 ## 31.9.9
 
 ## 31.9.8
