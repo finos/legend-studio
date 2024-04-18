@@ -32,6 +32,8 @@ import {
 import { createContext, useContext } from 'react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { DocumentationLink } from '@finos/legend-lego/application';
+import { DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from '../query/DSL_DataSpace_LegendQueryDocumentation.js';
 
 const TemplateQueryPromotionReviewerStoreContext = createContext<
   DataSpaceTemplateQueryPromotionReviewerStore | undefined
@@ -126,6 +128,11 @@ const TemplateQueryPromotionReviewerContent = observer(() => {
             <div className="template-query-promotor__content__main">
               <div className="template-query-promotor__title">
                 Promote as Curated Template Query
+                <DocumentationLink
+                  documentationKey={
+                    DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY.CURATED_TEMPLATE_QUERY
+                  }
+                />
               </div>
               <div className="template-query-promotor__title__prompt">
                 We will promote this query as a curated template query in
