@@ -32,6 +32,8 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
+import { DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from './DSL_DataSpace_LegendQueryDocumentation.js';
 
 const DataSpaceTemplateQueryDialog = observer(
   (props: {
@@ -132,6 +134,11 @@ const DataSpaceTemplateQueryDialog = observer(
             <div className="query-builder__data-space__template-query-panel">
               <div className="query-builder__data-space__template-query-panel__header">
                 Curated Template Queries
+                <DocumentationLink
+                  documentationKey={
+                    DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY.CURATED_TEMPLATE_QUERY
+                  }
+                />
               </div>
               {templateQueries.map((query) => (
                 <div
