@@ -1005,6 +1005,188 @@ export const TEST_DATA__simpleProjectionWithSubtype = {
   parameters: [],
 };
 
+export const TEST_DATA__simpleProjectionWithSubtypesInDeepLevel = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::Firm',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 3,
+            upperBound: 3,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'employees',
+                            },
+                          ],
+                          property: 'address',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'zipcode',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'employees',
+                            },
+                          ],
+                          property: 'address',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'streetName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'employees',
+                            },
+                          ],
+                          property: 'address',
+                        },
+                        {
+                          _type: 'genericTypeInstance',
+                          fullPath: 'model::Colony',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'id',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 3,
+            upperBound: 3,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'Employees/Address/@(Colony)Zipcode',
+            },
+            {
+              _type: 'string',
+              value: 'Employees/Address/@(Colony)Street Name',
+            },
+            {
+              _type: 'string',
+              value: 'Employees/Address/@(Colony)Id',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA_simpleProjectionWithCustomDate = {
   _type: 'lambda',
   body: [

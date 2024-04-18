@@ -41,6 +41,7 @@ import {
   TEST_DATA__simpleProjectWithSubtype,
   TEST_DATA__simpleGraphFetchWithSubtype,
   TEST_DATA__projectionWithDerivation,
+  TEST_DATA__simpleProjectionWithSubtypesInDeepLevel,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -1249,6 +1250,66 @@ test(
         queryBuilderState.buildQuery(),
       ),
     ).toStrictEqual(TEST_DATA__simpleProjectWithSubtype);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after creating a projection query with subType when deep-level ( > 1 layer) propery mapping points to class mapping of subType',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA_SimpleSubtypeModel,
+      stub_RawLambda(),
+      'model::NewMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+    );
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Firm'));
+
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    //Add properties to fetch-structure
+    fireEvent.click(getByText(explorerPanel, 'Employees'));
+    const element = await waitFor(() => getByText(explorerPanel, 'Address'));
+    fireEvent.contextMenu(element);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+    const tdsStateOne = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsStateOne.projectionColumns.length).toBe(3);
+    const fetchStructure = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    await waitFor(() =>
+      getByText(fetchStructure, 'Employees/Address/@(Colony)Id'),
+    );
+    await waitFor(() =>
+      getByText(fetchStructure, 'Employees/Address/@(Colony)Street Name'),
+    );
+    await waitFor(() =>
+      getByText(fetchStructure, 'Employees/Address/@(Colony)Zipcode'),
+    );
+
+    act(() => {
+      expect(
+        queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+          queryBuilderState.buildQuery(),
+        ),
+      ).toStrictEqual(TEST_DATA__simpleProjectionWithSubtypesInDeepLevel);
+    });
   },
 );
 

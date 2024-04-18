@@ -243,8 +243,8 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       parentNode = treeData.nodes.get(parentNode.parentId);
       continue;
     }
-
     let parentPropertyExpression;
+    let explorerTreePropertyNodeDataWithSubtype = false;
     if (parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
       parentPropertyExpression = new SimpleFunctionExpression(
         extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
@@ -265,6 +265,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
           guaranteeNonNullable(parentNode.property),
         ),
       );
+      explorerTreePropertyNodeDataWithSubtype = true;
       currentNode = parentNode;
       parentNode = treeData.nodes.get(parentNode.parentId);
     } else {
@@ -291,12 +292,14 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       currentExpression.parametersValues.push(subclass);
     }
     currentExpression = parentPropertyExpression;
-    currentNode = parentNode;
-    parentNode =
-      parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
-      parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
-        ? treeData.nodes.get(parentNode.parentId)
-        : undefined;
+    if (!explorerTreePropertyNodeDataWithSubtype) {
+      currentNode = parentNode;
+      parentNode =
+        parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+        parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+          ? treeData.nodes.get(parentNode.parentId)
+          : undefined;
+    }
     if (
       !parentNode &&
       (currentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
@@ -518,6 +521,29 @@ export const getQueryBuilderPropertyNodeData = (
     // returns we assign the type of the property node to the mapped subClass
     subClass,
   );
+
+  // Update parent's childrenIds for this proerty
+  // if subClass is defined, it means current QueryBuilderExplorerTreePropertyNodeData's id will be employees.partyBase@my::Party
+  // However, since parentNode.childrenIds is generated before we visiting this child and it doesn't consider subtype information,
+  // its value would be employees.partyBase. Mismatch will cause mapped-properties not showing up in the explorer tree.
+  if (subClass) {
+    const currentParentChildIDForThisProperty =
+      generateExplorerTreePropertyNodeID(
+        parentNode instanceof QueryBuilderExplorerTreeRootNodeData
+          ? ''
+          : parentNode.id,
+        property.name,
+      );
+    if (parentNode.childrenIds.includes(currentParentChildIDForThisProperty)) {
+      parentNode.childrenIds = [
+        ...parentNode.childrenIds.filter(
+          (id) => id !== currentParentChildIDForThisProperty,
+        ),
+        propertyNode.id,
+      ];
+    }
+  }
+
   if (propertyNode.type instanceof Class) {
     propertyNode.childrenIds =
       generateExplorerTreeClassNodeChildrenIDs(propertyNode);

@@ -219,4 +219,10 @@ export class QueryBuilderTelemetryHelper {
       data,
     );
   }
+
+  static logEvent_ShowUnmappedPropertyInExplorerTreeLaunched(
+    service: TelemetryService,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.SHOW_UNMAPPED_PROPERTIES__LAUNCH, {});
+  }
 }
