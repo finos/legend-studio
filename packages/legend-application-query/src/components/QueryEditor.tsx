@@ -58,6 +58,7 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
   generateQuerySetupRoute,
   generateExistingQueryEditorRoute,
+  generateMappingQueryCreatorRoute,
 } from '../__lib__/LegendQueryNavigation.js';
 import {
   createViewProjectHandler,
@@ -85,7 +86,11 @@ import {
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
-import { debounce } from '@finos/legend-shared';
+import {
+  debounce,
+  guaranteeNonNullable,
+  isNonNullable,
+} from '@finos/legend-shared';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import { QUERY_EDITOR_TEST_ID } from '../__lib__/LegendQueryTesting.js';
 import {
@@ -593,6 +598,36 @@ const QueryEditorHeaderContent = observer(
       }
     };
 
+    const handleNewQuery = (): void => {
+      if (editorStore instanceof ExistingQueryEditorStore) {
+        const query = editorStore.query;
+        if (query) {
+          const paths = applicationStore.pluginManager
+            .getApplicationPlugins()
+            .flatMap(
+              (plugin) => plugin.getExtraNewQueryNavigationPaths?.() ?? [],
+            )
+            .map((callback) => callback(query, editorStore))
+            .filter(isNonNullable);
+          if (paths.length) {
+            editorStore.applicationStore.navigationService.navigator.goToLocation(
+              guaranteeNonNullable(paths[0]),
+            );
+          } else {
+            editorStore.applicationStore.navigationService.navigator.goToLocation(
+              generateMappingQueryCreatorRoute(
+                query.groupId,
+                query.artifactId,
+                query.versionId,
+                query.mapping.value.path,
+                query.runtime.value.path,
+              ),
+            );
+          }
+        }
+      }
+    };
+
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
 
@@ -688,6 +723,19 @@ const QueryEditorHeaderContent = observer(
             </div>
           </Button>
 
+          {isExistingQuery && (
+            <Button
+              className="query-editor__header__action btn--dark"
+              disabled={editorStore.isPerformingBlockingAction}
+              onClick={handleNewQuery}
+              title="New query"
+            >
+              <SaveCurrIcon />
+              <div className="query-editor__header__action__label">
+                New Query
+              </div>
+            </Button>
+          )}
           <Button
             className="query-editor__header__action btn--dark"
             disabled={
