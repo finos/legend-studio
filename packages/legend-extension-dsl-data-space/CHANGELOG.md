@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.2.2
+
+### Patch Changes
+
+- [#3070](https://github.com/finos/legend-studio/pull/3070) [`cbe27c3e5`](https://github.com/finos/legend-studio/commit/cbe27c3e54ef771717deb9caf2ce5e1d111f3613) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add doc link of template query in dataspace
+
 ## 10.2.1
 
 ### Patch Changes
