@@ -56,6 +56,11 @@ export type ExistingQueryEditorStateBuilder = (
   editorStore: ExistingQueryEditorStore,
 ) => Promise<QueryBuilderState | undefined>;
 
+export type NewQueryNavigationPath = (
+  query: Query,
+  editorStore: ExistingQueryEditorStore,
+) => string | undefined;
+
 export type QueryEditorActionConfiguration = {
   key: string;
   renderer: (
@@ -111,4 +116,9 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   getExtraQueryHeaders?(): ((
     editorStore: QueryEditorStore,
   ) => React.ReactNode | undefined)[];
+
+  /**
+   * Get list of new query navigation paths
+   */
+  getExtraNewQueryNavigationPaths?(): NewQueryNavigationPath[];
 }

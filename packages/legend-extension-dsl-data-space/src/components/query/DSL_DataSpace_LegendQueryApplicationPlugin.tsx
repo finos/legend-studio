@@ -25,6 +25,7 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
   type QueryEditorActionConfiguration,
+  type NewQueryNavigationPath,
 } from '@finos/legend-application-query';
 import { ArrowCircleUpIcon, SquareIcon } from '@finos/legend-art';
 import {
@@ -43,12 +44,7 @@ import {
   type Query,
   type Mapping,
   type PackageableRuntime,
-  isValidFullPath,
 } from '@finos/legend-graph';
-import {
-  QUERY_PROFILE_PATH,
-  QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../graph/DSL_DataSpace_MetaModelConst.js';
 import {
   DataSpaceQueryBuilderState,
   DataSpaceProjectInfo,
@@ -77,6 +73,7 @@ import type {
 import { DataSpaceTemplateQueryCreator } from './DataSpaceTemplateQueryCreator.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../../stores/query/DataSpaceTemplateQueryCreatorStore.js';
 import { parseProjectIdentifier } from '@finos/legend-storage';
+import { getDataSpaceQueryInfo } from './QueryDataSpaceUtil.js';
 
 const resolveExecutionContext = (
   dataSpace: DataSpace,
@@ -152,15 +149,8 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
         query: Query,
         editorStore: ExistingQueryEditorStore,
       ): Promise<QueryBuilderState | undefined> => {
-        const dataSpaceTaggedValue = query.taggedValues?.find(
-          (taggedValue) =>
-            taggedValue.profile === QUERY_PROFILE_PATH &&
-            taggedValue.tag === QUERY_PROFILE_TAG_DATA_SPACE &&
-            isValidFullPath(taggedValue.value),
-        );
-
-        if (dataSpaceTaggedValue) {
-          const dataSpacePath = dataSpaceTaggedValue.value;
+        const dataSpacePath = getDataSpaceQueryInfo(query);
+        if (dataSpacePath) {
           const dataSpace = getOwnDataSpace(
             dataSpacePath,
             editorStore.graphManagerState.graph,
@@ -306,6 +296,35 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
               mappingModelCoverageAnalysisResult;
           }
           return dataSpaceQueryBuilderState;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraNewQueryNavigationPaths(): NewQueryNavigationPath[] {
+    return [
+      (
+        query: Query,
+        editorStore: ExistingQueryEditorStore,
+      ): string | undefined => {
+        const dataSpacePath = getDataSpaceQueryInfo(query);
+        const queryBuilderState = editorStore.queryBuilderState;
+        if (
+          dataSpacePath &&
+          queryBuilderState instanceof DataSpaceQueryBuilderState
+        ) {
+          queryBuilderState.executionContext.name;
+          return generateDataSpaceQueryCreatorRoute(
+            query.groupId,
+            query.artifactId,
+            query.versionId,
+            dataSpacePath,
+            // TODO: fix execution key once that is fixed
+            queryBuilderState.executionContext.name,
+            undefined,
+            undefined,
+          );
         }
         return undefined;
       },
