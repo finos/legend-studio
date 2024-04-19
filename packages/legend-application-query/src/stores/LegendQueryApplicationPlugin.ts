@@ -89,6 +89,11 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   }
 
   /**
+   * Get Redirect path for root application path
+   */
+  getExtraRootAppRedirectPath?(): string | undefined;
+
+  /**
    * Get the list of actions (configurations) for query setup.
    */
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
