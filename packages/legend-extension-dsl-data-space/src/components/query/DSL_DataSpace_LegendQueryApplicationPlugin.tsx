@@ -99,6 +99,10 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
     super(packageJson.extensions.applicationQueryPlugin, packageJson.version);
   }
 
+  override getExtraRootAppRedirectPath(): string | undefined {
+    return DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP;
+  }
+
   override getExtraApplicationPageEntries(): ApplicationPageEntry[] {
     return [
       // data space query editor setup

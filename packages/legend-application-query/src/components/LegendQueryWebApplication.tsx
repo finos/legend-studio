@@ -39,6 +39,7 @@ import { EditExistingQuerySetup } from './EditExistingQuerySetup.js';
 import { CreateMappingQuerySetup } from './CreateMappingQuerySetup.js';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 
 const LegendQueryWebApplicationRouter = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
@@ -47,6 +48,16 @@ const LegendQueryWebApplicationRouter = observer(() => {
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
+
+  const setupRoot = applicationStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap((plugin) => plugin.getExtraRootAppRedirectPath?.())
+    .filter(isNonNullable);
+
+  const rootRedirect =
+    setupRoot.length === 1
+      ? generateExtensionUrlPattern(guaranteeNonNullable(setupRoot[0]))
+      : LEGEND_QUERY_ROUTE_PATTERN.SETUP;
 
   useEffect(() => {
     flowResult(baseStore.initialize()).catch(
@@ -117,7 +128,7 @@ const LegendQueryWebApplicationRouter = observer(() => {
               }
             />
           ))}
-          <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
+          <Redirect to={rootRedirect} />
         </Switch>
       )}
     </div>
