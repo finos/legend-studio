@@ -137,7 +137,8 @@ export const isValidInstanceValue = (value: InstanceValue): boolean => {
   if (
     isRequired &&
     value.genericType?.value.rawType !== PrimitiveType.LATESTDATE &&
-    !value.values.length
+    (!value.values.length ||
+      value.values.some((val) => val === undefined || val === ''))
   ) {
     return false;
   }
