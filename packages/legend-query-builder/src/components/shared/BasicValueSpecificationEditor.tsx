@@ -406,13 +406,17 @@ const NumberPrimitiveInstanceValueEditor = observer(
       obseverContext,
     } = props;
     const [value, setValue] = useState(
-      (valueSpecification.values[0] as number).toString(),
+      valueSpecification.values[0] === undefined
+        ? ''
+        : (valueSpecification.values[0] as number).toString(),
     );
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
-    const numericValue = isInteger
-      ? Number.parseInt(Number(value).toString(), 10)
-      : Number(value);
+    const numericValue = value
+      ? isInteger
+        ? Number.parseInt(Number(value).toString(), 10)
+        : Number(value)
+      : undefined;
 
     const updateValueSpecIfValid = (val: string): void => {
       const parsedValue = isInteger
@@ -438,7 +442,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     // Support expression evaluation
     const calculateExpression = (): void => {
-      if (isNaN(numericValue)) {
+      if (numericValue && isNaN(numericValue)) {
         try {
           const calculatedValue = guaranteeIsNumber(evaluate(value));
           updateValueSpecIfValid(calculatedValue.toString());
@@ -449,7 +453,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
           );
           setValue((valueSpecification.values[0] as number).toString());
         }
-      } else {
+      } else if (numericValue) {
         updateValueSpecIfValid(numericValue.toString());
         setValue(numericValue.toString());
       }
@@ -466,6 +470,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     useEffect(() => {
       if (
+        numericValue &&
         !isNaN(numericValue) &&
         numericValue !== valueSpecification.values[0]
       ) {
