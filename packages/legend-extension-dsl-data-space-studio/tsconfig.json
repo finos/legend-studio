@@ -9,16 +9,12 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [
     { "path": "./tsconfig.package.json" },
-    { "path": "../legend-graph" },
-    { "path": "../legend-extension-dsl-diagram" },
-    { "path": "../legend-application-query" },
-    { "path": "../legend-query-builder" },
+    { "path": "../legend-application" },
+    { "path": "../legend-application-studio" },
+    { "path": "../legend-art" },
+    { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-server-depot" },
     { "path": "../legend-server-sdlc" },
-    { "path": "../legend-shared" },
-    { "path": "../legend-storage" },
-    { "path": "../legend-application" },
-    { "path": "../legend-art" },
-    { "path": "../legend-lego" }
+    { "path": "../legend-shared" }
   ]
 }

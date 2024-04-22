@@ -49,6 +49,7 @@
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-assortment": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
+    "@finos/legend-extension-dsl-data-space-studio": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-mastery": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",

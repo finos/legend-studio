@@ -34,10 +34,6 @@ import {
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
-import {
-  generateDataSpaceQuerySetupRoute,
-  generateDataSpaceTemplateQueryPromotionRoute,
-} from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { type Entity } from '@finos/legend-storage';
 import {
   type ProjectConfigurationStatus,
@@ -71,10 +67,14 @@ import {
   EntityChangeType,
 } from '@finos/legend-server-sdlc';
 import {
-  type DSL_DataSpace_PureGraphManagerExtension,
+  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   DSL_DataSpace_getGraphManagerExtension,
-} from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
+  type DSL_DataSpace_PureGraphManagerExtension,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  generateDataSpaceQuerySetupRoute,
+  generateDataSpaceTemplateQueryPromotionRoute,
+} from '@finos/legend-extension-dsl-data-space/application';
 
 const projectDependencyToProjectCoordinates = (
   projectDependency: ProjectDependency,

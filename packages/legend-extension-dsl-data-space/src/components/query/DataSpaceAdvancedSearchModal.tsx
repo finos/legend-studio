@@ -38,7 +38,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import { DataSpaceViewer } from '../DataSpaceViewer.js';
-import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
+import type { DataSpaceInfo } from '../../stores/shared/DataSpaceInfo.js';
 import type { DataSpaceAdvancedSearchState } from '../../stores/query/DataSpaceAdvancedSearchState.js';
 
 type DataSpaceOption = { label: string; value: DataSpaceInfo };

@@ -25,7 +25,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 import { DataSpaceExecutableTemplate } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import type { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
+import type { DataSpaceQueryBuilderState } from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
@@ -33,7 +33,7 @@ import {
 } from '@finos/legend-application';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
-import { DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from './DSL_DataSpace_LegendQueryDocumentation.js';
+import { DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from '../../__lib__/query/DSL_DataSpace_LegendQueryDocumentation.js';
 
 const DataSpaceTemplateQueryDialog = observer(
   (props: {
@@ -136,7 +136,7 @@ const DataSpaceTemplateQueryDialog = observer(
                 Curated Template Queries
                 <DocumentationLink
                   documentationKey={
-                    DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY.CURATED_TEMPLATE_QUERY
+                    DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY.CURATED_TEMPLATE_QUERY
                   }
                 />
               </div>

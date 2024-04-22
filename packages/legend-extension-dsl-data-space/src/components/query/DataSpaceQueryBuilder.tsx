@@ -31,9 +31,9 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  DataSpaceQueryBuilderState,
+  type DataSpaceQueryBuilderState,
   resolveUsableDataSpaceClasses,
-} from '../../stores/query/DataSpaceQueryBuilderState.js';
+} from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
@@ -45,18 +45,14 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
-import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
+import type { DataSpaceInfo } from '../../stores/shared/DataSpaceInfo.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useEffect } from 'react';
 import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import {
-  DataSpace,
-  type DataSpaceExecutionContext,
-} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
+import { type DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import { DataSpaceIcon } from '../shared/DSL_DataSpace_Icon.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
-import type { EditorStore } from '@finos/legend-application-studio';
 
 export type DataSpaceOption = {
   label: string;
@@ -120,7 +116,8 @@ const buildExecutionContextOption = (
  * This setup panel supports cascading in order: Data-space -> Execution context (-> Runtime) -> Class
  *
  * In other words, we will only show:
- * - For runtime selector: the list of compatible runtimes with the selected execution context mapping
+ * - For runtime selector: the list of compatible runtimes with the selected
+ execution context mapping
  * - For class selector: the list of compatible class with the selected execution context mapping
  *
  * See details on propagation/cascading in {@link DataSpaceQueryBuilderState}
@@ -372,61 +369,3 @@ export const renderDataSpaceQueryBuilderSetupPanelContent = (
     queryBuilderState={queryBuilderState}
   />
 );
-
-export const queryDataSpace = async (
-  dataSpace: DataSpace,
-  editorStore: EditorStore,
-): Promise<void> => {
-  const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
-  await flowResult(
-    embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-      setupQueryBuilderState: () => {
-        const sourceInfo = Object.assign(
-          {},
-          editorStore.editorMode.getSourceInfo(),
-          {
-            dataSpace: dataSpace.path,
-          },
-        );
-        const queryBuilderState = new DataSpaceQueryBuilderState(
-          editorStore.applicationStore,
-          editorStore.graphManagerState,
-          editorStore.depotServerClient,
-          dataSpace,
-          dataSpace.defaultExecutionContext,
-          (dataSpaceInfo: DataSpaceInfo) => {
-            queryBuilderState.dataSpace = guaranteeType(
-              queryBuilderState.graphManagerState.graph.getElement(
-                dataSpaceInfo.path,
-              ),
-              DataSpace,
-            );
-            queryBuilderState.setExecutionContext(
-              queryBuilderState.dataSpace.defaultExecutionContext,
-            );
-            queryBuilderState.propagateExecutionContextChange(
-              queryBuilderState.dataSpace.defaultExecutionContext,
-            );
-          },
-          false,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          editorStore.applicationStore.config.options.queryBuilderConfig,
-          sourceInfo,
-        );
-        queryBuilderState.setExecutionContext(
-          dataSpace.defaultExecutionContext,
-        );
-        queryBuilderState.propagateExecutionContextChange(
-          dataSpace.defaultExecutionContext,
-        );
-        return queryBuilderState;
-      },
-      actionConfigs: [],
-      disableCompile: true,
-    }),
-  );
-};

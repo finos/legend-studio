@@ -50,8 +50,8 @@ import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelp
 import {
   DataSpaceQueryBuilderState,
   DataSpaceProjectInfo,
-} from './DataSpaceQueryBuilderState.js';
-import type { DataSpaceInfo } from './DataSpaceInfo.js';
+} from '../query-builder/DataSpaceQueryBuilderState.js';
+import type { DataSpaceInfo } from '../shared/DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';

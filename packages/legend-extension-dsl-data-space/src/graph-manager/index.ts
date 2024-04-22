@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+// Graph
+export * from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+export * from '../graph/metamodel/pure/model/packageableElements/mapping/DSL_DataSpace_MappingIncludeDataSpace.js';
+
 export * from './DSL_DataSpace_GraphManagerPreset.js';
 
 export {
@@ -26,3 +30,4 @@ export { DSL_DataSpace_getGraphManagerExtension } from './protocol/pure/DSL_Data
 
 export * from './action/analytics/DataSpaceAnalysis.js';
 export * from './action/analytics/DataSpaceAnalysisHelper.js';
+export * from './protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';

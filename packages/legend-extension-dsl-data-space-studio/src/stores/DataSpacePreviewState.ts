@@ -20,18 +20,22 @@ import {
   type EditorStore,
 } from '@finos/legend-application-studio';
 import {
+  DataSpaceViewerState,
+  EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
+} from '@finos/legend-extension-dsl-data-space/application';
+import {
+  DSL_DataSpace_getGraphManagerExtension,
+  type DataSpaceAnalysisResult,
+  type DataSpace,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import { InMemoryGraphData, type Class } from '@finos/legend-graph';
+import {
   type GeneratorFn,
   guaranteeNonNullable,
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import type { DataSpace } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
-import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
-import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
-import { type Class, InMemoryGraphData } from '@finos/legend-graph';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from '../../__lib__/DSL_DataSpace_LegendApplicationNavigation.js';
 
 export class DataSpacePreviewState extends EditorExtensionState {
   private static readonly IDENTIFIER = 'data-space-preview';

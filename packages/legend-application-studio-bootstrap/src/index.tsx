@@ -23,6 +23,7 @@ import {
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/graph';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
+import { DSL_DataSpace_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-space-studio';
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery/graph';
 import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
@@ -30,7 +31,6 @@ import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extensi
 import { Assortment_GraphManagerPreset } from '@finos/legend-extension-assortment/graph';
 import { DSL_Text_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-text/application-studio';
 import { DSL_Diagram_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-diagram/application-studio';
-import { DSL_DataSpace_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application-studio';
 import { DSL_Persistence_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-persistence/application-studio';
 import { DSL_Mastery_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-mastery/application-studio';
 import { STO_ServiceStore_LegendStudioApplicationPlugin } from '@finos/legend-extension-store-service-store/application-studio';

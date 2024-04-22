@@ -30,7 +30,7 @@ import {
   SearchIcon,
   type SelectComponent,
 } from '@finos/legend-art';
-import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
+import { DataSpaceIcon } from '../shared/DSL_DataSpace_Icon.js';
 import {
   type DataSpaceQuerySetupState,
   DataSpaceQuerySetupStore,
