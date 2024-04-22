@@ -53,14 +53,7 @@ import {
   guaranteeIsString,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import {
-  DEFAULT_VARIABLE_NAME,
-  FILTER_FUNCTION_NAME,
-  GROUPBY_FUNCTION_NAME,
-  NOT_FUNCTION_NAME,
-  SLICE_FUNCTION_NAME,
-  SORT_FUNCTION_NAME,
-} from '../../Const.js';
+import { DEFAULT_VARIABLE_NAME, QUERY_FUNCTION } from '../../Const.js';
 
 const getPrimitiveValueSpecification = (
   type: PRIMITIVE_TYPE,
@@ -177,7 +170,7 @@ const processFilterOperations = (
           break;
         }
         case TDS_FILTER_OPERATION.NOT_EQUAL: {
-          filterCondition.function = NOT_FUNCTION_NAME;
+          filterCondition.function = QUERY_FUNCTION.NOT;
 
           const filterConditionFunc = new V1_AppliedFunction();
           filterConditionFunc.function = TDS_FILTER_OPERATION.EQUALS;
@@ -193,7 +186,7 @@ const processFilterOperations = (
           break;
         }
         case TDS_FILTER_OPERATION.NOT_BLANK: {
-          filterCondition.function = NOT_FUNCTION_NAME;
+          filterCondition.function = QUERY_FUNCTION.NOT;
 
           const filterConditionFunc = new V1_AppliedFunction();
           filterConditionFunc.function = TDS_FILTER_OPERATION.BLANK;
@@ -209,7 +202,7 @@ const processFilterOperations = (
           break;
         }
         case TDS_FILTER_OPERATION.NOT_CONTAINS: {
-          filterCondition.function = NOT_FUNCTION_NAME;
+          filterCondition.function = QUERY_FUNCTION.NOT;
 
           const filterConditionFunc = new V1_AppliedFunction();
           filterConditionFunc.function = TDS_FILTER_OPERATION.CONTAINS;
@@ -248,7 +241,7 @@ const processFilterOperations = (
     }
     filterLambda.parameters = [defaultVariable];
   });
-  updateParentFunction(expressions, FILTER_FUNCTION_NAME, [filterLambda]);
+  updateParentFunction(expressions, QUERY_FUNCTION.FILTER, [filterLambda]);
 };
 
 const getAggregationColSpec = (
@@ -350,7 +343,7 @@ const processGroupByOperations = (
     groupByColSpecArray.colSpecs.length !== 0 ||
     aggregationColSpecArray.colSpecs.length !== 0
   ) {
-    updateParentFunction(expressions, GROUPBY_FUNCTION_NAME, [
+    updateParentFunction(expressions, QUERY_FUNCTION.GROUPBY, [
       groupByInstance,
       aggregationInstance,
     ]);
@@ -382,10 +375,10 @@ const processSortOperations = (
       sortCollection.values.push(sortFunc);
     }
   });
-  updateParentFunction(expressions, SORT_FUNCTION_NAME, [sortCollection]);
+  updateParentFunction(expressions, QUERY_FUNCTION.SORT, [sortCollection]);
 };
 
-const processSliceFunction = (
+const updateExpressionWithSlice = (
   expressions: V1_ValueSpecification[],
   start: number | undefined,
   end: number | undefined,
@@ -397,16 +390,44 @@ const processSliceFunction = (
   startValue.value = start;
   const endValue = new V1_CInteger();
   endValue.value = end;
-  updateParentFunction(expressions, SLICE_FUNCTION_NAME, [
-    startValue,
-    endValue,
-  ]);
+  const funcBody = expressions[0];
+  let currentExpression: V1_ValueSpecification | undefined = funcBody;
+  while (currentExpression instanceof V1_AppliedFunction) {
+    if (currentExpression.function === QUERY_FUNCTION.FROM) {
+      if (
+        currentExpression.parameters[0] instanceof V1_AppliedFunction &&
+        currentExpression.parameters[0].function === QUERY_FUNCTION.SLICE
+      ) {
+        currentExpression.parameters[0].parameters = [
+          guaranteeNonNullable(currentExpression.parameters[0].parameters[0]),
+          startValue,
+          endValue,
+        ];
+        break;
+      }
+      const sliceFunction = new V1_AppliedFunction();
+      sliceFunction.function = QUERY_FUNCTION.SLICE;
+      sliceFunction.parameters = [
+        guaranteeNonNullable(currentExpression.parameters[0]),
+        startValue,
+        endValue,
+      ];
+      currentExpression.parameters[0] = sliceFunction;
+      break;
+    }
+    currentExpression = currentExpression.parameters[0];
+  }
 };
 
 export const buildLambdaExpressions = (
   funcBody: V1_ValueSpecification,
   request: TDSRequest,
+  isPaginationEnabled: boolean,
 ): V1_Lambda => {
+  const expressions = [funcBody];
+  if (isPaginationEnabled) {
+    updateExpressionWithSlice(expressions, request.startRow, request.endRow);
+  }
   const groupBy = request.groupBy;
   for (let index = 0; index < groupBy.groupKeys.length; index++) {
     const groupFilter = new TDSFilter(
@@ -422,11 +443,9 @@ export const buildLambdaExpressions = (
     );
     request.filter.push(groupFilter);
   }
-  const expressions = [funcBody];
   processFilterOperations(expressions, request.filter);
   processGroupByOperations(expressions, request.groupBy, request.columns);
   processSortOperations(expressions, request.sort, request.groupBy);
-  processSliceFunction(expressions, request.startRow, request.endRow);
   const lambda = new V1_Lambda();
   lambda.body = expressions;
   return lambda;

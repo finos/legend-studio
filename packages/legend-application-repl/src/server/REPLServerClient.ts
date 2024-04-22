@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-shared';
 import type { REPLGridServerResult } from '../components/grid/REPLGridServerResult.js';
 import type { V1_Lambda } from '@finos/legend-graph';
+import type { CompletionItem } from '../stores/CompletionResult.js';
 
 export class REPLServerClient {
   private readonly networkClient: NetworkClient;
@@ -54,15 +55,44 @@ export class REPLServerClient {
       undefined,
     );
 
-  getInitialREPLGridServerResult = (): Promise<
-    PlainObject<REPLGridServerResult>
-  > =>
-    this.networkClient.get(
-      `${this.baseUrl}/gridResult`,
+  executeLambda = (
+    lambda: string,
+    isPaginationEnabled: boolean,
+  ): Promise<PlainObject<REPLGridServerResult>> =>
+    this.networkClient.post(
+      `${this.baseUrl}/executeLambda`,
+      lambda,
       undefined,
+      undefined,
+      {
+        isPaginationEnabled,
+      },
+    );
+
+  getTypeaheadResults = (
+    lambda: string,
+  ): Promise<PlainObject<CompletionItem>[]> =>
+    this.networkClient.post(
+      `${this.baseUrl}/typeahead`,
+      lambda,
       undefined,
       undefined,
     );
+
+  parseQuery = (lambda: string): Promise<void> =>
+    this.networkClient.post(
+      `${this.baseUrl}/parseQuery`,
+      lambda,
+      undefined,
+      undefined,
+    );
+
+  getInitialREPLGridServerResult = (
+    isPaginationEnabled: boolean,
+  ): Promise<PlainObject<REPLGridServerResult>> =>
+    this.networkClient.get(`${this.baseUrl}/gridResult`, undefined, undefined, {
+      isPaginationEnabled,
+    });
 
   getLicenseKey = (): Promise<string> =>
     this.networkClient.get(

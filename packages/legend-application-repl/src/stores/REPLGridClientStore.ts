@@ -24,11 +24,17 @@ import {
   LogEvent,
   guaranteeNonNullable,
   guaranteeType,
+  ActionState,
+  HttpStatus,
+  NetworkClientError,
 } from '@finos/legend-shared';
 import type { TDSRequest } from '../components/grid/TDSRequest.js';
 import { flow, flowResult, makeObservable, observable } from 'mobx';
 import { REPLGridServerResult } from '../components/grid/REPLGridServerResult.js';
-import { LEGEND_REPL_EVENT } from '../Const.js';
+import {
+  LEGEND_APPLICATION_REPL_SETTING_KEY,
+  LEGEND_REPL_EVENT,
+} from '../Const.js';
 import { REPLGridState } from './REPLGridState.js';
 import { buildLambdaExpressions } from '../components/grid/TDSLambdaBuilder.js';
 import {
@@ -39,20 +45,33 @@ import {
   V1_deserializeValueSpecification,
   V1_serializeExecutionResult,
   V1_serializeValueSpecification,
+  V1_ParserError,
+  ParserError,
+  SourceInformation,
 } from '@finos/legend-graph';
+import { CompletionItem } from './CompletionResult.js';
+import {
+  languages as monacoLanguagesAPI,
+  type IPosition,
+  type editor as monacoEditorAPI,
+} from 'monaco-editor';
 
 export class REPLGridClientStore {
   readonly applicationStore: LegendREPLGridClientApplicationStore;
   readonly client: REPLServerClient;
   replGridState!: REPLGridState;
+  executeAction = ActionState.create();
 
   constructor(applicationStore: LegendREPLGridClientApplicationStore) {
     makeObservable(this, {
       replGridState: observable,
+      executeAction: observable,
       getREPLGridServerResult: flow,
       getInitialQueryLambda: flow,
       getInitialREPLGridServerResult: flow,
       getLicenseKey: flow,
+      executeLambda: flow,
+      parseQuery: flow,
     });
     this.applicationStore = applicationStore;
     this.client = new REPLServerClient(
@@ -62,7 +81,11 @@ export class REPLGridClientStore {
           : this.applicationStore.config.replUrl,
       }),
     );
-    this.replGridState = new REPLGridState();
+    const isPaginationEnabled =
+      applicationStore.settingService.getBooleanValue(
+        LEGEND_APPLICATION_REPL_SETTING_KEY.PAGINATION,
+      ) ?? true;
+    this.replGridState = new REPLGridState(isPaginationEnabled);
   }
 
   *getREPLGridServerResult(tdsRequest: TDSRequest): GeneratorFn<void> {
@@ -71,6 +94,7 @@ export class REPLGridClientStore {
       const lambda = buildLambdaExpressions(
         guaranteeNonNullable(this.replGridState.initialQueryLambda?.body[0]),
         tdsRequest,
+        this.replGridState.isPaginationEnabled,
       );
       const resultObj = (yield flowResult(
         this.client.getREPLGridServerResult(
@@ -91,7 +115,9 @@ export class REPLGridClientStore {
       if (isSubQuery) {
         this.replGridState.setCurrentSubQuery(replGridResult.currentQuery);
       } else {
-        this.replGridState.setCurrentQuery(replGridResult.currentQuery);
+        this.replGridState.queryEditorState.setQuery(
+          replGridResult.currentQuery.substring(1),
+        );
         this.replGridState.setCurrentSubQuery(undefined);
       }
     } catch (error) {
@@ -101,6 +127,105 @@ export class REPLGridClientStore {
         LogEvent.create(LEGEND_REPL_EVENT.FETCH_TDS_FAILURE),
         error,
       );
+    }
+  }
+
+  async getTypeaheadResults(
+    position: IPosition,
+    model: monacoEditorAPI.ITextModel,
+  ): Promise<monacoLanguagesAPI.CompletionItem[]> {
+    try {
+      const textUntilPosition = model.getValueInRange({
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: position.lineNumber,
+        endColumn: position.column,
+      });
+      const resultObj =
+        await this.client.getTypeaheadResults(textUntilPosition);
+      const result = resultObj.map((res) =>
+        CompletionItem.serialization.fromJson(res),
+      );
+      const currentWord = model.getWordUntilPosition(position);
+      return result.map((res) => ({
+        label: res.display,
+        kind: monacoLanguagesAPI.CompletionItemKind.Text,
+        range: {
+          startLineNumber: position.lineNumber,
+          startColumn: currentWord.startColumn + 1,
+          endLineNumber: position.lineNumber,
+          endColumn: currentWord.endColumn + 1,
+        },
+        insertText: res.completion,
+      })) as monacoLanguagesAPI.CompletionItem[];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  *executeLambda(): GeneratorFn<void> {
+    try {
+      this.executeAction.inProgress();
+      const resultObj = (yield this.client.executeLambda(
+        this.replGridState.queryEditorState.query,
+        this.replGridState.isPaginationEnabled,
+      )) as PlainObject<REPLGridServerResult>;
+      const replGridResult =
+        REPLGridServerResult.serialization.fromJson(resultObj);
+      const tdsResultObj = JSON.parse(
+        replGridResult.result,
+      ) as PlainObject<V1_TDSExecutionResult>;
+      const tdsResult = guaranteeType(
+        V1_buildExecutionResult(V1_serializeExecutionResult(tdsResultObj)),
+        TDSExecutionResult,
+      );
+      this.replGridState.setInitialResult(tdsResult);
+      this.replGridState.queryEditorState.setQuery(
+        replGridResult.currentQuery.substring(1),
+      );
+      this.replGridState.setCurrentSubQuery(undefined);
+      this.replGridState.setColumns(tdsResult.result.columns);
+
+      yield flowResult(this.getInitialQueryLambda());
+      this.executeAction.complete();
+    } catch (error) {
+      this.executeAction.fail();
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_REPL_EVENT.FETCH_TDS_FAILURE),
+        error,
+      );
+    }
+  }
+
+  *parseQuery(): GeneratorFn<void> {
+    try {
+      this.replGridState.queryEditorState.setParserError(undefined);
+      yield flowResult(
+        this.client.parseQuery(`|${this.replGridState.queryEditorState.query}`),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        const protocol = V1_ParserError.serialization.fromJson(
+          error.payload as PlainObject<V1_ParserError>,
+        );
+        const parserError = new ParserError(protocol.message);
+        if (protocol.sourceInformation) {
+          parserError.sourceInformation = new SourceInformation(
+            protocol.sourceInformation.sourceId,
+            protocol.sourceInformation.startLine,
+            protocol.sourceInformation.startColumn,
+            protocol.sourceInformation.endLine,
+            protocol.sourceInformation.endColumn,
+          );
+        }
+        this.replGridState.queryEditorState.setParserError(parserError);
+      }
     }
   }
 
@@ -115,14 +240,16 @@ export class REPLGridClientStore {
 
   *getInitialREPLGridServerResult(): GeneratorFn<void> {
     try {
+      this.executeAction.inProgress();
       if (!this.replGridState.licenseKey) {
         yield flowResult(this.getLicenseKey());
       }
-      if (!this.replGridState.initialQueryLambda) {
-        yield flowResult(this.getInitialQueryLambda());
-      }
-      const resultObj =
-        (yield this.client.getInitialREPLGridServerResult()) as PlainObject<REPLGridServerResult>;
+
+      yield flowResult(this.getInitialQueryLambda());
+
+      const resultObj = (yield this.client.getInitialREPLGridServerResult(
+        this.replGridState.isPaginationEnabled,
+      )) as PlainObject<REPLGridServerResult>;
       const replGridResult =
         REPLGridServerResult.serialization.fromJson(resultObj);
       const tdsResultObj = JSON.parse(
@@ -133,10 +260,14 @@ export class REPLGridClientStore {
         TDSExecutionResult,
       );
       this.replGridState.setInitialResult(tdsResult);
-      this.replGridState.setCurrentQuery(replGridResult.currentQuery);
+      this.replGridState.queryEditorState.setQuery(
+        replGridResult.currentQuery.substring(1),
+      );
       this.replGridState.setCurrentSubQuery(undefined);
       this.replGridState.setColumns(tdsResult.result.columns);
+      this.executeAction.complete();
     } catch (error) {
+      this.executeAction.fail();
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error);
       this.applicationStore.logService.error(
