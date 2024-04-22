@@ -83,10 +83,7 @@ export class QueryBuilderFilterOperator_EndWith
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           propertyType.path,
-          filterConditionState.filterState.queryBuilderState
-            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
-            ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : undefined,
+          generateDefaultValueForPrimitiveType(propertyType.path),
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
