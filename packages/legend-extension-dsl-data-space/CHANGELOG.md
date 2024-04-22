@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.2.3
+
+### Patch Changes
+
+- [#3076](https://github.com/finos/legend-studio/pull/3076) [`6c3f18e4d`](https://github.com/finos/legend-studio/commit/6c3f18e4d3f784eb5c3108cab89d998bfa089e8f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Redirect root legend query app to dataSpace creator view.
+
+- [#3073](https://github.com/finos/legend-studio/pull/3073) [`1ce2ea7a4`](https://github.com/finos/legend-studio/commit/1ce2ea7a442c887eceb4d3780e48ca5cd1e04eb0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add 'New Query` to existing query action.
+
 ## 10.2.2
 
 ### Patch Changes
