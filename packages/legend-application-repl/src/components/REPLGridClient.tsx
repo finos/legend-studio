@@ -28,9 +28,18 @@ import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
-  CodeDiffView,
   CodeEditor,
 } from '@finos/legend-lego/code-editor';
+import {
+  CheckSquareIcon,
+  PanelLoadingIndicator,
+  PlayIcon,
+  SquareIcon,
+  clsx,
+} from '@finos/legend-art';
+import { LEGEND_APPLICATION_REPL_SETTING_KEY } from '../Const.js';
+
+import { QueryEditor } from './REPLQueryEditor.js';
 
 export const Editor = withEditorStore(
   observer(() => {
@@ -41,7 +50,6 @@ export const Editor = withEditorStore(
         { persist: true },
       );
     };
-    const title = `Current Query <-> Current Row Group Sub Query`;
     const selectLightTheme = (): void => {
       editorStore.applicationStore.layoutService.setColorTheme(
         LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
@@ -51,6 +59,22 @@ export const Editor = withEditorStore(
     const isLightTheme =
       editorStore.applicationStore.layoutService
         .TEMPORARY__isLightColorThemeEnabled;
+
+    const executeLambda = (): void => {
+      flowResult(editorStore.executeLambda()).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
+    };
+
+    const togglePagination = (): void => {
+      editorStore.replGridState.setIsPaginationEnabled(
+        !editorStore.replGridState.isPaginationEnabled,
+      );
+      editorStore.applicationStore.settingService.persistValue(
+        LEGEND_APPLICATION_REPL_SETTING_KEY.PAGINATION,
+        editorStore.replGridState.isPaginationEnabled,
+      );
+    };
 
     useEffect(() => {
       flowResult(editorStore.getInitialREPLGridServerResult()).catch(
@@ -64,6 +88,28 @@ export const Editor = withEditorStore(
           <div className="repl__header__content">
             <div className="repl__header__content__title">REPL Grid</div>
             <div className="repl__header__actions">
+              <div className="repl__header__action__pagination">
+                <button
+                  className={clsx(
+                    'repl__header__action__pagination__toggler__btn',
+                    {
+                      'repl__header__action__pagination__toggler__btn--toggled':
+                        editorStore.replGridState.isPaginationEnabled,
+                    },
+                  )}
+                  onClick={togglePagination}
+                  tabIndex={-1}
+                >
+                  {editorStore.replGridState.isPaginationEnabled ? (
+                    <CheckSquareIcon />
+                  ) : (
+                    <SquareIcon />
+                  )}
+                </button>
+                <div className="repl__header__action__pagination__label">
+                  Pagination
+                </div>
+              </div>
               <button
                 className={
                   isLightTheme
@@ -87,70 +133,94 @@ export const Editor = withEditorStore(
             </div>
           </div>
         </div>
-        {editorStore.replGridState.initialResult &&
-          editorStore.replGridState.columns && (
-            <div className="repl__content">
-              {editorStore.replGridState.currentSubQuery !== undefined && (
-                <>
-                  <div className="repl__query__label">{title}</div>
-                  <div className="repl__query__content">
-                    <CodeDiffView
-                      language={CODE_EDITOR_LANGUAGE.PURE}
-                      from={editorStore.replGridState.currentQuery}
-                      to={editorStore.replGridState.currentSubQuery}
-                    />
-                  </div>
-                </>
-              )}
-              {editorStore.replGridState.currentSubQuery === undefined && (
-                <div className="repl__query">
-                  <div className="repl__query__editor">
-                    <div className="repl__query__label">Curent Query</div>
-                    <div className="repl__query__content">
-                      <CodeEditor
-                        lightTheme={
-                          isLightTheme
-                            ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_LIGHT
-                            : CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_BLACK
-                        }
-                        language={CODE_EDITOR_LANGUAGE.PURE}
-                        inputValue={
-                          editorStore.replGridState.currentQuery ?? ''
-                        }
-                        hideActionBar={true}
-                        isReadOnly={true}
-                      />
-                    </div>
+        <div className="repl__content">
+          <div className="repl__content__query">
+            <div className="repl__query">
+              <div className="repl__query__editor">
+                <div className="repl__query__header">
+                  <div className="repl__query__label">Curent Query</div>
+                  <div className="repl__query__execute-btn btn__dropdown-combo btn__dropdown-combo--primary">
+                    <button
+                      className="btn__dropdown-combo__label"
+                      onClick={executeLambda}
+                      tabIndex={-1}
+                    >
+                      <PlayIcon className="btn__dropdown-combo__label__icon" />
+                      <div className="btn__dropdown-combo__label__title">
+                        Run Query
+                      </div>
+                    </button>
                   </div>
                 </div>
-              )}
-              <div className="repl__query__label">Result</div>
-              <AgGridComponent
-                className={
-                  editorStore.applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                    ? 'ag-theme-balham'
-                    : 'ag-theme-balham-dark'
-                }
-                gridOptions={
-                  editorStore.replGridState.licenseKey
-                    ? {
-                        serverSideDatasource: new ServerSideDataSource(
-                          getTDSRowData(
-                            editorStore.replGridState.initialResult.result,
-                          ),
-                          editorStore.replGridState.initialResult.builder.columns,
-                          editorStore,
-                        ),
-                      }
-                    : {}
-                }
-                licenseKey={editorStore.replGridState.licenseKey ?? ''}
-                rowData={editorStore.replGridState.rowData}
-                columnDefs={editorStore.replGridState.columnDefs}
-              />
+                <div className="repl__query__content">
+                  <QueryEditor />
+                </div>
+              </div>
             </div>
+            {editorStore.replGridState.currentSubQuery !== undefined && (
+              <div className="repl__query">
+                <div className="repl__query__editor">
+                  <div className="repl__query__header">
+                    <div className="repl__query__label__sub__query">
+                      Current Row Group Sub Query
+                    </div>
+                    <div className="repl__query__label__sub__query__read--only">
+                      Read Only
+                    </div>
+                  </div>
+                  <div className="repl__query__content">
+                    <CodeEditor
+                      lightTheme={
+                        isLightTheme
+                          ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_LIGHT
+                          : CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_BLACK
+                      }
+                      language={CODE_EDITOR_LANGUAGE.PURE}
+                      isReadOnly={true}
+                      inputValue={editorStore.replGridState.currentSubQuery}
+                      hideActionBar={true}
+                      hidePadding={true}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="repl__query__label">Result</div>
+          <PanelLoadingIndicator
+            isLoading={editorStore.executeAction.isInProgress}
+          />
+          {editorStore.executeAction.hasCompleted && (
+            <AgGridComponent
+              className={
+                editorStore.applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+                  ? 'ag-theme-balham'
+                  : 'ag-theme-balham-dark'
+              }
+              gridOptions={
+                editorStore.replGridState.initialResult &&
+                editorStore.replGridState.licenseKey
+                  ? {
+                      serverSideDatasource: new ServerSideDataSource(
+                        getTDSRowData(
+                          editorStore.replGridState.initialResult.result,
+                        ),
+                        editorStore.replGridState.initialResult.builder.columns,
+                        editorStore,
+                      ),
+                    }
+                  : {}
+              }
+              licenseKey={editorStore.replGridState.licenseKey ?? ''}
+              rowData={editorStore.replGridState.rowData}
+              columnDefs={editorStore.replGridState.columnDefs}
+              suppressServerSideInfiniteScroll={
+                !editorStore.replGridState.isPaginationEnabled
+              }
+            />
           )}
+        </div>
       </div>
     );
   }),

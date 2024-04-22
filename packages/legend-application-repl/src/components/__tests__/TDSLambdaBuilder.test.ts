@@ -1019,11 +1019,11 @@ const TEST_DATA__SliceLambda = {
   body: [
     {
       _type: 'func',
-      function: 'slice',
+      function: 'from',
       parameters: [
         {
           _type: 'func',
-          function: 'from',
+          function: 'slice',
           parameters: [
             {
               _type: 'func',
@@ -1080,40 +1080,40 @@ const TEST_DATA__SliceLambda = {
               ],
             },
             {
-              _type: 'func',
-              function: 'new',
-              parameters: [
-                {
-                  _type: 'packageableElementPtr',
-                  fullPath: 'meta::pure::mapping::Mapping',
-                },
-                {
-                  _type: 'string',
-                  value: '',
-                },
-                {
-                  _type: 'collection',
-                  multiplicity: {
-                    lowerBound: 0,
-                    upperBound: 0,
-                  },
-                  values: [],
-                },
-              ],
+              _type: 'integer',
+              value: 0,
             },
             {
-              _type: 'packageableElementPtr',
-              fullPath: 'test::test',
+              _type: 'integer',
+              value: 100,
             },
           ],
         },
         {
-          _type: 'integer',
-          value: 0,
+          _type: 'func',
+          function: 'new',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'meta::pure::mapping::Mapping',
+            },
+            {
+              _type: 'string',
+              value: '',
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 0,
+                upperBound: 0,
+              },
+              values: [],
+            },
+          ],
         },
         {
-          _type: 'integer',
-          value: 100,
+          _type: 'packageableElementPtr',
+          fullPath: 'test::test',
         },
       ],
     },
@@ -1132,6 +1132,7 @@ test(unitTest('TDS lambda having sort function'), () => {
   const sortLambda = buildLambdaExpressions(
     guaranteeNonNullable(lambda.body[0]),
     request,
+    false,
   );
   const sortLambdaJson = V1_serializeValueSpecification(sortLambda, []);
   expect(sortLambdaJson).toEqual(TEST_DATA__SortLambda);
@@ -1156,6 +1157,7 @@ test(unitTest('TDS lambda having filter function'), () => {
   const filterLambda = buildLambdaExpressions(
     guaranteeNonNullable(lambda.body[0]),
     request,
+    false,
   );
   const filterLambdaJson = V1_serializeValueSpecification(filterLambda, []);
   expect(filterLambdaJson).toEqual(TEST_DATA__FilterLambda);
@@ -1167,6 +1169,7 @@ test(unitTest('TDS lambda having filter function'), () => {
   const groupFilterLambda = buildLambdaExpressions(
     guaranteeNonNullable(lambda.body[0]),
     request,
+    false,
   );
   const groupFilterLambdaJson = V1_serializeValueSpecification(
     groupFilterLambda,
@@ -1187,6 +1190,7 @@ test(unitTest('TDS lambda having groupBy'), () => {
   const groupByLambda = buildLambdaExpressions(
     guaranteeNonNullable(lambda.body[0]),
     request,
+    false,
   );
   const groupByLambdaJson = V1_serializeValueSpecification(groupByLambda, []);
   expect(groupByLambdaJson).toEqual(TEST_DATA__GroupByLambda);
@@ -1196,6 +1200,7 @@ test(unitTest('TDS lambda having groupBy'), () => {
   const expandLambda = buildLambdaExpressions(
     guaranteeNonNullable(lambda.body[0]),
     request,
+    false,
   );
   const expandLambdaJson = V1_serializeValueSpecification(expandLambda, []);
   expect(expandLambdaJson).toEqual(TEST_DATA__ExpandRowGroupLambda);
@@ -1220,12 +1225,13 @@ test(unitTest('TDS lambda having groupBy with aggregations'), () => {
   const aggLambda = buildLambdaExpressions(
     guaranteeNonNullable(lambda.body[0]),
     request,
+    false,
   );
   const aggLambdaJson = V1_serializeValueSpecification(aggLambda, []);
   expect(aggLambdaJson).toEqual(TEST_DATA__AggregationLambda);
 });
 
-test(unitTest('TDS lambda having slicd function'), () => {
+test(unitTest('TDS lambda having slice function'), () => {
   const lambda = guaranteeType(
     V1_deserializeValueSpecification(TEST_DATA__InitialLambda, []),
     V1_Lambda,
@@ -1242,6 +1248,7 @@ test(unitTest('TDS lambda having slicd function'), () => {
   const sliceLambda = buildLambdaExpressions(
     guaranteeNonNullable(lambda.body[0]),
     request,
+    true,
   );
   const sliceLambdaJson = V1_serializeValueSpecification(sliceLambda, []);
   expect(sliceLambdaJson).toEqual(TEST_DATA__SliceLambda);

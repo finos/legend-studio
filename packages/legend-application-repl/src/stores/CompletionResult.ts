@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-export enum LEGEND_REPL_EVENT {
-  FETCH_TDS_FAILURE = 'repl.fetch-tds.failure',
-  BUILD_TDS_EQUEST_FAILURE = 'repl.build-tds-request.failure',
-}
+import { createModelSchema, primitive } from 'serializr';
+import { SerializationFactory } from '@finos/legend-shared';
 
-export enum LEGEND_APPLICATION_REPL_SETTING_KEY {
-  PAGINATION = 'application.pagination.enabled',
-}
+export class CompletionItem {
+  display!: string;
+  completion!: string;
 
-export enum QUERY_FUNCTION {
-  FILTER = 'filter',
-  SORT = 'sort',
-  SLICE = 'slice',
-  GROUPBY = 'groupBy',
-  NOT = 'not',
-  FROM = 'from',
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(CompletionItem, {
+      display: primitive(),
+      completion: primitive(),
+    }),
+  );
 }
-
-export const DEFAULT_VARIABLE_NAME = 'x';

@@ -20,6 +20,7 @@
 @forward 'grid';
 
 :root {
+  --color-legacylight-light-grey-200: #dce2e4;
   --color-legacylight-light-blue-200: #6a8db6;
   --color-legacylight-light-blue-350: #475b72;
   --color-legacylight-light-blue-600: #2d3d51;
@@ -30,6 +31,16 @@
     background-color: var(--color-white);
 
     &__query__label {
+      color: var(--color-black);
+    }
+
+    &__query__label__sub__query {
+      color: var(--color-black);
+    }
+
+    &__query__label__sub__query__read--only {
+      background: var(--color-legacylight-light-grey-200);
+      border-color: var(--color-legacylight-light-blue-600);
       color: var(--color-black);
     }
 
@@ -47,6 +58,20 @@
         background: var(--color-dark-shade-100);
       }
 
+      &__action__pagination {
+        background: var(--color-legacylight-light-blue-200);
+        border-color: var(--color-legacylight-light-blue-600);
+        color: var(--color-legacylight-light-grey-200);
+      }
+
+      &__action__pagination__toggler__btn {
+        background: var(--color-legacylight-light-blue-200);
+
+        svg {
+          color: var(--color-light-grey-100);
+        }
+      }
+
       &__action {
         &--toggled {
           background: var(--color-legacylight-light-blue-200);
@@ -54,5 +79,10 @@
         }
       }
     }
+  }
+
+  .btn__dropdown-combo__label[disabled],
+  .btn__dropdown-combo__dropdown-btn[disabled] {
+    background: var(--color-light-grey-400);
   }
 }

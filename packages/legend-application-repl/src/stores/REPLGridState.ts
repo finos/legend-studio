@@ -23,43 +23,45 @@ import {
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { ColDef } from '@ag-grid-community/core';
 import type { V1_Lambda, TDSExecutionResult } from '@finos/legend-graph';
+import { QueryEditorState } from '../components/REPLQueryEditor.js';
 
 export class REPLGridState {
   initialResult?: TDSExecutionResult | undefined;
   currentResult?: TDSExecutionResult | undefined;
   columns?: string[] | undefined;
-  currentQuery?: string | undefined;
+  queryEditorState: QueryEditorState;
   currentSubQuery?: string | undefined;
   licenseKey?: string | undefined;
   initialQueryLambda?: V1_Lambda | undefined;
+  isPaginationEnabled!: boolean;
 
-  constructor() {
+  constructor(isPaginationEnabled: boolean) {
     makeObservable(this, {
       initialResult: observable,
       initialQueryLambda: observable,
       currentResult: observable,
-      currentQuery: observable,
       currentSubQuery: observable,
       licenseKey: observable,
       columns: observable,
+      isPaginationEnabled: observable,
+      queryEditorState: observable,
       setInitialResult: action,
-      setCurrentQuery: action,
       setCurrentSubQuery: action,
       setColumns: action,
       setInitialQueryLambda: action,
       setCurrentResult: action,
       setLicenseKey: action,
+      setIsPaginationEnabled: action,
       rowData: computed,
       columnDefs: computed,
     });
+
+    this.queryEditorState = new QueryEditorState('');
+    this.isPaginationEnabled = isPaginationEnabled;
   }
 
   setInitialQueryLambda(val: V1_Lambda | undefined): void {
     this.initialQueryLambda = val;
-  }
-
-  setCurrentQuery(val: string | undefined): void {
-    this.currentQuery = val;
   }
 
   setCurrentSubQuery(val: string | undefined): void {
@@ -80,6 +82,10 @@ export class REPLGridState {
 
   setLicenseKey(val: string | undefined): void {
     this.licenseKey = val;
+  }
+
+  setIsPaginationEnabled(val: boolean): void {
+    this.isPaginationEnabled = val;
   }
 
   get rowData(): TDSRowDataType[] {
