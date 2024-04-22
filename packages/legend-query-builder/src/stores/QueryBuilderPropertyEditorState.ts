@@ -51,6 +51,7 @@ import {
 import {
   createNullishValue,
   generateDefaultValueForPrimitiveType,
+  isValidInstanceValue,
 } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
@@ -141,6 +142,7 @@ export const getPropertyPath = (
 export const generateValueSpecificationForParameter = (
   parameter: VariableExpression,
   graph: PureModel,
+  initializeDefaultValue: boolean,
   observerContext: ObserverContext,
 ): ValueSpecification => {
   if (parameter.genericType) {
@@ -156,7 +158,7 @@ export const generateValueSpecificationForParameter = (
           ),
         ),
       );
-      if (type !== PrimitiveType.LATESTDATE) {
+      if (initializeDefaultValue && type !== PrimitiveType.LATESTDATE) {
         instanceValue_setValues(
           primitiveInstanceValue,
           [generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE)],
@@ -168,7 +170,7 @@ export const generateValueSpecificationForParameter = (
       const enumValueInstanceValue = new EnumValueInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(type)),
       );
-      if (type.values.length) {
+      if (initializeDefaultValue && type.values.length) {
         const enumValueRef = EnumValueExplicitReference.create(
           type.values[0] as Enum,
         );
@@ -215,6 +217,8 @@ const fillDerivedPropertyParameterValues = (
           parameter,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,
+          derivedPropertyExpressionState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue,
           derivedPropertyExpressionState.queryBuilderState.observerContext,
         ),
     );
@@ -284,22 +288,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
     // TODO: more type matching logic here (take into account multiplicity, type, etc.)
     return this.parameterValues.every((paramValue) => {
       if (paramValue instanceof InstanceValue) {
-        const isRequired = paramValue.multiplicity.lowerBound >= 1;
-        // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
-        if (
-          isRequired &&
-          paramValue.genericType?.value.rawType !== PrimitiveType.LATESTDATE &&
-          !paramValue.values.length
-        ) {
-          return false;
-        }
-        // more values than allowed
-        if (
-          paramValue.multiplicity.upperBound &&
-          paramValue.values.length > paramValue.multiplicity.upperBound
-        ) {
-          return false;
-        }
+        return isValidInstanceValue(paramValue);
       }
       return true;
     });

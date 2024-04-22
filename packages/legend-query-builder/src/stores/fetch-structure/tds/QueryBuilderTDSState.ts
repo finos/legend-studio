@@ -329,6 +329,20 @@ export class QueryBuilderTDSState
     if (hasNoProjectionColumns) {
       validationIssues.push('Query has no projection columns');
     }
+
+    this.projectionColumns.forEach((column) => {
+      if (
+        column instanceof QueryBuilderSimpleProjectionColumnState &&
+        column.propertyExpressionState.derivedPropertyExpressionStates.some(
+          (p) => !p.isValid,
+        )
+      ) {
+        validationIssues.push(
+          `Derived property parameter value for ${column.propertyExpressionState.title} is missing`,
+        );
+      }
+    });
+
     return validationIssues;
   }
 
@@ -336,6 +350,7 @@ export class QueryBuilderTDSState
     const fetchStructureValidationIssues = [
       ...this.fetchStructureValidationIssues,
       ...this.windowState.windowValidationIssues,
+      ...this.postFilterState.allValidationIssues,
     ];
 
     return fetchStructureValidationIssues;

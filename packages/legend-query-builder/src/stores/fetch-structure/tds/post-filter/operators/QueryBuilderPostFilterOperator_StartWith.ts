@@ -75,7 +75,10 @@ export class QueryBuilderPostFilterOperator_StartWith
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
           propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );

@@ -99,7 +99,10 @@ export class QueryBuilderFilterOperator_LessThan
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -108,7 +111,10 @@ export class QueryBuilderFilterOperator_LessThan
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           PRIMITIVE_TYPE.STRICTDATE,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }

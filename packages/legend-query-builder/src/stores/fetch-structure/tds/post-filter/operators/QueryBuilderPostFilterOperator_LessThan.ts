@@ -94,7 +94,10 @@ export class QueryBuilderPostFilterOperator_LessThan
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
           propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );
@@ -104,7 +107,10 @@ export class QueryBuilderPostFilterOperator_LessThan
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
           PRIMITIVE_TYPE.STRICTDATE,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );

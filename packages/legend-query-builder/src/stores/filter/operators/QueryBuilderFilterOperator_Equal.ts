@@ -116,7 +116,10 @@ export class QueryBuilderFilterOperator_Equal
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -125,7 +128,10 @@ export class QueryBuilderFilterOperator_Equal
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
           PRIMITIVE_TYPE.STRICTDATE,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ? generateDefaultValueForPrimitiveType(propertyType.path)
+            : undefined,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -137,16 +143,21 @@ export class QueryBuilderFilterOperator_Equal
                 new GenericType(propertyType),
               ),
             );
-            instanceValue_setValues(
-              enumValueInstanceValue,
-              [
-                EnumValueExplicitReference.create(
-                  propertyType.values[0] as Enum,
-                ),
-              ],
+            if (
               filterConditionState.filterState.queryBuilderState
-                .observerContext,
-            );
+                .INTERNAL__enableInitializingDefaultSimpleExpressionValue
+            ) {
+              instanceValue_setValues(
+                enumValueInstanceValue,
+                [
+                  EnumValueExplicitReference.create(
+                    propertyType.values[0] as Enum,
+                  ),
+                ],
+                filterConditionState.filterState.queryBuilderState
+                  .observerContext,
+              );
+            }
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(
