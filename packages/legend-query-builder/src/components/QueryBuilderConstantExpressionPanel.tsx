@@ -93,9 +93,16 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     const [selectedName, setSelectedName] = useState(stateName);
     const [isNameValid, setIsNameValid] = useState<boolean>(true);
     const [hasEditedName, setHasEditedName] = useState<boolean>(false);
-    const nameInputRef = useCallback((ref: HTMLInputElement | null): void => {
-      ref?.focus();
-    }, []);
+    const [nameInputRef, setNameInputRef] = useState<HTMLInputElement | null>(
+      null,
+    );
+    const handleNameInputRef = useCallback(
+      (ref: HTMLInputElement | null): void => {
+        ref?.focus();
+        setNameInputRef(ref);
+      },
+      [],
+    );
 
     // Value
     const stateValue = constantState.value;
@@ -127,13 +134,19 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           ),
         );
 
-    const valueInputRef = useCallback(
+    const handleValueInputRef = useCallback(
       (ref: HTMLInputElement | null): void => {
-        if (!isCreating && selectedType.value) {
+        if (
+          (!isCreating ||
+            (isCreating &&
+              hasEditedName &&
+              document.activeElement !== nameInputRef)) &&
+          selectedType.value
+        ) {
           ref?.focus();
         }
       },
-      [isCreating, selectedType.value],
+      [isCreating, selectedType.value, hasEditedName, nameInputRef],
     );
 
     // Modal lifecycle actions
@@ -202,7 +215,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
               }
               value={selectedName}
               isReadOnly={false}
-              ref={nameInputRef}
+              ref={handleNameInputRef}
             />
             <PanelFormSection>
               <div className="panel__content__form__section__header__label">
@@ -244,7 +257,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                     match: selectedType.value === PrimitiveType.DATETIME,
                   }}
                   resetValue={resetConstantValue}
-                  ref={valueInputRef}
+                  ref={handleValueInputRef}
                 />
               </div>
             </PanelFormSection>
