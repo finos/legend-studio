@@ -29,10 +29,10 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { DataSpaceViewer } from '../DataSpaceViewer.js';
-import type { DataSpace } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { useEditorStore } from '@finos/legend-application-studio';
-import { DataSpacePreviewState } from '../../stores/studio/DataSpacePreviewState.js';
+import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
+import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space/application';
 
 export const DataSpacePreviewAction = observer(
   (props: { dataSpace: DataSpace }) => {

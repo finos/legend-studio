@@ -17,11 +17,6 @@
 import { BlankPanelContent, GitBranchIcon, clsx } from '@finos/legend-art';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import { DataSpaceTemplateQueryPromotionReviewerStore } from '../../stores/query/DataSpaceTemplateQueryPromotionReviewerStore.js';
-import {
-  DATA_SPACE_TEMPLATE_QUERY_PROMOTION_ROUTE_PATTERN_TOKEN,
-  type DataSpaceTemplateQueryPromotionReviewerPathParams,
-} from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
   ActivityBarMenu,
@@ -33,7 +28,12 @@ import { createContext, useContext } from 'react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { DocumentationLink } from '@finos/legend-lego/application';
-import { DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from '../query/DSL_DataSpace_LegendQueryDocumentation.js';
+import {
+  DATA_SPACE_TEMPLATE_QUERY_PROMOTION_ROUTE_PATTERN_TOKEN,
+  type DataSpaceTemplateQueryPromotionReviewerPathParams,
+} from '@finos/legend-extension-dsl-data-space/application';
+import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
+import { DataSpaceTemplateQueryPromotionReviewerStore } from '../stores/DataSpaceTemplateQueryPromotionReviewerStore.js';
 
 const TemplateQueryPromotionReviewerStoreContext = createContext<
   DataSpaceTemplateQueryPromotionReviewerStore | undefined
@@ -130,7 +130,7 @@ const TemplateQueryPromotionReviewerContent = observer(() => {
                 Promote as Curated Template Query
                 <DocumentationLink
                   documentationKey={
-                    DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY.CURATED_TEMPLATE_QUERY
+                    DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.CURATED_TEMPLATE_QUERY
                   }
                 />
               </div>

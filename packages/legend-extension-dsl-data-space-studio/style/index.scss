@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-export enum DSL_DATASPACE_LEGEND_QUERY_DOCUMENTATION_KEY {
-  CURATED_TEMPLATE_QUERY = 'dsl-dataspace.curated-template-query',
+@forward 'data-space-studio-plugin';
+@forward 'data-space-template-query-promotor';
+
+:root {
+  --color-data-space: var(--color-blue-50);
+}
+
+.icon--data-space {
+  color: var(--color-data-space);
 }

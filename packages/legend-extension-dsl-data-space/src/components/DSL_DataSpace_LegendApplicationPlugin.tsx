@@ -30,7 +30,7 @@ import type {
   QueryBuilder_LegendApplicationPlugin_Extension,
   TemplateQueryPanelContentRenderer,
 } from '@finos/legend-query-builder';
-import { DataSpaceQueryBuilderState } from '../stores/query/DataSpaceQueryBuilderState.js';
+import { DataSpaceQueryBuilderState } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 import {
   createQueryClassTaggedValue,
   createQueryDataSpaceTaggedValue,

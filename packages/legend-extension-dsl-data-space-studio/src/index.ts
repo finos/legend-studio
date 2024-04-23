@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-@import url('@finos/legend-extension-dsl-diagram/lib/index.css');
+export { DSL_DataSpace_LegendStudioApplicationPlugin } from './components/DSL_DataSpace_LegendStudioApplicationPlugin.js';

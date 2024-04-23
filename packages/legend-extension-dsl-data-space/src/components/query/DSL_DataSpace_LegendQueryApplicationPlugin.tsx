@@ -37,7 +37,6 @@ import {
   DATA_SPACE_QUERY_ROUTE_PATTERN,
   generateDataSpaceQueryCreatorRoute,
   generateDataSpaceQuerySetupRoute,
-  generateDataSpaceTemplateQueryPromotionRoute,
 } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
 import {
@@ -48,8 +47,8 @@ import {
 import {
   DataSpaceQueryBuilderState,
   DataSpaceProjectInfo,
-} from '../../stores/query/DataSpaceQueryBuilderState.js';
-import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
+} from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
+import type { DataSpaceInfo } from '../../stores/shared/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import {
   assertErrorThrown,
@@ -74,6 +73,7 @@ import { DataSpaceTemplateQueryCreator } from './DataSpaceTemplateQueryCreator.j
 import { DataSpaceTemplateQueryCreatorStore } from '../../stores/query/DataSpaceTemplateQueryCreatorStore.js';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { getDataSpaceQueryInfo } from './QueryDataSpaceUtil.js';
+import { generateDataSpaceTemplateQueryPromotionRoute } from '../../__lib__/shared/DSL_DataSpace_LegendNavigation.js';
 
 const resolveExecutionContext = (
   dataSpace: DataSpace,

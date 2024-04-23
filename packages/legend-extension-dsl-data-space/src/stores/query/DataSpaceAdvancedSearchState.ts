@@ -39,7 +39,10 @@ import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/prot
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
-import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
+import {
+  type DataSpaceInfo,
+  extractDataSpaceInfo,
+} from '../shared/DataSpaceInfo.js';
 import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-export enum DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY {
-  GRAMMAR_PARSER = 'dsl-dataspace.grammar.parser',
-  CONCEPT_ELEMENT_DATA_SPACE = 'dsl-dataspace.concept.element.data-space',
-}
+export default {
+  publish: {
+    typescript: {
+      main: './tsconfig.publish.json',
+      others: ['./tsconfig.package.json'],
+    },
+  },
+};

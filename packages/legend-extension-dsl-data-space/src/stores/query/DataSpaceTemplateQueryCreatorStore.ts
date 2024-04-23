@@ -36,8 +36,8 @@ import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelp
 import {
   DataSpaceQueryBuilderState,
   DataSpaceProjectInfo,
-} from './DataSpaceQueryBuilderState.js';
-import type { DataSpaceInfo } from './DataSpaceInfo.js';
+} from '../query-builder/DataSpaceQueryBuilderState.js';
+import type { DataSpaceInfo } from '../shared/DataSpaceInfo.js';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import {
   DataSpaceExecutableTemplate,

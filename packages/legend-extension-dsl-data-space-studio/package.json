@@ -1,29 +1,28 @@
 {
-  "name": "@finos/legend-extension-dsl-data-space",
-  "version": "10.2.4",
-  "description": "Legend extension for Data Space DSL",
+  "name": "@finos/legend-extension-dsl-data-space-studio",
+  "version": "0.0.0",
+  "description": "Legend extension for Data Space DSL - Studio",
   "keywords": [
     "legend",
     "legend-extension",
     "dsl",
-    "dsl-data-space"
+    "dsl-data-space",
+    "studio"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-data-space",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-data-space-studio",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-extension-dsl-data-space"
+    "directory": "packages/legend-extension-dsl-data-space-studio"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
   "exports": {
-    "./graph": "./lib/graph-manager/index.js",
-    "./application": "./lib/components/index.js",
-    "./application-query": "./lib/components/query/index.js",
+    ".": "./lib/index.js",
     "./lib/index.css": "./lib/index.css"
   },
   "scripts": {
@@ -44,22 +43,14 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
-    "@finos/legend-application-query": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
-    "@finos/legend-extension-dsl-diagram": "workspace:*",
-    "@finos/legend-graph": "workspace:*",
-    "@finos/legend-lego": "workspace:*",
-    "@finos/legend-query-builder": "workspace:*",
+    "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-storage": "workspace:*",
-    "@types/react": "18.2.31",
     "mobx": "6.10.2",
-    "mobx-react-lite": "4.0.5",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "serializr": "3.0.2"
+    "mobx-react-lite": "4.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
@@ -79,11 +70,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationPlugin": "@finos/legend-application-plugin-dsl-data-space",
-    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-data-space",
-    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-data-space",
-    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-data-space",
-    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-data-space",
-    "applicationQueryPlugin": "@finos/legend-application-query-plugin-dsl-data-space"
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-data-space"
   }
 }
