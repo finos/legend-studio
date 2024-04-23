@@ -115,7 +115,7 @@ const VariableExpressionEditor = observer(
     const [selectedName, setSelectedName] = useState(stateName);
     const [isNameValid, setIsNameValid] = useState<boolean>(true);
     const [hasEditedName, setHasEditedName] = useState<boolean>(false);
-    const nameInputRef = useCallback((ref: HTMLInputElement): void => {
+    const nameInputRef = useCallback((ref: HTMLInputElement | null): void => {
       ref?.focus();
     }, []);
 
