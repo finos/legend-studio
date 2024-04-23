@@ -1126,3 +1126,57 @@ test(
     ).not.toBeNull();
   },
 );
+
+test(
+  integrationTest(
+    'Query builder constant modal only shows empty name error after editing name',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    await waitFor(() => renderResult.getByText('Create Constant'));
+
+    // Check that there's no error message
+    expect(renderResult.queryByText("Constant name can't be empty")).toBeNull();
+
+    // Set value
+    const constantNameInput = getConstantNameInput(renderResult);
+    fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+
+    // Check that there's no error message
+    expect(renderResult.queryByText("Constant name can't be empty")).toBeNull();
+
+    // Remove value
+    fireEvent.change(constantNameInput, { target: { value: '' } });
+
+    // Check for error message
+    expect(
+      renderResult.getByText("Constant name can't be empty"),
+    ).not.toBeNull();
+  },
+);
