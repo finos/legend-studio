@@ -1,5 +1,11 @@
 # @finos/legend-application-studio-bootstrap
 
+## 11.38.0
+
+### Patch Changes
+
+- [#3078](https://github.com/finos/legend-studio/pull/3078) [`960d8c4c4`](https://github.com/finos/legend-studio/commit/960d8c4c498e4848148e1f4d4d3a8ffd85eb085b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Seperate dsl-dataspace-studio into own module.
+
 ## 11.37.0
 
 ## 11.36.0
