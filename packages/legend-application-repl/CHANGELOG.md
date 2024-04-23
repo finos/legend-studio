@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 0.0.9
+
+### Patch Changes
+
+- [#3077](https://github.com/finos/legend-studio/pull/3077) [`b1a23cb8e`](https://github.com/finos/legend-studio/commit/b1a23cb8e649aa7cf1d0ab1c89445a1ef3e4a65a) ([@gayathrir11](https://github.com/gayathrir11)) - Support query editing from the editor
+
 ## 0.0.8
 
 ## 0.0.7
