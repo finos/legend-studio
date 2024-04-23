@@ -2353,6 +2353,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
     "@finos/legend-query-builder": "workspace:*"
@@ -2730,7 +2731,6 @@ __metadata:
   resolution: "@finos/legend-extension-dsl-data-space@workspace:packages/legend-extension-dsl-data-space"
   dependencies:
     "@finos/legend-application": "workspace:*"
-    "@finos/legend-application-query": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"

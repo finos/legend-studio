@@ -15,12 +15,6 @@
  */
 
 import {
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
-  QueryEditorStore,
-  type QueryPersistConfiguration,
-} from '@finos/legend-application-query';
-import {
   DepotScope,
   LATEST_VERSION_ALIAS,
   type DepotServerClient,
@@ -42,13 +36,19 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
-  type DataSpaceInfo,
   extractDataSpaceInfo,
-} from '../shared/DataSpaceInfo.js';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
-import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
-import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/query/DataSpaceQuerySetup.js';
-import { DataSpaceAdvancedSearchState } from './DataSpaceAdvancedSearchState.js';
+  type DataSpaceInfo,
+} from '@finos/legend-extension-dsl-data-space/application';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  QueryEditorStore,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+  type QueryPersistConfiguration,
+} from '../QueryEditorStore.js';
+import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/data-space/DataSpaceQuerySetup.js';
+import { DataSpaceAdvancedSearchState } from '@finos/legend-extension-dsl-data-space/application-query';
 
 export class DataSpaceQuerySetupState extends QueryBuilderState {
   readonly depotServerClient: DepotServerClient;

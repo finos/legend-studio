@@ -45,6 +45,7 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-query-builder": "workspace:*",
@@ -78,6 +79,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationQueryPlugin": "@finos/legend-application-query-plugin-core"
+    "applicationQueryPlugin": "@finos/legend-application-query-plugin-core",
+    "dataSpaceApplicationQueryPlugin": "@finos/legend-application-query-plugin-dsl-data-space"
   }
 }

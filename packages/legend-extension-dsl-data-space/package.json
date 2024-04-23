@@ -23,7 +23,7 @@
   "exports": {
     "./graph": "./lib/graph-manager/index.js",
     "./application": "./lib/components/index.js",
-    "./application-query": "./lib/components/query/index.js",
+    "./application-query": "./lib/components/query-builder/index.js",
     "./lib/index.css": "./lib/index.css"
   },
   "scripts": {
@@ -44,7 +44,6 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
-    "@finos/legend-application-query": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
@@ -83,7 +82,6 @@
     "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-data-space",
     "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-data-space",
     "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-data-space",
-    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-data-space",
-    "applicationQueryPlugin": "@finos/legend-application-query-plugin-dsl-data-space"
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-data-space"
   }
 }

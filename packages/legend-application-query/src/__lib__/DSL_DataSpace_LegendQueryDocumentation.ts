@@ -14,4 +14,6 @@
  * limitations under the License.
  */
 
-export { DSL_DataSpace_LegendQueryApplicationPlugin } from './DSL_DataSpace_LegendQueryApplicationPlugin.js';
+export enum DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY {
+  CURATED_TEMPLATE_QUERY = 'dsl-dataspace.curated-template-query',
+}

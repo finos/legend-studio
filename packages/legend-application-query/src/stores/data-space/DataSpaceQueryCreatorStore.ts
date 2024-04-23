@@ -17,20 +17,12 @@
 import {
   type Query,
   extractElementNameFromPath,
-  QueryTaggedValue,
   RuntimePointer,
   PackageableElementExplicitReference,
   type Runtime,
   type Class,
   type RawLambda,
 } from '@finos/legend-graph';
-import {
-  QueryEditorStore,
-  type QueryPersistConfiguration,
-  type LegendQueryApplicationStore,
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
-} from '@finos/legend-application-query';
 import {
   type DepotServerClient,
   StoreProjectData,
@@ -41,43 +33,29 @@ import {
   guaranteeType,
   uuid,
 } from '@finos/legend-shared';
-import {
-  QUERY_PROFILE_PATH,
-  QUERY_PROFILE_TAG_CLASS,
-  QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../graph/DSL_DataSpace_MetaModelConst.js';
-import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
-import {
-  DataSpaceQueryBuilderState,
-  DataSpaceProjectInfo,
-} from '../query-builder/DataSpaceQueryBuilderState.js';
-import type { DataSpaceInfo } from '../shared/DataSpaceInfo.js';
-import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
-import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
-import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
-import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
-
-export const createQueryDataSpaceTaggedValue = (
-  dataSpacePath: string,
-): QueryTaggedValue => {
-  const taggedValue = new QueryTaggedValue();
-  taggedValue.profile = QUERY_PROFILE_PATH;
-  taggedValue.tag = QUERY_PROFILE_TAG_DATA_SPACE;
-  taggedValue.value = dataSpacePath;
-  return taggedValue;
-};
-
-export const createQueryClassTaggedValue = (
-  classPath: string,
-): QueryTaggedValue => {
-  const taggedValue = new QueryTaggedValue();
-  taggedValue.profile = QUERY_PROFILE_PATH;
-  taggedValue.tag = QUERY_PROFILE_TAG_CLASS;
-  taggedValue.value = classPath;
-  return taggedValue;
-};
+import {
+  type DataSpaceExecutionContext,
+  DSL_DataSpace_getGraphManagerExtension,
+  getDataSpace,
+  retrieveAnalyticsResultCache,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  QueryEditorStore,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+  type QueryPersistConfiguration,
+} from '../QueryEditorStore.js';
+import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
+import {
+  DataSpaceProjectInfo,
+  DataSpaceQueryBuilderState,
+  createQueryClassTaggedValue,
+  createQueryDataSpaceTaggedValue,
+  type DataSpaceInfo,
+} from '@finos/legend-extension-dsl-data-space/application';
+import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 
 export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;

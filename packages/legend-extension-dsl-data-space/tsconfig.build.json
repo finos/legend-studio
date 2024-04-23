@@ -9,7 +9,6 @@
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-graph/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
-    { "path": "../legend-application-query/tsconfig.build.json" },
     { "path": "../legend-query-builder/tsconfig.build.json" },
     { "path": "../legend-server-depot/tsconfig.build.json" },
     { "path": "../legend-server-sdlc/tsconfig.build.json" },

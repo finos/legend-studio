@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { LegendQuery } from '@finos/legend-application-query';
+import {
+  LegendQuery,
+  DSL_DataSpace_LegendQueryApplicationPlugin,
+} from '@finos/legend-application-query';
 import {
   type AbstractPreset,
   type AbstractPlugin,
@@ -28,7 +31,6 @@ import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery/graph';
 import { Assortment_GraphManagerPreset } from '@finos/legend-extension-assortment/graph';
 import { DSL_Service_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-service/application-query';
-import { DSL_DataSpace_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application-query';
 import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
 
 export class LegendQueryWebApplication {

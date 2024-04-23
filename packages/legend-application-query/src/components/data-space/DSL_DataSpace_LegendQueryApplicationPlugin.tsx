@@ -15,41 +15,18 @@
  */
 
 import packageJson from '../../../package.json' assert { type: 'json' };
-import {
-  type ExistingQueryEditorStateBuilder,
-  type QueryEditorStore,
-  type QuerySetupActionConfiguration,
-  ExistingQueryEditorStore,
-  LegendQueryApplicationPlugin,
-  LEGEND_QUERY_APP_EVENT,
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
-  type QueryEditorActionConfiguration,
-  type NewQueryNavigationPath,
-} from '@finos/legend-application-query';
 import { ArrowCircleUpIcon, SquareIcon } from '@finos/legend-art';
 import {
   ActionAlertActionType,
   ActionAlertType,
   type ApplicationPageEntry,
 } from '@finos/legend-application';
-import {
-  DATA_SPACE_QUERY_ROUTE_PATTERN,
-  generateDataSpaceQueryCreatorRoute,
-  generateDataSpaceQuerySetupRoute,
-} from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
 import {
   type Query,
   type Mapping,
   type PackageableRuntime,
 } from '@finos/legend-graph';
-import {
-  DataSpaceQueryBuilderState,
-  DataSpaceProjectInfo,
-} from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
-import type { DataSpaceInfo } from '../../stores/shared/DataSpaceInfo.js';
-import { getOwnDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import {
   assertErrorThrown,
   buildUrl,
@@ -58,22 +35,47 @@ import {
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
-import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import {
   LATEST_VERSION_ALIAS,
   StoreProjectData,
 } from '@finos/legend-server-depot';
-import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import { flowResult } from 'mobx';
-import type {
-  DataSpace,
-  DataSpaceExecutionContext,
-} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DataSpaceTemplateQueryCreator } from './DataSpaceTemplateQueryCreator.js';
-import { DataSpaceTemplateQueryCreatorStore } from '../../stores/query/DataSpaceTemplateQueryCreatorStore.js';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { getDataSpaceQueryInfo } from './QueryDataSpaceUtil.js';
-import { generateDataSpaceTemplateQueryPromotionRoute } from '../../__lib__/shared/DSL_DataSpace_LegendNavigation.js';
+import {
+  ExistingQueryEditorStore,
+  type QueryEditorStore,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+} from '../../stores/QueryEditorStore.js';
+import {
+  DataSpaceProjectInfo,
+  DataSpaceQueryBuilderState,
+  generateDataSpaceTemplateQueryPromotionRoute,
+  type DataSpaceInfo,
+} from '@finos/legend-extension-dsl-data-space/application';
+import {
+  LegendQueryApplicationPlugin,
+  type ExistingQueryEditorStateBuilder,
+  type NewQueryNavigationPath,
+  type QueryEditorActionConfiguration,
+  type QuerySetupActionConfiguration,
+} from '../../stores/LegendQueryApplicationPlugin.js';
+import { DataSpaceTemplateQueryCreatorStore } from '../../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
+import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
+import {
+  DATA_SPACE_QUERY_ROUTE_PATTERN,
+  generateDataSpaceQueryCreatorRoute,
+  generateDataSpaceQuerySetupRoute,
+} from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import {
+  type DataSpace,
+  type DataSpaceExecutionContext,
+  DSL_DataSpace_getGraphManagerExtension,
+  getOwnDataSpace,
+  retrieveAnalyticsResultCache,
+} from '@finos/legend-extension-dsl-data-space/graph';
 
 const resolveExecutionContext = (
   dataSpace: DataSpace,
@@ -96,7 +98,10 @@ const resolveExecutionContext = (
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
-    super(packageJson.extensions.applicationQueryPlugin, packageJson.version);
+    super(
+      packageJson.extensions.dataSpaceApplicationQueryPlugin,
+      packageJson.version,
+    );
   }
 
   override getExtraRootAppRedirectPath(): string | undefined {
