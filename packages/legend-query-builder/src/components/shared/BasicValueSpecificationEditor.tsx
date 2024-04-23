@@ -70,7 +70,13 @@ import {
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import {
   instanceValue_setValue,
   instanceValue_setValues,
@@ -204,23 +210,26 @@ const VariableExpressionParameterEditor = observer(
 );
 
 const StringPrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue;
-    className?: string | undefined;
-    setValueSpecification: (val: ValueSpecification) => void;
-    resetValue: () => void;
-    selectorConfig?:
-      | {
-          values: string[] | undefined;
-          isLoading: boolean;
-          reloadValues:
-            | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-            | undefined;
-          cleanUpReloadValues?: () => void;
-        }
-      | undefined;
-    obseverContext: ObserverContext;
-  }) => {
+  forwardRef<
+    HTMLInputElement,
+    {
+      valueSpecification: PrimitiveInstanceValue;
+      className?: string | undefined;
+      setValueSpecification: (val: ValueSpecification) => void;
+      resetValue: () => void;
+      selectorConfig?:
+        | {
+            values: string[] | undefined;
+            isLoading: boolean;
+            reloadValues:
+              | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+              | undefined;
+            cleanUpReloadValues?: () => void;
+          }
+        | undefined;
+      obseverContext: ObserverContext;
+    }
+  >(function StringPrimitiveInstanceValueEditor(props, ref) {
     const {
       valueSpecification,
       className,
@@ -307,6 +316,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             value={value}
             placeholder={value === '' ? '(empty)' : undefined}
             onChange={changeInputValue}
+            ref={ref}
           />
         )}
         <button
@@ -319,7 +329,7 @@ const StringPrimitiveInstanceValueEditor = observer(
         </button>
       </div>
     );
-  },
+  }),
 );
 
 const BooleanPrimitiveInstanceValueEditor = observer(
@@ -367,14 +377,17 @@ const BooleanPrimitiveInstanceValueEditor = observer(
 );
 
 const NumberPrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue;
-    isInteger: boolean;
-    className?: string | undefined;
-    resetValue: () => void;
-    setValueSpecification: (val: ValueSpecification) => void;
-    obseverContext: ObserverContext;
-  }) => {
+  forwardRef<
+    HTMLInputElement,
+    {
+      valueSpecification: PrimitiveInstanceValue;
+      isInteger: boolean;
+      className?: string | undefined;
+      resetValue: () => void;
+      setValueSpecification: (val: ValueSpecification) => void;
+      obseverContext: ObserverContext;
+    }
+  >(function NumberPrimitiveInstanceValueEditor(props, ref) {
     const {
       valueSpecification,
       isInteger,
@@ -387,6 +400,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
       (valueSpecification.values[0] as number).toString(),
     );
     const inputRef = useRef<HTMLInputElement>(null);
+    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
     const numericValue = isInteger
       ? Number.parseInt(Number(value).toString(), 10)
       : Number(value);
@@ -484,7 +498,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
         </button>
       </div>
     );
-  },
+  }),
 );
 
 const EnumValueInstanceValueEditor = observer(
@@ -947,26 +961,29 @@ const DateInstanceValueEditor = observer(
  *
  * See https://github.com/finos/legend-studio/pull/1021
  */
-export const BasicValueSpecificationEditor: React.FC<{
-  valueSpecification: ValueSpecification;
-  graph: PureModel;
-  obseverContext: ObserverContext;
-  typeCheckOption: TypeCheckOption;
-  className?: string | undefined;
-  setValueSpecification: (val: ValueSpecification) => void;
-  resetValue: () => void;
-  isConstant?: boolean;
-  selectorConfig?:
-    | {
-        values: string[] | undefined;
-        isLoading: boolean;
-        reloadValues:
-          | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-          | undefined;
-        cleanUpReloadValues?: () => void;
-      }
-    | undefined;
-}> = (props) => {
+export const BasicValueSpecificationEditor = forwardRef<
+  HTMLInputElement,
+  {
+    valueSpecification: ValueSpecification;
+    graph: PureModel;
+    obseverContext: ObserverContext;
+    typeCheckOption: TypeCheckOption;
+    className?: string | undefined;
+    setValueSpecification: (val: ValueSpecification) => void;
+    resetValue: () => void;
+    isConstant?: boolean;
+    selectorConfig?:
+      | {
+          values: string[] | undefined;
+          isLoading: boolean;
+          reloadValues:
+            | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+            | undefined;
+          cleanUpReloadValues?: () => void;
+        }
+      | undefined;
+  }
+>(function BasicValueSpecificationEditor(props, ref) {
   const {
     className,
     valueSpecification,
@@ -990,6 +1007,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             resetValue={resetValue}
             selectorConfig={selectorConfig}
             obseverContext={obseverContext}
+            ref={ref}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
@@ -1016,6 +1034,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             className={className}
             resetValue={resetValue}
             obseverContext={obseverContext}
+            ref={ref}
           />
         );
       case PRIMITIVE_TYPE.DATE:
@@ -1134,6 +1153,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             className={className}
             resetValue={resetValue}
             obseverContext={obseverContext}
+            ref={ref}
           />
         );
       }
@@ -1141,4 +1161,4 @@ export const BasicValueSpecificationEditor: React.FC<{
   }
 
   return <UnsupportedValueSpecificationEditor />;
-};
+});

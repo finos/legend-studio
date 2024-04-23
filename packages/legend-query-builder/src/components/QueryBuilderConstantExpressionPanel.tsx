@@ -127,6 +127,15 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           ),
         );
 
+    const valueInputRef = useCallback(
+      (ref: HTMLInputElement | null): void => {
+        if (!isCreating && selectedType.value) {
+          ref?.focus();
+        }
+      },
+      [isCreating, selectedType.value],
+    );
+
     // Modal lifecycle actions
     const handleCancel = (): void => {
       variableState.setSelectedConstant(undefined);
@@ -178,6 +187,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                 setSelectedName(value ?? '');
                 setHasEditedName(true);
               }}
+              onBlur={() => setHasEditedName(true)}
               validate={(constantInput: string) =>
                 !hasEditedName
                   ? undefined
@@ -234,6 +244,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                     match: selectedType.value === PrimitiveType.DATETIME,
                   }}
                   resetValue={resetConstantValue}
+                  ref={valueInputRef}
                 />
               </div>
             </PanelFormSection>
