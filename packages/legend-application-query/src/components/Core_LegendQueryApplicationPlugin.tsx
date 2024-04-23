@@ -27,6 +27,7 @@ import {
   ManageSearchIcon,
   PlusIcon,
   RobotIcon,
+  SquareIcon,
 } from '@finos/legend-art';
 import {
   generateCloneServiceQuerySetupRoute,
@@ -49,6 +50,7 @@ import {
   configureCodeEditorComponent,
   setupPureLanguageService,
 } from '@finos/legend-lego/code-editor';
+import { generateDataSpaceQuerySetupRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -182,6 +184,22 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         label: 'Productionize an existing query',
         className: 'query-setup__landing-page__action--productionize-query',
         icon: <ArrowCircleUpIcon />,
+      },
+      // data space
+      {
+        key: 'create-query-from-data-space',
+        isAdvanced: false,
+        isCreateAction: true,
+        action: async (setupStore) => {
+          setupStore.applicationStore.navigationService.navigator.goToLocation(
+            generateDataSpaceQuerySetupRoute(),
+          );
+        },
+        label: 'Create query from data space',
+        className: 'query-setup__landing-page__action--data-space',
+        icon: (
+          <SquareIcon className="query-setup__landing-page__icon--data-space" />
+        ),
       },
     ];
   }

@@ -49,4 +49,3 @@ export {
   useQueryEditorStore,
 } from './components/QueryEditorStoreProvider.js';
 export { QueryEditor } from './components/QueryEditor.js';
-export { DSL_DataSpace_LegendQueryApplicationPlugin } from './components/data-space/DSL_DataSpace_LegendQueryApplicationPlugin.js';

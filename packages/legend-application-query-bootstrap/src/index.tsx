@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  LegendQuery,
-  DSL_DataSpace_LegendQueryApplicationPlugin,
-} from '@finos/legend-application-query';
+import { LegendQuery } from '@finos/legend-application-query';
 import {
   type AbstractPreset,
   type AbstractPlugin,
@@ -52,8 +49,6 @@ export class LegendQueryWebApplication {
       // application
       new DSL_Service_LegendQueryApplicationPlugin(),
       new DSL_DataSpace_LegendApplicationPlugin(),
-      new DSL_DataSpace_LegendQueryApplicationPlugin(),
-
       // loggers
       new WebConsole(),
     ];

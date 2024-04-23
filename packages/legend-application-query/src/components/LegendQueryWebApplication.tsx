@@ -39,7 +39,10 @@ import { EditExistingQuerySetup } from './EditExistingQuerySetup.js';
 import { CreateMappingQuerySetup } from './CreateMappingQuerySetup.js';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
-import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
+import { DATA_SPACE_QUERY_ROUTE_PATTERN } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { DataSpaceQuerySetup } from './data-space/DataSpaceQuerySetup.js';
+import { DataSpaceTemplateQueryCreator } from './data-space/DataSpaceTemplateQueryCreator.js';
+import { DataSpaceQueryCreator } from './data-space/DataSpaceQueryCreator.js';
 
 const LegendQueryWebApplicationRouter = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
@@ -48,16 +51,6 @@ const LegendQueryWebApplicationRouter = observer(() => {
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
-
-  const setupRoot = applicationStore.pluginManager
-    .getApplicationPlugins()
-    .flatMap((plugin) => plugin.getExtraRootAppRedirectPath?.())
-    .filter(isNonNullable);
-
-  const rootRedirect =
-    setupRoot.length === 1
-      ? generateExtensionUrlPattern(guaranteeNonNullable(setupRoot[0]))
-      : LEGEND_QUERY_ROUTE_PATTERN.SETUP;
 
   useEffect(() => {
     flowResult(baseStore.initialize()).catch(
@@ -117,6 +110,44 @@ const LegendQueryWebApplicationRouter = observer(() => {
               MappingQueryCreator as TEMPORARY__ReactRouterComponentType
             }
           />
+          {/* DATA SPACE */}
+          <Route
+            exact={true}
+            path={[
+              generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP),
+            ]}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              DataSpaceQuerySetup as TEMPORARY__ReactRouterComponentType
+            }
+          />
+
+          <Route
+            exact={true}
+            path={[
+              generateExtensionUrlPattern(
+                DATA_SPACE_QUERY_ROUTE_PATTERN.TEMPLATE_QUERY,
+              ),
+            ]}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              DataSpaceTemplateQueryCreator as TEMPORARY__ReactRouterComponentType
+            }
+          />
+
+          <Route
+            exact={true}
+            path={[
+              generateExtensionUrlPattern(
+                DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE,
+              ),
+            ]}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              DataSpaceQueryCreator as TEMPORARY__ReactRouterComponentType
+            }
+          />
+
           {extraApplicationPageEntries.map((entry) => (
             <Route
               key={entry.key}
@@ -128,7 +159,12 @@ const LegendQueryWebApplicationRouter = observer(() => {
               }
             />
           ))}
-          <Redirect to={rootRedirect} />
+          {/* Redirect to data space view */}
+          <Redirect
+            to={generateExtensionUrlPattern(
+              DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP,
+            )}
+          />
         </Switch>
       )}
     </div>

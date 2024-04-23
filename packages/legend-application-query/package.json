@@ -79,7 +79,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationQueryPlugin": "@finos/legend-application-query-plugin-core",
-    "dataSpaceApplicationQueryPlugin": "@finos/legend-application-query-plugin-dsl-data-space"
+    "applicationQueryPlugin": "@finos/legend-application-query-plugin-core"
   }
 }
