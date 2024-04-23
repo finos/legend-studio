@@ -41,15 +41,13 @@ import {
   isValidIdentifier,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { generateEnumerableNameFromToken } from '@finos/legend-shared';
-import { DEFAULT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
 import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
@@ -116,9 +114,15 @@ const VariableExpressionEditor = observer(
     const stateName = varState.name;
     const [selectedName, setSelectedName] = useState(stateName);
     const [isNameValid, setIsNameValid] = useState<boolean>(true);
+    const [hasEditedName, setHasEditedName] = useState<boolean>(false);
+    const nameInputRef = useCallback((ref: HTMLInputElement): void => {
+      ref?.focus();
+    }, []);
 
     const getValidationMessage = (input: string): string | undefined =>
-      !input
+      !hasEditedName
+        ? undefined
+        : !input
         ? `Parameter name can't be empty`
         : allVariableNames.filter((e) => e === input).length > 0 &&
           input !== stateName
@@ -171,10 +175,14 @@ const VariableExpressionEditor = observer(
               value={selectedName}
               update={(value: string | undefined): void => {
                 setSelectedName(value ?? '');
+                setHasEditedName(true);
               }}
               validate={getValidationMessage}
-              onValidate={(issue: string | undefined) => setIsNameValid(!issue)}
+              onValidate={(issue: string | undefined) =>
+                setIsNameValid(!issue && selectedName.length > 0)
+              }
               isReadOnly={false}
+              ref={nameInputRef}
             />
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
@@ -247,9 +255,6 @@ export const QueryBuilderParametersPanel = observer(
     const { queryBuilderState } = props;
     const isReadOnly = !queryBuilderState.isQuerySupported;
     const queryParameterState = queryBuilderState.parametersState;
-    const varNames = queryBuilderState.parametersState.parameterStates.map(
-      (parameter) => parameter.variableName,
-    );
     const seeDocumentation = (): void =>
       queryBuilderState.applicationStore.assistantService.openDocumentationEntry(
         QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_PARAMETERS_TO_QUERY,
@@ -258,7 +263,7 @@ export const QueryBuilderParametersPanel = observer(
       if (!isReadOnly && !queryBuilderState.isParameterSupportDisabled) {
         const parmaterState = new LambdaParameterState(
           new VariableExpression(
-            generateEnumerableNameFromToken(varNames, DEFAULT_VARIABLE_NAME),
+            '',
             queryBuilderState.graphManagerState.graph.getMultiplicity(1, 1),
             GenericTypeExplicitReference.create(
               new GenericType(PrimitiveType.STRING),
