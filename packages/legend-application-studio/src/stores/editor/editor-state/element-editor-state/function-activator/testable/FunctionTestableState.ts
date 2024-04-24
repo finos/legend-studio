@@ -26,11 +26,11 @@ import {
   addUniqueEntry,
   uniq,
   assertTrue,
-  guaranteeType,
   returnUndefOnError,
   type PlainObject,
   filterByType,
   deleteEntry,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   type ConcreteFunctionDefinition,
@@ -59,6 +59,7 @@ import {
   observe_ValueSpecification,
   buildLambdaVariableExpressions,
   EqualTo,
+  ModelStore,
 } from '@finos/legend-graph';
 import {
   TestablePackageableElementEditorState,
@@ -79,6 +80,7 @@ import {
 import {
   DEFAULT_TEST_ASSERTION_ID,
   createDefaultEqualToJSONTestAssertion,
+  createBareExternalFormat,
 } from '../../../../utils/TestableUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
 import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
@@ -325,6 +327,7 @@ export class FunctionTestState extends TestableTestEditorState {
       setAssertionToRename: action,
       handleTestResult: action,
       setSelectedTab: action,
+      syncWithQuery: action,
       runTest: flow,
     });
     this.parentState = parentSuiteState;
@@ -785,15 +788,20 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
           'Only one store supported in runtime for function tests',
         );
         const store = guaranteeNonNullable(stores[0]);
-        guaranteeType(
-          store,
-          Database,
-          'Only Database stores supported now for function test',
-        );
-        const relational = new RelationalCSVData();
         const data = new FunctionStoreTestData();
-        data.store = PackageableElementExplicitReference.create(store);
-        data.data = relational;
+        if (store instanceof Database) {
+          const relational = new RelationalCSVData();
+          data.store = PackageableElementExplicitReference.create(store);
+          data.data = relational;
+        } else if (store instanceof ModelStore) {
+          const modelStoreData = createBareExternalFormat();
+          data.store = PackageableElementExplicitReference.create(store);
+          data.data = modelStoreData;
+        } else {
+          throw new UnsupportedOperationError(
+            `function test store data does not support store: ${store.path}`,
+          );
+        }
         functionSuite.testData = [data];
       } catch (error) {
         assertErrorThrown(error);
