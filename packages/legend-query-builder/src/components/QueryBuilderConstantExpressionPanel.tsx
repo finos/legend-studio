@@ -134,20 +134,14 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           ),
         );
 
-    const handleValueInputRef = useCallback(
-      (ref: HTMLInputElement | null): void => {
-        if (
-          (!isCreating ||
-            (isCreating &&
-              hasEditedName &&
-              document.activeElement !== nameInputRef)) &&
-          selectedType.value
-        ) {
-          ref?.focus();
-        }
-      },
-      [isCreating, selectedType.value, hasEditedName, nameInputRef],
-    );
+    const handleValueInputRef = (ref: HTMLInputElement | null): void => {
+      if (
+        (!isCreating || hasEditedName) &&
+        document.activeElement !== nameInputRef
+      ) {
+        ref?.focus();
+      }
+    };
 
     // Modal lifecycle actions
     const handleCancel = (): void => {
