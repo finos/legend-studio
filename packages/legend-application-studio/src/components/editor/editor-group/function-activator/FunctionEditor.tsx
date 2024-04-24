@@ -150,6 +150,8 @@ import {
 import { PanelGroupItemExperimentalBadge } from '../../panel-group/PanelGroup.js';
 import type { FunctionActivatorState } from '../../../../stores/editor/editor-state/element-editor-state/FunctionActivatorState.js';
 import { FunctionTestableEditor } from './testable/FunctionTestableEditor.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -1319,6 +1321,13 @@ export const FunctionEditor = observer(() => {
                 })}
               >
                 {prettyCONSTName(tab)}
+                {tab === FUNCTION_EDITOR_TAB.TEST_SUITES && (
+                  <DocumentationLink
+                    documentationKey={
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_FUNCTION_TEST
+                    }
+                  />
+                )}
               </div>
             ))}
           </div>

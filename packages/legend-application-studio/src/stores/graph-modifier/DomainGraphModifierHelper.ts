@@ -438,7 +438,11 @@ export const function_deleteParameterValue = action(
 
 export const function_addParameterValue = action(
   (test: FunctionTest, value: FunctionParameterValue) => {
-    test.parameters?.push(observe_FunctionParameterValue(value));
+    if (test.parameters) {
+      test.parameters.push(observe_FunctionParameterValue(value));
+    } else {
+      test.parameters = [observe_FunctionParameterValue(value)];
+    }
   },
 );
 
