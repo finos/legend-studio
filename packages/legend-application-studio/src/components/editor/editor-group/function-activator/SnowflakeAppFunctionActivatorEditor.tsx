@@ -123,7 +123,7 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
   };
 
   //Ownership
-  const [ownerInputValue, setOwner] = useState<string>('');
+  const [ownerInputValue, setOwner] = useState<string>(activator.ownership.id);
   const updateDeploymentIdentifier: React.ChangeEventHandler<
     HTMLInputElement
   > = (event) => {

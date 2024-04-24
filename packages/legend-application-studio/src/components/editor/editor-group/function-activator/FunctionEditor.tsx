@@ -158,7 +158,7 @@ enum FUNCTION_PARAMETER_TYPE {
 }
 
 export enum FUNCTION_ACTIVATE_TYPE {
-  SNOWFLAKE_NATIVE_APP = 'Snowflake Native App',
+  SNOWFLAKE_NATIVE_APP = 'Snowflake UDTF',
   HOSTED_SERVICE = 'REST Service',
   SERVICE_JAR = 'Service JAR',
   REFINER = 'Refiner',
