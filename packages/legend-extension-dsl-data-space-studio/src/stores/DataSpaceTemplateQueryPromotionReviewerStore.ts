@@ -71,10 +71,7 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   type DSL_DataSpace_PureGraphManagerExtension,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import {
-  generateDataSpaceQuerySetupRoute,
-  generateDataSpaceTemplateQueryPromotionRoute,
-} from '@finos/legend-extension-dsl-data-space/application';
+import { generateDataSpaceTemplateQueryPromotionRoute } from '@finos/legend-extension-dsl-data-space/application';
 
 const projectDependencyToProjectCoordinates = (
   projectDependency: ProjectDependency,
@@ -232,8 +229,8 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
         if (query) {
           yield flowResult(this.loadQuery(query));
         } else {
-          this.applicationStore.navigationService.navigator.updateCurrentLocation(
-            generateDataSpaceQuerySetupRoute(),
+          this.applicationStore.notificationService.notifyError(
+            `Unable to find query with ID: ${queryId}`,
           );
         }
       }

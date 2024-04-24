@@ -45,7 +45,7 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
+import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
 import {
   DataSpace,
   type DataSpaceExecutionContext,

@@ -17,6 +17,7 @@
 // Graph
 export * from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 export * from '../graph/metamodel/pure/model/packageableElements/mapping/DSL_DataSpace_MappingIncludeDataSpace.js';
+export * from '../graph/DSL_DataSpace_MetaModelConst.js';
 
 export * from './DSL_DataSpace_GraphManagerPreset.js';
 

@@ -24,15 +24,15 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
-import { DataSpaceExecutableTemplate } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import type { DataSpaceQueryBuilderState } from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
-import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
+import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
+import { DataSpaceExecutableTemplate } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import type { DataSpaceQueryBuilderState } from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import { DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from '../../__lib__/query/DSL_DataSpace_LegendQueryDocumentation.js';
 
 const DataSpaceTemplateQueryDialog = observer(

@@ -17,19 +17,19 @@
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
+import { parseGAVCoordinates } from '@finos/legend-storage';
 import {
-  QueryEditor,
-  QueryEditorStoreContext,
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
-} from '@finos/legend-application-query';
-import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
+} from '../LegendQueryFrameworkProvider.js';
+import { DataSpaceQueryCreatorStore } from '../../stores/data-space/DataSpaceQueryCreatorStore.js';
+import { QueryEditorStoreContext } from '../QueryEditorStoreProvider.js';
 import {
-  type DataSpaceQueryCreatorPathParams,
-  DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN,
   DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN,
-} from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
-import { parseGAVCoordinates } from '@finos/legend-storage';
+  DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN,
+  type DataSpaceQueryCreatorPathParams,
+} from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { QueryEditor } from '../QueryEditor.js';
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;

@@ -62,6 +62,7 @@ import {
   reportGraphAnalytics,
   cloneQueryStereotype,
   cloneQueryTaggedValue,
+  type PackageableRuntime,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -85,6 +86,8 @@ import {
   VersionedProjectData,
 } from '@finos/legend-server-depot';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
   DEFAULT_TAB_SIZE,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
 } from '@finos/legend-application';
@@ -102,6 +105,20 @@ import {
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
+import {
+  DataSpaceProjectInfo,
+  DataSpaceQueryBuilderState,
+  type DataSpaceInfo,
+} from '@finos/legend-extension-dsl-data-space/application';
+import { getDataSpaceQueryInfo } from '../components/data-space/QueryDataSpaceUtil.js';
+import {
+  DSL_DataSpace_getGraphManagerExtension,
+  type DataSpace,
+  type DataSpaceExecutionContext,
+  getOwnDataSpace,
+  retrieveAnalyticsResultCache,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -1034,6 +1051,25 @@ export class ExistingQueryUpdateState {
   }
 }
 
+const resolveExecutionContext = (
+  dataSpace: DataSpace,
+  queryMapping: Mapping,
+  queryRuntime: PackageableRuntime,
+): DataSpaceExecutionContext | undefined => {
+  const matchingExecContexts = dataSpace.executionContexts.filter(
+    (ec) => ec.mapping.value === queryMapping,
+  );
+  if (matchingExecContexts.length > 1) {
+    const matchRuntime = matchingExecContexts.find(
+      (exec) => exec.defaultRuntime.value.path === queryRuntime.path,
+    );
+    // TODO: we will safely do this for now. Long term we should save exec context key into query store
+    // we should make runtime/mapping optional
+    return matchRuntime ?? matchingExecContexts[0];
+  }
+  return matchingExecContexts[0];
+};
+
 export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
   private _lightQuery?: LightQuery | undefined;
@@ -1113,6 +1149,154 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
   }
 
+  async buildDataspaceBuilderState(
+    query: Query,
+  ): Promise<DataSpaceQueryBuilderState | undefined> {
+    const dataSpacePath = getDataSpaceQueryInfo(query);
+    if (dataSpacePath) {
+      const dataSpace = getOwnDataSpace(
+        dataSpacePath,
+        this.graphManagerState.graph,
+      );
+      const mapping = query.mapping.value;
+      const matchingExecutionContext = resolveExecutionContext(
+        dataSpace,
+        mapping,
+        query.runtime.value,
+      );
+      if (!matchingExecutionContext) {
+        // if a matching execution context is not found, it means this query is not
+        // properly created from a data space, therefore, we cannot support this case
+        return undefined;
+      }
+      let dataSpaceAnalysisResult;
+      try {
+        const project = StoreProjectData.serialization.fromJson(
+          await this.depotServerClient.getProject(
+            query.groupId,
+            query.artifactId,
+          ),
+        );
+        dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
+          this.graphManagerState.graphManager,
+        ).retrieveDataSpaceAnalysisFromCache(() =>
+          retrieveAnalyticsResultCache(
+            project,
+            query.versionId,
+            dataSpace.path,
+            this.depotServerClient,
+          ),
+        );
+      } catch {
+        // do nothing
+      }
+      const projectInfo = new DataSpaceProjectInfo(
+        query.groupId,
+        query.artifactId,
+        query.versionId,
+        createViewProjectHandler(this.applicationStore),
+        createViewSDLCProjectHandler(
+          this.applicationStore,
+          this.depotServerClient,
+        ),
+      );
+      const sourceInfo = {
+        groupId: projectInfo.groupId,
+        artifactId: projectInfo.artifactId,
+        versionId: projectInfo.versionId,
+        dataSpace: dataSpace.path,
+      };
+      const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
+        this.applicationStore,
+        this.graphManagerState,
+        this.depotServerClient,
+        dataSpace,
+        matchingExecutionContext,
+        (dataSpaceInfo: DataSpaceInfo) => {
+          if (dataSpaceInfo.defaultExecutionContext) {
+            const proceed = (): void =>
+              this.applicationStore.navigationService.navigator.goToLocation(
+                generateDataSpaceQueryCreatorRoute(
+                  guaranteeNonNullable(dataSpaceInfo.groupId),
+                  guaranteeNonNullable(dataSpaceInfo.artifactId),
+                  LATEST_VERSION_ALIAS, //always default to latest
+                  dataSpaceInfo.path,
+                  guaranteeNonNullable(dataSpaceInfo.defaultExecutionContext),
+                  undefined,
+                  undefined,
+                ),
+              );
+            const updateQueryAndProceed = async (): Promise<void> => {
+              try {
+                await flowResult(
+                  this.updateState.updateQuery(undefined, undefined),
+                );
+                proceed();
+              } catch (error) {
+                assertErrorThrown(error);
+                this.applicationStore.logService.error(
+                  LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+                  error,
+                );
+                this.applicationStore.notificationService.notifyError(error);
+              }
+            };
+            if (
+              !query.isCurrentUserQuery ||
+              !this.queryBuilderState?.changeDetectionState.hasChanged
+            ) {
+              proceed();
+            } else {
+              this.applicationStore.alertService.setActionAlertInfo({
+                message: `To change the data space, you need to save the current query
+                   to proceed`,
+                type: ActionAlertType.CAUTION,
+                actions: [
+                  {
+                    label: 'Save query and Proceed',
+                    type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                    handler: () => {
+                      updateQueryAndProceed().catch(
+                        this.applicationStore.alertUnhandledError,
+                      );
+                    },
+                  },
+                  {
+                    label: 'Abort',
+                    type: ActionAlertActionType.PROCEED,
+                    default: true,
+                  },
+                ],
+              });
+            }
+          } else {
+            this.applicationStore.notificationService.notifyWarning(
+              `Can't switch data space: default execution context not specified`,
+            );
+          }
+        },
+        true,
+        dataSpaceAnalysisResult,
+        undefined,
+        undefined,
+        undefined,
+        projectInfo,
+        this.applicationStore.config.options.queryBuilderConfig,
+        sourceInfo,
+      );
+      const mappingModelCoverageAnalysisResult =
+        dataSpaceAnalysisResult?.executionContextsIndex.get(
+          matchingExecutionContext.name,
+        )?.mappingModelCoverageAnalysisResult;
+      if (mappingModelCoverageAnalysisResult) {
+        dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
+          mappingModelCoverageAnalysisResult;
+      }
+      return dataSpaceQueryBuilderState;
+    }
+    return undefined;
+  }
+
   async initializeQueryBuilderState(
     stopWatch: StopWatch,
   ): Promise<QueryBuilderState> {
@@ -1125,18 +1309,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       this.applicationStore.userDataService,
       query.id,
     );
-    let queryBuilderState: QueryBuilderState | undefined;
-    const existingQueryEditorStateBuilders = this.applicationStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) => plugin.getExtraExistingQueryEditorStateBuilders?.() ?? [],
-      );
-    for (const builder of existingQueryEditorStateBuilders) {
-      queryBuilderState = await builder(query, this);
-      if (queryBuilderState) {
-        break;
-      }
-    }
 
     // if no extension found, fall back to basic `class -> mapping -> runtime` mode
     const projectInfo = this.getProjectInfo();
@@ -1145,6 +1317,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       artifactId: projectInfo.artifactId,
       versionId: projectInfo.versionId,
     };
+    let queryBuilderState: QueryBuilderState | undefined =
+      await this.buildDataspaceBuilderState(query);
+
     queryBuilderState =
       queryBuilderState ??
       new ClassQueryBuilderState(

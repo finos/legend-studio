@@ -47,6 +47,7 @@ import {
   Panel,
   PanelFullContent,
   CustomSelectorInput,
+  ArrowCircleUpIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -86,21 +87,28 @@ import {
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
-import {
-  debounce,
-  guaranteeNonNullable,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { buildUrl, debounce } from '@finos/legend-shared';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import { QUERY_EDITOR_TEST_ID } from '../__lib__/LegendQueryTesting.js';
 import {
   compareSemVerVersions,
   generateGAVCoordinates,
+  parseProjectIdentifier,
 } from '@finos/legend-storage';
 import type { Query } from '@finos/legend-graph';
-import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
+import {
+  LATEST_VERSION_ALIAS,
+  StoreProjectData,
+} from '@finos/legend-server-depot';
 import { buildVersionOption, type VersionOption } from './QuerySetup.js';
 import { QueryEditorExistingQueryVersionRevertModal } from './QueryEdtiorExistingQueryVersionRevertModal.js';
+import {
+  DataSpaceQueryBuilderState,
+  generateDataSpaceTemplateQueryPromotionRoute,
+} from '@finos/legend-extension-dsl-data-space/application';
+import { getDataSpaceQueryInfo } from './data-space/QueryDataSpaceUtil.js';
+import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -602,16 +610,22 @@ const QueryEditorHeaderContent = observer(
       if (editorStore instanceof ExistingQueryEditorStore) {
         const query = editorStore.query;
         if (query) {
-          const paths = applicationStore.pluginManager
-            .getApplicationPlugins()
-            .flatMap(
-              (plugin) => plugin.getExtraNewQueryNavigationPaths?.() ?? [],
-            )
-            .map((callback) => callback(query, editorStore))
-            .filter(isNonNullable);
-          if (paths.length) {
+          const dataSpacePath = getDataSpaceQueryInfo(query);
+          if (
+            dataSpacePath &&
+            queryBuilderState instanceof DataSpaceQueryBuilderState
+          ) {
             editorStore.applicationStore.navigationService.navigator.goToLocation(
-              guaranteeNonNullable(paths[0]),
+              generateDataSpaceQueryCreatorRoute(
+                query.groupId,
+                query.artifactId,
+                query.versionId,
+                dataSpacePath,
+                // TODO: fix execution key once that is fixed
+                queryBuilderState.executionContext.name,
+                undefined,
+                undefined,
+              ),
             );
           } else {
             editorStore.applicationStore.navigationService.navigator.goToLocation(
@@ -659,17 +673,21 @@ const QueryEditorHeaderContent = observer(
             existingEditorStore={editorStore}
           />
         );
+      } else if (editorStore instanceof DataSpaceTemplateQueryCreatorStore) {
+        return (
+          <div className="query-editor__dataspace__header">
+            <div className="query-editor__header__content__main query-editor__header__content__title__text query-editor__dataspace__header__title__text">
+              {editorStore.templateQueryTitle}
+            </div>
+            <div className="query-editor__dataspace__header__title__tag">
+              template
+            </div>
+          </div>
+        );
       }
-      const extensionHeader = applicationStore.pluginManager
-        .getApplicationPlugins()
-        .flatMap((plugin) => plugin.getExtraQueryHeaders?.() ?? [])
-        .map((renderFunc) => renderFunc(editorStore))
-        .find((element) => element !== undefined);
 
       return (
-        extensionHeader ?? (
-          <div className="query-editor__header__content__main query-editor__header__content__title" />
-        )
+        <div className="query-editor__header__content__main query-editor__header__content__title" />
       );
     };
 
@@ -689,6 +707,57 @@ const QueryEditorHeaderContent = observer(
           <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
         </MenuContentItem>
       ));
+
+    const proceedCuratedTemplateQueryPromotion = async (): Promise<void> => {
+      if (
+        !(
+          editorStore instanceof ExistingQueryEditorStore &&
+          queryBuilderState instanceof DataSpaceQueryBuilderState
+        )
+      ) {
+        return;
+      }
+      // fetch project data
+      const project = StoreProjectData.serialization.fromJson(
+        await editorStore.depotServerClient.getProject(
+          editorStore.lightQuery.groupId,
+          editorStore.lightQuery.artifactId,
+        ),
+      );
+
+      // find the matching SDLC instance
+      const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+      const matchingSDLCEntry =
+        editorStore.applicationStore.config.studioInstances.find(
+          (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+        );
+      if (matchingSDLCEntry) {
+        editorStore.applicationStore.navigationService.navigator.visitAddress(
+          buildUrl([
+            editorStore.applicationStore.config.studioApplicationUrl,
+            generateDataSpaceTemplateQueryPromotionRoute(
+              editorStore.lightQuery.groupId,
+              editorStore.lightQuery.artifactId,
+              editorStore.lightQuery.versionId,
+              queryBuilderState.dataSpace.path,
+              editorStore.lightQuery.id,
+            ),
+          ]),
+        );
+      } else {
+        editorStore.applicationStore.notificationService.notifyWarning(
+          `Can't find the corresponding SDLC instance to productionize the query`,
+        );
+      }
+    };
+
+    const proceedTemplate = (): void => {
+      queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+        proceedCuratedTemplateQueryPromotion().catch(
+          editorStore.applicationStore.alertUnhandledError,
+        );
+      });
+    };
 
     return (
       <div
@@ -710,7 +779,26 @@ const QueryEditorHeaderContent = observer(
                 {actionConfig.renderer(editorStore, queryBuilderState)}
               </Fragment>
             ))}
-
+          <>
+            {editorStore instanceof ExistingQueryEditorStore &&
+              queryBuilderState instanceof DataSpaceQueryBuilderState && (
+                <button
+                  className="query-editor__header__action btn--dark"
+                  tabIndex={-1}
+                  onClick={proceedTemplate}
+                  title={
+                    !(editorStore instanceof ExistingQueryEditorStore)
+                      ? 'Please save your query first before promoting'
+                      : 'Promote Curated Template query...'
+                  }
+                >
+                  <ArrowCircleUpIcon className="query-editor__header__action__icon--productionize" />
+                  <div className="query-editor__header__action__label">
+                    Promote as Template Query
+                  </div>
+                </button>
+              )}
+          </>
           <Button
             className="query-editor__header__action btn--dark"
             disabled={editorStore.isPerformingBlockingAction}

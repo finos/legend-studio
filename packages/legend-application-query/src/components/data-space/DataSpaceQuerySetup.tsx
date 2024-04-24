@@ -16,12 +16,6 @@
 
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import {
-  QueryEditor,
-  QueryEditorStoreContext,
-  useLegendQueryApplicationStore,
-  useLegendQueryBaseStore,
-} from '@finos/legend-application-query';
 import { useEffect, useRef } from 'react';
 import { flowResult } from 'mobx';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
@@ -30,17 +24,23 @@ import {
   SearchIcon,
   type SelectComponent,
 } from '@finos/legend-art';
-import { DataSpaceIcon } from '../shared/DSL_DataSpace_Icon.js';
+import { DataSpaceIcon } from '@finos/legend-extension-dsl-data-space/application';
+import {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from '../LegendQueryFrameworkProvider.js';
 import {
   type DataSpaceQuerySetupState,
   DataSpaceQuerySetupStore,
-} from '../../stores/query/DataSpaceQuerySetupStore.js';
+} from '../../stores/data-space/DataSpaceQuerySetupState.js';
+import { QueryEditorStoreContext } from '../QueryEditorStoreProvider.js';
+import { QueryEditor } from '../QueryEditor.js';
 import {
+  DataSpaceAdvancedSearchModal,
   buildDataSpaceOption,
   formatDataSpaceOptionLabel,
   type DataSpaceOption,
-} from './DataSpaceQueryBuilder.js';
-import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
+} from '@finos/legend-extension-dsl-data-space/application-query';
 
 const DataSpaceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;

@@ -89,11 +89,6 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   }
 
   /**
-   * Get Redirect path for root application path
-   */
-  getExtraRootAppRedirectPath?(): string | undefined;
-
-  /**
    * Get the list of actions (configurations) for query setup.
    */
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
@@ -104,26 +99,9 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   getExtraQueryEditorHelpMenuActionConfigurations?(): QueryEditorHelpMenuActionConfiguration[];
 
   /**
-   * Get the list of existing query editor state builders.
-   */
-  getExtraExistingQueryEditorStateBuilders?(): ExistingQueryEditorStateBuilder[];
-
-  /**
    * Get the list of query editor action renderer configurations.
    */
   getExtraQueryEditorActionConfigurations?(
     editorStore: QueryEditorStore,
   ): QueryEditorActionConfiguration[];
-
-  /**
-   * Get the list of query headers
-   */
-  getExtraQueryHeaders?(): ((
-    editorStore: QueryEditorStore,
-  ) => React.ReactNode | undefined)[];
-
-  /**
-   * Get list of new query navigation paths
-   */
-  getExtraNewQueryNavigationPaths?(): NewQueryNavigationPath[];
 }

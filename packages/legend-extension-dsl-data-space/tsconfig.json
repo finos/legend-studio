@@ -11,7 +11,6 @@
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-graph" },
     { "path": "../legend-extension-dsl-diagram" },
-    { "path": "../legend-application-query" },
     { "path": "../legend-query-builder" },
     { "path": "../legend-server-depot" },
     { "path": "../legend-server-sdlc" },

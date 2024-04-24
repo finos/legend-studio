@@ -20,37 +20,34 @@ import {
   type RawLambda,
 } from '@finos/legend-graph';
 import {
-  QueryEditorStore,
-  type QueryPersistConfiguration,
-  type LegendQueryApplicationStore,
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
-} from '@finos/legend-application-query';
-import {
   type DepotServerClient,
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import { filterByType, guaranteeNonNullable, uuid } from '@finos/legend-shared';
-
-import { getDataSpace } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
-import {
-  DataSpaceQueryBuilderState,
-  DataSpaceProjectInfo,
-} from '../query-builder/DataSpaceQueryBuilderState.js';
-import type { DataSpaceInfo } from '../shared/DataSpaceInfo.js';
-import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/query/DSL_DataSpace_LegendQueryNavigation.js';
-import {
-  DataSpaceExecutableTemplate,
-  type DataSpaceExecutionContext,
-} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
-import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
-import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import {
-  createQueryDataSpaceTaggedValue,
+  QueryEditorStore,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+  type QueryPersistConfiguration,
+} from '../QueryEditorStore.js';
+import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
+import {
+  DSL_DataSpace_getGraphManagerExtension,
+  DataSpaceExecutableTemplate,
+  type DataSpaceExecutionContext,
+  getDataSpace,
+  retrieveAnalyticsResultCache,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  DataSpaceProjectInfo,
+  DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
-} from './DataSpaceQueryCreatorStore.js';
+  createQueryDataSpaceTaggedValue,
+  type DataSpaceInfo,
+} from '@finos/legend-extension-dsl-data-space/application';
+import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
