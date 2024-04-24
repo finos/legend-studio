@@ -21,6 +21,8 @@ import {
   getByTitle,
   act,
   getByText,
+  getByRole,
+  type RenderResult,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -48,6 +50,14 @@ import {
   MockedMonacoEditorAPI,
 } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+
+const getParameterNameInput = (renderResult: RenderResult): HTMLInputElement =>
+  getByRole(
+    guaranteeNonNullable(
+      renderResult.getByText('Parameter Name').parentElement,
+    ),
+    'textbox',
+  );
 
 test(
   integrationTest(
@@ -82,16 +92,15 @@ test(
     // Create first parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    let parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
     const createButton = renderResult.getByRole('button', { name: 'Create' });
     fireEvent.click(createButton);
 
     // Create second parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    const parameterNameInput = await waitFor(() =>
-      renderResult.getByDisplayValue('var_2'),
-    );
+    parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
 
     // Check for validation error
@@ -155,7 +164,7 @@ test(
     // Create parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    const parameterNameInput = renderResult.getByDisplayValue('var_1');
+    const parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, { target: { value: 'c_var_1' } });
 
     expect(
@@ -203,22 +212,21 @@ test(
     // Create first parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    await waitFor(() => renderResult.getByDisplayValue('var_1'));
-    // const createButton = renderResult.getByRole('button', { name: 'Create' });
+    let parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Create second parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    await waitFor(() => renderResult.getByDisplayValue('var_2'));
+    parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Update second parameter name
     fireEvent.click(await waitFor(() => getByText(parametersPanel, 'var_2')));
     await waitFor(() => renderResult.getByText('Update Parameter'));
-    const parameterNameInput = await waitFor(() =>
-      renderResult.getByDisplayValue('var_2'),
-    );
+    parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
 
     // Check for validation error
@@ -282,16 +290,15 @@ test(
     // Create parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    let parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
     const createButton = renderResult.getByRole('button', { name: 'Create' });
     fireEvent.click(createButton);
 
     // Update parameter name
     fireEvent.click(getByText(parametersPanel, 'var_1'));
     await waitFor(() => renderResult.getByText('Update Parameter'));
-    const parameterNameInput = await waitFor(() =>
-      renderResult.getByDisplayValue('var_1'),
-    );
+    parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, { target: { value: 'c_var_1' } });
 
     // Check for validation error
@@ -340,9 +347,7 @@ test(
     // Create parameter and change values
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    const parameterNameInput = await waitFor(() =>
-      renderResult.getByDisplayValue('var_1'),
-    );
+    const parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
     // select Number from dropdown
     const typeContainer = guaranteeNonNullable(
@@ -404,16 +409,15 @@ test(
     // Create parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    let parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
     const createButton = renderResult.getByRole('button', { name: 'Create' });
     fireEvent.click(createButton);
 
     // Update parameter values
     fireEvent.click(getByText(parametersPanel, 'var_1'));
     await waitFor(() => renderResult.getByText('Update Parameter'));
-    const parameterNameInput = await waitFor(() =>
-      renderResult.getByDisplayValue('var_1'),
-    );
+    parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
     // select Number from dropdown
     const typeContainer = guaranteeNonNullable(
@@ -474,16 +478,15 @@ test(
     // Create parameter
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
     await waitFor(() => renderResult.getByText('Create Parameter'));
-    await waitFor(() => renderResult.getByDisplayValue('var_1'));
+    let parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
     const createButton = renderResult.getByRole('button', { name: 'Create' });
     fireEvent.click(createButton);
 
     // Update parameter values
     fireEvent.click(getByText(parametersPanel, 'var_1'));
     await waitFor(() => renderResult.getByText('Update Parameter'));
-    const parameterNameInput = await waitFor(() =>
-      renderResult.getByDisplayValue('var_1'),
-    );
+    parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, { target: { value: 'var_2' } });
     // select Number from dropdown
     let typeContainer = guaranteeNonNullable(
@@ -731,7 +734,7 @@ test(
     );
 
     fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
-    const parameterNameInput = renderResult.getByDisplayValue('var_1');
+    const parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, {
       target: { value: 'contains space' },
     });
