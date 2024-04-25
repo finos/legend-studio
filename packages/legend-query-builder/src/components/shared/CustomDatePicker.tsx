@@ -733,7 +733,7 @@ export const buildDatePickerOption = (
           CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
         )
       : new DatePickerOption(
-          valueSpecification.values[0] as string,
+          (valueSpecification.values[0] ?? '') as string,
           valueSpecification.genericType.value.rawType.path ===
           PRIMITIVE_TYPE.DATETIME
             ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
@@ -812,7 +812,7 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
         className="panel__content__form__section__input value-spec-editor__date-picker__absolute-date__input input--dark"
         type="date"
         spellCheck={false}
-        value={absoluteDateValue}
+        value={absoluteDateValue ?? ''}
         onChange={updateAbsoluteDateValue}
       />
     </div>
@@ -893,7 +893,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
         // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#step
         step="1"
         spellCheck={false}
-        value={absoluteTimeValue}
+        value={absoluteTimeValue ?? ''}
         onChange={updateAbsoluteTimeValue}
       />
     </div>
