@@ -300,7 +300,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             options={queryOptions}
             onChange={changeValue}
             value={selectedValue}
-            inputValue={value}
+            inputValue={value ?? ''}
             onInputChange={handleInputChange}
             darkMode={
               !applicationStore.layoutService
