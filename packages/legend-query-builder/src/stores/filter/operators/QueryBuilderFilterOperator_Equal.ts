@@ -105,13 +105,6 @@ export class QueryBuilderFilterOperator_Equal
         .genericType.value.rawType;
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING:
-        return buildPrimitiveInstanceValue(
-          filterConditionState.filterState.queryBuilderState.graphManagerState
-            .graph,
-          propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
-          filterConditionState.filterState.queryBuilderState.observerContext,
-        );
       case PRIMITIVE_TYPE.BOOLEAN:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
@@ -126,7 +119,7 @@ export class QueryBuilderFilterOperator_Equal
           filterConditionState.filterState.queryBuilderState
             .INTERNAL__enableInitializingDefaultSimpleExpressionValue
             ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : undefined,
+            : null,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -138,7 +131,7 @@ export class QueryBuilderFilterOperator_Equal
           filterConditionState.filterState.queryBuilderState
             .INTERNAL__enableInitializingDefaultSimpleExpressionValue
             ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : undefined,
+            : null,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }

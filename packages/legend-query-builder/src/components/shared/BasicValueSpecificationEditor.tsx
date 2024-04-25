@@ -244,7 +244,7 @@ const StringPrimitiveInstanceValueEditor = observer(
     } = props;
     const useSelector = Boolean(selectorConfig);
     const applicationStore = useApplicationStore();
-    const value = valueSpecification.values[0] as string;
+    const value = valueSpecification.values[0] as string | null;
     const updateValueSpec = (val: string): void => {
       instanceValue_setValue(valueSpecification, val, 0, obseverContext);
       setValueSpecification(valueSpecification);
@@ -317,7 +317,7 @@ const StringPrimitiveInstanceValueEditor = observer(
           <InputWithInlineValidation
             className="panel__content__form__section__input value-spec-editor__input input-group__input"
             spellCheck={false}
-            value={value}
+            value={value ?? ''}
             placeholder={value === '' ? '(empty)' : undefined}
             onChange={changeInputValue}
             ref={ref}
@@ -406,7 +406,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
       obseverContext,
     } = props;
     const [value, setValue] = useState(
-      valueSpecification.values[0] === undefined
+      valueSpecification.values[0] === null
         ? ''
         : (valueSpecification.values[0] as number).toString(),
     );
@@ -416,19 +416,27 @@ const NumberPrimitiveInstanceValueEditor = observer(
       ? isInteger
         ? Number.parseInt(Number(value).toString(), 10)
         : Number(value)
-      : undefined;
+      : null;
 
     const updateValueSpecIfValid = (val: string): void => {
-      const parsedValue = isInteger
-        ? Number.parseInt(Number(val).toString(), 10)
-        : Number(val);
-      if (!isNaN(parsedValue) && parsedValue !== valueSpecification.values[0]) {
-        instanceValue_setValue(
-          valueSpecification,
-          parsedValue,
-          0,
-          obseverContext,
-        );
+      if (val) {
+        const parsedValue = isInteger
+          ? Number.parseInt(Number(val).toString(), 10)
+          : Number(val);
+        if (
+          !isNaN(parsedValue) &&
+          parsedValue !== valueSpecification.values[0]
+        ) {
+          instanceValue_setValue(
+            valueSpecification,
+            parsedValue,
+            0,
+            obseverContext,
+          );
+          setValueSpecification(valueSpecification);
+        }
+      } else {
+        instanceValue_setValue(valueSpecification, null, 0, obseverContext);
         setValueSpecification(valueSpecification);
       }
     };
@@ -442,7 +450,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     // Support expression evaluation
     const calculateExpression = (): void => {
-      if (numericValue && isNaN(numericValue)) {
+      if (numericValue !== null && isNaN(numericValue)) {
         try {
           const calculatedValue = guaranteeIsNumber(evaluate(value));
           updateValueSpecIfValid(calculatedValue.toString());
@@ -456,6 +464,9 @@ const NumberPrimitiveInstanceValueEditor = observer(
       } else if (numericValue) {
         updateValueSpecIfValid(numericValue.toString());
         setValue(numericValue.toString());
+      } else {
+        updateValueSpecIfValid('');
+        setValue('');
       }
     };
 

@@ -498,6 +498,7 @@ export class QueryBuilderFilterState
       setShowPanel: action,
       expandTree: action,
       allValidationIssues: computed,
+      hasInvalidFilterValues: computed,
       hashCode: computed,
     });
 
@@ -977,6 +978,15 @@ export class QueryBuilderFilterState
       }
     });
     return validationIssues;
+  }
+
+  get hasInvalidFilterValues(): boolean {
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        node instanceof QueryBuilderFilterTreeConditionNodeData &&
+        node.condition.value instanceof InstanceValue &&
+        !isValidInstanceValue(node.condition.value),
+    );
   }
 
   get hashCode(): string {
