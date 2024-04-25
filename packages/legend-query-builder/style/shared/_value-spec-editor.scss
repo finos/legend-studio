@@ -228,6 +228,11 @@
 
     &__input {
       padding-right: 2.8rem;
+
+      &--error {
+        background: var(--color-red-500);
+        border-color: var(--color-red-300);
+      }
     }
 
     &__actions {

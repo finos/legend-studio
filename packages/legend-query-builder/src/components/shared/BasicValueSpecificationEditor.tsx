@@ -496,7 +496,15 @@ const NumberPrimitiveInstanceValueEditor = observer(
         <div className="value-spec-editor__number__input-container">
           <input
             ref={inputRef}
-            className="panel__content__form__section__input value-spec-editor__input value-spec-editor__number__input"
+            className={clsx(
+              'panel__content__form__section__input',
+              'value-spec-editor__input',
+              'value-spec-editor__number__input',
+              {
+                'value-spec-editor__number__input--error':
+                  !isValidInstanceValue(valueSpecification),
+              },
+            )}
             spellCheck={false}
             type="text" // NOTE: we leave this as text so that we can support expression evaluation
             inputMode="numeric"
