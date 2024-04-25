@@ -734,8 +734,10 @@ export const buildDatePickerOption = (
         )
       : new DatePickerOption(
           (valueSpecification.values[0] ?? '') as string,
-          valueSpecification.genericType.value.rawType.path ===
-          PRIMITIVE_TYPE.DATETIME
+          valueSpecification.values[0] === null
+            ? ''
+            : valueSpecification.genericType.value.rawType.path ===
+              PRIMITIVE_TYPE.DATETIME
             ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
             : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
         );
