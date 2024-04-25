@@ -356,15 +356,20 @@
 .selector-input--has-error .selector-input--dark {
   &__control,
   &__control:hover {
-    border-color: var(--color-red-100);
+    border-color: var(--color-red-300);
+  }
+
+  &__control--is-focused,
+  &__control--is-focused:hover {
+    border-color: var(--color-blue-200);
   }
 
   &__value-container {
-    background: var(--color-dark-red-shade-100);
+    background: var(--color-red-500);
   }
 
   &__indicators {
-    background: var(--color-dark-red-shade-100);
+    background: var(--color-red-500);
 
     svg {
       color: var(--color-red-100);

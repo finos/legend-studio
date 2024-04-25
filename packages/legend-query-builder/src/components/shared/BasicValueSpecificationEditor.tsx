@@ -313,6 +313,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             components={{
               DropdownIndicator: null,
             }}
+            hasError={!isValidInstanceValue(valueSpecification)}
           />
         ) : (
           <InputWithInlineValidation
