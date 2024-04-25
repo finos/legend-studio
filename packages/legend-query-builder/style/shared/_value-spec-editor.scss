@@ -71,6 +71,7 @@
       height: 2.8rem;
       color: var(--color-light-grey-400);
       background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
       font-size: 1.2rem;
     }
 
@@ -208,7 +209,7 @@
     font-size: 1.2rem;
     padding: 0 0.5rem;
     background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-dark-grey-300);
     border-radius: 0;
     margin-bottom: 0;
   }
