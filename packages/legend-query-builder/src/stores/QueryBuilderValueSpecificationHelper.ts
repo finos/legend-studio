@@ -46,7 +46,7 @@ import {
   INTERNAL__PropagatedValue,
   isSubType,
   type ObserverContext,
-  type InstanceValue,
+  InstanceValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -146,8 +146,18 @@ export const isValidInstanceValue = (value: InstanceValue): boolean => {
   }
   // more values than allowed
   if (
+    !(value instanceof CollectionInstanceValue) &&
     value.multiplicity.upperBound &&
     value.values.length > value.multiplicity.upperBound
+  ) {
+    return false;
+  }
+  // collection instance with invalid values
+  if (
+    value instanceof CollectionInstanceValue &&
+    value.values.some(
+      (val) => val instanceof InstanceValue && !isValidInstanceValue(val),
+    )
   ) {
     return false;
   }
