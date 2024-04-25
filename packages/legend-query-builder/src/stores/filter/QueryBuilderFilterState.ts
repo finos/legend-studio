@@ -204,7 +204,8 @@ export class FilterConditionState implements Hashable {
       let defaultValue = this.operator.getDefaultFilterConditionValue(this);
       if (
         defaultValue instanceof CollectionInstanceValue &&
-        this.value instanceof InstanceValue
+        this.value instanceof InstanceValue &&
+        isValidInstanceValue(this.value)
       ) {
         instanceValue_setValues(
           defaultValue,
