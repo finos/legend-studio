@@ -103,7 +103,6 @@ export class QueryBuilderPostFilterOperator_Equal
     );
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING:
-      case PRIMITIVE_TYPE.BOOLEAN:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.NUMBER:
@@ -122,6 +121,15 @@ export class QueryBuilderPostFilterOperator_Equal
             .observerContext,
         );
       }
+      case PRIMITIVE_TYPE.BOOLEAN:
+        return buildPrimitiveInstanceValue(
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .graphManagerState.graph,
+          propertyType.path,
+          generateDefaultValueForPrimitiveType(propertyType.path),
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .observerContext,
+        );
       case PRIMITIVE_TYPE.DATE: {
         return buildPrimitiveInstanceValue(
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
