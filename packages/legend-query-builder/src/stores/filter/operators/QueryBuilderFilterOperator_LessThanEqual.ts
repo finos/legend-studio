@@ -102,7 +102,7 @@ export class QueryBuilderFilterOperator_LessThanEqual
           filterConditionState.filterState.queryBuilderState
             .INTERNAL__enableInitializingDefaultSimpleExpressionValue
             ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : undefined,
+            : null,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }
@@ -114,7 +114,7 @@ export class QueryBuilderFilterOperator_LessThanEqual
           filterConditionState.filterState.queryBuilderState
             .INTERNAL__enableInitializingDefaultSimpleExpressionValue
             ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : undefined,
+            : null,
           filterConditionState.filterState.queryBuilderState.observerContext,
         );
       }

@@ -80,7 +80,7 @@ export class QueryBuilderPostFilterOperator_Contain
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .INTERNAL__enableInitializingDefaultSimpleExpressionValue
             ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : undefined,
+            : null,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
         );
