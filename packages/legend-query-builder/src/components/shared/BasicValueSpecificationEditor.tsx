@@ -68,6 +68,7 @@ import {
   parseCSVString,
   guaranteeIsNumber,
   csvStringify,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -542,9 +543,16 @@ const EnumValueInstanceValueEditor = observer(
       obseverContext,
     } = props;
     const applicationStore = useApplicationStore();
-    const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
-    const enumValue = enumValueRef.value;
-    const options = enumValue._OWNER.values.map((value) => ({
+    const enumType = guaranteeType(
+      valueSpecification.genericType?.value.rawType,
+      Enumeration,
+    );
+    const enumValue =
+      valueSpecification.values[0] === null ||
+      valueSpecification.values[0] === undefined
+        ? null
+        : (valueSpecification.values[0].value as Enum);
+    const options = enumType.values.map((value) => ({
       label: value.name,
       value: value,
     }));
@@ -564,7 +572,7 @@ const EnumValueInstanceValueEditor = observer(
           className="value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}
-          value={{ value: enumValue, label: enumValue.name }}
+          value={{ value: enumValue, label: enumValue?.name ?? '' }}
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
