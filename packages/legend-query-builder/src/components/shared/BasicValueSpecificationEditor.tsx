@@ -453,20 +453,25 @@ const NumberPrimitiveInstanceValueEditor = observer(
     // Support expression evaluation
     const calculateExpression = (): void => {
       if (numericValue !== null && isNaN(numericValue)) {
+        // If the value is not a number, try to evaluate it as an expression
         try {
           const calculatedValue = guaranteeIsNumber(evaluate(value));
           updateValueSpecIfValid(calculatedValue.toString());
           setValue(calculatedValue.toString());
         } catch {
-          updateValueSpecIfValid(
-            (valueSpecification.values[0] as number).toString(),
-          );
-          setValue((valueSpecification.values[0] as number).toString());
+          // If we fail to evaluate the expression, we just keep the previous value
+          const prevValue = valueSpecification.values[0]
+            ? valueSpecification.values[0].toString()
+            : '';
+          updateValueSpecIfValid(prevValue);
+          setValue(prevValue);
         }
       } else if (numericValue) {
+        // If numericValue is a number, update the value spec
         updateValueSpecIfValid(numericValue.toString());
         setValue(numericValue.toString());
       } else {
+        // If numericValue is null, reset the value spec to null
         updateValueSpecIfValid('');
         setValue('');
       }
@@ -487,7 +492,10 @@ const NumberPrimitiveInstanceValueEditor = observer(
         !isNaN(numericValue) &&
         numericValue !== valueSpecification.values[0]
       ) {
-        setValue((valueSpecification.values[0] as number).toString());
+        const valueFromValueSpec = valueSpecification.values[0]
+          ? (valueSpecification.values[0] as number).toString()
+          : '';
+        setValue(valueFromValueSpec);
       }
     }, [numericValue, valueSpecification]);
 
