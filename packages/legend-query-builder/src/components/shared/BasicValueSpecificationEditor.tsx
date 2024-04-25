@@ -991,6 +991,10 @@ const DateInstanceValueEditor = observer(
           observerContext={obseverContext}
           typeCheckOption={typeCheckOption}
           setValueSpecification={setValueSpecification}
+          hasError={
+            valueSpecification instanceof PrimitiveInstanceValue &&
+            !isValidInstanceValue(valueSpecification)
+          }
         />
         <button
           className="value-spec-editor__reset-btn"
