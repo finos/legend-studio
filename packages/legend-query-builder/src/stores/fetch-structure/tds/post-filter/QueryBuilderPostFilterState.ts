@@ -608,6 +608,7 @@ export class QueryBuilderPostFilterState
       setRearrangingConditions: action,
       setDerivedColumnBeingDropped: action,
       allValidationIssues: computed,
+      hasInvalidFilterValues: computed,
       hashCode: computed,
     });
 
@@ -1018,6 +1019,19 @@ export class QueryBuilderPostFilterState
       }
     });
     return validationIssues;
+  }
+
+  get hasInvalidFilterValues(): boolean {
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        node instanceof QueryBuilderPostFilterTreeConditionNodeData &&
+        node.condition.rightConditionValue instanceof
+          PostFilterValueSpecConditionValueState &&
+        node.condition.rightConditionValue.value instanceof InstanceValue &&
+        !isValidInstanceValue(node.condition.rightConditionValue.value) &&
+        node.condition.leftConditionValue instanceof
+          QueryBuilderSimpleProjectionColumnState,
+    );
   }
 
   get hashCode(): string {

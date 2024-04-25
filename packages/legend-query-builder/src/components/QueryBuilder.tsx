@@ -434,6 +434,8 @@ export const QueryBuilder = observer(
       if (
         queryBuilderState.isQuerySupported &&
         !queryBuilderState.filterState.hasInvalidFilterValues &&
+        !queryBuilderState.fetchStructureState.implementation
+          .hasInvalidFilterValues &&
         queryBuilderState.class
       ) {
         queryBuilderState.changeHistoryState.cacheNewQuery(

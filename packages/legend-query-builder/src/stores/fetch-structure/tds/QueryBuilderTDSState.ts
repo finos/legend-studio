@@ -801,6 +801,10 @@ export class QueryBuilderTDSState
     return Boolean(usedInProjection ?? usedInPostFilter);
   }
 
+  get hasInvalidFilterValues(): boolean {
+    return this.postFilterState.hasInvalidFilterValues;
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.PROJECTION_STATE,
