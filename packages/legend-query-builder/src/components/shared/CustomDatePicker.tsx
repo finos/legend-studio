@@ -1415,7 +1415,7 @@ export const CustomDatePicker: React.FC<{
         title="Click to edit and pick from more date options"
         onClick={openCustomDatePickerPopover}
       >
-        {datePickerOption.label}
+        {datePickerOption.label || 'Select value'}
       </button>
       <BasePopover
         open={Boolean(anchorEl)}

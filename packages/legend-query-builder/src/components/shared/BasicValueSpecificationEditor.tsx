@@ -589,11 +589,12 @@ const EnumValueInstanceValueEditor = observer(
           className="value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}
-          value={{ value: enumValue, label: enumValue?.name ?? '' }}
+          value={enumValue ? { value: enumValue, label: enumValue.name } : null}
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
           hasError={!isValidInstanceValue(valueSpecification)}
+          placeholder="Select value"
         />
         <button
           className="value-spec-editor__reset-btn"
