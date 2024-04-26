@@ -1501,6 +1501,10 @@
       --ag-selected-row-background-color: var(--color-navy-300);
       --ag-range-selection-background-color: var(--color-navy-300);
     }
+
+    &__text {
+      margin-bottom: 2rem;
+    }
   }
 
   &__header__actions {

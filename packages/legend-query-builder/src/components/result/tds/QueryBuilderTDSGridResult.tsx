@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import { PRIMITIVE_TYPE, type TDSExecutionResult } from '@finos/legend-graph';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   DataGrid,
   type DataGridApi,
@@ -28,23 +27,40 @@ import {
   type DataGridGetContextMenuItemsParams,
   type DataGridIRowNode,
   type DataGridMenuItemDef,
+  type DataGridIAggFuncParams,
 } from '@finos/legend-lego/data-grid';
 import {
   getRowDataFromExecutionResult,
   type IQueryRendererParamsWithGridType,
   filterByOrOutValues,
 } from './QueryBuilderTDSResultShared.js';
-import type {
-  QueryBuilderResultState,
-  QueryBuilderTDSResultCellData,
-  QueryBuilderTDSResultCellDataType,
-  QueryBuilderTDSRowDataType,
+import {
+  type QueryBuilderResultState,
+  QueryBuilderResultWavgAggregationState,
+  type QueryBuilderTDSResultCellData,
+  type QueryBuilderTDSResultCellDataType,
+  type QueryBuilderTDSRowDataType,
 } from '../../../stores/QueryBuilderResultState.js';
 import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
-import { isNumber, isString, isValidURL } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  isNumber,
+  isString,
+  isValidURL,
+} from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
+import {
+  clsx,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  ModalFooter,
+  ModalFooterButton,
+  Dialog,
+  CustomSelectorInput,
+} from '@finos/legend-art';
 
 const getAggregationTDSColumnCustomizations = (
   result: TDSExecutionResult,
@@ -71,7 +87,7 @@ const getAggregationTDSColumnCustomizations = (
     case PRIMITIVE_TYPE.FLOAT:
       return {
         filter: 'agNumberColumnFilter',
-        allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
+        allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg', 'wavg'],
       };
     default:
       return {
@@ -222,27 +238,41 @@ export const QueryBuilderTDSGridResult = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
     const applicationStore = useApplicationStore();
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
     const [columnAPi, setColumnApi] = useState<DataGridColumnApi | undefined>(
       undefined,
     );
+    const [aggFuncParams, setAggFuncParams] = useState<
+      DataGridIAggFuncParams | undefined
+    >(undefined);
     const resultState = queryBuilderState.resultState;
     const isLocalModeEnabled = queryBuilderState.isLocalModeEnabled;
     const colDefs = isLocalModeEnabled
       ? getLocalColDefs(executionResult, resultState)
       : getColDefs(executionResult, resultState);
-    const darkMode =
-      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
     const onSaveGridColumnState = (): void => {
       if (!columnAPi) {
         return;
       }
-      resultState.setGridConfig({
-        columns: columnAPi.getColumnState(),
-        isPivotModeEnabled: columnAPi.isPivotMode(),
-        isLocalModeEnabled: true,
-        previewLimit: resultState.previewLimit,
-      });
+      resultState.setGridConfig(
+        resultState.wavgAggregationState?.weightedColumnIdPairs
+          ? {
+              columns: columnAPi.getColumnState(),
+              isPivotModeEnabled: columnAPi.isPivotMode(),
+              isLocalModeEnabled: true,
+              previewLimit: resultState.previewLimit,
+              weightedColumnPairs:
+                resultState.wavgAggregationState.weightedColumnIdPairs,
+            }
+          : {
+              columns: columnAPi.getColumnState(),
+              isPivotModeEnabled: columnAPi.isPivotMode(),
+              isLocalModeEnabled: true,
+              previewLimit: resultState.previewLimit,
+            },
+      );
     };
 
     const getSelectedCells = (
@@ -336,6 +366,103 @@ export const QueryBuilderTDSGridResult = observer(
       ],
     );
 
+    const weightedColumnOptions = columnAPi
+      ?.getColumns()
+      ?.filter((c) => c.getColDef().cellDataType === 'number')
+      .map((col) => ({
+        label: col.getColId(),
+        value: col.getColId(),
+      }));
+
+    const selectedWeightedColumn =
+      aggFuncParams?.colDef.field &&
+      resultState.wavgAggregationState?.weightedColumnIdPairs.get(
+        aggFuncParams.colDef.field,
+      )
+        ? {
+            label: resultState.wavgAggregationState.weightedColumnIdPairs.get(
+              aggFuncParams.colDef.field,
+            ),
+            value: resultState.wavgAggregationState.weightedColumnIdPairs.get(
+              aggFuncParams.colDef.field,
+            ),
+          }
+        : null;
+
+    const onWeightedColumnOptionChange = async (
+      option: { label: string; value: string } | null,
+    ): Promise<void> => {
+      if (aggFuncParams?.colDef.field && option?.value) {
+        resultState.wavgAggregationState?.addWeightedColumnIdPair(
+          aggFuncParams.colDef.field,
+          option.value,
+        );
+      }
+    };
+
+    const weightedAverage = (param: DataGridIAggFuncParams): void => {
+      if (param.colDef.field) {
+        if (!resultState.wavgAggregationState) {
+          resultState.setWavgAggregationState(
+            new QueryBuilderResultWavgAggregationState(),
+          );
+        }
+        resultState.wavgAggregationState?.addWeightedColumnIdPair(
+          param.colDef.field,
+          param.colDef.field,
+        );
+        resultState.wavgAggregationState?.setIsApplyingWavg(true);
+        setAggFuncParams(param);
+      } else {
+        applicationStore.notificationService.notifyError(
+          'The id of this column can`t be retrieved to perform weighted average',
+        );
+      }
+    };
+
+    const weightedAverageHelper = (param: DataGridIAggFuncParams): number => {
+      try {
+        const column = param.colDef.field;
+        if (column) {
+          const weightedColumnId =
+            resultState.wavgAggregationState?.weightedColumnIdPairs.get(column);
+          if (weightedColumnId) {
+            const weightedColumnSum = param.rowNode.allLeafChildren
+              .map((node) => node.data[weightedColumnId])
+              .reduce((a, b) => a + b) as number;
+            const weightedColumnMultiply = param.rowNode.allLeafChildren
+              .map((node) => node.data[weightedColumnId] * node.data[column])
+              .reduce((a, b) => a + b);
+            if (weightedColumnSum !== 0) {
+              onSaveGridColumnState();
+              return weightedColumnMultiply / weightedColumnSum;
+            } else {
+              applicationStore.notificationService.notifyError(
+                'The weighted column sum is 0',
+              );
+            }
+          } else {
+            applicationStore.notificationService.notifyError(
+              'The weighted column Id is not defined',
+            );
+          }
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        applicationStore.notificationService.notifyError(error);
+      }
+      return -1;
+    };
+
+    useEffect(() => {
+      if (aggFuncParams) {
+        aggFuncParams.columnApi.setColumnAggFunc(
+          aggFuncParams.colDef.field!,
+          'WAVG',
+        );
+      }
+    }, [resultState.wavgAggregationState, aggFuncParams]);
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS}
@@ -372,6 +499,10 @@ export const QueryBuilderTDSGridResult = observer(
               suppressFieldDotNotation={true}
               suppressContextMenu={false}
               columnDefs={colDefs}
+              aggFuncs={{
+                wavg: weightedAverage,
+                WAVG: weightedAverageHelper,
+              }}
               sideBar={['columns', 'filters']}
               onColumnVisible={onSaveGridColumnState}
               onColumnPinned={onSaveGridColumnState}
@@ -410,6 +541,54 @@ export const QueryBuilderTDSGridResult = observer(
                 getContextMenuItems(params)
               }
             />
+          )}
+          {resultState.wavgAggregationState?.isApplyingWavg && (
+            <Dialog
+              open={resultState.wavgAggregationState.isApplyingWavg}
+              onClose={() =>
+                resultState.wavgAggregationState?.setIsApplyingWavg(false)
+              }
+              classes={{
+                root: 'editor-modal__root-container',
+                container: 'editor-modal__container',
+                paper: 'editor-modal__content',
+              }}
+            >
+              <Modal
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+                className="query-editor__blocking-alert"
+              >
+                <ModalHeader title="Applying Weighted Average" />
+                <ModalBody>
+                  <div className="query-builder__result__tds-grid__text">
+                    choose a weighted column from dropdown
+                  </div>
+                  <CustomSelectorInput
+                    options={weightedColumnOptions}
+                    onChange={onWeightedColumnOptionChange}
+                    value={selectedWeightedColumn}
+                    placeholder={'Choose a weighted column'}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
+                  />
+                </ModalBody>
+                <ModalFooter>
+                  <ModalFooterButton
+                    onClick={() => {
+                      resultState.wavgAggregationState?.setIsApplyingWavg(
+                        false,
+                      );
+                    }}
+                    text="Apply"
+                  />
+                </ModalFooter>
+              </Modal>
+            </Dialog>
           )}
         </div>
       </div>
