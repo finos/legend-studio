@@ -950,7 +950,12 @@ const CollectionValueInstanceValueEditor = observer(
         onClick={enableEdit}
         title="Click to edit"
       >
-        <div className="value-spec-editor__list-editor__preview">
+        <div
+          className={clsx('value-spec-editor__list-editor__preview', {
+            'value-spec-editor__list-editor__preview--error':
+              !isValidInstanceValue(valueSpecification),
+          })}
+        >
           {previewText}
         </div>
         <button className="value-spec-editor__list-editor__edit-icon">
