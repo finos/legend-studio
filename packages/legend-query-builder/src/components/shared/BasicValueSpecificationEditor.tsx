@@ -593,6 +593,7 @@ const EnumValueInstanceValueEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
+          hasError={!isValidInstanceValue(valueSpecification)}
         />
         <button
           className="value-spec-editor__reset-btn"
