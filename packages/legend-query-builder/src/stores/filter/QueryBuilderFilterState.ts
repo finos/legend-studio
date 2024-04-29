@@ -968,12 +968,12 @@ export class QueryBuilderFilterState
           !isValidInstanceValue(node.condition.value)
         ) {
           validationIssues.push(
-            `Filter value for ${node.condition.propertyExpressionState.title} is missing`,
+            `Filter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
           );
         }
         if (!node.condition.propertyExpressionState.isValid) {
           validationIssues.push(
-            `Derived property parameter value for ${node.condition.propertyExpressionState.title} is missing`,
+            `Derived property parameter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
           );
         }
       }

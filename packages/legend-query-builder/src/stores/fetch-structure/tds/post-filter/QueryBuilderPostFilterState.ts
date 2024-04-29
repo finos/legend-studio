@@ -1004,7 +1004,7 @@ export class QueryBuilderPostFilterState
             QueryBuilderSimpleProjectionColumnState
         ) {
           validationIssues.push(
-            `Filter value for ${node.condition.leftConditionValue.propertyExpressionState.title} is missing`,
+            `Filter value for ${node.condition.leftConditionValue.propertyExpressionState.title} is missing or invalid`,
           );
         }
         if (
@@ -1013,7 +1013,7 @@ export class QueryBuilderPostFilterState
           !node.condition.leftConditionValue.propertyExpressionState.isValid
         ) {
           validationIssues.push(
-            `Derived property parameter value for ${node.condition.leftConditionValue.propertyExpressionState.title} is missing`,
+            `Derived property parameter value for ${node.condition.leftConditionValue.propertyExpressionState.title} is missing or invalid`,
           );
         }
       }
