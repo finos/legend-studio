@@ -317,7 +317,7 @@ const StringPrimitiveInstanceValueEditor = observer(
           />
         ) : (
           <InputWithInlineValidation
-            className="panel__content__form__section__input value-spec-editor__input input-group__input"
+            className="panel__content__form__section__input value-spec-editor__input"
             spellCheck={false}
             value={value ?? ''}
             placeholder={value === '' ? '(empty)' : undefined}
