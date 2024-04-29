@@ -466,14 +466,13 @@ const NumberPrimitiveInstanceValueEditor = observer(
           updateValueSpecIfValid(prevValue);
           setValue(prevValue);
         }
-      } else if (numericValue) {
+      } else if (numericValue !== null) {
         // If numericValue is a number, update the value spec
         updateValueSpecIfValid(numericValue.toString());
         setValue(numericValue.toString());
       } else {
-        // If numericValue is null, reset the value spec to null
-        updateValueSpecIfValid('');
-        setValue('');
+        // If numericValue is null, reset the value spec
+        resetValue();
       }
     };
 
