@@ -45,7 +45,6 @@ import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/gr
 import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
-import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery/graph';
 import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
 
 const engineConfig = JSON.parse(
@@ -142,7 +141,6 @@ const checkGrammarRoundtrip = async (
             new DSL_Diagram_GraphManagerPreset(),
             new DSL_DataSpace_GraphManagerPreset(),
             new DSL_Persistence_GraphManagerPreset(),
-            new DSL_Mastery_GraphManagerPreset(),
             new STO_ServiceStore_GraphManagerPreset(),
           ],
     )
