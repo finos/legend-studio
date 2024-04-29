@@ -216,6 +216,7 @@ export const PanelFormValidatedTextField = forwardRef<
     update: (value: string | undefined) => void;
     validate?: ((input: string) => string | undefined) | undefined;
     onValidate?: ((issue: string | undefined) => void) | undefined;
+    onBlur?: React.ChangeEventHandler<HTMLInputElement> | undefined;
     prompt?: string | React.ReactNode;
     placeholder?: string;
     isReadOnly?: boolean;
@@ -235,6 +236,7 @@ export const PanelFormValidatedTextField = forwardRef<
     placeholder,
     validate,
     onValidate,
+    onBlur,
     isReadOnly,
     className,
     darkMode,
@@ -282,6 +284,7 @@ export const PanelFormValidatedTextField = forwardRef<
           placeholder={placeholder}
           value={inputValue}
           onChange={changeValue}
+          onBlur={onBlur}
         />
         {validationErrorMessage && (
           <div

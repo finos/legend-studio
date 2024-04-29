@@ -42,12 +42,8 @@ import {
   Multiplicity,
   isValidIdentifier,
 } from '@finos/legend-graph';
-import {
-  deepClone,
-  generateEnumerableNameFromToken,
-} from '@finos/legend-shared';
+import { deepClone } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { DEFAULT_CONSTANT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type QueryBuilderConstantExpressionState,
@@ -59,7 +55,7 @@ import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEd
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaEditor } from './shared/LambdaEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
@@ -96,6 +92,17 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     const stateName = varExpression.name;
     const [selectedName, setSelectedName] = useState(stateName);
     const [isNameValid, setIsNameValid] = useState<boolean>(true);
+    const [hasEditedName, setHasEditedName] = useState<boolean>(false);
+    const [nameInputRef, setNameInputRef] = useState<HTMLInputElement | null>(
+      null,
+    );
+    const handleNameInputRef = useCallback(
+      (ref: HTMLInputElement | null): void => {
+        ref?.focus();
+        setNameInputRef(ref);
+      },
+      [],
+    );
 
     // Value
     const stateValue = constantState.value;
@@ -126,6 +133,15 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
             buildElementOption,
           ),
         );
+
+    const handleValueInputRef = (ref: HTMLInputElement | null): void => {
+      if (
+        (!isCreating || hasEditedName) &&
+        document.activeElement !== nameInputRef
+      ) {
+        ref?.focus();
+      }
+    };
 
     // Modal lifecycle actions
     const handleCancel = (): void => {
@@ -176,17 +192,24 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
               prompt="Name of constant. Should be descriptive of its purpose."
               update={(value: string | undefined): void => {
                 setSelectedName(value ?? '');
+                setHasEditedName(true);
               }}
+              onBlur={() => setHasEditedName(true)}
               validate={(constantInput: string) =>
-                getConstantNameValidationMessage(
-                  constantInput,
-                  allVariableNames,
-                  stateName,
-                )
+                !hasEditedName
+                  ? undefined
+                  : getConstantNameValidationMessage(
+                      constantInput,
+                      allVariableNames,
+                      stateName,
+                    )
               }
-              onValidate={(issue: string | undefined) => setIsNameValid(!issue)}
+              onValidate={(issue: string | undefined) =>
+                setIsNameValid(!issue && selectedName.length > 0)
+              }
               value={selectedName}
               isReadOnly={false}
+              ref={handleNameInputRef}
             />
             <PanelFormSection>
               <div className="panel__content__form__section__header__label">
@@ -228,6 +251,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                     match: selectedType.value === PrimitiveType.DATETIME,
                   }}
                   resetValue={resetConstantValue}
+                  ref={handleValueInputRef}
                 />
               </div>
             </PanelFormSection>
@@ -381,7 +405,6 @@ export const QueryBuilderConstantExpressionPanel = observer(
     const constantState = queryBuilderState.constantState;
     const graph = queryBuilderState.graphManagerState.graph;
     const isReadOnly = !queryBuilderState.isQuerySupported;
-    const varNames = queryBuilderState.allVariableNames;
     const seeDocumentation = (): void =>
       queryBuilderState.applicationStore.assistantService.openDocumentationEntry(
         QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_CONSTANTS_TO_QUERY,
@@ -393,14 +416,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
           PrimitiveType.STRING,
           queryBuilderState.observerContext,
         );
-        const constantName = generateEnumerableNameFromToken(
-          varNames,
-          DEFAULT_CONSTANT_VARIABLE_NAME,
-        );
-        const variableEx = new VariableExpression(
-          constantName,
-          Multiplicity.ONE,
-        );
+        const variableEx = new VariableExpression('', Multiplicity.ONE);
         variableEx.genericType = defaultVal.genericType;
         const constState = new QueryBuilderSimpleConstantExpressionState(
           queryBuilderState,
