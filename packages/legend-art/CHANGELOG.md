@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.27
+
+### Patch Changes
+
+- [#3085](https://github.com/finos/legend-studio/pull/3085) [`c9a32ba36`](https://github.com/finos/legend-studio/commit/c9a32ba366d5c84d63ee2612222effd0005064fd) ([@travisstebbins](https://github.com/travisstebbins)) - Add onBlur prop to PanelFormValidatedTextField
+
 ## 7.1.26
 
 ### Patch Changes

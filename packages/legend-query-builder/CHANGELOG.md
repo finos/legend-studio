@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.26
+
+### Patch Changes
+
+- [#3083](https://github.com/finos/legend-studio/pull/3083) [`e2d4a69a1`](https://github.com/finos/legend-studio/commit/e2d4a69a192e9241a1f0b56c43a21ed9626e89fb) ([@travisstebbins](https://github.com/travisstebbins)) - No default parameter name
+
+- [#3085](https://github.com/finos/legend-studio/pull/3085) [`c9a32ba36`](https://github.com/finos/legend-studio/commit/c9a32ba366d5c84d63ee2612222effd0005064fd) ([@travisstebbins](https://github.com/travisstebbins)) - No default constant name
+
 ## 4.14.25
 
 ## 4.14.24
