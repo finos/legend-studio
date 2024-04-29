@@ -30,6 +30,7 @@ import {
   getByTestId,
   getAllByTestId,
   findByText,
+  getByRole,
 } from '@testing-library/react';
 import {
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
@@ -291,7 +292,7 @@ test(
     );
     expect(queryByText(ageFilterCondition, 'integerConst')).not.toBeNull();
     fireEvent.click(getByTitle(ageFilterCondition, 'Reset'));
-    expect(queryByDisplayValue(ageFilterCondition, 0)).not.toBeNull();
+    expect(queryByDisplayValue(ageFilterCondition, '')).not.toBeNull();
     expect(
       queryByTitle(ageFilterCondition, 'Evaluate Expression (Enter)'),
     ).not.toBeNull();
@@ -321,7 +322,7 @@ test(
     await waitFor(() => expect(containerNodes.length).toBe(1));
     const ageNode = guaranteeNonNullable(containerNodes[0]);
     expect(getByText(ageNode, 'Age')).not.toBeNull();
-    const ageValue = getByDisplayValue(ageNode, 0);
+    const ageValue = getByDisplayValue(ageNode, '');
     // drag and drop
     const constantPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
@@ -464,7 +465,7 @@ test(
     const idFilterNode = guaranteeNonNullable(contentNodes[2]);
     await waitFor(() => getByText(idFilterNode, 'Id'));
     await waitFor(() => getByText(idFilterNode, 'is'));
-    await waitFor(() => getByDisplayValue(idFilterNode, '0'));
+    await waitFor(() => getByDisplayValue(idFilterNode, ''));
   },
 );
 
@@ -1193,7 +1194,11 @@ describe(
         );
         await waitFor(() => getByText(filterPanel, filterNodeName));
         await waitFor(() => getByText(filterPanel, 'is'));
-        await waitFor(() => getByDisplayValue(filterPanel, 0));
+        // Set filter value
+        const filterValueInput = await waitFor(() =>
+          getByRole(filterPanel, 'textbox'),
+        );
+        fireEvent.change(filterValueInput, { target: { value: '0' } });
         const contentNodes = await waitFor(() =>
           getAllByTestId(
             filterPanel,
@@ -1347,7 +1352,7 @@ test(
     );
     await waitFor(() => getByText(guaranteeNonNullable(contentNodes[1]), 'is'));
     await waitFor(() =>
-      getByDisplayValue(guaranteeNonNullable(contentNodes[1]), '0'),
+      getByDisplayValue(guaranteeNonNullable(contentNodes[1]), ''),
     );
     await waitFor(() =>
       getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
@@ -1730,7 +1735,7 @@ test(
     await waitFor(() => getByText(guaranteeNonNullable(contentNodes[4]), 'Id'));
     await waitFor(() => getByText(guaranteeNonNullable(contentNodes[4]), 'is'));
     await waitFor(() =>
-      getByDisplayValue(guaranteeNonNullable(contentNodes[4]), '0'),
+      getByDisplayValue(guaranteeNonNullable(contentNodes[4]), ''),
     );
   },
 );
@@ -1777,7 +1782,12 @@ test(
     );
     await waitFor(() => getByText(filterPanel, 'Address/@(Colony)Id'));
     await waitFor(() => getByText(filterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    const filterValueInput = await waitFor(() =>
+      getByDisplayValue(filterPanel, ''),
+    );
+    // Add filter value
+    fireEvent.change(filterValueInput, { target: { value: 'test' } });
+
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
@@ -1841,7 +1851,10 @@ test(
       getByText(filterPanel, 'Address/@(Address Type 1)Zipcode'),
     );
     await waitFor(() => getByText(filterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(filterPanel, '0'));
+    const filterValueInput = await waitFor(() =>
+      getByRole(filterPanel, 'textbox'),
+    );
+    fireEvent.change(filterValueInput, { target: { value: '0' } });
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,

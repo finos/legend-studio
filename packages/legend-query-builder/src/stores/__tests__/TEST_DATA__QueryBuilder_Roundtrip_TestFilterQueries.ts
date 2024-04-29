@@ -1409,7 +1409,7 @@ export const TEST_DATA__simpleFilterWithSubType = {
                 },
                 {
                   _type: 'string',
-                  value: '',
+                  value: 'test',
                 },
               ],
             },
