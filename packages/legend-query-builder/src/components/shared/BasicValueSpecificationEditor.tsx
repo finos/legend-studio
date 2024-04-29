@@ -414,11 +414,12 @@ const NumberPrimitiveInstanceValueEditor = observer(
     );
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
-    const numericValue = value
-      ? isInteger
-        ? Number.parseInt(Number(value).toString(), 10)
-        : Number(value)
-      : null;
+    const numericValue =
+      value !== null
+        ? isInteger
+          ? Number.parseInt(Number(value).toString(), 10)
+          : Number(value)
+        : null;
 
     const updateValueSpecIfValid = (val: string): void => {
       if (val) {
@@ -460,9 +461,11 @@ const NumberPrimitiveInstanceValueEditor = observer(
           setValue(calculatedValue.toString());
         } catch {
           // If we fail to evaluate the expression, we just keep the previous value
-          const prevValue = valueSpecification.values[0]
-            ? valueSpecification.values[0].toString()
-            : '';
+          const prevValue =
+            valueSpecification.values[0] !== null &&
+            valueSpecification.values[0] !== undefined
+              ? valueSpecification.values[0].toString()
+              : '';
           updateValueSpecIfValid(prevValue);
           setValue(prevValue);
         }
@@ -487,13 +490,14 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     useEffect(() => {
       if (
-        numericValue &&
+        numericValue !== null &&
         !isNaN(numericValue) &&
         numericValue !== valueSpecification.values[0]
       ) {
-        const valueFromValueSpec = valueSpecification.values[0]
-          ? (valueSpecification.values[0] as number).toString()
-          : '';
+        const valueFromValueSpec =
+          valueSpecification.values[0] !== null
+            ? (valueSpecification.values[0] as number).toString()
+            : '';
         setValue(valueFromValueSpec);
       }
     }, [numericValue, valueSpecification]);
