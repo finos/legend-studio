@@ -565,10 +565,9 @@ const EnumValueInstanceValueEditor = observer(
       Enumeration,
     );
     const enumValue =
-      valueSpecification.values[0] === null ||
       valueSpecification.values[0] === undefined
         ? null
-        : (valueSpecification.values[0].value as Enum);
+        : valueSpecification.values[0].value;
     const options = enumType.values.map((value) => ({
       label: value.name,
       value: value,

@@ -72,7 +72,7 @@ export const createSupportedFunctionExpression = (
 export const buildPrimitiveInstanceValue = (
   graph: PureModel,
   type: PRIMITIVE_TYPE,
-  value: unknown | undefined,
+  value: unknown,
   observerContext: ObserverContext,
 ): PrimitiveInstanceValue => {
   const instance = new PrimitiveInstanceValue(
