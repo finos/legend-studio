@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 11.40.0
+
+### Patch Changes
+
+- [#3069](https://github.com/finos/legend-studio/pull/3069) [`47d754c2f`](https://github.com/finos/legend-studio/commit/47d754c2fdd194695456ba088746298e3ea39d89) ([@Oluwatobiadeoye](https://github.com/Oluwatobiadeoye)) - delete all mastery code
+
 ## 11.39.0
 
 ## 11.38.0
