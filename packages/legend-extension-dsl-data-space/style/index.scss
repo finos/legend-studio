@@ -16,3 +16,11 @@
 
 @forward 'data-space-viewer';
 @forward 'data-space-query-plugin';
+
+:root {
+  --color-data-space: var(--color-blue-50);
+}
+
+.icon--data-space {
+  color: var(--color-data-space);
+}
