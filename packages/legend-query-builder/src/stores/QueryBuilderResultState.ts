@@ -270,9 +270,7 @@ export class QueryBuilderResultState {
     const weightedColumnPairsMap = this.processWeightedColumnPairsMap(config);
     if (weightedColumnPairsMap) {
       this.wavgAggregationState = new QueryBuilderResultWavgAggregationState();
-      this.wavgAggregationState.weightedColumnIdPairs = new Map([
-        ...weightedColumnPairsMap,
-      ]);
+      this.wavgAggregationState.weightedColumnIdPairs = weightedColumnPairsMap;
       newConfig = {
         ...config,
         weightedColumnPairs: weightedColumnPairsMap,
