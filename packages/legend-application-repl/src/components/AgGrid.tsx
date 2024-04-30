@@ -42,7 +42,7 @@ export function AgGridComponent<TData = unknown>(
 ): JSX.Element {
   let isAgGridLicenseEnabled = false;
   if (props.licenseKey) {
-    LicenseManager.setLicenseKey(JSON.stringify(props.licenseKey));
+    LicenseManager.setLicenseKey(props.licenseKey);
     isAgGridLicenseEnabled = true;
   }
 
