@@ -53,6 +53,12 @@ const getConstantNameInput = (renderResult: RenderResult): HTMLInputElement =>
     'textbox',
   );
 
+const getConstantValueInput = (renderResult: RenderResult): HTMLInputElement =>
+  getByRole(
+    guaranteeNonNullable(renderResult.getByText('Value').parentElement),
+    'textbox',
+  );
+
 test(integrationTest('Query builder parameter default values'), async () => {
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
     TEST_DATA__ComplexRelationalModel,
@@ -405,9 +411,7 @@ test(
     );
     selectFromCustomSelectorInput(typeContainer, 'Number');
     // enter value
-    const constantValueInput = await waitFor(() =>
-      renderResult.getByDisplayValue('0'),
-    );
+    const constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantValueInput, { target: { value: '5' } });
     const createButton = renderResult.getByRole('button', { name: 'Create' });
     fireEvent.click(createButton);
@@ -538,9 +542,7 @@ test(
     );
     selectFromCustomSelectorInput(typeContainer, 'Number');
     // enter number for value
-    const constantValueInput = await waitFor(() =>
-      renderResult.getByDisplayValue('0'),
-    );
+    const constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantValueInput, { target: { value: '5' } });
     fireEvent.click(renderResult.getByRole('button', { name: 'Cancel' }));
 
@@ -760,7 +762,7 @@ test(
     selectFromCustomSelectorInput(typeContainer, 'Number');
 
     // Set value
-    const valueInput = renderResult.getByDisplayValue('0');
+    let valueInput = getConstantValueInput(renderResult);
     fireEvent.change(valueInput, { target: { value: '5' } });
     expect(
       await waitFor(() => renderResult.getByDisplayValue('5')),
@@ -769,10 +771,9 @@ test(
     // Set Integer type
     selectFromCustomSelectorInput(typeContainer, 'Integer');
 
-    // Verify value is reset to 0
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('0')),
-    ).not.toBeNull();
+    // Verify value is reset to empty
+    valueInput = getConstantValueInput(renderResult);
+    await waitFor(() => expect(valueInput.value).toBe(''));
   },
 );
 
@@ -817,7 +818,7 @@ test(
     selectFromCustomSelectorInput(typeContainer, 'Number');
 
     // Set value
-    const valueInput = renderResult.getByDisplayValue('0');
+    const valueInput = getConstantValueInput(renderResult);
     fireEvent.change(valueInput, { target: { value: '5' } });
     expect(
       await waitFor(() => renderResult.getByDisplayValue('5')),
@@ -826,7 +827,7 @@ test(
     // Set String type
     selectFirstOptionFromCustomSelectorInput(typeContainer);
 
-    // Verify value is reset to 0
+    // Verify value is reset to empty string
     expect(
       await waitFor(() => renderResult.getByPlaceholderText('(empty)')),
     ).not.toBeNull();
@@ -868,7 +869,9 @@ test(
     await waitFor(() => renderResult.getByText('Create Constant'));
 
     // Set value
-    const valueInput = renderResult.getByPlaceholderText('(empty)');
+    let valueInput = renderResult.getByPlaceholderText(
+      '(empty)',
+    ) as HTMLInputElement;
     fireEvent.change(valueInput, { target: { value: 'test string value' } });
     expect(
       await waitFor(() => renderResult.getByDisplayValue('test string value')),
@@ -880,10 +883,9 @@ test(
     );
     selectFromCustomSelectorInput(typeContainer, 'Number');
 
-    // Verify value is reset to 0
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('0')),
-    ).not.toBeNull();
+    // Verify value is reset to empty
+    valueInput = getConstantValueInput(renderResult);
+    expect(valueInput.value).toBe('');
   },
 );
 
@@ -928,7 +930,7 @@ test(
     selectFromCustomSelectorInput(typeContainer, 'Number');
 
     // Set value
-    const valueInput = renderResult.getByDisplayValue('0');
+    const valueInput = getConstantValueInput(renderResult);
     fireEvent.change(valueInput, { target: { value: '1 + 2' } });
     expect(
       await waitFor(() => renderResult.getByDisplayValue('1 + 2')),
@@ -986,7 +988,7 @@ test(
     selectFromCustomSelectorInput(typeContainer, 'Number');
 
     // Set value
-    const valueInput = renderResult.getByDisplayValue('0');
+    const valueInput = getConstantValueInput(renderResult);
     fireEvent.change(valueInput, { target: { value: '1234' } });
     fireEvent.keyDown(valueInput, {
       key: 'Enter',
@@ -1106,7 +1108,7 @@ test(
     selectFromCustomSelectorInput(typeContainer, 'Number');
 
     // Set value
-    const valueInput = renderResult.getByDisplayValue('0');
+    const valueInput = getConstantValueInput(renderResult);
     fireEvent.change(valueInput, { target: { value: '1234' } });
     fireEvent.keyDown(valueInput, {
       key: 'Enter',
@@ -1121,9 +1123,9 @@ test(
     fireEvent.click(resetButton);
 
     // Verify value is reset
-    expect(
-      await waitFor(() => renderResult.getByDisplayValue('0')),
-    ).not.toBeNull();
+    await waitFor(() => {
+      expect(valueInput.value).toBe('');
+    });
   },
 );
 
