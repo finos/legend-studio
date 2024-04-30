@@ -41,6 +41,7 @@ import {
   VariableExpression,
   Multiplicity,
   isValidIdentifier,
+  InstanceValue,
 } from '@finos/legend-graph';
 import { deepClone } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -60,6 +61,7 @@ import { variableExpression_setName } from '../stores/shared/ValueSpecificationM
 import { LambdaEditor } from './shared/LambdaEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { flowResult } from 'mobx';
+import { isValidInstanceValue } from '../stores/QueryBuilderValueSpecificationHelper.js';
 
 const getConstantNameValidationMessage = (
   constantInput: string,
@@ -261,7 +263,11 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           <ModalFooter>
             <ModalFooterButton
               text={isCreating ? 'Create' : 'Apply'}
-              disabled={!isNameValid}
+              disabled={
+                !isNameValid ||
+                (selectedValue instanceof InstanceValue &&
+                  !isValidInstanceValue(selectedValue))
+              }
               onClick={handleApply}
             />
             <ModalFooterButton
