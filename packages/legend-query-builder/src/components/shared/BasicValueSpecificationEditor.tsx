@@ -414,12 +414,11 @@ const NumberPrimitiveInstanceValueEditor = observer(
     );
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
-    const numericValue =
-      value !== null
-        ? isInteger
-          ? Number.parseInt(Number(value).toString(), 10)
-          : Number(value)
-        : null;
+    const numericValue = value
+      ? isInteger
+        ? Number.parseInt(Number(value).toString(), 10)
+        : Number(value)
+      : null;
 
     const updateValueSpecIfValid = (val: string): void => {
       if (val) {
@@ -439,8 +438,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
           setValueSpecification(valueSpecification);
         }
       } else {
-        instanceValue_setValue(valueSpecification, null, 0, obseverContext);
-        setValueSpecification(valueSpecification);
+        resetValue();
       }
     };
 
