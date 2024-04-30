@@ -290,6 +290,7 @@ const EqualToAsssertionEditor = observer(
           type,
           testAssertionEditorState.editorStore.changeDetectionState
             .observerContext,
+          true,
         );
         equalToAssertionState.updateValueSpec(valSpec);
       }

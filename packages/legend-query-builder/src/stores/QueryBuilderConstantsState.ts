@@ -131,6 +131,8 @@ export class QueryBuilderSimpleConstantExpressionState
           this.queryBuilderState.graphManagerState.graph,
           type,
           this.queryBuilderState.observerContext,
+          this.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
         this.setValueSpec(valSpec);
       } catch (error) {

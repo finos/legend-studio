@@ -596,6 +596,7 @@ export const createFunctionTest = (
       editorStore.graphManagerState.graph,
       type,
       editorStore.changeDetectionState.observerContext,
+      true,
     );
     const expected =
       editorStore.graphManagerState.graphManager.serializeValueSpecification(
