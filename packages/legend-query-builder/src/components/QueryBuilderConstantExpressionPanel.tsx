@@ -93,13 +93,9 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     const [selectedName, setSelectedName] = useState(stateName);
     const [isNameValid, setIsNameValid] = useState<boolean>(true);
     const [hasEditedName, setHasEditedName] = useState<boolean>(false);
-    const [nameInputRef, setNameInputRef] = useState<HTMLInputElement | null>(
-      null,
-    );
     const handleNameInputRef = useCallback(
       (ref: HTMLInputElement | null): void => {
         ref?.focus();
-        setNameInputRef(ref);
       },
       [],
     );
@@ -107,6 +103,18 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     // Value
     const stateValue = constantState.value;
     const [selectedValue, setSelectedValue] = useState(deepClone(stateValue));
+    const [shouldFocusOnValue, setShouldFocusOnValue] = useState<boolean>(
+      !isCreating,
+    );
+    const handleValueInputRef = useCallback(
+      (ref: HTMLInputElement | null): void => {
+        if (shouldFocusOnValue) {
+          ref?.focus();
+          setShouldFocusOnValue(false);
+        }
+      },
+      [shouldFocusOnValue],
+    );
 
     // Type
     const stateType =
@@ -125,6 +133,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
         );
         setSelectedValue(newValSpec);
       }
+      setShouldFocusOnValue(true);
     };
     const typeOptions: PackageableElementOption<Type>[] =
       queryBuilderState.graphManagerState.graph.primitiveTypes
@@ -134,15 +143,6 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
             buildElementOption,
           ),
         );
-
-    const handleValueInputRef = (ref: HTMLInputElement | null): void => {
-      if (
-        (!isCreating || hasEditedName) &&
-        document.activeElement !== nameInputRef
-      ) {
-        ref?.focus();
-      }
-    };
 
     // Modal lifecycle actions
     const handleCancel = (): void => {
