@@ -137,8 +137,20 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
       }
       setShouldFocusOnValue(true);
     };
+    const supportedPrimitiveTypes: PrimitiveType[] = [
+      PrimitiveType.STRING,
+      PrimitiveType.BOOLEAN,
+      PrimitiveType.NUMBER,
+      PrimitiveType.INTEGER,
+      PrimitiveType.FLOAT,
+      PrimitiveType.DECIMAL,
+      PrimitiveType.DATE,
+      PrimitiveType.STRICTDATE,
+      PrimitiveType.DATETIME,
+    ];
     const typeOptions: PackageableElementOption<Type>[] =
       queryBuilderState.graphManagerState.graph.primitiveTypes
+        .filter((type) => supportedPrimitiveTypes.includes(type))
         .map(buildElementOption)
         .concat(
           queryBuilderState.graphManagerState.graph.enumerations.map(
