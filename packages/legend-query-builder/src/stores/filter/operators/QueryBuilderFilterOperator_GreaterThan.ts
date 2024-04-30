@@ -36,12 +36,11 @@ import {
 } from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
-  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
-import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
+import { buildDefaultInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderFilterOperator_GreaterThan
   extends QueryBuilderFilterOperator
@@ -94,28 +93,15 @@ export class QueryBuilderFilterOperator_GreaterThan
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER:
       case PRIMITIVE_TYPE.STRICTDATE:
-      case PRIMITIVE_TYPE.DATETIME: {
-        return buildPrimitiveInstanceValue(
-          filterConditionState.filterState.queryBuilderState.graphManagerState
-            .graph,
-          propertyType.path,
-          filterConditionState.filterState.queryBuilderState
-            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
-            ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : null,
-          filterConditionState.filterState.queryBuilderState.observerContext,
-        );
-      }
+      case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.DATE: {
-        return buildPrimitiveInstanceValue(
+        return buildDefaultInstanceValue(
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
-          PRIMITIVE_TYPE.STRICTDATE,
-          filterConditionState.filterState.queryBuilderState
-            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
-            ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : null,
+          propertyType,
           filterConditionState.filterState.queryBuilderState.observerContext,
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
       }
       default:

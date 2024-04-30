@@ -34,14 +34,11 @@ import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import {
-  generateDefaultValueForPrimitiveType,
-  isTypeCompatibleForAssignment,
-} from '../../../../QueryBuilderValueSpecificationHelper.js';
+import { isTypeCompatibleForAssignment } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
-import { buildPrimitiveInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
+import { buildDefaultInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderPostFilterOperator_LessThan
   extends QueryBuilderPostFilterOperator
@@ -89,30 +86,16 @@ export class QueryBuilderPostFilterOperator_LessThan
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER:
       case PRIMITIVE_TYPE.STRICTDATE:
-      case PRIMITIVE_TYPE.DATETIME: {
-        return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .graphManagerState.graph,
-          propertyType.path,
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
-            ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : null,
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .observerContext,
-        );
-      }
+      case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.DATE: {
-        return buildPrimitiveInstanceValue(
+        return buildDefaultInstanceValue(
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
-          PRIMITIVE_TYPE.STRICTDATE,
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
-            ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : null,
+          propertyType,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
       }
       default:

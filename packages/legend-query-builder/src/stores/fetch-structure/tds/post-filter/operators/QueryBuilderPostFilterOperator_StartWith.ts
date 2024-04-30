@@ -35,13 +35,12 @@ import type {
 } from '../QueryBuilderPostFilterState.js';
 import {
   buildNotExpression,
-  generateDefaultValueForPrimitiveType,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
-import { buildPrimitiveInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
+import { buildDefaultInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderPostFilterOperator_StartWith
   extends QueryBuilderPostFilterOperator
@@ -71,16 +70,14 @@ export class QueryBuilderPostFilterOperator_StartWith
       postFilterConditionState.leftConditionValue.getColumnType();
     switch (propertyType?.path) {
       case PRIMITIVE_TYPE.STRING: {
-        return buildPrimitiveInstanceValue(
+        return buildDefaultInstanceValue(
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .graphManagerState.graph,
-          propertyType.path,
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .INTERNAL__enableInitializingDefaultSimpleExpressionValue
-            ? generateDefaultValueForPrimitiveType(propertyType.path)
-            : null,
+          propertyType,
           postFilterConditionState.postFilterState.tdsState.queryBuilderState
             .observerContext,
+          postFilterConditionState.postFilterState.tdsState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
       }
       default:

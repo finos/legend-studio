@@ -121,6 +121,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           queryBuilderState.graphManagerState.graph,
           val.value,
           queryBuilderState.observerContext,
+          queryBuilderState.INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
         setSelectedValue(newValSpec);
       }
@@ -163,6 +164,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
         queryBuilderState.graphManagerState.graph,
         selectedType.value,
         queryBuilderState.observerContext,
+        queryBuilderState.INTERNAL__enableInitializingDefaultSimpleExpressionValue,
       );
       setSelectedValue(valSpec);
     };
@@ -415,6 +417,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
           graph,
           PrimitiveType.STRING,
           queryBuilderState.observerContext,
+          queryBuilderState.INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
         const variableEx = new VariableExpression('', Multiplicity.ONE);
         variableEx.genericType = defaultVal.genericType;
