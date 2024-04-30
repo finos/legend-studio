@@ -141,6 +141,14 @@ export const buildDefaultInstanceValue = (
   const path = type.path;
   switch (path) {
     case PRIMITIVE_TYPE.STRING:
+    case PRIMITIVE_TYPE.BOOLEAN: {
+      return buildPrimitiveInstanceValue(
+        graph,
+        path,
+        generateDefaultValueForPrimitiveType(path),
+        observerContext,
+      );
+    }
     case PRIMITIVE_TYPE.STRICTDATE:
     case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.NUMBER:
@@ -153,14 +161,6 @@ export const buildDefaultInstanceValue = (
         enableInitializingDefaultValue
           ? generateDefaultValueForPrimitiveType(path)
           : null,
-        observerContext,
-      );
-    }
-    case PRIMITIVE_TYPE.BOOLEAN: {
-      return buildPrimitiveInstanceValue(
-        graph,
-        path,
-        generateDefaultValueForPrimitiveType(path),
         observerContext,
       );
     }
