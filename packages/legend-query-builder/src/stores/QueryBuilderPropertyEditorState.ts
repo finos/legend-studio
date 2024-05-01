@@ -152,7 +152,7 @@ export const generateValueSpecificationForParameter = (
         graph,
         type,
         observerContext,
-        initializeDefaultValue,
+        initializeDefaultValue || parameter.multiplicity.lowerBound === 0,
       );
     }
   }
