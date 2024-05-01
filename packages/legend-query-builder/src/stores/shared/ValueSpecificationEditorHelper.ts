@@ -176,22 +176,23 @@ export const buildDefaultInstanceValue = (
     }
     default:
       if (type instanceof Enumeration) {
-        if (type.values.length > 0) {
-          const enumValueInstanceValue = new EnumValueInstanceValue(
-            GenericTypeExplicitReference.create(new GenericType(type)),
-          );
-          if (enableInitializingDefaultValue) {
+        const enumValueInstanceValue = new EnumValueInstanceValue(
+          GenericTypeExplicitReference.create(new GenericType(type)),
+        );
+        if (enableInitializingDefaultValue) {
+          if (type.values.length > 0) {
             instanceValue_setValues(
               enumValueInstanceValue,
               [EnumValueExplicitReference.create(type.values[0] as Enum)],
               observerContext,
             );
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't get default value for enumeration since enumeration '${path}' has no value`,
+            );
           }
-          return enumValueInstanceValue;
         }
-        throw new UnsupportedOperationError(
-          `Can't get default value for enumeration since enumeration '${path}' has no value`,
-        );
+        return enumValueInstanceValue;
       }
       throw new UnsupportedOperationError(
         `Can't get default value for type '${path}'`,

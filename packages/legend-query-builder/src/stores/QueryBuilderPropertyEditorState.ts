@@ -26,17 +26,13 @@ import {
 import {
   Class,
   type AbstractProperty,
-  type Enum,
   type ValueSpecification,
   type PureModel,
   AbstractPropertyExpression,
   DerivedProperty,
   Enumeration,
-  EnumValueExplicitReference,
-  EnumValueInstanceValue,
   InstanceValue,
   PrimitiveInstanceValue,
-  type PRIMITIVE_TYPE,
   VariableExpression,
   SimpleFunctionExpression,
   matchFunctionName,
@@ -50,7 +46,6 @@ import {
 } from '@finos/legend-graph';
 import {
   createNullishValue,
-  generateDefaultValueForPrimitiveType,
   isValidInstanceValue,
 } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -59,9 +54,9 @@ import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils
 import {
   propertyExpression_setFunc,
   functionExpression_setParametersValues,
-  instanceValue_setValues,
 } from './shared/ValueSpecificationModifierHelper.js';
 import { generateMilestonedPropertyParameterValue } from './milestoning/QueryBuilderMilestoningHelper.js';
+import { buildDefaultInstanceValue } from './shared/ValueSpecificationEditorHelper.js';
 
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
@@ -147,40 +142,18 @@ export const generateValueSpecificationForParameter = (
 ): ValueSpecification => {
   if (parameter.genericType) {
     const type = parameter.genericType.value.rawType;
-    if (type instanceof PrimitiveType) {
-      const primitiveInstanceValue = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            // NOTE: since the default generated value for type Date is a StrictDate
-            // we need to adjust the generic type accordingly
-            // See https://github.com/finos/legend-studio/issues/1391
-            type === PrimitiveType.DATE ? PrimitiveType.STRICTDATE : type,
-          ),
-        ),
-      );
-      if (initializeDefaultValue && type !== PrimitiveType.LATESTDATE) {
-        instanceValue_setValues(
-          primitiveInstanceValue,
-          [generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE)],
-          observerContext,
+    if (type instanceof PrimitiveType || type instanceof Enumeration) {
+      if (type === PrimitiveType.LATESTDATE) {
+        return new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(new GenericType(type)),
         );
       }
-      return primitiveInstanceValue;
-    } else if (type instanceof Enumeration) {
-      const enumValueInstanceValue = new EnumValueInstanceValue(
-        GenericTypeExplicitReference.create(new GenericType(type)),
+      return buildDefaultInstanceValue(
+        graph,
+        type,
+        observerContext,
+        initializeDefaultValue,
       );
-      if (initializeDefaultValue && type.values.length) {
-        const enumValueRef = EnumValueExplicitReference.create(
-          type.values[0] as Enum,
-        );
-        instanceValue_setValues(
-          enumValueInstanceValue,
-          [enumValueRef],
-          observerContext,
-        );
-      }
-      return enumValueInstanceValue;
     }
   }
   // for arguments of types we don't support, we will fill them with `[]`
