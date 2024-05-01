@@ -25,6 +25,7 @@ import {
   StoreProjectData,
   ProjectDependencyCoordinates,
   ProjectVersionEntities,
+  MASTER_SNAPSHOT_ALIAS,
 } from '@finos/legend-server-depot';
 import {
   ActionState,
@@ -245,7 +246,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
           this.depotServerClient.getVersionEntities(
             this.currentQuery.groupId,
             this.currentQuery.artifactId,
-            this.currentQuery.versionId,
+            MASTER_SNAPSHOT_ALIAS,
           ),
           this.sdlcServerClient.getConfiguration(
             this.currentQueryProject.projectId,
@@ -314,7 +315,10 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
           this.currentQuery.artifactId,
         )) as PlainObject<StoreProjectData>,
       );
-      this.setWorkspaceName(`${DEFAULT_WORKSPACE_NAME_PREFIX}-${query.name}`);
+      const updatedQueryName = query.name.replace(/[^a-zA-Z0-9]/g, '');
+      this.setWorkspaceName(
+        `${DEFAULT_WORKSPACE_NAME_PREFIX}-${updatedQueryName}`,
+      );
       this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateDataSpaceTemplateQueryPromotionRoute(
           this.currentQuery.groupId,
