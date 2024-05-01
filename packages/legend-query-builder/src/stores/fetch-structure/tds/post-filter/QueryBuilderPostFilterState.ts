@@ -609,6 +609,7 @@ export class QueryBuilderPostFilterState
       setDerivedColumnBeingDropped: action,
       allValidationIssues: computed,
       hasInvalidFilterValues: computed,
+      hasInvalidDerivedPropertyParameters: computed,
       hashCode: computed,
     });
 
@@ -1031,6 +1032,16 @@ export class QueryBuilderPostFilterState
         !isValidInstanceValue(node.condition.rightConditionValue.value) &&
         node.condition.leftConditionValue instanceof
           QueryBuilderSimpleProjectionColumnState,
+    );
+  }
+
+  get hasInvalidDerivedPropertyParameters(): boolean {
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        node instanceof QueryBuilderPostFilterTreeConditionNodeData &&
+        node.condition.leftConditionValue instanceof
+          QueryBuilderSimpleProjectionColumnState &&
+        !node.condition.leftConditionValue.propertyExpressionState.isValid,
     );
   }
 

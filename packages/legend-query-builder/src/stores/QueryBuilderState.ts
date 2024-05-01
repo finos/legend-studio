@@ -213,6 +213,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       sideBarClassName: computed,
       isQuerySupported: computed,
       allValidationIssues: computed,
+      canBuildQuery: computed,
 
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
@@ -813,6 +814,18 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   get allValidationIssues(): string[] {
     return this.fetchStructureState.implementation.allValidationIssues.concat(
       this.filterState.allValidationIssues,
+    );
+  }
+
+  get canBuildQuery(): boolean {
+    return (
+      this.isQuerySupported &&
+      !this.filterState.hasInvalidFilterValues &&
+      !this.filterState.hasInvalidDerivedPropertyParameters &&
+      !this.fetchStructureState.implementation.hasInvalidFilterValues &&
+      !this.fetchStructureState.implementation
+        .hasInvalidDerivedPropertyParameters &&
+      Boolean(this.class)
     );
   }
 

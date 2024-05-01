@@ -500,6 +500,7 @@ export class QueryBuilderFilterState
       expandTree: action,
       allValidationIssues: computed,
       hasInvalidFilterValues: computed,
+      hasInvalidDerivedPropertyParameters: computed,
       hashCode: computed,
     });
 
@@ -987,6 +988,14 @@ export class QueryBuilderFilterState
         node instanceof QueryBuilderFilterTreeConditionNodeData &&
         node.condition.value instanceof InstanceValue &&
         !isValidInstanceValue(node.condition.value),
+    );
+  }
+
+  get hasInvalidDerivedPropertyParameters(): boolean {
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        node instanceof QueryBuilderFilterTreeConditionNodeData &&
+        !node.condition.propertyExpressionState.isValid,
     );
   }
 

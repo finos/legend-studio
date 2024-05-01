@@ -802,7 +802,20 @@ export class QueryBuilderTDSState
   }
 
   get hasInvalidFilterValues(): boolean {
-    return this.postFilterState.hasInvalidFilterValues;
+    return (
+      this.postFilterState.hasInvalidFilterValues ||
+      this.postFilterState.hasInvalidDerivedPropertyParameters
+    );
+  }
+
+  get hasInvalidDerivedPropertyParameters(): boolean {
+    return this.projectionColumns.some(
+      (column) =>
+        column instanceof QueryBuilderSimpleProjectionColumnState &&
+        column.propertyExpressionState.derivedPropertyExpressionStates.some(
+          (p) => !p.isValid,
+        ),
+    );
   }
 
   get hashCode(): string {

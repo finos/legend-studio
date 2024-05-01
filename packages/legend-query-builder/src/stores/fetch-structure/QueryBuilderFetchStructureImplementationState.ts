@@ -48,6 +48,7 @@ export abstract class QueryBuilderFetchStructureImplementationState
       fetchStructureValidationIssues: computed,
       allValidationIssues: computed,
       hasInvalidFilterValues: computed,
+      hasInvalidDerivedPropertyParameters: computed,
       hashCode: computed,
     });
 
@@ -77,6 +78,7 @@ export abstract class QueryBuilderFetchStructureImplementationState
   abstract initialize(): void;
   abstract initializeWithQuery(): void;
   abstract get hasInvalidFilterValues(): boolean;
+  abstract get hasInvalidDerivedPropertyParameters(): boolean;
   abstract get hashCode(): string;
 
   get TEMPORARY__showPostFetchStructurePanel(): boolean {
