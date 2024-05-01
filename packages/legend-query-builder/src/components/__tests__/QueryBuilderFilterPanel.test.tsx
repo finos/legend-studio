@@ -47,6 +47,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
   TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
   TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
+  TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDerivedPropFromParentUsedInFilter,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
@@ -58,6 +59,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
+  selectFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter.json';
@@ -82,10 +84,12 @@ import {
 import type { Entity } from '@finos/legend-storage';
 import TEST_DATA__SimpleSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
 import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json' assert { type: 'json' };
+import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' assert { type: 'json' };
 import {
   TEST_DATA__nestedFilterWithSubType,
   TEST_DATA__simpleFilterWithSubType,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
+import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
 
 test(
   integrationTest(
@@ -918,321 +922,9 @@ test(
   },
 );
 
-type MilestoningDragAndDropTestCase = [
-  string,
-  {
-    mappingPath: string;
-    runtimePath: string;
-    classPath: string;
-    entities: Entity[];
-    mappingAnalysis: object;
-    propertyClassName: string;
-    propertyName: string;
-    filterNodeName: string;
-    expectedDerivedPropertyParameters: string[];
-    expectedRawLambda: { parameters?: object; body?: object };
-  },
-];
-
-const MILESTONING_FILTER_DND_TEST_CASES: MilestoningDragAndDropTestCase[] = [
-  [
-    'Query builder loads simple filter when we DnD filter node and both source and target are business temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Business Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Business Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBusinessTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is processing temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Processing Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Processing Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is biTemporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Bi Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Bi Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is business Temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person2',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Business Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Business Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is processing temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person2',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Processing Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Processing Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndProcessingTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is biTemporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person2',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Bi Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Bi Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is business temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person1',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Business Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Business Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is processing temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person1',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Processing Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Processing Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is biTemporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person1',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Bi Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Bi Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is business temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Firm',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Business Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Business Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithNonTemporalSourceAndBusinessTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is processing temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Firm',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Processing Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Processing Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithNonTemporalSourceAndProcessingTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is biTemporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Firm',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Bi Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Bi Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget,
-    },
-  ],
-];
-
-describe(
-  integrationTest('Milestoning filter DnD query is properly built'),
-  () => {
-    test.each(MILESTONING_FILTER_DND_TEST_CASES)(
-      '%s',
-      async (
-        testName: MilestoningDragAndDropTestCase[0],
-        testCase: MilestoningDragAndDropTestCase[1],
-      ) => {
-        const {
-          mappingPath,
-          runtimePath,
-          classPath,
-          entities,
-          mappingAnalysis,
-          propertyClassName,
-          propertyName,
-          filterNodeName,
-          expectedDerivedPropertyParameters,
-          expectedRawLambda,
-        } = testCase;
-        const { renderResult, queryBuilderState } =
-          await TEST__setUpQueryBuilder(
-            entities,
-            stub_RawLambda(),
-            mappingPath,
-            runtimePath,
-            mappingAnalysis,
-          );
-
-        const _class =
-          queryBuilderState.graphManagerState.graph.getClass(classPath);
-        await act(async () => {
-          queryBuilderState.changeClass(_class);
-        });
-        const filterPanel = await waitFor(() =>
-          renderResult.getByTestId(
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-          ),
-        );
-        const explorerPanel = await waitFor(() =>
-          renderResult.getByTestId(
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
-          ),
-        );
-
-        // Drag and drop
-        const dropZone = await waitFor(() =>
-          getByText(filterPanel, 'Add a filter condition'),
-        );
-        await waitFor(() => getByText(explorerPanel, propertyClassName));
-        fireEvent.click(getByText(explorerPanel, propertyClassName));
-        const sources = await waitFor(() =>
-          getAllByText(explorerPanel, propertyName),
-        );
-        expect(sources.length).toBe(2);
-        const dragSource = guaranteeNonNullable(sources[1]);
-        await dragAndDrop(
-          dragSource,
-          dropZone,
-          filterPanel,
-          'Add a filter condition',
-        );
-        await waitFor(() => getByText(filterPanel, filterNodeName));
-        await waitFor(() => getByText(filterPanel, 'is'));
-        // Set filter value
-        const filterValueInput = await waitFor(() =>
-          getByRole(filterPanel, 'textbox'),
-        );
-        fireEvent.change(filterValueInput, { target: { value: '0' } });
-        const contentNodes = await waitFor(() =>
-          getAllByTestId(
-            filterPanel,
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
-          ),
-        );
-        expect(contentNodes.length).toBe(1);
-        await waitFor(() =>
-          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
-        );
-        fireEvent.click(
-          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
-        );
-        const dpModal = await waitFor(() => renderResult.getByRole('dialog'));
-        await waitFor(() => getByText(dpModal, 'Derived Property'));
-        expectedDerivedPropertyParameters.forEach((p) =>
-          getAllByText(dpModal, p),
-        );
-        fireEvent.click(getByText(dpModal, 'Done'));
-
-        // Check whether the rawLambda we build is expected
-        expect(
-          queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
-            queryBuilderState.buildQuery(),
-          ),
-        ).toEqual(expectedRawLambda);
-      },
-    );
-  },
-);
-
 test(
   integrationTest(
-    `Query builder loads simple filter when we create milestoning derived property filter condition by DnD and doesn't propagate any milestoning date `,
+    `Query builder loads simple filter when we create milestoning derived property filter condition by DnD and doesn't propagate any milestoning date`,
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -1941,5 +1633,790 @@ test(
       ),
     );
     await waitFor(() => getByText(filterPanel, 'Derived Prop From Parent'));
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder uses null as default value for string filter and shows validation error`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+
+    // Enter value
+    const filterValueInput = getByRole(filterPanel, 'textbox');
+    fireEvent.change(filterValueInput, { target: { value: 'test' } });
+    await waitFor(() => getByDisplayValue(filterPanel, 'test'));
+
+    // Verify no validation issue
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
+
+    // Delete value to set it to empty string
+    fireEvent.change(filterValueInput, { target: { value: '' } });
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+
+    // Verify no validation issue
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
+
+    // Click reset button
+    fireEvent.click(getByTitle(filterPanel, 'Reset'));
+
+    // Verify value is reset
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder uses false as default value for boolean filter and shows no validation error`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Is Active'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Is Active'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Verify no validation issues
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder uses null as default value for numerical filter and shows validation error`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() => getByText(explorerPanel, 'Id'));
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Id'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+
+    // Enter value
+    const filterValueInput = getByRole(filterPanel, 'textbox');
+    fireEvent.change(filterValueInput, { target: { value: '123' } });
+
+    // Verify no validation issues
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
+
+    // Click reset button
+    fireEvent.click(getByTitle(filterPanel, 'Reset'));
+
+    // Verify value is reset
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder uses null as default value for date filter and shows validation error`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Dob Date'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Dob Date'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByText(filterPanel, 'Select value'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+
+    // Select value
+    const filterValueButton = getByText(filterPanel, 'Select value');
+    fireEvent.click(filterValueButton);
+    fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY));
+    fireEvent.keyDown(
+      renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+
+    // Verify no validation issues
+    expect(getByText(filterPanel, 'Today')).not.toBeNull();
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
+
+    // Click reset button
+    fireEvent.click(getByTitle(filterPanel, 'Reset'));
+
+    // Verify value is reset
+    await waitFor(() => getByText(filterPanel, 'Select value'));
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder uses null as default value for enum filter and shows validation error`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA_QueryBuilder_QueryExecution_Entities,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Inc Type'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Inc Type'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByText(filterPanel, 'Select value'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+
+    // Select value
+    const filterValueDropdown = guaranteeNonNullable(
+      getByText(filterPanel, 'Select value').parentElement?.parentElement,
+    );
+    selectFromCustomSelectorInput(filterValueDropdown, 'Corp');
+
+    // Verify no validation issues
+    expect(getByText(filterPanel, 'Corp')).not.toBeNull();
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
+
+    // Click reset button
+    fireEvent.click(getByTitle(filterPanel, 'Reset'));
+
+    // Verify value is reset
+    await waitFor(() => getByText(filterPanel, 'Select value'));
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+  },
+);
+
+type MilestoningDragAndDropTestCase = [
+  string,
+  {
+    mappingPath: string;
+    runtimePath: string;
+    classPath: string;
+    entities: Entity[];
+    mappingAnalysis: object;
+    propertyClassName: string;
+    propertyName: string;
+    filterNodeName: string;
+    expectedDerivedPropertyParameters: string[];
+    expectedRawLambda: { parameters?: object; body?: object };
+  },
+];
+
+const MILESTONING_FILTER_DND_TEST_CASES: MilestoningDragAndDropTestCase[] = [
+  [
+    'Query builder loads simple filter when we DnD filter node and both source and target are business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is business Temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+];
+
+describe(
+  integrationTest('Milestoning filter DnD query is properly built'),
+  () => {
+    test.each(MILESTONING_FILTER_DND_TEST_CASES)(
+      '%s',
+      async (
+        testName: MilestoningDragAndDropTestCase[0],
+        testCase: MilestoningDragAndDropTestCase[1],
+      ) => {
+        const {
+          mappingPath,
+          runtimePath,
+          classPath,
+          entities,
+          mappingAnalysis,
+          propertyClassName,
+          propertyName,
+          filterNodeName,
+          expectedDerivedPropertyParameters,
+          expectedRawLambda,
+        } = testCase;
+        const { renderResult, queryBuilderState } =
+          await TEST__setUpQueryBuilder(
+            entities,
+            stub_RawLambda(),
+            mappingPath,
+            runtimePath,
+            mappingAnalysis,
+          );
+
+        const _class =
+          queryBuilderState.graphManagerState.graph.getClass(classPath);
+        await act(async () => {
+          queryBuilderState.changeClass(_class);
+        });
+        const filterPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+          ),
+        );
+        const explorerPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+          ),
+        );
+
+        // Drag and drop
+        const dropZone = await waitFor(() =>
+          getByText(filterPanel, 'Add a filter condition'),
+        );
+        await waitFor(() => getByText(explorerPanel, propertyClassName));
+        fireEvent.click(getByText(explorerPanel, propertyClassName));
+        const sources = await waitFor(() =>
+          getAllByText(explorerPanel, propertyName),
+        );
+        expect(sources.length).toBe(2);
+        const dragSource = guaranteeNonNullable(sources[1]);
+        await dragAndDrop(
+          dragSource,
+          dropZone,
+          filterPanel,
+          'Add a filter condition',
+        );
+        await waitFor(() => getByText(filterPanel, filterNodeName));
+        await waitFor(() => getByText(filterPanel, 'is'));
+        // Set filter value
+        const filterValueInput = await waitFor(() =>
+          getByRole(filterPanel, 'textbox'),
+        );
+        fireEvent.change(filterValueInput, { target: { value: '0' } });
+        const contentNodes = await waitFor(() =>
+          getAllByTestId(
+            filterPanel,
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+          ),
+        );
+        expect(contentNodes.length).toBe(1);
+        await waitFor(() =>
+          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+        );
+        fireEvent.click(
+          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+        );
+        const dpModal = await waitFor(() => renderResult.getByRole('dialog'));
+        await waitFor(() => getByText(dpModal, 'Derived Property'));
+        expectedDerivedPropertyParameters.forEach((p) =>
+          getAllByText(dpModal, p),
+        );
+        fireEvent.click(getByText(dpModal, 'Done'));
+
+        // Check whether the rawLambda we build is expected
+        expect(
+          queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+            queryBuilderState.buildQuery(),
+          ),
+        ).toEqual(expectedRawLambda);
+      },
+    );
   },
 );

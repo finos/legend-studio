@@ -1475,6 +1475,10 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists =
             _type: 'MappedProperty',
             name: 'lastName',
           },
+          {
+            _type: 'MappedProperty',
+            name: 'isActive',
+          },
         ],
       },
       {
@@ -1778,3 +1782,27 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDerivedP
       },
     ],
   };
+
+export const TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities = {
+  mappedEntities: [
+    {
+      path: 'model::Firm',
+      properties: [
+        { _type: 'entity', entityPath: 'model::Person', name: 'employees' },
+        { _type: 'enum', enumPath: 'model::IncType', name: 'incType' },
+        { _type: 'MappedProperty', name: 'isApple' },
+        { _type: 'MappedProperty', name: 'legalName' },
+        { _type: 'MappedProperty', name: 'employeeSizes' },
+      ],
+    },
+    {
+      path: 'model::Person',
+      properties: [
+        { _type: 'MappedProperty', name: 'age' },
+        { _type: 'MappedProperty', name: 'firstName' },
+        { _type: 'MappedProperty', name: 'lastName' },
+        { _type: 'MappedProperty', name: 'fullName' },
+      ],
+    },
+  ],
+};
