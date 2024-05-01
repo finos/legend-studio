@@ -43,6 +43,7 @@ import {
   type IRowNode,
   type GetContextMenuItemsParams,
   type MenuItemDef,
+  type IAggFuncParams,
   ModuleRegistry,
 } from '@ag-grid-community/core';
 import { LicenseManager } from '@ag-grid-enterprise/core';
@@ -102,4 +103,5 @@ export type {
   IRowNode as DataGridIRowNode,
   GetContextMenuItemsParams as DataGridGetContextMenuItemsParams,
   MenuItemDef as DataGridMenuItemDef,
+  IAggFuncParams as DataGridIAggFuncParams,
 };

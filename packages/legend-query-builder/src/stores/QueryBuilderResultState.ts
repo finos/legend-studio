@@ -48,6 +48,7 @@ import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 import { downloadStream } from '@finos/legend-application';
+import { QueryBuilderDataGridCustomAggregationFunction } from '../components/result/tds/QueryBuilderTDSGridResult.js';
 
 export const DEFAULT_LIMIT = 1000;
 
@@ -83,7 +84,36 @@ type QueryBuilderDataGridConfig = {
   isPivotModeEnabled: boolean | undefined;
   isLocalModeEnabled: boolean | undefined;
   previewLimit?: number | undefined;
+  weightedColumnPairs?: Map<string, string> | undefined;
 };
+
+export class QueryBuilderResultWavgAggregationState {
+  isApplyingWavg = false;
+  weightedColumnIdPairs: Map<string, string>;
+
+  constructor() {
+    makeObservable(this, {
+      isApplyingWavg: observable,
+      weightedColumnIdPairs: observable,
+      setIsApplyingWavg: action,
+      addWeightedColumnIdPair: action,
+      removeWeightedColumnIdPair: action,
+    });
+    this.weightedColumnIdPairs = new Map<string, string>();
+  }
+
+  setIsApplyingWavg(val: boolean): void {
+    this.isApplyingWavg = val;
+  }
+
+  addWeightedColumnIdPair(col: string, weightedColumnId: string): void {
+    this.weightedColumnIdPairs.set(col, weightedColumnId);
+  }
+
+  removeWeightedColumnIdPair(col: string): void {
+    this.weightedColumnIdPairs.delete(col);
+  }
+}
 
 export class QueryBuilderResultState {
   readonly queryBuilderState: QueryBuilderState;
@@ -105,6 +135,7 @@ export class QueryBuilderResultState {
   isSelectingCells: boolean;
 
   gridConfig: QueryBuilderDataGridConfig | undefined;
+  wavgAggregationState: QueryBuilderResultWavgAggregationState | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
@@ -120,7 +151,9 @@ export class QueryBuilderResultState {
       isSelectingCells: observable,
       isQueryUsageViewerOpened: observable,
       gridConfig: observable,
+      wavgAggregationState: observable,
       setGridConfig: action,
+      setWavgAggregationState: action,
       setIsSelectingCells: action,
       setIsRunningQuery: action,
       setExecutionResult: action,
@@ -151,6 +184,12 @@ export class QueryBuilderResultState {
 
   setGridConfig(val: QueryBuilderDataGridConfig | undefined): void {
     this.gridConfig = val;
+  }
+
+  setWavgAggregationState(
+    val: QueryBuilderResultWavgAggregationState | undefined,
+  ): void {
+    this.wavgAggregationState = val;
   }
 
   setIsSelectingCells(val: boolean): void {
@@ -199,11 +238,50 @@ export class QueryBuilderResultState {
     }
   }
 
+  processWeightedColumnPairsMap(
+    config: QueryGridConfig,
+  ): Map<string, string> | undefined {
+    if (config.weightedColumnPairs) {
+      const wavgColumns = config.columns
+        .filter(
+          (col) =>
+            (col as DataGridColumnState).aggFunc ===
+            QueryBuilderDataGridCustomAggregationFunction.WAVG,
+        )
+        .map((col) => (col as DataGridColumnState).colId);
+      const weightedColumnPairsMap = new Map<string, string>();
+      config.weightedColumnPairs.forEach((wc) => {
+        if (wc[0] && wc[1]) {
+          weightedColumnPairsMap.set(wc[0], wc[1]);
+        }
+      });
+      for (const wavgCol of weightedColumnPairsMap.keys()) {
+        if (!wavgColumns.includes(wavgCol)) {
+          weightedColumnPairsMap.delete(wavgCol);
+        }
+      }
+      return weightedColumnPairsMap;
+    }
+    return undefined;
+  }
+
   handlePreConfiguredGridConfig(config: QueryGridConfig): void {
-    const newConfig = {
-      ...config,
-      columns: config.columns as DataGridColumnState[],
-    };
+    let newConfig;
+    const weightedColumnPairsMap = this.processWeightedColumnPairsMap(config);
+    if (weightedColumnPairsMap) {
+      this.wavgAggregationState = new QueryBuilderResultWavgAggregationState();
+      this.wavgAggregationState.weightedColumnIdPairs = weightedColumnPairsMap;
+      newConfig = {
+        ...config,
+        weightedColumnPairs: weightedColumnPairsMap,
+        columns: config.columns as DataGridColumnState[],
+      };
+    } else {
+      newConfig = {
+        ...config,
+        columns: config.columns as DataGridColumnState[],
+      };
+    }
     if (config.previewLimit) {
       this.setPreviewLimit(config.previewLimit);
     }

@@ -39,6 +39,7 @@ export interface QueryGridConfig {
   isPivotModeEnabled: boolean | undefined;
   isLocalModeEnabled: boolean | undefined;
   previewLimit?: number | undefined;
+  weightedColumnPairs?: Map<string, string> | undefined;
 }
 
 export class Query {
