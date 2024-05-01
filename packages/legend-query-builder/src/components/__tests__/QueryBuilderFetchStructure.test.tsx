@@ -24,6 +24,8 @@ import {
   act,
   getByDisplayValue,
   queryByText,
+  getByRole,
+  getAllByPlaceholderText,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -1785,5 +1787,195 @@ test(
     fireEvent.click(renderResult.getByText('Undo'));
     expect(await waitFor(() => queryByText(projectionPanel, 'Age'))).toBeNull();
     expect(renderResult.queryByText('1 issue')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder derived property required parameter is null when added to fetch structure',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+
+    // Drag and drop derived property into fetch structure panel
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Name With Title'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // Check for validation issue
+    expect(
+      await waitFor(() => renderResult.getByText('1 issue')),
+    ).not.toBeNull();
+    expect(
+      guaranteeNonNullable(renderResult.getByText('1 issue').parentElement)
+        .title,
+    ).toContain(
+      'Derived property parameter value for Name With Title is missing',
+    );
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+
+    // Set parameter value
+    fireEvent.click(
+      renderResult.getByTitle('Set Derived Property Argument(s)...'),
+    );
+    let dpModal = await waitFor(() => renderResult.getByRole('dialog'));
+    await waitFor(() => getByText(dpModal, 'Derived Property'));
+    await waitFor(() => getByText(dpModal, 'Name With Title'));
+    await waitFor(() => getByText(dpModal, 'title'));
+    const valueInput = guaranteeNonNullable(dpModal.querySelector('input'));
+    fireEvent.change(valueInput, {
+      target: { value: 'Mr.' },
+    });
+    fireEvent.click(renderResult.getByRole('button', { name: 'Done' }));
+
+    // Check for no validation issue
+    expect(await waitFor(() => renderResult.queryByText('1 issue'))).toBeNull();
+    expect(
+      await waitFor(() =>
+        renderResult.getByRole('button', { name: 'Run Query' }),
+      ),
+    ).toHaveProperty('disabled', false);
+
+    // Reset parameter value
+    fireEvent.click(
+      renderResult.getByTitle('Set Derived Property Argument(s)...'),
+    );
+    dpModal = await waitFor(() => renderResult.getByRole('dialog'));
+    await waitFor(() => getByText(dpModal, 'Derived Property'));
+    await waitFor(() => getByText(dpModal, 'Name With Title'));
+    await waitFor(() => getByText(dpModal, 'title'));
+    fireEvent.click(renderResult.getByRole('button', { name: 'Reset' }));
+    fireEvent.click(getByRole(dpModal, 'button', { name: 'Done' }));
+
+    // Check for validation issue
+    expect(
+      await waitFor(() => renderResult.getByText('1 issue')),
+    ).not.toBeNull();
+    expect(
+      guaranteeNonNullable(renderResult.getByText('1 issue').parentElement)
+        .title,
+    ).toContain(
+      'Derived property parameter value for Name With Title is missing',
+    );
+    expect(
+      await waitFor(() =>
+        renderResult.getByRole('button', { name: 'Run Query' }),
+      ),
+    ).toHaveProperty('disabled', true);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder derived property optional parameter is valid and has default value when added to fetch structure',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+
+    // Drag and drop derived property into fetch structure panel
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Name With Prefix And Suffix'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // Check for no validation issue
+    expect(await waitFor(() => renderResult.queryByText('1 issue'))).toBeNull();
+    expect(
+      await waitFor(() =>
+        renderResult.getByRole('button', { name: 'Run Query' }),
+      ),
+    ).toHaveProperty('disabled', false);
+
+    // Check that the derived property has the default value (empty string)
+    fireEvent.click(
+      renderResult.getByTitle('Set Derived Property Argument(s)...'),
+    );
+    const dpModal = await waitFor(() => renderResult.getByRole('dialog'));
+    await waitFor(() => getByText(dpModal, 'Derived Property'));
+    await waitFor(() => getByText(dpModal, 'Name With Prefix And Suffix'));
+    await waitFor(() => getByText(dpModal, 'prefix'));
+    await waitFor(() => getByText(dpModal, 'suffixes'));
+    expect(
+      await waitFor(() => getAllByPlaceholderText(dpModal, '(empty)')),
+    ).toHaveLength(2);
   },
 );
