@@ -157,8 +157,9 @@ test(
     // Create first constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     let constantNameInput = getConstantNameInput(renderResult);
+    const constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
-    await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Create second constant
@@ -232,14 +233,18 @@ test(
     // Create first constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     let constantNameInput = getConstantNameInput(renderResult);
+    let constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Create second constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     constantNameInput = getConstantNameInput(renderResult);
+    constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_2' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Update second constant name to existing constant name
@@ -314,14 +319,18 @@ test(
     // Create first constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     let constantNameInput = getConstantNameInput(renderResult);
+    let constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     await waitFor(() => renderResult.getByRole('button', { name: 'Create' }));
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Create second constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     constantNameInput = getConstantNameInput(renderResult);
+    constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_2' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Convert second constant to derived
@@ -458,7 +467,9 @@ test(
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
     let constantNameInput = getConstantNameInput(renderResult);
+    const constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     const createButton = renderResult.getByRole('button', { name: 'Create' });
     fireEvent.click(createButton);
 
@@ -525,7 +536,9 @@ test(
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     await waitFor(() => renderResult.getByText('Create Constant'));
     let constantNameInput = getConstantNameInput(renderResult);
+    let constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     const createButton = renderResult.getByRole('button', { name: 'Create' });
     fireEvent.click(createButton);
 
@@ -542,8 +555,10 @@ test(
     );
     selectFromCustomSelectorInput(typeContainer, 'Number');
     // enter number for value
-    const constantValueInput = getConstantValueInput(renderResult);
+    constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantValueInput, { target: { value: '5' } });
+
+    // click cancel
     fireEvent.click(renderResult.getByRole('button', { name: 'Cancel' }));
 
     // Check values are the same
@@ -563,7 +578,7 @@ test(
     );
     expect(getCustomSelectorInputValue(typeContainer)).toBe('String');
     expect(
-      await waitFor(() => renderResult.getByPlaceholderText('(empty)')),
+      await waitFor(() => renderResult.getByDisplayValue('test')),
     ).not.toBeNull();
   },
 );
@@ -598,13 +613,18 @@ test(
     );
 
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    await waitFor(() => renderResult.getByText('Create Constant'));
 
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-    });
     const constantNameInput = getConstantNameInput(renderResult);
+    const constantValueInput = getConstantValueInput(renderResult);
+
+    // Enter valid constant value so Create button is only disabled if there is an issue with the
+    // constant name.
+    fireEvent.change(constantValueInput, {
+      target: { value: 'test' },
+    });
+
+    // Enter invalid constant name and check for validation error message
     fireEvent.change(constantNameInput, {
       target: { value: '1startsWithNumber' },
     });
@@ -620,14 +640,16 @@ test(
         .getByRole('button', { name: 'Create' })
         .hasAttribute('disabled'),
     ).toBe(true);
-    fireEvent.change(constantNameInput, {
-      target: { value: 'validInput' },
-    });
+
+    // Enter valid constant name and check that Create button is not disabled
+    fireEvent.change(constantNameInput, { target: { value: 'validInput' } });
     expect(
       renderResult
         .getByRole('button', { name: 'Create' })
         .hasAttribute('disabled'),
     ).toBe(false);
+
+    // Enter invalid constant name and check for validation error message
     fireEvent.change(constantNameInput, {
       target: { value: 'invalidInput!' },
     });
@@ -675,12 +697,7 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-
-    await act(async () => {
-      if (!queryBuilderState.constantState.selectedConstant) {
-        return;
-      }
-    });
+    await waitFor(() => renderResult.getByText('Create Constant'));
 
     // Type in name
     const constantNameInput = getConstantNameInput(renderResult);
@@ -827,9 +844,12 @@ test(
     // Set String type
     selectFirstOptionFromCustomSelectorInput(typeContainer);
 
-    // Verify value is reset to empty string
+    // Verify value is reset to null
+    const valueSection = guaranteeNonNullable(
+      renderResult.getByText('Value').parentElement,
+    );
     expect(
-      await waitFor(() => renderResult.getByPlaceholderText('(empty)')),
+      await waitFor(() => getByDisplayValue(valueSection, '')),
     ).not.toBeNull();
   },
 );
@@ -869,9 +889,7 @@ test(
     await waitFor(() => renderResult.getByText('Create Constant'));
 
     // Set value
-    let valueInput = renderResult.getByPlaceholderText(
-      '(empty)',
-    ) as HTMLInputElement;
+    let valueInput = getConstantValueInput(renderResult);
     fireEvent.change(valueInput, { target: { value: 'test string value' } });
     expect(
       await waitFor(() => renderResult.getByDisplayValue('test string value')),
@@ -1050,7 +1068,7 @@ test(
     await waitFor(() => renderResult.getByText('Create Constant'));
 
     // Set value
-    const valueInput = renderResult.getByPlaceholderText('(empty)');
+    const valueInput = getConstantValueInput(renderResult);
     fireEvent.change(valueInput, { target: { value: 'test string value' } });
     expect(
       await waitFor(() => renderResult.getByDisplayValue('test string value')),
@@ -1061,8 +1079,11 @@ test(
     fireEvent.click(resetButton);
 
     // Verify value is reset
+    const valueSection = guaranteeNonNullable(
+      renderResult.getByText('Value').parentElement,
+    );
     expect(
-      await waitFor(() => renderResult.getByPlaceholderText('(empty)')),
+      await waitFor(() => getByDisplayValue(valueSection, '')),
     ).not.toBeNull();
   },
 );
