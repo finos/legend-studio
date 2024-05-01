@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 0.0.11
+
+### Patch Changes
+
+- [#3097](https://github.com/finos/legend-studio/pull/3097) [`6a943452c`](https://github.com/finos/legend-studio/commit/6a943452c5d1ffe18c0a023c29832d7ab9466d74) ([@gayathrir11](https://github.com/gayathrir11)) - Fix issue with AgGrid license for REPL grid
+
 ## 0.0.10
 
 ## 0.0.9

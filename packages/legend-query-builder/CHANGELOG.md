@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.27
+
+### Patch Changes
+
+- [#3099](https://github.com/finos/legend-studio/pull/3099) [`fb4fe1ef0`](https://github.com/finos/legend-studio/commit/fb4fe1ef0c44f8f14d5d4171822982c397d90e21) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support weighted average aggregation function as a custom aggregation function in ag grid
+
 ## 4.14.26
 
 ### Patch Changes
