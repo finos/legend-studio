@@ -16,6 +16,4 @@
 
 // NOTE: these are non-compilable profile and tag that we come up with for query
 // to store extra metadata
-export const QUERY_PROFILE_PATH = 'meta::pure::profiles::query';
 export const QUERY_PROFILE_TAG_DATA_SPACE = 'dataSpace';
-export const QUERY_PROFILE_TAG_CLASS = 'class';

@@ -175,3 +175,6 @@ export const DATE_FORMAT = 'yyyy-MM-dd';
 
 // Generation Const
 export const DEFAULT_GENERATION_PACKAGE = 'generated';
+// Query
+export const QUERY_PROFILE_TAG_CLASS = 'class';
+export const QUERY_PROFILE_PATH = 'meta::pure::profiles::query';

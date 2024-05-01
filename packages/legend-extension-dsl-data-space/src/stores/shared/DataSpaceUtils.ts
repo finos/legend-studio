@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { QueryTaggedValue } from '@finos/legend-graph';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_CLASS,
-  QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../graph/DSL_DataSpace_MetaModelConst.js';
+  QueryTaggedValue,
+} from '@finos/legend-graph';
+import { QUERY_PROFILE_TAG_DATA_SPACE } from '../../graph/DSL_DataSpace_MetaModelConst.js';
 
 export const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -30,7 +30,6 @@ export const createQueryDataSpaceTaggedValue = (
   taggedValue.value = dataSpacePath;
   return taggedValue;
 };
-
 export const createQueryClassTaggedValue = (
   classPath: string,
 ): QueryTaggedValue => {

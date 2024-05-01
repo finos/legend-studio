@@ -37,6 +37,7 @@ import {
   quantifyList,
   assertNonNullable,
   returnUndefOnError,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -46,6 +47,7 @@ import {
   type QueryGridConfig,
   type ValueSpecification,
   type GraphInitializationReport,
+  type PackageableRuntime,
   GraphManagerState,
   Query,
   PureExecution,
@@ -62,7 +64,8 @@ import {
   reportGraphAnalytics,
   cloneQueryStereotype,
   cloneQueryTaggedValue,
-  type PackageableRuntime,
+  QueryDataSpaceExecutionContext,
+  QueryExplicitExecutionContext,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
@@ -110,7 +113,6 @@ import {
   DataSpaceQueryBuilderState,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
-import { getDataSpaceQueryInfo } from '../components/data-space/QueryDataSpaceUtil.js';
 import {
   DSL_DataSpace_getGraphManagerExtension,
   type DataSpace,
@@ -427,15 +429,8 @@ export abstract class QueryEditorStore {
         this.queryBuilderState.executionContextState.mapping,
         'Query required mapping to update',
       );
-      const runtimeValue = guaranteeType(
-        this.queryBuilderState.executionContextState.runtimeValue,
-        RuntimePointer,
-        'Query runtime must be of type runtime pointer',
-      );
-      query.mapping = PackageableElementExplicitReference.create(
-        this.queryBuilderState.executionContextState.mapping,
-      );
-      query.runtime = runtimeValue.packageableRuntime;
+      query.executionContext =
+        this.queryBuilderState.getQueryExecutionContext();
       query.content =
         await this.graphManagerState.graphManager.lambdaToPureCode(rawLambda);
       config?.decorator?.(query);
@@ -1053,20 +1048,36 @@ export class ExistingQueryUpdateState {
 
 const resolveExecutionContext = (
   dataSpace: DataSpace,
-  queryMapping: Mapping,
-  queryRuntime: PackageableRuntime,
+  ex: string | undefined,
+  queryMapping: Mapping | undefined,
+  queryRuntime: PackageableRuntime | undefined,
 ): DataSpaceExecutionContext | undefined => {
-  const matchingExecContexts = dataSpace.executionContexts.filter(
-    (ec) => ec.mapping.value === queryMapping,
-  );
-  if (matchingExecContexts.length > 1) {
-    const matchRuntime = matchingExecContexts.find(
-      (exec) => exec.defaultRuntime.value.path === queryRuntime.path,
-    );
-    // TODO: we will safely do this for now. Long term we should save exec context key into query store
-    // we should make runtime/mapping optional
-    return matchRuntime ?? matchingExecContexts[0];
+  if (!ex) {
+    if (queryMapping && queryRuntime) {
+      if (
+        dataSpace.defaultExecutionContext.mapping.value !== queryMapping &&
+        dataSpace.defaultExecutionContext.defaultRuntime.value.path !==
+          queryRuntime.path
+      ) {
+        const matchingExecContexts = dataSpace.executionContexts.filter(
+          (ec) => ec.mapping.value === queryMapping,
+        );
+        if (matchingExecContexts.length > 1) {
+          const matchRuntime = matchingExecContexts.find(
+            (exec) => exec.defaultRuntime.value.path === queryRuntime.path,
+          );
+          // TODO: we will safely do this for now. Long term we should save exec context key into query store
+          // we should make runtime/mapping optional
+          return matchRuntime ?? matchingExecContexts[0];
+        }
+        return matchingExecContexts[0];
+      }
+    }
+    return dataSpace.defaultExecutionContext;
   }
+  const matchingExecContexts = dataSpace.executionContexts.filter(
+    (ec) => ec.name === ex,
+  );
   return matchingExecContexts[0];
 };
 
@@ -1149,152 +1160,184 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
   }
 
-  async buildDataspaceBuilderState(
-    query: Query,
-  ): Promise<DataSpaceQueryBuilderState | undefined> {
-    const dataSpacePath = getDataSpaceQueryInfo(query);
-    if (dataSpacePath) {
+  async initQueryBuildStateFromQuery(query: Query): Promise<QueryBuilderState> {
+    const exec = query.executionContext;
+    if (exec instanceof QueryDataSpaceExecutionContext) {
       const dataSpace = getOwnDataSpace(
-        dataSpacePath,
+        exec.dataSpacePath,
         this.graphManagerState.graph,
       );
-      const mapping = query.mapping.value;
       const matchingExecutionContext = resolveExecutionContext(
         dataSpace,
-        mapping,
-        query.runtime.value,
+        exec.executionKey,
+        query.mapping?.value,
+        query.runtime?.value,
       );
-      if (!matchingExecutionContext) {
-        // if a matching execution context is not found, it means this query is not
-        // properly created from a data space, therefore, we cannot support this case
-        return undefined;
-      }
-      let dataSpaceAnalysisResult;
-      try {
-        const project = StoreProjectData.serialization.fromJson(
-          await this.depotServerClient.getProject(
-            query.groupId,
-            query.artifactId,
-          ),
-        );
-        dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
-          this.graphManagerState.graphManager,
-        ).retrieveDataSpaceAnalysisFromCache(() =>
-          retrieveAnalyticsResultCache(
-            project,
-            query.versionId,
-            dataSpace.path,
+      if (matchingExecutionContext) {
+        let dataSpaceAnalysisResult;
+        try {
+          const project = StoreProjectData.serialization.fromJson(
+            await this.depotServerClient.getProject(
+              query.groupId,
+              query.artifactId,
+            ),
+          );
+          dataSpaceAnalysisResult =
+            await DSL_DataSpace_getGraphManagerExtension(
+              this.graphManagerState.graphManager,
+            ).retrieveDataSpaceAnalysisFromCache(() =>
+              retrieveAnalyticsResultCache(
+                project,
+                query.versionId,
+                dataSpace.path,
+                this.depotServerClient,
+              ),
+            );
+        } catch {
+          // do nothing
+        }
+        const projectInfo = new DataSpaceProjectInfo(
+          query.groupId,
+          query.artifactId,
+          query.versionId,
+          createViewProjectHandler(this.applicationStore),
+          createViewSDLCProjectHandler(
+            this.applicationStore,
             this.depotServerClient,
           ),
         );
-      } catch {
-        // do nothing
-      }
-      const projectInfo = new DataSpaceProjectInfo(
-        query.groupId,
-        query.artifactId,
-        query.versionId,
-        createViewProjectHandler(this.applicationStore),
-        createViewSDLCProjectHandler(
+        const sourceInfo = {
+          groupId: projectInfo.groupId,
+          artifactId: projectInfo.artifactId,
+          versionId: projectInfo.versionId,
+          dataSpace: dataSpace.path,
+        };
+        const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
           this.applicationStore,
+          this.graphManagerState,
           this.depotServerClient,
-        ),
-      );
+          dataSpace,
+          matchingExecutionContext,
+          (dataSpaceInfo: DataSpaceInfo) => {
+            if (dataSpaceInfo.defaultExecutionContext) {
+              const proceed = (): void =>
+                this.applicationStore.navigationService.navigator.goToLocation(
+                  generateDataSpaceQueryCreatorRoute(
+                    guaranteeNonNullable(dataSpaceInfo.groupId),
+                    guaranteeNonNullable(dataSpaceInfo.artifactId),
+                    LATEST_VERSION_ALIAS, //always default to latest
+                    dataSpaceInfo.path,
+                    guaranteeNonNullable(dataSpaceInfo.defaultExecutionContext),
+                    undefined,
+                    undefined,
+                  ),
+                );
+              const updateQueryAndProceed = async (): Promise<void> => {
+                try {
+                  await flowResult(
+                    this.updateState.updateQuery(undefined, undefined),
+                  );
+                  proceed();
+                } catch (error) {
+                  assertErrorThrown(error);
+                  this.applicationStore.logService.error(
+                    LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+                    error,
+                  );
+                  this.applicationStore.notificationService.notifyError(error);
+                }
+              };
+              if (
+                !query.isCurrentUserQuery ||
+                !this.queryBuilderState?.changeDetectionState.hasChanged
+              ) {
+                proceed();
+              } else {
+                this.applicationStore.alertService.setActionAlertInfo({
+                  message: `To change the data space, you need to save the current query
+                     to proceed`,
+                  type: ActionAlertType.CAUTION,
+                  actions: [
+                    {
+                      label: 'Save query and Proceed',
+                      type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                      handler: () => {
+                        updateQueryAndProceed().catch(
+                          this.applicationStore.alertUnhandledError,
+                        );
+                      },
+                    },
+                    {
+                      label: 'Abort',
+                      type: ActionAlertActionType.PROCEED,
+                      default: true,
+                    },
+                  ],
+                });
+              }
+            } else {
+              this.applicationStore.notificationService.notifyWarning(
+                `Can't switch data space: default execution context not specified`,
+              );
+            }
+          },
+          true,
+          dataSpaceAnalysisResult,
+          undefined,
+          undefined,
+          undefined,
+          projectInfo,
+          this.applicationStore.config.options.queryBuilderConfig,
+          sourceInfo,
+        );
+        const mappingModelCoverageAnalysisResult =
+          dataSpaceAnalysisResult?.executionContextsIndex.get(
+            matchingExecutionContext.name,
+          )?.mappingModelCoverageAnalysisResult;
+        if (mappingModelCoverageAnalysisResult) {
+          dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
+            mappingModelCoverageAnalysisResult;
+        }
+        dataSpaceQueryBuilderState.executionContextState.setMapping(
+          matchingExecutionContext.mapping.value,
+        );
+        dataSpaceQueryBuilderState.executionContextState.setRuntimeValue(
+          new RuntimePointer(
+            PackageableElementExplicitReference.create(
+              matchingExecutionContext.defaultRuntime.value,
+            ),
+          ),
+        );
+        return dataSpaceQueryBuilderState;
+      } else {
+        throw new UnsupportedOperationError(
+          `Unsupported execution context ${exec.executionKey}`,
+        );
+      }
+    } else if (exec instanceof QueryExplicitExecutionContext) {
+      const projectInfo = this.getProjectInfo();
       const sourceInfo = {
         groupId: projectInfo.groupId,
         artifactId: projectInfo.artifactId,
         versionId: projectInfo.versionId,
-        dataSpace: dataSpace.path,
       };
-      const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
+      const classQueryBuilderState = new ClassQueryBuilderState(
         this.applicationStore,
         this.graphManagerState,
-        this.depotServerClient,
-        dataSpace,
-        matchingExecutionContext,
-        (dataSpaceInfo: DataSpaceInfo) => {
-          if (dataSpaceInfo.defaultExecutionContext) {
-            const proceed = (): void =>
-              this.applicationStore.navigationService.navigator.goToLocation(
-                generateDataSpaceQueryCreatorRoute(
-                  guaranteeNonNullable(dataSpaceInfo.groupId),
-                  guaranteeNonNullable(dataSpaceInfo.artifactId),
-                  LATEST_VERSION_ALIAS, //always default to latest
-                  dataSpaceInfo.path,
-                  guaranteeNonNullable(dataSpaceInfo.defaultExecutionContext),
-                  undefined,
-                  undefined,
-                ),
-              );
-            const updateQueryAndProceed = async (): Promise<void> => {
-              try {
-                await flowResult(
-                  this.updateState.updateQuery(undefined, undefined),
-                );
-                proceed();
-              } catch (error) {
-                assertErrorThrown(error);
-                this.applicationStore.logService.error(
-                  LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-                  error,
-                );
-                this.applicationStore.notificationService.notifyError(error);
-              }
-            };
-            if (
-              !query.isCurrentUserQuery ||
-              !this.queryBuilderState?.changeDetectionState.hasChanged
-            ) {
-              proceed();
-            } else {
-              this.applicationStore.alertService.setActionAlertInfo({
-                message: `To change the data space, you need to save the current query
-                   to proceed`,
-                type: ActionAlertType.CAUTION,
-                actions: [
-                  {
-                    label: 'Save query and Proceed',
-                    type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                    handler: () => {
-                      updateQueryAndProceed().catch(
-                        this.applicationStore.alertUnhandledError,
-                      );
-                    },
-                  },
-                  {
-                    label: 'Abort',
-                    type: ActionAlertActionType.PROCEED,
-                    default: true,
-                  },
-                ],
-              });
-            }
-          } else {
-            this.applicationStore.notificationService.notifyWarning(
-              `Can't switch data space: default execution context not specified`,
-            );
-          }
-        },
-        true,
-        dataSpaceAnalysisResult,
-        undefined,
-        undefined,
-        undefined,
-        projectInfo,
         this.applicationStore.config.options.queryBuilderConfig,
         sourceInfo,
       );
-      const mappingModelCoverageAnalysisResult =
-        dataSpaceAnalysisResult?.executionContextsIndex.get(
-          matchingExecutionContext.name,
-        )?.mappingModelCoverageAnalysisResult;
-      if (mappingModelCoverageAnalysisResult) {
-        dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
-          mappingModelCoverageAnalysisResult;
-      }
-      return dataSpaceQueryBuilderState;
+      classQueryBuilderState.executionContextState.setMapping(
+        exec.mapping.value,
+      );
+      classQueryBuilderState.executionContextState.setRuntimeValue(
+        new RuntimePointer(
+          PackageableElementExplicitReference.create(exec.runtime.value),
+        ),
+      );
+      return classQueryBuilderState;
     }
-    return undefined;
+    throw new UnsupportedOperationError(`Unsupported query execution context`);
   }
 
   async initializeQueryBuilderState(
@@ -1311,30 +1354,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
 
     // if no extension found, fall back to basic `class -> mapping -> runtime` mode
-    const projectInfo = this.getProjectInfo();
-    const sourceInfo = {
-      groupId: projectInfo.groupId,
-      artifactId: projectInfo.artifactId,
-      versionId: projectInfo.versionId,
-    };
-    let queryBuilderState: QueryBuilderState | undefined =
-      await this.buildDataspaceBuilderState(query);
+    const queryBuilderState = await this.initQueryBuildStateFromQuery(query);
 
-    queryBuilderState =
-      queryBuilderState ??
-      new ClassQueryBuilderState(
-        this.applicationStore,
-        this.graphManagerState,
-        this.applicationStore.config.options.queryBuilderConfig,
-        sourceInfo,
-      );
-
-    queryBuilderState.executionContextState.setMapping(query.mapping.value);
-    queryBuilderState.executionContextState.setRuntimeValue(
-      new RuntimePointer(
-        PackageableElementExplicitReference.create(query.runtime.value),
-      ),
-    );
     // leverage initialization of query builder state to ensure we handle unsupported queries
     let defaultParameters: Map<string, ValueSpecification> | undefined =
       undefined;

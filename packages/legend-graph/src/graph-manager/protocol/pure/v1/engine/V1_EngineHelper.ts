@@ -15,6 +15,7 @@
  */
 
 import {
+  UnsupportedOperationError,
   assertNonEmptyString,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
@@ -22,14 +23,23 @@ import {
 import {
   LightQuery,
   Query,
+  QueryDataSpaceExecutionContext,
+  type QueryExecutionContext,
+  QueryExplicitExecutionContext,
   QueryParameterValue,
   QueryStereotype,
   QueryTaggedValue,
+  type QueryExecutionContextInfo,
+  QueryExplicitExecutionContextInfo,
+  QueryDataSpaceExecutionContextInfo,
 } from '../../../../../graph-manager/action/query/Query.js';
 import {
   type V1_LightQuery,
   V1_Query,
   V1_QueryParameterValue,
+  V1_QueryExplicitExecutionContext,
+  V1_QueryDataSpaceExecutionContext,
+  type V1_QueryExecutionContext,
 } from './query/V1_Query.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
 import { PackageableElementExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
@@ -72,6 +82,8 @@ import { V1_StereotypePtr } from '../model/packageableElements/domain/V1_Stereot
 import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import { ExternalFormatDescription } from '../../../../../graph-manager/action/externalFormat/ExternalFormatDescription.js';
 import type { Service } from '../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
+import { QUERY_PROFILE_PATH } from '../../../../../graph/MetaModelConst.js';
+import { isValidFullPath } from '../../../../../graph/MetaModelUtils.js';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -106,6 +118,105 @@ export const V1_buildLightQuery = (
   return metamodel;
 };
 
+const getDataSpaceQueryInfo = (query: V1_Query): string | undefined => {
+  const dataSpaceTaggedValue = query.taggedValues?.find(
+    (taggedValue) =>
+      taggedValue.tag.profile === QUERY_PROFILE_PATH &&
+      // move to dsl-dataSpace
+      taggedValue.tag.value === 'dataSpace' &&
+      isValidFullPath(taggedValue.value),
+  );
+  return dataSpaceTaggedValue?.value;
+};
+
+export const V1_buildExecutionContext = (
+  protocolQuery: V1_Query,
+  graph: PureModel,
+  metamodel: Query,
+): QueryExecutionContext => {
+  const protocolExecContext = protocolQuery.executionContext;
+  const dataspace = getDataSpaceQueryInfo(protocolQuery);
+  if (dataspace) {
+    const exec = new QueryDataSpaceExecutionContext();
+    exec.dataSpacePath = dataspace;
+    return exec;
+  } else if (protocolQuery.mapping && protocolQuery.runtime) {
+    const exec = new QueryExplicitExecutionContext();
+    exec.mapping = PackageableElementExplicitReference.create(
+      graph.getMapping(
+        guaranteeNonNullable(
+          protocolQuery.mapping,
+          `Query 'mapping' field is missing`,
+        ),
+      ),
+    );
+    exec.runtime = PackageableElementExplicitReference.create(
+      graph.getRuntime(
+        guaranteeNonNullable(
+          protocolQuery.runtime,
+          `Query 'runtime' field is missing`,
+        ),
+      ),
+    );
+    metamodel.mapping = exec.mapping;
+    metamodel.runtime = exec.runtime;
+    return exec;
+  } else if (protocolExecContext instanceof V1_QueryExplicitExecutionContext) {
+    const exec = new QueryExplicitExecutionContext();
+    exec.mapping = PackageableElementExplicitReference.create(
+      graph.getMapping(
+        guaranteeNonNullable(
+          protocolExecContext.mapping,
+          `Query 'mapping' field is missing`,
+        ),
+      ),
+    );
+    exec.runtime = PackageableElementExplicitReference.create(
+      graph.getRuntime(
+        guaranteeNonNullable(
+          protocolExecContext.runtime,
+          `Query 'runtime' field is missing`,
+        ),
+      ),
+    );
+    return exec;
+  } else if (protocolExecContext instanceof V1_QueryDataSpaceExecutionContext) {
+    const exec = new QueryDataSpaceExecutionContext();
+    exec.dataSpacePath = protocolExecContext.dataSpacePath;
+    exec.executionKey = protocolExecContext.executionKey;
+    return exec;
+  }
+  throw new UnsupportedOperationError('Unsupported query execution context');
+};
+
+export const V1_buildExecutionContextInfo = (
+  protocol: V1_Query,
+): QueryExecutionContextInfo => {
+  const v1_execContext = protocol.executionContext;
+  const dataspace = getDataSpaceQueryInfo(protocol);
+  if (dataspace) {
+    const exec = new QueryDataSpaceExecutionContextInfo();
+    exec.dataSpacePath = dataspace;
+    return exec;
+  } else if (protocol.mapping && protocol.runtime) {
+    const exec = new QueryExplicitExecutionContextInfo();
+    exec.mapping = protocol.mapping;
+    exec.runtime = protocol.runtime;
+    return exec;
+  } else if (v1_execContext instanceof V1_QueryExplicitExecutionContext) {
+    const exec = new QueryExplicitExecutionContextInfo();
+    exec.mapping = v1_execContext.mapping;
+    exec.runtime = v1_execContext.runtime;
+    return exec;
+  } else if (v1_execContext instanceof V1_QueryDataSpaceExecutionContext) {
+    const exec = new QueryDataSpaceExecutionContextInfo();
+    exec.dataSpacePath = v1_execContext.dataSpacePath;
+    exec.executionKey = v1_execContext.executionKey;
+    return exec;
+  }
+  throw new UnsupportedOperationError('Unsupported query execution context');
+};
+
 export const V1_buildQuery = (
   protocol: V1_Query,
   graph: PureModel,
@@ -132,21 +243,11 @@ export const V1_buildQuery = (
     protocol.artifactId,
     `Query 'artifactId' field is missing`,
   );
-  metamodel.mapping = PackageableElementExplicitReference.create(
-    graph.getMapping(
-      guaranteeNonNullable(
-        protocol.mapping,
-        `Query 'mapping' field is missing`,
-      ),
-    ),
-  );
-  metamodel.runtime = PackageableElementExplicitReference.create(
-    graph.getRuntime(
-      guaranteeNonNullable(
-        protocol.runtime,
-        `Query 'runtime' field is missing`,
-      ),
-    ),
+
+  metamodel.executionContext = V1_buildExecutionContext(
+    protocol,
+    graph,
+    metamodel,
   );
   metamodel.content = guaranteeNonNullable(
     protocol.content,
@@ -206,6 +307,23 @@ export const V1_buildQuery = (
   return metamodel;
 };
 
+export const V1_transformQueryExecutionContext = (
+  execContext: QueryExecutionContext,
+): V1_QueryExecutionContext => {
+  if (execContext instanceof QueryExplicitExecutionContext) {
+    const protocol = new V1_QueryExplicitExecutionContext();
+    protocol.mapping = execContext.mapping.valueForSerialization ?? '';
+    protocol.runtime = execContext.runtime.valueForSerialization ?? '';
+    return protocol;
+  } else if (execContext instanceof QueryDataSpaceExecutionContext) {
+    const protocol = new V1_QueryDataSpaceExecutionContext();
+    protocol.dataSpacePath = execContext.dataSpacePath;
+    protocol.executionKey = execContext.executionKey;
+    return protocol;
+  }
+  throw new UnsupportedOperationError('Unsupported query execution context');
+};
+
 export const V1_transformQuery = (metamodel: Partial<Query>): V1_Query => {
   const protocol = new V1_Query();
   if (metamodel.name) {
@@ -224,11 +342,10 @@ export const V1_transformQuery = (metamodel: Partial<Query>): V1_Query => {
     protocol.artifactId = metamodel.artifactId;
   }
   protocol.originalVersionId = metamodel.originalVersionId;
-  if (metamodel.mapping) {
-    protocol.mapping = metamodel.mapping.valueForSerialization ?? '';
-  }
-  if (metamodel.runtime) {
-    protocol.runtime = metamodel.runtime.valueForSerialization ?? '';
+  if (metamodel.executionContext) {
+    protocol.executionContext = V1_transformQueryExecutionContext(
+      metamodel.executionContext,
+    );
   }
   if (metamodel.content) {
     protocol.content = metamodel.content;

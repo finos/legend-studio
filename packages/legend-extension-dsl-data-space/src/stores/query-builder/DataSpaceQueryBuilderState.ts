@@ -24,11 +24,13 @@ import {
   type GraphManagerState,
   getMappingCompatibleClasses,
   RuntimePointer,
+  type QueryExecutionContext,
   type Runtime,
   Class,
   type Mapping,
   getDescendantsOfPackage,
   Package,
+  QueryDataSpaceExecutionContext,
 } from '@finos/legend-graph';
 import {
   DepotScope,
@@ -197,6 +199,13 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     return this.showRuntimeSelector
       ? 'query-builder__setup__data-space--with-runtime'
       : 'query-builder__setup__data-space';
+  }
+
+  override getQueryExecutionContext(): QueryExecutionContext {
+    const queryExeContext = new QueryDataSpaceExecutionContext();
+    queryExeContext.dataSpacePath = this.dataSpace.path;
+    queryExeContext.executionKey = this.executionContext.name;
+    return queryExeContext;
   }
 
   setTemplateQueryDialogOpen(val: boolean): void {

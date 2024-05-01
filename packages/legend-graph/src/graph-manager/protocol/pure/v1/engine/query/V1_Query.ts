@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema, list, optional, primitive, raw } from 'serializr';
+import {
+  SerializationFactory,
+  UnsupportedOperationError,
+  optionalCustom,
+  usingConstantValueSchema,
+  usingModelSchema,
+  type PlainObject,
+} from '@finos/legend-shared';
+import {
+  createModelSchema,
+  deserialize,
+  list,
+  optional,
+  primitive,
+  raw,
+  serialize,
+} from 'serializr';
 import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../../model/packageableElements/domain/V1_TaggedValue.js';
 import {
@@ -44,6 +59,90 @@ export interface V1_QueryGridConfig {
   isLocalModeEnabled: boolean | undefined;
   previewLimit?: number | undefined;
 }
+export class V1_QueryExecutionContext {}
+
+export enum V1_QueryExecutionContextType {
+  QUERY_EXPLICIT_EXECUTION_CONTEXT = 'explicitExecutionContext',
+  QUERY_DATASAPCE_EXECUTION_CONTEXT = 'dataSpaceExecutionContext',
+}
+
+export class V1_QueryExplicitExecutionContext extends V1_QueryExecutionContext {
+  mapping!: string;
+  runtime!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_QueryExplicitExecutionContext, {
+      _type: usingConstantValueSchema(
+        V1_QueryExecutionContextType.QUERY_EXPLICIT_EXECUTION_CONTEXT,
+      ),
+      mapping: primitive(),
+      runtime: primitive(),
+    }),
+    {
+      deserializeNullAsUndefined: true,
+    },
+  );
+}
+
+export class V1_QueryDataSpaceExecutionContext extends V1_QueryExecutionContext {
+  dataSpacePath!: string;
+  executionKey: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_QueryDataSpaceExecutionContext, {
+      _type: usingConstantValueSchema(
+        V1_QueryExecutionContextType.QUERY_DATASAPCE_EXECUTION_CONTEXT,
+      ),
+      dataSpacePath: primitive(),
+      executionKey: optional(primitive()),
+    }),
+    {
+      deserializeNullAsUndefined: true,
+    },
+  );
+}
+
+export const V1_deserializeQueryExecutionContext = (
+  json: PlainObject<V1_QueryExecutionContext>,
+): V1_QueryExecutionContext => {
+  switch (json._type) {
+    case V1_QueryExecutionContextType.QUERY_EXPLICIT_EXECUTION_CONTEXT:
+      return deserialize(
+        V1_QueryExplicitExecutionContext.serialization.schema,
+        json,
+      );
+    case V1_QueryExecutionContextType.QUERY_DATASAPCE_EXECUTION_CONTEXT:
+      return deserialize(
+        V1_QueryDataSpaceExecutionContext.serialization.schema,
+        json,
+      );
+    default: {
+      throw new UnsupportedOperationError(
+        `Can't deserialize authentication strategy of type '${json._type}': no compatible deserializer available from plugins`,
+      );
+    }
+  }
+};
+
+export const V1_serializeQueryExecutionContext = (
+  protocol: V1_QueryExecutionContext,
+): PlainObject<V1_QueryExecutionContext> => {
+  if (protocol instanceof V1_QueryExplicitExecutionContext) {
+    return serialize(
+      V1_QueryExplicitExecutionContext.serialization.schema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_QueryDataSpaceExecutionContext) {
+    return serialize(
+      V1_QueryDataSpaceExecutionContext.serialization.schema,
+      protocol,
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize authentication strategy: no compatible serializer available from plugins`,
+    protocol,
+  );
+};
 
 export class V1_Query {
   name!: string;
@@ -52,8 +151,6 @@ export class V1_Query {
   artifactId!: string;
   versionId!: string;
   originalVersionId?: string | undefined;
-  mapping!: string;
-  runtime!: string;
   content!: string;
   owner?: string | undefined;
   taggedValues?: V1_TaggedValue[] | undefined;
@@ -61,6 +158,17 @@ export class V1_Query {
   defaultParameterValues?: V1_QueryParameterValue[] | undefined;
   lastUpdatedAt?: number | undefined;
   gridConfig?: V1_QueryGridConfig | undefined;
+
+  executionContext: V1_QueryExecutionContext | undefined;
+  /**
+   * mapping, runtime have been deprecated in favor of `V1_QueryExecutionContext`
+   * @deprecated
+   */
+  mapping: string | undefined;
+  /**
+   * @deprecated
+   */
+  runtime: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
@@ -72,12 +180,16 @@ export class V1_Query {
       ),
       groupId: primitive(),
       lastUpdatedAt: optional(primitive()),
-      mapping: primitive(),
+      mapping: optional(primitive()),
       name: primitive(),
       owner: optional(primitive()),
-      runtime: primitive(),
+      runtime: optional(primitive()),
       stereotypes: optional(
         list(usingModelSchema(V1_stereotypePtrModelSchema)),
+      ),
+      executionContext: optionalCustom(
+        (val) => V1_serializeQueryExecutionContext(val),
+        (val) => V1_deserializeQueryExecutionContext(val),
       ),
       taggedValues: optional(list(usingModelSchema(V1_taggedValueModelSchema))),
       versionId: primitive(),

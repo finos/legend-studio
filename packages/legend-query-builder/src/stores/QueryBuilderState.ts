@@ -32,6 +32,7 @@ import {
   ActionState,
   hashArray,
   assertTrue,
+  assertNonNullable,
 } from '@finos/legend-shared';
 import { QueryBuilderFilterState } from './filter/QueryBuilderFilterState.js';
 import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
@@ -54,6 +55,7 @@ import {
   type ValueSpecification,
   type Type,
   type QueryGridConfig,
+  type QueryExecutionContext,
   GRAPH_MANAGER_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
@@ -73,6 +75,7 @@ import {
   InstanceValue,
   Multiplicity,
   RuntimePointer,
+  QueryExplicitExecutionContext,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import type {
@@ -285,6 +288,24 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get allVariableNames(): string[] {
     return this.allVariables.map((e) => e.name);
+  }
+
+  getQueryExecutionContext(): QueryExecutionContext {
+    const queryExeContext = new QueryExplicitExecutionContext();
+    const runtimeValue = guaranteeType(
+      this.executionContextState.runtimeValue,
+      RuntimePointer,
+      'Query runtime must be of type runtime pointer',
+    );
+    assertNonNullable(
+      this.executionContextState.mapping,
+      'Query required mapping to update',
+    );
+    queryExeContext.mapping = PackageableElementExplicitReference.create(
+      this.executionContextState.mapping,
+    );
+    queryExeContext.runtime = runtimeValue.packageableRuntime;
+    return queryExeContext;
   }
 
   /**

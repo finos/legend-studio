@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
+import { QUERY_PROFILE_TAG_DATA_SPACE } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   QUERY_PROFILE_PATH,
-  QUERY_PROFILE_TAG_DATA_SPACE,
-} from '@finos/legend-extension-dsl-data-space/graph';
-import { isValidFullPath, type Query } from '@finos/legend-graph';
+  isValidFullPath,
+  type Query,
+} from '@finos/legend-graph';
 
-export const getDataSpaceQueryInfo = (query: Query): string | undefined => {
+export const getDataSpaceQueryExecutionInfo = (
+  query: Query,
+): string | undefined => {
   const dataSpaceTaggedValue = query.taggedValues?.find(
     (taggedValue) =>
       taggedValue.profile === QUERY_PROFILE_PATH &&
@@ -29,6 +32,3 @@ export const getDataSpaceQueryInfo = (query: Query): string | undefined => {
   );
   return dataSpaceTaggedValue?.value;
 };
-
-export const isDataSpaceQuery = (query: Query): boolean =>
-  Boolean(getDataSpaceQueryInfo(query));
