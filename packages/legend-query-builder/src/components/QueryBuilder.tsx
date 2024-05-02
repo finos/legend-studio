@@ -700,11 +700,17 @@ export const QueryBuilder = observer(
                       <MenuContentItem
                         onClick={openCheckEntitlmentsEditor}
                         disabled={
-                          queryBuilderState.isQuerySupported &&
-                          queryBuilderState.fetchStructureState
-                            .implementation instanceof QueryBuilderTDSState &&
-                          queryBuilderState.fetchStructureState.implementation
-                            .projectionColumns.length === 0
+                          (queryBuilderState.isQuerySupported &&
+                            queryBuilderState.fetchStructureState
+                              .implementation instanceof QueryBuilderTDSState &&
+                            queryBuilderState.fetchStructureState.implementation
+                              .projectionColumns.length === 0) ||
+                          !queryBuilderState.canBuildQuery
+                        }
+                        title={
+                          !queryBuilderState.canBuildQuery
+                            ? 'Please fix query errors to check entitlements'
+                            : ''
                         }
                       >
                         <MenuContentItemIcon>
@@ -714,7 +720,15 @@ export const QueryBuilder = observer(
                           Check Entitlements
                         </MenuContentItemLabel>
                       </MenuContentItem>
-                      <MenuContentItem onClick={editQueryInPure}>
+                      <MenuContentItem
+                        onClick={editQueryInPure}
+                        disabled={!queryBuilderState.canBuildQuery}
+                        title={
+                          !queryBuilderState.canBuildQuery
+                            ? 'Please fix query errors to edit in Pure'
+                            : undefined
+                        }
+                      >
                         <MenuContentItemIcon>
                           <HackerIcon />
                         </MenuContentItemIcon>
@@ -722,7 +736,15 @@ export const QueryBuilder = observer(
                           Edit Query in Pure
                         </MenuContentItemLabel>
                       </MenuContentItem>
-                      <MenuContentItem onClick={showQueryProtocol}>
+                      <MenuContentItem
+                        onClick={showQueryProtocol}
+                        disabled={!queryBuilderState.canBuildQuery}
+                        title={
+                          !queryBuilderState.canBuildQuery
+                            ? 'Please fix query errors to show query protocol'
+                            : undefined
+                        }
+                      >
                         <MenuContentItemIcon>
                           <SerializeIcon />
                         </MenuContentItemIcon>

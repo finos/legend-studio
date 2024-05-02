@@ -34,7 +34,7 @@ export const MenuContentItem: React.FC<{
   children: React.ReactNode;
   className?: string;
   disabled?: boolean;
-  title?: string;
+  title?: string | undefined;
   onClick?: () => void;
 }> = (props) => {
   const { className, onClick, title, disabled, children, ...otherProps } =
