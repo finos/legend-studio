@@ -576,7 +576,7 @@ test(
     guaranteeNonNullable(EXPECTED_STRING_TYPES[PRIMITIVE_TYPE.INTEGER]).forEach(
       (expectedOp) => getByText(switchMenu, expectedOp),
     );
-    const ageInupNode = getByDisplayValue(postFilterPanel, 0);
+    const ageInupNode = getByDisplayValue(postFilterPanel, '');
     fireEvent.change(ageInupNode, {
       target: { value: 55 },
     });
