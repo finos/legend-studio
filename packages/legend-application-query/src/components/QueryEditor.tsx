@@ -873,9 +873,16 @@ const QueryEditorHeaderContent = observer(
           </Button>
           <Button
             className="query-editor__header__action btn--dark"
-            disabled={editorStore.isPerformingBlockingAction}
+            disabled={
+              editorStore.isPerformingBlockingAction ||
+              !queryBuilderState.canBuildQuery
+            }
             onClick={handleQuerySaveAs}
-            title="Save as new query"
+            title={
+              !queryBuilderState.canBuildQuery
+                ? 'Please fix query errors before saving'
+                : 'Save as new query'
+            }
           >
             <SaveAsIcon />
             <div className="query-editor__header__action__label">
