@@ -819,13 +819,11 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get canBuildQuery(): boolean {
     return (
-      this.isQuerySupported &&
       !this.filterState.hasInvalidFilterValues &&
       !this.filterState.hasInvalidDerivedPropertyParameters &&
       !this.fetchStructureState.implementation.hasInvalidFilterValues &&
       !this.fetchStructureState.implementation
-        .hasInvalidDerivedPropertyParameters &&
-      Boolean(this.class)
+        .hasInvalidDerivedPropertyParameters
     );
   }
 

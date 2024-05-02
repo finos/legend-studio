@@ -436,7 +436,11 @@ export const QueryBuilder = observer(
     useEffect(() => {
       // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
       // we use an empty RawLambda with an empty class and this useEffect is called earlier than initializeWithQuery()
-      if (queryBuilderState.canBuildQuery) {
+      if (
+        queryBuilderState.isQuerySupported &&
+        queryBuilderState.class &&
+        queryBuilderState.canBuildQuery
+      ) {
         queryBuilderState.changeHistoryState.cacheNewQuery(
           queryBuilderState.buildQuery(),
         );
