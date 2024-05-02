@@ -474,6 +474,7 @@ export const QueryBuilderResultPanel = observer(
                         : undefined
                     }
                     disabled={isRunQueryDisabled}
+                    name="Run Query"
                   >
                     <PlayIcon className="btn__dropdown-combo__label__icon" />
                     <div className="btn__dropdown-combo__label__title">
