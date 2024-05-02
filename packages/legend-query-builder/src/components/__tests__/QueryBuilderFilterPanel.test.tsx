@@ -31,6 +31,7 @@ import {
   getAllByTestId,
   findByText,
   getByRole,
+  getByPlaceholderText,
 } from '@testing-library/react';
 import {
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
@@ -2106,6 +2107,103 @@ test(
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', true);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder uses empty list as default value for list filter and shows validation error`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Select "is in " operator
+    fireEvent.click(getByTitle(filterPanel, 'Choose Operator...'));
+    const operatorsMenu = renderResult.getByRole('menu');
+    fireEvent.click(getByText(operatorsMenu, 'is in'));
+    expect(getByText(filterPanel, 'List(empty)'));
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+
+    // Enter values
+    fireEvent.click(getByText(filterPanel, 'List(empty)'));
+    const valueInput = getByPlaceholderText(filterPanel, '(empty)');
+    fireEvent.change(valueInput, {
+      target: { value: 'test1,test2' },
+    });
+    fireEvent.keyDown(valueInput, {
+      key: 'Enter',
+      code: 'Enter',
+    });
+
+    // Verify no validation issues
+    expect(getByText(filterPanel, 'List(2): test1,test2')).not.toBeNull();
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
   },
 );
 
