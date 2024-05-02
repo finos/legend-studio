@@ -300,7 +300,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             className="value-spec-editor__enum-selector"
             options={queryOptions}
             onChange={changeValue}
-            value={selectedValue}
+            value={selectedValue.label === '' ? '' : selectedValue}
             inputValue={value ?? ''}
             onInputChange={handleInputChange}
             darkMode={
@@ -314,6 +314,7 @@ const StringPrimitiveInstanceValueEditor = observer(
               DropdownIndicator: null,
             }}
             hasError={!isValidInstanceValue(valueSpecification)}
+            placeholder={value === '' ? '(empty)' : undefined}
           />
         ) : (
           <InputWithInlineValidation
