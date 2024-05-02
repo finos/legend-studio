@@ -1852,7 +1852,7 @@ test(
       'Derived property parameter value for Name With Title is missing',
     );
     expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
+      await renderResult.findByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', true);
 
     // Set parameter value
@@ -1872,9 +1872,7 @@ test(
     // Check for no validation issue
     expect(await waitFor(() => renderResult.queryByText('1 issue'))).toBeNull();
     expect(
-      await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Run Query' }),
-      ),
+      await renderResult.findByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', false);
 
     // Reset parameter value
@@ -1899,9 +1897,7 @@ test(
       'Derived property parameter value for Name With Title is missing',
     );
     expect(
-      await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Run Query' }),
-      ),
+      await renderResult.findByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', true);
   },
 );
