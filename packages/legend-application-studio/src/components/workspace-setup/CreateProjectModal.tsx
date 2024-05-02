@@ -59,6 +59,8 @@ const CreateNewProjectTab = observer(() => {
   const [projectName, setProjectName] = useState('');
   const [groupId, setGroupId] = useState('');
   const [artifactId, setArtifactId] = useState('');
+  const isArtfactIdInvalid =
+    artifactId !== '' && !artifactIdPattern.test(artifactId);
   const [description, setDescription] = useState('');
   const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
@@ -208,7 +210,7 @@ const CreateNewProjectTab = observer(() => {
             setArtifactId(value ?? '')
           }
           errorMessage={
-            artifactId !== '' && !artifactIdPattern.test(artifactId)
+            isArtfactIdInvalid
               ? `Invalid artifactId: ${artifactId}. ArtifactId must follow the pattern that starts with a lowercase letter and can include lowercase letters, digits, underscores, and hyphens between segments.`
               : undefined
           }
@@ -347,6 +349,8 @@ const ImportProjectTab = observer(() => {
   const [projectIdentifier, setProjectIdentifier] = useState('');
   const [groupId, setGroupId] = useState('');
   const [artifactId, setArtifactId] = useState('');
+  const isArtfactIdInvalid =
+    artifactId !== '' && !artifactIdPattern.test(artifactId);
   const [description, setDescription] = useState('');
   const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
@@ -488,7 +492,7 @@ const ImportProjectTab = observer(() => {
           }
           isReadOnly={Boolean(importProjectSuccessReport)}
           errorMessage={
-            artifactId !== '' && !artifactIdPattern.test(artifactId)
+            isArtfactIdInvalid
               ? `Invalid artifactId: ${artifactId}. ArtifactId must follow the pattern that starts with a lowercase letter and can include lowercase letters, digits, underscores, and hyphens between segments.`
               : undefined
           }
