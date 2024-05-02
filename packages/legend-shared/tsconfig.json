@@ -5,13 +5,6 @@
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
     "rootDir": "src"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.json",
-    // Limitation due to dependencies not ready for Typescript ESM
-    // See https://github.com/microsoft/TypeScript/issues/49298
-    "src/search/CJS__Fuse.cts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [{ "path": "./tsconfig.package.json" }]
 }

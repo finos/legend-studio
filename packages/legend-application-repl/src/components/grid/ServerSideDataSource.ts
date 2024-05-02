@@ -15,6 +15,7 @@
  */
 
 import type {
+  FilterModel,
   IServerSideDatasource,
   IServerSideGetRowsParams,
 } from '@ag-grid-community/core';
@@ -124,11 +125,9 @@ export class ServerSideDataSource implements IServerSideDatasource {
         aggregations,
       );
       const filter: TDSFilter[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const filterModel = request.filterModel;
+      const filterModel = request.filterModel as FilterModel;
       if (filterModel) {
         Object.keys(filterModel).forEach((key) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const item = filterModel[key];
           const conditions: TDSFilterCondition[] = [];
           const colType = getFilterColumnType(item.filterType);

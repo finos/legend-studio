@@ -30,19 +30,19 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/helper-plugin-utils": "7.22.5",
-    "@babel/plugin-syntax-import-attributes": "7.22.5",
-    "@babel/preset-env": "7.23.2",
-    "@babel/preset-react": "7.22.15",
-    "@babel/preset-typescript": "7.23.2",
-    "@babel/runtime": "7.23.2",
-    "react-refresh": "0.14.0"
+    "@babel/helper-plugin-utils": "7.24.5",
+    "@babel/plugin-syntax-import-attributes": "7.24.1",
+    "@babel/preset-env": "7.24.5",
+    "@babel/preset-react": "7.24.1",
+    "@babel/preset-typescript": "7.24.1",
+    "@babel/runtime": "7.24.5",
+    "react-refresh": "0.14.2"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.52.0",
+    "eslint": "8.57.0",
     "rimraf": "5.0.5",
-    "typescript": "5.2.2"
+    "typescript": "5.4.5"
   },
   "peerDependencies": {
     "@babel/core": "^7.0.0"
