@@ -46,6 +46,8 @@ enum CREATE_PROJECT_MODAL_TAB {
   IMPORT = 'IMPORT',
 }
 
+const artifactIdPattern = new RegExp('^[a-z][a-z\\d_]*(?:-[a-z][a-z\\d_]*)*$');
+
 const CreateNewProjectTab = observer(() => {
   const setupStore = useWorkspaceSetupStore();
   const applicationStore = useLegendStudioApplicationStore();
@@ -204,6 +206,11 @@ const CreateNewProjectTab = observer(() => {
           value={artifactId}
           update={(value: string | undefined): void =>
             setArtifactId(value ?? '')
+          }
+          errorMessage={
+            artifactId !== '' && !artifactIdPattern.test(artifactId)
+              ? `Invalid artifactId: ${artifactId}. ArtifactId must follow the pattern that starts with a lowercase letter and can include lowercase letters, digits, underscores, and hyphens between segments.`
+              : undefined
           }
         />
         <PanelFormListItems
@@ -480,6 +487,11 @@ const ImportProjectTab = observer(() => {
             setArtifactId(value ?? '')
           }
           isReadOnly={Boolean(importProjectSuccessReport)}
+          errorMessage={
+            artifactId !== '' && !artifactIdPattern.test(artifactId)
+              ? `Invalid artifactId: ${artifactId}. ArtifactId must follow the pattern that starts with a lowercase letter and can include lowercase letters, digits, underscores, and hyphens between segments.`
+              : undefined
+          }
         />
         <PanelFormListItems
           title="Tags"
