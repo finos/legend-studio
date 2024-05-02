@@ -1867,7 +1867,7 @@ test(
     fireEvent.change(valueInput, {
       target: { value: 'Mr.' },
     });
-    fireEvent.click(renderResult.getByRole('button', { name: 'Done' }));
+    fireEvent.click(getByRole(dpModal, 'button', { name: 'Done' }));
 
     // Check for no validation issue
     expect(await waitFor(() => renderResult.queryByText('1 issue'))).toBeNull();
