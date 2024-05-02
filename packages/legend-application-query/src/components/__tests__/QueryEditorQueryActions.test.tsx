@@ -27,6 +27,7 @@ import {
   act,
   fireEvent,
   getByDisplayValue,
+  getByRole,
   getByText,
   getByTitle,
   waitFor,
@@ -36,7 +37,10 @@ import {
   TEST__provideMockedQueryEditorStore,
   TEST__setUpQueryEditor,
 } from '../__test-utils__/QueryEditorComponentTestUtils.js';
-import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
+import {
+  QUERY_BUILDER_TEST_ID,
+  dragAndDrop,
+} from '@finos/legend-query-builder';
 import {
   TEST_DATA__ResultState_entities,
   TEST_DATA__result,
@@ -222,6 +226,186 @@ test(
 
     expect(
       getByText(createNewQueryModal, 'Create Query').hasAttribute('disabled'),
+    ).toBe(false);
+  },
+);
+
+test(
+  integrationTest("Query header actions are disabled if query can't be built"),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      TEST__provideMockedQueryEditorStore(),
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+    const _class = 'model::Firm';
+
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass(_class);
+
+    await act(async () => {
+      queryBuilderState.changeClass(_modelClass);
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+
+    // Verify action buttons are disabled properly
+    const queryActionsPanel = await renderResult.findByTestId(
+      QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS,
+    );
+    expect(
+      getByRole(queryActionsPanel, 'button', {
+        name: 'Load Query',
+      }).hasAttribute('disabled'),
+    ).toBe(false);
+    expect(
+      getByRole(queryActionsPanel, 'button', {
+        name: 'New Query',
+      }).hasAttribute('disabled'),
+    ).toBe(false);
+    expect(
+      getByRole(queryActionsPanel, 'button', { name: 'Save' }).hasAttribute(
+        'disabled',
+      ),
+    ).toBe(true);
+    expect(
+      getByRole(queryActionsPanel, 'button', {
+        name: 'Save As...',
+      }).hasAttribute('disabled'),
+    ).toBe(true);
+  },
+);
+
+test(
+  integrationTest(
+    'Query header actions are not disabled if query can be built',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      TEST__provideMockedQueryEditorStore(),
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+    const _class = 'model::Firm';
+
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass(_class);
+
+    await act(async () => {
+      queryBuilderState.changeClass(_modelClass);
+    });
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+
+    // Enter filter value
+    const filterValueInput = getByDisplayValue(filterPanel, '');
+    fireEvent.change(filterValueInput, { target: { value: 'test' } });
+
+    // Verify action buttons are disabled properly
+    const queryActionsPanel = await renderResult.findByTestId(
+      QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS,
+    );
+    expect(
+      getByRole(queryActionsPanel, 'button', {
+        name: 'Load Query',
+      }).hasAttribute('disabled'),
+    ).toBe(false);
+    expect(
+      getByRole(queryActionsPanel, 'button', {
+        name: 'New Query',
+      }).hasAttribute('disabled'),
+    ).toBe(false);
+    expect(
+      getByRole(queryActionsPanel, 'button', { name: 'Save' }).hasAttribute(
+        'disabled',
+      ),
+    ).toBe(false);
+    expect(
+      getByRole(queryActionsPanel, 'button', {
+        name: 'Save As...',
+      }).hasAttribute('disabled'),
     ).toBe(false);
   },
 );

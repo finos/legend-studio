@@ -21,6 +21,7 @@ export * from './__lib__/QueryBuilderEvent.js';
 export { QueryBuilder_GraphManagerPreset } from './graph-manager/QueryBuilder_GraphManagerPreset.js';
 export { QueryBuilderConfig } from './graph-manager/QueryBuilderConfig.js';
 export { QUERY_BUILDER_TEST_ID } from './__lib__/QueryBuilderTesting.js';
+export { dragAndDrop } from './components/__test-utils__/QueryBuilderComponentTestUtils.js';
 export {
   type CheckEntitlementEditorRender,
   QueryBuilder_LegendApplicationPlugin,
