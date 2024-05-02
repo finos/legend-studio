@@ -53,6 +53,16 @@
     margin-left: 0.5rem;
     padding: 0.3rem;
     border-radius: 0.2rem;
+
+    &__explanation {
+      margin-left: 0.5rem;
+      cursor: help;
+
+      svg {
+        font-size: 1.3rem;
+        color: var(--color-dark-grey-500);
+      }
+    }
   }
 
   &__multiplicity__range {

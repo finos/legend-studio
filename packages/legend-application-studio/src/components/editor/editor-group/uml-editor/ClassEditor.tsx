@@ -47,6 +47,7 @@ import {
   Panel,
   PanelDnDEntry,
   PanelContentLists,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -92,6 +93,7 @@ import {
   getAllClassConstraints,
   getAllClassDerivedProperties,
   isElementReadOnly,
+  getMultiplicityPrettyDescription,
 } from '@finos/legend-graph';
 import {
   ApplicationNavigationContextData,
@@ -430,6 +432,12 @@ const PropertyBasicEditor = observer(
               value={upperBound}
               onChange={changeUpperBound}
             />
+            <div
+              className="property-basic-editor__multiplicity__explanation"
+              title={getMultiplicityPrettyDescription(property.multiplicity)}
+            >
+              <InfoCircleIcon />
+            </div>
           </div>
           {!isIndirectProperty && (
             <button
