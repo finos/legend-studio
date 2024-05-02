@@ -85,10 +85,15 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
               className="query-editor__header__action btn--dark"
               tabIndex={-1}
               onClick={proceed}
-              disabled={!(editorStore instanceof ExistingQueryEditorStore)}
+              disabled={
+                !(editorStore instanceof ExistingQueryEditorStore) ||
+                !editorStore.queryBuilderState?.canBuildQuery
+              }
               title={
                 !(editorStore instanceof ExistingQueryEditorStore)
                   ? 'Please save your query first before productionizing'
+                  : !editorStore.queryBuilderState?.canBuildQuery
+                  ? 'Please fix query errors before productionizing'
                   : 'Productionize query...'
               }
             >
