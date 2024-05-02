@@ -126,11 +126,16 @@ const QueryBuilderStatusBar = observer(
                 className={clsx(
                   'query-builder__status-bar__action query-builder__status-bar__view-diff-btn',
                 )}
-                disabled={!queryBuilderState.changeDetectionState.hasChanged}
+                disabled={
+                  !queryBuilderState.changeDetectionState.hasChanged ||
+                  !queryBuilderState.canBuildQuery
+                }
                 onClick={showDiff}
                 tabIndex={-1}
                 title={
-                  queryBuilderState.changeDetectionState.hasChanged
+                  !queryBuilderState.canBuildQuery
+                    ? 'Please fix query errors to show changes'
+                    : queryBuilderState.changeDetectionState.hasChanged
                     ? 'Show changes'
                     : 'Query has not been changed'
                 }
