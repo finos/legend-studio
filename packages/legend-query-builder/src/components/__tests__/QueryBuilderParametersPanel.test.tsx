@@ -65,6 +65,12 @@ const getConstantNameInput = (renderResult: RenderResult): HTMLInputElement =>
     'textbox',
   );
 
+const getConstantValueInput = (renderResult: RenderResult): HTMLInputElement =>
+  getByRole(
+    guaranteeNonNullable(renderResult.getByText('Value').parentElement),
+    'textbox',
+  );
+
 test(
   integrationTest(
     'Query builder shows validation error for creating parameter name if existing duplicate parameter name',
@@ -155,7 +161,9 @@ test(
     // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     const constantNameInput = getConstantNameInput(renderResult);
+    const constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     await waitFor(() => renderResult.getByText('Create'));
     fireEvent.click(renderResult.getByText('Create'));
 
@@ -280,7 +288,9 @@ test(
     // Create constant
     fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
     const constantNameInput = getConstantNameInput(renderResult);
+    const constantValueInput = getConstantValueInput(renderResult);
     fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
     await waitFor(() => renderResult.getByText('Create'));
     fireEvent.click(renderResult.getByText('Create'));
 
