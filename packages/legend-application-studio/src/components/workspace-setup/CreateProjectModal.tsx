@@ -46,6 +46,8 @@ enum CREATE_PROJECT_MODAL_TAB {
   IMPORT = 'IMPORT',
 }
 
+const artifactIdPattern = new RegExp('^[a-z][a-z\\d_]*(?:-[a-z][a-z\\d_]*)*$');
+
 const CreateNewProjectTab = observer(() => {
   const setupStore = useWorkspaceSetupStore();
   const applicationStore = useLegendStudioApplicationStore();
@@ -57,6 +59,8 @@ const CreateNewProjectTab = observer(() => {
   const [projectName, setProjectName] = useState('');
   const [groupId, setGroupId] = useState('');
   const [artifactId, setArtifactId] = useState('');
+  const isArtfactIdInvalid =
+    artifactId !== '' && !artifactIdPattern.test(artifactId);
   const [description, setDescription] = useState('');
   const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
@@ -205,6 +209,11 @@ const CreateNewProjectTab = observer(() => {
           update={(value: string | undefined): void =>
             setArtifactId(value ?? '')
           }
+          errorMessage={
+            isArtfactIdInvalid
+              ? `Invalid artifactId: ${artifactId}. ArtifactId must follow the pattern that starts with a lowercase letter and can include lowercase letters, digits, underscores, and hyphens between segments.`
+              : undefined
+          }
         />
         <PanelFormListItems
           title="Tags"
@@ -340,6 +349,8 @@ const ImportProjectTab = observer(() => {
   const [projectIdentifier, setProjectIdentifier] = useState('');
   const [groupId, setGroupId] = useState('');
   const [artifactId, setArtifactId] = useState('');
+  const isArtfactIdInvalid =
+    artifactId !== '' && !artifactIdPattern.test(artifactId);
   const [description, setDescription] = useState('');
   const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
@@ -480,6 +491,11 @@ const ImportProjectTab = observer(() => {
             setArtifactId(value ?? '')
           }
           isReadOnly={Boolean(importProjectSuccessReport)}
+          errorMessage={
+            isArtfactIdInvalid
+              ? `Invalid artifactId: ${artifactId}. ArtifactId must follow the pattern that starts with a lowercase letter and can include lowercase letters, digits, underscores, and hyphens between segments.`
+              : undefined
+          }
         />
         <PanelFormListItems
           title="Tags"
