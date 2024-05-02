@@ -336,7 +336,16 @@ const ServiceRegisterModal = observer(
             </PanelFullContent>
           </Panel>
           <div className="search-modal__actions">
-            <button className="btn btn--dark" onClick={registerService}>
+            <button
+              className="btn btn--dark"
+              onClick={registerService}
+              disabled={!queryBuilderState.canBuildQuery}
+              title={
+                !queryBuilderState.canBuildQuery
+                  ? 'Please fix query errors before registering query as service'
+                  : undefined
+              }
+            >
               Register Service
             </button>
             <button className="btn btn--dark" onClick={onClose}>
@@ -368,7 +377,12 @@ export const ServiceRegisterAction = observer(
           className="query-editor__header__action btn--dark"
           tabIndex={-1}
           onClick={registerCurrentQuery}
-          title="Register query as service"
+          disabled={!queryBuilderState.canBuildQuery}
+          title={
+            !queryBuilderState.canBuildQuery
+              ? 'Please fix query errors before registering query as service'
+              : 'Register query as service'
+          }
         >
           <RocketIcon className="query-editor__header__action__icon--service" />
           <div className="query-editor__header__action__label">
