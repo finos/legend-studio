@@ -52,7 +52,6 @@ import {
   DataSpaceProjectInfo,
   DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
-  createQueryDataSpaceTaggedValue,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
@@ -272,12 +271,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         query.versionId = this.versionId;
         if (this.queryBuilderState?.class) {
           query.taggedValues = [
-            createQueryDataSpaceTaggedValue(this.dataSpacePath),
             createQueryClassTaggedValue(this.queryBuilderState.class.path),
-          ];
-        } else {
-          query.taggedValues = [
-            createQueryDataSpaceTaggedValue(this.dataSpacePath),
           ];
         }
       },

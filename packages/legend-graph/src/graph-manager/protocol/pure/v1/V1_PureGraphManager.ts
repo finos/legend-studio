@@ -198,6 +198,7 @@ import {
   V1_buildLightQuery,
   V1_transformQuerySearchSpecification,
   V1_buildSourceInformation,
+  V1_buildExecutionContextInfo,
 } from './engine/V1_EngineHelper.js';
 import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
 import {
@@ -2941,7 +2942,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.engine.getCurrentUserId(),
     );
   }
-
   async getQueryInfo(queryId: string): Promise<QueryInfo> {
     const query = await this.engine.getQuery(queryId);
     return {
@@ -2952,6 +2952,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       artifactId: query.artifactId,
       mapping: query.mapping,
       runtime: query.runtime,
+      executionContext: V1_buildExecutionContextInfo(query),
       content: query.content,
     };
   }

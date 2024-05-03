@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { isValidFullPath, type Query } from '@finos/legend-graph';
 import {
   QUERY_PROFILE_PATH,
-  QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../graph/DSL_DataSpace_MetaModelConst.js';
+  isValidFullPath,
+  type Query,
+} from '@finos/legend-graph';
+import { QUERY_PROFILE_TAG_DATA_SPACE } from '../../graph/DSL_DataSpace_MetaModelConst.js';
 
 export const getDataSpaceQueryInfo = (query: Query): string | undefined => {
   const dataSpaceTaggedValue = query.taggedValues?.find(

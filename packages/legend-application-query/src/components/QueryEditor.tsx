@@ -95,7 +95,12 @@ import {
   generateGAVCoordinates,
   parseProjectIdentifier,
 } from '@finos/legend-storage';
-import type { Query } from '@finos/legend-graph';
+import {
+  QueryDataSpaceExecutionContext,
+  QueryExplicitExecutionContext,
+  RuntimePointer,
+  type Query,
+} from '@finos/legend-graph';
 import {
   LATEST_VERSION_ALIAS,
   StoreProjectData,
@@ -106,7 +111,6 @@ import {
   DataSpaceQueryBuilderState,
   generateDataSpaceTemplateQueryPromotionRoute,
 } from '@finos/legend-extension-dsl-data-space/application';
-import { getDataSpaceQueryInfo } from './data-space/QueryDataSpaceUtil.js';
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 
@@ -404,6 +408,7 @@ const QueryEditorExistingQueryInfoModal = observer(
       .slice()
       .sort((v1, v2) => compareSemVerVersions(v2, v1))
       .map(buildVersionOption);
+    const executionContext = query.executionContext;
     const updateQueryVersionId = applicationStore.guardUnhandledError(
       async (): Promise<void> => {
         flowResult(
@@ -466,18 +471,42 @@ const QueryEditorExistingQueryInfoModal = observer(
                   )}
                 </div>
               </div>
-              <div className="query-preview__field">
-                <div className="query-preview__field__label">Mapping</div>
-                <div className="query-preview__field__value">
-                  {query.mapping.value.name}
-                </div>
-              </div>
-              <div className="query-preview__field">
-                <div className="query-preview__field__label">Runtime</div>
-                <div className="query-preview__field__value">
-                  {query.runtime.value.name}
-                </div>
-              </div>
+              {executionContext instanceof QueryExplicitExecutionContext && (
+                <>
+                  <div className="query-preview__field">
+                    <div className="query-preview__field__label">Mapping</div>
+                    <div className="query-preview__field__value">
+                      {executionContext.mapping.value.name}
+                    </div>
+                  </div>
+                  <div className="query-preview__field">
+                    <div className="query-preview__field__label">Runtime</div>
+                    <div className="query-preview__field__value">
+                      {executionContext.runtime.value.name}
+                    </div>
+                  </div>
+                </>
+              )}
+              {executionContext instanceof QueryDataSpaceExecutionContext && (
+                <>
+                  <div className="query-preview__field">
+                    <div className="query-preview__field__label">DataSpace</div>
+                    <div className="query-preview__field__value">
+                      {executionContext.dataSpacePath}
+                    </div>
+                  </div>
+                  {executionContext.executionKey && (
+                    <div className="query-preview__field">
+                      <div className="query-preview__field__label">
+                        Exec Key
+                      </div>
+                      <div className="query-preview__field__value">
+                        {executionContext.executionKey}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
               <div className="query-preview__field">
                 <div className="query-preview__field__label">Version</div>
                 <div className="query-preview__field__input">
@@ -610,33 +639,34 @@ const QueryEditorHeaderContent = observer(
       if (editorStore instanceof ExistingQueryEditorStore) {
         const query = editorStore.query;
         if (query) {
-          const dataSpacePath = getDataSpaceQueryInfo(query);
-          if (
-            dataSpacePath &&
-            queryBuilderState instanceof DataSpaceQueryBuilderState
-          ) {
+          if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
             editorStore.applicationStore.navigationService.navigator.goToLocation(
               generateDataSpaceQueryCreatorRoute(
                 query.groupId,
                 query.artifactId,
                 query.versionId,
-                dataSpacePath,
-                // TODO: fix execution key once that is fixed
+                queryBuilderState.dataSpace.path,
                 queryBuilderState.executionContext.name,
                 undefined,
                 undefined,
               ),
             );
           } else {
-            editorStore.applicationStore.navigationService.navigator.goToLocation(
-              generateMappingQueryCreatorRoute(
-                query.groupId,
-                query.artifactId,
-                query.versionId,
-                query.mapping.value.path,
-                query.runtime.value.path,
-              ),
-            );
+            const mapping =
+              editorStore.queryBuilderState?.executionContextState.mapping;
+            const runtime =
+              editorStore.queryBuilderState?.executionContextState.runtimeValue;
+            if (mapping && runtime instanceof RuntimePointer) {
+              editorStore.applicationStore.navigationService.navigator.goToLocation(
+                generateMappingQueryCreatorRoute(
+                  query.groupId,
+                  query.artifactId,
+                  query.versionId,
+                  mapping.path,
+                  runtime.packageableRuntime.value.path,
+                ),
+              );
+            }
           }
         }
       }

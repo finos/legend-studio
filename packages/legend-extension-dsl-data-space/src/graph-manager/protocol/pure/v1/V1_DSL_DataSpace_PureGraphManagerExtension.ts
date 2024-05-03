@@ -17,7 +17,6 @@
 import {
   type AbstractPureGraphManager,
   type PureProtocolProcessorPlugin,
-  type RawLambda,
   PureModel,
   V1_PureGraphManager,
   PureClientVersion,
@@ -33,8 +32,8 @@ import {
   V1_buildDatasetSpecification,
   V1_buildModelCoverageAnalysisResult,
   V1_deserializePackageableElement,
-  V1_transformRawLambda,
-  V1_GraphTransformerContextBuilder,
+  type QueryInfo,
+  QueryDataSpaceExecutionContextInfo,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -129,35 +128,39 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
   async addNewExecutableToDataSpaceEntity(
     dataSpaceEntity: Entity,
+    currentQuery: QueryInfo,
     executable: {
       id: string;
       title: string;
-      mapping: string;
-      runtime: string;
-      query: RawLambda;
       description?: string;
     },
   ): Promise<Entity> {
+    const content = currentQuery.content;
+    const rawLambda =
+      await this.graphManager.engine.transformCodeToLambda(content);
     const dataSpaceProtocol =
       this.getDataSpaceProtocolFromEntity(dataSpaceEntity);
     const dataSpaceTemplateExecutable = new V1_DataSpaceTemplateExecutable();
     dataSpaceTemplateExecutable.id = executable.id;
     dataSpaceTemplateExecutable.title = executable.title;
     dataSpaceTemplateExecutable.description = executable.description;
-    dataSpaceTemplateExecutable.executionContextKey = guaranteeNonNullable(
-      dataSpaceProtocol.executionContexts.filter(
-        (ec) =>
-          ec.mapping.path === executable.mapping &&
-          ec.defaultRuntime.path === executable.runtime,
-      )[0]?.name,
-      'can`t find a corresponding executatin key based on query`s mapping and runtime in dataspace',
-    );
-    dataSpaceTemplateExecutable.query = V1_transformRawLambda(
-      executable.query,
-      new V1_GraphTransformerContextBuilder(
-        this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
+    const execContext = currentQuery.executionContext;
+
+    if (execContext instanceof QueryDataSpaceExecutionContextInfo) {
+      dataSpaceTemplateExecutable.executionContextKey =
+        execContext.executionKey;
+    } else if (currentQuery.mapping && currentQuery.runtime) {
+      dataSpaceTemplateExecutable.executionContextKey = guaranteeNonNullable(
+        dataSpaceProtocol.executionContexts.filter(
+          (ec) =>
+            ec.mapping.path === currentQuery.mapping &&
+            ec.defaultRuntime.path === currentQuery.runtime,
+        )[0]?.name,
+        'can`t find a corresponding executatin key based on query`s mapping and runtime in dataspace',
+      );
+    }
+
+    dataSpaceTemplateExecutable.query = rawLambda;
     dataSpaceProtocol.executables = dataSpaceProtocol.executables
       ? [...dataSpaceProtocol.executables, dataSpaceTemplateExecutable]
       : [dataSpaceTemplateExecutable];

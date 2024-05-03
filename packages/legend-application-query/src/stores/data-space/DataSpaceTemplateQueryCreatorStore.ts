@@ -36,7 +36,6 @@ import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
   DSL_DataSpace_getGraphManagerExtension,
   DataSpaceExecutableTemplate,
-  type DataSpaceExecutionContext,
   getDataSpace,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
@@ -44,10 +43,8 @@ import {
   DataSpaceProjectInfo,
   DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
-  createQueryDataSpaceTaggedValue,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
-import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
@@ -150,17 +147,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       },
       true,
       dataSpaceAnalysisResult,
-      (ec: DataSpaceExecutionContext) => {
-        this.applicationStore.navigationService.navigator.updateCurrentLocation(
-          generateDataSpaceTemplateQueryCreatorRoute(
-            this.groupId,
-            this.artifactId,
-            this.versionId,
-            dataSpace.path,
-            this.templateQueryId,
-          ),
-        );
-      },
+      undefined,
       undefined,
       undefined,
       projectInfo,
@@ -190,12 +177,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
         query.versionId = this.versionId;
         if (this.queryBuilderState?.class) {
           query.taggedValues = [
-            createQueryDataSpaceTaggedValue(this.dataSpacePath),
             createQueryClassTaggedValue(this.queryBuilderState.class.path),
-          ];
-        } else {
-          query.taggedValues = [
-            createQueryDataSpaceTaggedValue(this.dataSpacePath),
           ];
         }
       },

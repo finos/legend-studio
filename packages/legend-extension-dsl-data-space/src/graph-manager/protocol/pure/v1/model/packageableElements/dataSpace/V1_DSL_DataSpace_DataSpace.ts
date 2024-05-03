@@ -95,7 +95,7 @@ export class V1_DataSpaceTemplateExecutable
 {
   id!: string;
   query!: V1_RawLambda;
-  executionContextKey?: string;
+  executionContextKey?: string | undefined;
 
   override get hashCode(): string {
     return hashArray([

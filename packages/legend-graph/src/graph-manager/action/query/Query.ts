@@ -34,6 +34,18 @@ export class QueryParameterValue {
   content!: string;
 }
 
+export abstract class QueryExecutionContext {}
+
+export class QueryExplicitExecutionContext extends QueryExecutionContext {
+  mapping!: PackageableElementReference<Mapping>;
+  runtime!: PackageableElementReference<PackageableRuntime>;
+}
+
+export class QueryDataSpaceExecutionContext extends QueryExecutionContext {
+  dataSpacePath!: string;
+  executionKey: string | undefined;
+}
+
 export interface QueryGridConfig {
   columns: object[];
   isPivotModeEnabled: boolean | undefined;
@@ -49,8 +61,6 @@ export class Query {
   originalVersionId?: string | undefined;
   groupId!: string;
   artifactId!: string;
-  mapping!: PackageableElementReference<Mapping>;
-  runtime!: PackageableElementReference<PackageableRuntime>;
   // We enforce a single owner, for collaboration on query, use Studio
   // if not owner is specified, any user can own the query
   // NOTE: the owner is managed automatically by the backend
@@ -63,6 +73,18 @@ export class Query {
 
   // Store query in text to be more compact and stable
   content!: string;
+  executionContext!: QueryExecutionContext;
+
+  /**
+   * mapping, runtime have been deprecated in favor of `V1_QueryExecutionContext`
+   * @deprecated
+   */
+  mapping?: PackageableElementReference<Mapping> | undefined;
+  /**
+   * mapping, runtime have been deprecated in favor of `V1_QueryExecutionContext`
+   * @deprecated
+   */
+  runtime?: PackageableElementReference<PackageableRuntime> | undefined;
 
   lastUpdatedAt?: number | undefined;
   isCurrentUserQuery = false;
@@ -112,6 +134,17 @@ export const cloneQueryStereotype = (val: QueryStereotype): QueryStereotype => {
   return queryStereotype;
 };
 
+export abstract class QueryExecutionContextInfo {}
+
+export class QueryExplicitExecutionContextInfo extends QueryExecutionContextInfo {
+  mapping!: string;
+  runtime!: string;
+}
+
+export class QueryDataSpaceExecutionContextInfo extends QueryExecutionContextInfo {
+  dataSpacePath!: string;
+  executionKey: string | undefined;
+}
 export interface QueryInfo {
   name: string;
   id: string;
@@ -119,7 +152,8 @@ export interface QueryInfo {
   origignalVersionId?: string | undefined;
   groupId: string;
   artifactId: string;
-  mapping: string;
-  runtime: string;
+  executionContext: QueryExecutionContextInfo;
+  mapping?: string | undefined;
+  runtime?: string | undefined;
   content: string;
 }

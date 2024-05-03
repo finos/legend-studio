@@ -17,7 +17,6 @@
 import {
   type LightQuery,
   type QueryInfo,
-  type RawLambda,
   GraphManagerState,
 } from '@finos/legend-graph';
 import {
@@ -404,14 +403,10 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
       const updatedDataSpaceEntity =
         (yield this.graphManagerExtension.addNewExecutableToDataSpaceEntity(
           this.dataSpaceEntity,
+          this.currentQueryInfo,
           {
             id: this.templateQueryId,
             title: this.templateQueryTitle,
-            mapping: guaranteeNonNullable(this.currentQueryInfo).mapping,
-            runtime: guaranteeNonNullable(this.currentQueryInfo).runtime,
-            query: (yield this.graphManagerState.graphManager.pureCodeToLambda(
-              this.currentQueryInfo.content,
-            )) as RawLambda,
             description: this.templateQueryDescription,
           },
         )) as Entity;

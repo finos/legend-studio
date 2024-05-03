@@ -16,8 +16,8 @@
 
 import {
   type AbstractPureGraphManager,
-  type RawLambda,
   AbstractPureGraphManagerExtension,
+  type QueryInfo,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -42,12 +42,10 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
 
   abstract addNewExecutableToDataSpaceEntity(
     dataSpaceEntity: Entity,
+    currentQuery: QueryInfo,
     executable: {
       id: string;
       title: string;
-      mapping: string;
-      runtime: string;
-      query: RawLambda;
       description?: string;
     },
   ): Promise<Entity>;

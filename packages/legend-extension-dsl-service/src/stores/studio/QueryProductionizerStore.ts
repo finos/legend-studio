@@ -44,6 +44,7 @@ import {
   Service,
   Mapping,
   RawLambda,
+  QueryExplicitExecutionContextInfo,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -530,13 +531,21 @@ export class QueryProductionizerStore {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
+      let mapping = this.currentQueryInfo.mapping;
+      let runtime = this.currentQueryInfo.runtime;
+      const execContext = this.currentQueryInfo.executionContext;
+      if (execContext instanceof QueryExplicitExecutionContextInfo) {
+        mapping = execContext.mapping;
+        runtime = execContext.runtime;
+      }
+      // TODO handle dataspace
       const serviceEntity = await createServiceEntity(
         this.servicePath,
         this.servicePattern,
         this.serviceOwners,
         this.currentQueryInfo.content,
-        this.currentQueryInfo.mapping,
-        this.currentQueryInfo.runtime,
+        guaranteeNonNullable(mapping, 'Unable to resolve mapping for service'),
+        guaranteeNonNullable(runtime, 'Unable to resolve runtime for service'),
         this.graphManagerState,
       );
       const projectData = await Promise.all([
@@ -547,7 +556,6 @@ export class QueryProductionizerStore {
         projectData[0] as unknown as Entity[],
         ProjectConfiguration.serialization.fromJson(projectData[1]),
       ];
-
       // 2. auto-configure the project
       // here, the goal is to identify and add the query's project as a dependency
       const dependenciesToAdd: ProjectDependency[] = [];
