@@ -22,7 +22,6 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
-  MenuIcon,
   MenuContentDivider,
   MenuContentItemIcon,
   CheckIcon,
@@ -48,6 +47,7 @@ import {
   PanelFullContent,
   CustomSelectorInput,
   ArrowCircleUpIcon,
+  HomeIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -1056,7 +1056,7 @@ export const QueryEditor = observer(() => {
               </MenuContent>
             }
           >
-            <MenuIcon />
+            <HomeIcon />
           </DropdownMenu>
         </div>
         <div className="query-editor__logo-header__name">
