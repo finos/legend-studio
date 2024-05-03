@@ -536,6 +536,78 @@ test(
 
 test(
   integrationTest(
+    "Query builder doesn't allow stopping editing if the column name is empty",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop column
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // check fetch-structure
+    const FIRST_NAME_ALIAS = 'First Name';
+    expect(
+      await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+    ).not.toBeNull();
+
+    // edit column name
+    const firstNameColumnName = guaranteeNonNullable(
+      await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+    );
+    fireEvent.click(firstNameColumnName);
+    const firstNameColumnNameInput = guaranteeNonNullable(
+      await waitFor(() =>
+        tdsProjectionPanel.querySelector(`input[value="${FIRST_NAME_ALIAS}"]`),
+      ),
+    );
+    fireEvent.change(firstNameColumnNameInput, {
+      target: { value: '' },
+    });
+    fireEvent.blur(firstNameColumnNameInput);
+
+    // check that input is still present
+    expect(
+      await waitFor(() => tdsProjectionPanel.querySelector('input[value=""]')),
+    ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
     'Query builder allows editing derivation column name upon clicking column name',
   ),
   async () => {
