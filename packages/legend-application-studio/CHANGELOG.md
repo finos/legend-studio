@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.16.16
+
+### Patch Changes
+
+- [#3103](https://github.com/finos/legend-studio/pull/3103) [`2071deb70`](https://github.com/finos/legend-studio/commit/2071deb70aac956efa7e042a887f2d83b2895ca2) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - add error indicator for invalid artifactId
+
+- [#3105](https://github.com/finos/legend-studio/pull/3105) [`93a0c3876`](https://github.com/finos/legend-studio/commit/93a0c387663e659ef6d6a9a2a4c4f335dfd7be2e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add an info icon to elucidate the meaning of the class's properties
+
 ## 28.16.15
 
 ## 28.16.14

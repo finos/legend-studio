@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 0.0.12
+
+### Patch Changes
+
+- [#3107](https://github.com/finos/legend-studio/pull/3107) [`4272cd7a8`](https://github.com/finos/legend-studio/commit/4272cd7a833df538d17f2ff8d859994c2d224516) ([@gayathrir11](https://github.com/gayathrir11)) - Always enable enterprise features for AgGrid used for REPL
+
 ## 0.0.11
 
 ### Patch Changes
