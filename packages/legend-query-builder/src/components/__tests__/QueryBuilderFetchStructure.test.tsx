@@ -26,6 +26,7 @@ import {
   queryByText,
   getByRole,
   getAllByPlaceholderText,
+  waitForElementToBeRemoved,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -1867,7 +1868,10 @@ test(
     fireEvent.change(valueInput, {
       target: { value: 'Mr.' },
     });
-    fireEvent.click(getByText(dpModal, 'Done'));
+    fireEvent.click(getByRole(dpModal, 'button', { name: 'Done' }));
+    await waitForElementToBeRemoved(() =>
+      renderResult.getByText('Derived Property'),
+    );
 
     // Check for no validation issue
     expect(await waitFor(() => renderResult.queryByText('1 issue'))).toBeNull();
@@ -1885,6 +1889,9 @@ test(
     await waitFor(() => getByText(dpModal, 'title'));
     fireEvent.click(renderResult.getByRole('button', { name: 'Reset' }));
     fireEvent.click(getByRole(dpModal, 'button', { name: 'Done' }));
+    await waitForElementToBeRemoved(() =>
+      renderResult.getByText('Derived Property'),
+    );
 
     // Check for validation issue
     expect(
