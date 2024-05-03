@@ -923,6 +923,302 @@ test(
   },
 );
 
+const MILESTONING_FILTER_DND_TEST_CASES: MilestoningDragAndDropTestCase[] = [
+  [
+    'Query builder loads simple filter when we DnD filter node and both source and target are business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is business Temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person2',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person1',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is business temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Business Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Business Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndBusinessTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is processing temporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Processing Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Processing Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndProcessingTemporalTarget,
+    },
+  ],
+  [
+    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is biTemporal',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Firm',
+      entities: TEST_MilestoningModel,
+      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+      propertyClassName: 'Bi Temporal',
+      propertyName: 'Firm ID',
+      filterNodeName: 'Bi Temporal/Firm ID',
+      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
+      expectedRawLambda:
+        TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget,
+    },
+  ],
+];
+
+describe(
+  integrationTest('Milestoning filter DnD query is properly built'),
+  () => {
+    test.each(MILESTONING_FILTER_DND_TEST_CASES)(
+      '%s',
+      async (
+        testName: MilestoningDragAndDropTestCase[0],
+        testCase: MilestoningDragAndDropTestCase[1],
+      ) => {
+        const {
+          mappingPath,
+          runtimePath,
+          classPath,
+          entities,
+          mappingAnalysis,
+          propertyClassName,
+          propertyName,
+          filterNodeName,
+          expectedDerivedPropertyParameters,
+          expectedRawLambda,
+        } = testCase;
+        const { renderResult, queryBuilderState } =
+          await TEST__setUpQueryBuilder(
+            entities,
+            stub_RawLambda(),
+            mappingPath,
+            runtimePath,
+            mappingAnalysis,
+          );
+
+        const _class =
+          queryBuilderState.graphManagerState.graph.getClass(classPath);
+        await act(async () => {
+          queryBuilderState.changeClass(_class);
+        });
+        const filterPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+          ),
+        );
+        const explorerPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+          ),
+        );
+
+        // Drag and drop
+        const dropZone = await waitFor(() =>
+          getByText(filterPanel, 'Add a filter condition'),
+        );
+        await waitFor(() => getByText(explorerPanel, propertyClassName));
+        fireEvent.click(getByText(explorerPanel, propertyClassName));
+        const sources = await waitFor(() =>
+          getAllByText(explorerPanel, propertyName),
+        );
+        expect(sources.length).toBe(2);
+        const dragSource = guaranteeNonNullable(sources[1]);
+        await dragAndDrop(
+          dragSource,
+          dropZone,
+          filterPanel,
+          'Add a filter condition',
+        );
+        await waitFor(() => getByText(filterPanel, filterNodeName));
+        await waitFor(() => getByText(filterPanel, 'is'));
+        // Set filter value
+        const filterValueInput = await waitFor(() =>
+          getByRole(filterPanel, 'textbox'),
+        );
+        fireEvent.change(filterValueInput, { target: { value: '0' } });
+        const contentNodes = await waitFor(() =>
+          getAllByTestId(
+            filterPanel,
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+          ),
+        );
+        expect(contentNodes.length).toBe(1);
+        await waitFor(() =>
+          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+        );
+        fireEvent.click(
+          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+        );
+        const dpModal = await waitFor(() => renderResult.getByRole('dialog'));
+        await waitFor(() => getByText(dpModal, 'Derived Property'));
+        expectedDerivedPropertyParameters.forEach((p) =>
+          getAllByText(dpModal, p),
+        );
+        fireEvent.click(getByText(dpModal, 'Done'));
+
+        // Check whether the rawLambda we build is expected
+        expect(
+          queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+            queryBuilderState.buildQuery(),
+          ),
+        ).toEqual(expectedRawLambda);
+      },
+    );
+  },
+);
+
 test(
   integrationTest(
     `Query builder loads simple filter when we create milestoning derived property filter condition by DnD and doesn't propagate any milestoning date`,
@@ -2222,299 +2518,3 @@ type MilestoningDragAndDropTestCase = [
     expectedRawLambda: { parameters?: object; body?: object };
   },
 ];
-
-const MILESTONING_FILTER_DND_TEST_CASES: MilestoningDragAndDropTestCase[] = [
-  [
-    'Query builder loads simple filter when we DnD filter node and both source and target are business temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Business Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Business Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBusinessTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is processing temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Processing Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Processing Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is business temporal, target is biTemporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Bi Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Bi Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is business Temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person2',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Business Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Business Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is processing temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person2',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Processing Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Processing Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndProcessingTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is processing temporal, target is biTemporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person2',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Bi Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Bi Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is business temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person1',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Business Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Business Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is processing temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person1',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Processing Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Processing Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is biTemporal, target is biTemporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person1',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Bi Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Bi Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is business temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Firm',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Business Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Business Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithNonTemporalSourceAndBusinessTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is processing temporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Firm',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Processing Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Processing Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithNonTemporalSourceAndProcessingTemporalTarget,
-    },
-  ],
-  [
-    'Query builder loads simple filter when we DnD filter node and source is non-Temporal, target is biTemporal',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Firm',
-      entities: TEST_MilestoningModel,
-      mappingAnalysis: TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
-      propertyClassName: 'Bi Temporal',
-      propertyName: 'Firm ID',
-      filterNodeName: 'Bi Temporal/Firm ID',
-      expectedDerivedPropertyParameters: ['processingDate', 'businessDate'],
-      expectedRawLambda:
-        TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget,
-    },
-  ],
-];
-
-describe(
-  integrationTest('Milestoning filter DnD query is properly built'),
-  () => {
-    test.each(MILESTONING_FILTER_DND_TEST_CASES)(
-      '%s',
-      async (
-        testName: MilestoningDragAndDropTestCase[0],
-        testCase: MilestoningDragAndDropTestCase[1],
-      ) => {
-        const {
-          mappingPath,
-          runtimePath,
-          classPath,
-          entities,
-          mappingAnalysis,
-          propertyClassName,
-          propertyName,
-          filterNodeName,
-          expectedDerivedPropertyParameters,
-          expectedRawLambda,
-        } = testCase;
-        const { renderResult, queryBuilderState } =
-          await TEST__setUpQueryBuilder(
-            entities,
-            stub_RawLambda(),
-            mappingPath,
-            runtimePath,
-            mappingAnalysis,
-          );
-
-        const _class =
-          queryBuilderState.graphManagerState.graph.getClass(classPath);
-        await act(async () => {
-          queryBuilderState.changeClass(_class);
-        });
-        const filterPanel = await waitFor(() =>
-          renderResult.getByTestId(
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-          ),
-        );
-        const explorerPanel = await waitFor(() =>
-          renderResult.getByTestId(
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
-          ),
-        );
-
-        // Drag and drop
-        const dropZone = await waitFor(() =>
-          getByText(filterPanel, 'Add a filter condition'),
-        );
-        await waitFor(() => getByText(explorerPanel, propertyClassName));
-        fireEvent.click(getByText(explorerPanel, propertyClassName));
-        const sources = await waitFor(() =>
-          getAllByText(explorerPanel, propertyName),
-        );
-        expect(sources.length).toBe(2);
-        const dragSource = guaranteeNonNullable(sources[1]);
-        await dragAndDrop(
-          dragSource,
-          dropZone,
-          filterPanel,
-          'Add a filter condition',
-        );
-        await waitFor(() => getByText(filterPanel, filterNodeName));
-        await waitFor(() => getByText(filterPanel, 'is'));
-        // Set filter value
-        const filterValueInput = await waitFor(() =>
-          getByRole(filterPanel, 'textbox'),
-        );
-        fireEvent.change(filterValueInput, { target: { value: '0' } });
-        const contentNodes = await waitFor(() =>
-          getAllByTestId(
-            filterPanel,
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
-          ),
-        );
-        expect(contentNodes.length).toBe(1);
-        await waitFor(() =>
-          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
-        );
-        fireEvent.click(
-          getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
-        );
-        const dpModal = await waitFor(() => renderResult.getByRole('dialog'));
-        await waitFor(() => getByText(dpModal, 'Derived Property'));
-        expectedDerivedPropertyParameters.forEach((p) =>
-          getAllByText(dpModal, p),
-        );
-        fireEvent.click(getByText(dpModal, 'Done'));
-
-        // Check whether the rawLambda we build is expected
-        expect(
-          queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
-            queryBuilderState.buildQuery(),
-          ),
-        ).toEqual(expectedRawLambda);
-      },
-    );
-  },
-);
