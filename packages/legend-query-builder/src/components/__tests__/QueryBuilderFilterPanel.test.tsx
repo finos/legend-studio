@@ -923,6 +923,22 @@ test(
   },
 );
 
+type MilestoningDragAndDropTestCase = [
+  string,
+  {
+    mappingPath: string;
+    runtimePath: string;
+    classPath: string;
+    entities: Entity[];
+    mappingAnalysis: object;
+    propertyClassName: string;
+    propertyName: string;
+    filterNodeName: string;
+    expectedDerivedPropertyParameters: string[];
+    expectedRawLambda: { parameters?: object; body?: object };
+  },
+];
+
 const MILESTONING_FILTER_DND_TEST_CASES: MilestoningDragAndDropTestCase[] = [
   [
     'Query builder loads simple filter when we DnD filter node and both source and target are business temporal',
@@ -2502,19 +2518,3 @@ test(
     ).toHaveProperty('disabled', false);
   },
 );
-
-type MilestoningDragAndDropTestCase = [
-  string,
-  {
-    mappingPath: string;
-    runtimePath: string;
-    classPath: string;
-    entities: Entity[];
-    mappingAnalysis: object;
-    propertyClassName: string;
-    propertyName: string;
-    filterNodeName: string;
-    expectedDerivedPropertyParameters: string[];
-    expectedRawLambda: { parameters?: object; body?: object };
-  },
-];
