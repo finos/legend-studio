@@ -70,6 +70,8 @@ class LegendQueryApplicationCoreOptions {
    */
   queryBuilderConfig: QueryBuilderConfig | undefined;
 
+  applicationName = 'Legend Query';
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryApplicationCoreOptions, {
       TEMPORARY__serviceRegistrationConfig: list(
@@ -78,6 +80,7 @@ class LegendQueryApplicationCoreOptions {
       queryBuilderConfig: optional(
         usingModelSchema(QueryBuilderConfig.serialization.schema),
       ),
+      applicationName: primitive(),
     }),
   );
 

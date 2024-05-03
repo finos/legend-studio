@@ -1011,10 +1011,10 @@ export const QueryEditor = observer(() => {
 
   return (
     <div className="query-editor">
-      <div className="query-editor__header">
-        <div className="query-editor__header__menu">
+      <div className="query-editor__logo-header">
+        <div className="query-editor__logo-header__menu">
           <DropdownMenu
-            className="query-editor__header__menu-item"
+            className="query-editor__logo-header__menu-item"
             menuProps={{
               anchorOrigin: { vertical: 'top', horizontal: 'right' },
               transformOrigin: { vertical: 'top', horizontal: 'left' },
@@ -1059,6 +1059,11 @@ export const QueryEditor = observer(() => {
             <MenuIcon />
           </DropdownMenu>
         </div>
+        <div className="query-editor__logo-header__name">
+          {editorStore.applicationStore.config.options.applicationName}
+        </div>
+      </div>
+      <div className="query-editor__header">
         {!isLoadingEditor && editorStore.queryBuilderState && (
           <QueryEditorHeaderContent
             queryBuilderState={editorStore.queryBuilderState}
