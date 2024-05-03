@@ -24,6 +24,7 @@ import {
   act,
   getByDisplayValue,
   queryByText,
+  findByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -536,7 +537,7 @@ test(
 
 test(
   integrationTest(
-    "Query builder doesn't allow stopping editing if the column name is empty",
+    "Query builder doesn't allow stopping editing if the column name is empty and shows validation error",
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -599,10 +600,19 @@ test(
     });
     fireEvent.blur(firstNameColumnNameInput);
 
-    // check that input is still present
+    // check that input is still present and validation error is present
     expect(
       await waitFor(() => tdsProjectionPanel.querySelector('input[value=""]')),
     ).not.toBeNull();
+    const fetchStructurePanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+      ),
+    );
+    expect(await findByText(fetchStructurePanel, '1 issue')).not.toBeNull();
+    expect(
+      getByText(fetchStructurePanel, '1 issue').parentElement?.title,
+    ).toContain('Query has projection column with no name');
   },
 );
 
@@ -714,6 +724,62 @@ test(
         ),
       ),
     ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    "Query builder doesn't allow stopping editing derivation column name if the column name is empty and shows validation error",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+
+    const fetchStructurePanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+      ),
+    );
+
+    // Add derivation column
+    fireEvent.click(getByTitle(fetchStructurePanel, 'Add a new derivation'));
+
+    // edit column name
+    const derivationColumnName = guaranteeNonNullable(
+      await waitFor(() => queryByText(fetchStructurePanel, '(derivation)')),
+    );
+    fireEvent.click(derivationColumnName);
+    const derivationColumnNameInput = guaranteeNonNullable(
+      await waitFor(() =>
+        fetchStructurePanel.querySelector(`input[value="(derivation)"]`),
+      ),
+    );
+    fireEvent.change(derivationColumnNameInput, {
+      target: { value: '' },
+    });
+    fireEvent.blur(derivationColumnNameInput);
+
+    // check that input is still present and validation error is present
+    expect(
+      await waitFor(() => fetchStructurePanel.querySelector('input[value=""]')),
+    ).not.toBeNull();
+    expect(await findByText(fetchStructurePanel, '1 issue')).not.toBeNull();
+    expect(
+      getByText(fetchStructurePanel, '1 issue').parentElement?.title,
+    ).toContain('Query has projection column with no name');
   },
 );
 
