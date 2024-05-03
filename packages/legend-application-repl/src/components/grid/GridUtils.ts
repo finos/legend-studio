@@ -151,30 +151,16 @@ export const getAggregationTDSColumnCustomizations = (
   }
 };
 
-export const getDefaultColumnDefintions = (
-  isAgGridLicenseEnabled: boolean,
-): object => {
-  if (isAgGridLicenseEnabled) {
-    return {
-      minWidth: 50,
-      sortable: true,
-      flex: 1,
-      resizable: true,
-      enableRowGroup: true,
-      allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
-      enableValue: true,
-      menuTabs: ['filterMenuTab', 'generalMenuTab', 'columnsMenuTab'],
-    };
-  } else {
-    return {
-      minWidth: 50,
-      sortable: true,
-      flex: 1,
-      resizable: true,
-      menuTabs: ['filterMenuTab', 'generalMenuTab', 'columnsMenuTab'],
-    };
-  }
-};
+export const getDefaultColumnDefintions = (): object => ({
+  minWidth: 50,
+  sortable: true,
+  flex: 1,
+  resizable: true,
+  enableRowGroup: true,
+  allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
+  enableValue: true,
+  menuTabs: ['filterMenuTab', 'generalMenuTab', 'columnsMenuTab'],
+});
 
 export const getTDSRowData = (tds: TabularDataSet): TDSRowDataType[] =>
   tds.rows.map((_row, rowIdx) => {

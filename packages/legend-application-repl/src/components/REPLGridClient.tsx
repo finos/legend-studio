@@ -199,8 +199,7 @@ export const Editor = withEditorStore(
                   : 'ag-theme-balham-dark'
               }
               gridOptions={
-                editorStore.replGridState.initialResult &&
-                editorStore.replGridState.licenseKey
+                editorStore.replGridState.initialResult
                   ? {
                       serverSideDatasource: new ServerSideDataSource(
                         getTDSRowData(

@@ -40,22 +40,20 @@ export function AgGridComponent<TData = unknown>(
     licenseKey: string;
   },
 ): JSX.Element {
-  let isAgGridLicenseEnabled = false;
   if (props.licenseKey) {
     LicenseManager.setLicenseKey(props.licenseKey);
-    isAgGridLicenseEnabled = true;
   }
 
   return (
     <AgGridReact
-      rowGroupPanelShow={isAgGridLicenseEnabled ? 'always' : 'never'}
+      rowGroupPanelShow={'always'}
       suppressBrowserResizeObserver={true}
       suppressScrollOnNewData={true}
       alwaysMultiSort={true}
-      rowModelType={isAgGridLicenseEnabled ? 'serverSide' : 'clientSide'}
+      rowModelType={'serverSide'}
       {...props}
-      defaultColDef={getDefaultColumnDefintions(isAgGridLicenseEnabled)}
-      modules={isAgGridLicenseEnabled ? allModules : communityModules}
+      defaultColDef={getDefaultColumnDefintions()}
+      modules={allModules}
     />
   );
 }
