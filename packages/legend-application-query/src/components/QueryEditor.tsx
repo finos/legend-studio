@@ -36,7 +36,6 @@ import {
   LightBulbIcon,
   EmptyLightBulbIcon,
   SaveCurrIcon,
-  SaveAsIcon,
   ExclamationTriangleIcon,
   PanelListItem,
   Button,
@@ -47,7 +46,10 @@ import {
   PanelFullContent,
   CustomSelectorInput,
   ArrowCircleUpIcon,
-  HomeIcon,
+  PencilIcon,
+  MenuIcon,
+  InfoCircleIcon,
+  DocumentationIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -85,6 +87,8 @@ import {
   QueryLoaderDialog,
   QueryBuilderDiffViewPanel,
   type QueryBuilderState,
+  QueryBuilder_LegendApplicationPlugin,
+  QueryBuilderAdvancedButtonKey,
 } from '@finos/legend-query-builder';
 import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
 import { buildUrl, debounce } from '@finos/legend-shared';
@@ -764,9 +768,43 @@ const QueryEditorHeaderContent = observer(
         className="query-editor__header__content"
         data-testid={QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS}
       >
+        {applicationStore.pluginManager
+          .getApplicationPlugins()
+          .filter(
+            (plugin) => plugin instanceof QueryBuilder_LegendApplicationPlugin,
+          )
+          .flatMap((plugin) =>
+            (
+              plugin as unknown as QueryBuilder_LegendApplicationPlugin
+            ).getCoreQueryBuilderStatusConfigurations(),
+          )
+          .map((actionConfig) => (
+            <Fragment key={actionConfig.key}>
+              {actionConfig.renderer(queryBuilderState)}
+            </Fragment>
+          ))}
         {renderQueryTitle()}
-
         <div className="query-editor__header__actions">
+          {applicationStore.pluginManager
+            .getApplicationPlugins()
+            .filter(
+              (plugin) =>
+                plugin instanceof QueryBuilder_LegendApplicationPlugin,
+            )
+            .flatMap((plugin) =>
+              (
+                plugin as unknown as QueryBuilder_LegendApplicationPlugin
+              ).getCoreQueryBuilderActionConfigurations(),
+            )
+            .filter(
+              (actionConfig) =>
+                actionConfig.key !== QueryBuilderAdvancedButtonKey,
+            )
+            .map((actionConfig) => (
+              <Fragment key={actionConfig.key}>
+                {actionConfig.renderer(queryBuilderState)}
+              </Fragment>
+            ))}
           {applicationStore.pluginManager
             .getApplicationPlugins()
             .flatMap(
@@ -810,7 +848,19 @@ const QueryEditorHeaderContent = observer(
               Load Query
             </div>
           </Button>
-
+          {isExistingQuery && (
+            <Button
+              className="query-editor__header__action btn--dark"
+              disabled={!isExistingQuery}
+              onClick={renameQuery}
+              title="Rename query..."
+            >
+              <PencilIcon />
+              <div className="query-editor__header__action__label">
+                Rename Query
+              </div>
+            </Button>
+          )}
           {isExistingQuery && (
             <Button
               className="query-editor__header__action btn--dark"
@@ -824,43 +874,87 @@ const QueryEditorHeaderContent = observer(
               </div>
             </Button>
           )}
-          <Button
-            className="query-editor__header__action btn--dark"
-            disabled={
-              !isExistingQuery || editorStore.isPerformingBlockingAction
-            }
-            onClick={openSaveQueryModal}
-            title="Save query"
-          >
-            <SaveCurrIcon />
-            <div className="query-editor__header__action__label">Save</div>
-          </Button>
-          <Button
-            className="query-editor__header__action btn--dark"
-            disabled={editorStore.isPerformingBlockingAction}
-            onClick={handleQuerySaveAs}
-            title="Save as new query"
-          >
-            <SaveAsIcon />
-            <div className="query-editor__header__action__label">
-              Save As...
-            </div>
-          </Button>
+          <div className="query-editor__header__action-combo btn__dropdown-combo">
+            <Button
+              className="query-editor__header__action btn--dark"
+              disabled={
+                !isExistingQuery || editorStore.isPerformingBlockingAction
+              }
+              onClick={openSaveQueryModal}
+              title="Save query"
+            >
+              <SaveCurrIcon />
+              <div className="query-editor__header__action__label">Save</div>
+            </Button>
+            <DropdownMenu
+              className="query-editor__header__action-combo__dropdown-btn"
+              disabled={editorStore.isViewProjectActionDisabled}
+              content={
+                <MenuContent>
+                  <MenuContentItem
+                    className="btn__dropdown-combo__option"
+                    onClick={handleQuerySaveAs}
+                    disabled={editorStore.isPerformingBlockingAction}
+                  >
+                    <MenuContentItemLabel>
+                      Save as New Query
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <CaretDownIcon />
+            </DropdownMenu>
+          </div>
           <DropdownMenu
             className="query-editor__header__action btn--dark"
             disabled={editorStore.isViewProjectActionDisabled}
             content={
               <MenuContent>
                 {extraHelpMenuContentItems}
+                {isExistingQuery && (
+                  <MenuContentItem
+                    onClick={showQueryInfo}
+                    disabled={!isExistingQuery}
+                  >
+                    <MenuContentItemIcon>
+                      <InfoCircleIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      About Query Info
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                )}
+                <MenuContentItem
+                  disabled={editorStore.isViewProjectActionDisabled}
+                  onClick={viewProject}
+                >
+                  <MenuContentItemIcon>
+                    <InfoCircleIcon />
+                  </MenuContentItemIcon>
+                  <MenuContentItemLabel>About Project</MenuContentItemLabel>
+                </MenuContentItem>
+                <MenuContentItem
+                  disabled={editorStore.isViewProjectActionDisabled}
+                  onClick={viewSDLCProject}
+                >
+                  <MenuContentItemIcon>
+                    <InfoCircleIcon />
+                  </MenuContentItemIcon>
+                  <MenuContentItemLabel>
+                    About SDLC project
+                  </MenuContentItemLabel>
+                </MenuContentItem>
                 {queryDocEntry && (
                   <MenuContentItem onClick={openQueryTutorial}>
-                    <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                    <MenuContentItemIcon>
+                      <DocumentationIcon />
+                    </MenuContentItemIcon>
                     <MenuContentItemLabel>
                       Open Documentation
                     </MenuContentItemLabel>
                   </MenuContentItem>
                 )}
-
                 <MenuContentItem onClick={toggleAssistant}>
                   <MenuContentItemIcon>
                     {!applicationStore.assistantService.isHidden ? (
@@ -888,6 +982,26 @@ const QueryEditorHeaderContent = observer(
               title="Load query"
             />
           )}
+          {applicationStore.pluginManager
+            .getApplicationPlugins()
+            .filter(
+              (plugin) =>
+                plugin instanceof QueryBuilder_LegendApplicationPlugin,
+            )
+            .flatMap((plugin) =>
+              (
+                plugin as unknown as QueryBuilder_LegendApplicationPlugin
+              ).getCoreQueryBuilderActionConfigurations(),
+            )
+            .filter(
+              (actionConfig) =>
+                actionConfig.key === QueryBuilderAdvancedButtonKey,
+            )
+            .map((actionConfig) => (
+              <Fragment key={actionConfig.key}>
+                {actionConfig.renderer(queryBuilderState)}
+              </Fragment>
+            ))}
           <button
             title="Toggle light/dark mode"
             onClick={TEMPORARY__toggleLightDarkMode}
@@ -904,56 +1018,6 @@ const QueryEditorHeaderContent = observer(
               </>
             )}
           </button>
-
-          <DropdownMenu
-            className="query-editor__header__action btn--medium"
-            disabled={editorStore.isViewProjectActionDisabled}
-            content={
-              <MenuContent>
-                {isExistingQuery && (
-                  <MenuContentItem
-                    className="query-editor__header__action__options"
-                    onClick={renameQuery}
-                    disabled={!isExistingQuery}
-                  >
-                    Rename Query
-                  </MenuContentItem>
-                )}
-                {isExistingQuery && (
-                  <MenuContentItem
-                    className="query-editor__header__action__options"
-                    onClick={showQueryInfo}
-                    disabled={!isExistingQuery}
-                  >
-                    Get Query Info
-                  </MenuContentItem>
-                )}
-                <MenuContentItem
-                  className="query-editor__header__action__options"
-                  disabled={editorStore.isViewProjectActionDisabled}
-                  onClick={viewProject}
-                >
-                  Go to Project
-                </MenuContentItem>
-                <MenuContentItem
-                  className="query-editor__header__action__options"
-                  disabled={editorStore.isViewProjectActionDisabled}
-                  onClick={viewSDLCProject}
-                >
-                  Go to SDLC project
-                </MenuContentItem>
-              </MenuContent>
-            }
-          >
-            <div
-              className="query-editor__header__action__label"
-              title="See more options"
-            >
-              More Actions...
-            </div>
-            <CaretDownIcon className="query-editor__header__action__dropdown-trigger" />
-          </DropdownMenu>
-
           {editorStore.queryCreatorState.showCreateModal && (
             <CreateQueryDialog />
           )}
@@ -1056,7 +1120,7 @@ export const QueryEditor = observer(() => {
               </MenuContent>
             }
           >
-            <HomeIcon />
+            <MenuIcon />
           </DropdownMenu>
         </div>
         <div className="query-editor__logo-header__name">

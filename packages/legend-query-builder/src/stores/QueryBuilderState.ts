@@ -115,6 +115,8 @@ export type QueryStateInfo = QuerySDLC & {
   runtime: string;
 };
 
+export const QueryBuilderAdvancedButtonKey = 'advanced';
+
 export abstract class QueryBuilderState implements CommandRegistrar {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: GraphManagerState;
@@ -146,6 +148,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isCalendarEnabled = false;
   isQueryChatOpened = false;
   isLocalModeEnabled = false;
+  queryBuilderRef!: React.RefObject<HTMLDivElement>;
 
   class?: Class | undefined;
   getAllFunction: QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS =
@@ -193,6 +196,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
       getAllFunction: observable,
+      queryBuilderRef: observable,
 
       sideBarClassName: computed,
       isQuerySupported: computed,
@@ -207,6 +211,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setIsQueryChatOpened: action,
       setIsLocalModeEnabled: action,
       setGetAllFunction: action,
+      setQueryBuilderRef: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -354,6 +359,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setGetAllFunction(val: QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS): void {
     this.getAllFunction = val;
+  }
+
+  setQueryBuilderRef(val: React.RefObject<HTMLDivElement>): void {
+    this.queryBuilderRef = val;
   }
 
   get isQuerySupported(): boolean {

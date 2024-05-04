@@ -22,17 +22,8 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   HackerIcon,
-  DropdownMenu,
-  MenuContent,
-  MenuContentItem,
-  MenuContentItemIcon,
-  MenuContentItemLabel,
-  CheckIcon,
-  CaretDownIcon,
   DiffIcon,
-  WaterDropIcon,
   AssistantIcon,
-  MenuContentDivider,
   Dialog,
   Modal,
   ModalBody,
@@ -40,7 +31,6 @@ import {
   ModalHeader,
   BlankPanelContent,
   ModalFooterButton,
-  CalendarClockIcon,
   ChatIcon,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
@@ -59,24 +49,20 @@ import {
   BackdropContainer,
   useApplicationStore,
   useCommands,
-  ActionAlertActionType,
-  ActionAlertType,
 } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderDiffViewPanelDiaglog } from './QueryBuilderDiffPanel.js';
-import { guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
-import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
-import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
 import { QueryChat } from './QueryChat.js';
-import { useEffect, useRef } from 'react';
-import { RedoButton, UndoButton } from '@finos/legend-lego/application';
+import { Fragment, useEffect, useRef } from 'react';
+import { QueryBuilder_LegendApplicationPlugin } from './QueryBuilder_LegendApplicationPlugin.js';
+import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -229,127 +215,13 @@ export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = queryBuilderState.applicationStore;
+    const hideQueryBuilderHeader = applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap((plugin) => plugin.hideBuiltInQueryBuilderActionHeader)
+      .reduce((acc, currentValue) => acc || currentValue, false);
     const queryBuilderRef = useRef<HTMLDivElement>(null);
     const isQuerySupported = queryBuilderState.isQuerySupported;
     const fetchStructureState = queryBuilderState.fetchStructureState;
-    const isTDSState =
-      fetchStructureState.implementation instanceof QueryBuilderTDSState;
-    const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
-      queryBuilderState.textEditorState.openModal(mode);
-    const toggleShowFunctionPanel = (): void => {
-      queryBuilderState.setShowFunctionsExplorerPanel(
-        !queryBuilderState.showFunctionsExplorerPanel,
-      );
-    };
-    const toggleShowParameterPanel = (): void => {
-      queryBuilderState.setShowParametersPanel(
-        !queryBuilderState.showParametersPanel,
-      );
-    };
-    const toggleConstantPanel = (): void => {
-      queryBuilderState.constantState.setShowConstantPanel(
-        !queryBuilderState.constantState.showConstantPanel,
-      );
-    };
-    const toggleShowFilterPanel = (): void => {
-      queryBuilderState.filterState.setShowPanel(
-        !queryBuilderState.filterState.showPanel,
-      );
-    };
-    const toggleShowPostFilterPanel = (): void => {
-      if (
-        queryBuilderState.fetchStructureState.implementation instanceof
-        QueryBuilderTDSState
-      ) {
-        const tdsState = queryBuilderState.fetchStructureState.implementation;
-        tdsState.setShowPostFilterPanel(!tdsState.showPostFilterPanel);
-        queryBuilderState.applicationStore.settingService.persistValue(
-          QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL,
-          tdsState.showPostFilterPanel,
-        );
-      }
-    };
-
-    const openWatermark = (): void => {
-      queryBuilderState.watermarkState.setIsEditingWatermark(true);
-    };
-
-    const toggleEnableCalendar = (): void => {
-      if (queryBuilderState.isCalendarEnabled) {
-        queryBuilderState.applicationStore.alertService.setActionAlertInfo({
-          message:
-            'You are about to disable calendar aggregation operations. This will remove all the calendar aggreagtions you added to the query.',
-          prompt: ' Do you want to proceed?',
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Proceed',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => {
-                if (
-                  queryBuilderState.fetchStructureState
-                    .implementation instanceof QueryBuilderTDSState
-                ) {
-                  queryBuilderState.fetchStructureState.implementation.aggregationState.disableCalendar();
-                }
-              },
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
-        });
-      } else {
-        queryBuilderState.applicationStore.alertService.setActionAlertInfo({
-          message:
-            'You are about to enable calendar aggregation operations. This will let you add calendar functions to the aggregation operations that you perform on projection columns, but this would require your calendar database to be included in your database.',
-          prompt: ' Do you want to proceed?',
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Proceed',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => queryBuilderState.setIsCalendarEnabled(true),
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
-        });
-      }
-    };
-
-    const editQueryInPure = (): void => {
-      openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
-    };
-    const showQueryProtocol = (): void => {
-      openLambdaEditor(QueryBuilderTextEditorMode.JSON);
-    };
-
-    const openCheckEntitlmentsEditor = (): void => {
-      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
-        true,
-      );
-    };
-    const handleClose = (): void => {
-      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
-        false,
-      );
-    };
-    useCommands(queryBuilderState);
-    const toggleShowOLAPGroupByPanel = (): void => {
-      if (isTDSState) {
-        const tdsState = guaranteeType(
-          queryBuilderState.fetchStructureState.implementation,
-          QueryBuilderTDSState,
-        );
-        tdsState.setShowWindowFuncPanel(!tdsState.showWindowFuncPanel);
-      }
-    };
     const showPostFetchStructurePanel =
       queryBuilderState.fetchStructureState.implementation
         .TEMPORARY__showPostFetchStructurePanel;
@@ -373,13 +245,13 @@ export const QueryBuilder = observer(
       return null;
     };
 
-    const undo = (): void => {
-      queryBuilderState.changeHistoryState.undo();
+    const handleClose = (): void => {
+      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
+        false,
+      );
     };
 
-    const redo = (): void => {
-      queryBuilderState.changeHistoryState.redo();
-    };
+    useCommands(queryBuilderState);
 
     useEffect(() => {
       // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
@@ -390,6 +262,10 @@ export const QueryBuilder = observer(
         );
       }
     }, [queryBuilderState, queryBuilderState.hashCode]);
+
+    useEffect(() => {
+      queryBuilderState.setQueryBuilderRef(queryBuilderRef);
+    }, [queryBuilderRef, queryBuilderState]);
 
     return (
       <div
@@ -405,244 +281,46 @@ export const QueryBuilder = observer(
             isLoading={queryBuilderState.resultState.exportState.isInProgress}
           />
           <div className="query-builder__content">
-            <div className="query-builder__header">
-              <div className="query-builder__header__statuses">
-                {queryBuilderState.watermarkState.value && (
-                  <button
-                    className="query-builder__header__status query-builder__header__status--action"
-                    onClick={openWatermark}
-                    tabIndex={-1}
-                    title="Used watermark"
-                    name="Used watermark"
-                  >
-                    <WaterDropIcon />
-                  </button>
-                )}
-                {queryBuilderState.isCalendarEnabled && (
-                  <div
-                    className="query-builder__header__status"
-                    title="Used calendar aggregation"
-                  >
-                    <CalendarClockIcon className="query-builder__header__status__icon--calendar" />
-                  </div>
-                )}
-                {queryBuilderState.watermarkState.isEditingWatermark && (
-                  <QueryBuilderWatermarkEditor
-                    queryBuilderState={queryBuilderState}
-                  />
-                )}
-              </div>
-              <div className="query-builder__header__actions">
-                <div className="query-builder__header__actions__undo-redo">
-                  <UndoButton
-                    parent={queryBuilderRef}
-                    canUndo={
-                      queryBuilderState.changeHistoryState.canUndo &&
-                      queryBuilderState.isQuerySupported
-                    }
-                    undo={undo}
-                  />
-                  <RedoButton
-                    parent={queryBuilderRef}
-                    canRedo={
-                      queryBuilderState.changeHistoryState.canRedo &&
-                      queryBuilderState.isQuerySupported
-                    }
-                    redo={redo}
-                  />
+            {!hideQueryBuilderHeader && (
+              <div className="query-builder__header">
+                <div className="query-builder__header__statuses">
+                  {applicationStore.pluginManager
+                    .getApplicationPlugins()
+                    .filter(
+                      (plugin) =>
+                        plugin instanceof QueryBuilder_LegendApplicationPlugin,
+                    )
+                    .flatMap((plugin) =>
+                      (
+                        plugin as QueryBuilder_LegendApplicationPlugin
+                      ).getCoreQueryBuilderStatusConfigurations(),
+                    )
+                    .map((actionConfig) => (
+                      <Fragment key={actionConfig.key}>
+                        {actionConfig.renderer(queryBuilderState)}
+                      </Fragment>
+                    ))}
                 </div>
-                <DropdownMenu
-                  className="query-builder__header__advanced-dropdown"
-                  title="Show Advanced Menu..."
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        onClick={toggleShowFunctionPanel}
-                        disabled={!queryBuilderState.isQuerySupported}
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.showFunctionsExplorerPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Function(s)
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      {!queryBuilderState.isParameterSupportDisabled && (
-                        <MenuContentItem
-                          onClick={toggleShowParameterPanel}
-                          disabled={
-                            !queryBuilderState.isQuerySupported ||
-                            queryBuilderState.parametersState.parameterStates
-                              .length > 0
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            {queryBuilderState.showParametersPanel ? (
-                              <CheckIcon />
-                            ) : null}
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Show Parameter(s)
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      )}
-                      {
-                        <MenuContentItem
-                          onClick={toggleConstantPanel}
-                          disabled={
-                            !queryBuilderState.isQuerySupported ||
-                            queryBuilderState.constantState.constants.length > 0
-                          }
-                        >
-                          <MenuContentItemIcon>
-                            {queryBuilderState.constantState
-                              .showConstantPanel ? (
-                              <CheckIcon />
-                            ) : null}
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Show Constant(s)
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      }
-                      <MenuContentItem
-                        onClick={toggleShowFilterPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          Array.from(
-                            queryBuilderState.filterState.nodes.values(),
-                          ).length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.filterState.showPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>Show Filter</MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentDivider />
-                      <MenuContentItem
-                        onClick={toggleShowOLAPGroupByPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          ) ||
-                          queryBuilderState.fetchStructureState.implementation
-                            .windowState.windowColumns.length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {isTDSState &&
-                          guaranteeType(
-                            queryBuilderState.fetchStructureState
-                              .implementation,
-                            QueryBuilderTDSState,
-                          ).showWindowFuncPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Window Function(s)
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={toggleShowPostFilterPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          ) ||
-                          Array.from(
-                            queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
-                          ).length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.fetchStructureState
-                            .implementation instanceof QueryBuilderTDSState &&
-                          queryBuilderState.fetchStructureState.implementation
-                            .showPostFilterPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Post-Filter
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem onClick={openWatermark}>
-                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Watermark
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={toggleEnableCalendar}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          )
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.isCalendarEnabled ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Enable Calendar
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentDivider />
-                      <MenuContentItem
-                        onClick={openCheckEntitlmentsEditor}
-                        disabled={
-                          queryBuilderState.isQuerySupported &&
-                          queryBuilderState.fetchStructureState
-                            .implementation instanceof QueryBuilderTDSState &&
-                          queryBuilderState.fetchStructureState.implementation
-                            .projectionColumns.length === 0
-                        }
-                      >
-                        <MenuContentItemIcon />
-                        <MenuContentItemLabel>
-                          Check Entitlements
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem onClick={editQueryInPure}>
-                        <MenuContentItemIcon />
-                        <MenuContentItemLabel>
-                          Edit Query in Pure
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem onClick={showQueryProtocol}>
-                        <MenuContentItemIcon />
-                        <MenuContentItemLabel>
-                          Show Query Protocol
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                    elevation: 7,
-                  }}
-                >
-                  <div className="query-builder__header__advanced-dropdown__label">
-                    Advanced
-                  </div>
-                  <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
-                </DropdownMenu>
+                <div className="query-builder__header__actions">
+                  {applicationStore.pluginManager
+                    .getApplicationPlugins()
+                    .filter(
+                      (plugin) =>
+                        plugin instanceof QueryBuilder_LegendApplicationPlugin,
+                    )
+                    .flatMap((plugin) =>
+                      (
+                        plugin as QueryBuilder_LegendApplicationPlugin
+                      ).getCoreQueryBuilderActionConfigurations(),
+                    )
+                    .map((actionConfig) => (
+                      <Fragment key={actionConfig.key}>
+                        {actionConfig.renderer(queryBuilderState)}
+                      </Fragment>
+                    ))}
+                </div>
               </div>
-            </div>
+            )}
             <div className="query-builder__main">
               <ResizablePanelGroup orientation="horizontal">
                 <ResizablePanel minSize={120}>
@@ -787,6 +465,11 @@ export const QueryBuilder = observer(
                 </ModalFooter>
               </Modal>
             </Dialog>
+          )}
+          {queryBuilderState.watermarkState.isEditingWatermark && (
+            <QueryBuilderWatermarkEditor
+              queryBuilderState={queryBuilderState}
+            />
           )}
         </div>
         <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />

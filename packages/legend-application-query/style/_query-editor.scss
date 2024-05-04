@@ -98,6 +98,27 @@
       height: 100%;
     }
 
+    &__action-combo {
+      @include flexCenter;
+
+      background: var(--color-blue-200);
+      height: 2.8rem;
+      min-width: 2rem;
+      border-radius: 0.2rem;
+
+      &__dropdown-btn {
+        @include flexCenter;
+
+        height: 2.8rem;
+        width: 2rem;
+        border-left: 0.1rem solid var(--color-dark-shade-280);
+
+        svg {
+          color: var(--color-light-grey-180);
+        }
+      }
+    }
+
     &__action {
       @include flexCenter;
 
@@ -185,6 +206,13 @@
 
     &__action__dropdown-trigger {
       margin-left: 0.5rem;
+    }
+
+    &__action-advanced {
+      background: var(--color-blue-200);
+      color: var(--color-light-grey-50) !important;
+      height: 2.8rem;
+      margin-right: 0;
     }
   }
 

@@ -444,7 +444,6 @@ export const QueryBuilderResultPanel = observer(
                 />
               </div>
             )}
-
             <div className="query-builder__result__execute-btn btn__dropdown-combo btn__dropdown-combo--primary">
               {resultState.isRunningQuery ? (
                 <button

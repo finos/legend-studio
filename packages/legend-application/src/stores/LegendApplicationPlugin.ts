@@ -52,6 +52,11 @@ export type VirtualAssistantViewConfiguration = {
 
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
   /**
+   * auto-hide built-in query builder action header
+   */
+  hideBuiltInQueryBuilderActionHeader = false;
+
+  /**
    * Get the list of extension state builders for application store.
    *
    * This is a mechanism to have the store holds references to extension states

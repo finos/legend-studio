@@ -88,6 +88,8 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
     pluginManager.registerApplicationPlugin(this);
   }
 
+  override hideBuiltInQueryBuilderActionHeader = true;
+
   /**
    * Get the list of actions (configurations) for query setup.
    */
