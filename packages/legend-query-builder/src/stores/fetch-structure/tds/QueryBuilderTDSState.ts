@@ -279,6 +279,13 @@ export class QueryBuilderTDSState
   get fetchStructureValidationIssues(): string[] {
     const validationIssues: string[] = [];
 
+    const hasEmptyProjectionColumnName = this.projectionColumns.some(
+      (column) => column.columnName.length === 0,
+    );
+    if (hasEmptyProjectionColumnName) {
+      validationIssues.push('Query has projection column with no name');
+    }
+
     const hasInValidCalendarAggregateColumns =
       this.aggregationState.columns.some(
         (column) =>

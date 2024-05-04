@@ -789,7 +789,11 @@ const QueryBuilderProjectionColumnEditor = observer(
                     projectionColumnState={projectionColumnState}
                     changeColumnName={changeColumnName}
                     error={
-                      isDuplicatedColumnName ? 'Duplicated column' : undefined
+                      isDuplicatedColumnName
+                        ? 'Duplicated column'
+                        : projectionColumnState.columnName.length === 0
+                        ? 'Empty column name'
+                        : undefined
                     }
                   />
                 </div>
@@ -812,7 +816,11 @@ const QueryBuilderProjectionColumnEditor = observer(
                     columnName={projectionColumnState.columnName}
                     changeColumnName={changeColumnName}
                     error={
-                      isDuplicatedColumnName ? 'Duplicated column' : undefined
+                      isDuplicatedColumnName
+                        ? 'Duplicated column'
+                        : projectionColumnState.columnName.length === 0
+                        ? 'Empty column name'
+                        : undefined
                     }
                     title={projectionColumnState.columnName}
                   />

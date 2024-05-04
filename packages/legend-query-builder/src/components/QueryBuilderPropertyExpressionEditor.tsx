@@ -408,11 +408,15 @@ export const QueryBuilderEditablePropertyName = observer(
           onChange={changeColumnName}
           onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === 'Enter') {
-              setIsEditingColumnName(false);
+              if (columnName.length > 0) {
+                setIsEditingColumnName(false);
+              }
             }
           }}
           onBlur={() => {
-            setIsEditingColumnName(false);
+            if (columnName.length > 0) {
+              setIsEditingColumnName(false);
+            }
           }}
           error={error}
           ref={columnNameInputRef}
