@@ -88,6 +88,7 @@ const getAggregationTDSColumnCustomizations = (
         allowedAggFuncs: ['count'],
       };
     case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.INTEGER:
     case PRIMITIVE_TYPE.FLOAT:
       return {
