@@ -401,6 +401,18 @@ export const QueryBuilderEditablePropertyName = observer(
       }
     }, [isEditingColumnName, columnNameInputRef]);
 
+    const handleFinishEditing = (): void => {
+      const trimmedSelectedColumnName = selectedColumnName.trim();
+      if (trimmedSelectedColumnName.length > 0) {
+        setColumnName?.(trimmedSelectedColumnName);
+        setSelectedColumnName(trimmedSelectedColumnName);
+      } else {
+        setColumnName?.(defaultColumnName);
+        setSelectedColumnName(defaultColumnName);
+      }
+      setIsEditingColumnName(false);
+    };
+
     return isEditingColumnName ? (
       <div className="query-builder__property__name__editor">
         <InputWithInlineValidation
@@ -412,28 +424,10 @@ export const QueryBuilderEditablePropertyName = observer(
           }
           onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === 'Enter') {
-              const trimmedSelectedColumnName = selectedColumnName.trim();
-              if (trimmedSelectedColumnName.length > 0) {
-                setColumnName?.(trimmedSelectedColumnName);
-                setSelectedColumnName(trimmedSelectedColumnName);
-              } else {
-                setColumnName?.(defaultColumnName);
-                setSelectedColumnName(defaultColumnName);
-              }
-              setIsEditingColumnName(false);
+              handleFinishEditing();
             }
           }}
-          onBlur={() => {
-            const trimmedSelectedColumnName = selectedColumnName.trim();
-            if (trimmedSelectedColumnName.length > 0) {
-              setColumnName?.(trimmedSelectedColumnName);
-              setSelectedColumnName(trimmedSelectedColumnName);
-            } else {
-              setColumnName?.(defaultColumnName);
-              setSelectedColumnName(defaultColumnName);
-            }
-            setIsEditingColumnName(false);
-          }}
+          onBlur={handleFinishEditing}
           ref={columnNameInputRef}
           draggable={true}
           onDragStart={(e: React.DragEvent<HTMLInputElement>) => {
