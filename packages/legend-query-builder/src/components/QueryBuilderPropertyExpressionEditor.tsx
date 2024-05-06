@@ -412,8 +412,10 @@ export const QueryBuilderEditablePropertyName = observer(
           }
           onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === 'Enter') {
-              if (selectedColumnName.length > 0) {
-                setColumnName?.(selectedColumnName);
+              const trimmedSelectedColumnName = selectedColumnName.trim();
+              if (trimmedSelectedColumnName.length > 0) {
+                setColumnName?.(trimmedSelectedColumnName);
+                setSelectedColumnName(trimmedSelectedColumnName);
               } else {
                 setColumnName?.(defaultColumnName);
                 setSelectedColumnName(defaultColumnName);
@@ -422,8 +424,10 @@ export const QueryBuilderEditablePropertyName = observer(
             }
           }}
           onBlur={() => {
-            if (selectedColumnName.length > 0) {
-              setColumnName?.(selectedColumnName);
+            const trimmedSelectedColumnName = selectedColumnName.trim();
+            if (trimmedSelectedColumnName.length > 0) {
+              setColumnName?.(trimmedSelectedColumnName);
+              setSelectedColumnName(trimmedSelectedColumnName);
             } else {
               setColumnName?.(defaultColumnName);
               setSelectedColumnName(defaultColumnName);
