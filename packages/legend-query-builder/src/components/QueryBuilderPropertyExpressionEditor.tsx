@@ -37,6 +37,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import {
   generateValueSpecificationForParameter,
+  getPropertyChainName,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState.js';
@@ -382,15 +383,16 @@ export const QueryBuilderPropertyExpressionEditor = observer(
 export const QueryBuilderEditablePropertyName = observer(
   (props: {
     columnName: string;
-    changeColumnName?:
-      | ((event: ChangeEvent<HTMLInputElement>) => void)
-      | undefined;
+    setColumnName?: ((columnName: string) => void) | undefined;
     error: string | undefined;
     title: string;
+    defaultColumnName: string;
   }) => {
-    const { columnName, changeColumnName, error, title } = props;
+    const { columnName, setColumnName, error, title, defaultColumnName } =
+      props;
 
     const [isEditingColumnName, setIsEditingColumnName] = useState(false);
+    const [selectedColumnName, setSelectedColumnName] = useState(columnName);
     const columnNameInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -404,21 +406,30 @@ export const QueryBuilderEditablePropertyName = observer(
         <InputWithInlineValidation
           className="query-builder__property__name__editor__input input-group__input"
           spellCheck={false}
-          value={columnName}
-          onChange={changeColumnName}
+          value={selectedColumnName}
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            setSelectedColumnName(event.target.value)
+          }
           onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.key === 'Enter') {
-              if (columnName.length > 0) {
-                setIsEditingColumnName(false);
+              if (selectedColumnName.length > 0) {
+                setColumnName?.(selectedColumnName);
+              } else {
+                setColumnName?.(defaultColumnName);
+                setSelectedColumnName(defaultColumnName);
               }
-            }
-          }}
-          onBlur={() => {
-            if (columnName.length > 0) {
               setIsEditingColumnName(false);
             }
           }}
-          error={error}
+          onBlur={() => {
+            if (selectedColumnName.length > 0) {
+              setColumnName?.(selectedColumnName);
+            } else {
+              setColumnName?.(defaultColumnName);
+              setSelectedColumnName(defaultColumnName);
+            }
+            setIsEditingColumnName(false);
+          }}
           ref={columnNameInputRef}
           draggable={true}
           onDragStart={(e: React.DragEvent<HTMLInputElement>) => {
@@ -434,10 +445,10 @@ export const QueryBuilderEditablePropertyName = observer(
         <span
           className={clsx('query-builder__property__name__display__content', {
             'query-builder__property__name__display__content--error': error,
-            'editable-value': changeColumnName,
+            'editable-value': setColumnName,
           })}
           onClick={() => {
-            if (changeColumnName) {
+            if (setColumnName) {
               setIsEditingColumnName(true);
             }
           }}
@@ -456,14 +467,14 @@ export const QueryBuilderPropertyExpressionBadge = observer(
     onPropertyExpressionChange: (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ) => void;
-    changeColumnName?: (event: ChangeEvent<HTMLInputElement>) => void;
+    setColumnName?: (columnName: string) => void;
     error?: string | undefined;
   }) => {
     const {
       columnName,
       propertyExpressionState,
       onPropertyExpressionChange,
-      changeColumnName,
+      setColumnName,
       error,
     } = props;
     const type =
@@ -529,9 +540,14 @@ export const QueryBuilderPropertyExpressionBadge = observer(
           >
             <QueryBuilderEditablePropertyName
               columnName={columnName ?? propertyExpressionState.title}
-              changeColumnName={changeColumnName}
+              setColumnName={setColumnName}
               error={error}
               title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
+              defaultColumnName={getPropertyChainName(
+                propertyExpressionState.propertyExpression,
+                propertyExpressionState.queryBuilderState.explorerState
+                  .humanizePropertyName,
+              )}
             />
             {hasDerivedPropertyInExpression && (
               <button
