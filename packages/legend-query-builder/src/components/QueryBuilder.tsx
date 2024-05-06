@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  clsx,
   HammerIcon,
   ResizablePanelGroup,
   ResizablePanel,
@@ -31,7 +30,6 @@ import {
   CaretDownIcon,
   DiffIcon,
   WaterDropIcon,
-  AssistantIcon,
   MenuContentDivider,
   Dialog,
   Modal,
@@ -43,6 +41,9 @@ import {
   CalendarClockIcon,
   ChatIcon,
   PanelLoadingIndicator,
+  SerializeIcon,
+  DataAccessIcon,
+  AssistantIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -57,7 +58,6 @@ import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor.js';
 import {
   BackdropContainer,
-  useApplicationStore,
   useCommands,
   ActionAlertActionType,
   ActionAlertType,
@@ -77,138 +77,6 @@ import { DataAccessOverview } from './data-access/DataAccessOverview.js';
 import { QueryChat } from './QueryChat.js';
 import { useEffect, useRef } from 'react';
 import { RedoButton, UndoButton } from '@finos/legend-lego/application';
-
-const QueryBuilderStatusBar = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const applicationStore = useApplicationStore();
-    const showDiff = (): void =>
-      queryBuilderState.changeDetectionState.showDiffViewPanel();
-    const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
-      queryBuilderState.textEditorState.openModal(mode);
-    const compile = applicationStore.guardUnhandledError(() =>
-      flowResult(queryBuilderState.compileQuery()),
-    );
-    const toggleAssistant = (): void =>
-      applicationStore.assistantService.toggleAssistant();
-    const openQueryChat = (): void =>
-      queryBuilderState.setIsQueryChatOpened(true);
-
-    return (
-      <div className="query-builder__status-bar">
-        <div className="query-builder__status-bar__left"></div>
-        <div className="query-builder__status-bar__right">
-          {queryBuilderState.changeDetectionState.initState.hasCompleted && (
-            <>
-              <button
-                className={clsx(
-                  'query-builder__status-bar__action query-builder__status-bar__view-diff-btn',
-                )}
-                disabled={!queryBuilderState.changeDetectionState.hasChanged}
-                onClick={showDiff}
-                tabIndex={-1}
-                title={
-                  queryBuilderState.changeDetectionState.hasChanged
-                    ? 'Show changes'
-                    : 'Query has not been changed'
-                }
-              >
-                <DiffIcon />
-              </button>
-              {queryBuilderState.changeDetectionState.diffViewState && (
-                <QueryBuilderDiffViewPanelDiaglog
-                  diffViewState={
-                    queryBuilderState.changeDetectionState.diffViewState
-                  }
-                />
-              )}
-            </>
-          )}
-          {queryBuilderState.isQueryChatOpened && (
-            <QueryChat queryBuilderState={queryBuilderState} />
-          )}
-          {!queryBuilderState.config?.TEMPORARY__disableQueryBuilderChat && (
-            <button
-              className={clsx(
-                'query-builder__status-bar__action query-builder__status-bar__action__toggler',
-                {
-                  'query-builder__status-bar__action__toggler--toggled':
-                    queryBuilderState.isQueryChatOpened === true,
-                },
-              )}
-              onClick={openQueryChat}
-              tabIndex={-1}
-              title="Open Query Chat"
-            >
-              <ChatIcon />
-            </button>
-          )}
-          <button
-            className={clsx(
-              'query-builder__status-bar__action query-builder__status-bar__compile-btn',
-              {
-                'query-builder__status-bar__compile-btn--wiggling':
-                  queryBuilderState.queryCompileState.isInProgress,
-              },
-            )}
-            disabled={queryBuilderState.queryCompileState.isInProgress}
-            onClick={compile}
-            tabIndex={-1}
-            title="Compile (F9)"
-          >
-            <HammerIcon />
-          </button>
-          <button
-            className={clsx(
-              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
-              {
-                'query-builder__status-bar__action__toggler--toggled':
-                  queryBuilderState.textEditorState.mode ===
-                  QueryBuilderTextEditorMode.JSON,
-              },
-            )}
-            onClick={(): void =>
-              openLambdaEditor(QueryBuilderTextEditorMode.JSON)
-            }
-            tabIndex={-1}
-            title="View Query Protocol"
-          >{`{ }`}</button>
-          <button
-            className={clsx(
-              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
-              {
-                'query-builder__status-bar__action__toggler--toggled':
-                  queryBuilderState.textEditorState.mode ===
-                  QueryBuilderTextEditorMode.TEXT,
-              },
-            )}
-            onClick={(): void =>
-              openLambdaEditor(QueryBuilderTextEditorMode.TEXT)
-            }
-            tabIndex={-1}
-            title="View Query in Pure"
-          >
-            <HackerIcon />
-          </button>
-          <button
-            className={clsx(
-              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
-              {
-                'query-builder__status-bar__action__toggler--toggled':
-                  !applicationStore.assistantService.isHidden,
-              },
-            )}
-            onClick={toggleAssistant}
-            tabIndex={-1}
-            title="Toggle assistant"
-          >
-            <AssistantIcon />
-          </button>
-        </div>
-      </div>
-    );
-  },
-);
 
 const QueryBuilderPostGraphFetchPanel = observer(
   (props: { graphFetchState: QueryBuilderGraphFetchTreeState }) => {
@@ -380,6 +248,16 @@ export const QueryBuilder = observer(
     const redo = (): void => {
       queryBuilderState.changeHistoryState.redo();
     };
+
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
+    const compileQuery = applicationStore.guardUnhandledError(() =>
+      flowResult(queryBuilderState.compileQuery()),
+    );
+    const showDiff = (): void =>
+      queryBuilderState.changeDetectionState.showDiffViewPanel();
+    const openQueryChat = (): void =>
+      queryBuilderState.setIsQueryChatOpened(true);
 
     useEffect(() => {
       // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
@@ -576,7 +454,9 @@ export const QueryBuilder = observer(
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={openWatermark}>
-                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                        <MenuContentItemIcon>
+                          <WaterDropIcon />
+                        </MenuContentItemIcon>
                         <MenuContentItemLabel>
                           Show Watermark
                         </MenuContentItemLabel>
@@ -594,7 +474,9 @@ export const QueryBuilder = observer(
                         <MenuContentItemIcon>
                           {queryBuilderState.isCalendarEnabled ? (
                             <CheckIcon />
-                          ) : null}
+                          ) : (
+                            <CalendarClockIcon />
+                          )}
                         </MenuContentItemIcon>
                         <MenuContentItemLabel>
                           Enable Calendar
@@ -611,21 +493,75 @@ export const QueryBuilder = observer(
                             .projectionColumns.length === 0
                         }
                       >
-                        <MenuContentItemIcon />
+                        <MenuContentItemIcon>
+                          <DataAccessIcon />
+                        </MenuContentItemIcon>
                         <MenuContentItemLabel>
                           Check Entitlements
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={editQueryInPure}>
-                        <MenuContentItemIcon />
+                        <MenuContentItemIcon>
+                          <HackerIcon />
+                        </MenuContentItemIcon>
                         <MenuContentItemLabel>
                           Edit Query in Pure
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={showQueryProtocol}>
-                        <MenuContentItemIcon />
+                        <MenuContentItemIcon>
+                          <SerializeIcon />
+                        </MenuContentItemIcon>
                         <MenuContentItemLabel>
                           Show Query Protocol
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem onClick={compileQuery}>
+                        <MenuContentItemIcon>
+                          <HammerIcon />
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel>
+                          Compile Query (F9)
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      {queryBuilderState.changeDetectionState.initState
+                        .hasCompleted && (
+                        <MenuContentItem
+                          disabled={
+                            !queryBuilderState.changeDetectionState.hasChanged
+                          }
+                          onClick={showDiff}
+                          title={
+                            queryBuilderState.changeDetectionState.hasChanged
+                              ? 'Show changes'
+                              : 'Query has not been changed'
+                          }
+                        >
+                          <MenuContentItemIcon>
+                            <DiffIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>
+                            Show Query Diff
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      )}
+                      {!queryBuilderState.config
+                        ?.TEMPORARY__disableQueryBuilderChat && (
+                        <MenuContentItem onClick={openQueryChat}>
+                          <MenuContentItemIcon>
+                            <ChatIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>
+                            Open Query Chat
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      )}
+                      <MenuContentItem onClick={toggleAssistant}>
+                        <MenuContentItemIcon>
+                          <AssistantIcon />
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel>
+                          Open Assistant
                         </MenuContentItemLabel>
                       </MenuContentItem>
                     </MenuContent>
@@ -736,8 +672,18 @@ export const QueryBuilder = observer(
               </ResizablePanelGroup>
             </div>
           </div>
+          {queryBuilderState.isQueryChatOpened && (
+            <QueryChat queryBuilderState={queryBuilderState} />
+          )}
           {queryBuilderState.textEditorState.mode && (
             <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
+          )}
+          {queryBuilderState.changeDetectionState.diffViewState && (
+            <QueryBuilderDiffViewPanelDiaglog
+              diffViewState={
+                queryBuilderState.changeDetectionState.diffViewState
+              }
+            />
           )}
           {queryBuilderState.checkEntitlementsState
             .showCheckEntitlementsViewer && (
@@ -789,7 +735,6 @@ export const QueryBuilder = observer(
             </Dialog>
           )}
         </div>
-        <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
       </div>
     );
   },

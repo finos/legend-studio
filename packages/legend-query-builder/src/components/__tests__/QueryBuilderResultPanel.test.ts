@@ -196,7 +196,10 @@ describe(integrationTest('Query builder result state'), () => {
       MOCK__lambdaToPureCode.mockResolvedValue(mockValue);
 
       await act(async () => {
-        fireEvent.click(renderResult.getByTitle('View Query in Pure'));
+        fireEvent.click(renderResult.getByTitle('Show Advanced Menu...'));
+      });
+      await act(async () => {
+        fireEvent.click(renderResult.getByText('Edit Query in Pure'));
       });
       const lambdaEditor = await waitFor(() =>
         renderResult.getByRole('dialog'),

@@ -688,7 +688,12 @@ test(
     const mockValue = new Map<string, string>();
     mockValue.set('query-builder', 'test');
     MOCK__lambdaToPureCode.mockResolvedValue(mockValue);
-    fireEvent.click(renderResult.getByTitle('View Query in Pure'));
+    await act(async () => {
+      fireEvent.click(renderResult.getByTitle('Show Advanced Menu...'));
+    });
+    await act(async () => {
+      fireEvent.click(renderResult.getByText('Edit Query in Pure'));
+    });
     const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
     fireEvent.click(getByText(lambdaEditor, 'Close'));
     await waitFor(() =>
@@ -827,7 +832,12 @@ test(
     const mockValue = new Map<string, string>();
     mockValue.set('query-builder', 'test');
     MOCK__lambdaToPureCode.mockResolvedValue(mockValue);
-    fireEvent.click(renderResult.getByTitle('View Query in Pure'));
+    await act(async () => {
+      fireEvent.click(renderResult.getByTitle('Show Advanced Menu...'));
+    });
+    await act(async () => {
+      fireEvent.click(renderResult.getByText('Edit Query in Pure'));
+    });
     const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
     fireEvent.click(getByText(lambdaEditor, 'Close'));
     await waitFor(() =>
