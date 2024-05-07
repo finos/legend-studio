@@ -324,7 +324,7 @@ test(
     );
     const filterNodes = queryAllByTestId(
       filterPanel,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     expect(filterNodes.length).toBe(9);
     // click removal of top level nodes will remove all nodes
@@ -342,7 +342,7 @@ test(
     expect(
       queryAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ).length,
     ).toBe(0);
     expect(queryByText(filterPanel, 'Add a filter condition')).not.toBeNull();
@@ -468,7 +468,7 @@ test(
         guaranteeNonNullable(
           queryAllByTestId(
             filterPanel,
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
           ).find((node) => queryByText(node, 'and') !== null),
         ),
         'Remove',
@@ -477,7 +477,7 @@ test(
     expect(
       queryAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     ).toHaveLength(0);
     fireEvent.click(

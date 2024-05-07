@@ -18,7 +18,7 @@
 
 .query-builder-filter-tree {
   &__root {
-    padding: 0.5rem 0;
+    padding: 1rem;
   }
 
   &__free-drop-zone {
@@ -45,8 +45,30 @@
     font-size: 1rem;
   }
 
+  &__node__block {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+  }
+
+  &__node__context-menu {
+    @include flexVCenter;
+
+    width: inherit;
+  }
+
   &__node__container {
-    height: 3.3rem;
+    @include flexVCenter;
+
+    &--group {
+      width: fit-content;
+      margin: auto;
+    }
+
+    &--condition {
+      width: 100%;
+      height: 3.3rem;
+    }
   }
 
   &__node__container:hover {
@@ -70,7 +92,7 @@
     @include flexVCenter;
 
     height: 100%;
-    width: calc(100% - 3.9rem);
+    flex: 1;
   }
 
   &__node__actions {
@@ -107,10 +129,6 @@
     user-select: none;
   }
 
-  &__node__label--expandable {
-    width: calc(100% - 2rem);
-  }
-
   &__node__label__content {
     @include flexVCenter;
 
@@ -118,10 +136,39 @@
     height: 100%;
   }
 
+  &__node__children {
+    @include flexVCenter;
+
+    flex: 1;
+    flex-direction: column;
+    margin-left: 1rem;
+    padding-left: 1rem;
+    border-left: 1px white solid;
+
+    &::before,
+    &::after {
+      position: relative;
+      left: calc(-50% - 0.5rem);
+      width: 1rem;
+      content: '';
+      border-top: 1px solid white;
+    }
+
+    .query-builder-filter-tree__node__block::before {
+      position: relative;
+      left: -1rem;
+      top: 50%;
+      width: 0.5rem;
+      content: '';
+      border-top: 1px solid white;
+    }
+  }
+
   &__group-node {
     @include flexVCenter;
 
     height: 2.2rem;
+    width: 4.5rem;
     border-radius: 0.2rem;
 
     &__label {

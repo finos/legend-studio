@@ -184,12 +184,12 @@ test(
     );
     const nodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_BLOCK,
     );
     expect(nodes.length).toBe(9);
     let contentNodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     expect(contentNodes.length).toBe(9);
 
@@ -253,7 +253,7 @@ test(
     );
     const contentOrNodes = queryAllByTestId(
       orNode,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     expect(contentOrNodes.length).toBe(4);
     testBasicConstantContent('Dob Date', '<', 'dateParam', contentOrNodes);
@@ -271,7 +271,7 @@ test(
     expect(
       queryAllByTestId(
         filterTree,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_BLOCK,
       ).length,
     ).toBe(8);
     // remove or group
@@ -281,7 +281,7 @@ test(
     fireEvent.click(getByTitle(contentOrNode, 'Remove'));
     contentNodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     expect(contentNodes.length).toBe(5);
     contentAndNode = guaranteeNonNullable(
@@ -293,7 +293,7 @@ test(
     expect(queryByText(filterTree, 'and')).toBeNull();
     contentNodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     contentOrNode = guaranteeNonNullable(
       contentNodes.find((e) => queryByText(e, 'or') !== null),
@@ -310,7 +310,7 @@ test(
     // delete all nodes expect age (should auto delete or node)
     queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     ).forEach((_node) => {
       if (
         queryByText(_node, 'or') === null &&
@@ -321,7 +321,7 @@ test(
     });
     contentNodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     expect(contentNodes.length).toBe(1);
     const ageNode = guaranteeNonNullable(contentNodes[0]);
@@ -335,7 +335,7 @@ test(
     await dragAndDrop(intConst, ageValue, filterTree, 'Change Filter Value');
     const alteredNode = getByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     // check node has been altered by dropped constant
     expect(getByText(alteredNode, 'Age')).not.toBeNull();
@@ -442,7 +442,7 @@ test(
     let contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(1);
@@ -462,7 +462,7 @@ test(
     contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(3);
@@ -508,7 +508,7 @@ test(
 
     let filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(3);
@@ -539,7 +539,7 @@ test(
     filterTreeNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(6);
@@ -603,7 +603,7 @@ test(
 
     let filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(4);
@@ -632,7 +632,7 @@ test(
     filterTreeNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(6);
@@ -694,7 +694,7 @@ test(
 
     let filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(5);
@@ -727,7 +727,7 @@ test(
     filterTreeNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(6);
@@ -795,7 +795,7 @@ test(
 
     let filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(2);
@@ -816,7 +816,7 @@ test(
     await dragAndDrop(dragSource, dropZone, dropZone, 'Create Condition');
     filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(3);
@@ -851,7 +851,7 @@ test(
     await dragAndDrop(dragSource, dropZone, dropZone, 'Create Condition');
     filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(3);
@@ -900,7 +900,7 @@ test(
     //Drag and drop
     const filterTreeNode = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNode.length).toBe(1);
@@ -1337,7 +1337,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(2);
@@ -1426,7 +1426,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(4);
@@ -1514,7 +1514,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(5);
@@ -1608,7 +1608,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(5);
@@ -1706,7 +1706,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(5);
