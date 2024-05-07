@@ -28,6 +28,10 @@
     height: 100%;
     width: 100%;
     display: flex;
+
+    &__status-bar {
+      height: calc(100% - 2.2rem) !important;
+    }
   }
 
   &__content {

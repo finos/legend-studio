@@ -412,7 +412,12 @@ export const QueryBuilder = observer(
         <BackdropContainer
           elementId={QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
         />
-        <div className="query-builder__body">
+        <div
+          className={clsx('query-builder__body', {
+            'query-builder__body__status-bar':
+              queryBuilderState.workflowState.showStatusBar,
+          })}
+        >
           <PanelLoadingIndicator
             isLoading={queryBuilderState.resultState.exportState.isInProgress}
           />
