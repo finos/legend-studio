@@ -153,6 +153,7 @@ import {
   TEST_DATA__simpleProjectionWithBusinessMilestonedColumn,
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
+import { QueryBuilderAdvancedWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
 
 type RoundtripTestCase = [
   string,
@@ -782,6 +783,7 @@ describe(
         const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
           applicationStore,
           graphManagerState,
+          QueryBuilderAdvancedWorkflowState.INSTANCE,
           undefined,
         );
         // do the check using input and output lambda
@@ -811,7 +813,6 @@ test(
     pluginManager
       .usePresets([
         new Core_GraphManagerPreset(),
-
         new QueryBuilder_GraphManagerPreset(),
       ])
       .install();
@@ -825,6 +826,7 @@ test(
     const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
       applicationStore,
       graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
       undefined,
     );
     queryBuilderState.resultState.setPreviewLimit(DEFAULT_LIMIT);

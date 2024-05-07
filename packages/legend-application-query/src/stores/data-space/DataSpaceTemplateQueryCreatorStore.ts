@@ -45,6 +45,7 @@ import {
   createQueryClassTaggedValue,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
+import { QueryBuilderDataBrowserWorkflow } from '../query-builder/QueryBuilderDataBrowserWorkflow.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
@@ -138,6 +139,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       this.depotServerClient,
+      QueryBuilderDataBrowserWorkflow.INSTANCE,
       dataSpace,
       executionContext,
       (dataSpaceInfo: DataSpaceInfo) => {

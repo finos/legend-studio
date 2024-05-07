@@ -78,6 +78,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph/test';
 import { INTERNAL__BasicQueryBuilderState } from '../../stores/QueryBuilderState.js';
+import { QueryBuilderAdvancedWorkflowState } from '../../stores/workflow/QueryBuilderWorkFlowState.js';
 
 test(
   integrationTest('Query builder loads simple post-filter with DateTime value'),
@@ -677,6 +678,7 @@ test(
     const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
       applicationStore,
       graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
       undefined,
     );
     // do the check using input and output lambda

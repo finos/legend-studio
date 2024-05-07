@@ -140,6 +140,7 @@ import {
   FunctionQueryBuilderState,
   LambdaEditor,
   LambdaParameterValuesEditor,
+  QueryBuilderAdvancedWorkflowState,
 } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../../stores/graph-modifier/GraphModifierHelper.js';
@@ -1211,6 +1212,7 @@ export const FunctionEditor = observer(() => {
         const functionQueryBuilderState = new FunctionQueryBuilderState(
           embeddedQueryBuilderState.editorStore.applicationStore,
           embeddedQueryBuilderState.editorStore.graphManagerState,
+          QueryBuilderAdvancedWorkflowState.INSTANCE,
           functionEditorState.functionElement,
           editorStore.applicationStore.config.options.queryBuilderConfig,
         );

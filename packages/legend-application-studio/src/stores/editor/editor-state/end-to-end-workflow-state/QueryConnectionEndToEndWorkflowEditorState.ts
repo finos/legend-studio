@@ -57,6 +57,7 @@ import { EntityChangeType, type EntityChange } from '@finos/legend-server-sdlc';
 import type { Entity } from '@finos/legend-storage';
 import {
   ClassQueryBuilderState,
+  QueryBuilderAdvancedWorkflowState,
   QueryBuilderConfig,
 } from '@finos/legend-query-builder';
 import {
@@ -189,6 +190,7 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Con
       const queryBuilderState = new ClassQueryBuilderState(
         this.editorStore.applicationStore,
         this.editorStore.graphManagerState,
+        QueryBuilderAdvancedWorkflowState.INSTANCE,
         config,
       );
       queryBuilderState.class = theClass;

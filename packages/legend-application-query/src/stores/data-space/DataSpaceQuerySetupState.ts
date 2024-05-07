@@ -49,6 +49,7 @@ import {
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/data-space/DataSpaceQuerySetup.js';
 import { DataSpaceAdvancedSearchState } from '@finos/legend-extension-dsl-data-space/application-query';
+import { QueryBuilderDataBrowserWorkflow } from '../query-builder/QueryBuilderDataBrowserWorkflow.js';
 
 export class DataSpaceQuerySetupState extends QueryBuilderState {
   readonly depotServerClient: DepotServerClient;
@@ -91,7 +92,12 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
     ) => Promise<void>,
     config: QueryBuilderConfig | undefined,
   ) {
-    super(applicationStore, graphManagerState, config);
+    super(
+      applicationStore,
+      graphManagerState,
+      QueryBuilderDataBrowserWorkflow.INSTANCE,
+      config,
+    );
 
     makeObservable(this, {
       dataSpaces: observable,

@@ -36,6 +36,7 @@ import {
 import {
   type QueryBuilderState,
   ServiceQueryBuilderState,
+  QueryBuilderAdvancedWorkflowState,
 } from '@finos/legend-query-builder';
 import {
   type DepotServerClient,
@@ -185,6 +186,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       const queryBuilderState = new ServiceQueryBuilderState(
         this.applicationStore,
         this.graphManagerState,
+        QueryBuilderAdvancedWorkflowState.INSTANCE,
         this.service,
         undefined,
         undefined,

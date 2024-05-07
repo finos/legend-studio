@@ -121,6 +121,7 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { QueryBuilderDataBrowserWorkflow } from './query-builder/QueryBuilderDataBrowserWorkflow.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -696,6 +697,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     const queryBuilderState = new MappingQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
+      QueryBuilderDataBrowserWorkflow.INSTANCE,
       (val: Mapping) => {
         this.applicationStore.navigationService.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
@@ -804,6 +806,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     const queryBuilderState = new ServiceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
+      QueryBuilderDataBrowserWorkflow.INSTANCE,
       service,
       this.graphManagerState.usableServices,
       this.executionKey,
@@ -1216,6 +1219,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           this.applicationStore,
           this.graphManagerState,
           this.depotServerClient,
+          QueryBuilderDataBrowserWorkflow.INSTANCE,
           dataSpace,
           matchingExecutionContext,
           (dataSpaceInfo: DataSpaceInfo) => {
@@ -1324,6 +1328,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       const classQueryBuilderState = new ClassQueryBuilderState(
         this.applicationStore,
         this.graphManagerState,
+        QueryBuilderDataBrowserWorkflow.INSTANCE,
         this.applicationStore.config.options.queryBuilderConfig,
         sourceInfo,
       );

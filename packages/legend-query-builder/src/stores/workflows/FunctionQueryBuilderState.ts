@@ -21,6 +21,7 @@ import type {
 } from '@finos/legend-graph';
 import { ClassQueryBuilderState } from './ClassQueryBuilderState.js';
 import type { QueryBuilderConfig } from '../../graph-manager/QueryBuilderConfig.js';
+import type { QueryBuilderWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
 
 // Note: We may want to move it to extend QueryBuilderState directly
 // but for now we will use the same setup as class as class, mapping, runtime are editable
@@ -30,10 +31,11 @@ export class FunctionQueryBuilderState extends ClassQueryBuilderState {
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
+    workflowState: QueryBuilderWorkflowState,
     functionElemenet: ConcreteFunctionDefinition,
     config: QueryBuilderConfig | undefined,
   ) {
-    super(applicationStore, graphManagerState, config);
+    super(applicationStore, graphManagerState, workflowState, config);
     this.functionElement = functionElemenet;
     this.showParametersPanel = true;
   }

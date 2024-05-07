@@ -51,6 +51,7 @@ import {
 } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
 import { STYLE_PREFIX, STYLE_PREFIX__DARK } from '@finos/legend-art';
 import { expect } from '@jest/globals';
+import { QueryBuilderAdvancedWorkflowState } from '../../stores/workflow/QueryBuilderWorkFlowState.js';
 
 const getSelectorContainerClassName = (lightMode?: boolean): string =>
   '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;
@@ -198,6 +199,7 @@ export const TEST__setUpQueryBuilder = async (
   const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
     MOCK__applicationStore,
     graphManagerState,
+    QueryBuilderAdvancedWorkflowState.INSTANCE,
     undefined,
   );
   const mapping = graphManagerState.graph.getMapping(mappingPath);

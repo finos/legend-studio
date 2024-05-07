@@ -27,6 +27,7 @@ import {
   DataSpaceQueryBuilderState,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
+import { QueryBuilderAdvancedWorkflowState } from '@finos/legend-query-builder';
 
 export const queryDataSpace = async (
   dataSpace: DataSpace,
@@ -47,6 +48,7 @@ export const queryDataSpace = async (
           editorStore.applicationStore,
           editorStore.graphManagerState,
           editorStore.depotServerClient,
+          QueryBuilderAdvancedWorkflowState.INSTANCE,
           dataSpace,
           dataSpace.defaultExecutionContext,
           (dataSpaceInfo: DataSpaceInfo) => {

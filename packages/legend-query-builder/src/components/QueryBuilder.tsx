@@ -44,6 +44,7 @@ import {
   SerializeIcon,
   DataAccessIcon,
   AssistantIcon,
+  clsx,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -61,6 +62,7 @@ import {
   useCommands,
   ActionAlertActionType,
   ActionAlertType,
+  useApplicationStore,
 } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
@@ -89,6 +91,138 @@ const QueryBuilderPostGraphFetchPanel = observer(
       <QueryBuilderFilterPanel
         queryBuilderState={graphFetchState.queryBuilderState}
       />
+    );
+  },
+);
+
+const QueryBuilderStatusBar = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
+    const showDiff = (): void =>
+      queryBuilderState.changeDetectionState.showDiffViewPanel();
+    const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
+      queryBuilderState.textEditorState.openModal(mode);
+    const compile = applicationStore.guardUnhandledError(() =>
+      flowResult(queryBuilderState.compileQuery()),
+    );
+    const toggleAssistant = (): void =>
+      applicationStore.assistantService.toggleAssistant();
+    const openQueryChat = (): void =>
+      queryBuilderState.setIsQueryChatOpened(true);
+
+    return (
+      <div className="query-builder__status-bar">
+        <div className="query-builder__status-bar__left"></div>
+        <div className="query-builder__status-bar__right">
+          {queryBuilderState.changeDetectionState.initState.hasCompleted && (
+            <>
+              <button
+                className={clsx(
+                  'query-builder__status-bar__action query-builder__status-bar__view-diff-btn',
+                )}
+                disabled={!queryBuilderState.changeDetectionState.hasChanged}
+                onClick={showDiff}
+                tabIndex={-1}
+                title={
+                  queryBuilderState.changeDetectionState.hasChanged
+                    ? 'Show changes'
+                    : 'Query has not been changed'
+                }
+              >
+                <DiffIcon />
+              </button>
+              {queryBuilderState.changeDetectionState.diffViewState && (
+                <QueryBuilderDiffViewPanelDiaglog
+                  diffViewState={
+                    queryBuilderState.changeDetectionState.diffViewState
+                  }
+                />
+              )}
+            </>
+          )}
+          {queryBuilderState.isQueryChatOpened && (
+            <QueryChat queryBuilderState={queryBuilderState} />
+          )}
+          {!queryBuilderState.config?.TEMPORARY__disableQueryBuilderChat && (
+            <button
+              className={clsx(
+                'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+                {
+                  'query-builder__status-bar__action__toggler--toggled':
+                    queryBuilderState.isQueryChatOpened === true,
+                },
+              )}
+              onClick={openQueryChat}
+              tabIndex={-1}
+              title="Open Query Chat"
+            >
+              <ChatIcon />
+            </button>
+          )}
+          <button
+            className={clsx(
+              'query-builder__status-bar__action query-builder__status-bar__compile-btn',
+              {
+                'query-builder__status-bar__compile-btn--wiggling':
+                  queryBuilderState.queryCompileState.isInProgress,
+              },
+            )}
+            disabled={queryBuilderState.queryCompileState.isInProgress}
+            onClick={compile}
+            tabIndex={-1}
+            title="Compile (F9)"
+          >
+            <HammerIcon />
+          </button>
+          <button
+            className={clsx(
+              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+              {
+                'query-builder__status-bar__action__toggler--toggled':
+                  queryBuilderState.textEditorState.mode ===
+                  QueryBuilderTextEditorMode.JSON,
+              },
+            )}
+            onClick={(): void =>
+              openLambdaEditor(QueryBuilderTextEditorMode.JSON)
+            }
+            tabIndex={-1}
+            title="View Query Protocol"
+          >{`{ }`}</button>
+          <button
+            className={clsx(
+              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+              {
+                'query-builder__status-bar__action__toggler--toggled':
+                  queryBuilderState.textEditorState.mode ===
+                  QueryBuilderTextEditorMode.TEXT,
+              },
+            )}
+            onClick={(): void =>
+              openLambdaEditor(QueryBuilderTextEditorMode.TEXT)
+            }
+            tabIndex={-1}
+            title="View Query in Pure"
+          >
+            <HackerIcon />
+          </button>
+          <button
+            className={clsx(
+              'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+              {
+                'query-builder__status-bar__action__toggler--toggled':
+                  !applicationStore.assistantService.isHidden,
+              },
+            )}
+            onClick={toggleAssistant}
+            tabIndex={-1}
+            title="Toggle assistant"
+          >
+            <AssistantIcon />
+          </button>
+        </div>
+      </div>
     );
   },
 );
@@ -735,6 +869,9 @@ export const QueryBuilder = observer(
             </Dialog>
           )}
         </div>
+        {queryBuilderState.workflowState.showStatusBar ? (
+          <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
+        ) : null}
       </div>
     );
   },
