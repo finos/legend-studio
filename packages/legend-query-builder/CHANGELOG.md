@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.29
+
+### Patch Changes
+
+- [#3113](https://github.com/finos/legend-studio/pull/3113) [`394876bcb`](https://github.com/finos/legend-studio/commit/394876bcb5db3b05ea8c6757d7fa349893749aa7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove query builder status bar
+
+- [#3109](https://github.com/finos/legend-studio/pull/3109) [`bb5850be7`](https://github.com/finos/legend-studio/commit/bb5850be7e6687b06587217617d317e98e40a382) ([@travisstebbins](https://github.com/travisstebbins)) - Don't allow empty column names
+
 ## 4.14.28
 
 ## 4.14.27
