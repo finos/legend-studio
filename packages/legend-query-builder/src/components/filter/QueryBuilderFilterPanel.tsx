@@ -634,6 +634,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
           isDragOver={isDragOver}
           isDroppable={isDroppable}
           label={`Add to Logical Group '${operationName}'`}
+          className="query-builder-filter-tree__group-node__drop-zone"
         >
           <div
             className={clsx('query-builder-filter-tree__group-node', {
@@ -971,7 +972,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
   ) => {
     const { node, onNodeSelect, innerProps } = props;
     const { queryBuilderState } = innerProps;
-    const ref = useRef<HTMLDivElement>(null);
+    const dragRef = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const applicationStore = useApplicationStore();
@@ -1099,10 +1100,11 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               : QUERY_BUILDER_FILTER_DND_TYPE.BLANK_CONDITION,
           item: () => ({ node }),
           end: (): void => filterState.setRearrangingConditions(false),
+          canDrag: () => !(node instanceof QueryBuilderFilterTreeGroupNodeData),
         }),
         [node, filterState],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(dropConnector(dragRef));
     useDragPreviewLayer(dragPreviewConnector);
 
     const { isDroppable } = useDragLayer((monitor) => ({
@@ -1137,6 +1139,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           'query-builder-filter-tree__node__container--selected-from-context-menu':
             isSelectedFromContextMenu,
         })}
+        ref={dragRef}
       >
         <ContextMenu
           content={
@@ -1155,7 +1158,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT
             }
             className="query-builder-filter-tree__node__content"
-            ref={ref}
           >
             {node instanceof QueryBuilderFilterTreeGroupNodeData && (
               <QueryBuilderFilterGroupConditionEditor
