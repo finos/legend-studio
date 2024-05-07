@@ -20,7 +20,7 @@ export abstract class QueryBuilderWorkflowState {
 
 export class QueryBuilderAdvancedWorkflowState extends QueryBuilderWorkflowState {
   get showStatusBar(): boolean {
-    return false;
+    return true;
   }
 
   static INSTANCE = new QueryBuilderAdvancedWorkflowState();
