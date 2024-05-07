@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 0.0.13
+
+### Patch Changes
+
+- [#3102](https://github.com/finos/legend-studio/pull/3102) [`480d827f1`](https://github.com/finos/legend-studio/commit/480d827f10a20a9c8a4d5e8c5de57d7c1190488c) ([@gayathrir11](https://github.com/gayathrir11)) - Fix `baseUrl` for REPL Grid
+
 ## 0.0.12
 
 ### Patch Changes
