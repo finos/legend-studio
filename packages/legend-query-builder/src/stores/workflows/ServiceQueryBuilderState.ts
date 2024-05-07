@@ -34,6 +34,7 @@ import { action, makeObservable, observable } from 'mobx';
 import { renderServiceQueryBuilderSetupPanelContent } from '../../components/workflows/ServiceQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 import type { QueryBuilderConfig } from '../../graph-manager/QueryBuilderConfig.js';
+import type { QueryBuilderWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
 
 export type ServiceExecutionContext = {
   key: string;
@@ -58,6 +59,7 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
+    workflowState: QueryBuilderWorkflowState,
     service: Service,
     usableServices: Service[] | undefined,
     executionContextKey?: string | undefined,
@@ -68,7 +70,13 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
     config?: QueryBuilderConfig | undefined,
     sourceInfo?: object | undefined,
   ) {
-    super(applicationStore, graphManagerState, config, sourceInfo);
+    super(
+      applicationStore,
+      graphManagerState,
+      workflowState,
+      config,
+      sourceInfo,
+    );
 
     makeObservable(this, {
       selectedExecutionContext: observable,

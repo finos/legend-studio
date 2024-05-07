@@ -47,6 +47,7 @@ import {
   TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass,
   TEST_DATA__simpleGetAllVersionsWithNonTemporalClass,
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
+import { QueryBuilderAdvancedWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
 
 type TestCase = [
   string,
@@ -159,6 +160,7 @@ describe(
         const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
           applicationStore,
           graphManagerState,
+          QueryBuilderAdvancedWorkflowState.INSTANCE,
           undefined,
         );
         await act(async () => {

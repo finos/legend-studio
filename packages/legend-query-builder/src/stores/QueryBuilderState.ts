@@ -109,6 +109,7 @@ import {
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
+import { type QueryBuilderWorkflowState } from './workflow/QueryBuilderWorkFlowState.js';
 
 export interface QuerySDLC {}
 
@@ -118,6 +119,11 @@ export type QueryStateInfo = QuerySDLC & {
   runtime: string;
 };
 
+export enum QUERY_BUILDER_LAMBDA_WRITER_MODE {
+  STANDARD = 'STANDARD',
+  TYPED_FETCH_STRUCTURE = 'TYPED_FETCH_STRUCTURE',
+}
+
 export abstract class QueryBuilderState implements CommandRegistrar {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: GraphManagerState;
@@ -126,6 +132,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   readonly queryCompileState = ActionState.create();
   readonly observerContext: ObserverContext;
   readonly config: QueryBuilderConfig | undefined;
+  readonly workflowState: QueryBuilderWorkflowState;
 
   explorerState: QueryBuilderExplorerState;
   functionsExplorerState: QueryFunctionsExplorerState;
@@ -168,6 +175,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
+    workflowState: QueryBuilderWorkflowState,
     config: QueryBuilderConfig | undefined,
     sourceInfo?: QuerySDLC | undefined,
   ) {
@@ -245,6 +253,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
     this.changeHistoryState = new QueryBuilderChangeHistoryState(this);
     this.config = config;
+
+    this.workflowState = workflowState;
     this.sourceInfo = sourceInfo;
   }
 
@@ -789,6 +799,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     const basicState = new INTERNAL__BasicQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
+      this.workflowState,
       undefined,
     );
     basicState.class = this.class;

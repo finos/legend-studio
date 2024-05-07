@@ -55,6 +55,7 @@ import {
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { QueryBuilderDataBrowserWorkflow } from '../query-builder/QueryBuilderDataBrowserWorkflow.js';
 
 export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
@@ -144,6 +145,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       this.depotServerClient,
+      QueryBuilderDataBrowserWorkflow.INSTANCE,
       dataSpace,
       executionContext,
       (dataSpaceInfo: DataSpaceInfo) => {

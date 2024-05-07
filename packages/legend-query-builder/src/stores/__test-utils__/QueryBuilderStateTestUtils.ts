@@ -41,6 +41,7 @@ import {
   INTERNAL__BasicQueryBuilderState,
   type QueryBuilderState,
 } from '../QueryBuilderState.js';
+import { QueryBuilderAdvancedWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -131,6 +132,7 @@ export const TEST__setUpQueryBuilderState = async (
   const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
     applicationStore,
     graphManagerState,
+    QueryBuilderAdvancedWorkflowState.INSTANCE,
     undefined,
   );
   if (rawLambda) {
