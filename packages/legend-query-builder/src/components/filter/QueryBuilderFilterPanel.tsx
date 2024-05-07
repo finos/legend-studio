@@ -1125,7 +1125,11 @@ const QueryBuilderFilterTreeNodeContainer = observer(
         data-testid={
           QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER
         }
-        onClick={selectNode}
+        onClick={
+          node instanceof QueryBuilderFilterTreeGroupNodeData
+            ? undefined
+            : selectNode
+        }
         className={clsx('query-builder-filter-tree__node__container', {
           'query-builder-filter-tree__node__container--group':
             node instanceof QueryBuilderFilterTreeGroupNodeData,
