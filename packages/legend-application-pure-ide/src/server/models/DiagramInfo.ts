@@ -557,8 +557,8 @@ const buildClass = (
         propertyData.aggregation === 'Composite'
           ? AggregationKind.COMPOSITE
           : propertyData.aggregation === 'Shared'
-          ? AggregationKind.SHARED
-          : undefined;
+            ? AggregationKind.SHARED
+            : undefined;
       addUniqueEntry(_class.properties, newProperty);
     });
   classData.qualifiedProperties

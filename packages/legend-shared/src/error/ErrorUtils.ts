@@ -62,8 +62,8 @@ export class EnrichedError extends Error {
       overideMessage
         ? overideMessage
         : error instanceof Error
-        ? error.message
-        : error,
+          ? error.message
+          : error,
     );
     this.name = name;
     // if the material used to make this error is also an error, we maintain the stack trace and

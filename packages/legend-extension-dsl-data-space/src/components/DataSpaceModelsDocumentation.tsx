@@ -695,18 +695,18 @@ const getFilterNodeCount = (
             entry.elementEntry instanceof DataSpaceClassDocumentationEntry,
         ).length
       : node.typePath === CORE_PURE_PATH.ENUMERATION
-      ? documentationState.searchResults.filter(
-          (entry) =>
-            entry.elementEntry instanceof
-            DataSpaceEnumerationDocumentationEntry,
-        ).length
-      : node.typePath === CORE_PURE_PATH.ASSOCIATION
-      ? documentationState.searchResults.filter(
-          (entry) =>
-            entry.elementEntry instanceof
-            DataSpaceAssociationDocumentationEntry,
-        ).length
-      : undefined;
+        ? documentationState.searchResults.filter(
+            (entry) =>
+              entry.elementEntry instanceof
+              DataSpaceEnumerationDocumentationEntry,
+          ).length
+        : node.typePath === CORE_PURE_PATH.ASSOCIATION
+          ? documentationState.searchResults.filter(
+              (entry) =>
+                entry.elementEntry instanceof
+                DataSpaceAssociationDocumentationEntry,
+            ).length
+          : undefined;
   } else if (node instanceof ModelsDocumentationFilterTreeRootNodeData) {
     return documentationState.searchResults.length;
   }

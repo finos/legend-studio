@@ -695,8 +695,8 @@ export const EntityChangeConflictEditor = observer(
                 {isReadOnly
                   ? 'Merge preview'
                   : conflictEditorState.mergeSucceeded
-                  ? 'Merged successfully'
-                  : 'Merged with conflict(s)'}
+                    ? 'Merged successfully'
+                    : 'Merged with conflict(s)'}
               </div>
             </div>
             <div className="entity-change-conflict-editor__header__info__comparison-summary">

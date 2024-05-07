@@ -190,12 +190,12 @@ const ElementRenamer = observer(() => {
     const errorMessage = !isElementPathNonEmpty
       ? `Element path cannot be empty`
       : !isNotTopLevelElement
-      ? `Creating top level element is not allowed`
-      : !isValidElementPath
-      ? `Element path is not valid`
-      : !isElementUnique
-      ? `Element of the same path already existed`
-      : '';
+        ? `Creating top level element is not allowed`
+        : !isValidElementPath
+          ? `Element path is not valid`
+          : !isElementUnique
+            ? `Element of the same path already existed`
+            : '';
     setElementRenameValidationErrorMessage(errorMessage);
     setCanRenameElement(
       isElementPathNonEmpty &&
@@ -960,10 +960,10 @@ const PackageTreeNodeContainer = observer(
     const iconPackageColor = isGeneratedElement(node.packageableElement)
       ? 'color--generated'
       : isSystemElement(node.packageableElement)
-      ? 'color--system'
-      : isDependencyElement(node.packageableElement)
-      ? 'color--dependency'
-      : '';
+        ? 'color--system'
+        : isDependencyElement(node.packageableElement)
+          ? 'color--dependency'
+          : '';
 
     const nodeIcon = isPackage ? (
       node.isOpen ? (

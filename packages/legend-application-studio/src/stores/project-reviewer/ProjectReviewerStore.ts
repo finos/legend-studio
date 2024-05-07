@@ -332,7 +332,7 @@ export class ProjectReviewerStore {
           ),
       ]);
       if (comparison.projectConfigurationUpdated) {
-        [
+        yield Promise.all([
           this.editorStore.sdlcServerClient
             .getReviewFromConfiguration(
               this.projectId,
@@ -347,7 +347,7 @@ export class ProjectReviewerStore {
               this.reviewId,
             )
             .then((config) => report.addToConfig(config)),
-        ];
+        ]);
       }
       yield fromToRequests;
     } catch (error) {

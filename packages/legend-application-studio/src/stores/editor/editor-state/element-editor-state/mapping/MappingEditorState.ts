@@ -759,8 +759,8 @@ export class MappingEditorState extends ElementEditorState {
           openIndex >= 0
             ? this.openedTabStates[openIndex]
             : this.openedTabStates.length
-            ? this.openedTabStates[0]
-            : undefined;
+              ? this.openedTabStates[0]
+              : undefined;
         if (tabStateToOpen) {
           yield flowResult(this.openTab(tabStateToOpen));
         } else {
@@ -1477,8 +1477,8 @@ export class MappingEditorState extends ElementEditorState {
     return numberOfTestFailed
       ? TEST_RESULT.FAILED
       : numberOfTestPassed
-      ? TEST_RESULT.PASSED
-      : TEST_RESULT.NONE;
+        ? TEST_RESULT.PASSED
+        : TEST_RESULT.NONE;
   }
 
   *runTests(): GeneratorFn<void> {

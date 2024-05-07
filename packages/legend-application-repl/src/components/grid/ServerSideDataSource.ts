@@ -125,9 +125,10 @@ export class ServerSideDataSource implements IServerSideDatasource {
         aggregations,
       );
       const filter: TDSFilter[] = [];
-      const filterModel = request.filterModel as FilterModel;
+      const filterModel = request.filterModel as FilterModel | null;
       if (filterModel) {
         Object.keys(filterModel).forEach((key) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const item = filterModel[key];
           const conditions: TDSFilterCondition[] = [];
           const colType = getFilterColumnType(item.filterType);
@@ -152,7 +153,7 @@ export class ServerSideDataSource implements IServerSideDatasource {
           filter.push(
             new TDSFilter(
               key,
-              colType as PRIMITIVE_TYPE,
+              colType,
               conditions,
               item.operator === 'OR'
                 ? TDS_FILTER_GROUP.OR

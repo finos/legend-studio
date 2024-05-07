@@ -258,11 +258,10 @@ export abstract class BasicModel {
       (plugin) => plugin.getExtraTestablesCollectors?.() ?? [],
     );
     const extraTestables = this.allOwnElements
-      .map(
-        (element) =>
-          filters.find((elementFilter) => Boolean(elementFilter(element)))?.(
-            element,
-          ),
+      .map((element) =>
+        filters.find((elementFilter) => Boolean(elementFilter(element)))?.(
+          element,
+        ),
       )
       .filter(isNonNullable);
     return [...coreTestables, ...extraTestables];

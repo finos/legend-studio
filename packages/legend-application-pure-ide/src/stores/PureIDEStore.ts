@@ -1196,9 +1196,9 @@ export class PureIDEStore implements CommandRegistrar {
         concept.pureType === ConceptType.ENUM_VALUE
           ? FIND_USAGE_FUNCTION_PATH.ENUM
           : concept.pureType === ConceptType.PROPERTY ||
-            concept.pureType === ConceptType.QUALIFIED_PROPERTY
-          ? FIND_USAGE_FUNCTION_PATH.PROPERTY
-          : FIND_USAGE_FUNCTION_PATH.ELEMENT,
+              concept.pureType === ConceptType.QUALIFIED_PROPERTY
+            ? FIND_USAGE_FUNCTION_PATH.PROPERTY
+            : FIND_USAGE_FUNCTION_PATH.ELEMENT,
         (concept.owner ? [`'${concept.owner}'`] : []).concat(
           `'${concept.path}'`,
         ),

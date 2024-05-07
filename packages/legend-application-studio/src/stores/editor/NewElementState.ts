@@ -128,12 +128,12 @@ export const resolvePackageAndElementName = (
     !selectedPackageName && !additionalPackageName
       ? ''
       : selectedPackageName
-      ? `${selectedPackageName}${
-          additionalPackageName
-            ? `${ELEMENT_PATH_DELIMITER}${additionalPackageName}`
-            : ''
-        }`
-      : additionalPackageName;
+        ? `${selectedPackageName}${
+            additionalPackageName
+              ? `${ELEMENT_PATH_DELIMITER}${additionalPackageName}`
+              : ''
+          }`
+        : additionalPackageName;
   return [packagePath, elementName];
 };
 

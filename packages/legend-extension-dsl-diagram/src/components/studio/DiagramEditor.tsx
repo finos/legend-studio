@@ -739,10 +739,10 @@ const DiagramEditorInlineClassRenamerContent = observer(
     const classCreationValidationErrorMessage = !isClassNameNonEmpty
       ? `Class name cannot be empty`
       : !isClassNameValid
-      ? `Class name is not valid`
-      : !isClassNameUnique
-      ? `Element of the same name already existed`
-      : undefined;
+        ? `Class name is not valid`
+        : !isClassNameUnique
+          ? `Element of the same name already existed`
+          : undefined;
     const canRenameClass =
       isClassNameNonEmpty && isClassNameValid && isClassNameUnique;
 
@@ -858,12 +858,12 @@ const DiagramEditorInlineClassCreatorContent = observer(
     const classCreationValidationErrorMessage = !isClassPathNonEmpty
       ? `Class path cannot be empty`
       : !isNotTopLevelClass
-      ? `Creating top level class is not allowed`
-      : !isValidPath
-      ? `Class path is not valid`
-      : !isClassUnique
-      ? `Class already existed`
-      : undefined;
+        ? `Creating top level class is not allowed`
+        : !isValidPath
+          ? `Class path is not valid`
+          : !isClassUnique
+            ? `Class already existed`
+            : undefined;
     const canCreateClass =
       isClassPathNonEmpty && isNotTopLevelClass && isValidPath && isClassUnique;
 
@@ -989,8 +989,8 @@ const DiagramEditorInlinePropertyMultiplicityEditor = observer(
         upper === MULTIPLICITY_INFINITE
           ? undefined
           : typeof upper === 'number'
-          ? upper
-          : parseInt(upper, 10);
+            ? upper
+            : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         updateValue(
           editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),

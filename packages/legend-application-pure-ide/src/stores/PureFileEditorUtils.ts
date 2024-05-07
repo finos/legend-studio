@@ -310,16 +310,16 @@ const elementSuggestionToCompletionItem = (
     type === ConceptType.PACKAGE
       ? monacoLanguagesAPI.CompletionItemKind.Folder
       : type === ConceptType.CLASS
-      ? monacoLanguagesAPI.CompletionItemKind.Class
-      : type === ConceptType.FUNCTION
-      ? monacoLanguagesAPI.CompletionItemKind.Function
-      : type === ConceptType.ENUMERATION
-      ? monacoLanguagesAPI.CompletionItemKind.Enum
-      : type === ConceptType.PROFILE
-      ? monacoLanguagesAPI.CompletionItemKind.Module
-      : type === ConceptType.ASSOCIATION
-      ? monacoLanguagesAPI.CompletionItemKind.Interface
-      : monacoLanguagesAPI.CompletionItemKind.Value;
+        ? monacoLanguagesAPI.CompletionItemKind.Class
+        : type === ConceptType.FUNCTION
+          ? monacoLanguagesAPI.CompletionItemKind.Function
+          : type === ConceptType.ENUMERATION
+            ? monacoLanguagesAPI.CompletionItemKind.Enum
+            : type === ConceptType.PROFILE
+              ? monacoLanguagesAPI.CompletionItemKind.Module
+              : type === ConceptType.ASSOCIATION
+                ? monacoLanguagesAPI.CompletionItemKind.Interface
+                : monacoLanguagesAPI.CompletionItemKind.Value;
   return {
     label: {
       label: suggestion.pureName,
@@ -379,8 +379,8 @@ export const getIncompletePathSuggestions = async (
           isUsingConstructor
             ? [ConceptType.CLASS]
             : isUsingArrowFunction
-            ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
-            : [],
+              ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
+              : [],
         )
       ).map((child) => deserialize(ElementSuggestion, child));
     } catch {
@@ -456,8 +456,8 @@ export const getIdentifierSuggestions = async (
         isUsingConstructor
           ? [ConceptType.CLASS]
           : isUsingArrowFunction
-          ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
-          : [],
+            ? [ConceptType.FUNCTION, ConceptType.NATIVE_FUNCTION]
+            : [],
       )
     ).map((child) => deserialize(ElementSuggestion, child));
   } catch {
@@ -509,14 +509,14 @@ const attributeSuggestionToCompletionItem = (
     type === ConceptType.PROPERTY
       ? monacoLanguagesAPI.CompletionItemKind.Property
       : type === ConceptType.QUALIFIED_PROPERTY
-      ? monacoLanguagesAPI.CompletionItemKind.Method
-      : type === ConceptType.TAG
-      ? monacoLanguagesAPI.CompletionItemKind.Constant
-      : type === ConceptType.STEREOTYPE
-      ? monacoLanguagesAPI.CompletionItemKind.Value
-      : type === ConceptType.ENUM_VALUE
-      ? monacoLanguagesAPI.CompletionItemKind.Enum
-      : monacoLanguagesAPI.CompletionItemKind.Value;
+        ? monacoLanguagesAPI.CompletionItemKind.Method
+        : type === ConceptType.TAG
+          ? monacoLanguagesAPI.CompletionItemKind.Constant
+          : type === ConceptType.STEREOTYPE
+            ? monacoLanguagesAPI.CompletionItemKind.Value
+            : type === ConceptType.ENUM_VALUE
+              ? monacoLanguagesAPI.CompletionItemKind.Enum
+              : monacoLanguagesAPI.CompletionItemKind.Value;
   return {
     label: {
       label: suggestion.pureName,

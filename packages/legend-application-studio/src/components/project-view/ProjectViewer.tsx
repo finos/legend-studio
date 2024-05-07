@@ -93,8 +93,8 @@ const ProjectViewerStatusBar = observer(() => {
         ? 'latest behind project'
         : 'latest'
       : currentRevision
-      ? 'current'
-      : ''
+        ? 'current'
+        : ''
   }`;
 
   const editable =

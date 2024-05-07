@@ -364,15 +364,15 @@ export class STO_ServiceStore_PureProtocolProcessorPlugin
                 context,
               )
             : connection.store
-            ? V1_resolveServiceStore(connection.store, context)
-            : ((): PackageableElementReference<ServiceStore> => {
-                assertType(
-                  store.value,
-                  ServiceStore,
-                  'ServiceStore connection must have a ServiceStore as its store',
-                );
-                return store as PackageableElementReference<ServiceStore>;
-              })();
+              ? V1_resolveServiceStore(connection.store, context)
+              : ((): PackageableElementReference<ServiceStore> => {
+                  assertType(
+                    store.value,
+                    ServiceStore,
+                    'ServiceStore connection must have a ServiceStore as its store',
+                  );
+                  return store as PackageableElementReference<ServiceStore>;
+                })();
           const serviceStoreConnection = new ServiceStoreConnection(Store);
           serviceStoreConnection.baseUrl = connection.baseUrl;
           return serviceStoreConnection;

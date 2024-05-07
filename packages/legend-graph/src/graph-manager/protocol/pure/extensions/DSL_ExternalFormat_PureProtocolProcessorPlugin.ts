@@ -306,15 +306,15 @@ export class DSL_ExternalFormat_PureProtocolProcessorPlugin
                 context,
               )
             : connection.store
-            ? V1_resolveBinding(connection.store, context)
-            : ((): PackageableElementReference<Binding> => {
-                assertType(
-                  store.value,
-                  Binding,
-                  `External format connection store must be a Binding`,
-                );
-                return store as PackageableElementReference<Binding>;
-              })();
+              ? V1_resolveBinding(connection.store, context)
+              : ((): PackageableElementReference<Binding> => {
+                  assertType(
+                    store.value,
+                    Binding,
+                    `External format connection store must be a Binding`,
+                  );
+                  return store as PackageableElementReference<Binding>;
+                })();
           const externalFormatConnection = new ExternalFormatConnection(Store);
           assertNonNullable(
             connection.externalSource,

@@ -277,7 +277,7 @@ const QueryResultCellRenderer = observer(
               ?.data as QueryBuilderTDSRowDataType,
           ).forEach((entry) => {
             if (entry[0] !== 'rowNumber') {
-              valueArr.push(entry[1] as QueryBuilderTDSResultCellDataType);
+              valueArr.push(entry[1]);
             }
           });
           return valueArr.join(',');

@@ -107,9 +107,8 @@ export const getPropertyChainName = (
         processedChunks[processedChunks.length - 1],
       );
       if (latestProcessedChunk.startsWith(TYPE_CAST_TOKEN)) {
-        processedChunks[
-          processedChunks.length - 1
-        ] = `${latestProcessedChunk}${chunk}`;
+        processedChunks[processedChunks.length - 1] =
+          `${latestProcessedChunk}${chunk}`;
       } else {
         processedChunks.push(chunk);
       }

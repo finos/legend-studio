@@ -140,12 +140,12 @@ export const WorkspaceReview = observer(() => {
   const commitReviewTitle = workspaceContainsSnapshotDependencies
     ? `Can't commit review: workspace has snapshot dependencies`
     : workspaceReviewState.sdlcState.isActiveProjectSandbox
-    ? `Can't commit review: reviews are not allowed on sandbox projects`
-    : !workspaceReviewState.canMergeReview
-    ? workspaceReviewState.sdlcState.unAuthorizedActionMessage(
-        AuthorizableProjectAction.COMMIT_REVIEW,
-      )
-    : 'Commit review';
+      ? `Can't commit review: reviews are not allowed on sandbox projects`
+      : !workspaceReviewState.canMergeReview
+        ? workspaceReviewState.sdlcState.unAuthorizedActionMessage(
+            AuthorizableProjectAction.COMMIT_REVIEW,
+          )
+        : 'Commit review';
   const commitReview = (): void => {
     if (workspaceReview && !isDispatchingAction) {
       editorStore.localChangesState.alertUnsavedChanges((): void => {
@@ -167,12 +167,12 @@ export const WorkspaceReview = observer(() => {
   const createReviewTitle = workspaceContainsSnapshotDependencies
     ? `Can't create review: workspace has snapshot dependencies`
     : workspaceReviewState.sdlcState.isActiveProjectSandbox
-    ? `Can't create review: reviews are not allowed on sandbox projects`
-    : !workspaceReviewState.canCreateReview
-    ? workspaceReviewState.sdlcState.unAuthorizedActionMessage(
-        AuthorizableProjectAction.SUBMIT_REVIEW,
-      )
-    : 'Create review';
+      ? `Can't create review: reviews are not allowed on sandbox projects`
+      : !workspaceReviewState.canCreateReview
+        ? workspaceReviewState.sdlcState.unAuthorizedActionMessage(
+            AuthorizableProjectAction.SUBMIT_REVIEW,
+          )
+        : 'Create review';
   const createReview = (): void => {
     if (
       workspaceReviewState.reviewTitle &&

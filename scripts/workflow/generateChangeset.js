@@ -51,8 +51,8 @@ let targetBranch = argv.v
   ? argv.v.toString() === 'latest'
     ? DEFAULT_BRANCH_NAME
     : semver.valid(argv.v)
-    ? `release/${argv.v}`
-    : undefined
+      ? `release/${argv.v}`
+      : undefined
   : undefined;
 
 if (targetBranch === undefined) {
@@ -126,7 +126,7 @@ generateChangeset(
   useOrigin
     ? `origin/${targetBranch}`
     : // NOTE: if not generate for branch, we use HEAD as the reference point
-    generateForBranch
-    ? targetBranch
-    : headRef,
+      generateForBranch
+      ? targetBranch
+      : headRef,
 );

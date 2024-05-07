@@ -350,10 +350,10 @@ const ReleaseEditor = observer(() => {
   const disabledCreateVersionTitle = isCurrentProjectVersionLatest
     ? `Can't create version: project version not the latest`
     : !editorStore.sdlcServerClient.features.canCreateVersion
-    ? `Can't create version: current svn system does not support creating versions`
-    : !editorStore.sdlcState.canCreateVersion
-    ? `Can't create version: You do not have the rights to create a version`
-    : undefined;
+      ? `Can't create version: current svn system does not support creating versions`
+      : !editorStore.sdlcState.canCreateVersion
+        ? `Can't create version: You do not have the rights to create a version`
+        : undefined;
 
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {

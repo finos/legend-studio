@@ -307,10 +307,10 @@ const buildPackageFilterTreeData = (
             entry instanceof DataSpaceClassDocumentationEntry
               ? CORE_PURE_PATH.CLASS
               : entry instanceof DataSpaceEnumerationDocumentationEntry
-              ? CORE_PURE_PATH.ENUMERATION
-              : entry instanceof DataSpaceAssociationDocumentationEntry
-              ? CORE_PURE_PATH.ASSOCIATION
-              : undefined,
+                ? CORE_PURE_PATH.ENUMERATION
+                : entry instanceof DataSpaceAssociationDocumentationEntry
+                  ? CORE_PURE_PATH.ASSOCIATION
+                  : undefined,
           );
         } else {
           node = new ModelsDocumentationFilterTreePackageNodeData(

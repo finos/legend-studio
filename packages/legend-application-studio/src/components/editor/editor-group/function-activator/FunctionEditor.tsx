@@ -274,8 +274,8 @@ const ParameterBasicEditor = observer(
         upper === MULTIPLICITY_INFINITE
           ? undefined
           : typeof upper === 'number'
-          ? upper
-          : parseInt(upper, 10);
+            ? upper
+            : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         rawVariableExpression_setMultiplicity(
           parameter,
@@ -540,8 +540,8 @@ const ReturnTypeEditor = observer(
         upper === MULTIPLICITY_INFINITE
           ? undefined
           : typeof upper === 'number'
-          ? upper
-          : parseInt(upper, 10);
+            ? upper
+            : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         function_setReturnMultiplicity(
           functionElement,

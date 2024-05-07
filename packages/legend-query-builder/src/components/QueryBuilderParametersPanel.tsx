@@ -123,13 +123,13 @@ const VariableExpressionEditor = observer(
       !hasEditedName
         ? undefined
         : !input
-        ? `Parameter name can't be empty`
-        : allVariableNames.filter((e) => e === input).length > 0 &&
-          input !== stateName
-        ? 'Parameter name already exists'
-        : isValidIdentifier(input, true) === false
-        ? 'Parameter name must be text with no spaces and not start with an uppercase letter or number'
-        : undefined;
+          ? `Parameter name can't be empty`
+          : allVariableNames.filter((e) => e === input).length > 0 &&
+              input !== stateName
+            ? 'Parameter name already exists'
+            : isValidIdentifier(input, true) === false
+              ? 'Parameter name must be text with no spaces and not start with an uppercase letter or number'
+              : undefined;
 
     // modal lifecycle actions
     const handleCancel = (): void => {

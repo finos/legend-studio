@@ -68,8 +68,8 @@ export class V1_EnumValueMapping implements Hashable {
           sourceValue instanceof V1_EnumValueMappingIntegerSourceValue
             ? sourceValue.value.toString()
             : sourceValue instanceof V1_EnumValueMappingEnumSourceValue
-            ? `${sourceValue.enumeration}.${sourceValue.value}`
-            : (sourceValue.value as string),
+              ? `${sourceValue.enumeration}.${sourceValue.value}`
+              : (sourceValue.value as string),
         ),
       ),
     ]);

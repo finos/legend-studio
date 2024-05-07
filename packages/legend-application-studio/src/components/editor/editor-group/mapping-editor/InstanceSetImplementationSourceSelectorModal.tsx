@@ -165,24 +165,24 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
                 }),
             )
         : sourceElementToFilter instanceof Class
-        ? ([sourceElementToFilter] as MappingElementSource[])
-        : sourceElementToFilter instanceof FlatData
-        ? [sourceElementToFilter].flatMap(getAllRecordTypes)
-        : [sourceElementToFilter as Database]
-            .flatMap((e) =>
-              e.schemas.flatMap((schema) =>
-                (schema.tables as (Table | View)[]).concat(schema.views),
-              ),
-            )
-            .map((relation) => {
-              const mainTableAlias = new TableAlias();
-              mainTableAlias.relation =
-                relation instanceof Table
-                  ? TableExplicitReference.create(relation)
-                  : ViewExplicitReference.create(relation);
-              mainTableAlias.name = mainTableAlias.relation.value.name;
-              return mainTableAlias;
-            })
+          ? ([sourceElementToFilter] as MappingElementSource[])
+          : sourceElementToFilter instanceof FlatData
+            ? [sourceElementToFilter].flatMap(getAllRecordTypes)
+            : [sourceElementToFilter as Database]
+                .flatMap((e) =>
+                  e.schemas.flatMap((schema) =>
+                    (schema.tables as (Table | View)[]).concat(schema.views),
+                  ),
+                )
+                .map((relation) => {
+                  const mainTableAlias = new TableAlias();
+                  mainTableAlias.relation =
+                    relation instanceof Table
+                      ? TableExplicitReference.create(relation)
+                      : ViewExplicitReference.create(relation);
+                  mainTableAlias.name = mainTableAlias.relation.value.name;
+                  return mainTableAlias;
+                })
     ).map(buildMappingElementSourceOption);
     const sourceFilterOption = createFilter({
       ignoreCase: true,

@@ -288,11 +288,11 @@ export class WorkspaceSetupStore {
             workspaceId
               ? { workspaceId: workspaceId, workspaceType: WorkspaceType.USER }
               : groupWorkspaceId
-              ? {
-                  workspaceId: groupWorkspaceId,
-                  workspaceType: WorkspaceType.GROUP,
-                }
-              : undefined,
+                ? {
+                    workspaceId: groupWorkspaceId,
+                    workspaceType: WorkspaceType.GROUP,
+                  }
+                : undefined,
           ),
         );
       }

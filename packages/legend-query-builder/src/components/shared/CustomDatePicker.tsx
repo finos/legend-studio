@@ -541,14 +541,14 @@ const buildCustomDateOptionDurationValue = (
   return durationParam instanceof PrimitiveInstanceValue
     ? (durationParam.values[0] as number)
     : durationParam instanceof SimpleFunctionExpression &&
-      matchFunctionName(
-        durationParam.functionName,
-        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
-      )
-    ? durationParam.parametersValues[0] instanceof PrimitiveInstanceValue
-      ? (durationParam.parametersValues[0].values[0] as number)
-      : 0
-    : 0;
+        matchFunctionName(
+          durationParam.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.MINUS,
+        )
+      ? durationParam.parametersValues[0] instanceof PrimitiveInstanceValue
+        ? (durationParam.parametersValues[0].values[0] as number)
+        : 0
+      : 0;
 };
 
 /**
@@ -713,9 +713,10 @@ export const buildDatePickerOption = (
         );
       case QUERY_BUILDER_SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK:
         return new CustomPreviousDayOfWeekOption(
-          `Previous ${(
-            valueSpecification.parametersValues[0] as EnumValueInstanceValue
-          ).values[0]?.value.name}`,
+          `Previous ${
+            (valueSpecification.parametersValues[0] as EnumValueInstanceValue)
+              .values[0]?.value.name
+          }`,
           (valueSpecification.parametersValues[0] as EnumValueInstanceValue)
             .values[0]?.value.name as CUSTOM_DATE_DAY_OF_WEEK,
         );

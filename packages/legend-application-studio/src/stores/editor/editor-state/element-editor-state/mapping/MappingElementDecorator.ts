@@ -741,8 +741,7 @@ export class MappingElementDecorationCleaner
         (propertyMapping) =>
           (propertyMapping instanceof FlatDataPropertyMapping &&
             !isStubbed_RawLambda(propertyMapping.transform)) ||
-          (propertyMapping instanceof EmbeddedFlatDataPropertyMapping &&
-            propertyMapping.property),
+          propertyMapping instanceof EmbeddedFlatDataPropertyMapping,
       ),
       this.editorStore.changeDetectionState.observerContext,
     );

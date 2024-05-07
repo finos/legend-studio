@@ -768,6 +768,9 @@ export const VirtualAssistant = observer(() => {
       bounds="parent"
       onStart={onDragStart}
       onStop={onDragEnd}
+      // Avoid using deprecated findDOMNode method to rid of React warning
+      // See https://github.com/react-grid-layout/react-draggable/issues/749
+      nodeRef={assistantRef}
       // limit the dnd trigger to only the drag handle
       handle=".virtual-assistant__station__drag-handle"
     >

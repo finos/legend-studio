@@ -80,8 +80,8 @@ export const getBaseWebpackConfig = (
           // See https://webpack.js.org/configuration/devtool/
           false
       : enableSourceMap
-      ? 'source-map'
-      : false,
+        ? 'source-map'
+        : false,
     watchOptions: {
       ignored: /node_modules/,
     },

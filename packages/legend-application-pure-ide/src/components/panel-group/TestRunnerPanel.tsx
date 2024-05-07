@@ -380,7 +380,6 @@ const TestResultConsole: React.FC<{
               model.getLineContent(i).matchAll(TEST_ERROR_LOCATION_PATTERN),
             ).forEach((match) => {
               if (
-                match.index !== undefined &&
                 match.groups?.path &&
                 match.groups.path_sourceId &&
                 match.groups.path_column &&
@@ -431,8 +430,8 @@ const TestResultConsole: React.FC<{
         result instanceof TestSuccessResult
           ? 'Test passed!'
           : result instanceof TestFailureResult
-          ? result.error.text
-          : 'Running...';
+            ? result.error.text
+            : 'Running...';
       editor.setValue(value);
       // color text based on test result/status
       if (

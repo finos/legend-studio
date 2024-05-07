@@ -130,8 +130,8 @@ const QueryBuilderTreeNodeViewer = observer(
             ? node.type instanceof Enumeration
               ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY
               : node.type instanceof Class
-              ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
-              : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
+                ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
+                : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
             : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
         item: () =>
           node instanceof QueryBuilderExplorerTreePropertyNodeData
@@ -186,8 +186,8 @@ const QueryBuilderTreeNodeViewer = observer(
       parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
         ? prettyPropertyNameForSubType(node.id)
         : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-        ? prettyPropertyNameForSubTypeClass(node.id)
-        : prettyPropertyNameFromNodeId(node.id);
+          ? prettyPropertyNameForSubTypeClass(node.id)
+          : prettyPropertyNameFromNodeId(node.id);
 
     return (
       <div>

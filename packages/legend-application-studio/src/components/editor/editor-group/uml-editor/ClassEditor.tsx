@@ -210,8 +210,8 @@ const PropertyBasicEditor = observer(
         upper === MULTIPLICITY_INFINITE
           ? undefined
           : typeof upper === 'number'
-          ? upper
-          : parseInt(upper, 10);
+            ? upper
+            : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         property_setMultiplicity(
           property,
@@ -557,8 +557,8 @@ const DerivedPropertyBasicEditor = observer(
         upper === MULTIPLICITY_INFINITE
           ? undefined
           : typeof upper === 'number'
-          ? upper
-          : parseInt(upper, 10);
+            ? upper
+            : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         property_setMultiplicity(
           derivedProperty,

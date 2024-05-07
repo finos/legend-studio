@@ -81,10 +81,10 @@ export const getTestResultById = (
   testResultInfo.passedTests.has(id)
     ? TestResultType.PASSED
     : testResultInfo.failedTests.has(id)
-    ? TestResultType.FAILED
-    : testResultInfo.testsWithError.has(id)
-    ? TestResultType.ERROR
-    : TestResultType.RUNNING;
+      ? TestResultType.FAILED
+      : testResultInfo.testsWithError.has(id)
+        ? TestResultType.ERROR
+        : TestResultType.RUNNING;
 
 export const getTestTreeNodeStatus = (
   node: TestTreeNode,
@@ -102,8 +102,8 @@ export const getTestTreeNodeStatus = (
     testResultInfo.testWithErrorIds.some((i) => i.startsWith(`${id}_`))
     ? TestResultType.FAILED
     : testResultInfo.notRunTestIds.some((i) => i.startsWith(`${id}_`))
-    ? TestResultType.RUNNING
-    : TestResultType.PASSED;
+      ? TestResultType.RUNNING
+      : TestResultType.PASSED;
 };
 
 export class TestResultInfo {
@@ -184,8 +184,8 @@ export class TestResultInfo {
     return this.failed + this.error
       ? TestSuiteStatus.FAILED
       : this.passed
-      ? TestSuiteStatus.PASSED
-      : TestSuiteStatus.NONE;
+        ? TestSuiteStatus.PASSED
+        : TestSuiteStatus.NONE;
   }
 
   setTime(val: number): void {

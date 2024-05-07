@@ -1009,9 +1009,8 @@ test(
     fireEvent.click(lastNameExpressionInfoTooltipIcon);
     const tooltip = await renderResult.findByRole('tooltip');
     const pathShowInTreeButton = guaranteeNonNullable(
-      await waitFor(
-        () =>
-          queryByText(tooltip, 'Path')?.parentElement?.querySelector('button'),
+      await waitFor(() =>
+        queryByText(tooltip, 'Path')?.parentElement?.querySelector('button'),
       ),
     );
     fireEvent.click(pathShowInTreeButton);

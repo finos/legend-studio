@@ -41,8 +41,8 @@ export const CreateNewDirectoryPrompt = observer(
     const error = !isValidValue
       ? 'Invalid directory name'
       : !isUnique
-      ? 'Already existed'
-      : undefined;
+        ? 'Already existed'
+        : undefined;
 
     // actions
     const closeModal = (): void =>

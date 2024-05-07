@@ -132,8 +132,8 @@ export class ProjectViewerStore {
           versionId
             ? generateViewVersionRoute(projectId, versionId)
             : revisionId
-            ? generateViewRevisionRoute(projectId, revisionId)
-            : generateViewProjectRoute(projectId),
+              ? generateViewRevisionRoute(projectId, revisionId)
+              : generateViewProjectRoute(projectId),
         );
       } else if (gav) {
         const {

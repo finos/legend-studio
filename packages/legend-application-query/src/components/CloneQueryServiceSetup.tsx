@@ -125,10 +125,10 @@ const CloneQueryServiceSetupContent = observer(() => {
     .isInProgress
     ? 'Loading projects'
     : querySetupState.loadProjectsState.hasFailed
-    ? 'Error fetching projects'
-    : querySetupState.projects.length
-    ? 'Choose a project'
-    : 'You have no projects, please create or acquire access for at least one';
+      ? 'Error fetching projects'
+      : querySetupState.projects.length
+        ? 'Choose a project'
+        : 'You have no projects, please create or acquire access for at least one';
   const onProjectOptionChange = async (
     option: ProjectOption | null,
   ): Promise<void> => {
@@ -310,8 +310,8 @@ const CloneQueryServiceSetupContent = observer(() => {
                 {querySetupState.loadServiceExecutionsState.isInProgress
                   ? `Surveying service executions...`
                   : querySetupState.loadServiceExecutionsState.hasFailed
-                  ? `Can't load service executions`
-                  : 'Project and version must be specified'}
+                    ? `Can't load service executions`
+                    : 'Project and version must be specified'}
               </BlankPanelContent>
             </div>
           )}

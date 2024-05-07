@@ -130,10 +130,10 @@ const CreateMappingQuerySetupContent = observer(() => {
   const projectSelectorPlaceholder = setupStore.loadProjectsState.isInProgress
     ? 'Loading projects'
     : setupStore.loadProjectsState.hasFailed
-    ? 'Error fetching projects'
-    : setupStore.projects.length
-    ? 'Choose a project'
-    : 'You have no projects, please create or acquire access for at least one';
+      ? 'Error fetching projects'
+      : setupStore.projects.length
+        ? 'Choose a project'
+        : 'You have no projects, please create or acquire access for at least one';
   const onProjectOptionChange = async (
     option: ProjectOption | null,
   ): Promise<void> => {
@@ -229,8 +229,8 @@ const CreateMappingQuerySetupContent = observer(() => {
   const runtimeSelectorPlaceholder = !setupStore.currentMapping
     ? 'No mapping specified'
     : runtimeOptions.length
-    ? 'Choose a runtime'
-    : 'No runtime available';
+      ? 'Choose a runtime'
+      : 'No runtime available';
   const onRuntimeOptionChange = (
     option: PackageableElementOption<PackageableRuntime> | null,
   ): void => {
@@ -331,8 +331,8 @@ const CreateMappingQuerySetupContent = observer(() => {
                 {setupStore.surveyMappingRuntimeCompatibilityState.isInProgress
                   ? `Surveying runtime and mapping compatibility...`
                   : setupStore.surveyMappingRuntimeCompatibilityState.hasFailed
-                  ? `Can't load runtime and mapping`
-                  : 'Project and version must be specified'}
+                    ? `Can't load runtime and mapping`
+                    : 'Project and version must be specified'}
               </BlankPanelContent>
             </div>
           )}

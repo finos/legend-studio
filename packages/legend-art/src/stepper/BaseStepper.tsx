@@ -36,7 +36,7 @@ export const BaseStepper: React.FC<
       <MuiStepper className="mui-stepper__container" {...otherProps}>
         {steps.map((label, index) => {
           const stepProps: { completed?: boolean } = {};
-          if (stepCompleteStatus && stepCompleteStatus[index]) {
+          if (stepCompleteStatus?.[index]) {
             stepProps.completed = false;
           }
           return (

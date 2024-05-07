@@ -84,8 +84,8 @@ const V1_serializeMappedProperty = (
   V1_MappedProperty instanceof V1_EnumMappedProperty
     ? serialize(V1_EnumMappedProperty.serialization.schema, prop)
     : V1_MappedProperty instanceof V1_EntityMappedProperty
-    ? serialize(V1_EntityMappedProperty.serialization.schema, prop)
-    : serialize(V1_MappedProperty.serialization.schema, prop);
+      ? serialize(V1_EntityMappedProperty.serialization.schema, prop)
+      : serialize(V1_MappedProperty.serialization.schema, prop);
 
 const V1_deserializeMappedProperty = (
   json: PlainObject<V1_MappedProperty>,
@@ -152,8 +152,8 @@ const buildMappedProperty = (protocol: V1_MappedProperty): MappedProperty =>
         protocol.subType,
       )
     : protocol instanceof V1_EnumMappedProperty
-    ? new EnumMappedProperty(protocol.name, protocol.enumPath)
-    : new MappedProperty(protocol.name);
+      ? new EnumMappedProperty(protocol.name, protocol.enumPath)
+      : new MappedProperty(protocol.name);
 
 const buildMappedEntity = (protocol: V1_MappedEntity): MappedEntity =>
   new MappedEntity(

@@ -383,8 +383,8 @@ const filterByOrOutValue = (
     _cellData.value === null
       ? [postFilterEmptyOperator, postFilterNotEmptyOperator]
       : isFilterBy
-      ? [postFilterEqualOperator, postFilterInOperator]
-      : [postFilterNotEqualOperator, postFilterNotInOperator],
+        ? [postFilterEqualOperator, postFilterInOperator]
+        : [postFilterNotEqualOperator, postFilterNotInOperator],
     _cellData.columnName,
     tdsState.postFilterState,
     tdsColState,

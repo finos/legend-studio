@@ -131,8 +131,8 @@ export const ModalFooterButton: React.FC<{
       {inProgressText
         ? prettyCONSTName(inProgressText)
         : isFormatText
-        ? prettyCONSTName(text)
-        : text}
+          ? prettyCONSTName(text)
+          : text}
       {children}
     </button>
   );
