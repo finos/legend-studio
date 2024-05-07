@@ -72,11 +72,11 @@
     &--condition {
       width: 100%;
       cursor: grab;
-    }
-  }
 
-  &__node__container:hover {
-    background: var(--color-dark-blue-shade-100);
+      &:hover {
+        background: var(--color-dark-blue-shade-100);
+      }
+    }
   }
 
   &__node__container--selected,
