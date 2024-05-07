@@ -77,7 +77,8 @@ export class REPLGridClientStore {
     this.client = new REPLServerClient(
       new NetworkClient({
         baseUrl: this.applicationStore.config.useDynamicREPLServer
-          ? window.location.origin
+          ? window.location.origin +
+            this.applicationStore.config.baseAddress.replace('/repl/', '')
           : this.applicationStore.config.replUrl,
       }),
     );
