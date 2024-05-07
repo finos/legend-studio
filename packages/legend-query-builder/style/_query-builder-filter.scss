@@ -187,7 +187,6 @@
       font-weight: 700;
       font-size: 1.2rem;
       text-transform: uppercase;
-      color: var(--color-light-grey-50);
     }
 
     &__action {
@@ -207,14 +206,6 @@
       &:hover svg {
         color: var(--color-light-grey-50);
       }
-    }
-
-    &--and {
-      background: var(--color-dark-grey-280);
-    }
-
-    &--or {
-      background: var(--color-magenta-300);
     }
 
     &__drop-zone {

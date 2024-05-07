@@ -646,7 +646,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
             title="Switch Operation"
             onClick={switchOperation}
           >
-            <div className="query-builder-filter-tree__group-node__label">
+            <div className="query-builder-filter-tree__group-node__label editable-value">
               {node.groupOperation}
             </div>
           </div>
