@@ -633,7 +633,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
           isDroppable={isDroppable}
-          label={`Add to Logical Group '${operationName}'`}
+          label={operationName}
           className="query-builder-filter-tree__group-node__drop-zone"
         >
           <div

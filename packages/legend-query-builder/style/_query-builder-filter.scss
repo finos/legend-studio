@@ -16,6 +16,8 @@
 
 @use 'mixins' as *;
 
+$group-node-width: 3.5rem;
+
 .query-builder-filter-tree {
   &__root {
     padding: 1rem;
@@ -154,7 +156,7 @@
     flex-direction: column;
     margin-left: 1rem;
     padding-left: 1rem;
-    border-left: 1px white solid;
+    border-left: 1px solid var(--color-light-grey-0);
 
     &::before,
     &::after {
@@ -162,7 +164,7 @@
       left: calc(-50% - 0.5rem);
       width: 1rem;
       content: '';
-      border-top: 1px solid white;
+      border-top: 1px solid var(--color-light-grey-0);
     }
 
     .query-builder-filter-tree__node__block::before {
@@ -170,7 +172,7 @@
       left: -1rem;
       width: 0.5rem;
       content: '';
-      border-top: 1px solid white;
+      border-top: 1px solid var(--color-light-grey-0);
     }
   }
 
@@ -178,13 +180,13 @@
     @include flexVCenter;
 
     height: 2.2rem;
-    width: 6rem;
+    width: $group-node-width;
     border-radius: 0.2rem;
 
     &__label {
       width: 100%;
-      text-align: center;
-      font-weight: 700;
+      text-align: right;
+      padding-right: 0.2rem;
       font-size: 1.2rem;
       text-transform: uppercase;
     }
@@ -209,8 +211,19 @@
     }
 
     &__drop-zone {
-      width: 6rem;
+      width: $group-node-width;
       height: 100%;
+
+      .dnd__entry-dropzone__placeholder__content {
+        justify-content: right;
+      }
+
+      .dnd__entry-dropzone__placeholder__label {
+        color: var(--color-blue-40);
+        cursor: pointer;
+        text-decoration: underline;
+        text-decoration-style: dotted;
+      }
     }
   }
 
