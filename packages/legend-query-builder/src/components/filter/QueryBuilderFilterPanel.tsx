@@ -637,12 +637,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
           className="query-builder-filter-tree__group-node__drop-zone"
         >
           <div
-            className={clsx('query-builder-filter-tree__group-node', {
-              'query-builder-filter-tree__group-node--and':
-                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
-              'query-builder-filter-tree__group-node--or':
-                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
-            })}
+            className="query-builder-filter-tree__group-node'"
             title="Switch Operation"
             onClick={switchOperation}
           >
