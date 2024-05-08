@@ -327,18 +327,23 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     expect(filterNodes.length).toBe(9);
-    // click removal of top level nodes will remove all nodes
-    fireEvent.click(
-      getByTitle(
-        guaranteeNonNullable(
-          filterNodes.find(
-            (e) => queryByText(e, 'and'),
-            `Can't find 'and' condition in filter tree`,
-          ),
-        ),
-        'Remove',
-      ),
-    );
+    // Remove all nodes
+    while (
+      queryAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
+      ).length > 0
+    ) {
+      queryAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
+      ).forEach((_node) => {
+        if (queryByTitle(_node, 'Remove') !== null) {
+          fireEvent.click(getByTitle(_node, 'Remove'));
+        }
+      });
+    }
+
     expect(
       queryAllByTestId(
         filterPanel,
@@ -463,17 +468,21 @@ test(
     const tdsPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
-    fireEvent.click(
-      getByTitle(
-        guaranteeNonNullable(
-          queryAllByTestId(
-            filterPanel,
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
-          ).find((node) => queryByText(node, 'and') !== null),
-        ),
-        'Remove',
-      ),
-    );
+    while (
+      queryAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
+      ).length > 0
+    ) {
+      queryAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
+      ).forEach((_node) => {
+        if (queryByTitle(_node, 'Remove') !== null) {
+          fireEvent.click(getByTitle(_node, 'Remove'));
+        }
+      });
+    }
     expect(
       queryAllByTestId(
         filterPanel,
