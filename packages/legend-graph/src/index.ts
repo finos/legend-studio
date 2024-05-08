@@ -101,6 +101,11 @@ export {
   KeyExpressionInstanceValue,
 } from './graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 export {
+  ColSpec,
+  ColSpecArray,
+  ColSpecArrayInstance,
+} from './graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
+export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   FunctionExpression,

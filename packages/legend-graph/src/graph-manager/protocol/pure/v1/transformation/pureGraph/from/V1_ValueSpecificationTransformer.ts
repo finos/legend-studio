@@ -86,6 +86,9 @@ import { V1_ClassInstance } from '../../../model/valueSpecification/raw/V1_Class
 import { V1_ClassInstanceType } from '../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import type { KeyExpressionInstanceValue } from '../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 import { V1_CByteArray } from '../../../model/valueSpecification/raw/V1_CByteArray.js';
+import type { ColSpecArrayInstance } from '../../../../../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
+import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/V1_ColSpecArray.js';
+import { V1_ColSpec } from '../../../model/valueSpecification/raw/V1_ColSpec.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -371,6 +374,33 @@ class V1_ValueSpecificationTransformer
       this.isParameter,
       this.useAppliedFunction,
     );
+    return classInstance;
+  }
+
+  visit_ColSpecArrayInstance(
+    valueSpecification: ColSpecArrayInstance,
+  ): V1_ValueSpecification {
+    const classInstance = new V1_ClassInstance();
+    classInstance.type = V1_ClassInstanceType.COL_SPEC_ARRAY;
+    const val = guaranteeNonNullable(valueSpecification.values[0]);
+    const colSpecArray = new V1_ColSpecArray();
+    colSpecArray.colSpecs = val.colSpecs.map((col) => {
+      const colProtocol = new V1_ColSpec();
+      colProtocol.name = col.name;
+      const fun1 = col.function1?.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationTransformer(
+          this.inScope,
+          this.open,
+          this.isParameter,
+          this.useAppliedFunction,
+        ),
+      );
+      if (fun1) {
+        colProtocol.function1 = guaranteeType(fun1, V1_Lambda);
+      }
+      return colProtocol;
+    });
+    classInstance.value = colSpecArray;
     return classInstance;
   }
 }

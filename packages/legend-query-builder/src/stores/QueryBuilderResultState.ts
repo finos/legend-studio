@@ -312,6 +312,7 @@ export class QueryBuilderResultState {
     if (this.queryBuilderState.isQuerySupported) {
       const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
         isBuildingExecutionQuery: true,
+        useTypedRelationFunctions: this.queryBuilderState.isFetchStructureTyped,
         ...executionOptions,
       });
       query = buildRawLambdaFromLambdaFunction(
