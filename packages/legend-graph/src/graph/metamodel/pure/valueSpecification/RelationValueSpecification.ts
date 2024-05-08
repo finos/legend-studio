@@ -14,31 +14,53 @@
  * limitations under the License.
  */
 
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { InstanceValue } from './InstanceValue.js';
 import type {
   ValueSpecification,
   ValueSpecificationVisitor,
 } from './ValueSpecification.js';
+import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 
 /**
  * To Keep simple we have modeled the metamodel classes ColSpec, FuncColSpec, AggColSpec
  * with the singluar `Col Spec` class.
  * @discrepancy model
  */
-export class ColSpec {
+export class ColSpec implements Hashable {
   name!: string;
   type: string | undefined;
   function1: ValueSpecification | undefined;
   function2: ValueSpecification | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_COL_SPEC,
+      this.name,
+      this.function1 ?? '',
+    ]);
+  }
 }
 
-export class ColSpecArray {
+export class ColSpecArray implements Hashable {
   colSpecs: ColSpec[] = [];
+
+  get hashCode(): string {
+    return hashArray([hashArray(this.colSpecs)]);
+  }
 }
 
-export class ColSpecArrayInstance extends InstanceValue {
+export class ColSpecArrayInstance extends InstanceValue implements Hashable {
   override values: ColSpecArray[] = [];
 
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_COL_SPEC_ARRAY,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashArray(this.values),
+    ]);
+  }
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {

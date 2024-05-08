@@ -24,6 +24,8 @@ export enum QUERY_BUILDER_PURE_PATH {
   DURATION_UNIT = 'meta::pure::functions::date::DurationUnit',
   DAY_OF_WEEK = 'meta::pure::functions::date::DayOfWeek',
 
+  // RELATION
+  RELATION = 'meta::pure::metamodel::relation::Relation',
   // serialization
   SERIALIZE_CONFIG = 'meta::pure::graphFetch::execution::AlloySerializationConfig',
 }
@@ -31,6 +33,7 @@ export enum QUERY_BUILDER_PURE_PATH {
 export enum QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS {
   CALENDAR_ANNUALIZED = 'meta::pure::functions::date::calendar::annualized',
   CALENDAR_CME = ' meta::pure::functions::date::calendar::cme',
+
   CALENDAR_CW = 'meta::pure::functions::date::calendar::cw',
   CALENDAR_CW_FM = 'meta::pure::functions::date::calendar::cw_fm',
   CALENDAR_CY_MINUS2 = 'meta::pure::functions::date::calendar::CYMinus2',

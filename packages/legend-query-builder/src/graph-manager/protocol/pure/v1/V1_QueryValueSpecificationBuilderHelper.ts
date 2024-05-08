@@ -21,6 +21,7 @@ import {
   filterByType,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
 import {
@@ -56,6 +57,11 @@ import {
   LambdaFunction,
   LambdaFunctionInstanceValue,
   PackageableElementExplicitReference,
+  V1_ClassInstance,
+  V1_ColSpecArray,
+  ColSpecArrayInstance,
+  ColSpecArray,
+  ColSpec,
 } from '@finos/legend-graph';
 import {
   QUERY_BUILDER_PURE_PATH,
@@ -574,7 +580,7 @@ export const V1_buildFilterFunctionExpression = (
   return expression;
 };
 
-export const V1_buildProjectFunctionExpression = (
+export const V1_buildTypedProjectFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
   openVariables: string[],
@@ -582,7 +588,122 @@ export const V1_buildProjectFunctionExpression = (
   processingContext: V1_ProcessingContext,
 ): SimpleFunctionExpression => {
   assertTrue(
-    parameters.length === 3,
+    parameters.length === 2,
+    `Can't build relation project() expression: project() expects 2 arguments`,
+  );
+
+  let topLevelLambdaParameters: V1_Variable[] = [];
+  const precedingExperession = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  assertNonNullable(
+    precedingExperession.genericType,
+    `Can't build relation project() expression: preceding expression return type is missing`,
+  );
+
+  const classInstance = parameters[1];
+  assertType(
+    classInstance,
+    V1_ClassInstance,
+    `Can't build relation project() expression: project() expects argument #1 to be a ClassInstance`,
+  );
+  const specArray = guaranteeType(
+    classInstance.value,
+    V1_ColSpecArray,
+    `Can't build relation project() expression: project() expects argument #1 to hold spec array instances value`,
+  );
+
+  topLevelLambdaParameters = specArray.colSpecs
+    .map((e) => e.function1)
+    .filter(isNonNullable)
+    .filter(filterByType(V1_Lambda))
+    .map((lambda) => lambda.parameters)
+    .flat();
+
+  const variables = new Set<string>();
+  // Make sure top-level lambdas have their lambda parameter types set properly
+  topLevelLambdaParameters.forEach((variable) => {
+    if (!variables.has(variable.name) && !variable.class) {
+      const variableExpression = new VariableExpression(
+        variable.name,
+        precedingExperession.multiplicity,
+      );
+      variableExpression.genericType = precedingExperession.genericType;
+      processingContext.addInferredVariables(variable.name, variableExpression);
+    }
+  });
+  const processedExpression = new ColSpecArrayInstance(Multiplicity.ONE);
+  const processedColSpecArray = new ColSpecArray();
+  processedExpression.values = [processedColSpecArray];
+
+  processedColSpecArray.colSpecs = specArray.colSpecs.map((colSpec) => {
+    const pColSpec = new ColSpec();
+    let lambda: ValueSpecification;
+    const _funct = guaranteeType(
+      colSpec.function1,
+      V1_ValueSpecification,
+      `Can't build relation col spec() expression: expects function1 to be a lambda`,
+    );
+    try {
+      lambda = buildProjectionColumnLambda(
+        _funct,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
+    } catch {
+      lambda = new INTERNAL__UnknownValueSpecification(
+        V1_serializeValueSpecification(
+          _funct,
+          compileContext.extensions.plugins,
+        ),
+      );
+    }
+    pColSpec.function1 = lambda;
+    pColSpec.name = colSpec.name;
+    return pColSpec;
+  });
+
+  const expression = V1_buildBaseSimpleFunctionExpression(
+    [precedingExperession, processedExpression],
+    functionName,
+    compileContext,
+  );
+  expression.genericType = GenericTypeExplicitReference.create(
+    new GenericType(
+      compileContext.resolveType(QUERY_BUILDER_PURE_PATH.RELATION).value,
+    ),
+  );
+
+  return expression;
+};
+
+export const V1_buildProjectFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  if (parameters.length === 2) {
+    return V1_buildTypedProjectFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+  }
+
+  const length = parameters.length;
+  assertTrue(
+    length === 3 || length === 2,
     `Can't build project() expression: project() expects 2 arguments`,
   );
 
