@@ -1100,7 +1100,9 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               : QUERY_BUILDER_FILTER_DND_TYPE.BLANK_CONDITION,
           item: () => ({ node }),
           end: (): void => filterState.setRearrangingConditions(false),
-          canDrag: () => !(node instanceof QueryBuilderFilterTreeGroupNodeData),
+          canDrag: () =>
+            node instanceof QueryBuilderFilterTreeConditionNodeData ||
+            node instanceof QueryBuilderFilterTreeBlankConditionNodeData,
         }),
         [node, filterState],
       );
@@ -1120,22 +1122,35 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
+    const isEmptyExistsNode =
+      node instanceof QueryBuilderFilterTreeExistsNodeData &&
+      node.childrenIds.length === 0;
+    const showRemoveButton =
+      node instanceof QueryBuilderFilterTreeConditionNodeData ||
+      node instanceof QueryBuilderFilterTreeBlankConditionNodeData ||
+      isEmptyExistsNode;
+
     return (
       <div
         data-testid={
           QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER
         }
         onClick={
-          node instanceof QueryBuilderFilterTreeGroupNodeData
-            ? undefined
-            : selectNode
+          node instanceof QueryBuilderFilterTreeConditionNodeData ||
+          node instanceof QueryBuilderFilterTreeBlankConditionNodeData
+            ? selectNode
+            : undefined
         }
         className={clsx('query-builder-filter-tree__node__container', {
           'query-builder-filter-tree__node__container--group':
             node instanceof QueryBuilderFilterTreeGroupNodeData,
-          'query-builder-filter-tree__node__container--condition': !(
-            node instanceof QueryBuilderFilterTreeGroupNodeData
-          ),
+          'query-builder-filter-tree__node__container--condition':
+            node instanceof QueryBuilderFilterTreeConditionNodeData ||
+            node instanceof QueryBuilderFilterTreeBlankConditionNodeData,
+          'query-builder-filter-tree__node__container--exists':
+            node instanceof QueryBuilderFilterTreeExistsNodeData,
+          'query-builder-filter-tree__node__container--exists--empty':
+            isEmptyExistsNode,
           'query-builder-filter-tree__node__container--no-hover':
             filterState.isRearrangingConditions,
           'query-builder-filter-tree__node__container--selected':
@@ -1195,7 +1210,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               />
             )}
           </div>
-          {!(node instanceof QueryBuilderFilterTreeGroupNodeData) && (
+          {showRemoveButton && (
             <div className="query-builder-filter-tree__node__actions">
               <button
                 className="query-builder-filter-tree__node__action"
@@ -1242,7 +1257,7 @@ const QueryBuilderFilterTreeNodeView = observer(
           onNodeSelect={onNodeSelect}
           innerProps={innerProps}
         />
-        {node.isOpen && (
+        {node.isOpen && getChildNodes(node).length > 0 && (
           <div
             data-testid={
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CHILDREN
