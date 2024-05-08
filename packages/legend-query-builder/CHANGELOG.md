@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.31
+
+### Patch Changes
+
+- [#3125](https://github.com/finos/legend-studio/pull/3125) [`a35a45e96`](https://github.com/finos/legend-studio/commit/a35a45e96ef8b444e8e2b33d66f666dc4e8d9134) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Change fetch structure wording to Columns, Class Properties for TDS, Graph Fetch
+
+- [#3115](https://github.com/finos/legend-studio/pull/3115) [`9137ac232`](https://github.com/finos/legend-studio/commit/9137ac2323d676da92261fab49f556698878f8c9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for typed project function (relation feature).
+
 ## 4.14.30
 
 ## 4.14.29
