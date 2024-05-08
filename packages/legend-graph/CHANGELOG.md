@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.9.14
+
+### Patch Changes
+
+- [#3115](https://github.com/finos/legend-studio/pull/3115) [`9137ac232`](https://github.com/finos/legend-studio/commit/9137ac2323d676da92261fab49f556698878f8c9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for typed project function (relation feature).
+
 ## 31.9.13
 
 ## 31.9.12
