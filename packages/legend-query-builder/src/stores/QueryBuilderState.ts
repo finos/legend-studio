@@ -157,6 +157,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isQueryChatOpened = false;
   isLocalModeEnabled = false;
 
+  lambdaWriteMode = QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD;
+
   class?: Class | undefined;
   getAllFunction: QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS =
     QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL;
@@ -204,6 +206,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
       getAllFunction: observable,
+      lambdaWriteMode: observable,
 
       sideBarClassName: computed,
       isQuerySupported: computed,
@@ -218,6 +221,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setIsQueryChatOpened: action,
       setIsLocalModeEnabled: action,
       setGetAllFunction: action,
+      setLambdaWriteMode: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -298,6 +302,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get allVariableNames(): string[] {
     return this.allVariables.map((e) => e.name);
+  }
+
+  get isFetchStructureTyped(): boolean {
+    return (
+      this.lambdaWriteMode ===
+      QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE
+    );
+  }
+
+  setLambdaWriteMode(val: QUERY_BUILDER_LAMBDA_WRITER_MODE): void {
+    this.lambdaWriteMode = val;
   }
 
   getQueryExecutionContext(): QueryExecutionContext {
@@ -538,6 +553,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     return buildRawLambdaFromLambdaFunction(
       buildLambdaFunction(this, {
         keepSourceInformation: Boolean(options?.keepSourceInformation),
+        useTypedRelationFunctions: this.isFetchStructureTyped,
       }),
       this.graphManagerState,
     );

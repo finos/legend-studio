@@ -51,7 +51,10 @@ import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
 import { QueryBuilderResultPanel } from './result/QueryBuilderResultPanel.js';
 import { QueryBuilderTextEditor } from './QueryBuilderTextEditor.js';
-import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import {
+  QUERY_BUILDER_LAMBDA_WRITER_MODE,
+  type QueryBuilderState,
+} from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';
 import { QueryBuilderFetchStructurePanel } from './fetch-structure/QueryBuilderFetchStructurePanel.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
@@ -316,6 +319,36 @@ export const QueryBuilder = observer(
               label: 'Proceed',
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void => queryBuilderState.setIsCalendarEnabled(true),
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      }
+    };
+
+    const toggleTypedRelation = (): void => {
+      if (queryBuilderState.isFetchStructureTyped) {
+        queryBuilderState.setLambdaWriteMode(
+          QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD,
+        );
+      } else {
+        queryBuilderState.applicationStore.alertService.setActionAlertInfo({
+          message:
+            'You are about to change to use typed TDS functions. Please proceed with caution as this is still an experimental feature.',
+          prompt: ' Do you want to proceed?',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void =>
+                queryBuilderState.setLambdaWriteMode(
+                  QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
+                ),
             },
             {
               label: 'Cancel',
@@ -637,6 +670,25 @@ export const QueryBuilder = observer(
                         </MenuContentItemIcon>
                         <MenuContentItemLabel>
                           Enable Calendar
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem
+                        onClick={toggleTypedRelation}
+                        disabled={
+                          !queryBuilderState.isQuerySupported ||
+                          !(
+                            queryBuilderState.fetchStructureState
+                              .implementation instanceof QueryBuilderTDSState
+                          )
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          {queryBuilderState.isFetchStructureTyped ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel>
+                          Enable Typed TDS (BETA)
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentDivider />

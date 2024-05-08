@@ -205,4 +205,9 @@ export type LambdaFunctionBuilderOption = {
    * limit for the query results if it exists so the exported results contain all the data
    */
   isExportingResult?: boolean | undefined;
+  /**
+   * Set this flag to `true` when you want to write to typed TDS function using the `Relation`
+   * typed in engine. This is still an experimental feature, hence we should only enable this flag when user wants to enable this directly.
+   */
+  useTypedRelationFunctions?: boolean | undefined;
 };

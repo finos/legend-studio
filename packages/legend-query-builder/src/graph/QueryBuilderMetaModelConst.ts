@@ -114,6 +114,10 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   TDS_RESTRICT = 'meta::pure::tds::restrict',
   TDS_FUNC = 'meta::pure::tds::func',
 
+  // Relation
+  RELATION_PROJECT = 'meta::pure::functions::relation::project',
+  RELATION_LIMIT = 'meta::pure::functions::relation::limit',
+
   // filter
   CONTAINS = 'meta::pure::functions::string::contains',
   ENDS_WITH = 'meta::pure::functions::string::endsWith',

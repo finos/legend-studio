@@ -60,6 +60,7 @@ import type {
   KeyExpression,
   KeyExpressionInstanceValue,
 } from '../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
+import type { ColSpecArrayInstance } from '../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
 
 const observe_Abstract_ValueSpecification = (
   metamodel: ValueSpecification,
@@ -240,6 +241,7 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
   constructor(observerContext: ObserverContext) {
     this.observerContext = observerContext;
   }
+
   visit_KeyExpressionInstanceValue(
     valueSpeciciation: KeyExpressionInstanceValue,
   ): void {
@@ -320,6 +322,9 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
       this.observerContext,
     );
   }
+  visit_ColSpecArrayInstance(valueSpeciciation: ColSpecArrayInstance): void {
+    throw new Error('Method not implemented.');
+  }
 }
 
 export const observe_ValueSpecification = skipObservedWithContext(
@@ -327,7 +332,6 @@ export const observe_ValueSpecification = skipObservedWithContext(
     valueSpecification.accept_ValueSpecificationVisitor(
       new ValueSpecificationObserver(context),
     );
-
     return valueSpecification;
   },
 );

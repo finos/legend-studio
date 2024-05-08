@@ -37,6 +37,7 @@ import {
   type ValueSpecification,
   type CollectionInstanceValue,
   type LambdaFunctionInstanceValue,
+  type ColSpecArrayInstance,
   InstanceValue,
   INTERNAL__UnknownValueSpecification,
   matchFunctionName,
@@ -901,6 +902,10 @@ export class QueryBuilderValueSpecificationProcessor
   visit_GraphFetchTreeInstanceValue(
     valueSpecification: GraphFetchTreeInstanceValue,
   ): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_ColSpecArrayInstance(valueSpeciciation: ColSpecArrayInstance): void {
     throw new UnsupportedOperationError();
   }
 }
