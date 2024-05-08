@@ -78,16 +78,20 @@ $group-node-width: 3.5rem;
     &--condition {
       width: 100%;
       padding: 0.25rem 0 0.25rem 0.5rem;
-      cursor: grab;
 
       &:hover {
         background: var(--color-dark-blue-shade-100);
+      }
+
+      .query-builder-filter-tree__node__content {
+        cursor: grab;
       }
     }
 
     &--exists {
       width: fit-content;
       height: 100%;
+      padding-left: 0.5rem;
 
       &--empty {
         width: 100%;

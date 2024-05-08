@@ -1159,7 +1159,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           'query-builder-filter-tree__node__container--selected-from-context-menu':
             isSelectedFromContextMenu,
         })}
-        ref={dragRef}
       >
         <ContextMenu
           content={
@@ -1178,6 +1177,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT
             }
             className="query-builder-filter-tree__node__content"
+            ref={dragRef}
           >
             {node instanceof QueryBuilderFilterTreeGroupNodeData && (
               <QueryBuilderFilterGroupConditionEditor
