@@ -637,7 +637,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
           className="query-builder-filter-tree__group-node__drop-zone"
         >
           <div
-            className="query-builder-filter-tree__group-node'"
+            className="query-builder-filter-tree__group-node"
             title="Switch Operation"
             onClick={switchOperation}
           >
