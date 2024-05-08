@@ -26,7 +26,7 @@ import {
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
-  type AbstractPropertyExpression,
+  AbstractPropertyExpression,
   type EnumValueInstanceValue,
   type FunctionExpression,
   type GraphFetchTreeInstanceValue,
@@ -36,7 +36,7 @@ import {
   type INTERNAL__PropagatedValue,
   type ValueSpecification,
   type CollectionInstanceValue,
-  type LambdaFunctionInstanceValue,
+  LambdaFunctionInstanceValue,
   type ColSpecArrayInstance,
   InstanceValue,
   INTERNAL__UnknownValueSpecification,
@@ -482,6 +482,7 @@ export class QueryBuilderValueSpecificationProcessor
     ) {
       processTDSProjectionDerivationExpression(
         valueSpecification,
+        undefined,
         this.parentExpression,
         this.queryBuilderState,
       );
@@ -638,10 +639,10 @@ export class QueryBuilderValueSpecificationProcessor
       );
       return;
     } else if (
-      matchFunctionName(
-        functionName,
+      matchFunctionName(functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-      )
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
+      ])
     ) {
       processTDSProjectExpression(
         valueSpecification,
@@ -836,6 +837,7 @@ export class QueryBuilderValueSpecificationProcessor
     if (
       matchFunctionName(this.parentExpression.functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
         ...Object.values(
@@ -845,6 +847,7 @@ export class QueryBuilderValueSpecificationProcessor
     ) {
       processTDSProjectionColumnPropertyExpression(
         valueSpecification,
+        undefined,
         this.queryBuilderState,
       );
       return;
@@ -905,8 +908,60 @@ export class QueryBuilderValueSpecificationProcessor
     throw new UnsupportedOperationError();
   }
 
-  visit_ColSpecArrayInstance(valueSpeciciation: ColSpecArrayInstance): void {
-    throw new UnsupportedOperationError();
+  visit_ColSpecArrayInstance(valueSpecification: ColSpecArrayInstance): void {
+    assertNonNullable(
+      this.parentExpression,
+      `Can't process col spec aray instance: parent expression cannot be retrieved`,
+    );
+
+    if (
+      matchFunctionName(this.parentExpression.functionName, [
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
+      ])
+    ) {
+      const spec = valueSpecification.values;
+      assertTrue(
+        spec.length === 1,
+        `Can't process col spec array instance: value expected to be of size 1`,
+      );
+      guaranteeNonNullable(spec[0]).colSpecs.forEach((col) => {
+        const _function1 = guaranteeType(
+          col.function1,
+          LambdaFunctionInstanceValue,
+          `Can't process col spec: function1 not a lambda function instance value`,
+        );
+        assertTrue(_function1.values.length === 1);
+        const lambdaVal = guaranteeNonNullable(_function1.values[0]);
+        assertTrue(lambdaVal.expressionSequence.length === 1);
+        const expression = guaranteeNonNullable(
+          lambdaVal.expressionSequence[0],
+        );
+
+        if (expression instanceof AbstractPropertyExpression) {
+          processTDSProjectionColumnPropertyExpression(
+            expression,
+            col.name,
+            this.queryBuilderState,
+          );
+        } else if (expression instanceof INTERNAL__UnknownValueSpecification) {
+          assertNonNullable(
+            this.parentExpression,
+            `Can't process unknown value: parent expression cannot be retrieved`,
+          );
+          processTDSProjectionDerivationExpression(
+            expression,
+            col.name,
+            this.parentExpression,
+            this.queryBuilderState,
+          );
+        }
+      });
+
+      return;
+    }
+    throw new UnsupportedOperationError(
+      `Can't process col spec array expression with parent expression of function ${this.parentExpression.functionName}()`,
+    );
   }
 }
 

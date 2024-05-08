@@ -146,10 +146,10 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(
-            functionName,
+          matchFunctionName(functionName, [
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          )
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
+          ])
         ) {
           return V1_buildProjectFunctionExpression(
             functionName,

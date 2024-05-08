@@ -2575,6 +2575,11 @@
     },
     {
       "_type": "class",
+      "name": "Relation",
+      "package": "meta::pure::metamodel::relation"
+    },
+    {
+      "_type": "class",
       "name": "PackageableRuntime",
       "package": "meta::pure::runtime"
     }
