@@ -1249,7 +1249,12 @@ const QueryBuilderFilterTreeNodeView = observer(
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_BLOCK}
-        className="query-builder-filter-tree__node__block"
+        className={clsx('query-builder-filter-tree__node__block', {
+          'query-builder-filter-tree__node__block--group':
+            node instanceof QueryBuilderFilterTreeGroupNodeData,
+          'query-builder-filter-tree__node__block--exists':
+            node instanceof QueryBuilderFilterTreeExistsNodeData,
+        })}
       >
         <QueryBuilderFilterTreeNodeContainer
           node={node}
