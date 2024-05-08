@@ -79,6 +79,8 @@ import { DataAccessOverview } from './data-access/DataAccessOverview.js';
 import { QueryChat } from './QueryChat.js';
 import { useEffect, useRef } from 'react';
 import { RedoButton, UndoButton } from '@finos/legend-lego/application';
+import { FETCH_STRUCTURE_IMPLEMENTATION } from '../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
+import { onChangeFetchStructureImplementation } from '../stores/fetch-structure/QueryBuilderFetchStructureState.js';
 
 const QueryBuilderPostGraphFetchPanel = observer(
   (props: { graphFetchState: QueryBuilderGraphFetchTreeState }) => {
@@ -412,7 +414,12 @@ export const QueryBuilder = observer(
         <BackdropContainer
           elementId={QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
         />
-        <div className="query-builder__body">
+        <div
+          className={clsx('query-builder__body', {
+            'query-builder__body__status-bar':
+              queryBuilderState.workflowState.showStatusBar,
+          })}
+        >
           <PanelLoadingIndicator
             isLoading={queryBuilderState.resultState.exportState.isInProgress}
           />
@@ -534,6 +541,22 @@ export const QueryBuilder = observer(
                           ) : null}
                         </MenuContentItemIcon>
                         <MenuContentItemLabel>Show Filter</MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem
+                        onClick={onChangeFetchStructureImplementation(
+                          isTDSState
+                            ? FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH
+                            : FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
+                          fetchStructureState,
+                        )}
+                        disabled={!queryBuilderState.isQuerySupported}
+                      >
+                        <MenuContentItemIcon>
+                          {isTDSState ? <CheckIcon /> : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel>
+                          Tabular Data Structure
+                        </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentDivider />
                       <MenuContentItem

@@ -58,6 +58,7 @@ export abstract class QueryBuilderFetchStructureImplementationState
   abstract get usedExplorerTreePropertyNodeIDs(): string[];
   abstract get fetchStructureValidationIssues(): string[];
   abstract get allValidationIssues(): string[];
+  abstract get fetchLabel(): string;
 
   abstract onClassChange(_class: Class | undefined): void;
   abstract revealCompilationError(compilationError: CompilationError): boolean;

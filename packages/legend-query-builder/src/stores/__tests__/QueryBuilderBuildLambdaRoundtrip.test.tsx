@@ -153,7 +153,7 @@ import {
   TEST_DATA__simpleProjectionWithBusinessMilestonedColumn,
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
-import { QueryBuilderAdvancedWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
+import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
 
 type RoundtripTestCase = [
   string,

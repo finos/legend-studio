@@ -292,6 +292,7 @@ export class QueryBuilderGraphFetchTreeState
       setSerializationState: action,
       setChecked: action,
       initialize: action,
+      checkBeforeChangingImplementation: action,
     });
 
     // try to initialize the graph-fetch tree data using the setup class
@@ -302,6 +303,10 @@ export class QueryBuilderGraphFetchTreeState
 
   get type(): string {
     return FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH;
+  }
+
+  override get fetchLabel(): string {
+    return 'Class Properties';
   }
 
   get usedExplorerTreePropertyNodeIDs(): string[] {

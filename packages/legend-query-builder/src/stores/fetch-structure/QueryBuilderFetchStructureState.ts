@@ -29,6 +29,21 @@ import {
   type QueryBuilderFetchStructureImplementationState,
 } from './QueryBuilderFetchStructureImplementationState.js';
 
+export const onChangeFetchStructureImplementation =
+  (
+    implementationType: FETCH_STRUCTURE_IMPLEMENTATION,
+    fetchStructureState: QueryBuilderFetchStructureState,
+  ): (() => void) =>
+  (): void => {
+    if (fetchStructureState.implementation.type !== implementationType) {
+      fetchStructureState.implementation.checkBeforeChangingImplementation(
+        () => {
+          fetchStructureState.changeImplementation(implementationType);
+        },
+      );
+    }
+  };
+
 export class QueryBuilderFetchStructureState {
   readonly queryBuilderState: QueryBuilderState;
   implementation: QueryBuilderFetchStructureImplementationState;

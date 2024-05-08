@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
+import type { QueryBuilderState } from '../QueryBuilderState.js';
+
+export interface FetchStructureLayoutConfig {
+  label: string;
+  showInFetchPanel: boolean;
+}
+
 export abstract class QueryBuilderWorkflowState {
   abstract get showStatusBar(): boolean;
+
+  abstract getFetchStructureLayoutConfig(
+    state: QueryBuilderState,
+  ): FetchStructureLayoutConfig;
 }
 
 export class QueryBuilderAdvancedWorkflowState extends QueryBuilderWorkflowState {
@@ -23,5 +34,31 @@ export class QueryBuilderAdvancedWorkflowState extends QueryBuilderWorkflowState
     return true;
   }
 
+  override getFetchStructureLayoutConfig(
+    state: QueryBuilderState,
+  ): FetchStructureLayoutConfig {
+    return {
+      label: 'fetch structure',
+      showInFetchPanel: true,
+    };
+  }
+
   static INSTANCE = new QueryBuilderAdvancedWorkflowState();
+}
+
+export class QueryBuilderDataBrowserWorkflow extends QueryBuilderWorkflowState {
+  override get showStatusBar(): boolean {
+    return false;
+  }
+
+  override getFetchStructureLayoutConfig(
+    state: QueryBuilderState,
+  ): FetchStructureLayoutConfig {
+    return {
+      label: state.fetchStructureState.implementation.fetchLabel,
+      showInFetchPanel: false,
+    };
+  }
+
+  static readonly INSTANCE = new QueryBuilderDataBrowserWorkflow();
 }

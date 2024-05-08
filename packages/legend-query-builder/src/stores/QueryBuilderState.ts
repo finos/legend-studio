@@ -109,7 +109,7 @@ import {
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
-import { type QueryBuilderWorkflowState } from './workflow/QueryBuilderWorkFlowState.js';
+import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
 
 export interface QuerySDLC {}
 

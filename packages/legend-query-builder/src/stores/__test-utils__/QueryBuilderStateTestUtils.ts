@@ -41,7 +41,7 @@ import {
   INTERNAL__BasicQueryBuilderState,
   type QueryBuilderState,
 } from '../QueryBuilderState.js';
-import { QueryBuilderAdvancedWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
+import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
 
 export class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>

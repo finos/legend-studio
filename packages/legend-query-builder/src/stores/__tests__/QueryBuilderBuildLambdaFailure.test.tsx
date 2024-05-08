@@ -47,7 +47,7 @@ import {
   TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass,
   TEST_DATA__simpleGetAllVersionsWithNonTemporalClass,
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
-import { QueryBuilderAdvancedWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
+import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
 
 type TestCase = [
   string,
