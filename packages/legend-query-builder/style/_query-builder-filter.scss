@@ -83,19 +83,19 @@ $group-node-width: 3.5rem;
         width: 100%;
       }
     }
-  }
 
-  &__node__container--selected,
-  &__node__container--selected:hover {
-    background: var(--color-blue-500);
-  }
+    &--selected,
+    &--selected:hover {
+      background: var(--color-blue-500);
+    }
 
-  &__node__container--selected-from-context-menu {
-    background: var(--color-dark-blue-shade-100);
-  }
+    &--selected-from-context-menu {
+      background: var(--color-dark-blue-shade-100);
+    }
 
-  &__node__container--no-hover:hover {
-    background: transparent !important;
+    &--no-hover:hover {
+      background: transparent !important;
+    }
   }
 
   &__node__content {
@@ -193,25 +193,6 @@ $group-node-width: 3.5rem;
       padding-right: 0.2rem;
       font-size: 1.2rem;
       text-transform: uppercase;
-    }
-
-    &__action {
-      @include flexCenter;
-
-      height: 100%;
-      min-width: 2rem;
-      width: 2rem;
-      background: var(--color-dark-shade-200);
-      padding: 0 0.2rem;
-
-      svg {
-        font-size: 1rem;
-        color: var(--color-light-grey-200);
-      }
-
-      &:hover svg {
-        color: var(--color-light-grey-50);
-      }
     }
 
     &__drop-zone {
