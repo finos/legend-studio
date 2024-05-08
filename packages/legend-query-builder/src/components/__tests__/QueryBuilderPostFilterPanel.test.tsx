@@ -78,7 +78,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph/test';
 import { INTERNAL__BasicQueryBuilderState } from '../../stores/QueryBuilderState.js';
-import { QueryBuilderAdvancedWorkflowState } from '../../stores/workflow/QueryBuilderWorkFlowState.js';
+import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
 
 test(
   integrationTest('Query builder loads simple post-filter with DateTime value'),

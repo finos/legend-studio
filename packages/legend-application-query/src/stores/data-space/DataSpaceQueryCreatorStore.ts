@@ -33,7 +33,10 @@ import {
   guaranteeType,
   uuid,
 } from '@finos/legend-shared';
-import type { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderState,
+  QueryBuilderDataBrowserWorkflow,
+} from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   type DataSpaceExecutionContext,
@@ -55,7 +58,6 @@ import {
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
-import { QueryBuilderDataBrowserWorkflow } from '../query-builder/QueryBuilderDataBrowserWorkflow.js';
 
 export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;

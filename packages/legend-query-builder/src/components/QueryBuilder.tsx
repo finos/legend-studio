@@ -79,6 +79,8 @@ import { DataAccessOverview } from './data-access/DataAccessOverview.js';
 import { QueryChat } from './QueryChat.js';
 import { useEffect, useRef } from 'react';
 import { RedoButton, UndoButton } from '@finos/legend-lego/application';
+import { FETCH_STRUCTURE_IMPLEMENTATION } from '../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
+import { onChangeFetchStructureImplementation } from '../stores/fetch-structure/QueryBuilderFetchStructureState.js';
 
 const QueryBuilderPostGraphFetchPanel = observer(
   (props: { graphFetchState: QueryBuilderGraphFetchTreeState }) => {
@@ -539,6 +541,22 @@ export const QueryBuilder = observer(
                           ) : null}
                         </MenuContentItemIcon>
                         <MenuContentItemLabel>Show Filter</MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem
+                        onClick={onChangeFetchStructureImplementation(
+                          isTDSState
+                            ? FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH
+                            : FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
+                          fetchStructureState,
+                        )}
+                        disabled={!queryBuilderState.isQuerySupported}
+                      >
+                        <MenuContentItemIcon>
+                          {isTDSState ? <CheckIcon /> : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel>
+                          Tabular Data Structure
+                        </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentDivider />
                       <MenuContentItem

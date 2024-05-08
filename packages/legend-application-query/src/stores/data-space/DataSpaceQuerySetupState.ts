@@ -26,6 +26,7 @@ import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type QueryBuilderConfig,
   QueryBuilderState,
+  QueryBuilderDataBrowserWorkflow,
 } from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
@@ -49,7 +50,6 @@ import {
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/data-space/DataSpaceQuerySetup.js';
 import { DataSpaceAdvancedSearchState } from '@finos/legend-extension-dsl-data-space/application-query';
-import { QueryBuilderDataBrowserWorkflow } from '../query-builder/QueryBuilderDataBrowserWorkflow.js';
 
 export class DataSpaceQuerySetupState extends QueryBuilderState {
   readonly depotServerClient: DepotServerClient;

@@ -32,6 +32,7 @@ import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/gr
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { onChangeFetchStructureImplementation } from '../../stores/fetch-structure/QueryBuilderFetchStructureState.js';
 
 const QueryBuilderFetchStructureEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -68,24 +69,18 @@ export const QueryBuilderFetchStructurePanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const fetchStructureState = queryBuilderState.fetchStructureState;
-
-    const onChangeFetchStructureImplementation =
-      (implementationType: FETCH_STRUCTURE_IMPLEMENTATION): (() => void) =>
-      (): void => {
-        if (fetchStructureState.implementation.type !== implementationType) {
-          fetchStructureState.implementation.checkBeforeChangingImplementation(
-            () => {
-              fetchStructureState.changeImplementation(implementationType);
-            },
-          );
-        }
-      };
+    const fetchConfig =
+      queryBuilderState.workflowState.getFetchStructureLayoutConfig(
+        queryBuilderState,
+      );
 
     return (
       <Panel data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE}>
         <PanelHeader>
           <div className="panel__header__title">
-            <div className="panel__header__title__label">fetch structure</div>
+            <div className="panel__header__title__label">
+              {fetchConfig.label}
+            </div>
             {fetchStructureState.implementation.fetchStructureValidationIssues
               .length !== 0 && (
               <QueryBuilderPanelIssueCountBadge
@@ -96,22 +91,27 @@ export const QueryBuilderFetchStructurePanel = observer(
               />
             )}
           </div>
-          <PanelHeaderActions>
-            <div className="query-builder__fetch__structure__modes">
-              {Object.values(FETCH_STRUCTURE_IMPLEMENTATION).map((type) => (
-                <button
-                  onClick={onChangeFetchStructureImplementation(type)}
-                  className={clsx('query-builder__fetch__structure__mode', {
-                    'query-builder__fetch__structure__mode--selected':
-                      type === fetchStructureState.implementation.type,
-                  })}
-                  key={type}
-                >
-                  {prettyCONSTName(type)}
-                </button>
-              ))}
-            </div>
-          </PanelHeaderActions>
+          {fetchConfig.showInFetchPanel ? (
+            <PanelHeaderActions>
+              <div className="query-builder__fetch__structure__modes">
+                {Object.values(FETCH_STRUCTURE_IMPLEMENTATION).map((type) => (
+                  <button
+                    onClick={onChangeFetchStructureImplementation(
+                      type,
+                      fetchStructureState,
+                    )}
+                    className={clsx('query-builder__fetch__structure__mode', {
+                      'query-builder__fetch__structure__mode--selected':
+                        type === fetchStructureState.implementation.type,
+                    })}
+                    key={type}
+                  >
+                    {prettyCONSTName(type)}
+                  </button>
+                ))}
+              </div>
+            </PanelHeaderActions>
+          ) : null}
         </PanelHeader>
         <QueryBuilderFetchStructureEditor
           queryBuilderState={queryBuilderState}

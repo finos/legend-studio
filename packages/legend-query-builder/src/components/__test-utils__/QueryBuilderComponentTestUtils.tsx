@@ -51,7 +51,7 @@ import {
 } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
 import { STYLE_PREFIX, STYLE_PREFIX__DARK } from '@finos/legend-art';
 import { expect } from '@jest/globals';
-import { QueryBuilderAdvancedWorkflowState } from '../../stores/workflow/QueryBuilderWorkFlowState.js';
+import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
 
 const getSelectorContainerClassName = (lightMode?: boolean): string =>
   '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;

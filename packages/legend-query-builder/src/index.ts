@@ -93,4 +93,4 @@ export * from './stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 export * from './stores/data-access/DataAccessState.js';
 export * from './components/data-access/DataAccessOverview.js';
-export * from './stores/workflow/QueryBuilderWorkFlowState.js';
+export * from './stores/query-workflow/QueryBuilderWorkFlowState.js';

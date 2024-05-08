@@ -28,7 +28,7 @@ import { getNullableFirstEntry } from '@finos/legend-shared';
 import { renderMappingQueryBuilderSetupPanelContent } from '../../components/workflows/MappingQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 import type { QueryBuilderConfig } from '../../graph-manager/QueryBuilderConfig.js';
-import type { QueryBuilderWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
+import type { QueryBuilderWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
 
 export class MappingQueryBuilderState extends QueryBuilderState {
   readonly onMappingChange?: ((val: Mapping) => void) | undefined;

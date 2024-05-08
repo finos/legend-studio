@@ -105,6 +105,7 @@ import {
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
   QueryLoaderState,
+  QueryBuilderDataBrowserWorkflow,
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
@@ -121,7 +122,6 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
-import { QueryBuilderDataBrowserWorkflow } from './query-builder/QueryBuilderDataBrowserWorkflow.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>

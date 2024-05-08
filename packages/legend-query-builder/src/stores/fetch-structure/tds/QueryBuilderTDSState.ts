@@ -154,6 +154,7 @@ export class QueryBuilderTDSState
       initializeWithQuery: action,
       setShowPostFilterPanel: action,
       setShowWindowFuncPanel: action,
+      checkBeforeChangingImplementation: action,
       convertDerivationProjectionObjects: flow,
       fetchDerivedReturnTypes: flow,
     });
@@ -192,6 +193,10 @@ export class QueryBuilderTDSState
     return this.derivations.some(
       (derivation) => derivation.derivationLambdaEditorState.parserError,
     );
+  }
+
+  override get fetchLabel(): string {
+    return 'Columns';
   }
 
   override get TEMPORARY__showPostFetchStructurePanel(): boolean {

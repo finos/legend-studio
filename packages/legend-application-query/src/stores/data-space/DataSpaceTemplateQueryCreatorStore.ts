@@ -24,7 +24,10 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import { filterByType, guaranteeNonNullable, uuid } from '@finos/legend-shared';
-import type { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderState,
+  QueryBuilderDataBrowserWorkflow,
+} from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   QueryEditorStore,
@@ -45,7 +48,6 @@ import {
   createQueryClassTaggedValue,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
-import { QueryBuilderDataBrowserWorkflow } from '../query-builder/QueryBuilderDataBrowserWorkflow.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;

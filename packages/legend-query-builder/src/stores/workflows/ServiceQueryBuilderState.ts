@@ -34,7 +34,7 @@ import { action, makeObservable, observable } from 'mobx';
 import { renderServiceQueryBuilderSetupPanelContent } from '../../components/workflows/ServiceQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 import type { QueryBuilderConfig } from '../../graph-manager/QueryBuilderConfig.js';
-import type { QueryBuilderWorkflowState } from '../workflow/QueryBuilderWorkFlowState.js';
+import type { QueryBuilderWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
 
 export type ServiceExecutionContext = {
   key: string;
