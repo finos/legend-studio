@@ -306,6 +306,10 @@ $group-node-width: 3.5rem;
         }
       }
     }
+
+    &__drop-zone {
+      height: 100%;
+    }
   }
 
   &__blank-node {

@@ -679,7 +679,8 @@ const QueryBuilderFilterExistsConditionEditor = observer(
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
           isDroppable={isDroppable}
-          label={`Add to Exists Group`}
+          label="Add to Exists Group"
+          className="query-builder-filter-tree__exists-node__drop-zone"
         >
           <div
             className="query-builder-filter-tree__exists-node"
