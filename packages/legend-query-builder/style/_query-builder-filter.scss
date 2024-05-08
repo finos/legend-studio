@@ -33,20 +33,6 @@ $group-node-width: 3.5rem;
     height: 100%;
   }
 
-  &__expand-icon {
-    @include flexVCenter;
-
-    justify-content: flex-start;
-    color: var(--color-light-grey-200);
-    width: 1.5rem;
-    min-width: 1.5rem;
-    margin-right: 0.5rem;
-  }
-
-  &__expand-icon svg {
-    font-size: 1rem;
-  }
-
   &__node__block {
     display: flex;
     flex-direction: row;
