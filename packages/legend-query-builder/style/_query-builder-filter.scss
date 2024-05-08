@@ -228,14 +228,6 @@ $group-node-width: 3.5rem;
       color: var(--color-light-grey-50);
     }
 
-    &__class--icon {
-      @include flexCenter;
-
-      width: 1.7rem;
-      height: 1.4rem;
-      padding-left: 0.5rem;
-    }
-
     &__exists--label {
       @include flexVCenter;
 
