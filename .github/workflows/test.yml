@@ -57,7 +57,7 @@ jobs:
       - name: Test
         run: yarn test:ci
       - name: Upload test coverage report
-        uses: codecov/codecov-action@v3.1.4
+        uses: codecov/codecov-action@v4.3.1
         with:
           directory: ./build/coverage
 
