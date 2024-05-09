@@ -290,7 +290,7 @@ test(
     await waitFor(() => getByText(filterPanel, 'is'));
     await waitFor(() => getByDisplayValue(filterPanel, ''));
 
-    // Verify action buttons are disabled properly
+    // Verify action buttons are disabled properly and error is shown
     const queryActionsPanel = await renderResult.findByTestId(
       QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS,
     );
@@ -314,6 +314,7 @@ test(
         name: 'Save As...',
       }).hasAttribute('disabled'),
     ).toBe(true);
+    expect(renderResult.getByText('1 issue')).not.toBeNull();
   },
 );
 
@@ -383,7 +384,7 @@ test(
     const filterValueInput = getByDisplayValue(filterPanel, '');
     fireEvent.change(filterValueInput, { target: { value: 'test' } });
 
-    // Verify action buttons are disabled properly
+    // Verify action buttons are disabled properly and no error is shown
     const queryActionsPanel = await renderResult.findByTestId(
       QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS,
     );
@@ -407,5 +408,6 @@ test(
         name: 'Save As...',
       }).hasAttribute('disabled'),
     ).toBe(false);
+    expect(renderResult.queryByText('1 issue')).toBeNull();
   },
 );
