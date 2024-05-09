@@ -162,9 +162,9 @@ export const QueryBuilderClassSelector = observer(
           <div className="query-builder__setup__config-group__item ">
             <div
               className="btn--sm query-builder__setup__config-group__item__label"
-              title="class"
+              title="model"
             >
-              <PURE_ClassIcon />
+              Model
             </div>
             <CustomSelectorInput
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector query-builder__setup__config-group__item__selector__milestoned"
