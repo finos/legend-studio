@@ -37,6 +37,7 @@ import {
   TEST_DATA__simpleFromFunction,
   TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
   TEST_DATA__simpleProjectionWithSlice,
+  TEST_DATA_simpleTypedRelationProjection,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
@@ -223,6 +224,14 @@ const filtersCtx = {
 const cases: RoundtripTestCase[] = [
   // projection
   ['Simple projection', projectionCtx, TEST_DATA__simpleProjection, undefined],
+
+  [
+    'Simple typed projection (relation)',
+    projectionCtx,
+    TEST_DATA_simpleTypedRelationProjection,
+    undefined,
+  ],
+
   [
     'Simple projection with subType',
     projectionCtx,

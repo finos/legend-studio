@@ -114,6 +114,75 @@ export const TEST_DATA__simpleProjection = {
   ],
 };
 
+export const TEST_DATA_simpleTypedRelationProjection = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'take',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::pure::tests::model::simple::Person',
+                },
+              ],
+            },
+            {
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'colSpecArray',
+              value: {
+                colSpecs: [
+                  {
+                    function1: {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'name',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                    name: 'Name',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          _type: 'integer',
+          value: 1000,
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__simpleProjectionWithPreviewLimit = {
   body: [
     {

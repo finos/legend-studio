@@ -93,6 +93,10 @@ import {
 import { checkIfEquivalent } from './milestoning/QueryBuilderMilestoningHelper.js';
 import type { QueryBuilderParameterValue } from './QueryBuilderParametersState.js';
 import { QueryBuilderEmbeddedFromExecutionContextState } from './QueryBuilderExecutionContextState.js';
+import {
+  isTypedProjectionExpression,
+  processTypedTDSProjectExpression,
+} from './fetch-structure/tds/projection/QueryBuilderTypedProjectionStateBuilder.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -644,11 +648,20 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
       ])
     ) {
-      processTDSProjectExpression(
-        valueSpecification,
-        this.queryBuilderState,
-        this.parentLambda,
-      );
+      if (isTypedProjectionExpression(valueSpecification)) {
+        processTypedTDSProjectExpression(
+          valueSpecification,
+          this.queryBuilderState,
+          this.parentLambda,
+        );
+      } else {
+        processTDSProjectExpression(
+          valueSpecification,
+          this.queryBuilderState,
+          this.parentLambda,
+        );
+      }
+
       return;
     } else if (
       matchFunctionName(
