@@ -198,7 +198,12 @@ const QueryBuilderStatusBar = observer(
               openLambdaEditor(QueryBuilderTextEditorMode.JSON)
             }
             tabIndex={-1}
-            title="View Query Protocol"
+            disabled={!queryBuilderState.canBuildQuery}
+            title={
+              !queryBuilderState.canBuildQuery
+                ? 'Please fix query errors to show query protocol'
+                : 'Show Query Protocol'
+            }
           >{`{ }`}</button>
           <button
             className={clsx(
@@ -213,7 +218,12 @@ const QueryBuilderStatusBar = observer(
               openLambdaEditor(QueryBuilderTextEditorMode.TEXT)
             }
             tabIndex={-1}
-            title="View Query in Pure"
+            disabled={!queryBuilderState.canBuildQuery}
+            title={
+              !queryBuilderState.canBuildQuery
+                ? 'Please fix query errors to edit in Pure'
+                : 'Edit Query in Pure'
+            }
           >
             <HackerIcon />
           </button>
