@@ -26,22 +26,22 @@
 
 .query-builder__setup__data-space-setup {
   .query-builder__setup.panel {
-    height: 9.8rem;
+    height: fit-content;
   }
 
   .query-builder__side-bar__content {
-    height: calc(100% - 9.8rem);
+    height: 100%;
   }
 }
 
 .query-builder__setup__data-space {
   &--with-runtime {
     .query-builder__setup.panel {
-      height: 16.4rem;
+      height: fit-content;
     }
 
     .query-builder__side-bar__content {
-      height: calc(100% - 16.4rem);
+      height: 100%;
     }
   }
 

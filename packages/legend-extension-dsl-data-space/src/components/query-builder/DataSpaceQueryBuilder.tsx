@@ -221,7 +221,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         <div className="query-builder__setup__config-group">
           <div className="query-builder__setup__config-group__header">
             <div className="query-builder__setup__config-group__header__title">
-              data space execution context
+              Properties
             </div>
             <DropdownMenu
               className="query-builder__setup__config-group__header__dropdown-trigger"
@@ -260,7 +260,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="data space"
               >
-                <DataSpaceIcon />
+                Data Space
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
@@ -302,7 +302,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="execution context"
               >
-                <PlayIcon className="query-builder__setup__data-space__icon__execution-context" />
+                Context
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
@@ -327,7 +327,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                   className="btn--sm query-builder__setup__config-group__item__label"
                   title="runtime"
                 >
-                  <PURE_RuntimeIcon />
+                  Runtime
                 </div>
                 <CustomSelectorInput
                   className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"

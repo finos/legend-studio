@@ -35,15 +35,15 @@
       @include flexVCenter;
 
       justify-content: space-between;
-      height: 1.6rem;
+      height: fit-content;
       padding-left: 1rem;
       background: var(--color-blue-300);
       border-radius: 0.2rem 0.2rem 0.2rem 0;
 
       &__title {
         color: var(--color-light-grey-300);
-        font-size: 1rem;
-        font-weight: 500;
+        font-size: 2rem;
+        padding: 0.5rem 0;
       }
 
       &__dropdown-trigger {
@@ -73,14 +73,18 @@
     }
 
     &__item__label {
-      @include flexCenter;
+      @include flexVCenter;
 
-      background: var(--color-dark-grey-100);
-      margin-right: 0.5rem;
+      width: 8rem;
+      color: var(--color-light-grey-400);
+      margin-right: 1rem;
+      justify-content: right;
+      text-align: right;
+      font-weight: bold;
     }
 
     &__item__selector {
-      width: 100%;
+      flex: 1;
       max-width: unset;
     }
 
@@ -88,17 +92,9 @@
       margin-top: 0.5rem;
     }
 
-    &--class &__header {
-      background: var(--color-purple-400);
-    }
-
     &--class &__content {
       padding-top: 0;
       border-left: 0.5rem solid var(--color-purple-400);
-    }
-
-    &--class &__item__label {
-      border: 0.1rem solid var(--color-purple-400);
     }
   }
 
