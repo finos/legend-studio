@@ -28,7 +28,6 @@ import {
   V1_RawLambda,
   VariableExpression,
   PrimitiveInstanceValue,
-  ColSpecArrayInstance,
 } from '@finos/legend-graph';
 import {
   assertNonNullable,
@@ -45,10 +44,7 @@ import {
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from '../../../../graph/QueryBuilderMetaModelConst.js';
-import {
-  QUERY_BUILDER_LAMBDA_WRITER_MODE,
-  type QueryBuilderState,
-} from '../../../QueryBuilderState.js';
+import { type QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QueryBuilderValueSpecificationProcessor } from '../../../QueryBuilderStateBuilder.js';
 import {
   extractNullableNumberFromInstanceValue,
@@ -63,74 +59,11 @@ import {
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { SortColumnState } from '../QueryResultSetModifierState.js';
 
-export const processTypedTDSProjectExpression = (
-  expression: SimpleFunctionExpression,
-  queryBuilderState: QueryBuilderState,
-  parentLambda: LambdaFunction,
-): void => {
-  // check parameters
-  assertTrue(
-    expression.parametersValues.length === 2,
-    `Can't process project() expression: project() expects 2 arguments`,
-  );
-  // update fetch-structure
-  queryBuilderState.fetchStructureState.changeImplementation(
-    FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
-  );
-
-  // check preceding expression
-  const precedingExpression = guaranteeType(
-    expression.parametersValues[0],
-    SimpleFunctionExpression,
-    `Can't process project() expression: only support project() immediately following an expression`,
-  );
-  assertTrue(
-    matchFunctionName(precedingExpression.functionName, [
-      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
-      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
-      QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
-    ]),
-    `Can't process project() expression: only support project() immediately following either getAll(), filter(), or forWatermark()`,
-  );
-  QueryBuilderValueSpecificationProcessor.process(
-    precedingExpression,
-    parentLambda,
-    queryBuilderState,
-  );
-  // check columns
-  const classInstance = expression.parametersValues[1];
-  assertType(
-    classInstance,
-    ColSpecArrayInstance,
-    `Can't process project() expression: project() expects argument #1 to be a ColSpecArrayInstance`,
-  );
-  queryBuilderState.setLambdaWriteMode(
-    QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
-  );
-  QueryBuilderValueSpecificationProcessor.processChild(
-    classInstance,
-    expression,
-    parentLambda,
-    queryBuilderState,
-  );
-};
-
 export const processTDSProjectExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
   parentLambda: LambdaFunction,
 ): void => {
-  if (expression.parametersValues.length === 2) {
-    processTypedTDSProjectExpression(
-      expression,
-      queryBuilderState,
-      parentLambda,
-    );
-
-    return;
-  }
   // update fetch-structure
   queryBuilderState.fetchStructureState.changeImplementation(
     FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
