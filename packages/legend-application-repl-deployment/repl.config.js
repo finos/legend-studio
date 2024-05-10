@@ -29,6 +29,12 @@ export default {
    */
   baseUrl: '/repl/',
   /**
+   * `isRelativePathSupported` [boolean, optional]
+   * Boolean flag to check if your website supports resolution of relative
+   * paths for resources
+   */
+  isRelativePathSupported: true,
+  /**
    * `devServerOptions` [object, optional]
    * Options to override `webpack-dev-server` configs.
    * See https://webpack.js.org/configuration/dev-server/

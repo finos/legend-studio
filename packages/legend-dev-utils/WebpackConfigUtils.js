@@ -45,6 +45,7 @@ export const getBaseWebpackConfig = (
   arg,
   dirname,
   { babelConfigPath },
+  isRelativePathSupported,
 ) => {
   if (!dirname) {
     throw new Error(`\`dirname\` is required to build Webpack config`);
@@ -125,6 +126,11 @@ export const getBaseWebpackConfig = (
           use: [
             {
               loader: MiniCssExtractPlugin.loader,
+              options: isRelativePathSupported
+                ? {
+                    publicPath: '../',
+                  }
+                : {},
             },
             {
               // Helps resolve @import and url() like import/require()
@@ -247,9 +253,15 @@ export const getWebAppBaseWebpackConfig = (
     throw new Error(`\`dirname\` is required to build Webpack config`);
   }
   const { isEnvDevelopment, isEnvProduction } = getEnvInfo(env, arg);
-  const baseConfig = getBaseWebpackConfig(env, arg, dirname, {
-    babelConfigPath,
-  });
+  const baseConfig = getBaseWebpackConfig(
+    env,
+    arg,
+    dirname,
+    {
+      babelConfigPath,
+    },
+    appConfig.isRelativePathSupported,
+  );
   validateAppConfig(appConfig, dirname);
 
   // NOTE: due to routes like `/v1.0.0` (with '.'), to refer to static resources, we move all static content to `/static`
@@ -274,7 +286,11 @@ export const getWebAppBaseWebpackConfig = (
       assetModuleFilename: `${staticPath}/${
         isEnvDevelopment ? '[name].[ext]' : '[name].[contenthash:8].[ext]'
       }`,
-      publicPath: isEnvDevelopment ? '/' : appConfig.baseUrl,
+      publicPath: isEnvDevelopment
+        ? '/'
+        : appConfig.isRelativePathSupported
+        ? './'
+        : appConfig.baseUrl,
       filename: `${staticPath}/${
         isEnvDevelopment ? '[name].js' : '[name].[contenthash:8].js'
       }`,
