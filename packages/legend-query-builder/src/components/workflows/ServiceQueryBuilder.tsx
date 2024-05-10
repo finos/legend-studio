@@ -102,7 +102,7 @@ const ServiceQueryBuilderSetupPanelContent = observer(
         <div className="query-builder__setup__config-group">
           <div className="query-builder__setup__config-group__header">
             <div className="query-builder__setup__config-group__header__title">
-              service execution context
+              Properties
             </div>
           </div>
           <div className="query-builder__setup__config-group__content">
@@ -111,7 +111,7 @@ const ServiceQueryBuilderSetupPanelContent = observer(
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="service"
               >
-                <RobotIcon className="query-builder__setup__service__icon__service" />
+                Service
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
