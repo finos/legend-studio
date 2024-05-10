@@ -132,15 +132,10 @@ const ClassQueryBuilderSetupPanelContent = observer(
 
     return (
       <>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={classes}
-          onClassChange={onClassChange}
-        />
         <div className="query-builder__setup__config-group">
           <div className="query-builder__setup__config-group__header">
             <div className="query-builder__setup__config-group__header__title">
-              execution context
+              Properties
             </div>
           </div>
           <div className="query-builder__setup__config-group__content">
@@ -149,7 +144,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="mapping"
               >
-                <PURE_MappingIcon />
+                Mapping
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
@@ -180,7 +175,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="runtime"
               >
-                <PURE_RuntimeIcon />
+                Runtime
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
@@ -207,6 +202,11 @@ const ClassQueryBuilderSetupPanelContent = observer(
             </div>
           </div>
         </div>
+        <QueryBuilderClassSelector
+          queryBuilderState={queryBuilderState}
+          classes={classes}
+          onClassChange={onClassChange}
+        />
       </>
     );
   },
