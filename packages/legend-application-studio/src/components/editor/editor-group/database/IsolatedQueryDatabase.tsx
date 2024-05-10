@@ -71,24 +71,19 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
       : [];
     return (
       <>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={classes}
-          noMatchMessage="No classes selected from"
-        />
         <div className="query-builder__setup__config-group">
           <div className="query-builder__setup__config-group__header">
             <div className="query-builder__setup__config-group__header__title">
-              database/connection
+              Properties
             </div>
           </div>
           <div className="query-builder__setup__config-group__content">
             <div className="query-builder__setup__config-group__item">
               <div
                 className="btn--sm query-builder__setup__config-group__item__label"
-                title="mapping"
+                title="store"
               >
-                <PURE_DatabaseIcon />
+                Store
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
@@ -107,7 +102,7 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="connection"
               >
-                <PURE_ConnectionIcon />
+                Connection
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
@@ -124,6 +119,11 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
             </div>
           </div>
         </div>
+        <QueryBuilderClassSelector
+          queryBuilderState={queryBuilderState}
+          classes={classes}
+          noMatchMessage="No classes selected from"
+        />
       </>
     );
   },
