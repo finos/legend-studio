@@ -88,13 +88,3 @@
     border: 0.1rem solid var(--color-dark-grey-80);
   }
 }
-
-.query-builder__setup__mapping-execution {
-  .query-builder__setup.panel {
-    height: 9.8rem;
-  }
-
-  .query-builder__side-bar__content {
-    height: calc(100% - 9.8rem);
-  }
-}
