@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.32
+
+### Patch Changes
+
+- [#3114](https://github.com/finos/legend-studio/pull/3114) [`53c105718`](https://github.com/finos/legend-studio/commit/53c105718413b37fbbf7913996fd01faa5c80a21) ([@travisstebbins](https://github.com/travisstebbins)) - Give column name editor its own lifecycle and trim column names
+
 ## 4.14.31
 
 ### Patch Changes
