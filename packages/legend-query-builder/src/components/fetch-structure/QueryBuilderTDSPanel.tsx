@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  useEffect,
-  useRef,
-  useCallback,
-  useState,
-  forwardRef,
-  type ChangeEvent,
-} from 'react';
+import { useEffect, useRef, useCallback, useState, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -161,10 +154,10 @@ const QueryBuilderProjectionColumnContextMenu = observer(
 const QueryBuilderSimpleProjectionColumnEditor = observer(
   (props: {
     projectionColumnState: QueryBuilderSimpleProjectionColumnState;
-    changeColumnName: (event: ChangeEvent<HTMLInputElement>) => void;
+    setColumnName: (columnName: string) => void;
     error?: string | undefined;
   }) => {
-    const { projectionColumnState, changeColumnName, error } = props;
+    const { projectionColumnState, setColumnName, error } = props;
     const onPropertyExpressionChange = (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ): void =>
@@ -179,7 +172,7 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
         columnName={projectionColumnState.columnName}
         propertyExpressionState={projectionColumnState.propertyExpressionState}
         onPropertyExpressionChange={onPropertyExpressionChange}
-        changeColumnName={changeColumnName}
+        setColumnName={setColumnName}
         error={error}
       />
     );
@@ -391,9 +384,8 @@ const QueryBuilderProjectionColumnEditor = observer(
       tdsState.removeColumn(projectionColumnState);
 
     // name
-    const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => projectionColumnState.setColumnName(event.target.value);
+    const setColumnName = (columnName: string): void =>
+      projectionColumnState.setColumnName(columnName);
     const isDuplicatedColumnName =
       projectionColumnState.tdsState.isDuplicateColumn(projectionColumnState);
 
@@ -787,7 +779,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                 <div className="query-builder__projection__column__value">
                   <QueryBuilderSimpleProjectionColumnEditor
                     projectionColumnState={projectionColumnState}
-                    changeColumnName={changeColumnName}
+                    setColumnName={setColumnName}
                     error={
                       isDuplicatedColumnName
                         ? 'Duplicated column'
@@ -814,7 +806,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                 <div className="query-builder__projection__column__value">
                   <QueryBuilderEditablePropertyName
                     columnName={projectionColumnState.columnName}
-                    changeColumnName={changeColumnName}
+                    setColumnName={setColumnName}
                     error={
                       isDuplicatedColumnName
                         ? 'Duplicated column'
@@ -823,6 +815,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                         : undefined
                     }
                     title={projectionColumnState.columnName}
+                    defaultColumnName="(derivation)"
                   />
                   <QueryBuilderDerivationProjectionColumnEditor
                     projectionColumnState={projectionColumnState}

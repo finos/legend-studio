@@ -24,7 +24,6 @@ import {
   act,
   getByDisplayValue,
   queryByText,
-  findByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -537,7 +536,7 @@ test(
 
 test(
   integrationTest(
-    "Query builder doesn't allow stopping editing if the column name is empty and shows validation error",
+    'Query builder resets simple column name if user edits it and clears the name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -600,21 +599,171 @@ test(
     });
     fireEvent.blur(firstNameColumnNameInput);
 
-    // check that input is still present and validation error is present
+    // check that column name is reset
     expect(
-      await waitFor(() => tdsProjectionPanel.querySelector('input[value=""]')),
+      await waitFor(() => getByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
     ).not.toBeNull();
-    const fetchStructurePanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
-      ),
-    );
-    expect(await findByText(fetchStructurePanel, '1 issue')).not.toBeNull();
-    expect(
-      getByText(fetchStructurePanel, '1 issue').parentElement?.title,
-    ).toContain('Query has projection column with no name');
   },
 );
+
+test(
+  integrationTest(
+    "Query builder doesn't update column name in state until user finishes editing",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop columns
+    const FIRST_NAME_ALIAS = 'First Name';
+    const LAST_NAME_ALIAS = 'Last Name';
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    let dragSource = await waitFor(() =>
+      getByText(explorerPanel, FIRST_NAME_ALIAS),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    dragSource = await waitFor(() => getByText(explorerPanel, LAST_NAME_ALIAS));
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // check fetch-structure
+    expect(
+      await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+    ).not.toBeNull();
+    expect(
+      await waitFor(() => queryByText(tdsProjectionPanel, LAST_NAME_ALIAS)),
+    ).not.toBeNull();
+
+    // edit column name
+    const firstNameColumnName = guaranteeNonNullable(
+      await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+    );
+    fireEvent.click(firstNameColumnName);
+    const firstNameColumnNameInput = guaranteeNonNullable(
+      await waitFor(() =>
+        tdsProjectionPanel.querySelector(`input[value="${FIRST_NAME_ALIAS}"]`),
+      ),
+    );
+    fireEvent.change(firstNameColumnNameInput, {
+      target: { value: LAST_NAME_ALIAS },
+    });
+
+    // check that there is no error
+    expect(renderResult.queryByText('1 issue')).toBeNull();
+
+    // finish editing
+    fireEvent.blur(firstNameColumnNameInput);
+
+    // check that there is an error
+    expect(renderResult.getByText('1 issue')).not.toBeNull();
+  },
+);
+
+test(integrationTest('Query builder trims column name'), async () => {
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    TEST_DATA__ComplexRelationalModel,
+    stub_RawLambda(),
+    'model::relational::tests::simpleRelationalMapping',
+    'model::MyRuntime',
+    TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  );
+
+  const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+    'model::pure::tests::model::simple::Person',
+  );
+
+  await act(async () => {
+    queryBuilderState.changeClass(_personClass);
+  });
+
+  const tdsProjectionPanel = await waitFor(() =>
+    renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+    ),
+  );
+  const explorerPanel = await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+  );
+
+  // Drag and drop column
+  const tdsProjectionDropZone = await waitFor(() =>
+    getByText(tdsProjectionPanel, 'Add a projection column'),
+  );
+  const dragSource = await waitFor(() =>
+    getByText(explorerPanel, 'First Name'),
+  );
+  await dragAndDrop(
+    dragSource,
+    tdsProjectionDropZone,
+    tdsProjectionPanel,
+    'Add a projection column',
+  );
+
+  // check fetch-structure
+  const FIRST_NAME_ALIAS = 'First Name';
+  expect(
+    await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+  ).not.toBeNull();
+
+  // edit column name
+  const firstNameColumnName = guaranteeNonNullable(
+    await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+  );
+  fireEvent.click(firstNameColumnName);
+  const firstNameColumnNameInput = guaranteeNonNullable(
+    await waitFor(() =>
+      tdsProjectionPanel.querySelector(`input[value="${FIRST_NAME_ALIAS}"]`),
+    ),
+  );
+  fireEvent.change(firstNameColumnNameInput, {
+    target: { value: '  Test  ' },
+  });
+  fireEvent.blur(firstNameColumnNameInput);
+
+  // check that column name is trimmed
+  expect(
+    await waitFor(() => getByText(tdsProjectionPanel, 'Test')),
+  ).not.toBeNull();
+  expect(
+    guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    ).tdsColumns[0]?.columnName,
+  ).toBe('Test');
+});
 
 test(
   integrationTest(
@@ -729,7 +878,7 @@ test(
 
 test(
   integrationTest(
-    "Query builder doesn't allow stopping editing derivation column name if the column name is empty and shows validation error",
+    'Query builder resets derivation column name if user edits it and clears the name',
   ),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
@@ -772,14 +921,10 @@ test(
     });
     fireEvent.blur(derivationColumnNameInput);
 
-    // check that input is still present and validation error is present
+    // check that the column name is reset
     expect(
-      await waitFor(() => fetchStructurePanel.querySelector('input[value=""]')),
+      await waitFor(() => getByText(fetchStructurePanel, '(derivation)')),
     ).not.toBeNull();
-    expect(await findByText(fetchStructurePanel, '1 issue')).not.toBeNull();
-    expect(
-      getByText(fetchStructurePanel, '1 issue').parentElement?.title,
-    ).toContain('Query has projection column with no name');
   },
 );
 
@@ -1583,7 +1728,7 @@ test(
       'Add a projection column',
     );
 
-    // Verify column is present and noterror message
+    // Verify column is present and no error message
     expect(
       await waitFor(() => getByText(projectionPanel, 'Age')),
     ).not.toBeNull();
