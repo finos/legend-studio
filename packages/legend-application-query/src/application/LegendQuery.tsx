@@ -20,7 +20,6 @@ import {
   ApplicationStoreProvider,
   LegendApplication,
   type LegendApplicationConfigurationInput,
-  Core_LegendApplicationPlugin,
   getApplicationRootElement,
 } from '@finos/legend-application';
 import { LegendQueryWebApplication } from '../components/LegendQueryWebApplication.js';
@@ -36,6 +35,7 @@ import {
 } from '@finos/legend-query-builder';
 import { Core_LegendQueryApplicationPlugin } from '../components/Core_LegendQueryApplicationPlugin.js';
 import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';
+import { Core_LegendQuery_LegendApplicationPlugin } from './Core_LegendQuery_LegendApplicationPlugin.js';
 
 export class LegendQuery extends LegendApplication {
   declare config: LegendQueryApplicationConfig;
@@ -48,7 +48,7 @@ export class LegendQuery extends LegendApplication {
       new QueryBuilder_GraphManagerPreset(),
     ]);
     application.withBasePlugins([
-      new Core_LegendApplicationPlugin(),
+      new Core_LegendQuery_LegendApplicationPlugin(),
       new Core_LegendQueryApplicationPlugin(),
       new QueryBuilder_LegendApplicationPlugin(),
     ]);
