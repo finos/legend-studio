@@ -24,7 +24,6 @@ import {
   SearchIcon,
   type SelectComponent,
 } from '@finos/legend-art';
-import { DataSpaceIcon } from '@finos/legend-extension-dsl-data-space/application';
 import {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,

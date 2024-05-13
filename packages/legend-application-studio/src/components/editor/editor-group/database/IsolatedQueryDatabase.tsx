@@ -21,11 +21,7 @@ import {
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import type { IsolatedDatabaseBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
 import { observer } from 'mobx-react-lite';
-import {
-  CustomSelectorInput,
-  PURE_ConnectionIcon,
-  PURE_DatabaseIcon,
-} from '@finos/legend-art';
+import { CustomSelectorInput } from '@finos/legend-art';
 import { returnUndefOnError } from '@finos/legend-shared';
 
 const IsolatedDatabseQueryBuilderSetupPanelContext = observer(

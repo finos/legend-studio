@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CustomSelectorInput, PlayIcon, RobotIcon } from '@finos/legend-art';
+import { CustomSelectorInput, PlayIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { getMappingCompatibleClasses, type Service } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';

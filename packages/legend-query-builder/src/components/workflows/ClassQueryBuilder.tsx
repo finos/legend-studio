@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  CustomSelectorInput,
-  createFilter,
-  PURE_MappingIcon,
-  PURE_RuntimeIcon,
-} from '@finos/legend-art';
+import { CustomSelectorInput, createFilter } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   type Class,

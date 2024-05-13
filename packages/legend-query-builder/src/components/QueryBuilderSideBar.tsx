@@ -19,8 +19,6 @@ import {
   createFilter,
   CogIcon,
   PURE_ClassIcon,
-  PURE_MappingIcon,
-  PURE_RuntimeIcon,
   ClockIcon,
   clsx,
 } from '@finos/legend-art';
