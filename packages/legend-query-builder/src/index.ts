@@ -69,6 +69,7 @@ export {
   QueryBuilderDiffViewState,
   QueryBuilderChangeDetectionState,
 } from './stores/QueryBuilderChangeDetectionState.js';
+export { QueryBuilderResultValues } from './components/result/QueryBuilderResultPanel.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 

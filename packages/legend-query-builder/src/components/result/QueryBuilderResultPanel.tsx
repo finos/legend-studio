@@ -71,7 +71,7 @@ import { getExecutedSqlFromExecutionResult } from './tds/QueryBuilderTDSResultSh
 import { QueryBuilderTDSGridResult } from './tds/QueryBuilderTDSGridResult.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 
-const QueryBuilderResultValues = observer(
+export const QueryBuilderResultValues = observer(
   (props: {
     executionResult: ExecutionResult;
     queryBuilderState: QueryBuilderState;
