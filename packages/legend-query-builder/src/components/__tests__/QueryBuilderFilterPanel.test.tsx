@@ -184,14 +184,14 @@ test(
     );
     const nodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_BLOCK,
     );
     expect(nodes.length).toBe(9);
-    let contentNodes = queryAllByTestId(
+    let containerNodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
-    expect(contentNodes.length).toBe(9);
+    expect(containerNodes.length).toBe(9);
 
     const testBasicConstantContent = (
       property: string,
@@ -220,86 +220,74 @@ test(
       }
       return element;
     };
+
     // test and block
-    let contentAndNode = guaranteeNonNullable(
-      contentNodes.filter((node) => queryByText(node, 'and'))[0],
+    let containerAndNode = guaranteeNonNullable(
+      containerNodes.filter((node) => queryByText(node, 'and'))[0],
     );
-    getByTitle(contentAndNode, 'Switch Operation');
-    getByTitle(contentAndNode, 'Remove');
-    testBasicConstantContent('Age', '<', 'integerConst', contentNodes, {
+    getByTitle(containerAndNode, 'Switch Operation');
+    testBasicConstantContent('Age', '<', 'integerConst', containerNodes, {
       isConstant: true,
     });
-    testBasicConstantContent('Dob Date', '<', 'dateFunction', contentNodes, {
+    testBasicConstantContent('Dob Date', '<', 'dateFunction', containerNodes, {
       isConstant: true,
     });
     testBasicConstantContent(
       'Dob Strict Date',
       '>',
       'absoluteDate',
-      contentNodes,
+      containerNodes,
       {
         isConstant: true,
       },
     );
-    testBasicConstantContent('Dob Time', '>=', 'dateParam', contentNodes);
+    testBasicConstantContent('Dob Time', '>=', 'dateParam', containerNodes);
 
     // test or block
-
     const orNode = guaranteeNonNullable(
       nodes.filter(
         (node) =>
           queryByText(node, 'or') !== null && queryByText(node, 'and') === null,
       )[0],
     );
-    const contentOrNodes = queryAllByTestId(
+    const containerOrNodes = queryAllByTestId(
       orNode,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
-    expect(contentOrNodes.length).toBe(4);
-    testBasicConstantContent('Dob Date', '<', 'dateParam', contentOrNodes);
-    testBasicConstantContent('Dob Time', '<', 'dateParam', contentOrNodes);
+    expect(containerOrNodes.length).toBe(4);
+    testBasicConstantContent('Dob Date', '<', 'dateParam', containerOrNodes);
+    testBasicConstantContent('Dob Time', '<', 'dateParam', containerOrNodes);
     const strictDateNode = testBasicConstantContent(
       'Dob Strict Date',
       '>',
       'dateParam',
-      contentOrNodes,
+      containerOrNodes,
     );
-    // operations
 
     // remove single node from or group
     fireEvent.click(getByTitle(strictDateNode, 'Remove'));
     expect(
       queryAllByTestId(
         filterTree,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_BLOCK,
       ).length,
     ).toBe(8);
-    // remove or group
-    let contentOrNode = guaranteeNonNullable(
-      contentOrNodes.find((e) => queryByText(e, 'or') !== null),
-    );
-    fireEvent.click(getByTitle(contentOrNode, 'Remove'));
-    contentNodes = queryAllByTestId(
-      filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
-    );
-    expect(contentNodes.length).toBe(5);
-    contentAndNode = guaranteeNonNullable(
-      contentNodes.filter((node) => queryByText(node, 'and'))[0],
-    );
 
     // switch operations
-    fireEvent.click(getByTitle(contentAndNode, 'Switch Operation'));
+    containerAndNode = guaranteeNonNullable(
+      containerNodes.filter((node) => queryByText(node, 'and'))[0],
+    );
+    fireEvent.click(getByTitle(containerAndNode, 'Switch Operation'));
     expect(queryByText(filterTree, 'and')).toBeNull();
-    contentNodes = queryAllByTestId(
+    containerNodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
-    contentOrNode = guaranteeNonNullable(
-      contentNodes.find((e) => queryByText(e, 'or') !== null),
-    );
+    expect(
+      containerNodes.filter((e) => queryByText(e, 'or') !== null).length,
+    ).toBe(2);
     const ageFilterCondition = guaranteeNonNullable(
-      contentNodes.filter((e) => queryByText(e, 'Age') !== null)[0],
+      containerNodes.filter((e) => queryByText(e, 'Age') !== null)[0],
     );
     expect(queryByText(ageFilterCondition, 'integerConst')).not.toBeNull();
     fireEvent.click(getByTitle(ageFilterCondition, 'Reset'));
@@ -307,24 +295,31 @@ test(
     expect(
       queryByTitle(ageFilterCondition, 'Evaluate Expression (Enter)'),
     ).not.toBeNull();
-    // delete all nodes expect age (should auto delete or node)
-    queryAllByTestId(
+    // delete all nodes except age
+    while (
+      queryAllByTestId(
+        filterTree,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
+      ).length > 1
+    ) {
+      queryAllByTestId(
+        filterTree,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
+      ).forEach((_node) => {
+        if (
+          queryByText(_node, 'Age') === null &&
+          queryByTitle(_node, 'Remove') !== null
+        ) {
+          fireEvent.click(getByTitle(_node, 'Remove'));
+        }
+      });
+    }
+    containerNodes = queryAllByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
-    ).forEach((_node) => {
-      if (
-        queryByText(_node, 'or') === null &&
-        queryByText(_node, 'Age') === null
-      ) {
-        fireEvent.click(getByTitle(_node, 'Remove'));
-      }
-    });
-    contentNodes = queryAllByTestId(
-      filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
-    expect(contentNodes.length).toBe(1);
-    const ageNode = guaranteeNonNullable(contentNodes[0]);
+    await waitFor(() => expect(containerNodes.length).toBe(1));
+    const ageNode = guaranteeNonNullable(containerNodes[0]);
     expect(getByText(ageNode, 'Age')).not.toBeNull();
     const ageValue = getByDisplayValue(ageNode, 0);
     // drag and drop
@@ -335,7 +330,7 @@ test(
     await dragAndDrop(intConst, ageValue, filterTree, 'Change Filter Value');
     const alteredNode = getByTestId(
       filterTree,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
     );
     // check node has been altered by dropped constant
     expect(getByText(alteredNode, 'Age')).not.toBeNull();
@@ -442,7 +437,7 @@ test(
     let contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(1);
@@ -462,7 +457,7 @@ test(
     contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(3);
@@ -508,7 +503,7 @@ test(
 
     let filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(3);
@@ -539,7 +534,7 @@ test(
     filterTreeNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(6);
@@ -603,7 +598,7 @@ test(
 
     let filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(4);
@@ -632,7 +627,7 @@ test(
     filterTreeNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(6);
@@ -694,7 +689,7 @@ test(
 
     let filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(5);
@@ -727,7 +722,7 @@ test(
     filterTreeNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(6);
@@ -816,7 +811,7 @@ test(
     await dragAndDrop(dragSource, dropZone, dropZone, 'Create Condition');
     filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(3);
@@ -851,7 +846,7 @@ test(
     await dragAndDrop(dragSource, dropZone, dropZone, 'Create Condition');
     filterTreeNodes = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNodes.length).toBe(3);
@@ -900,7 +895,7 @@ test(
     //Drag and drop
     const filterTreeNode = await waitFor(() =>
       renderResult.getAllByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(filterTreeNode.length).toBe(1);
@@ -1337,7 +1332,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(2);
@@ -1426,7 +1421,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(4);
@@ -1514,7 +1509,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(5);
@@ -1608,7 +1603,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(5);
@@ -1706,7 +1701,7 @@ test(
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     );
     expect(contentNodes.length).toBe(5);
