@@ -17,8 +17,6 @@
 import {
   CustomSelectorInput,
   createFilter,
-  PURE_RuntimeIcon,
-  PlayIcon,
   DropdownMenu,
   MoreHorizontalIcon,
   MenuContentItem,
@@ -51,7 +49,6 @@ import { useEffect } from 'react';
 import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { type DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
-import { DataSpaceIcon } from '../shared/DSL_DataSpace_Icon.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
 
 export type DataSpaceOption = {
