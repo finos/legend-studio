@@ -57,6 +57,7 @@ import {
 } from './ServiceQueryEditorStoreProvider.js';
 import {
   QueryBuilder,
+  QueryBuilderActionConfig,
   QueryBuilderAdvancedWorkflowState,
   QueryBuilderNavigationBlocker,
 } from '@finos/legend-query-builder';
@@ -499,6 +500,7 @@ export const ServiceQueryEditor = observer(() => {
     flowResult(
       editorStore.initializeWithServiceQuery(
         QueryBuilderAdvancedWorkflowState.INSTANCE,
+        QueryBuilderActionConfig.INSTANCE,
       ),
     ).catch(applicationStore.alertUnhandledError);
   }, [editorStore, applicationStore]);

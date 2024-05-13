@@ -28,7 +28,10 @@ import { getNullableFirstEntry } from '@finos/legend-shared';
 import { renderMappingQueryBuilderSetupPanelContent } from '../../components/workflows/MappingQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 import type { QueryBuilderConfig } from '../../graph-manager/QueryBuilderConfig.js';
-import type { QueryBuilderWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
+import type {
+  QueryBuilderActionConfig,
+  QueryBuilderWorkflowState,
+} from '../query-workflow/QueryBuilderWorkFlowState.js';
 
 export class MappingQueryBuilderState extends QueryBuilderState {
   readonly onMappingChange?: ((val: Mapping) => void) | undefined;
@@ -41,6 +44,7 @@ export class MappingQueryBuilderState extends QueryBuilderState {
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     workflowState: QueryBuilderWorkflowState,
+    actionConfig: QueryBuilderActionConfig,
     onMappingChange?: ((val: Mapping) => void) | undefined,
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     config?: QueryBuilderConfig | undefined,
@@ -50,12 +54,14 @@ export class MappingQueryBuilderState extends QueryBuilderState {
       applicationStore,
       graphManagerState,
       workflowState,
+
       config,
       sourceInfo,
     );
 
     this.onMappingChange = onMappingChange;
     this.onRuntimeChange = onRuntimeChange;
+    this.workflowState.updateActionConfig(actionConfig);
   }
 
   /**

@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
+  QueryBuilderActionConfig_QueryApplication,
   QueryEditorStore,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
@@ -142,6 +143,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       this.graphManagerState,
       this.depotServerClient,
       QueryBuilderDataBrowserWorkflow.INSTANCE,
+      new QueryBuilderActionConfig_QueryApplication(this),
       dataSpace,
       executionContext,
       (dataSpaceInfo: DataSpaceInfo) => {

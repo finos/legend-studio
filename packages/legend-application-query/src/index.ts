@@ -36,11 +36,12 @@ export type { LegendQueryApplicationStore } from './stores/LegendQueryBaseStore.
 export * from './stores/LegendQueryApplicationPlugin.js';
 export { BaseQuerySetupStore } from './stores/QuerySetupStore.js';
 export {
+  type QueryPersistConfiguration,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
   QueryEditorStore,
   ExistingQueryEditorStore,
-  type QueryPersistConfiguration,
+  QueryBuilderActionConfig_QueryApplication,
 } from './stores/QueryEditorStore.js';
 export { QUERY_EDITOR_TEST_ID } from './__lib__/LegendQueryTesting.js';
 // components

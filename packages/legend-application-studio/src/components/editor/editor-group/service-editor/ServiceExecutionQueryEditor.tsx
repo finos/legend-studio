@@ -54,6 +54,7 @@ import {
   QueryLoaderDialog,
   ExecutionPlanViewer,
   QueryBuilderAdvancedWorkflowState,
+  QueryBuilderActionConfig,
 } from '@finos/legend-query-builder';
 import { ProjectViewerEditorMode } from '../../../../stores/project-view/ProjectViewerEditorMode.js';
 import { useLegendStudioApplicationStore } from '../../../LegendStudioFrameworkProvider.js';
@@ -145,6 +146,7 @@ export const ServiceExecutionQueryEditor = observer(
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,
                 QueryBuilderAdvancedWorkflowState.INSTANCE,
+                QueryBuilderActionConfig.INSTANCE,
                 service,
                 undefined,
                 selectedExecutionState?.executionContext instanceof
@@ -491,6 +493,7 @@ export const queryService = async (
           embeddedQueryBuilderState.editorStore.applicationStore,
           embeddedQueryBuilderState.editorStore.graphManagerState,
           QueryBuilderAdvancedWorkflowState.INSTANCE,
+          QueryBuilderActionConfig.INSTANCE,
           service,
           undefined,
           selectedExec,
