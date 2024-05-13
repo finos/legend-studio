@@ -1,5 +1,11 @@
 # @finos/legend-application-repl-deployment
 
+## 11.46.0
+
+### Patch Changes
+
+- [#3130](https://github.com/finos/legend-studio/pull/3130) [`97838e392`](https://github.com/finos/legend-studio/commit/97838e392d1f37ca958528b7c3269c28f6d5dcfb) ([@gayathrir11](https://github.com/gayathrir11)) - Support relative path resolution for `baseUrl` during production bundling
+
 ## 11.45.0
 
 ## 11.44.0
