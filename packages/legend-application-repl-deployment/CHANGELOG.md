@@ -1,5 +1,7 @@
 # @finos/legend-application-repl-deployment
 
+## 11.47.0
+
 ## 11.46.0
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.4.10
+
+### Patch Changes
+
+- [#3133](https://github.com/finos/legend-studio/pull/3133) [`1ffeda30a`](https://github.com/finos/legend-studio/commit/1ffeda30afeffd83e37c3d2fdc513e3f651082e2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Make light theme default in application-query.
+
 ## 13.4.9
 
 ## 13.4.8
