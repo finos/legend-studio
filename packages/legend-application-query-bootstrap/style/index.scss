@@ -1365,8 +1365,15 @@
       }
     }
 
-    .query-builder-filter-tree__exists-node__label {
-      color: var(--color-legacylight-dark-grey-200);
+    .query-builder-filter-tree__exists-node {
+      &__label {
+        color: var(--color-legacylight-dark-grey-200);
+      }
+
+      &__exists--label__action:hover {
+        color: var(--color-light-grey-180);
+        background: var(--color-legacylight-light-blue-400);
+      }
     }
 
     // ------------------------------------ Post-filter Panel ---------------------------------------
