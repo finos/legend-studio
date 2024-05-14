@@ -16,9 +16,9 @@
 
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import { integrationTest } from '@finos/legend-shared/test';
-import { waitFor, getByText } from '@testing-library/react';
+import { waitFor, getByText, getByLabelText } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
-import { test } from '@jest/globals';
+import { expect, test } from '@jest/globals';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { TEST_DATA__simpleProjectionWithConstantsAndParameters } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
@@ -27,6 +27,7 @@ import {
   selectFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest('Query builder set up panel'),
@@ -49,16 +50,23 @@ test(
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
+    // Check for selector labels
+    expect(getByLabelText(queryBuilderSetup, 'Mapping')).not.toBeNull();
+    expect(getByLabelText(queryBuilderSetup, 'Runtime')).not.toBeNull();
+    expect(getByLabelText(queryBuilderSetup, 'Entity')).not.toBeNull();
     await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    const entitySelectorContainer = guaranteeNonNullable(
+      await waitFor(() => getByText(queryBuilderSetup, 'Entity').parentElement),
+    );
     // select FirmExtension from dropdown
     selectFromCustomSelectorInput(
-      queryBuilderSetup,
+      entitySelectorContainer,
       'FirmExtensionmodel::pure::tests::model::simple::FirmExtension',
     );
     await waitFor(() => getByText(queryBuilderSetup, 'FirmExtension'));
     // select synonym from dropdown
     selectFromCustomSelectorInput(
-      queryBuilderSetup,
+      entitySelectorContainer,
       'Synonymmodel::pure::tests::model::simple::Synonym',
     );
     await waitFor(() => getByText(queryBuilderSetup, 'Synonym'));
