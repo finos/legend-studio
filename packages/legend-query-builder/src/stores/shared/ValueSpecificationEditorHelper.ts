@@ -146,6 +146,8 @@ export const buildDefaultInstanceValue = (
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.BINARY:
+    case PRIMITIVE_TYPE.BYTE:
     case PRIMITIVE_TYPE.INTEGER: {
       return buildPrimitiveInstanceValue(
         graph,
