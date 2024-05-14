@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CustomSelectorInput, PlayIcon } from '@finos/legend-art';
+import { CustomSelectorInput } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { getMappingCompatibleClasses, type Service } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
@@ -107,13 +107,15 @@ const ServiceQueryBuilderSetupPanelContent = observer(
           </div>
           <div className="query-builder__setup__config-group__content">
             <div className="query-builder__setup__config-group__item">
-              <div
+              <label
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="service"
+                htmlFor="query-builder__setup__service-selector"
               >
                 Service
-              </div>
+              </label>
               <CustomSelectorInput
+                inputId="query-builder__setup__service-selector"
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 placeholder="Choose a service..."
                 options={serviceOptions}
@@ -134,13 +136,15 @@ const ServiceQueryBuilderSetupPanelContent = observer(
             {Boolean(queryBuilderState.executionContexts.length) && (
               <>
                 <div className="query-builder__setup__config-group__item">
-                  <div
+                  <label
                     className="btn--sm query-builder__setup__config-group__item__label"
                     title="execution context"
+                    htmlFor="query-builder__setup__context-selector"
                   >
-                    <PlayIcon className="query-builder__setup__service__icon__execution-context" />
-                  </div>
+                    Context
+                  </label>
                   <CustomSelectorInput
+                    inputId="query-builder__setup__context-selector"
                     className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                     placeholder="Choose an execution context..."
                     options={executionContextOptions}

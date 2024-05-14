@@ -110,13 +110,15 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
           </div>
           <div className="query-builder__setup__config-group__content">
             <div className="query-builder__setup__config-group__item">
-              <div
+              <label
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="data space"
+                htmlFor="query-builder__setup__data-space-selector"
               >
                 Data Space
-              </div>
+              </label>
               <CustomSelectorInput
+                inputId="query-builder__setup__data-space-selector"
                 ref={dataSpaceSearchRef}
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 options={dataSpaceOptions}

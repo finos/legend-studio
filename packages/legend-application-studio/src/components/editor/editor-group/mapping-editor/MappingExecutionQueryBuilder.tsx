@@ -55,13 +55,15 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
           </div>
           <div className="query-builder__setup__config-group__content">
             <div className="query-builder__setup__config-group__item">
-              <div
+              <label
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="mapping"
+                htmlFor="query-builder__setup__mapping-selector"
               >
                 Mapping
-              </div>
+              </label>
               <CustomSelectorInput
+                inputId="query-builder__setup__mapping-selector"
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 disabled={true}
                 options={[]}

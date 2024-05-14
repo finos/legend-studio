@@ -255,13 +255,15 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           </div>
           <div className="query-builder__setup__config-group__content">
             <div className="query-builder__setup__config-group__item">
-              <div
+              <label
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="data space"
+                htmlFor="query-builder__setup__data-space-selector"
               >
                 Data Space
-              </div>
+              </label>
               <CustomSelectorInput
+                inputId="query-builder__setup__data-space-selector"
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 options={dataSpaceOptions}
                 isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
@@ -297,13 +299,15 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               )}
             </div>
             <div className="query-builder__setup__config-group__item">
-              <div
+              <label
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="execution context"
+                htmlFor="query-builder__setup__context-selector"
               >
                 Context
-              </div>
+              </label>
               <CustomSelectorInput
+                inputId="query-builder__setup__context-selector"
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 placeholder="Choose an execution context..."
                 options={executionContextOptions}
@@ -322,13 +326,15 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
             </div>
             {queryBuilderState.showRuntimeSelector && (
               <div className="query-builder__setup__config-group__item">
-                <div
+                <label
                   className="btn--sm query-builder__setup__config-group__item__label"
                   title="runtime"
+                  htmlFor="query-builder__setup__runtime-selector"
                 >
                   Runtime
-                </div>
+                </label>
                 <CustomSelectorInput
+                  inputId="query-builder__setup__runtime-selector"
                   className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                   placeholder="Choose a runtime..."
                   noMatchMessage="No compatible runtime found for specified execution context"

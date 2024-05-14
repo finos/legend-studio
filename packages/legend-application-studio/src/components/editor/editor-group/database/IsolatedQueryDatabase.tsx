@@ -75,13 +75,15 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
           </div>
           <div className="query-builder__setup__config-group__content">
             <div className="query-builder__setup__config-group__item">
-              <div
+              <label
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="store"
+                htmlFor="query-builder__setup__store-selector"
               >
                 Store
-              </div>
+              </label>
               <CustomSelectorInput
+                inputId="query-builder__setup__store-selector"
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 noMatchMessage="No compatible mapping found for specified class"
                 disabled={true}
@@ -94,13 +96,15 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
               />
             </div>
             <div className="query-builder__setup__config-group__item">
-              <div
+              <label
                 className="btn--sm query-builder__setup__config-group__item__label"
                 title="connection"
+                htmlFor="query-builder__setup__connection-selector"
               >
                 Connection
-              </div>
+              </label>
               <CustomSelectorInput
+                inputId="query-builder__setup__connection-selector"
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 noMatchMessage="No compatible mapping found for specified class"
                 disabled={compConnectionsOptions.length < 2}
