@@ -289,8 +289,8 @@ export const getWebAppBaseWebpackConfig = (
       publicPath: isEnvDevelopment
         ? '/'
         : appConfig.isRelativePathSupported
-        ? './'
-        : appConfig.baseUrl,
+          ? './'
+          : appConfig.baseUrl,
       filename: `${staticPath}/${
         isEnvDevelopment ? '[name].js' : '[name].[contenthash:8].js'
       }`,
